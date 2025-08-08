@@ -192,8 +192,12 @@ async function createWindow() {
   )
 
   mainWindow.webContents.setWindowOpenHandler(edata => {
-    shell.openExternal(edata.url)
-    return { action: 'deny' }
+    shell.openExternal(edata.url).catch((e: unknown) => {
+      console.error(e)
+    })
+    return {
+      action: 'deny',
+    }
   })
 
   const isMac = process.platform === 'darwin'

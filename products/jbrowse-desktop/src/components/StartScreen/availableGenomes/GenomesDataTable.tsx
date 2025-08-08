@@ -1,18 +1,6 @@
-import { useMemo, useState, useCallback } from 'react'
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  flexRender,
-} from '@tanstack/react-table'
+import { useCallback, useMemo, useState } from 'react'
 
-import {
-  CascadingMenuButton,
-  ErrorMessage,
-  LoadingEllipses,
-} from '@jbrowse/core/ui'
+import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import Help from '@mui/icons-material/Help'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
@@ -26,6 +14,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
 import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
@@ -241,17 +237,21 @@ function SkeletonLoader({ classes }: { classes: any }) {
 }
 
 function highlightText(text: string, query: string): React.ReactNode {
-  if (!query || !text) return text
+  if (!query || !text) {
+    return text
+  }
 
   const queryLower = query.toLowerCase().trim()
   const textLower = text.toLowerCase()
 
   const index = textLower.indexOf(queryLower)
-  if (index === -1) return text
+  if (index === -1) {
+    return text
+  }
 
-  const beforeMatch = text.substring(0, index)
-  const match = text.substring(index, index + query.length)
-  const afterMatch = text.substring(index + query.length)
+  const beforeMatch = text.slice(0, Math.max(0, index))
+  const match = text.slice(index, index + query.length)
+  const afterMatch = text.slice(Math.max(0, index + query.length))
 
   return (
     <>
@@ -283,9 +283,7 @@ export default function GenomesDataTable({
     pageIndex: 0,
     pageSize: 50,
   })
-  const [sorting, setSorting] = useState<Array<{ id: string; desc: boolean }>>(
-    [],
-  )
+  const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([])
   const [typeOption, setTypeOption] = useLocalStorage(
     'startScreen-genArkChoice',
     'mammals',
@@ -336,11 +334,11 @@ export default function GenomesDataTable({
     }
     if (filterOption === 'refseq') {
       return preRows?.filter(
-        r => 'ncbiName' in r && r.ncbiName?.startsWith('GCF_'),
+        r => 'ncbiName' in r && r.ncbiName.startsWith('GCF_'),
       )
     } else if (filterOption === 'genbank') {
       return preRows?.filter(
-        r => 'ncbiName' in r && r.ncbiName?.startsWith('GCA_'),
+        r => 'ncbiName' in r && r.ncbiName.startsWith('GCA_'),
       )
     } else if (filterOption === 'designatedReference') {
       return preRows?.filter(
@@ -353,7 +351,7 @@ export default function GenomesDataTable({
     }
   }, [filterOption, preRows, typeOption])
 
-  const favs = new Set(favorites.map(r => r.id))
+  const favs = useMemo(() => new Set(favorites.map(r => r.id)), [favorites])
 
   // Filter rows based on search query
   const searchFilteredRows = useMemo(() => {
@@ -395,7 +393,7 @@ export default function GenomesDataTable({
         columnHelper.accessor('name', {
           header: 'Name',
           cell: info => {
-            const row = info.row.original as any
+            const row = info.row.original
             const isFavorite = favs.has(row.id)
             const websiteUrl = `https://genomes.jbrowse.org/ucsc/${row.id}/`
 
@@ -473,7 +471,7 @@ export default function GenomesDataTable({
         columnHelper.accessor('commonName', {
           header: 'Common Name',
           cell: info => {
-            const row = info.row.original as any
+            const row = info.row.original
             const isFavorite = favs.has(row.id)
             const websiteUrl = `https://genomes.jbrowse.org/accession/${row.accession}/`
 
@@ -537,7 +535,9 @@ export default function GenomesDataTable({
           header: 'Release Date',
           cell: info => {
             const date = info.getValue()
-            if (!date) return ''
+            if (!date) {
+              return ''
+            }
             // Parse the date and format it to show only the date part (YYYY-MM-DD)
             const dateObj = new Date(date)
             return dateObj.toISOString().split('T')[0]
@@ -568,7 +568,6 @@ export default function GenomesDataTable({
     setFavorites,
     launch,
     onClose,
-    multipleSelection,
     searchQuery,
     showAllColumns,
     columnHelper,
@@ -576,15 +575,14 @@ export default function GenomesDataTable({
 
   // Create table instance
   const rowSelection = useMemo(
-    () => selected.reduce((acc, id) => ({ ...acc, [id]: true }), {}),
+    () => Object.fromEntries(selected.map(id => [id, true])),
     [selected],
   )
 
   const handleRowSelectionChange = useCallback(
     (updater: any) => {
-      const currentSelection = selected.reduce(
-        (acc, id) => ({ ...acc, [id]: true }),
-        {},
+      const currentSelection = Object.fromEntries(
+        selected.map(id => [id, true]),
       )
       const newSelection =
         typeof updater === 'function' ? updater(currentSelection) : updater
@@ -604,7 +602,7 @@ export default function GenomesDataTable({
   )
 
   const table = useReactTable({
-    data: finalFilteredRows || [],
+    data: finalFilteredRows,
     columns: tableColumns,
     state: {
       sorting,
@@ -634,7 +632,7 @@ export default function GenomesDataTable({
             variant="contained"
             disabled={selected.length === 0}
             onClick={() => {
-              if (selected.length > 0 && finalFilteredRows) {
+              if (selected.length > 0) {
                 const selectedRows = selected
                   .map(id => finalFilteredRows.find(row => row.id === id))
                   .filter(notEmpty)
@@ -657,17 +655,21 @@ export default function GenomesDataTable({
           type="text"
           placeholder="Search genomes..."
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          onChange={e => {
+            setSearchQuery(e.target.value)
+          }}
           variant="outlined"
           size="small"
           className={classes.ml}
           style={{ minWidth: 200 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search fontSize="small" />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search fontSize="small" />
+                </InputAdornment>
+              ),
+            },
           }}
         />
 
@@ -790,10 +792,9 @@ export default function GenomesDataTable({
         <ErrorMessage error={genArkError || mainGenomesError} />
       ) : null}
 
-      {!finalFilteredRows ||
-      (finalFilteredRows.length === 0 && !genArkData && !mainGenomesData) ? (
+      {finalFilteredRows.length === 0 && !genArkData && !mainGenomesData ? (
         <SkeletonLoader classes={classes} />
-      ) : finalFilteredRows ? (
+      ) : (
         <div>
           <table className={classes.table}>
             <thead>
@@ -860,14 +861,18 @@ export default function GenomesDataTable({
           <div className={classes.paginationContainer}>
             <button
               className={classes.paginationButton}
-              onClick={() => table.setPageIndex(0)}
+              onClick={() => {
+                table.setPageIndex(0)
+              }}
               disabled={!table.getCanPreviousPage()}
             >
               {'<<'}
             </button>
             <button
               className={classes.paginationButton}
-              onClick={() => table.previousPage()}
+              onClick={() => {
+                table.previousPage()
+              }}
               disabled={!table.getCanPreviousPage()}
             >
               {'<'}
@@ -881,14 +886,18 @@ export default function GenomesDataTable({
             </span>
             <button
               className={classes.paginationButton}
-              onClick={() => table.nextPage()}
+              onClick={() => {
+                table.nextPage()
+              }}
               disabled={!table.getCanNextPage()}
             >
               {'>'}
             </button>
             <button
               className={classes.paginationButton}
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              onClick={() => {
+                table.setPageIndex(table.getPageCount() - 1)
+              }}
               disabled={!table.getCanNextPage()}
             >
               {'>>'}
@@ -923,8 +932,6 @@ export default function GenomesDataTable({
             </span>
           </div>
         </div>
-      ) : (
-        <LoadingEllipses />
       )}
       {moreInfoDialogOpen ? (
         <MoreInfoDialog
