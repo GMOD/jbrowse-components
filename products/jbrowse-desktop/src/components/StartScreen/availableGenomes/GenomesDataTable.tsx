@@ -18,7 +18,14 @@ import Help from '@mui/icons-material/Help'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
 import Search from '@mui/icons-material/Search'
-import { Button, InputAdornment, Link, MenuItem, TextField, Typography } from '@mui/material'
+import {
+  Button,
+  InputAdornment,
+  Link,
+  MenuItem,
+  TextField,
+  Typography,
+} from '@mui/material'
 import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
@@ -41,12 +48,12 @@ const allTypes = {
   primates: 'UCSC GenArk - Primates',
   vertebrate: 'UCSC GenArk - Vertebrate',
   viral: 'UCSC GenArk - Viral',
-  BRC: 'BRC (includes VEuPathDB)',
-  CCGP: 'CCGP (California conservation genome project)',
-  globalReference: 'Global Reference',
-  HPRC: 'HPRC (Human pangenome reference consortium)',
-  legacy: 'Legacy',
-  VGP: 'VGP (Vertebrate genomes project)',
+  BRC: 'UCSC GenArk - BRC (includes VEuPathDB)',
+  CCGP: 'UCSC GenArk - CCGP (California Conservation Genomics Project)',
+  globalReference: 'UCSC GenArk - Global Human Reference genomes',
+  HPRC: 'UCSC GenArk - HPRC (Human Pangenome Reference Consortium)',
+  legacy: 'UCSC GenArk - Legacy (NCBI genomes superseded by newer versions)',
+  VGP: 'UCSC GenArk - VGP (Vertebrate Genomes Project)',
 }
 
 const useStyles = makeStyles()({
@@ -123,7 +130,8 @@ const useStyles = makeStyles()({
       left: '-100%',
       width: '100%',
       height: '100%',
-      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+      background:
+        'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
       animation: '$shimmer 1.5s infinite',
     },
   },
@@ -164,7 +172,8 @@ const useStyles = makeStyles()({
       left: '-100%',
       width: '100%',
       height: '100%',
-      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+      background:
+        'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
       animation: '$shimmer 1.5s infinite',
     },
   },
@@ -179,84 +188,50 @@ interface Entry {
   ncbiRefSeqCategory: string
 }
 
-const order = {
-  'Complete genome': 1,
-  Chromosome: 2,
-  Scaffold: 3,
-  Contig: 4,
-}
-
-const columns = [
-  {
-    field: 'commonName',
-    title: 'Common Name',
-    sortable: true,
-  },
-  {
-    field: 'assemblyStatus',
-    title: 'Assembly status',
-    sortable: true,
-    sortComparator: (v1: string, v2: string) =>
-      (order[v1 as keyof typeof order] || 0) -
-      (order[v2 as keyof typeof order] || 0),
-  },
-  {
-    field: 'submitterOrg',
-    title: 'Submitter',
-    sortable: false,
-    extra: true,
-  },
-  {
-    field: 'seqReleaseDate',
-    title: 'Release date',
-    sortable: true,
-  },
-  {
-    field: 'scientificName',
-    title: 'Scientific name',
-    sortable: true,
-  },
-  {
-    field: 'ncbiAssemblyName',
-    title: 'NCBI assembly name',
-    sortable: true,
-  },
-  {
-    field: 'accession',
-    title: 'Accession',
-    sortable: true,
-    extra: true,
-  },
-
-  {
-    field: 'taxonId',
-    title: 'Taxonomy ID',
-    sortable: true,
-    extra: true,
-  },
-]
-
 function SkeletonLoader({ classes }: { classes: any }) {
   return (
     <div>
       <table className={classes.skeletonTable}>
         <thead>
           <tr>
-            <th><div className={classes.skeletonRow} style={{ width: '120px' }} /></th>
-            <th><div className={classes.skeletonRow} style={{ width: '100px' }} /></th>
-            <th><div className={classes.skeletonRow} style={{ width: '80px' }} /></th>
-            <th><div className={classes.skeletonRow} style={{ width: '140px' }} /></th>
-            <th><div className={classes.skeletonRow} style={{ width: '160px' }} /></th>
+            <th>
+              <div className={classes.skeletonRow} style={{ width: '120px' }} />
+            </th>
+            <th>
+              <div className={classes.skeletonRow} style={{ width: '100px' }} />
+            </th>
+            <th>
+              <div className={classes.skeletonRow} style={{ width: '80px' }} />
+            </th>
+            <th>
+              <div className={classes.skeletonRow} style={{ width: '140px' }} />
+            </th>
+            <th>
+              <div className={classes.skeletonRow} style={{ width: '160px' }} />
+            </th>
           </tr>
         </thead>
         <tbody>
           {Array.from({ length: 10 }).map((_, i) => (
             <tr key={i}>
-              <td><div className={classes.skeletonRow} style={{ width: '100%' }} /></td>
-              <td><div className={classes.skeletonRow} style={{ width: '80%' }} /></td>
-              <td><div className={classes.skeletonRow} style={{ width: '60%' }} /></td>
-              <td><div className={classes.skeletonRow} style={{ width: '90%' }} /></td>
-              <td><div className={classes.skeletonRow} style={{ width: '70%' }} /></td>
+              <td>
+                <div
+                  className={classes.skeletonRow}
+                  style={{ width: '100%' }}
+                />
+              </td>
+              <td>
+                <div className={classes.skeletonRow} style={{ width: '80%' }} />
+              </td>
+              <td>
+                <div className={classes.skeletonRow} style={{ width: '60%' }} />
+              </td>
+              <td>
+                <div className={classes.skeletonRow} style={{ width: '90%' }} />
+              </td>
+              <td>
+                <div className={classes.skeletonRow} style={{ width: '70%' }} />
+              </td>
             </tr>
           ))}
         </tbody>
@@ -422,6 +397,7 @@ export default function GenomesDataTable({
           cell: info => {
             const row = info.row.original as any
             const isFavorite = favs.has(row.id)
+            const websiteUrl = `https://genomes.jbrowse.org/ucsc/${row.id}/`
 
             const handleLaunch = (event: React.MouseEvent) => {
               event.preventDefault()
@@ -452,17 +428,19 @@ export default function GenomesDataTable({
 
             return (
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                {multipleSelection ? (
-                  highlightText(info.getValue() || '', searchQuery)
-                ) : (
-                  <Link href="#" onClick={handleLaunch}>
-                    {highlightText(info.getValue() || '', searchQuery)}
-                  </Link>
-                )}
-                {isFavorite ? <StarIcon /> : null}
+                {highlightText(info.getValue() || '', searchQuery)} (
+                <Link href={websiteUrl}>info</Link>
+                )(
+                <Link href="#" onClick={handleLaunch}>
+                  launch
+                </Link>
+                ) {isFavorite ? <StarIcon /> : null}
                 <CascadingMenuButton
                   menuItems={[
-                    { label: 'Launch', onClick: handleLaunch },
+                    {
+                      label: 'Launch',
+                      onClick: handleLaunch,
+                    },
                     {
                       label: isFavorite
                         ? 'Remove from favorites'
@@ -497,6 +475,7 @@ export default function GenomesDataTable({
           cell: info => {
             const row = info.row.original as any
             const isFavorite = favs.has(row.id)
+            const websiteUrl = `https://genomes.jbrowse.org/accession/${row.accession}/`
 
             const handleLaunch = (event: React.MouseEvent) => {
               event.preventDefault()
@@ -527,17 +506,18 @@ export default function GenomesDataTable({
 
             return (
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                {multipleSelection ? (
-                  highlightText(info.getValue() || '', searchQuery)
-                ) : (
-                  <Link href="#" onClick={handleLaunch}>
-                    {highlightText(info.getValue() || '', searchQuery)}
-                  </Link>
-                )}
-                {isFavorite ? <StarIcon /> : null}
+                {highlightText(info.getValue() || '', searchQuery)} (
+                <Link href={websiteUrl}>info</Link>) (
+                <Link href="#" onClick={handleLaunch}>
+                  launch
+                </Link>
+                ){isFavorite ? <StarIcon /> : null}
                 <CascadingMenuButton
                   menuItems={[
-                    { label: 'Launch', onClick: handleLaunch },
+                    {
+                      label: 'Launch',
+                      onClick: handleLaunch,
+                    },
                     {
                       label: isFavorite
                         ? 'Remove from favorites'
@@ -595,21 +575,33 @@ export default function GenomesDataTable({
   ])
 
   // Create table instance
-  const rowSelection = useMemo(() => 
-    selected.reduce((acc, id) => ({ ...acc, [id]: true }), {}), 
-    [selected]
+  const rowSelection = useMemo(
+    () => selected.reduce((acc, id) => ({ ...acc, [id]: true }), {}),
+    [selected],
   )
 
-  const handleRowSelectionChange = useCallback((updater: any) => {
-    const currentSelection = selected.reduce((acc, id) => ({ ...acc, [id]: true }), {})
-    const newSelection = typeof updater === 'function' ? updater(currentSelection) : updater
-    const newSelectedIds = Object.keys(newSelection).filter(key => newSelection[key])
-    
-    // Only update if the selection actually changed
-    if (JSON.stringify(newSelectedIds.sort()) !== JSON.stringify(selected.sort())) {
-      setSelected(newSelectedIds)
-    }
-  }, [selected])
+  const handleRowSelectionChange = useCallback(
+    (updater: any) => {
+      const currentSelection = selected.reduce(
+        (acc, id) => ({ ...acc, [id]: true }),
+        {},
+      )
+      const newSelection =
+        typeof updater === 'function' ? updater(currentSelection) : updater
+      const newSelectedIds = Object.keys(newSelection).filter(
+        key => newSelection[key],
+      )
+
+      // Only update if the selection actually changed
+      if (
+        JSON.stringify(newSelectedIds.sort()) !==
+        JSON.stringify(selected.sort())
+      ) {
+        setSelected(newSelectedIds)
+      }
+    },
+    [selected],
+  )
 
   const table = useReactTable({
     data: finalFilteredRows || [],
@@ -798,7 +790,8 @@ export default function GenomesDataTable({
         <ErrorMessage error={genArkError || mainGenomesError} />
       ) : null}
 
-      {!finalFilteredRows || (finalFilteredRows.length === 0 && !genArkData && !mainGenomesData) ? (
+      {!finalFilteredRows ||
+      (finalFilteredRows.length === 0 && !genArkData && !mainGenomesData) ? (
         <SkeletonLoader classes={classes} />
       ) : finalFilteredRows ? (
         <div>

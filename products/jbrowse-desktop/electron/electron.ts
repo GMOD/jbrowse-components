@@ -191,10 +191,8 @@ async function createWindow() {
       : url.format(devServerUrl),
   )
 
-  mainWindow.webContents.setWindowOpenHandler(details => {
-    // unsure how to handle
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    shell.openExternal(details.url)
+  mainWindow.webContents.setWindowOpenHandler(edata => {
+    shell.openExternal(edata.url)
     return { action: 'deny' }
   })
 
