@@ -47,7 +47,7 @@ const Segments = observer(function Segments(props: {
         stroke={color2}
       />
       {subfeatures?.map(subfeature => {
-        const subfeatureId = String(subfeature.id())
+        const subfeatureId = subfeature.id()
         const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
         // This subfeature got filtered out
         if (!subfeatureLayout) {

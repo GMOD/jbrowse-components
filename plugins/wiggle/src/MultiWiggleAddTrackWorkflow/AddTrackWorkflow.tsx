@@ -95,7 +95,7 @@ const MultiWiggleAddTrackWorkflow = observer(function ({
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
-  const [trackName, setTrackName] = useState(`MultiWiggle${+Date.now()}`)
+  const [trackName, setTrackName] = useState(`MultiWiggle${Date.now()}`)
   return (
     <Paper className={classes.paper}>
       <ul>

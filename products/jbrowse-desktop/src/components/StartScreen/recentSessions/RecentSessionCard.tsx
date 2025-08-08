@@ -86,7 +86,7 @@ function RecentSessionCard({
         onClick={() => {
           onClick(sessionData)
         }}
-        raised={Boolean(hovered)}
+        raised={hovered}
       >
         {screenshot ? (
           <CardMedia

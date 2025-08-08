@@ -102,7 +102,7 @@ const SequenceSearchDialog = observer(function ({
         <Button
           onClick={() => {
             if (value) {
-              const trackId = `sequence_search_${+Date.now()}`
+              const trackId = `sequence_search_${Date.now()}`
               const session = getSession(model)
               const { assemblyManager } = session
               const assemblyName = model.assemblyNames[0]!

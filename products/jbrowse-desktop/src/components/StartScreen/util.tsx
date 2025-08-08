@@ -27,7 +27,7 @@ export async function loadPluginManager(configPath: string) {
 
 export async function createPluginManager(
   configSnapshot: JBrowseConfig,
-  initialTimestamp = +Date.now(),
+  initialTimestamp = Date.now(),
 ) {
   const pluginLoader = new PluginLoader(configSnapshot.plugins, {
     fetchESM: url => import(/* webpackIgnore:true */ url),
