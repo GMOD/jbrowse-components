@@ -3,6 +3,7 @@ import { Suspense, lazy, useEffect, useState } from 'react'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
+import { destroy } from 'mobx-state-tree'
 import {
   QueryParamProvider,
   StringParam,
@@ -128,12 +129,16 @@ const Renderer = observer(function ({
 
     try {
       if (ready) {
+        if (pluginManager?.rootModel) {
+          destroy(pluginManager.rootModel)
+        }
         setPluginManager(createPluginManager(loader, reloadPluginManager))
       }
     } catch (e) {
       console.error(e)
       setError(e)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loader, ready])
 
   const err = configError || error
