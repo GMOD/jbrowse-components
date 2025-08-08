@@ -124,9 +124,7 @@ const RulerLabel = observer(function ({
   const textXY = polarToCartesian(radiusPx + 5, radians)
   if (!text) {
     return null
-  }
-
-  if (text.length * 6.5 < maxWidthPx) {
+  } else if (text.length * 6.5 < maxWidthPx) {
     // text is rotated parallel to the ruler arc
     return (
       <text
@@ -134,7 +132,7 @@ const RulerLabel = observer(function ({
         y={0}
         className={classes.rulerLabel}
         textAnchor="middle"
-        dominantBaseline="baseline"
+        dominantBaseline="middle"
         transform={`translate(${textXY}) rotate(${radToDeg(radians) + 90})`}
         {...getFillProps(color)}
       >
@@ -142,8 +140,7 @@ const RulerLabel = observer(function ({
         <title>{title || text}</title>
       </text>
     )
-  }
-  if (maxWidthPx > 4) {
+  } else if (maxWidthPx > 4) {
     // text is rotated perpendicular to the ruler arc
     const overallRotation = radToDeg(radians + view.offsetRadians - Math.PI / 2)
     if (overallRotation >= 180) {
@@ -176,10 +173,10 @@ const RulerLabel = observer(function ({
         <title>{title || text}</title>
       </text>
     )
+  } else {
+    // if you get here there is no room for the text at all
+    return null
   }
-
-  // if you get here there is no room for the text at all
-  return null
 })
 
 const RegionRulerArc = observer(function ({
