@@ -152,7 +152,7 @@ export function pluginUrl(d: PluginDefinition) {
 }
 
 function isInWebWorker() {
-  return Boolean('WorkerGlobalScope' in globalThis)
+  return 'WorkerGlobalScope' in globalThis
 }
 
 export default class PluginLoader {

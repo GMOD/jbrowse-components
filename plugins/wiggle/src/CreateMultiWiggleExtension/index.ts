@@ -23,7 +23,7 @@ function makeTrack({
   const subadapters = tracks
     .map(c => readConfObject(c, 'adapter'))
     .map((c, idx) => ({ ...c, source: trackIds[idx] }))
-  const now = +Date.now()
+  const now = Date.now()
   const trackId = `multitrack-${now}-sessionTrack`
 
   const session = getSession(model)

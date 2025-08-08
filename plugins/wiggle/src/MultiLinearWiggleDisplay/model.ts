@@ -27,6 +27,8 @@ import type {
 import type { Instance } from 'mobx-state-tree'
 
 const randomColor = () =>
+  // my understanding is this casts to int
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
 
 // lazies
