@@ -138,7 +138,7 @@ const Renderer = observer(function ({
       console.error(e)
       setError(e)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loader, ready])
 
   const err = configError || error
