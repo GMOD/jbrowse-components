@@ -33,6 +33,7 @@ const htmlTags = [
   'tbody',
   'sup',
   'sub',
+  'svg',
   'td',
   'tfoot',
   'th',
@@ -81,11 +82,17 @@ export default function SanitizedHTML({
     })
   }
 
+  const res = dompurify.sanitize(value)
+  // Strip <style> tags and their content using a heuristic approach
+  // because these can pollute global styles
+  const cleanRes = res.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+
+  console.log({ res, cleanRes, html })
   return (
     <span
       className={className}
       dangerouslySetInnerHTML={{
-        __html: dompurify.sanitize(value),
+        __html: cleanRes,
       }}
     />
   )

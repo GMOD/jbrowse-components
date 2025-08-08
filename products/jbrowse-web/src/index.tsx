@@ -8,6 +8,8 @@ const Main = lazy(() => import('./components/Loader'))
 
 const initialTimeStamp = Date.now()
 
+import './index.css'
+
 if (window.name.startsWith('JBrowseAuthWindow')) {
   const parent = window.opener
   if (parent) {
