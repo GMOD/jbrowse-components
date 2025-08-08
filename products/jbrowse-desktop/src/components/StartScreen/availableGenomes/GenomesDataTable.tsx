@@ -198,7 +198,7 @@ function highlightText(text: string, query: string): React.ReactNode {
   )
 }
 
-export default function GenArkDataTable({
+export default function GenomesDataTable({
   favorites,
   setFavorites,
   onClose,
