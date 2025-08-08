@@ -43,7 +43,7 @@ const FeatureGlyph = observer(function (props: {
     shouldShowDescription,
   } = props
 
-  const featureLayout = rootLayout.getSubRecord(String(feature.id()))
+  const featureLayout = rootLayout.getSubRecord(feature.id())
   if (!featureLayout) {
     return null
   }

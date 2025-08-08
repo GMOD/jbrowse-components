@@ -12,7 +12,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const toP = (s = 0) => +(+s).toFixed(1)
+const toP = (s = 0) => +s.toFixed(1)
 
 const pct = (n: number, total = 1) => `${toP((n / (total || 1)) * 100)}%`
 

@@ -216,7 +216,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #action
        */
       setOnlyDisplayRelevantRegionsInCircularView(val: boolean) {
-        self.onlyDisplayRelevantRegionsInCircularView = Boolean(val)
+        self.onlyDisplayRelevantRegionsInCircularView = val
       },
     }))
     .views(self => ({

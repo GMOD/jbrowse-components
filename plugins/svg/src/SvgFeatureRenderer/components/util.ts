@@ -148,7 +148,7 @@ export function layOutFeature(args: FeatureLayOutArgs) {
   const layoutParent = layout.parent
   const top = layoutParent ? layoutParent.top : 0
   return layout.addChild(
-    String(feature.id()),
+    feature.id(),
     x,
     displayMode === 'collapse' ? 0 : top,
     Math.max(width, 1), // has to be at least one to register in the layout

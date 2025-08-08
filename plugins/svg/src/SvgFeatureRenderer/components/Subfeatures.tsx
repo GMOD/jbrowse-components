@@ -16,7 +16,7 @@ const Subfeatures = observer(function Subfeatures(props: {
   const { feature, featureLayout, selected } = props
 
   return feature.get('subfeatures')?.map(subfeature => {
-    const subfeatureId = String(subfeature.id())
+    const subfeatureId = subfeature.id()
     const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
     if (!subfeatureLayout) {
       return null
