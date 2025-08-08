@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -17,7 +17,8 @@ import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import Help from '@mui/icons-material/Help'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Button, Link, MenuItem, TextField, Typography } from '@mui/material'
+import Search from '@mui/icons-material/Search'
+import { Button, InputAdornment, Link, MenuItem, TextField, Typography } from '@mui/material'
 import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
@@ -108,6 +109,65 @@ const useStyles = makeStyles()({
   searchHighlight: {
     backgroundColor: 'yellow',
   },
+  skeleton: {
+    width: '100%',
+    height: '400px',
+    backgroundColor: '#f0f0f0',
+    borderRadius: '4px',
+    position: 'relative',
+    overflow: 'hidden',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: '-100%',
+      width: '100%',
+      height: '100%',
+      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+      animation: '$shimmer 1.5s infinite',
+    },
+  },
+  '@keyframes shimmer': {
+    '0%': {
+      left: '-100%',
+    },
+    '100%': {
+      left: '100%',
+    },
+  },
+  skeletonTable: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    '& th, & td': {
+      padding: '4px 8px',
+      borderBottom: '1px solid #e0e0e0',
+    },
+    '& th': {
+      backgroundColor: '#f5f5f5',
+      height: '35px',
+    },
+    '& td': {
+      height: '25px',
+    },
+  },
+  skeletonRow: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: '4px',
+    height: '16px',
+    margin: '2px 0',
+    position: 'relative',
+    overflow: 'hidden',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: '-100%',
+      width: '100%',
+      height: '100%',
+      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+      animation: '$shimmer 1.5s infinite',
+    },
+  },
 })
 
 interface Entry {
@@ -175,6 +235,35 @@ const columns = [
     extra: true,
   },
 ]
+
+function SkeletonLoader({ classes }: { classes: any }) {
+  return (
+    <div>
+      <table className={classes.skeletonTable}>
+        <thead>
+          <tr>
+            <th><div className={classes.skeletonRow} style={{ width: '120px' }} /></th>
+            <th><div className={classes.skeletonRow} style={{ width: '100px' }} /></th>
+            <th><div className={classes.skeletonRow} style={{ width: '80px' }} /></th>
+            <th><div className={classes.skeletonRow} style={{ width: '140px' }} /></th>
+            <th><div className={classes.skeletonRow} style={{ width: '160px' }} /></th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <tr key={i}>
+              <td><div className={classes.skeletonRow} style={{ width: '100%' }} /></td>
+              <td><div className={classes.skeletonRow} style={{ width: '80%' }} /></td>
+              <td><div className={classes.skeletonRow} style={{ width: '60%' }} /></td>
+              <td><div className={classes.skeletonRow} style={{ width: '90%' }} /></td>
+              <td><div className={classes.skeletonRow} style={{ width: '70%' }} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 function highlightText(text: string, query: string): React.ReactNode {
   if (!query || !text) return text
@@ -506,27 +595,38 @@ export default function GenomesDataTable({
   ])
 
   // Create table instance
+  const rowSelection = useMemo(() => 
+    selected.reduce((acc, id) => ({ ...acc, [id]: true }), {}), 
+    [selected]
+  )
+
+  const handleRowSelectionChange = useCallback((updater: any) => {
+    const currentSelection = selected.reduce((acc, id) => ({ ...acc, [id]: true }), {})
+    const newSelection = typeof updater === 'function' ? updater(currentSelection) : updater
+    const newSelectedIds = Object.keys(newSelection).filter(key => newSelection[key])
+    
+    // Only update if the selection actually changed
+    if (JSON.stringify(newSelectedIds.sort()) !== JSON.stringify(selected.sort())) {
+      setSelected(newSelectedIds)
+    }
+  }, [selected])
+
   const table = useReactTable({
     data: finalFilteredRows || [],
     columns: tableColumns,
     state: {
       sorting,
       pagination,
-      rowSelection: selected.reduce((acc, id) => ({ ...acc, [id]: true }), {}),
+      rowSelection,
     },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
-    onRowSelectionChange: updater => {
-      const newSelection =
-        typeof updater === 'function'
-          ? updater(selected.reduce((acc, id) => ({ ...acc, [id]: true }), {}))
-          : updater
-      setSelected(Object.keys(newSelection).filter(key => newSelection[key]))
-    },
+    onRowSelectionChange: handleRowSelectionChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     enableRowSelection: multipleSelection,
+    autoResetPageIndex: false, // Prevent automatic page reset
   })
   return (
     <div className={classes.panel}>
@@ -570,6 +670,13 @@ export default function GenomesDataTable({
           size="small"
           className={classes.ml}
           style={{ minWidth: 200 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
         />
 
         <TextField
@@ -691,7 +798,9 @@ export default function GenomesDataTable({
         <ErrorMessage error={genArkError || mainGenomesError} />
       ) : null}
 
-      {finalFilteredRows ? (
+      {!finalFilteredRows || (finalFilteredRows.length === 0 && !genArkData && !mainGenomesData) ? (
+        <SkeletonLoader classes={classes} />
+      ) : finalFilteredRows ? (
         <div>
           <table className={classes.table}>
             <thead>
