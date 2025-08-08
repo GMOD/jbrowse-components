@@ -277,7 +277,7 @@ ipcMain.handle(
     location: { uri: string } | { localPath: string },
   ) => {
     const filename = 'localPath' in location ? location.localPath : location.uri
-    const faiPath = getFaiPath(`${path.basename(filename)}${+Date.now()}.fai`)
+    const faiPath = getFaiPath(`${path.basename(filename)}${Date.now()}.fai`)
     const stream = await getFileStream(location)
     const write = fs.createWriteStream(faiPath)
 
@@ -382,11 +382,11 @@ ipcMain.handle(
   'createInitialAutosaveFile',
   async (_event: unknown, snap: SessionSnap) => {
     const rows = await readRecentSessions()
-    const autosavePath = getAutosavePath(`${+Date.now()}`)
+    const autosavePath = getAutosavePath(`${Date.now()}`)
     const idx = rows.findIndex(r => r.path === autosavePath)
     const entry = {
       path: autosavePath,
-      updated: +Date.now(),
+      updated: Date.now(),
       name: snap.defaultSession?.name,
     }
     if (idx === -1) {
@@ -415,7 +415,7 @@ ipcMain.handle(
     const png = page?.resize({ width: 500 }).toDataURL()
     const entry = {
       path,
-      updated: +Date.now(),
+      updated: Date.now(),
       name: snap.defaultSession?.name,
     }
     if (idx === -1) {
