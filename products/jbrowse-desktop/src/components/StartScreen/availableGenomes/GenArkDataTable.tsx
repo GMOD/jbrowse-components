@@ -175,7 +175,7 @@ const columns = [
   },
 ]
 
-function highlightText(text: string, query: string) {
+function highlightText(text: string, query: string): React.ReactNode {
   if (!query || !text) return text
 
   const queryLower = query.toLowerCase().trim()
@@ -218,7 +218,7 @@ export default function GenArkDataTable({
     pageIndex: 0,
     pageSize: 200,
   })
-  const [sorting, setSorting] = useState([])
+  const [sorting, setSorting] = useState<Array<{id: string, desc: boolean}>>([])
   const [typeOption, setTypeOption] = useLocalStorage(
     'startScreen-genArkChoice',
     'mammals',
@@ -268,11 +268,11 @@ export default function GenArkDataTable({
       return preRows
     }
     if (filterOption === 'refseq') {
-      return preRows?.filter(r => r.ncbiName?.startsWith('GCF_'))
+      return preRows?.filter(r => 'ncbiName' in r && r.ncbiName?.startsWith('GCF_'))
     } else if (filterOption === 'genbank') {
-      return preRows?.filter(r => r.ncbiName?.startsWith('GCA_'))
+      return preRows?.filter(r => 'ncbiName' in r && r.ncbiName?.startsWith('GCA_'))
     } else if (filterOption === 'designatedReference') {
-      return preRows?.filter(r => r.ncbiRefSeqCategory === 'reference genome')
+      return preRows?.filter(r => 'ncbiRefSeqCategory' in r && r.ncbiRefSeqCategory === 'reference genome')
     } else {
       return preRows
     }
@@ -290,11 +290,11 @@ export default function GenArkDataTable({
       rows?.filter(row => {
         const searchText = [
           row.commonName,
-          row.scientificName,
-          row.ncbiAssemblyName,
-          row.organism,
-          row.description,
-          row.name,
+          'scientificName' in row ? row.scientificName : '',
+          'ncbiAssemblyName' in row ? row.ncbiAssemblyName : '',
+          'organism' in row ? row.organism : '',
+          'description' in row ? row.description : '',
+          'name' in row ? row.name : '',
         ]
           .join(' ')
           .toLowerCase()
@@ -311,7 +311,7 @@ export default function GenArkDataTable({
   }, [searchFilteredRows, showOnlyFavs, favs])
 
   // Create table columns
-  const columnHelper = createColumnHelper()
+  const columnHelper = createColumnHelper<any>()
 
   const tableColumns = useMemo(() => {
     if (typeOption === 'mainGenomes') {
@@ -319,7 +319,7 @@ export default function GenArkDataTable({
         columnHelper.accessor('name', {
           header: 'Name',
           cell: info => {
-            const row = info.row.original
+            const row = info.row.original as any
             const isFavorite = favs.has(row.id)
 
             const handleLaunch = (event: React.MouseEvent) => {
@@ -394,7 +394,7 @@ export default function GenArkDataTable({
         columnHelper.accessor('commonName', {
           header: 'Common Name',
           cell: info => {
-            const row = info.row.original
+            const row = info.row.original as any
             const isFavorite = favs.has(row.id)
 
             const handleLaunch = (event: React.MouseEvent) => {
@@ -486,7 +486,7 @@ export default function GenArkDataTable({
 
   // Create table instance
   const table = useReactTable({
-    data: finalFilteredRows,
+    data: finalFilteredRows || [],
     columns: tableColumns,
     state: {
       sorting,
@@ -591,7 +591,7 @@ export default function GenArkDataTable({
               ? [
                   {
                     label: 'Show all columns',
-                    type: 'checkbox',
+                    type: 'checkbox' as const,
                     checked: showAllColumns,
                     onClick: () => {
                       setShowAllColumns(!showAllColumns)
@@ -603,11 +603,11 @@ export default function GenArkDataTable({
               ? [
                   {
                     label: 'Filter by NCBI status',
-                    type: 'subMenu',
+                    type: 'subMenu' as const,
                     subMenu: [
                       {
                         label: 'All',
-                        type: 'radio',
+                        type: 'radio' as const,
                         checked: filterOption === 'all',
                         onClick: () => {
                           setFilterOption('all')
@@ -615,7 +615,7 @@ export default function GenArkDataTable({
                       },
                       {
                         label: 'RefSeq only',
-                        type: 'radio',
+                        type: 'radio' as const,
                         checked: filterOption === 'refseq',
                         onClick: () => {
                           setFilterOption('refseq')
@@ -623,7 +623,7 @@ export default function GenArkDataTable({
                       },
                       {
                         label: 'GenBank only',
-                        type: 'radio',
+                        type: 'radio' as const,
                         checked: filterOption === 'genbank',
                         onClick: () => {
                           setFilterOption('genbank')
@@ -631,7 +631,7 @@ export default function GenArkDataTable({
                       },
                       {
                         label: 'Designated reference genome only',
-                        type: 'radio',
+                        type: 'radio' as const,
                         checked: filterOption === 'designatedReference',
                         onClick: () => {
                           setFilterOption('designatedReference')
@@ -645,6 +645,7 @@ export default function GenArkDataTable({
               ? [
                   {
                     label: 'Reset favorites list to defaults',
+                    type: 'normal' as const,
                     onClick: () => {
                       setFavorites(defaultFavs)
                     },
@@ -653,6 +654,7 @@ export default function GenArkDataTable({
               : []),
             {
               label: 'More information',
+              type: 'normal' as const,
               icon: Help,
               onClick: () => {
                 setMoreInfoDialogOpen(true)
@@ -700,7 +702,7 @@ export default function GenArkDataTable({
                       {{
                         asc: ' ↑',
                         desc: ' ↓',
-                      }[header.column.getIsSorted()] ?? ''}
+                      }[header.column.getIsSorted() as string] ?? ''}
                     </th>
                   ))}
                 </tr>
