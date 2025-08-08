@@ -129,16 +129,17 @@ const Renderer = observer(function ({
 
     try {
       if (ready) {
-        if (pluginManager?.rootModel) {
-          destroy(pluginManager.rootModel)
-        }
-        setPluginManager(createPluginManager(loader, reloadPluginManager))
+        setPluginManager(previousPluginManager => {
+          if (previousPluginManager?.rootModel) {
+            destroy(previousPluginManager.rootModel)
+          }
+          return createPluginManager(loader, reloadPluginManager)
+        })
       }
     } catch (e) {
       console.error(e)
       setError(e)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loader, ready])
 
   const err = configError || error
