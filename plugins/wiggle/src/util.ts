@@ -159,7 +159,7 @@ export function getNiceDomain({
 }
 
 export function toP(s = 0) {
-  return +(+s).toPrecision(6)
+  return +s.toPrecision(6)
 }
 
 export function round(value: number) {
