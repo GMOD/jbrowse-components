@@ -78,7 +78,6 @@ export default function MainGenomesDialogPanel({
   const widths = rows
     ? colNames.map(e => measureGridWidth(rows.map(r => r[e as keyof typeof r])))
     : undefined
-  console.log({ rows })
   return (
     <div>
       <div className={classes.span}>
