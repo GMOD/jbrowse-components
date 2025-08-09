@@ -155,13 +155,12 @@ module.exports = {
   presets: [
     [
       '@docusaurus/preset-classic',
+
       {
         gtag: {
           trackingID: 'G-TRMBQZRJW7',
           anonymizeIP: true,
         },
-      },
-      {
         docs: {
           sidebarPath: require.resolve('./sidebars.json'),
           // Please change this to your repo.
