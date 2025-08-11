@@ -208,11 +208,15 @@ async function createWindow() {
     })
   })
 
-  await mainWindow.loadURL(
-    app.isPackaged
-      ? `file://${path.join(app.getAppPath(), 'build', 'index.html')}`
-      : url.format(devServerUrl),
-  )
+  const appUrl = app.isPackaged
+    ? new URL(`file://${path.join(app.getAppPath(), 'build', 'index.html')}`)
+    : devServerUrl
+  const lastArg = process.argv.at(-1)
+  if (lastArg?.endsWith(".jbrowse")) {
+    appUrl.searchParams.append('config', lastArg)
+  }
+
+  await mainWindow.loadURL(url.format(appUrl))
 
   mainWindow.webContents.setWindowOpenHandler(details => {
     // unsure how to handle
