@@ -114,6 +114,16 @@
     "appId": "org.jbrowse2.app",
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
+    "fileAssociations": [
+      {
+        "ext": "jbrowse",
+        "name": "JBrowse",
+        "role": "Editor"
+      }
+    ],
+    "nsis": {
+      "perMachine": true
+    },
     "win": {
       "sign": "./sign.js",
       "signingHashAlgorithms": [
