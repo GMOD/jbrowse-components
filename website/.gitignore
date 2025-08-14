@@ -26,3 +26,5 @@ cli.md
 # plugin data from AWS
 plugins.json
 jb2
+llms.txt
+llms-full.txt
