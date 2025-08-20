@@ -79,7 +79,7 @@ export function clusterData({
   // initialize clusters to match data
   const clusters = data.map((_datum, index) => ({
     height: 0,
-    indexes: [Number(index)],
+    indexes: [index],
   }))
 
   // keep track of all tree slices

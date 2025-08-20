@@ -23,13 +23,13 @@ import copy from 'copy-to-clipboard'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
-import FeatureDensityMixin from './FeatureDensityMixin'
-import TrackHeightMixin from './TrackHeightMixin'
-import configSchema from './configSchema'
-import BlockState from './serverSideRenderedBlock'
+import FeatureDensityMixin from './models/FeatureDensityMixin'
+import TrackHeightMixin from './models/TrackHeightMixin'
+import configSchema from './models/configSchema'
+import BlockState from './models/serverSideRenderedBlock'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { ExportSvgOptions } from '../../LinearGenomeView/types'
+import type { LinearGenomeViewModel } from '../LinearGenomeView'
+import type { ExportSvgOptions } from '../LinearGenomeView/types'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -37,7 +37,7 @@ import type { ThemeOptions } from '@mui/material'
 import type { Instance } from 'mobx-state-tree'
 
 // lazies
-const Tooltip = lazy(() => import('../components/Tooltip'))
+const Tooltip = lazy(() => import('./components/Tooltip'))
 
 type LGV = LinearGenomeViewModel
 
@@ -88,6 +88,7 @@ function stateModelFactory() {
       }),
     )
     .volatile(() => ({
+      mouseoverExtraInformation: undefined as string | undefined,
       /**
        * #volatile
        */
@@ -314,6 +315,12 @@ function stateModelFactory() {
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
       },
+      /**
+       * #action
+       */
+      setMouseoverExtraInformation(extra?: string) {
+        self.mouseoverExtraInformation = extra
+      },
     }))
 
     .actions(self => {
@@ -398,7 +405,8 @@ function stateModelFactory() {
           onClick() {
             self.clearFeatureSelection()
           },
-          // similar to click but opens a menu with further options
+          // similar to click but opens a menu with further
+          // options
           onFeatureContextMenu(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse
             if (!f) {
@@ -409,12 +417,14 @@ function stateModelFactory() {
             }
           },
 
-          onMouseMove(_: unknown, featureId?: string) {
+          onMouseMove(_: unknown, featureId?: string, extra?: string) {
             self.setFeatureIdUnderMouse(featureId)
+            self.setMouseoverExtraInformation(extra)
           },
 
           onMouseLeave(_: unknown) {
             self.setFeatureIdUnderMouse(undefined)
+            self.setMouseoverExtraInformation(undefined)
           },
 
           onContextMenu() {
@@ -429,7 +439,9 @@ function stateModelFactory() {
        * #method
        */
       async renderSvg(opts: ExportSvgDisplayOptions) {
-        const { renderBaseLinearDisplaySvg } = await import('./renderSvg')
+        const { renderBaseLinearDisplaySvg } = await import(
+          './models/renderSvg'
+        )
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
       afterAttach() {

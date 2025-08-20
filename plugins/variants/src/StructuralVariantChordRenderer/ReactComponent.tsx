@@ -51,7 +51,7 @@ const StructuralVariantChordsReactComponent = observer(function ({
     <g data-testid="structuralVariantChordRenderer">
       {[...features.values()].map(feature => {
         const id = feature.id()
-        const selected = String(selectedFeatureId) === String(id)
+        const selected = selectedFeatureId === id
         return (
           <Chord
             key={id}

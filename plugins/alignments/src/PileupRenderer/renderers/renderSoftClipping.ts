@@ -1,12 +1,12 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import { fillRect, getCharWidthHeight } from './util'
-import { parseCigar } from '../MismatchParser'
+import { parseCigar } from '../../MismatchParser'
+import { fillRect, getCharWidthHeight } from '../util'
 
-import type { ProcessedRenderArgs } from './types'
-import type { LayoutFeature } from './util'
-import type { Mismatch } from '../shared/types'
+import type { Mismatch } from '../../shared/types'
+import type { ProcessedRenderArgs } from '../types'
+import type { LayoutFeature } from '../util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Theme } from '@mui/material'
 

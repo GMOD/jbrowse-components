@@ -9,7 +9,7 @@ import {
 } from './Block'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import type { BaseLinearDisplayModel } from '../model'
 
 type LGV = LinearGenomeViewModel
 

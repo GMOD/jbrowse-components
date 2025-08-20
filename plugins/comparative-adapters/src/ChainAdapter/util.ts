@@ -137,7 +137,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
         const diff_in_query = l_vec.length > 2 ? +l_vec[2]! : 0
 
         if (size_ungapped_alignment !== 0) {
-          num_matches += +size_ungapped_alignment
+          num_matches += size_ungapped_alignment
           cigar += `${size_ungapped_alignment}M`
         }
         if (diff_in_query !== 0) {

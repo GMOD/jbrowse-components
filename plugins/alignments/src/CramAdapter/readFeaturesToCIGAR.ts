@@ -4,13 +4,10 @@ import type { CramRecord } from '@gmod/cram'
 type ReadFeatures = CramRecord['readFeatures']
 
 export function readFeaturesToMismatches(
-  readFeatures: ReadFeatures,
+  readFeatures: ReadFeatures = [],
   start: number,
   qual?: number[] | null,
 ) {
-  if (!readFeatures) {
-    return []
-  }
   const mismatches: Mismatch[] = new Array(readFeatures.length)
   let j = 0
   let insLen = 0
@@ -18,7 +15,8 @@ export function readFeaturesToMismatches(
   let sublen = 0
   let lastPos = start
 
-  for (const { refPos: p, code, pos, data, sub, ref } of readFeatures) {
+  for (const ret of readFeatures) {
+    const { refPos: p, code, pos, data, sub, ref } = ret
     sublen = refPos - lastPos
     lastPos = refPos
 
@@ -27,6 +25,7 @@ export function readFeaturesToMismatches(
         start: refPos,
         type: 'insertion',
         base: `${insLen}`,
+        insertedBases: data,
         length: 0,
       }
       insLen = 0
@@ -130,8 +129,6 @@ export function readFeaturesToCIGAR(
   if (!refRegion) {
     return ''
   }
-
-  // not sure I should access these, but...
   const ref = refRegion.seq
   const refStart = refRegion.start
   let lastPos = alignmentStart
