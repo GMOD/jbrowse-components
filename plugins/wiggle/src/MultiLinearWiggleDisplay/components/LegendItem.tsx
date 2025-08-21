@@ -18,7 +18,7 @@ const LegendItem = function ({
   model: WiggleDisplayModel
   exportSVG?: boolean
 }) {
-  const boxHeight = Math.min(20, rowHeight)
+  const boxHeight = rowHeight //Math.min(20, rowHeight)
   const {
     needsCustomLegend,
     graphType,
@@ -26,8 +26,8 @@ const LegendItem = function ({
     rowHeightTooSmallForScalebar,
     renderColorBoxes,
   } = model
-  const svgFontSize = Math.min(rowHeight, 12)
-  const canDisplayLabel = rowHeight > 11
+  const svgFontSize = rowHeight
+  const canDisplayLabel = rowHeight >= 6
   const colorBoxWidth = renderColorBoxes ? 15 : 0
   const legendWidth = labelWidth + colorBoxWidth + 5
   const svgOffset = exportSVG ? 10 : 0
@@ -35,23 +35,6 @@ const LegendItem = function ({
     svgOffset || (graphType && !rowHeightTooSmallForScalebar ? 50 : 0)
   return (
     <>
-      {needsFullHeightScalebar ? null : (
-        <RectBg
-          y={idx * rowHeight + 1}
-          x={extraOffset}
-          width={legendWidth}
-          height={boxHeight}
-        />
-      )}
-      {source.color ? (
-        <RectBg
-          y={idx * rowHeight + 1}
-          x={extraOffset}
-          width={colorBoxWidth}
-          height={needsCustomLegend ? rowHeight : boxHeight}
-          color={source.color}
-        />
-      ) : null}
       {canDisplayLabel ? (
         <text
           y={idx * rowHeight + 13}
