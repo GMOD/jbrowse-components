@@ -34,8 +34,7 @@ function Arc({
     bpPerPx,
   )
   const featureId = feature.id()
-  const selected =
-    selectedFeatureId && String(selectedFeatureId) === String(feature.id())
+  const selected = selectedFeatureId && selectedFeatureId === feature.id()
   const stroke = selected ? 'red' : readConfObject(config, 'color', { feature })
   const textStroke = selected ? 'red' : 'black'
   const label = readConfObject(config, 'label', { feature })
@@ -160,8 +159,7 @@ function SemiCircles({
   )
 
   const featureId = feature.id()
-  const selected =
-    selectedFeatureId && String(selectedFeatureId) === String(feature.id())
+  const selected = selectedFeatureId && selectedFeatureId === feature.id()
   const stroke = selected ? 'red' : readConfObject(config, 'color', { feature })
   const textStroke = selected ? 'red' : 'black'
   const label = readConfObject(config, 'label', { feature })
