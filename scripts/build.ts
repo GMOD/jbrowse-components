@@ -18,17 +18,18 @@ function main() {
   const packages = getPackages()
   const graph = getDependencyGraph(packages)
   for (const level of getLevels(graph)) {
-    const scopes = [] as string[]
     for (const pkg of level) {
-      scopes.push('--scope', pkg)
-    }
-    const { signal, status } = spawn.sync(
-      'yarn',
-      ['lerna', 'exec', 'yarn', 'pack', ...scopes],
-      { stdio: 'inherit' },
-    )
-    if (signal || (status !== null && status > 0)) {
-      process.exit(status || 1)
+      const pkgInfo = packages[pkg]
+      if (!pkgInfo) {
+        throw new Error(`Package ${pkg} not found`)
+      }
+      const { signal, status } = spawn.sync('yarn', ['pack'], {
+        stdio: 'inherit',
+        cwd: path.join(root, pkgInfo.location),
+      })
+      if (signal || (status !== null && status > 0)) {
+        process.exit(status || 1)
+      }
     }
   }
   for (const dir of subDirs) {
