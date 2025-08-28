@@ -45,7 +45,7 @@ mv tmp.json website/docusaurus.config.json
 
 # Generates a changelog with a section added listing the packages that were
 # included in this release
-CHANGELOG=$(GITHUB_TOKEN="$GITHUB_AUTH" yarn changelog)
+CHANGELOG=$(node scripts/generateChangelog.js GMOD jbrowse-components v$PREVIOUS_VERSION v$VERSION "$GITHUB_AUTH")
 # Add the changelog to the top of CHANGELOG.md
 echo "$CHANGELOG" >tmp.md
 echo "" >>tmp.md
