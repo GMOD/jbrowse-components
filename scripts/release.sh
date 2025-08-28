@@ -30,7 +30,7 @@ yarn lint
 yarn test
 
 # Get the version before release from lerna.json
-PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
+PREVIOUS_VERSION=$(node -p "require('./package.json').version")
 # Use semver to get the new version from the semver level
 VERSION=$(yarn --silent semver --increment "$SEMVER_LEVEL" "$PREVIOUS_VERSION")
 RELEASE_TAG=v$VERSION
@@ -45,7 +45,7 @@ mv tmp.json website/docusaurus.config.json
 
 # Generates a changelog with a section added listing the packages that were
 # included in this release
-CHANGELOG=$(GITHUB_AUTH="$GITHUB_AUTH" yarn changelog --silent --next-version "$VERSION")
+CHANGELOG=$(GITHUB_TOKEN="$GITHUB_AUTH" yarn changelog)
 # Add the changelog to the top of CHANGELOG.md
 echo "$CHANGELOG" >tmp.md
 echo "" >>tmp.md
@@ -65,7 +65,14 @@ git add .
 git commit --message "Prepare for $RELEASE_TAG release"
 
 # Run lerna version first, publish after changelog and blog post have been created
-yarn lerna publish --force-publish "*" "$SEMVER_LEVEL" --message "[update docs] %s"
+yarn version --new-version "$VERSION" --no-git-tag-version
+yarn workspaces run version "$VERSION"
+git add -A
+git commit --amend --no-edit
+git tag "$RELEASE_TAG"
+git push
+git push --tags
+node -e 'const { spawn } = require("child_process"); const { EOL } = require("os"); const child = spawn("yarn", ["workspaces", "info", "--json"]); let data = ""; child.stdout.on("data", chunk => { data += chunk; }); child.on("close", code => { if (code !== 0) { process.exit(code); } const lines = data.split(EOL); const firstLine = lines.findIndex(line => line.startsWith("{")); const lastLine = lines.findLastIndex(line => line.startsWith("}")); const info = JSON.parse(lines.slice(firstLine, lastLine + 1).join("")); for (const workspace of Object.keys(info)) { const pkg = require(require.resolve(`${info[workspace].location}/package.json`)); if (!pkg.private) { spawn("npm", ["publish"], { cwd: info[workspace].location, stdio: "inherit" }); } } });'
 
 # Push bump version from embedded package.json lifecycles, might be good if this was part of lerna but is separate for now
 git push
