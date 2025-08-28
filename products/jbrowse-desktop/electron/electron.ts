@@ -212,7 +212,7 @@ async function createWindow() {
     ? new URL(`file://${path.join(app.getAppPath(), 'build', 'index.html')}`)
     : devServerUrl
   const lastArg = process.argv.at(-1)
-  if (lastArg?.endsWith(".jbrowse")) {
+  if (lastArg?.endsWith('.jbrowse')) {
     appUrl.searchParams.append('config', lastArg)
   }
 
