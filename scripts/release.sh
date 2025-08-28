@@ -29,7 +29,7 @@ yarn lint
 # make sure the tests are passing
 yarn test
 
-# Get the version before release from lerna.json
+# Get the version before release from package.json
 PREVIOUS_VERSION=$(node -p "require('./package.json').version")
 # Use semver to get the new version from the semver level
 VERSION=$(yarn --silent semver --increment "$SEMVER_LEVEL" "$PREVIOUS_VERSION")
@@ -56,7 +56,7 @@ mv tmp.md CHANGELOG.md
 NOTES=$(cat "$BLOGPOST_DRAFT")
 DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
 DATE=$(date +"%Y-%m-%d")
-## Blogpost run after lerna version, to get the accurate tags
+## Blogpost run after version bump, to get the accurate tags
 BLOGPOST_FILENAME=website/blog/${DATE}-${RELEASE_TAG}-release.md
 RELEASE_TAG=$RELEASE_TAG DATE=$DATETIME NOTES=$NOTES CHANGELOG=$CHANGELOG perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"
 
@@ -64,7 +64,7 @@ yarn format
 git add .
 git commit --message "Prepare for $RELEASE_TAG release"
 
-# Run lerna version first, publish after changelog and blog post have been created
+# Run version bump first, publish after changelog and blog post have been created
 yarn version --new-version "$VERSION" --no-git-tag-version
 yarn workspaces run version "$VERSION"
 git add -A
@@ -74,5 +74,5 @@ git push
 git push --tags
 node -e 'const { spawn } = require("child_process"); const { EOL } = require("os"); const child = spawn("yarn", ["workspaces", "info", "--json"]); let data = ""; child.stdout.on("data", chunk => { data += chunk; }); child.on("close", code => { if (code !== 0) { process.exit(code); } const lines = data.split(EOL); const firstLine = lines.findIndex(line => line.startsWith("{")); const lastLine = lines.findLastIndex(line => line.startsWith("}")); const info = JSON.parse(lines.slice(firstLine, lastLine + 1).join("")); for (const workspace of Object.keys(info)) { const pkg = require(require.resolve(`${info[workspace].location}/package.json`)); if (!pkg.private) { spawn("npm", ["publish"], { cwd: info[workspace].location, stdio: "inherit" }); } } });'
 
-# Push bump version from embedded package.json lifecycles, might be good if this was part of lerna but is separate for now
+# Push bump version from embedded package.json lifecycles
 git push
