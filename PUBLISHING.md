@@ -55,8 +55,8 @@ You can see examples of the finished posts at https://jbrowse.org/jb2/blog.
 
 If you want to preview the changelog to help write the release announcement, you
 can use the command
-`GITHUB_AUTH=<auth_token> yarn --silent lerna-changelog > tmp_changelog.md`
-(make sure to run the command on the main branch).
+`GITHUB_AUTH=<auth_token> node scripts/generateChangelog.js GMOD jbrowse-components v<PREVIOUS_VERSION> v<NEW_VERSION> > tmp_changelog.md`
+(make sure to run the command on the main branch, and replace `<PREVIOUS_VERSION>` and `<NEW_VERSION>` with the actual versions).
 
 See the next step if you need to generate an access token.
 
