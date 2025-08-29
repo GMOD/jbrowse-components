@@ -2,40 +2,33 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
-import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline'
 import Help from '@mui/icons-material/Help'
-import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
 import Search from '@mui/icons-material/Search'
 import {
   Button,
   InputAdornment,
-  Link,
   MenuItem,
   TextField,
   Typography,
 } from '@mui/material'
 import {
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
 import { defaultFavs } from '../const'
-import { fetchjson } from '../util'
 import MoreInfoDialog from './MoreInfoDialog'
 import SkeletonLoader from './SkeletonLoader'
-import StarIcon from '../StarIcon'
 import { getColumnDefinitions } from './getColumnDefinitions'
 import { useFavorites } from './useFavorites'
 import { useGenomesData } from './useGenomesData'
 
-import type { Fav, LaunchCallback, UCSCListGenome } from '../types'
+import type { Fav, LaunchCallback } from '../types'
 
 const allTypes = {
   mainGenomes: 'UCSC Main Genomes',
@@ -114,19 +107,7 @@ const useStyles = makeStyles()({
   pageInfo: {
     margin: '0 0.5rem',
   },
-  searchHighlight: {
-    backgroundColor: 'yellow',
-  },
 })
-
-interface Entry {
-  jbrowseConfig: string
-  accession: string
-  commonName: string
-  ncbiAssemblyName: string
-  ncbiName: string
-  ncbiRefSeqCategory: string
-}
 
 export default function GenomesDataTable({
   favorites,
@@ -178,8 +159,7 @@ export default function GenomesDataTable({
       getColumnDefinitions({
         typeOption,
         favs,
-        favorites,
-        setFavorites,
+        toggleFavorite,
         launch,
         onClose,
         searchQuery,
@@ -188,10 +168,9 @@ export default function GenomesDataTable({
     [
       typeOption,
       favs,
-      favorites,
-      setFavorites,
       launch,
       onClose,
+      toggleFavorite,
       searchQuery,
       showAllColumns,
     ],

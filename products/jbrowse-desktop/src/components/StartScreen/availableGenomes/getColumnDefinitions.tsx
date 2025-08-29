@@ -2,13 +2,14 @@ import React from 'react'
 
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline'
+import Close from '@mui/icons-material/Close'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
-import { Link, MenuItem } from '@mui/material'
+import { Link, Tooltip } from '@mui/material'
 import { createColumnHelper } from '@tanstack/react-table'
 
 import StarIcon from '../StarIcon'
 
-import type { Fav, LaunchCallback, UCSCListGenome } from '../types'
+import type { LaunchCallback } from '../types'
 
 interface Entry {
   jbrowseConfig: string
@@ -89,10 +90,7 @@ export function getColumnDefinitions({
             toggleFavorite(row)
           }
           return (
-            <StarIcon
-              isFavorite={isFavorite}
-              onClick={handleToggleFavorite}
-            />
+            <StarIcon isFavorite={isFavorite} onClick={handleToggleFavorite} />
           )
         },
       }),
@@ -176,10 +174,7 @@ export function getColumnDefinitions({
             toggleFavorite(row)
           }
           return (
-            <StarIcon
-              isFavorite={isFavorite}
-              onClick={handleToggleFavorite}
-            />
+            <StarIcon isFavorite={isFavorite} onClick={handleToggleFavorite} />
           )
         },
       }),
@@ -214,37 +209,41 @@ export function getColumnDefinitions({
                 </Link>
                 )
               </span>
-              <CascadingMenuButton
-                menuItems={[
-                  {
-                    label: 'Launch',
-                    onClick: handleLaunch,
-                  },
-                  {
-                    label: isFavorite
-                      ? 'Remove from favorites'
-                      : 'Add to favorites',
-                    onClick: () => {
-                      toggleFavorite(row)
+              <span style={{ float: 'right' }}>
+                {row.ncbiRefSeqCategory === 'reference genome' ? (
+                  <Tooltip title="NCBI designated reference">
+                    <CheckCircleOutline style={{ color: 'green' }} />
+                  </Tooltip>
+                ) : null}
+                {row.ncbiRefSeqCategory === 'refseq_suppressed' ? (
+                  <Tooltip title="NCBI RefSeq suppressed">
+                    <Close style={{ color: 'red' }} />
+                  </Tooltip>
+                ) : null}
+                <CascadingMenuButton
+                  menuItems={[
+                    {
+                      label: 'Launch',
+                      onClick: handleLaunch,
                     },
-                  },
-                ]}
-              >
-                <MoreHoriz />
-              </CascadingMenuButton>
+                    {
+                      label: isFavorite
+                        ? 'Remove from favorites'
+                        : 'Add to favorites',
+                      onClick: () => {
+                        toggleFavorite(row)
+                      },
+                    },
+                  ]}
+                >
+                  <MoreHoriz />
+                </CascadingMenuButton>
+              </span>
             </div>
           )
         },
       }),
-      columnHelper.accessor('ncbiRefSeqCategory', {
-        header: 'Designated reference',
-        cell: info => {
-          const isReference = info.getValue() === 'reference genome'
-          return isReference ? (
-            <CheckCircleOutline style={{ color: 'green' }} />
-          ) : null
-        },
-      }),
+
       columnHelper.accessor('assemblyStatus', { header: 'Assembly Status' }),
       columnHelper.accessor('seqReleaseDate', {
         header: 'Release Date',

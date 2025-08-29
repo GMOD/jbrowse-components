@@ -1,9 +1,7 @@
 import { useMemo } from 'react'
 
-import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import useSWR from 'swr'
 
-import { LaunchCallback } from '../types'
 import { fetchjson } from '../util'
 
 import type { Fav, UCSCListGenome } from '../types'
