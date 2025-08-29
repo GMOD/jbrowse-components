@@ -1,9 +1,11 @@
 import React from 'react'
-import { Link, MenuItem } from '@mui/material'
-import { createColumnHelper } from '@tanstack/react-table'
+
+import { CascadingMenuButton } from '@jbrowse/core/ui'
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
-import { CascadingMenuButton } from '@jbrowse/core/ui'
+import { Link, MenuItem } from '@mui/material'
+import { createColumnHelper } from '@tanstack/react-table'
+
 import StarIcon from '../StarIcon'
 
 import type { Fav, LaunchCallback, UCSCListGenome } from '../types'

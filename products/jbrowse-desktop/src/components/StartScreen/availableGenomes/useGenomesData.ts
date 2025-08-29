@@ -1,8 +1,12 @@
 import { useMemo } from 'react'
-import useSWR from 'swr'
+
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
+import useSWR from 'swr'
+
+import { LaunchCallback } from '../types'
 import { fetchjson } from '../util'
-import { Fav, LaunchCallback, UCSCListGenome } from '../types'
+
+import type { Fav, UCSCListGenome } from '../types'
 
 interface Entry {
   jbrowseConfig: string

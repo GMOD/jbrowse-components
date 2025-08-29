@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Fav } from '../types'
+
+import type { Fav } from '../types'
 
 export function useFavorites(favorites: Fav[], setFavorites: (favs: Fav[]) => void) {
   const favs = useMemo(() => new Set(favorites.map(r => r.id)), [favorites])

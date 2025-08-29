@@ -31,14 +31,14 @@ import { fetchjson } from '../util'
 import MoreInfoDialog from './MoreInfoDialog'
 import SkeletonLoader from './SkeletonLoader'
 import StarIcon from '../StarIcon'
-import { useGenomesData } from './useGenomesData'
 import { getColumnDefinitions } from './getColumnDefinitions'
 import { useFavorites } from './useFavorites'
+import { useGenomesData } from './useGenomesData'
 
 import type { Fav, LaunchCallback, UCSCListGenome } from '../types'
 
 const allTypes = {
-  mainGenomes: 'UCSC - Main Genomes',
+  mainGenomes: 'UCSC Main Genomes',
   bacteria: 'UCSC GenArk - Bacteria',
   birds: 'UCSC GenArk - Birds',
   fish: 'UCSC GenArk - Fish',
@@ -165,7 +165,13 @@ export default function GenomesDataTable({
     mainGenomesError,
     genArkData,
     mainGenomesData,
-  } = useGenomesData(searchQuery, filterOption, typeOption, showOnlyFavs, favorites)
+  } = useGenomesData(
+    searchQuery,
+    filterOption,
+    typeOption,
+    showOnlyFavs,
+    favorites,
+  )
 
   const tableColumns = useMemo(
     () =>
