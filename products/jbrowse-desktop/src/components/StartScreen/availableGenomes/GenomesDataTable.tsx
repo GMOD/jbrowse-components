@@ -25,7 +25,6 @@ import { defaultFavs } from '../const'
 import MoreInfoDialog from './MoreInfoDialog'
 import SkeletonLoader from './SkeletonLoader'
 import { getColumnDefinitions } from './getColumnDefinitions'
-import { useFavorites } from './useFavorites'
 import { useGenomesData } from './useGenomesData'
 
 import type { Fav, LaunchCallback } from '../types'
@@ -138,7 +137,26 @@ export default function GenomesDataTable({
   const [showAllColumns, setShowAllColumns] = useState(false)
   const { classes } = useStyles()
 
-  const { favs, toggleFavorite } = useFavorites(favorites, setFavorites)
+  const favs = useMemo(() => new Set(favorites.map(f => f.id)), [favorites])
+  const toggleFavorite = useCallback(
+    (row: any) => {
+      const isFavorite = favs.has(row.id)
+      if (isFavorite) {
+        setFavorites(favorites.filter(fav => fav.id !== row.id))
+      } else {
+        setFavorites([
+          ...favorites,
+          {
+            id: row.id,
+            shortName: row.name || row.ncbiAssemblyName || row.accession,
+            description: row.description || row.commonName,
+            jbrowseConfig: row.jbrowseConfig,
+          },
+        ])
+      }
+    },
+    [setFavorites, favorites, favs],
+  )
 
   const {
     finalFilteredRows,
@@ -205,6 +223,7 @@ export default function GenomesDataTable({
   )
 
   const table = useReactTable({
+    // @ts-expect-error
     data: finalFilteredRows,
     columns: tableColumns,
     state: {

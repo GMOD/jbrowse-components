@@ -63,8 +63,7 @@ export function useGenomesData(
   const rows = useMemo(() => {
     if (typeOption === 'mainGenomes') {
       return preRows
-    }
-    if (filterOption === 'refseq') {
+    } else if (filterOption === 'refseq') {
       return preRows?.filter(
         r => 'ncbiName' in r && r.ncbiName.startsWith('GCF_'),
       )
@@ -83,39 +82,31 @@ export function useGenomesData(
     }
   }, [filterOption, preRows, typeOption])
 
-  const favs = useMemo(() => new Set(favorites.map(r => r.id)), [favorites])
-
+  const favs = new Set(favorites.map(r => r.id))
   const searchFilteredRows = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return rows
-    }
     const query = searchQuery.toLowerCase().trim()
-    return (
-      rows?.filter(row => {
-        const searchText = [
-          row.commonName,
-          row.accession,
-          'scientificName' in row ? row.scientificName : '',
-          'ncbiAssemblyName' in row ? row.ncbiAssemblyName : '',
-          'organism' in row ? row.organism : '',
-          'description' in row ? row.description : '',
-          'name' in row ? row.name : '',
-        ]
-          .join(' ')
-          .toLowerCase()
-        return searchText.includes(query)
-      }) || []
-    )
+    return !query
+      ? rows
+      : rows?.filter(row => {
+          const searchText = [
+            row.commonName,
+            row.accession,
+            'scientificName' in row ? row.scientificName : '',
+            'ncbiAssemblyName' in row ? row.ncbiAssemblyName : '',
+            'organism' in row ? row.organism : '',
+            'description' in row ? row.description : '',
+            'name' in row ? row.name : '',
+          ]
+            .join(' ')
+            .toLowerCase()
+          return searchText.includes(query)
+        }) || []
   }, [rows, searchQuery])
 
-  const finalFilteredRows = useMemo(() => {
-    return showOnlyFavs
-      ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
-      : searchFilteredRows || []
-  }, [searchFilteredRows, showOnlyFavs, favs])
-
   return {
-    finalFilteredRows,
+    finalFilteredRows: showOnlyFavs
+      ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
+      : searchFilteredRows || [],
     genArkError,
     mainGenomesError,
     genArkData,

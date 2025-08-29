@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { CascadingMenuButton } from '@jbrowse/core/ui'
-import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline'
+import Check from '@mui/icons-material/Check'
 import Close from '@mui/icons-material/Close'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { Link, Tooltip } from '@mui/material'
@@ -12,6 +12,7 @@ import StarIcon from '../StarIcon'
 import type { LaunchCallback } from '../types'
 
 interface Entry {
+  suppressed: boolean
   jbrowseConfig: string
   accession: string
   commonName: string
@@ -27,6 +28,7 @@ interface Entry {
   seqReleaseDate: string
   taxonId: string
   submitterOrg: string
+  favorite: boolean
 }
 
 function highlightText(text: string, query: string): React.ReactNode {
@@ -198,47 +200,43 @@ export function getColumnDefinitions({
 
           return (
             <div>
-              <span style={{ flexGrow: 1 }}>
-                {highlightText(info.getValue() || '', searchQuery)} (
-                <Link href={websiteUrl} target="_blank">
-                  info
-                </Link>
-                ) (
-                <Link href="#" onClick={handleLaunch}>
-                  launch
-                </Link>
-                )
-              </span>
-              <span style={{ float: 'right' }}>
-                {row.ncbiRefSeqCategory === 'reference genome' ? (
-                  <Tooltip title="NCBI designated reference">
-                    <CheckCircleOutline style={{ color: 'green' }} />
-                  </Tooltip>
-                ) : null}
-                {row.ncbiRefSeqCategory === 'refseq_suppressed' ? (
-                  <Tooltip title="NCBI RefSeq suppressed">
-                    <Close style={{ color: 'red' }} />
-                  </Tooltip>
-                ) : null}
-                <CascadingMenuButton
-                  menuItems={[
-                    {
-                      label: 'Launch',
-                      onClick: handleLaunch,
+              {highlightText(info.getValue() || '', searchQuery)} (
+              <Link href={websiteUrl} target="_blank">
+                info
+              </Link>
+              ) (
+              <Link href="#" onClick={handleLaunch}>
+                launch
+              </Link>
+              )
+              {row.ncbiRefSeqCategory === 'reference genome' ? (
+                <Tooltip title="NCBI designated reference">
+                  <Check style={{ color: 'green' }} />
+                </Tooltip>
+              ) : null}
+              {row.suppressed ? (
+                <Tooltip title="NCBI RefSeq suppressed">
+                  <Close style={{ color: 'red' }} />
+                </Tooltip>
+              ) : null}
+              <CascadingMenuButton
+                menuItems={[
+                  {
+                    label: 'Launch',
+                    onClick: handleLaunch,
+                  },
+                  {
+                    label: isFavorite
+                      ? 'Remove from favorites'
+                      : 'Add to favorites',
+                    onClick: () => {
+                      toggleFavorite(row)
                     },
-                    {
-                      label: isFavorite
-                        ? 'Remove from favorites'
-                        : 'Add to favorites',
-                      onClick: () => {
-                        toggleFavorite(row)
-                      },
-                    },
-                  ]}
-                >
-                  <MoreHoriz />
-                </CascadingMenuButton>
-              </span>
+                  },
+                ]}
+              >
+                <MoreHoriz />
+              </CascadingMenuButton>
             </div>
           )
         },
