@@ -21,17 +21,14 @@ export function useGenomesData(
   typeOption: string,
   showOnlyFavs: boolean,
   favorites: Fav[],
+  url = '',
 ) {
-  const { data: genArkData, error: genArkError } = useSWR(
-    typeOption === 'mainGenomes' ? null : `genark-${typeOption}`,
-    () =>
-      fetchjson(
-        `https://jbrowse.org/processedHubJson/${typeOption}.json`,
-      ) as Promise<Entry[]>,
+  const { data: genArkData, error: genArkError } = useSWR(url, () =>
+    url ? (fetchjson(url) as Promise<Entry[]>) : undefined,
   )
 
   const { data: mainGenomesData, error: mainGenomesError } = useSWR(
-    typeOption === 'mainGenomes' ? 'quickstarts' : null,
+    'ucscGenomeList',
     () =>
       fetchjson('https://jbrowse.org/ucsc/list.json') as Promise<{
         ucscGenomes: Record<string, UCSCListGenome>

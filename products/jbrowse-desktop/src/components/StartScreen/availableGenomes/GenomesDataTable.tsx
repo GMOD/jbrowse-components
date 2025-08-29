@@ -19,34 +19,31 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
 import { defaultFavs } from '../const'
+import { fetchjson } from '../util'
 import MoreInfoDialog from './MoreInfoDialog'
 import SkeletonLoader from './SkeletonLoader'
+import TablePagination from './TablePagination'
 import { getColumnDefinitions } from './getColumnDefinitions'
 import { useGenomesData } from './useGenomesData'
 
 import type { Fav, LaunchCallback } from '../types'
 
-const allTypes = {
-  mainGenomes: 'UCSC Main Genomes',
-  bacteria: 'UCSC GenArk - Bacteria',
-  birds: 'UCSC GenArk - Birds',
-  fish: 'UCSC GenArk - Fish',
-  fungi: 'UCSC GenArk - Fungi',
-  invertebrate: 'UCSC GenArk - Invertebrate',
-  mammals: 'UCSC GenArk - Mammals',
-  plants: 'UCSC GenArk - Plants',
-  primates: 'UCSC GenArk - Primates',
-  vertebrate: 'UCSC GenArk - Vertebrate',
-  viral: 'UCSC GenArk - Viral',
-  BRC: 'UCSC GenArk - BRC (includes VEuPathDB)',
-  CCGP: 'UCSC GenArk - CCGP (California Conservation Genomics Project)',
-  globalReference: 'UCSC GenArk - Global Human Reference genomes',
-  HPRC: 'UCSC GenArk - HPRC (Human Pangenome Reference Consortium)',
-  legacy: 'UCSC GenArk - Legacy (NCBI genomes superseded by newer versions)',
-  VGP: 'UCSC GenArk - VGP (Vertebrate Genomes Project)',
+function useAllTypes() {
+  const { data, error, isLoading } = useSWR('categories', () =>
+    fetchjson('https://jbrowse.org/hubs/categories.json'),
+  )
+
+  return {
+    allTypes: data as
+      | { categories: { key: string; title: string; url: string }[] }
+      | undefined,
+    isLoading,
+    error,
+  }
 }
 
 const useStyles = makeStyles()({
@@ -86,26 +83,6 @@ const useStyles = makeStyles()({
       backgroundColor: '#f9f9f9',
     },
   },
-  paginationContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    marginTop: '1rem',
-  },
-  paginationButton: {
-    padding: '0.3rem 1rem',
-    border: '1px solid #ccc',
-    borderRadius: '0.1rem',
-    backgroundColor: '#f0f0f0',
-    cursor: 'pointer',
-    '&:disabled': {
-      opacity: 0.5,
-      cursor: 'not-allowed',
-    },
-  },
-  pageInfo: {
-    margin: '0 0.5rem',
-  },
 })
 
 export default function GenomesDataTable({
@@ -136,6 +113,13 @@ export default function GenomesDataTable({
   )
   const [showAllColumns, setShowAllColumns] = useState(false)
   const { classes } = useStyles()
+  const {
+    allTypes,
+    isLoading: allTypesLoading,
+    error: allTypesError,
+  } = useAllTypes()
+  const url = allTypes?.categories.find(f => f.key === typeOption)?.url
+  console.log({ url })
 
   const favs = useMemo(() => new Set(favorites.map(f => f.id)), [favorites])
   const toggleFavorite = useCallback(
@@ -170,6 +154,7 @@ export default function GenomesDataTable({
     typeOption,
     showOnlyFavs,
     favorites,
+    url,
   )
 
   const tableColumns = useMemo(
@@ -295,23 +280,33 @@ export default function GenomesDataTable({
           }}
         />
 
-        <TextField
-          select
-          name="typeOption"
-          label="Group"
-          variant="outlined"
-          className={classes.ml}
-          value={typeOption}
-          onChange={event => {
-            setTypeOption(event.target.value)
-          }}
-        >
-          {Object.entries(allTypes).map(([key, value]) => (
-            <MenuItem key={key} value={key}>
-              {value}
-            </MenuItem>
-          ))}
-        </TextField>
+        {allTypes ? (
+          <TextField
+            select
+            name="typeOption"
+            label="Group"
+            variant="outlined"
+            className={classes.ml}
+            value={typeOption}
+            disabled={allTypesLoading}
+            onChange={event => {
+              setTypeOption(event.target.value)
+            }}
+            helperText={
+              allTypesLoading
+                ? 'Loading categories...'
+                : allTypesError
+                  ? 'Using cached categories'
+                  : ''
+            }
+          >
+            {allTypes.categories.map(({ key, title }) => (
+              <MenuItem key={key} value={key}>
+                {title}
+              </MenuItem>
+            ))}
+          </TextField>
+        ) : null}
         <CascadingMenuButton
           menuItems={[
             {
@@ -414,7 +409,9 @@ export default function GenomesDataTable({
         <ErrorMessage error={genArkError || mainGenomesError} />
       ) : null}
 
-      {finalFilteredRows.length === 0 && !genArkData && !mainGenomesData ? (
+      {allTypesLoading ? (
+        <SkeletonLoader />
+      ) : finalFilteredRows.length === 0 && !genArkData && !mainGenomesData ? (
         <SkeletonLoader />
       ) : (
         <div>
@@ -479,80 +476,13 @@ export default function GenomesDataTable({
             </tbody>
           </table>
 
-          {/* Pagination */}
-          <div className={classes.paginationContainer}>
-            <button
-              className={classes.paginationButton}
-              onClick={() => {
-                table.setPageIndex(0)
-              }}
-              disabled={!table.getCanPreviousPage()}
-            >
-              {'<<'}
-            </button>
-            <button
-              className={classes.paginationButton}
-              onClick={() => {
-                table.previousPage()
-              }}
-              disabled={!table.getCanPreviousPage()}
-            >
-              {'<'}
-            </button>
-            <span className={classes.pageInfo}>
-              Page{' '}
-              <strong>
-                {table.getState().pagination.pageIndex + 1} of{' '}
-                {table.getPageCount()}
-              </strong>
-            </span>
-            <button
-              className={classes.paginationButton}
-              onClick={() => {
-                table.nextPage()
-              }}
-              disabled={!table.getCanNextPage()}
-            >
-              {'>'}
-            </button>
-            <button
-              className={classes.paginationButton}
-              onClick={() => {
-                table.setPageIndex(table.getPageCount() - 1)
-              }}
-              disabled={!table.getCanNextPage()}
-            >
-              {'>>'}
-            </button>
-            <div style={{ marginLeft: '1rem' }}>
-              <label>Show:</label>
-              <select
-                value={pagination.pageSize}
-                onChange={e => {
-                  const newSize = Number(e.target.value)
-                  setPagination({
-                    pageIndex: 0,
-                    pageSize: newSize,
-                  })
-                }}
-                style={{ marginLeft: '0.5rem', padding: '0.25rem' }}
-              >
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-                <option value={200}>200</option>
-                <option value={500}>500</option>
-                <option value={1000}>1000</option>
-                <option value={1000}>1000</option>
-              </select>
-              <span style={{ marginLeft: '0.5rem' }}>rows</span>
-            </div>
-            <span
-              style={{ marginLeft: '1rem', fontSize: '0.9rem', color: '#666' }}
-            >
-              Showing {table.getRowModel().rows.length} of{' '}
-              {finalFilteredRows.length} rows
-            </span>
-          </div>
+          <TablePagination
+            table={table}
+            pagination={pagination}
+            setPagination={setPagination}
+            totalRows={finalFilteredRows.length}
+            displayedRows={table.getRowModel().rows.length}
+          />
         </div>
       )}
       {moreInfoDialogOpen ? (

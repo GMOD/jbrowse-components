@@ -7,6 +7,7 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { Link, Tooltip } from '@mui/material'
 import { createColumnHelper } from '@tanstack/react-table'
 
+import HighlightedText from './HighlightedText'
 import StarIcon from '../StarIcon'
 
 import type { LaunchCallback } from '../types'
@@ -31,32 +32,6 @@ interface Entry {
   favorite: boolean
 }
 
-function highlightText(text: string, query: string): React.ReactNode {
-  if (!query || !text) {
-    return text
-  }
-
-  const queryLower = query.toLowerCase().trim()
-  const textLower = text.toLowerCase()
-
-  const index = textLower.indexOf(queryLower)
-  if (index === -1) {
-    return text
-  }
-
-  const beforeMatch = text.slice(0, Math.max(0, index))
-  const match = text.slice(index, index + query.length)
-  const afterMatch = text.slice(Math.max(0, index + query.length))
-
-  return (
-    <>
-      {beforeMatch}
-      <mark style={{ backgroundColor: 'yellow' }}>{match}</mark>
-      {highlightText(afterMatch, query)}
-    </>
-  )
-}
-
 export function getColumnDefinitions({
   typeOption,
   favs,
@@ -76,7 +51,7 @@ export function getColumnDefinitions({
 }) {
   const columnHelper = createColumnHelper<Entry>()
 
-  if (typeOption === 'mainGenomes') {
+  if (typeOption === 'ucsc') {
     return [
       columnHelper.accessor('favorite', {
         header: 'Favorite',
@@ -115,8 +90,12 @@ export function getColumnDefinitions({
           }
 
           return (
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              {highlightText(info.getValue() || '', searchQuery)} (
+            <div>
+              <HighlightedText
+                text={info.getValue() || ''}
+                query={searchQuery}
+              />{' '}
+              (
               <Link href={websiteUrl} target="_blank">
                 info
               </Link>
@@ -149,15 +128,21 @@ export function getColumnDefinitions({
       }),
       columnHelper.accessor('scientificName', {
         header: 'Scientific Name',
-        cell: info => highlightText(info.getValue() || '', searchQuery),
+        cell: info => (
+          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        ),
       }),
       columnHelper.accessor('organism', {
         header: 'Organism',
-        cell: info => highlightText(info.getValue() || '', searchQuery),
+        cell: info => (
+          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        ),
       }),
       columnHelper.accessor('description', {
         header: 'Description',
-        cell: info => highlightText(info.getValue() || '', searchQuery),
+        cell: info => (
+          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        ),
       }),
     ]
   } else {
@@ -200,7 +185,11 @@ export function getColumnDefinitions({
 
           return (
             <div>
-              {highlightText(info.getValue() || '', searchQuery)} (
+              <HighlightedText
+                text={info.getValue() || ''}
+                query={searchQuery}
+              />{' '}
+              (
               <Link href={websiteUrl} target="_blank">
                 info
               </Link>
@@ -257,11 +246,15 @@ export function getColumnDefinitions({
       }),
       columnHelper.accessor('scientificName', {
         header: 'Scientific Name',
-        cell: info => highlightText(info.getValue() || '', searchQuery),
+        cell: info => (
+          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        ),
       }),
       columnHelper.accessor('ncbiAssemblyName', {
         header: 'NCBI Assembly Name',
-        cell: info => highlightText(info.getValue() || '', searchQuery),
+        cell: info => (
+          <HighlightedText text={info.getValue() || ''} query={searchQuery} />
+        ),
       }),
     ]
 
