@@ -8,6 +8,7 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import Search from '@mui/icons-material/Search'
 import {
   Button,
+  Chip,
   InputAdornment,
   Link,
   MenuItem,
@@ -68,12 +69,15 @@ const useStyles = makeStyles()({
     margin: 0,
     marginLeft: 10,
   },
+  chip: {
+    marginLeft: 10,
+  },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
     '& th, & td': {
       textAlign: 'left',
-      padding: '4px 8px',
+      padding: '2px 4px',
       border: '1px solid #ddd',
       fontSize: '0.9rem',
     },
@@ -143,7 +147,7 @@ const useStyles = makeStyles()({
     width: '100%',
     borderCollapse: 'collapse',
     '& th, & td': {
-      padding: '4px 8px',
+      padding: '2px 4px',
       borderBottom: '1px solid #e0e0e0',
     },
     '& th': {
@@ -390,6 +394,39 @@ export default function GenomesDataTable({
   const tableColumns = useMemo(() => {
     if (typeOption === 'mainGenomes') {
       return [
+        columnHelper.accessor('favorite', {
+          header: 'Favorite',
+          sortingFn: (a, b) => {
+            const aIsFav = favs.has(a.original.id)
+            const bIsFav = favs.has(b.original.id)
+            return aIsFav === bIsFav ? 0 : aIsFav ? -1 : 1
+          },
+          cell: info => {
+            const row = info.row.original
+            const isFavorite = favs.has(row.id)
+            const handleToggleFavorite = () => {
+              if (isFavorite) {
+                setFavorites(favorites.filter(fav => fav.id !== row.id))
+              } else {
+                setFavorites([
+                  ...favorites,
+                  {
+                    id: row.id,
+                    shortName: row.name,
+                    description: row.description,
+                    jbrowseConfig: row.jbrowseConfig,
+                  },
+                ])
+              }
+            }
+            return (
+              <StarIcon
+                isFavorite={isFavorite}
+                onClick={handleToggleFavorite}
+              />
+            )
+          },
+        }),
         columnHelper.accessor('name', {
           header: 'Name',
           cell: info => {
@@ -408,31 +445,17 @@ export default function GenomesDataTable({
               onClose()
             }
 
-            const handleToggleFavorite = () => {
-              if (isFavorite) {
-                setFavorites(favorites.filter(fav => fav.id !== row.id))
-              } else {
-                setFavorites([
-                  ...favorites,
-                  {
-                    id: row.id,
-                    shortName: row.name,
-                    description: row.description,
-                    jbrowseConfig: row.jbrowseConfig,
-                  },
-                ])
-              }
-            }
-
             return (
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 {highlightText(info.getValue() || '', searchQuery)} (
-                <Link href={websiteUrl}>info</Link>
+                <Link href={websiteUrl} target="_blank">
+                  info
+                </Link>
                 )(
                 <Link href="#" onClick={handleLaunch}>
                   launch
                 </Link>
-                ) {isFavorite ? <StarIcon /> : null}
+                )
                 <CascadingMenuButton
                   menuItems={[
                     {
@@ -443,7 +466,23 @@ export default function GenomesDataTable({
                       label: isFavorite
                         ? 'Remove from favorites'
                         : 'Add to favorites',
-                      onClick: handleToggleFavorite,
+                      onClick: () => {
+                        if (isFavorite) {
+                          setFavorites(
+                            favorites.filter(fav => fav.id !== row.id),
+                          )
+                        } else {
+                          setFavorites([
+                            ...favorites,
+                            {
+                              id: row.id,
+                              shortName: row.name,
+                              description: row.description,
+                              jbrowseConfig: row.jbrowseConfig,
+                            },
+                          ])
+                        }
+                      },
                     },
                   ]}
                 >
@@ -468,6 +507,39 @@ export default function GenomesDataTable({
       ]
     } else {
       const baseColumns = [
+        columnHelper.accessor('favorite', {
+          header: 'Favorite',
+          sortingFn: (a, b) => {
+            const aIsFav = favs.has(a.original.id)
+            const bIsFav = favs.has(b.original.id)
+            return aIsFav === bIsFav ? 0 : aIsFav ? -1 : 1
+          },
+          cell: info => {
+            const row = info.row.original
+            const isFavorite = favs.has(row.id)
+            const handleToggleFavorite = () => {
+              if (isFavorite) {
+                setFavorites(favorites.filter(fav => fav.id !== row.id))
+              } else {
+                setFavorites([
+                  ...favorites,
+                  {
+                    id: row.id,
+                    shortName: row.ncbiAssemblyName || row.accession,
+                    description: row.commonName,
+                    jbrowseConfig: row.jbrowseConfig,
+                  },
+                ])
+              }
+            }
+            return (
+              <StarIcon
+                isFavorite={isFavorite}
+                onClick={handleToggleFavorite}
+              />
+            )
+          },
+        }),
         columnHelper.accessor('commonName', {
           header: 'Common Name',
           cell: info => {
@@ -486,30 +558,29 @@ export default function GenomesDataTable({
               onClose()
             }
 
-            const handleToggleFavorite = () => {
-              if (isFavorite) {
-                setFavorites(favorites.filter(fav => fav.id !== row.id))
-              } else {
-                setFavorites([
-                  ...favorites,
-                  {
-                    id: row.id,
-                    shortName: row.ncbiAssemblyName || row.accession,
-                    description: row.commonName,
-                    jbrowseConfig: row.jbrowseConfig,
-                  },
-                ])
-              }
-            }
+            const isReference = row.ncbiRefSeqCategory === 'reference genome'
 
             return (
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                {highlightText(info.getValue() || '', searchQuery)} (
-                <Link href={websiteUrl}>info</Link>) (
+                {highlightText(info.getValue() || '', searchQuery)}
+                {isReference ? (
+                  <Chip
+                    label="reference"
+                    className={classes.chip}
+                    size="small"
+                    color="success"
+                    variant="outlined"
+                  />
+                ) : null}
+                (
+                <Link href={websiteUrl} target="_blank">
+                  info
+                </Link>
+                ) (
                 <Link href="#" onClick={handleLaunch}>
                   launch
                 </Link>
-                ){isFavorite ? <StarIcon /> : null}
+                )
                 <CascadingMenuButton
                   menuItems={[
                     {
@@ -520,7 +591,23 @@ export default function GenomesDataTable({
                       label: isFavorite
                         ? 'Remove from favorites'
                         : 'Add to favorites',
-                      onClick: handleToggleFavorite,
+                      onClick: () => {
+                        if (isFavorite) {
+                          setFavorites(
+                            favorites.filter(fav => fav.id !== row.id),
+                          )
+                        } else {
+                          setFavorites([
+                            ...favorites,
+                            {
+                              id: row.id,
+                              shortName: row.ncbiAssemblyName || row.accession,
+                              description: row.commonName,
+                              jbrowseConfig: row.jbrowseConfig,
+                            },
+                          ])
+                        }
+                      },
                     },
                   ]}
                 >
@@ -571,6 +658,7 @@ export default function GenomesDataTable({
     searchQuery,
     showAllColumns,
     columnHelper,
+    classes.chip,
   ])
 
   // Create table instance
