@@ -2,13 +2,13 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
+import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline'
 import Help from '@mui/icons-material/Help'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import MoreVert from '@mui/icons-material/MoreVert'
 import Search from '@mui/icons-material/Search'
 import {
   Button,
-  Chip,
   InputAdornment,
   Link,
   MenuItem,
@@ -29,7 +29,11 @@ import { makeStyles } from 'tss-react/mui'
 import { defaultFavs } from '../const'
 import { fetchjson } from '../util'
 import MoreInfoDialog from './MoreInfoDialog'
+import SkeletonLoader from './SkeletonLoader'
 import StarIcon from '../StarIcon'
+import { useGenomesData } from './useGenomesData'
+import { getColumnDefinitions } from './getColumnDefinitions'
+import { useFavorites } from './useFavorites'
 
 import type { Fav, LaunchCallback, UCSCListGenome } from '../types'
 
@@ -67,9 +71,6 @@ const useStyles = makeStyles()({
   },
   ml: {
     margin: 0,
-    marginLeft: 10,
-  },
-  chip: {
     marginLeft: 10,
   },
   table: {
@@ -116,67 +117,6 @@ const useStyles = makeStyles()({
   searchHighlight: {
     backgroundColor: 'yellow',
   },
-  skeleton: {
-    width: '100%',
-    height: '400px',
-    backgroundColor: '#f0f0f0',
-    borderRadius: '4px',
-    position: 'relative',
-    overflow: 'hidden',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: '-100%',
-      width: '100%',
-      height: '100%',
-      background:
-        'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
-      animation: '$shimmer 1.5s infinite',
-    },
-  },
-  '@keyframes shimmer': {
-    '0%': {
-      left: '-100%',
-    },
-    '100%': {
-      left: '100%',
-    },
-  },
-  skeletonTable: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    '& th, & td': {
-      padding: '2px 4px',
-      borderBottom: '1px solid #e0e0e0',
-    },
-    '& th': {
-      backgroundColor: '#f5f5f5',
-      height: '35px',
-    },
-    '& td': {
-      height: '25px',
-    },
-  },
-  skeletonRow: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: '4px',
-    height: '16px',
-    margin: '2px 0',
-    position: 'relative',
-    overflow: 'hidden',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: '-100%',
-      width: '100%',
-      height: '100%',
-      background:
-        'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
-      animation: '$shimmer 1.5s infinite',
-    },
-  },
 })
 
 interface Entry {
@@ -186,84 +126,6 @@ interface Entry {
   ncbiAssemblyName: string
   ncbiName: string
   ncbiRefSeqCategory: string
-}
-
-function SkeletonLoader({ classes }: { classes: any }) {
-  return (
-    <div>
-      <table className={classes.skeletonTable}>
-        <thead>
-          <tr>
-            <th>
-              <div className={classes.skeletonRow} style={{ width: '120px' }} />
-            </th>
-            <th>
-              <div className={classes.skeletonRow} style={{ width: '100px' }} />
-            </th>
-            <th>
-              <div className={classes.skeletonRow} style={{ width: '80px' }} />
-            </th>
-            <th>
-              <div className={classes.skeletonRow} style={{ width: '140px' }} />
-            </th>
-            <th>
-              <div className={classes.skeletonRow} style={{ width: '160px' }} />
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: 10 }).map((_, i) => (
-            <tr key={i}>
-              <td>
-                <div
-                  className={classes.skeletonRow}
-                  style={{ width: '100%' }}
-                />
-              </td>
-              <td>
-                <div className={classes.skeletonRow} style={{ width: '80%' }} />
-              </td>
-              <td>
-                <div className={classes.skeletonRow} style={{ width: '60%' }} />
-              </td>
-              <td>
-                <div className={classes.skeletonRow} style={{ width: '90%' }} />
-              </td>
-              <td>
-                <div className={classes.skeletonRow} style={{ width: '70%' }} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-function highlightText(text: string, query: string): React.ReactNode {
-  if (!query || !text) {
-    return text
-  }
-
-  const queryLower = query.toLowerCase().trim()
-  const textLower = text.toLowerCase()
-
-  const index = textLower.indexOf(queryLower)
-  if (index === -1) {
-    return text
-  }
-
-  const beforeMatch = text.slice(0, Math.max(0, index))
-  const match = text.slice(index, index + query.length)
-  const afterMatch = text.slice(Math.max(0, index + query.length))
-
-  return (
-    <>
-      {beforeMatch}
-      <mark style={{ backgroundColor: 'yellow' }}>{match}</mark>
-      {highlightText(afterMatch, query)}
-    </>
-  )
 }
 
 export default function GenomesDataTable({
@@ -295,371 +157,39 @@ export default function GenomesDataTable({
   const [showAllColumns, setShowAllColumns] = useState(false)
   const { classes } = useStyles()
 
-  const { data: genArkData, error: genArkError } = useSWR(
-    typeOption === 'mainGenomes' ? null : `genark-${typeOption}`,
+  const { favs, toggleFavorite } = useFavorites(favorites, setFavorites)
+
+  const {
+    finalFilteredRows,
+    genArkError,
+    mainGenomesError,
+    genArkData,
+    mainGenomesData,
+  } = useGenomesData(searchQuery, filterOption, typeOption, showOnlyFavs, favorites)
+
+  const tableColumns = useMemo(
     () =>
-      fetchjson(
-        `https://jbrowse.org/processedHubJson/${typeOption}.json`,
-      ) as Promise<Entry[]>,
+      getColumnDefinitions({
+        typeOption,
+        favs,
+        favorites,
+        setFavorites,
+        launch,
+        onClose,
+        searchQuery,
+        showAllColumns,
+      }),
+    [
+      typeOption,
+      favs,
+      favorites,
+      setFavorites,
+      launch,
+      onClose,
+      searchQuery,
+      showAllColumns,
+    ],
   )
-
-  const { data: mainGenomesData, error: mainGenomesError } = useSWR(
-    typeOption === 'mainGenomes' ? 'quickstarts' : null,
-    () =>
-      fetchjson('https://jbrowse.org/ucsc/list.json') as Promise<{
-        ucscGenomes: Record<string, UCSCListGenome>
-      }>,
-  )
-
-  const preRows = useMemo(() => {
-    if (typeOption === 'mainGenomes') {
-      return mainGenomesData
-        ? Object.entries(mainGenomesData.ucscGenomes).map(([key, value]) => ({
-            ...value,
-            id: key,
-            name: key,
-            accession: key,
-            commonName: value.organism,
-            jbrowseConfig: `https://jbrowse.org/ucsc/${key}/config.json`,
-          }))
-        : undefined
-    } else {
-      return genArkData
-        ?.map(r => ({
-          ...r,
-          id: r.accession,
-        }))
-        .filter(f => !!f.id)
-    }
-  }, [typeOption, genArkData, mainGenomesData])
-  const rows = useMemo(() => {
-    if (typeOption === 'mainGenomes') {
-      return preRows
-    }
-    if (filterOption === 'refseq') {
-      return preRows?.filter(
-        r => 'ncbiName' in r && r.ncbiName.startsWith('GCF_'),
-      )
-    } else if (filterOption === 'genbank') {
-      return preRows?.filter(
-        r => 'ncbiName' in r && r.ncbiName.startsWith('GCA_'),
-      )
-    } else if (filterOption === 'designatedReference') {
-      return preRows?.filter(
-        r =>
-          'ncbiRefSeqCategory' in r &&
-          r.ncbiRefSeqCategory === 'reference genome',
-      )
-    } else {
-      return preRows
-    }
-  }, [filterOption, preRows, typeOption])
-
-  const favs = useMemo(() => new Set(favorites.map(r => r.id)), [favorites])
-
-  // Filter rows based on search query
-  const searchFilteredRows = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return rows
-    }
-    const query = searchQuery.toLowerCase().trim()
-    return (
-      rows?.filter(row => {
-        const searchText = [
-          row.commonName,
-          row.accession,
-          'scientificName' in row ? row.scientificName : '',
-          'ncbiAssemblyName' in row ? row.ncbiAssemblyName : '',
-          'organism' in row ? row.organism : '',
-          'description' in row ? row.description : '',
-          'name' in row ? row.name : '',
-        ]
-          .join(' ')
-          .toLowerCase()
-        return searchText.includes(query)
-      }) || []
-    )
-  }, [rows, searchQuery])
-
-  // Filter by favorites if enabled
-  const finalFilteredRows = useMemo(() => {
-    return showOnlyFavs
-      ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
-      : searchFilteredRows || []
-  }, [searchFilteredRows, showOnlyFavs, favs])
-
-  // Create table columns
-  const columnHelper = createColumnHelper<any>()
-
-  const tableColumns = useMemo(() => {
-    if (typeOption === 'mainGenomes') {
-      return [
-        columnHelper.accessor('favorite', {
-          header: 'Favorite',
-          sortingFn: (a, b) => {
-            const aIsFav = favs.has(a.original.id)
-            const bIsFav = favs.has(b.original.id)
-            return aIsFav === bIsFav ? 0 : aIsFav ? -1 : 1
-          },
-          cell: info => {
-            const row = info.row.original
-            const isFavorite = favs.has(row.id)
-            const handleToggleFavorite = () => {
-              if (isFavorite) {
-                setFavorites(favorites.filter(fav => fav.id !== row.id))
-              } else {
-                setFavorites([
-                  ...favorites,
-                  {
-                    id: row.id,
-                    shortName: row.name,
-                    description: row.description,
-                    jbrowseConfig: row.jbrowseConfig,
-                  },
-                ])
-              }
-            }
-            return (
-              <StarIcon
-                isFavorite={isFavorite}
-                onClick={handleToggleFavorite}
-              />
-            )
-          },
-        }),
-        columnHelper.accessor('name', {
-          header: 'Name',
-          cell: info => {
-            const row = info.row.original
-            const isFavorite = favs.has(row.id)
-            const websiteUrl = `https://genomes.jbrowse.org/ucsc/${row.id}/`
-
-            const handleLaunch = (event: React.MouseEvent) => {
-              event.preventDefault()
-              launch([
-                {
-                  jbrowseConfig: row.jbrowseConfig,
-                  shortName: row.id,
-                },
-              ])
-              onClose()
-            }
-
-            return (
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                {highlightText(info.getValue() || '', searchQuery)} (
-                <Link href={websiteUrl} target="_blank">
-                  info
-                </Link>
-                )(
-                <Link href="#" onClick={handleLaunch}>
-                  launch
-                </Link>
-                )
-                <CascadingMenuButton
-                  menuItems={[
-                    {
-                      label: 'Launch',
-                      onClick: handleLaunch,
-                    },
-                    {
-                      label: isFavorite
-                        ? 'Remove from favorites'
-                        : 'Add to favorites',
-                      onClick: () => {
-                        if (isFavorite) {
-                          setFavorites(
-                            favorites.filter(fav => fav.id !== row.id),
-                          )
-                        } else {
-                          setFavorites([
-                            ...favorites,
-                            {
-                              id: row.id,
-                              shortName: row.name,
-                              description: row.description,
-                              jbrowseConfig: row.jbrowseConfig,
-                            },
-                          ])
-                        }
-                      },
-                    },
-                  ]}
-                >
-                  <MoreHoriz />
-                </CascadingMenuButton>
-              </div>
-            )
-          },
-        }),
-        columnHelper.accessor('scientificName', {
-          header: 'Scientific Name',
-          cell: info => highlightText(info.getValue() || '', searchQuery),
-        }),
-        columnHelper.accessor('organism', {
-          header: 'Organism',
-          cell: info => highlightText(info.getValue() || '', searchQuery),
-        }),
-        columnHelper.accessor('description', {
-          header: 'Description',
-          cell: info => highlightText(info.getValue() || '', searchQuery),
-        }),
-      ]
-    } else {
-      const baseColumns = [
-        columnHelper.accessor('favorite', {
-          header: 'Favorite',
-          sortingFn: (a, b) => {
-            const aIsFav = favs.has(a.original.id)
-            const bIsFav = favs.has(b.original.id)
-            return aIsFav === bIsFav ? 0 : aIsFav ? -1 : 1
-          },
-          cell: info => {
-            const row = info.row.original
-            const isFavorite = favs.has(row.id)
-            const handleToggleFavorite = () => {
-              if (isFavorite) {
-                setFavorites(favorites.filter(fav => fav.id !== row.id))
-              } else {
-                setFavorites([
-                  ...favorites,
-                  {
-                    id: row.id,
-                    shortName: row.ncbiAssemblyName || row.accession,
-                    description: row.commonName,
-                    jbrowseConfig: row.jbrowseConfig,
-                  },
-                ])
-              }
-            }
-            return (
-              <StarIcon
-                isFavorite={isFavorite}
-                onClick={handleToggleFavorite}
-              />
-            )
-          },
-        }),
-        columnHelper.accessor('commonName', {
-          header: 'Common Name',
-          cell: info => {
-            const row = info.row.original
-            const isFavorite = favs.has(row.id)
-            const websiteUrl = `https://genomes.jbrowse.org/accession/${row.accession}/`
-
-            const handleLaunch = (event: React.MouseEvent) => {
-              event.preventDefault()
-              launch([
-                {
-                  jbrowseConfig: row.jbrowseConfig,
-                  shortName: row.accession,
-                },
-              ])
-              onClose()
-            }
-
-            const isReference = row.ncbiRefSeqCategory === 'reference genome'
-
-            return (
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                {highlightText(info.getValue() || '', searchQuery)}
-                {isReference ? (
-                  <Chip
-                    label="reference"
-                    className={classes.chip}
-                    size="small"
-                    color="success"
-                    variant="outlined"
-                  />
-                ) : null}
-                (
-                <Link href={websiteUrl} target="_blank">
-                  info
-                </Link>
-                ) (
-                <Link href="#" onClick={handleLaunch}>
-                  launch
-                </Link>
-                )
-                <CascadingMenuButton
-                  menuItems={[
-                    {
-                      label: 'Launch',
-                      onClick: handleLaunch,
-                    },
-                    {
-                      label: isFavorite
-                        ? 'Remove from favorites'
-                        : 'Add to favorites',
-                      onClick: () => {
-                        if (isFavorite) {
-                          setFavorites(
-                            favorites.filter(fav => fav.id !== row.id),
-                          )
-                        } else {
-                          setFavorites([
-                            ...favorites,
-                            {
-                              id: row.id,
-                              shortName: row.ncbiAssemblyName || row.accession,
-                              description: row.commonName,
-                              jbrowseConfig: row.jbrowseConfig,
-                            },
-                          ])
-                        }
-                      },
-                    },
-                  ]}
-                >
-                  <MoreHoriz />
-                </CascadingMenuButton>
-              </div>
-            )
-          },
-        }),
-        columnHelper.accessor('assemblyStatus', { header: 'Assembly Status' }),
-        columnHelper.accessor('seqReleaseDate', {
-          header: 'Release Date',
-          cell: info => {
-            const date = info.getValue()
-            if (!date) {
-              return ''
-            }
-            // Parse the date and format it to show only the date part (YYYY-MM-DD)
-            const dateObj = new Date(date)
-            return dateObj.toISOString().split('T')[0]
-          },
-        }),
-        columnHelper.accessor('scientificName', {
-          header: 'Scientific Name',
-          cell: info => highlightText(info.getValue() || '', searchQuery),
-        }),
-        columnHelper.accessor('ncbiAssemblyName', {
-          header: 'NCBI Assembly Name',
-          cell: info => highlightText(info.getValue() || '', searchQuery),
-        }),
-      ]
-
-      const extraColumns = [
-        columnHelper.accessor('accession', { header: 'Accession' }),
-        columnHelper.accessor('taxonId', { header: 'Taxonomy ID' }),
-        columnHelper.accessor('submitterOrg', { header: 'Submitter' }),
-      ]
-
-      return showAllColumns ? [...baseColumns, ...extraColumns] : baseColumns
-    }
-  }, [
-    typeOption,
-    favs,
-    favorites,
-    setFavorites,
-    launch,
-    onClose,
-    searchQuery,
-    showAllColumns,
-    columnHelper,
-    classes.chip,
-  ])
 
   // Create table instance
   const rowSelection = useMemo(
@@ -881,7 +411,7 @@ export default function GenomesDataTable({
       ) : null}
 
       {finalFilteredRows.length === 0 && !genArkData && !mainGenomesData ? (
-        <SkeletonLoader classes={classes} />
+        <SkeletonLoader />
       ) : (
         <div>
           <table className={classes.table}>
