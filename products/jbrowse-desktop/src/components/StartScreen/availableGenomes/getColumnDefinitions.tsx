@@ -63,11 +63,13 @@ export function getColumnDefinitions({
         cell: info => {
           const row = info.row.original
           const isFavorite = favs.has(row.id)
-          const handleToggleFavorite = () => {
-            toggleFavorite(row)
-          }
           return (
-            <StarIcon isFavorite={isFavorite} onClick={handleToggleFavorite} />
+            <StarIcon
+              isFavorite={isFavorite}
+              onClick={() => {
+                toggleFavorite(row)
+              }}
+            />
           )
         },
       }),
@@ -99,7 +101,7 @@ export function getColumnDefinitions({
               <Link href={websiteUrl} target="_blank">
                 info
               </Link>
-              )(
+              ) (
               <Link href="#" onClick={handleLaunch}>
                 launch
               </Link>
@@ -157,11 +159,13 @@ export function getColumnDefinitions({
         cell: info => {
           const row = info.row.original
           const isFavorite = favs.has(row.id)
-          const handleToggleFavorite = () => {
-            toggleFavorite(row)
-          }
           return (
-            <StarIcon isFavorite={isFavorite} onClick={handleToggleFavorite} />
+            <StarIcon
+              isFavorite={isFavorite}
+              onClick={() => {
+                toggleFavorite(row)
+              }}
+            />
           )
         },
       }),
@@ -231,7 +235,9 @@ export function getColumnDefinitions({
         },
       }),
 
-      columnHelper.accessor('assemblyStatus', { header: 'Assembly Status' }),
+      columnHelper.accessor('assemblyStatus', {
+        header: 'Assembly Status',
+      }),
       columnHelper.accessor('seqReleaseDate', {
         header: 'Release Date',
         cell: info => {
@@ -259,9 +265,15 @@ export function getColumnDefinitions({
     ]
 
     const extraColumns = [
-      columnHelper.accessor('accession', { header: 'Accession' }),
-      columnHelper.accessor('taxonId', { header: 'Taxonomy ID' }),
-      columnHelper.accessor('submitterOrg', { header: 'Submitter' }),
+      columnHelper.accessor('accession', {
+        header: 'Accession',
+      }),
+      columnHelper.accessor('taxonId', {
+        header: 'Taxonomy ID',
+      }),
+      columnHelper.accessor('submitterOrg', {
+        header: 'Submitter',
+      }),
     ]
 
     return showAllColumns ? [...baseColumns, ...extraColumns] : baseColumns

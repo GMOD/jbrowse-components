@@ -4,14 +4,7 @@ import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
-import Search from '@mui/icons-material/Search'
-import {
-  Button,
-  InputAdornment,
-  MenuItem,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Button, IconButton, Typography } from '@mui/material'
 import {
   flexRender,
   getCoreRowModel,
@@ -24,7 +17,9 @@ import { makeStyles } from 'tss-react/mui'
 
 import { defaultFavs } from '../const'
 import { fetchjson } from '../util'
+import CategorySelector from './CategorySelector'
 import MoreInfoDialog from './MoreInfoDialog'
+import SearchField from './SearchField'
 import SkeletonLoader from './SkeletonLoader'
 import TablePagination from './TablePagination'
 import { getColumnDefinitions } from './getColumnDefinitions'
@@ -57,10 +52,6 @@ const useStyles = makeStyles()({
     minWidth: 1000,
     minHeight: 500,
     position: 'relative',
-  },
-  ml: {
-    margin: 0,
-    marginLeft: 10,
   },
   table: {
     width: '100%',
@@ -109,7 +100,7 @@ export default function GenomesDataTable({
   const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([])
   const [typeOption, setTypeOption] = useLocalStorage(
     'startScreen-genArkChoice',
-    'mammals',
+    'ucsc',
   )
   const [showAllColumns, setShowAllColumns] = useState(false)
   const { classes } = useStyles()
@@ -119,7 +110,6 @@ export default function GenomesDataTable({
     error: allTypesError,
   } = useAllTypes()
   const url = allTypes?.categories.find(f => f.key === typeOption)?.url
-  console.log({ url })
 
   const favs = useMemo(() => new Set(favorites.map(f => f.id)), [favorites])
   const toggleFavorite = useCallback(
@@ -185,28 +175,6 @@ export default function GenomesDataTable({
     [selected],
   )
 
-  const handleRowSelectionChange = useCallback(
-    (updater: any) => {
-      const currentSelection = Object.fromEntries(
-        selected.map(id => [id, true]),
-      )
-      const newSelection =
-        typeof updater === 'function' ? updater(currentSelection) : updater
-      const newSelectedIds = Object.keys(newSelection).filter(
-        key => newSelection[key],
-      )
-
-      // Only update if the selection actually changed
-      if (
-        JSON.stringify(newSelectedIds.sort()) !==
-        JSON.stringify(selected.sort())
-      ) {
-        setSelected(newSelectedIds)
-      }
-    },
-    [selected],
-  )
-
   const table = useReactTable({
     // @ts-expect-error
     data: finalFilteredRows,
@@ -218,7 +186,12 @@ export default function GenomesDataTable({
     },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
-    onRowSelectionChange: handleRowSelectionChange,
+    onRowSelectionChange: (updater: any) => {
+      const newSelection =
+        typeof updater === 'function' ? updater(rowSelection) : updater
+      setSelected(Object.keys(newSelection).filter(key => newSelection[key]))
+    },
+    getRowId: row => row.id,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -228,12 +201,6 @@ export default function GenomesDataTable({
   return (
     <div className={classes.panel}>
       <div className={classes.span}>
-        <Typography variant="h6" style={{ display: 'inline', margin: 0 }}>
-          {typeOption === 'mainGenomes'
-            ? 'Main genome browsers'
-            : 'GenArk genome browsers'}
-        </Typography>
-
         {multipleSelection ? (
           <Button
             variant="contained"
@@ -243,13 +210,12 @@ export default function GenomesDataTable({
                 const selectedRows = selected
                   .map(id => finalFilteredRows.find(row => row.id === id))
                   .filter(notEmpty)
-                launch(
-                  selectedRows.map(r => ({
+                  .map(r => ({
                     jbrowseConfig: r.jbrowseConfig,
-                    shortName:
-                      typeOption === 'mainGenomes' ? r.id : r.accession,
-                  })),
-                )
+                    shortName: r.accession,
+                  }))
+
+                launch(selectedRows)
                 onClose()
               }
             }}
@@ -258,55 +224,15 @@ export default function GenomesDataTable({
           </Button>
         ) : null}
 
-        <TextField
-          type="text"
-          placeholder="Search genomes..."
-          value={searchQuery}
-          onChange={e => {
-            setSearchQuery(e.target.value)
-          }}
-          variant="outlined"
-          size="small"
-          className={classes.ml}
-          style={{ minWidth: 200 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search fontSize="small" />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        <SearchField searchQuery={searchQuery} onChange={setSearchQuery} />
 
-        {allTypes ? (
-          <TextField
-            select
-            name="typeOption"
-            label="Group"
-            variant="outlined"
-            className={classes.ml}
-            value={typeOption}
-            disabled={allTypesLoading}
-            onChange={event => {
-              setTypeOption(event.target.value)
-            }}
-            helperText={
-              allTypesLoading
-                ? 'Loading categories...'
-                : allTypesError
-                  ? 'Using cached categories'
-                  : ''
-            }
-          >
-            {allTypes.categories.map(({ key, title }) => (
-              <MenuItem key={key} value={key}>
-                {title}
-              </MenuItem>
-            ))}
-          </TextField>
-        ) : null}
+        <CategorySelector
+          allTypes={allTypes}
+          typeOption={typeOption}
+          allTypesLoading={allTypesLoading}
+          allTypesError={allTypesError}
+          onChange={setTypeOption}
+        />
         <CascadingMenuButton
           menuItems={[
             {
@@ -326,7 +252,7 @@ export default function GenomesDataTable({
                 setShowOnlyFavs(!showOnlyFavs)
               },
             },
-            ...(typeOption !== 'mainGenomes'
+            ...(typeOption !== 'ucsc'
               ? [
                   {
                     label: 'Show all columns',
@@ -336,10 +262,6 @@ export default function GenomesDataTable({
                       setShowAllColumns(!showAllColumns)
                     },
                   },
-                ]
-              : []),
-            ...(typeOption !== 'mainGenomes'
-              ? [
                   {
                     label: 'Filter by NCBI status',
                     type: 'subMenu' as const,
@@ -380,29 +302,27 @@ export default function GenomesDataTable({
                   },
                 ]
               : []),
-            ...(typeOption === 'mainGenomes'
-              ? [
-                  {
-                    label: 'Reset favorites list to defaults',
-                    type: 'normal' as const,
-                    onClick: () => {
-                      setFavorites(defaultFavs)
-                    },
-                  },
-                ]
-              : []),
             {
-              label: 'More information',
+              label: 'Reset favorites list to defaults',
               type: 'normal' as const,
-              icon: Help,
               onClick: () => {
-                setMoreInfoDialogOpen(true)
+                setFavorites(defaultFavs)
               },
             },
           ]}
         >
           <MoreVert />
         </CascadingMenuButton>
+
+        <IconButton
+          size="small"
+          title="More information"
+          onClick={() => {
+            setMoreInfoDialogOpen(true)
+          }}
+        >
+          <Help />
+        </IconButton>
       </div>
 
       {genArkError || mainGenomesError ? (
