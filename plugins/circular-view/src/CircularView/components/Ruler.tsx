@@ -134,7 +134,7 @@ const RulerLabel = observer(function ({
         y={0}
         className={classes.rulerLabel}
         textAnchor="middle"
-        dominantBaseline="baseline"
+        dominantBaseline="middle"
         transform={`translate(${textXY}) rotate(${radToDeg(radians) + 90})`}
         {...getFillProps(color)}
       >
