@@ -70,7 +70,7 @@ const ElisionRulerArc = observer(function ({
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
   // TODO: draw the elision
   const centerRadians = (endRadians + startRadians) / 2
-  const regionCount = `[${Number(region.regions.length).toLocaleString()}]`
+  const regionCount = `[${region.regions.length.toLocaleString()}]`
   return (
     <>
       <RulerLabel
@@ -134,7 +134,7 @@ const RulerLabel = observer(function ({
         y={0}
         className={classes.rulerLabel}
         textAnchor="middle"
-        dominantBaseline="baseline"
+        dominantBaseline="middle"
         transform={`translate(${textXY}) rotate(${radToDeg(radians) + 90})`}
         {...getFillProps(color)}
       >
