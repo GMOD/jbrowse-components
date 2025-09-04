@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
@@ -98,12 +98,10 @@ const Renderer = observer(function ({
   loader: SessionLoaderModel
 }) {
   const [loader, setLoader] = useState(firstLoader)
-  const { configError, ready, sessionTriaged } = loader
-  const [pluginManager, setPluginManager] = useState<PluginManager>()
-  const [error, setError] = useState<unknown>()
-
-  useEffect(() => {
-    const reloadPluginManager = (
+  const pluginManager = useRef<PluginManager | undefined>(undefined)
+  const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
+  const reloadPluginManager = useCallback(
+    (
       configSnapshot: Record<string, unknown>,
       sessionSnapshot: Record<string, unknown>,
     ) => {
@@ -125,22 +123,32 @@ const Renderer = observer(function ({
         sessionSnapshot,
       })
       setLoader(newLoader)
-    }
+      setPluginManagerCreated(false)
+    },
+    [loader],
+  )
+  const { configError, ready, sessionTriaged } = loader
+  const [error, setError] = useState<unknown>()
 
-    try {
-      if (ready) {
-        setPluginManager(previousPluginManager => {
-          if (previousPluginManager?.rootModel) {
-            destroy(previousPluginManager.rootModel)
-          }
-          return createPluginManager(loader, reloadPluginManager)
-        })
+  useEffect(() => {
+    if (ready) {
+      try {
+        if (pluginManager.current?.rootModel) {
+          destroy(pluginManager.current.rootModel)
+        }
+        pluginManager.current = createPluginManager(loader, reloadPluginManager)
+        setPluginManagerCreated(true)
+      } catch (e) {
+        console.error(e)
+        setError(e)
       }
-    } catch (e) {
-      console.error(e)
-      setError(e)
     }
-  }, [loader, ready])
+    return () => {
+      if (pluginManager.current?.rootModel) {
+        destroy(pluginManager.current.rootModel)
+      }
+    }
+  }, [ready, loader, reloadPluginManager])
 
   const err = configError || error
   if (err) {
@@ -151,8 +159,8 @@ const Renderer = observer(function ({
     )
   } else if (sessionTriaged) {
     return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
-  } else if (pluginManager) {
-    return <JBrowse pluginManager={pluginManager} />
+  } else if (pluginManagerCreated && pluginManager.current) {
+    return <JBrowse pluginManager={pluginManager.current} />
   } else {
     return <Loading />
   }
