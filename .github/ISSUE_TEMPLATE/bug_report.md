@@ -45,7 +45,6 @@ Chrome)
 
 **Whether you are using the web version or desktop version**
 
-
 **Additional context**
 
 <!-- Add any other context about the problem here. -->
