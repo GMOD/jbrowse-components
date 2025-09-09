@@ -50,7 +50,7 @@ exports[`open up a widget 1`] = `
           class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
         >
           <div
-            class="MuiAccordion-region"
+            class="MuiAccordion-region css-at4ued-MuiAccordion-region"
             role="region"
           >
             <div
