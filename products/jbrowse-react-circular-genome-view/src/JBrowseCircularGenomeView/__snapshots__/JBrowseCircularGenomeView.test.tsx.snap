@@ -97,7 +97,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 >
                   <text
                     class="css-wdlapd-rulerLabel"
-                    dominant-baseline="baseline"
+                    dominant-baseline="middle"
                     fill="#996600"
                     fill-opacity="1"
                     text-anchor="middle"
@@ -118,7 +118,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   />
                   <text
                     class="css-wdlapd-rulerLabel"
-                    dominant-baseline="baseline"
+                    dominant-baseline="middle"
                     fill="#666600"
                     fill-opacity="1"
                     text-anchor="middle"
