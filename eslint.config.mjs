@@ -1,4 +1,5 @@
 import eslint from '@eslint/js'
+import { defineConfig } from 'eslint/config'
 import importPlugin from 'eslint-plugin-import'
 import eslintPluginReact from 'eslint-plugin-react'
 import reactCompiler from 'eslint-plugin-react-compiler'
@@ -8,7 +9,7 @@ import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [
       'packages/__mocks__/@testing-library/react.tsx',
@@ -186,6 +187,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
