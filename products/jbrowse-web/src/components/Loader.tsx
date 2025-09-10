@@ -130,8 +130,8 @@ const Renderer = observer(function ({
   const { configError, ready, sessionTriaged } = loader
   const [error, setError] = useState<unknown>()
 
-  const isJest = typeof jest === 'undefined'
   useEffect(() => {
+    const isJest = typeof jest === 'undefined'
     if (ready) {
       try {
         if (pluginManager.current?.rootModel && !isJest) {
@@ -149,7 +149,7 @@ const Renderer = observer(function ({
         destroy(pluginManager.current.rootModel)
       }
     }
-  }, [ready, loader, reloadPluginManager])
+  }, [ready, isJest, loader, reloadPluginManager])
 
   const err = configError || error
   if (err) {
