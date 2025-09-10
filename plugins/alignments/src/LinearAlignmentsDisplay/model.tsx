@@ -171,8 +171,8 @@ function stateModelFactory(
        */
       notReady() {
         return (
-          self.PileupDisplay.renderProps().notReady ||
-          self.SNPCoverageDisplay.renderProps().notReady
+          self.PileupDisplay?.renderProps().notReady ||
+          self.SNPCoverageDisplay?.renderProps().notReady
         )
       },
     }))

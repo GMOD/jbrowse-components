@@ -3559,12 +3559,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808248/hg19.COLO_829N.bam",
+          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808247/hg19.COLO_829N.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808248/hg19.COLO_829N.bam.bai",
+            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808247/hg19.COLO_829N.bam.bai",
             "locationType": "UriLocation"
           }
         },
