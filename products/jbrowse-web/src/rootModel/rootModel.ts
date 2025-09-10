@@ -30,7 +30,14 @@ import { formatDistanceToNow } from 'date-fns'
 import { saveAs } from 'file-saver'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getType,
+  isAlive,
+  types,
+} from 'mobx-state-tree'
 
 import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
@@ -221,6 +228,9 @@ export default function RootModel({
                       // triggered the autorun
                       if (self.sessionDB) {
                         await sessionDB.put('sessions', getSnapshot(s), s.id)
+                        if (!isAlive(self)) {
+                          return
+                        }
 
                         const ret = await self.sessionDB.get('metadata', s.id)
                         await sessionDB.put(

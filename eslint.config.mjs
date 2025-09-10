@@ -1,4 +1,5 @@
 import eslint from '@eslint/js'
+import { defineConfig } from 'eslint/config'
 import importPlugin from 'eslint-plugin-import'
 import eslintPluginReact from 'eslint-plugin-react'
 import reactCompiler from 'eslint-plugin-react-compiler'
@@ -8,7 +9,7 @@ import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [
       'packages/__mocks__/@testing-library/react.tsx',

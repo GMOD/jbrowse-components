@@ -1,5 +1,3 @@
-import { FatalErrorDialog } from '@jbrowse/core/ui'
-import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
@@ -118,17 +116,7 @@ test('can use config from a url with nonexistent share param ', async () => {
 
 test('can catch error from loading a bad config', async () => {
   const { findAllByText } = render(
-    <ErrorBoundary
-      FallbackComponent={props => (
-        <FatalErrorDialog
-          {...props}
-          resetButtonText="Reset Session"
-          onFactoryReset={() => {}}
-        />
-      )}
-    >
-      <App search="?config=test_data/bad_config_test/config.json" />
-    </ErrorBoundary>,
+    <App search="?config=test_data/bad_config_test/config.json" />,
   )
   await findAllByText(/Error while converting/)
 }, 20000)

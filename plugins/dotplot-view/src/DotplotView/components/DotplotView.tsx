@@ -203,7 +203,7 @@ const DotplotViewInternal = observer(function ({
     window.addEventListener('keyup', globalCtrlKeyUp)
     return () => {
       window.removeEventListener('keydown', globalCtrlKeyDown)
-      window.addEventListener('keyup', globalCtrlKeyUp)
+      window.removeEventListener('keyup', globalCtrlKeyUp)
     }
   }, [])
 
