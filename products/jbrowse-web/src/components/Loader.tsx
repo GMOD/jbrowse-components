@@ -149,7 +149,7 @@ const Renderer = observer(function ({
         destroy(pluginManager.current.rootModel)
       }
     }
-  }, [ready, isJest, loader, reloadPluginManager])
+  }, [ready, loader, reloadPluginManager])
 
   const err = configError || error
   if (err) {
