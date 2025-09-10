@@ -88,7 +88,9 @@ function SessionNameCell({
       <Link href="#" onClick={handleLinkClick}>
         {value}
       </Link>
-      {isFavorite ? <StarIcon /> : null}
+      {isFavorite ? (
+        <StarIcon isFavorite={isFavorite} onClick={handleToggleFavorite} />
+      ) : null}
       <CascadingMenuButton menuItems={menuItems}>
         <MoreHoriz />
       </CascadingMenuButton>

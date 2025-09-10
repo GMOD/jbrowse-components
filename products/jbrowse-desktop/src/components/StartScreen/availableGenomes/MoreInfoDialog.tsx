@@ -7,16 +7,9 @@ export default function MoreInfoDialog({ onClose }: { onClose: () => void }) {
       <DialogContent>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <Typography>
-            These JBrowse instances leverage UCSC genome browser data resources,
-            utilizing both their main data browsers and GenArk track hubs.
-          </Typography>
-          <Typography>
-            JBrowse sends a huge thank you to the UCSC genome browser team for
-            their data curation, sharing, and innovation!
-          </Typography>
-          <Typography>
-            Please visit these links for more info, and consider citing UCSC
-            alongside JBrowse in your work.
+            This resource leverage UCSC genome browser resources. Please
+            consider citing UCSC, JBrowse, and any other relevant data in your
+            work. See resources below for more information
           </Typography>
         </div>
 
@@ -27,18 +20,8 @@ export default function MoreInfoDialog({ onClose }: { onClose: () => void }) {
             </Link>
           </li>
           <li>
-            <Link href="https://hgdownload.soe.ucsc.edu/hubs/">
-              UCSC GenArk home
-            </Link>
-          </li>
-          <li>
-            <Link href="https://genome.ucsc.edu/conditions.html">
-              UCSC data re-use policy
-            </Link>
-          </li>
-          <li>
-            <Link href="https://github.com/cmdcolin/jb2hubs">
-              Our pipeline to import and convert UCSC resources
+            <Link href="https://genomes.jbrowse.org/about">
+              JBrowse 2 genomes about page
             </Link>
           </li>
         </ul>
