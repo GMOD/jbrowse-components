@@ -17,6 +17,7 @@ import windowStateKeeper from 'electron-window-state'
 import parseJson from 'json-parse-even-better-errors'
 
 import { getFileStream } from './generateFastaIndex'
+import contextMenu from 'electron-context-menu'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 
@@ -25,6 +26,8 @@ interface RecentSession {
   updated: number
   name?: string
 }
+
+contextMenu()
 
 function stringify(obj: unknown) {
   return JSON.stringify(obj, null, 2)
