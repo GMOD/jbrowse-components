@@ -15,7 +15,7 @@ jobs:
       skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 1
 
@@ -38,14 +38,14 @@ jobs:
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '22'
       - name: Install website deps (with cache)
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
         with:
           working-directory: website
       - name: Build website
@@ -55,7 +55,7 @@ jobs:
           mkdir testing
           mv build testing/jb2
       - name: Check website links
-        uses: untitaker/hyperlink@0.1.27
+        uses: untitaker/hyperlink@e66bb17cc9ae341677431edec3b893a0aa6ac747 # 0.1.44
         with:
           args: website/testing/ --check-anchors
 
@@ -66,14 +66,14 @@ jobs:
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '22'
       - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
       - name: Build codebase
         run: yarn build
       - name: Test build
@@ -101,14 +101,14 @@ jobs:
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '22'
       - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
       - name: Build project
         run: |
           echo $RELEASE_VERSION
@@ -116,7 +116,7 @@ jobs:
           NODE_OPTIONS='--max-old-space-size=6500' yarn build
           cd ../../
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -133,7 +133,7 @@ jobs:
           yarn storybook:build
         working-directory: products/jbrowse-react-linear-genome-view
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -152,7 +152,7 @@ jobs:
           yarn storybook:build
         working-directory: products/jbrowse-react-app
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -170,7 +170,7 @@ jobs:
           yarn storybook:build
         working-directory: products/jbrowse-react-circular-genome-view
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -191,14 +191,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get -y install tabix
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '22'
       - name: Install deps and build (with cache)
-        uses: bahmutov/npm-install@v1
+        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
       - name: Check codebase format
         run: yarn prettier --check .
       - name: Check autogen docs
@@ -210,6 +210,6 @@ jobs:
       - name: Test codebase
         run: yarn test-ci
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
       - name: Typecheck codebase
         run: yarn typecheck
