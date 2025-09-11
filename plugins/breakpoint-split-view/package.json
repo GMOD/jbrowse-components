@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-breakpoint-split-view",
-  "version": "3.6.4",
+  "version": "3.6.5",
   "description": "JBrowse 2 breakpoint detail split view",
   "keywords": [
     "jbrowse",
@@ -37,8 +37,8 @@
   },
   "dependencies": {
     "@gmod/vcf": "^6.0.8",
-    "@jbrowse/core": "^3.6.4",
-    "@jbrowse/plugin-linear-genome-view": "^3.6.4",
+    "@jbrowse/core": "^3.6.5",
+    "@jbrowse/plugin-linear-genome-view": "^3.6.5",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "@types/file-saver": "^2.0.1",
