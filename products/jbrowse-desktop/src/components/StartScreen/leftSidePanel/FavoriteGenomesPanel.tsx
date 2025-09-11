@@ -1,24 +1,25 @@
 import { CascadingMenuButton } from '@jbrowse/core/ui'
+import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { useLocalStorage } from '@jbrowse/core/util'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
 import { useInnerDims } from '../availableGenomes/util'
 
 import type { Fav, LaunchCallback } from '../types'
+import CustomToolbar from './SearchToolbar'
 
 const useStyles = makeStyles()(theme => ({
   panel: {
     marginTop: theme.spacing(2),
-    overflow: 'auto',
   },
   mb: {
     marginBottom: 5,
   },
-
   headerContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -26,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
   },
   linkText: {
     whiteSpace: 'nowrap',
-    maxWidth: 100,
+    overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
 }))
@@ -64,53 +65,93 @@ export default function FavoriteGenomesPanel({
       </div>
 
       {isVisible ? (
-        <>
-          <div className={classes.panel}>
-            {favorites.map(({ id, shortName, description, jbrowseConfig }) => {
-              const handleLaunch = () => {
-                launch([
-                  {
-                    shortName,
-                    jbrowseConfig,
-                  },
-                ])
-              }
-
-              const handleRemove = () => {
-                setFavorites(favorites.filter(fav => fav.id !== id))
-              }
-
-              return (
-                <Link
-                  key={id}
-                  href="#"
-                  className={classes.linkText}
-                  onClick={event => {
-                    event.preventDefault()
-                    handleLaunch()
-                  }}
-                >
-                  {[shortName, description].filter(f => !!f).join(' - ')}
-                  <CascadingMenuButton
-                    style={{ padding: 0, margin: 0 }}
-                    menuItems={[
+        <div className={classes.panel}>
+          <DataGrid
+            rows={favorites.map(
+              ({ id, shortName, description, jbrowseConfig }) => ({
+                id,
+                name: [shortName, description].filter(f => !!f).join(' - '),
+                shortName,
+                description,
+                jbrowseConfig,
+              }),
+            )}
+            columns={[
+              {
+                field: 'name',
+                headerName: 'Genome',
+                flex: 1,
+                renderCell: ({ row }: any) => {
+                  const handleLaunch = () => {
+                    launch([
                       {
-                        label: 'Launch',
-                        onClick: handleLaunch,
+                        shortName: row.shortName,
+                        jbrowseConfig: row.jbrowseConfig,
                       },
+                    ])
+                  }
+
+                  return (
+                    <Link
+                      href="#"
+                      className={classes.linkText}
+                      onClick={event => {
+                        event.preventDefault()
+                        handleLaunch()
+                      }}
+                    >
+                      {row.name}
+                    </Link>
+                  )
+                },
+              },
+              {
+                field: 'actions',
+                headerName: '',
+                width: 50,
+                sortable: false,
+                renderCell: ({ row }: any) => {
+                  const handleLaunch = () => {
+                    launch([
                       {
-                        label: 'Remove from favorites',
-                        onClick: handleRemove,
+                        shortName: row.shortName,
+                        jbrowseConfig: row.jbrowseConfig,
                       },
-                    ]}
-                  >
-                    <MoreHoriz />
-                  </CascadingMenuButton>
-                </Link>
-              )
-            })}
-          </div>
-        </>
+                    ])
+                  }
+
+                  const handleRemove = () => {
+                    setFavorites(favorites.filter(fav => fav.id !== row.id))
+                  }
+
+                  return (
+                    <CascadingMenuButton
+                      style={{ padding: 0, margin: 0 }}
+                      menuItems={[
+                        {
+                          label: 'Launch',
+                          onClick: handleLaunch,
+                        },
+                        {
+                          label: 'Remove from favorites',
+                          onClick: handleRemove,
+                        },
+                      ]}
+                    >
+                      <MoreHoriz />
+                    </CascadingMenuButton>
+                  )
+                },
+              },
+            ]}
+            rowHeight={25}
+            columnHeaderHeight={32}
+            hideFooter
+            disableColumnMenu
+            disableRowSelectionOnClick
+            showToolbar
+          />
+        </div>
       ) : null}
     </div>
   )
