@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-hic",
-  "version": "3.6.5",
+  "version": "3.6.4",
   "description": "JBrowse 2 hic adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -36,8 +36,8 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/core": "^3.6.5",
-    "@jbrowse/plugin-linear-genome-view": "^3.6.5",
+    "@jbrowse/core": "^3.6.4",
+    "@jbrowse/plugin-linear-genome-view": "^3.6.4",
     "@mui/material": "^7.0.0",
     "@mui/x-charts-vendor": "^8.0.0",
     "hic-straw": "^2.0.3",

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/web-core",
-  "version": "3.6.5",
+  "version": "3.6.4",
   "description": "JBrowse 2 code shared between web-app type products",
   "keywords": [
     "jbrowse",
@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "@jbrowse/app-core": "^3.6.5",
-    "@jbrowse/product-core": "^3.6.5",
+    "@jbrowse/app-core": "^3.6.4",
+    "@jbrowse/product-core": "^3.6.4",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "copy-to-clipboard": "^3.3.1",
