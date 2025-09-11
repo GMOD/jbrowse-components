@@ -8,7 +8,7 @@ import { makeStyles } from 'tss-react/mui'
 import FavoriteGenomesPanel from './FavoriteGenomesPanel'
 import OpenSequencePanel from './OpenSequencePanel'
 import QuickstartPanel from './QuickstartPanel'
-import { useDefaultFavs } from '../const'
+import defaultFavs from '../defaultFavs'
 import { addRelativeUris, fetchjson, loadPluginManager } from '../util'
 
 import type { Fav, JBrowseConfig } from '../types'
@@ -53,10 +53,10 @@ export default function LauncherPanel({
   const { classes } = useStyles()
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
-  const { defaultFavs, isLoading: defaultFavsLoading, error: defaultFavsError } = useDefaultFavs()
+
   const [favorites, setFavorites] = useLocalStorage<Fav[]>(
     'startScreen-favEntries',
-    defaultFavs || [],
+    defaultFavs,
   )
 
   async function initializeSession(entries: JBrowseConfig[]) {
@@ -92,19 +92,14 @@ export default function LauncherPanel({
   return (
     <div className={classes.form}>
       {error ? <ErrorMessage error={error} /> : null}
-      {defaultFavsError ? <ErrorMessage error={defaultFavsError} /> : null}
-      {loading || defaultFavsLoading ? (
-        <LoadingEllipses 
-          variant="h6" 
-          message={loading || 'Loading default favorites...'} 
-        />
+      {loading ? (
+        <LoadingEllipses variant="h6" message={loading} />
       ) : (
         <>
           <OpenSequencePanel
             setPluginManager={setPluginManager}
             favorites={favorites}
             setFavorites={setFavorites}
-            defaultFavs={defaultFavs}
             launch={sel =>
               structuredCb(async () => {
                 await initializeSession(await fetchData(sel))

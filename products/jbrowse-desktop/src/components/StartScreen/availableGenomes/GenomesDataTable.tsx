@@ -4,7 +4,7 @@ import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Button, IconButton, Typography } from '@mui/material'
+import { Button, IconButton } from '@mui/material'
 import {
   flexRender,
   getCoreRowModel,
@@ -12,10 +12,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
-import { fetchjson } from '../util'
 import CategorySelector from './CategorySelector'
 import MoreInfoDialog from './MoreInfoDialog'
 import SearchField from './SearchField'
@@ -23,22 +21,10 @@ import SkeletonLoader from './SkeletonLoader'
 import TablePagination from './TablePagination'
 import { getColumnDefinitions } from './getColumnDefinitions'
 import { useGenomesData } from './useGenomesData'
+import defaultFavs from '../defaultFavs'
+import useCategories from './useCategories'
 
 import type { Fav, LaunchCallback } from '../types'
-
-function useAllTypes() {
-  const { data, error, isLoading } = useSWR('categories', () =>
-    fetchjson('https://jbrowse.org/hubs/categories.json'),
-  )
-
-  return {
-    allTypes: data as
-      | { categories: { key: string; title: string; url: string }[] }
-      | undefined,
-    isLoading,
-    error,
-  }
-}
 
 const useStyles = makeStyles()({
   span: {
@@ -80,13 +66,11 @@ export default function GenomesDataTable({
   setFavorites,
   onClose,
   launch,
-  defaultFavs,
 }: {
   onClose: () => void
   favorites: Fav[]
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
-  defaultFavs?: Fav[]
 }) {
   const [selected, setSelected] = useState<string[]>([])
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
@@ -106,11 +90,11 @@ export default function GenomesDataTable({
   const [showAllColumns, setShowAllColumns] = useState(false)
   const { classes } = useStyles()
   const {
-    allTypes,
-    isLoading: allTypesLoading,
-    error: allTypesError,
-  } = useAllTypes()
-  const url = allTypes?.categories.find(f => f.key === typeOption)?.url
+    categories,
+    isLoading: categoriesLoading,
+    error: categoriesError,
+  } = useCategories()
+  const url = categories?.categories.find(f => f.key === typeOption)?.url
 
   const favs = useMemo(() => new Set(favorites.map(f => f.id)), [favorites])
   const toggleFavorite = useCallback(
@@ -119,7 +103,6 @@ export default function GenomesDataTable({
       if (isFavorite) {
         setFavorites(favorites.filter(fav => fav.id !== row.id))
       } else {
-        console.log(row)
         setFavorites([
           ...favorites,
           {
@@ -230,10 +213,10 @@ export default function GenomesDataTable({
         <SearchField searchQuery={searchQuery} onChange={setSearchQuery} />
 
         <CategorySelector
-          allTypes={allTypes}
+          categories={categories}
           typeOption={typeOption}
-          allTypesLoading={allTypesLoading}
-          allTypesError={allTypesError}
+          categoriesLoading={categoriesLoading}
+          categoriesError={categoriesError}
           onChange={setTypeOption}
         />
         <CascadingMenuButton
@@ -305,13 +288,13 @@ export default function GenomesDataTable({
                   },
                 ]
               : []),
-            ...(defaultFavs ? [{
+            {
               label: 'Reset favorites list to defaults',
               type: 'normal' as const,
               onClick: () => {
                 setFavorites(defaultFavs)
               },
-            }] : []),
+            },
           ]}
         >
           <MoreVert />
@@ -332,7 +315,7 @@ export default function GenomesDataTable({
         <ErrorMessage error={genArkError || mainGenomesError} />
       ) : null}
 
-      {allTypesLoading ? (
+      {categoriesLoading ? (
         <SkeletonLoader />
       ) : finalFilteredRows.length === 0 && !genArkData && !mainGenomesData ? (
         <SkeletonLoader />

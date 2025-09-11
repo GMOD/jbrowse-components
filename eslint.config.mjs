@@ -151,6 +151,7 @@ export default defineConfig(
       'unicorn/prefer-string-replace-all': 'off',
       'unicorn/no-array-reduce': 'off',
       'unicorn/expiring-todo-comments': 'off',
+      'unicorn/no-array-sort': 'off',
 
       'import/no-unresolved': 'off',
       'import/order': [

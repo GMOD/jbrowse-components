@@ -9,23 +9,23 @@ const useStyles = makeStyles()({
 })
 
 interface CategorySelectorProps {
-  allTypes?: { categories: { key: string; title: string; url: string }[] }
+  categories?: { categories: { key: string; title: string; url: string }[] }
   typeOption: string
-  allTypesLoading: boolean
-  allTypesError?: unknown
+  categoriesLoading: boolean
+  categoriesError?: unknown
   onChange: (value: string) => void
 }
 
 export default function CategorySelector({
-  allTypes,
+  categories,
   typeOption,
-  allTypesLoading,
-  allTypesError,
+  categoriesLoading,
+  categoriesError,
   onChange,
 }: CategorySelectorProps) {
   const { classes } = useStyles()
 
-  if (!allTypes) {
+  if (!categories) {
     return null
   }
 
@@ -37,19 +37,19 @@ export default function CategorySelector({
       variant="outlined"
       className={classes.root}
       value={typeOption}
-      disabled={allTypesLoading}
+      disabled={categoriesLoading}
       onChange={event => {
         onChange(event.target.value)
       }}
       helperText={
-        allTypesLoading
+        categoriesLoading
           ? 'Loading categories...'
-          : allTypesError
+          : categoriesError
             ? 'Using cached categories'
             : ''
       }
     >
-      {allTypes.categories.map(({ key, title }) => (
+      {categories.categories.map(({ key, title }) => (
         <MenuItem key={key} value={key}>
           {title}
         </MenuItem>

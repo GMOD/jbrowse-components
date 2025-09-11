@@ -1,5 +1,4 @@
 import { CascadingMenuButton } from '@jbrowse/core/ui'
-import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { useLocalStorage } from '@jbrowse/core/util'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -43,7 +42,6 @@ export default function FavoriteGenomesPanel({
     'startScreen-favMinimized',
     true,
   )
-  console.log(favorites)
 
   return (
     <div>

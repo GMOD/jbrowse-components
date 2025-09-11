@@ -11,13 +11,13 @@ import electron, {
   ipcMain,
   shell,
 } from 'electron'
+import contextMenu from 'electron-context-menu'
 import debug from 'electron-debug'
 import { autoUpdater } from 'electron-updater'
 import windowStateKeeper from 'electron-window-state'
 import parseJson from 'json-parse-even-better-errors'
 
 import { getFileStream } from './generateFastaIndex'
-import contextMenu from 'electron-context-menu'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 
