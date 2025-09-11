@@ -65,8 +65,7 @@ export default function TablePagination({
       <span className={classes.pageInfo}>
         Page{' '}
         <strong>
-          {table.getState().pagination.pageIndex + 1} of{' '}
-          {table.getPageCount()}
+          {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
         </strong>
       </span>
       <button
@@ -108,9 +107,7 @@ export default function TablePagination({
         </select>
         <span style={{ marginLeft: '0.5rem' }}>rows</span>
       </div>
-      <span
-        style={{ marginLeft: '1rem', fontSize: '0.9rem', color: '#666' }}
-      >
+      <span style={{ marginLeft: '1rem', fontSize: '0.9rem', color: '#666' }}>
         Showing {displayedRows} of {totalRows} rows
       </span>
     </div>

@@ -6489,9 +6489,9 @@ electron-publish@25.1.7:
     mime "^2.5.2"
 
 electron-to-chromium@^1.5.211:
-  version "1.5.215"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.215.tgz#200c8d69b1270af6126837b6b1f95077c3a347b1"
-  integrity sha512-TIvGp57UpeNetj/wV/xpFNpWGb0b/ROw372lHPx5Aafx02gjTBtWnEEcaSX3W2dLM3OSdGGyHX/cHl01JQsLaQ==
+  version "1.5.216"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.216.tgz#c49da93cae9c8b0548755b136423be6982e21a7e"
+  integrity sha512-uVgsufJ+qIiOsZBmqkM2AGPn3gbqPySHl/SLKXJ70nowhI0VsRX4aog+R9EUL2bOjqPPhfR9pG8j8s4Zk4xq+A==
 
 electron-updater@^6.1.1:
   version "6.6.2"
@@ -7706,9 +7706,9 @@ gauge@^4.0.3:
     wide-align "^1.1.5"
 
 generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.10, generic-filehandle2@^2.0.12, generic-filehandle2@^2.0.5:
-  version "2.0.13"
-  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.13.tgz#d63720a19b1423bfb2495cae96df50dbcda4a009"
-  integrity sha512-Xrt+jiMCwLJRLbjezRT/csCIJmGvRLZgKFHEXIwLPhjqkBrB2MUMf1aW9gn9TNR1ae3gUvFsw7qM4zFUjVmrvA==
+  version "2.0.14"
+  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.14.tgz#bf56dbba9bd39ae8375d5c6b0b9bf8d070ca8180"
+  integrity sha512-Gg0EQY2Rd3wlusat7wbmAozxADzmsHKcko+b3/hRM/mh6eGheeyyVEpXoYpFbhlov2QTbjnBOSsPCP8gwywJHQ==
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"

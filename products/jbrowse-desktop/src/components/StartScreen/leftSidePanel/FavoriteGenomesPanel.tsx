@@ -24,6 +24,11 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
     cursor: 'pointer',
   },
+  linkText: {
+    whiteSpace: 'nowrap',
+    maxWidth: 100,
+    textOverflow: 'ellipsis',
+  },
 }))
 
 export default function FavoriteGenomesPanel({
@@ -60,60 +65,50 @@ export default function FavoriteGenomesPanel({
 
       {isVisible ? (
         <>
-          <div className={classes.panel} style={{ maxHeight: innerHeight / 4 }}>
-            <table>
-              <tbody>
-                {favorites.map(
-                  ({ id, shortName, description, jbrowseConfig }) => {
-                    const handleLaunch = () => {
-                      launch([
-                        {
-                          shortName,
-                          jbrowseConfig,
-                        },
-                      ])
-                    }
-
-                    const handleRemove = () => {
-                      setFavorites(favorites.filter(fav => fav.id !== id))
-                    }
-
-                    return (
-                      <tr key={id}>
-                        <td>
-                          <Link
-                            href="#"
-                            onClick={event => {
-                              event.preventDefault()
-                              handleLaunch()
-                            }}
-                          >
-                            {[shortName, description]
-                              .filter(f => !!f)
-                              .join(' - ')}
-                          </Link>{' '}
-                          <CascadingMenuButton
-                            style={{ padding: 0, margin: 0 }}
-                            menuItems={[
-                              {
-                                label: 'Launch',
-                                onClick: handleLaunch,
-                              },
-                              {
-                                label: 'Remove from favorites',
-                                onClick: handleRemove,
-                              },
-                            ]}
-                          >
-                            <MoreHoriz />
-                          </CascadingMenuButton>
-                        </td>
-                      </tr>
-                    )
+          <div className={classes.panel}>
+            {favorites.map(({ id, shortName, description, jbrowseConfig }) => {
+              const handleLaunch = () => {
+                launch([
+                  {
+                    shortName,
+                    jbrowseConfig,
                   },
-                )}
-              </tbody>
-            </table>
+                ])
+              }
+
+              const handleRemove = () => {
+                setFavorites(favorites.filter(fav => fav.id !== id))
+              }
+
+              return (
+                <Link
+                  key={id}
+                  href="#"
+                  className={classes.linkText}
+                  onClick={event => {
+                    event.preventDefault()
+                    handleLaunch()
+                  }}
+                >
+                  {[shortName, description].filter(f => !!f).join(' - ')}
+                  <CascadingMenuButton
+                    style={{ padding: 0, margin: 0 }}
+                    menuItems={[
+                      {
+                        label: 'Launch',
+                        onClick: handleLaunch,
+                      },
+                      {
+                        label: 'Remove from favorites',
+                        onClick: handleRemove,
+                      },
+                    ]}
+                  >
+                    <MoreHoriz />
+                  </CascadingMenuButton>
+                </Link>
+              )
+            })}
           </div>
         </>
       ) : null}

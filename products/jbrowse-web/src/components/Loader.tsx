@@ -131,9 +131,10 @@ const Renderer = observer(function ({
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
+    const isJest = typeof jest === 'undefined'
     if (ready) {
       try {
-        if (pluginManager.current?.rootModel) {
+        if (pluginManager.current?.rootModel && !isJest) {
           destroy(pluginManager.current.rootModel)
         }
         pluginManager.current = createPluginManager(loader, reloadPluginManager)
@@ -144,7 +145,7 @@ const Renderer = observer(function ({
       }
     }
     return () => {
-      if (pluginManager.current?.rootModel) {
+      if (pluginManager.current?.rootModel && !isJest) {
         destroy(pluginManager.current.rootModel)
       }
     }

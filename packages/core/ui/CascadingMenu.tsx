@@ -53,6 +53,8 @@ function CascadingMenuItem({
         onClick?.(event)
       }}
       onMouseOver={() => {
+        // Close any existing child submenu when hovering over a regular menu item
+        // Note: This logic is duplicated in CascadingSubmenu for consistency
         if (parentPopupState?.childHandle) {
           parentPopupState.childHandle.close()
           parentPopupState.setChildHandle(undefined)
@@ -80,9 +82,25 @@ function CascadingSubmenu({
     parentPopupState,
   })
 
+  const { onMouseOver: originalOnMouseOver, ...hoverProps } =
+    bindHover(popupState)
+
   return (
     <>
-      <MenuItem {...bindFocus(popupState)} {...bindHover(popupState)}>
+      <MenuItem
+        {...bindFocus(popupState)}
+        {...hoverProps}
+        onMouseOver={event => {
+          // Close any existing sibling submenus before opening this one
+          // Note: This logic is duplicated from CascadingMenuItem for consistency
+          if (parentPopupState?.childHandle) {
+            parentPopupState.childHandle.close()
+            parentPopupState.setChildHandle(undefined)
+          }
+          // Call the original hover handler to open this submenu
+          originalOnMouseOver(event)
+        }}
+      >
         {Icon ? (
           <ListItemIcon>
             <Icon />

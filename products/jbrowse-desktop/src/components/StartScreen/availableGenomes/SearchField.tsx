@@ -14,7 +14,10 @@ interface SearchFieldProps {
   onChange: (value: string) => void
 }
 
-export default function SearchField({ searchQuery, onChange }: SearchFieldProps) {
+export default function SearchField({
+  searchQuery,
+  onChange,
+}: SearchFieldProps) {
   const { classes } = useStyles()
 
   return (
