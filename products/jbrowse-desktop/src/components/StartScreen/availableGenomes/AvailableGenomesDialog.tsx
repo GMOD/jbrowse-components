@@ -10,11 +10,13 @@ export default function AllGenomesDialog({
   setFavorites,
   onClose,
   launch,
+  defaultFavs,
 }: {
   onClose: () => void
   favorites: Fav[]
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
+  defaultFavs?: Fav[]
 }) {
   return (
     <Dialog maxWidth="xl" open title="Available genomes" onClose={onClose}>
@@ -24,6 +26,7 @@ export default function AllGenomesDialog({
           setFavorites={setFavorites}
           onClose={onClose}
           launch={launch}
+          defaultFavs={defaultFavs}
         />
       </DialogContent>
     </Dialog>

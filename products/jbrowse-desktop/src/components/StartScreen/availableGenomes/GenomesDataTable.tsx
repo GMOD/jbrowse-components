@@ -15,7 +15,6 @@ import {
 import useSWR from 'swr'
 import { makeStyles } from 'tss-react/mui'
 
-import { defaultFavs } from '../const'
 import { fetchjson } from '../util'
 import CategorySelector from './CategorySelector'
 import MoreInfoDialog from './MoreInfoDialog'
@@ -81,11 +80,13 @@ export default function GenomesDataTable({
   setFavorites,
   onClose,
   launch,
+  defaultFavs,
 }: {
   onClose: () => void
   favorites: Fav[]
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
+  defaultFavs?: Fav[]
 }) {
   const [selected, setSelected] = useState<string[]>([])
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
@@ -118,11 +119,13 @@ export default function GenomesDataTable({
       if (isFavorite) {
         setFavorites(favorites.filter(fav => fav.id !== row.id))
       } else {
+        console.log(row)
         setFavorites([
           ...favorites,
           {
             id: row.id,
             shortName: row.name || row.ncbiAssemblyName || row.accession,
+            commonName: row.commonName,
             description: row.description || row.commonName,
             jbrowseConfig: row.jbrowseConfig,
           },
@@ -302,13 +305,13 @@ export default function GenomesDataTable({
                   },
                 ]
               : []),
-            {
+            ...(defaultFavs ? [{
               label: 'Reset favorites list to defaults',
               type: 'normal' as const,
               onClick: () => {
                 setFavorites(defaultFavs)
               },
-            },
+            }] : []),
           ]}
         >
           <MoreVert />

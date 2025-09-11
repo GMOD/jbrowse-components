@@ -8,10 +8,7 @@ import { IconButton, Link, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
-import { useInnerDims } from '../availableGenomes/util'
-
 import type { Fav, LaunchCallback } from '../types'
-import CustomToolbar from './SearchToolbar'
 
 const useStyles = makeStyles()(theme => ({
   panel: {
@@ -46,7 +43,7 @@ export default function FavoriteGenomesPanel({
     'startScreen-favMinimized',
     true,
   )
-  const { height: innerHeight } = useInnerDims()
+  console.log(favorites)
 
   return (
     <div>
@@ -68,9 +65,11 @@ export default function FavoriteGenomesPanel({
         <div className={classes.panel}>
           <DataGrid
             rows={favorites.map(
-              ({ id, shortName, description, jbrowseConfig }) => ({
+              ({ id, shortName, description, commonName, jbrowseConfig }) => ({
                 id,
-                name: [shortName, description].filter(f => !!f).join(' - '),
+                name: [shortName, description, commonName]
+                  .filter(f => !!f)
+                  .join(' - '),
                 shortName,
                 description,
                 jbrowseConfig,
@@ -149,7 +148,6 @@ export default function FavoriteGenomesPanel({
             hideFooter
             disableColumnMenu
             disableRowSelectionOnClick
-            showToolbar
           />
         </div>
       ) : null}

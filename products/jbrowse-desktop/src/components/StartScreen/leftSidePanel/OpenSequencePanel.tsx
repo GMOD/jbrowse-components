@@ -24,11 +24,13 @@ export default function OpenSequencePanel({
   favorites,
   setFavorites,
   launch,
+  defaultFavs,
 }: {
   setPluginManager: (arg0: PluginManager) => void
   favorites: Fav[]
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
+  defaultFavs?: Fav[]
 }) {
   const { classes } = useStyles()
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
@@ -83,6 +85,7 @@ export default function OpenSequencePanel({
           favorites={favorites}
           setFavorites={setFavorites}
           launch={launch}
+          defaultFavs={defaultFavs}
           onClose={() => {
             setShowAll(false)
           }}
