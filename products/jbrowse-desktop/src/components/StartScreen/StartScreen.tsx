@@ -9,8 +9,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()({
   root: {
-    marginLeft: 100,
-    marginRight: 100,
+    marginLeft: 75,
+    marginRight: 75,
     marginTop: 50,
     display: 'flex',
     gap: 10,

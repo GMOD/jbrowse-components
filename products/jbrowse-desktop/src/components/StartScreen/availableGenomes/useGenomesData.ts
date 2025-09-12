@@ -65,25 +65,29 @@ export function useGenomesData({
   }, [typeOption, genArkData, mainGenomesData])
 
   const rows = useMemo(() => {
-    if (typeOption === 'mainGenomes') {
-      return preRows
-    } else if (filterOption === 'refseq') {
-      return preRows?.filter(
-        r => 'ncbiName' in r && r.ncbiName.startsWith('GCF_'),
-      )
-    } else if (filterOption === 'genbank') {
-      return preRows?.filter(
-        r => 'ncbiName' in r && r.ncbiName.startsWith('GCA_'),
-      )
-    } else if (filterOption === 'designatedReference') {
-      return preRows?.filter(
-        r =>
-          'ncbiRefSeqCategory' in r &&
-          r.ncbiRefSeqCategory === 'reference genome',
-      )
-    } else {
-      return preRows
-    }
+    return (function () {
+      if (typeOption === 'mainGenomes') {
+        return preRows
+      } else if (filterOption === 'refseq') {
+        return preRows?.filter(
+          r => 'ncbiName' in r && r.ncbiName.startsWith('GCF_'),
+        )
+      } else if (filterOption === 'genbank') {
+        return preRows?.filter(
+          r => 'ncbiName' in r && r.ncbiName.startsWith('GCA_'),
+        )
+      } else if (filterOption === 'designatedReference') {
+        return preRows?.filter(
+          r =>
+            'ncbiRefSeqCategory' in r &&
+            r.ncbiRefSeqCategory === 'reference genome',
+        )
+      } else {
+        return preRows
+      }
+    })()?.sort((a, b) =>
+      'orderKey' in a && 'orderKey' in b ? a.orderKey - b.orderKey : 0,
+    )
   }, [filterOption, preRows, typeOption])
 
   const favs = new Set(favorites.map(r => r.id))
@@ -91,8 +95,8 @@ export function useGenomesData({
     const query = searchQuery.toLowerCase().trim()
     return !query
       ? rows
-      : rows?.filter(row => {
-          const searchText = [
+      : rows?.filter(row =>
+          [
             row.commonName,
             row.accession,
             'scientificName' in row ? row.scientificName : '',
@@ -103,17 +107,14 @@ export function useGenomesData({
           ]
             .join(' ')
             .toLowerCase()
-          return searchText.includes(query)
-        }) || []
+            .includes(query),
+        ) || []
   }, [rows, searchQuery])
 
-  const data = showOnlyFavs
-    ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
-    : searchFilteredRows || []
   return {
-    data: data.sort((a, b) => {
-      return 'orderKey' in a && 'orderKey' in b ? a.orderKey - b.orderKey : 0
-    }),
+    data: showOnlyFavs
+      ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
+      : searchFilteredRows || [],
     genArkError,
     mainGenomesError,
     genArkData,
