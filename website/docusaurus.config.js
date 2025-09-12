@@ -21,8 +21,9 @@ module.exports = {
       },
       items: [
         {
-          to: 'http://jbrowse.org/demos/jb2hubs/',
+          to: 'http://genomes.jbrowse.org/',
           label: 'Genomes',
+          className: 'new_feature',
           position: 'left',
         },
         {
