@@ -50,9 +50,7 @@ export function chooseGridPitch(
 ) {
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
-  const majorMagnitude = +Number(minMajorPitchBp)
-    .toExponential()
-    .split(/e/i)[1]!
+  const majorMagnitude = +minMajorPitchBp.toExponential().split(/e/i)[1]!
 
   let majorPitch = 10 ** majorMagnitude
   while (majorPitch < minMajorPitchBp) {

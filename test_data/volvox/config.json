@@ -1192,6 +1192,7 @@
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "BigBedAdapter",
+        "aggregateField": "geneName",
         "bigBedLocation": {
           "uri": "volvox.bb",
           "locationType": "UriLocation"

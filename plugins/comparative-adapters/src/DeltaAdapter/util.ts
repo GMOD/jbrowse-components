@@ -78,10 +78,10 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
         const t3 = +t[3]!
         const t4 = +t[4]!
         strand = (t0 < t1 && t2 < t3) || (t0 > t1 && t2 > t3) ? 1 : -1
-        rs = +Math.min(t0, t1) - 1
-        re = +Math.max(t1, t0)
-        qs = +Math.min(t2, t3) - 1
-        qe = +Math.max(t3, t2)
+        rs = Math.min(t0, t1) - 1
+        re = Math.max(t1, t0)
+        qs = Math.min(t2, t3) - 1
+        qe = Math.max(t3, t2)
         x = y = 0
         NM = t4
         cigar = []

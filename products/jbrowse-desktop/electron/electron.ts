@@ -11,6 +11,7 @@ import electron, {
   ipcMain,
   shell,
 } from 'electron'
+import contextMenu from 'electron-context-menu'
 import debug from 'electron-debug'
 import { autoUpdater } from 'electron-updater'
 import windowStateKeeper from 'electron-window-state'
@@ -25,6 +26,8 @@ interface RecentSession {
   updated: number
   name?: string
 }
+
+contextMenu()
 
 function stringify(obj: unknown) {
   return JSON.stringify(obj, null, 2)
@@ -156,31 +159,8 @@ interface SessionSnap {
 
 let mainWindow: electron.BrowserWindow | null
 
-async function updatePreconfiguredSessions() {
-  try {
-    const response = await fetch('https://jbrowse.org/genomes/sessions.json')
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} ${response.statusText}`)
-    }
-    const data = await response.json()
-    for (const [key, value] of Object.entries(data)) {
-      // if there is not a 'gravestone' (.deleted file), then repopulate it on
-      // startup, this allows the user to delete even defaults if they want to
-      if (!fs.existsSync(`${getQuickstartPath(key)}.deleted`)) {
-        fs.writeFileSync(getQuickstartPath(key), JSON.stringify(value, null, 2))
-      }
-    }
-  } catch (e) {
-    // just console.error
-    console.error('Failed to fetch sessions.json', e)
-  }
-}
-
 async function createWindow() {
   // no need to await, just update in background
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  updatePreconfiguredSessions()
-
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1400,
     defaultHeight: 800,
@@ -218,11 +198,13 @@ async function createWindow() {
 
   await mainWindow.loadURL(url.format(appUrl))
 
-  mainWindow.webContents.setWindowOpenHandler(details => {
-    // unsure how to handle
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    shell.openExternal(details.url)
-    return { action: 'deny' }
+  mainWindow.webContents.setWindowOpenHandler(edata => {
+    shell.openExternal(edata.url).catch((e: unknown) => {
+      console.error(e)
+    })
+    return {
+      action: 'deny',
+    }
   })
 
   const isMac = process.platform === 'darwin'
@@ -300,7 +282,7 @@ ipcMain.handle(
     location: { uri: string } | { localPath: string },
   ) => {
     const filename = 'localPath' in location ? location.localPath : location.uri
-    const faiPath = getFaiPath(`${path.basename(filename)}${+Date.now()}.fai`)
+    const faiPath = getFaiPath(`${path.basename(filename)}${Date.now()}.fai`)
     const stream = await getFileStream(location)
     const write = fs.createWriteStream(faiPath)
 
@@ -405,11 +387,11 @@ ipcMain.handle(
   'createInitialAutosaveFile',
   async (_event: unknown, snap: SessionSnap) => {
     const rows = await readRecentSessions()
-    const autosavePath = getAutosavePath(`${+Date.now()}`)
+    const autosavePath = getAutosavePath(`${Date.now()}`)
     const idx = rows.findIndex(r => r.path === autosavePath)
     const entry = {
       path: autosavePath,
-      updated: +Date.now(),
+      updated: Date.now(),
       name: snap.defaultSession?.name,
     }
     if (idx === -1) {
@@ -438,7 +420,7 @@ ipcMain.handle(
     const png = page?.resize({ width: 500 }).toDataURL()
     const entry = {
       path,
-      updated: +Date.now(),
+      updated: Date.now(),
       name: snap.defaultSession?.name,
     }
     if (idx === -1) {

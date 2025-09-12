@@ -7,9 +7,7 @@ import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
   Button,
-  Checkbox,
   FormControl,
-  FormControlLabel,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -17,13 +15,14 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-import RecentSessionsCards from './RecentSessionCards'
-import RecentSessionsList from './RecentSessionList'
-import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
-import RenameSessionDialog from './dialogs/RenameSessionDialog'
-import { loadPluginManager } from './util'
+import Checkbox2 from '../Checkbox2'
+import RecentSessionsCards from './RecentSessionsCards'
+import RecentSessionsList from './RecentSessionsDataGrid'
+import DeleteSessionDialog from '../dialogs/DeleteSessionDialog'
+import RenameSessionDialog from '../dialogs/RenameSessionDialog'
+import { loadPluginManager } from '../util'
 
-import type { RecentSessionData } from './util'
+import type { RecentSessionData } from '../types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ToggleButtonProps } from '@mui/material'
 
@@ -32,7 +31,7 @@ const { ipcRenderer } = window.require('electron')
 const useStyles = makeStyles()({
   flex: {
     display: 'flex',
-    gap: 20,
+    gap: 10,
   },
   verticalCenter: {
     margin: 'auto 0',
@@ -41,8 +40,7 @@ const useStyles = makeStyles()({
 
 type RecentSessions = RecentSessionData[]
 
-// note: adjust props so disabled button can have a tooltip and not lose styling
-// https://stackoverflow.com/a/63276424
+// uses span to allow disabled button to have a tooltip
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   const { title = '', children, ...rest } = props
   return (
@@ -72,13 +70,16 @@ export default function RecentSessionPanel({
     'showAutosaves',
     true,
   )
+  const [showFavoritesOnly, setShowFavoritesOnly] = useLocalStorage(
+    'showFavoritesOnly',
+    false,
+  )
 
   const sortedSessions = useMemo(
     () => sessions.sort((a, b) => (b.updated || 0) - (a.updated || 0)),
     [sessions],
   )
 
-  /* biome-ignore lint/correctness/useExhaustiveDependencies: */
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
@@ -98,6 +99,16 @@ export default function RecentSessionPanel({
     )
   }
 
+  const [favorites, setFavorites] = useLocalStorage(
+    'startScreen-favoriteSessions',
+    [] as string[],
+  )
+
+  const favs = new Set(favorites)
+
+  const filteredSessions = sortedSessions.filter(f =>
+    showFavoritesOnly ? favs.has(f.path) : true,
+  )
   return (
     <div>
       {sessionToRename ? (
@@ -152,42 +163,43 @@ export default function RecentSessionPanel({
               value="quickstart"
               title="Add sessions to quickstart list"
               disabled={!selectedSessions?.length}
-              onClick={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                ;(async () => {
-                  try {
-                    await addToQuickstartList(selectedSessions || [])
-                  } catch (e) {
-                    setError(e)
-                    console.error(e)
-                  }
-                })()
+              onClick={async () => {
+                try {
+                  await addToQuickstartList(selectedSessions || [])
+                } catch (e) {
+                  setError(e)
+                  console.error(e)
+                }
               }}
             >
               <PlaylistAddIcon />
             </ToggleButtonWithTooltip>
           </ToggleButtonGroup>
         </FormControl>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={showAutosaves}
-              onChange={() => {
-                setShowAutosaves(!showAutosaves)
-              }}
-            />
-          }
+        <Checkbox2
           label="Show autosaves"
+          checked={showAutosaves}
+          onChange={() => {
+            setShowAutosaves(!showAutosaves)
+          }}
         />
+        <Checkbox2
+          label="Show favorites only"
+          checked={showFavoritesOnly}
+          onChange={() => {
+            setShowFavoritesOnly(!showFavoritesOnly)
+          }}
+        />
+
         <div className={classes.verticalCenter}>
           <Button variant="contained" component="label" onClick={() => {}}>
             Open saved session (.jbrowse) file
             <input
               type="file"
               hidden
-              onChange={async ({ target }) => {
+              onChange={async event => {
                 try {
-                  const file = target.files?.[0]
+                  const file = event.target.files?.[0]
                   if (file) {
                     const { webUtils } = window.require('electron')
                     const path = webUtils.getPathForFile(file)
@@ -203,28 +215,38 @@ export default function RecentSessionPanel({
         </div>
       </div>
 
-      {sortedSessions.length ? (
-        displayMode === 'grid' ? (
-          <RecentSessionsCards
-            addToQuickstartList={entry => addToQuickstartList([entry])}
-            setPluginManager={setPluginManager}
-            sessions={sortedSessions}
-            setError={setError}
-            setSessionsToDelete={setSessionsToDelete}
-            setSessionToRename={setSessionToRename}
-          />
-        ) : (
-          <RecentSessionsList
-            setPluginManager={setPluginManager}
-            sessions={sortedSessions}
-            setError={setError}
-            setSelectedSessions={setSelectedSessions}
-            setSessionToRename={setSessionToRename}
-          />
-        )
-      ) : (
+      {!sortedSessions.length ? (
         <Typography>No sessions available</Typography>
-      )}
+      ) : null}
+
+      {sortedSessions.length > 0 && displayMode === 'grid' ? (
+        <RecentSessionsCards
+          addToQuickstartList={entry => addToQuickstartList([entry])}
+          setPluginManager={setPluginManager}
+          sessions={filteredSessions}
+          setError={setError}
+          setSessionsToDelete={setSessionsToDelete}
+          setSessionToRename={setSessionToRename}
+        />
+      ) : null}
+
+      {sortedSessions.length > 0 && displayMode === 'list' ? (
+        <RecentSessionsList
+          setPluginManager={setPluginManager}
+          setError={setError}
+          setSelectedSessions={setSelectedSessions}
+          setSessionToRename={setSessionToRename}
+          sessions={filteredSessions}
+          favorites={favorites}
+          toggleFavorite={sessionPath => {
+            if (favs.has(sessionPath)) {
+              setFavorites(favorites.filter(path => path !== sessionPath))
+            } else {
+              setFavorites([...favorites, sessionPath])
+            }
+          }}
+        />
+      ) : null}
     </div>
   )
 }
