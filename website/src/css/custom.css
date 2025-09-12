@@ -108,3 +108,14 @@
     brightness(101%) contrast(87%);
   opacity: 0.8;
 }
+
+.new_feature::after {
+  content: 'NEW!';
+  font-size: 0.6em;
+  font-weight: bold;
+  color: red;
+  margin-left: 5px;
+  padding: 2px 5px;
+  display: inline-block;
+  vertical-align: super;
+}
