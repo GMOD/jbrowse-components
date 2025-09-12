@@ -15,14 +15,21 @@ interface Entry {
   ncbiRefSeqCategory: string
 }
 
-export function useGenomesData(
-  searchQuery: string,
-  filterOption: string,
-  typeOption: string,
-  showOnlyFavs: boolean,
-  favorites: Fav[],
+export function useGenomesData({
+  searchQuery,
+  filterOption,
+  typeOption,
+  showOnlyFavs,
+  favorites,
   url = '',
-) {
+}: {
+  searchQuery: string
+  filterOption: string
+  typeOption: string
+  showOnlyFavs: boolean
+  favorites: Fav[]
+  url?: string
+}) {
   const { data: genArkData, error: genArkError } = useSWR(url, () =>
     url ? (fetchjson(url) as Promise<Entry[]>) : undefined,
   )
@@ -100,10 +107,13 @@ export function useGenomesData(
         }) || []
   }, [rows, searchQuery])
 
+  const data = showOnlyFavs
+    ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
+    : searchFilteredRows || []
   return {
-    finalFilteredRows: showOnlyFavs
-      ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
-      : searchFilteredRows || [],
+    data: data.sort((a, b) => {
+      return 'orderKey' in a && 'orderKey' in b ? a.orderKey - b.orderKey : 0
+    }),
     genArkError,
     mainGenomesError,
     genArkData,

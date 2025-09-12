@@ -118,20 +118,15 @@ export default function GenomesDataTable({
     [setFavorites, favorites, favs],
   )
 
-  const {
-    finalFilteredRows,
-    genArkError,
-    mainGenomesError,
-    genArkData,
-    mainGenomesData,
-  } = useGenomesData(
-    searchQuery,
-    filterOption,
-    typeOption,
-    showOnlyFavs,
-    favorites,
-    url,
-  )
+  const { data, genArkError, mainGenomesError, genArkData, mainGenomesData } =
+    useGenomesData({
+      searchQuery,
+      filterOption,
+      typeOption,
+      showOnlyFavs,
+      favorites,
+      url,
+    })
 
   const tableColumns = useMemo(
     () =>
@@ -163,7 +158,7 @@ export default function GenomesDataTable({
 
   const table = useReactTable({
     // @ts-expect-error
-    data: finalFilteredRows,
+    data,
     columns: tableColumns,
     state: {
       sorting,
@@ -194,7 +189,7 @@ export default function GenomesDataTable({
             onClick={() => {
               if (selected.length > 0) {
                 const selectedRows = selected
-                  .map(id => finalFilteredRows.find(row => row.id === id))
+                  .map(id => data.find(row => row.id === id))
                   .filter(notEmpty)
                   .map(r => ({
                     jbrowseConfig: r.jbrowseConfig,
@@ -317,7 +312,7 @@ export default function GenomesDataTable({
 
       {categoriesLoading ? (
         <SkeletonLoader />
-      ) : finalFilteredRows.length === 0 && !genArkData && !mainGenomesData ? (
+      ) : data.length === 0 && !genArkData && !mainGenomesData ? (
         <SkeletonLoader />
       ) : (
         <div>
@@ -386,7 +381,7 @@ export default function GenomesDataTable({
             table={table}
             pagination={pagination}
             setPagination={setPagination}
-            totalRows={finalFilteredRows.length}
+            totalRows={data.length}
             displayedRows={table.getRowModel().rows.length}
           />
         </div>
