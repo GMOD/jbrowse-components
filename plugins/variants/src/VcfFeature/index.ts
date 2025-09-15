@@ -34,7 +34,7 @@ function getEnd(variant: Variant) {
     const lens = []
     if (info.SVLEN && !isTRA) {
       for (let i = 0; i < info.SVLEN.length; i++) {
-        if (ALT?.[i] !== '<INS>') {
+        if (!ALT?.[i]?.startsWith('<INS')) {
           lens.push(Math.abs(+(info.SVLEN as string[])[i]!))
         } else {
           lens.push(1)
