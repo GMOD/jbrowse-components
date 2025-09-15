@@ -1,8 +1,9 @@
+import { type Feature, max } from '@jbrowse/core/util'
+
 import { getSOTermAndDescription } from './util'
 
 import type VCFParser from '@gmod/vcf'
 import type { Variant } from '@gmod/vcf'
-import type { Feature } from '@jbrowse/core/util'
 
 type FeatureData = ReturnType<typeof dataFromVariant>
 
@@ -29,6 +30,17 @@ function getEnd(variant: Variant) {
     const info = variant.INFO
     if (info.END && !isTRA) {
       return +(info.END as string[])[0]!
+    }
+    const lens = []
+    if (info.SVLEN && !isTRA) {
+      for (let i = 0; i < info.SVLEN.length; i++) {
+        if (ALT?.[i] !== '<INS>') {
+          lens.push(Math.abs(+(info.SVLEN as string[])[i]!))
+        } else {
+          lens.push(1)
+        }
+      }
+      return start + max(lens)
     }
   }
   return start + REF.length
