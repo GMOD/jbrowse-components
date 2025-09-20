@@ -12,6 +12,7 @@ const SpreadsheetDataGrid = observer(function ({
   const apiRef = useGridApiRef()
   return rows && dataGridColumns ? (
     <DataGrid
+      data-testid="spreadsheet-view-data-grid"
       apiRef={apiRef}
       checkboxSelection
       disableRowSelectionOnClick

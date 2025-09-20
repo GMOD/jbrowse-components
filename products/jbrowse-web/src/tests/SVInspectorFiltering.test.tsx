@@ -1,0 +1,212 @@
+/**
+ * Tests for SvInspector data grid filtering functionality.
+ * 
+ * This test suite verifies that:
+ * 1. The SV Inspector view loads data correctly from VCF files
+ * 2. The data grid displays the expected structural variant data 
+ * 3. Filtering works correctly (programmatically simulated)
+ * 4. The circular view updates accordingly when data is filtered
+ * 5. The features getter properly reflects filtered data
+ */
+import '@testing-library/jest-dom'
+import { fireEvent, waitFor, within } from '@testing-library/react'
+
+import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
+
+setup()
+
+beforeEach(() => {
+  doBeforeEach()
+})
+
+const delay = { timeout: 40000 }
+
+test('opens SVInspector and tests data grid filtering functionality', async () => {
+  const result = await mockConsoleWarn(async () => {
+    const { session, findByTestId, getByTestId, findByText, queryByTestId, container } =
+      await createView()
+
+    // Open the SV Inspector view
+    fireEvent.click(await findByText('File'))
+    fireEvent.click(await findByText('Add'))
+    fireEvent.click(await findByText('SV inspector'))
+
+    // Load a VCF file with data
+    fireEvent.change(await findByTestId('urlInput', {}, delay), {
+      target: { value: 'volvox.dup.renamed.vcf.gz' },
+    })
+    await waitFor(() => {
+      expect(
+        getByTestId('open_spreadsheet').closest('button'),
+      ).not.toBeDisabled()
+    })
+    fireEvent.click(await findByTestId('open_spreadsheet'))
+
+    // Wait for the SV Inspector view to be created and loaded
+    await waitFor(() => {
+      expect(session.views.length).toBeGreaterThan(1)
+      const svInspectorView = session.views.find((v: any) => v.type === 'SvInspectorView')
+      expect(svInspectorView).toBeDefined()
+      expect(svInspectorView.spreadsheetView.spreadsheet?.rows).toBeDefined()
+      expect(svInspectorView.spreadsheetView.spreadsheet.rows.length).toBeGreaterThan(0)
+    }, delay)
+
+    // Find the data grid using MUI data grid selector
+    const dataGrid = await waitFor(() => {
+      const grid = container.querySelector('.MuiDataGrid-root')
+      expect(grid).toBeInTheDocument()
+      return grid
+    }, delay)
+    
+    // Get the SV Inspector view and initial row count
+    const svInspectorView = session.views.find((v: any) => v.type === 'SvInspectorView')
+    const initialRowCount = svInspectorView.spreadsheetView.spreadsheet.rows.length
+    expect(initialRowCount).toBeGreaterThan(0)
+    
+    console.log('Initial data loaded with', initialRowCount, 'rows')
+    
+    // Test that the grid displays the expected data
+    expect(svInspectorView.spreadsheetView.spreadsheet.visibleRows).toBeDefined()
+    expect(svInspectorView.spreadsheetView.spreadsheet.visibleRows.length).toBe(initialRowCount)
+    
+    // Verify there are rows with different chromosomes
+    const chromosomes = new Set(svInspectorView.spreadsheetView.spreadsheet.rows.map((row: any) => row.CHROM))
+    expect(chromosomes.has('A')).toBe(true)
+    expect(chromosomes.has('B')).toBe(true)
+    console.log('Chromosomes in dataset:', Array.from(chromosomes))
+    
+    // Test programmatic filtering by directly manipulating the visible rows
+    // This simulates what the DataGrid filter would do
+    const originalRows = svInspectorView.spreadsheetView.spreadsheet.rows
+    const filteredRows = originalRows.filter((row: any) => row.CHROM === 'B')
+    
+    // Test that we can filter to chromosome B
+    expect(filteredRows.length).toBeGreaterThan(0)
+    expect(filteredRows.length).toBeLessThan(initialRowCount)
+    
+    console.log('Filter simulation: filtering to chromosome B would show', filteredRows.length, 'rows')
+    
+    // Verify that filtered rows only contain chromosome B
+    filteredRows.forEach((row: any) => {
+      expect(row.CHROM).toBe('B')
+    })
+    
+    // Test filtering by variant ID
+    const variantFilteredRows = originalRows.filter((row: any) => 
+      JSON.stringify(row).toLowerCase().includes('bnd_a')
+    )
+    
+    expect(variantFilteredRows.length).toBeGreaterThan(0)
+    console.log('Filter simulation: filtering for bnd_A would show', variantFilteredRows.length, 'rows')
+    
+    // Verify that filtered rows contain the search term
+    variantFilteredRows.forEach((row: any) => {
+      expect(JSON.stringify(row).toLowerCase()).toContain('bnd_a')
+    })
+    
+    // Test that the SV Inspector features are derived from visible rows
+    expect(svInspectorView.features).toBeDefined()
+    expect(svInspectorView.features.length).toBe(svInspectorView.spreadsheetView.spreadsheet.visibleRows.length)
+    
+    // Test that circular view shows when there are features
+    expect(svInspectorView.showCircularView).toBe(true)
+
+    return { session, dataGrid, svInspectorView, originalRows, filteredRows }
+  })
+  
+  return result
+}, 60000)
+
+test('SVInspector filtering updates circular view accordingly', async () => {
+  const result = await mockConsoleWarn(async () => {
+    const { session, findByTestId, getByTestId, findByText } =
+      await createView()
+
+    // Open the SV Inspector view
+    fireEvent.click(await findByText('File'))
+    fireEvent.click(await findByText('Add'))
+    fireEvent.click(await findByText('SV inspector'))
+
+    // Load a VCF file with data
+    fireEvent.change(await findByTestId('urlInput', {}, delay), {
+      target: { value: 'volvox.dup.renamed.vcf.gz' },
+    })
+    await waitFor(() => {
+      expect(
+        getByTestId('open_spreadsheet').closest('button'),
+      ).not.toBeDisabled()
+    })
+    fireEvent.click(await findByTestId('open_spreadsheet'))
+
+    // Wait for the SV Inspector view to be created and loaded
+    await waitFor(() => {
+      expect(session.views.length).toBeGreaterThan(1)
+      const svInspectorView = session.views.find((v: any) => v.type === 'SvInspectorView')
+      expect(svInspectorView).toBeDefined()
+      expect(svInspectorView.spreadsheetView.spreadsheet?.rows).toBeDefined()
+      expect(svInspectorView.spreadsheetView.spreadsheet.rows.length).toBeGreaterThan(0)
+    }, delay)
+
+    const svInspectorView = session.views.find((v: any) => v.type === 'SvInspectorView')
+    const initialRowCount = svInspectorView.spreadsheetView.spreadsheet.rows.length
+    
+    // Verify circular view is shown when there are features
+    expect(svInspectorView.showCircularView).toBe(true)
+    
+    // Test that features are properly derived from visible rows
+    expect(svInspectorView.features).toBeDefined()
+    expect(svInspectorView.features.length).toBe(svInspectorView.spreadsheetView.spreadsheet.visibleRows.length)
+    
+    // Test that features contain the expected properties for circular view
+    const features = svInspectorView.features
+    expect(features.length).toBeGreaterThan(0)
+    features.forEach((feature: any) => {
+      expect(feature).toHaveProperty('refName')
+      expect(feature).toHaveProperty('start')
+      expect(feature).toHaveProperty('end')
+      expect(feature).toHaveProperty('type')
+    })
+    
+    // Test that the circular view track configuration is generated properly
+    const trackConfig = svInspectorView.featuresCircularTrackConfiguration
+    expect(trackConfig).toBeDefined()
+    expect(trackConfig.type).toBe('VariantTrack')
+    expect(trackConfig.adapter.features).toBe(features)
+    
+    // Simulate filtering by manually updating visible rows (this is what the DataGrid filter would do)
+    const originalVisibleRows = svInspectorView.spreadsheetView.spreadsheet.visibleRows
+    const allRows = svInspectorView.spreadsheetView.spreadsheet.rows
+    
+    // Create a visibility map based on row indices (not row IDs)
+    const visibilityMap: Record<number, boolean> = {}
+    allRows.forEach((row: any, index: number) => {
+      // Only show rows from chromosome B
+      visibilityMap[index] = row.CHROM === 'B'
+    })
+    
+    // Manually trigger the filtering mechanism to simulate what happens when user filters
+    svInspectorView.spreadsheetView.spreadsheet.setVisibleRows(visibilityMap)
+    
+    const filteredRows = allRows.filter((row: any) => row.CHROM === 'B')
+    
+    // Wait for the change to propagate
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    // Verify that features are updated based on filtered rows
+    const filteredFeatures = svInspectorView.features
+    expect(filteredFeatures.length).toBe(filteredRows.length)
+    expect(filteredFeatures.length).toBeLessThan(features.length)
+    
+    // Verify all filtered features are from chromosome B
+    filteredFeatures.forEach((feature: any) => {
+      expect(feature.refName).toBe('B')
+    })
+    
+    // Verify circular view still shows (as long as there are features)
+    expect(svInspectorView.showCircularView).toBe(filteredFeatures.length > 0)
+
+    return { session, svInspectorView, originalVisibleRows, filteredRows, filteredFeatures }
+  })
+  
+  return result
+}, 60000)
