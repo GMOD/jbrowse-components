@@ -156,7 +156,7 @@ export default function stateModelFactory() {
       get visibleRows() {
         const { visibleRowFlags } = self
         return visibleRowFlags
-          ? self.rows?.filter((_f, idx) => !!visibleRowFlags[idx])
+          ? self.rows?.filter((_f, idx) => visibleRowFlags[idx] !== false)
           : self.rows
       },
     }))
