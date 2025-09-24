@@ -329,7 +329,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         const chrId = this.refNameToId(refName)
         return chrId !== undefined
           ? cram.index.getEntriesForRange(chrId, start, end)
-          : [{ sliceBytes: 0 }]
+          : Promise.resolve([{ sliceBytes: 0 }])
       }),
     )
 
