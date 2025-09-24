@@ -131,7 +131,7 @@ const Renderer = observer(function ({
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    const isJest = typeof jest === 'undefined'
+    const isJest = typeof jest !== 'undefined'
     if (ready) {
       try {
         if (pluginManager.current?.rootModel && !isJest) {
