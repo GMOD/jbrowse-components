@@ -429,6 +429,7 @@ function Menu(props: MenuProps) {
     <Popover
       open={open}
       onClose={onClose}
+      style={{ zIndex: 10000, ...other.style }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'right',
