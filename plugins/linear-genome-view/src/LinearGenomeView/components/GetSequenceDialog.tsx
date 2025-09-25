@@ -127,7 +127,6 @@ const GetSequenceDialog = observer(function ({
           <LoadingEllipses message="Retrieving sequences" />
         ) : null}
         <TextField
-          data-testid="rubberband-sequence"
           variant="outlined"
           multiline
           minRows={5}
