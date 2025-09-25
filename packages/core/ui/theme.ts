@@ -332,6 +332,11 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
         defaultProps: {
           transitionDuration: 0,
         },
+        styleOverrides: {
+          root: {
+            zIndex: 10000,
+          },
+        },
       },
       MuiMenuItem: {
         defaultProps: {
