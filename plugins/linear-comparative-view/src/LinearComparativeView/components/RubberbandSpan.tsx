@@ -56,14 +56,18 @@ export default function RubberbandSpan({
             side="left"
             anchorEl={anchorEl}
             text={leftBpOffset.map((l, idx) => (
-              <div key={`JSON.stringify(l)-${idx}`}>{stringify(l, true)}</div>
+              <div key={`${JSON.stringify(l)}-left-${idx}`}>
+                {stringify(l, true)}
+              </div>
             ))}
           />
           <RubberbandTooltip
             side="right"
             anchorEl={anchorEl}
             text={rightBpOffset.map((l, idx) => (
-              <div key={`JSON.stringify(l)-${idx}`}>{stringify(l, true)}</div>
+              <div key={`${JSON.stringify(l)}-right-${idx}`}>
+                {stringify(l, true)}
+              </div>
             ))}
           />
         </>
@@ -82,8 +86,7 @@ export default function RubberbandSpan({
             }}
           >
             {numOfBpSelected.map((n, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-              <div key={i}>{getBpDisplayStr(n)}</div>
+              <div key={`bpSelectedRow-${i}`}>{getBpDisplayStr(n)}</div>
             ))}
           </Typography>
         ) : null}

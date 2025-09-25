@@ -73,6 +73,15 @@ const Rubberband = observer(function ({
           open={open}
           onClose={handleClose}
           menuItems={model.rubberBandMenuItems()}
+          slotProps={{
+            root: {
+              style: {
+                // needed to make the menu appear over the tooltip when the
+                // synteny views have long assembly/refnames
+                zIndex: 10000,
+              },
+            },
+          }}
         />
       ) : null}
       <div
