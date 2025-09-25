@@ -16,6 +16,10 @@ const SessionLoader = types
     /**
      * #property
      */
+    dataDir: types.maybe(types.string),
+    /**
+     * #property
+     */
     configPath: types.maybe(types.string),
     /**
      * #property
@@ -338,8 +342,10 @@ const SessionLoader = types
      */
     async fetchConfig() {
       // @ts-expect-error
-      const path = window.__jbrowseConfigPath
-      const { configPath = path || 'config.json' } = self
+      const path = window.__jbrowseConfigPath || 'config.json'
+      const { configPath: configPathPre, dataDir } = self
+      const configPath =
+        configPathPre || (dataDir ? `${dataDir}/config.json` : '') || path
       const shouldFetchConfig = configPath !== 'none'
 
       // if ?config=none then we will not load the config, which is useful for
