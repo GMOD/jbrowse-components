@@ -52,8 +52,6 @@ export function drawRef(
   const offsets = view.views.map(v => v.offsetPx)
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
 
-  // this loop is optimized to draw many thin lines with a single ctx.stroke
-  // call, a separate loop below draws larger boxes
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
   for (const { p11, p12, p21, p22 } of featPositions) {
@@ -75,18 +73,18 @@ export function drawRef(
       x21 < width + oobLimit &&
       x21 > -oobLimit
     ) {
+      ctx1.beginPath()
       ctx1.moveTo(x11, y1)
       if (drawCurves) {
         ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+        ctx1.stroke()
       } else {
         ctx1.lineTo(x21, y2)
+        ctx1.stroke()
       }
     }
   }
-  ctx1.stroke()
 
-  // this loop only draws small lines as a polyline, the polyline calls
-  // ctx.stroke once is much more efficient than calling stroke() many times
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
   for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
