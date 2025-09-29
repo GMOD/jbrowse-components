@@ -105,7 +105,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "jest-fetch-mock": "^3.0.3",
     "jest-image-snapshot": "^6.1.0",
-    "lerna": "^8.0.0",
+    "lerna": "^9.0.0",
     "lerna-changelog": "^2.2.0",
     "mini-css-extract-plugin": "^2.4.5",
     "mobx": "^6.0.0",
