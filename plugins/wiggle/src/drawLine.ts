@@ -49,6 +49,9 @@ export function drawLine(
   const height = unadjustedHeight - offset * 2
   const clipColor = readConfObject(config, 'clipColor')
   const scale = getScale({ ...scaleOpts, range: [0, height] })
+  if (!scale) {
+    return { reducedFeatures: [] }
+  }
   const domain = scale.domain()
   const niceMin = domain[0]!
   const niceMax = domain[1]!
