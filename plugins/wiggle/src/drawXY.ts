@@ -79,6 +79,9 @@ export function drawXY(
   const minSize = readConfObject(config, 'minSize')
 
   const scale = getScale({ ...scaleOpts, range: [0, height], inverted })
+  if (!scale) {
+    return { reducedFeatures: [] }
+  }
   const originY = getOrigin(scaleOpts.scaleType)
   const domain = scale.domain()
   const niceMin = domain[0]!

@@ -138,16 +138,20 @@ function stateModelFactory(
           const { inverted, scaleType, domain, height } = self
           const minimalTicks = getConf(self, 'minimalTicks')
           if (domain) {
+            const scale = getScale({
+              scaleType,
+              domain,
+              range: [
+                height - YSCALEBAR_LABEL_OFFSET,
+                YSCALEBAR_LABEL_OFFSET,
+              ],
+              inverted,
+            })
+            if (!scale) {
+              return undefined
+            }
             const ticks = axisPropsFromTickScale(
-              getScale({
-                scaleType,
-                domain,
-                range: [
-                  height - YSCALEBAR_LABEL_OFFSET,
-                  YSCALEBAR_LABEL_OFFSET,
-                ],
-                inverted,
-              }),
+              scale,
               4,
             )
             return height < 100 || minimalTicks

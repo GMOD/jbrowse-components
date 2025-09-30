@@ -73,7 +73,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
     const { reducedFeatures, ...rest } = await updateStatus(
       'Rendering plot',
-      statusCallback,
+      statusCallback || (() => {}),
       () =>
         renderToAbstractCanvas(
           width,
