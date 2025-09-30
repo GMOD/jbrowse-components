@@ -90,6 +90,10 @@ export default function SharedWiggleMixin(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        statsRegion: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -101,7 +105,12 @@ export default function SharedWiggleMixin(
        * #volatile
        */
       stats: undefined as
-        | { currStatsBpPerPx: number; scoreMin: number; scoreMax: number }
+        | {
+            currStatsBpPerPx: number
+            scoreMin: number
+            scoreMax: number
+            region: string
+          }
         | undefined,
       /**
        * #volatile
@@ -112,11 +121,14 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      updateQuantitativeStats(stats: {
-        currStatsBpPerPx: number
-        scoreMin: number
-        scoreMax: number
-      }) {
+      updateQuantitativeStats(
+        stats: {
+          currStatsBpPerPx: number
+          scoreMin: number
+          scoreMax: number
+        },
+        statsRegion: string,
+      ) {
         const { currStatsBpPerPx, scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
         if (
@@ -128,6 +140,7 @@ export default function SharedWiggleMixin(
             currStatsBpPerPx,
             scoreMin,
             scoreMax,
+            region: statsRegion,
           }
         }
       },
@@ -257,6 +270,13 @@ export default function SharedWiggleMixin(
        */
       setCrossHatches(cross: boolean) {
         self.displayCrossHatches = cross
+      },
+
+      /**
+       * #action
+       */
+      setStatsRegion(statsRegion: string) {
+        self.statsRegion = statsRegion
       },
     }))
 
@@ -419,6 +439,8 @@ export default function SharedWiggleMixin(
           autoscaleType: self.autoscaleType,
           scaleType: self.scaleType,
           inverted: getConf(self, 'inverted') as boolean,
+          minScore: self.minScore,
+          maxScore: self.maxScore,
         }
       },
 

@@ -1,6 +1,8 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
+import { getNiceDomain } from './util'
+
 import type { ScaleOpts, Source } from './util'
 import type {
   RenderArgs as FeatureRenderArgs,
@@ -41,16 +43,33 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const {
-      inverted,
-      height,
-      regions,
-      bpPerPx,
-      statusCallback = () => {},
-    } = renderProps
+    const { inverted, height, regions, bpPerPx, scaleOpts, statusCallback } =
+      renderProps
 
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
+
+    // calculate new domain for single region views
+    let newDomain: number[] | undefined
+    if (regions.length === 1) {
+      let scoreMin = Infinity
+      let scoreMax = -Infinity
+      for (const feature of features.values()) {
+        const score = feature.get('score') as number
+        scoreMin = Math.min(scoreMin, score)
+        scoreMax = Math.max(scoreMax, score)
+      }
+      if (scoreMin !== Infinity) {
+        const { scaleType, minScore, maxScore } = scaleOpts
+        newDomain = getNiceDomain({
+          domain: [scoreMin, scoreMax],
+          bounds: [minScore, maxScore],
+          scaleType: scaleType,
+        })
+      }
+    }
+
+    const newScaleOpts = { ...scaleOpts, domain: newDomain || scaleOpts.domain }
 
     const { reducedFeatures, ...rest } = await updateStatus(
       'Rendering plot',
@@ -63,6 +82,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
           ctx =>
             this.draw(ctx, {
               ...renderProps,
+              scaleOpts: newScaleOpts,
               features,
               inverted,
             }) as Promise<{ reducedFeatures: Feature[] | undefined }>,

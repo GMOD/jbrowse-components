@@ -5,6 +5,7 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import { trace } from 'mobx'
 import { types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
@@ -163,11 +164,18 @@ function stateModelFactory(
        * #method
        */
       renderProps() {
+        trace()
         const { inverted, ticks, height } = self
         const superProps = self.adapterProps()
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const statsRegion = JSON.stringify(view.dynamicBlocks)
+        const singleRegion = view.dynamicBlocks.contentBlocks.length === 1
         return {
           ...self.adapterProps(),
-          notReady: superProps.notReady || !self.stats,
+          notReady:
+            superProps.notReady ||
+            (!singleRegion &&
+              (!self.stats || self.statsRegion !== statsRegion)),
           height,
           ticks,
           inverted,

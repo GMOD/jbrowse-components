@@ -21,17 +21,23 @@ export function getQuantitativeStatsAutorun(self: {
   setError: (error: unknown) => void
   setMessage: (str: string) => void
   updateQuantitativeStats: (stats: QuantitativeStats, region: string) => void
+  setStatsRegion: (region: string) => void
 }) {
   addDisposer(
     self,
     autorun(
       async () => {
         try {
-          if (self.quantitativeStatsReady) {
-            const view = getContainingView(self) as LGV
+          const view = getContainingView(self) as LGV
+          if (
+            self.quantitativeStatsReady &&
+            view.dynamicBlocks.contentBlocks.length > 1
+          ) {
+            console.log('wtf')
             const stopToken = createStopToken()
             self.setStatsLoading(stopToken)
             const statsRegion = JSON.stringify(view.dynamicBlocks)
+            self.setStatsRegion(statsRegion)
             const wiggleStats = await getQuantitativeStats(self, {
               stopToken,
               filters: [],
