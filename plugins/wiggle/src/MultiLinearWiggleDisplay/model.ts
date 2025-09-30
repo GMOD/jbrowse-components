@@ -336,15 +336,16 @@ export function stateModelFactory(
           }
 
           const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
-          const ticks = axisPropsFromTickScale(
-            getScale({
-              scaleType,
-              domain,
-              range: [rowHeight - offset, offset],
-              inverted: getConf(self, 'inverted') as boolean,
-            }),
-            4,
-          )
+          const scale = getScale({
+            scaleType,
+            domain,
+            range: [rowHeight - offset, offset],
+            inverted: getConf(self, 'inverted') as boolean,
+          })
+          if (!scale) {
+            return undefined
+          }
+          const ticks = axisPropsFromTickScale(scale, 4)
           return useMinimalTicks ? { ...ticks, values: domain } : ticks
         },
 

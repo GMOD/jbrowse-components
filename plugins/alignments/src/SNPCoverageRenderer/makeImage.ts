@@ -76,6 +76,7 @@ export async function makeImage(
         newVisibleModifications[type] = {
           type,
           base: 'N',
+          strand: '.',
           color: getColorForModification(type),
         }
       }
@@ -102,6 +103,11 @@ export async function makeImage(
     range: [0, height / 2],
     scaleType: 'linear',
   })
+
+  if (!viewScale || !indicatorViewScale) {
+    return
+  }
+
   const originY = getOrigin(scaleOpts.scaleType)
   const originLinear = getOrigin('linear')
 
