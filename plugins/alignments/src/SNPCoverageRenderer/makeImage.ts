@@ -12,6 +12,7 @@ import {
 } from '@jbrowse/plugin-wiggle'
 
 import { alphaColor } from '../shared/util'
+import { getColorForModification } from '../util'
 
 import type { RenderArgsDeserializedWithFeatures } from './types'
 import type { BaseCoverageBin } from '../shared/types'
@@ -43,7 +44,7 @@ export async function makeImage(
     bpPerPx,
     colorBy,
     displayCrossHatches,
-    visibleModifications = {},
+    visibleModifications: initialVisibleModifications = {},
     scaleOpts,
     height: unadjustedHeight,
     theme: configTheme,
@@ -51,6 +52,37 @@ export async function makeImage(
     ticks,
     stopToken,
   } = props
+
+  const singleRegion = regions.length === 1
+  let visibleModifications = initialVisibleModifications
+  if (singleRegion && colorBy.type === 'modifications') {
+    const newVisibleModifications = { ...initialVisibleModifications }
+    const foundModifications = new Set<string>()
+    for (const feature of features.values()) {
+      const snpinfo = feature.get('snpinfo')
+      if (snpinfo) {
+        const { mods, nonmods } = snpinfo
+        for (const mod of Object.keys(mods)) {
+          foundModifications.add(mod.replace('mod_', ''))
+        }
+        for (const nonmod of Object.keys(nonmods)) {
+          foundModifications.add(nonmod.replace('nonmod_', ''))
+        }
+      }
+    }
+
+    for (const type of foundModifications) {
+      if (!newVisibleModifications[type]) {
+        newVisibleModifications[type] = {
+          type,
+          base: 'N',
+          color: getColorForModification(type),
+        }
+      }
+    }
+    visibleModifications = newVisibleModifications
+  }
+
   const theme = createJBrowseTheme(configTheme)
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
