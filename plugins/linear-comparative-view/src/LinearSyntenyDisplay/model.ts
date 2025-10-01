@@ -204,11 +204,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           colorByTag: colorByTagConf &&
                       (colorByTagConf.tag !== 'cl' ||
                        Object.keys(colorByTagConf.mapping as Record<string, string>).length !== 0 ||
-                       colorByTagConf.default !== 'blue')
+                       colorByTagConf.default !== 'undefined')
             ? {
                 tag: colorByTagConf.tag ?? 'cl',
                 mapping: colorByTagConf.mapping as Record<string, string>,
-                default: colorByTagConf.default ?? 'blue',
+                default: colorByTagConf.default ?? 'undefined',
               }
             : undefined,
         }

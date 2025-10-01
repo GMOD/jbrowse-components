@@ -1774,8 +1774,13 @@
       "type": "SyntenyTrack",
       "trackId": "grape_peach_synteny_mcscan",
       "name": "Grape peach synteny (MCScan, anchors)",
-      "assemblyNames": ["peach", "grape"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "peach",
+        "grape"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "MCScanAnchorsAdapter",
         "mcscanAnchorsLocation": {
@@ -1787,16 +1792,23 @@
         "bed2Location": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
         },
-        "assemblyNames": ["grape", "peach"]
+        "assemblyNames": [
+          "grape",
+          "peach"
+        ]
       }
     },
-
     {
       "type": "SyntenyTrack",
       "trackId": "grape_peach_synteny_mcscan_simple",
       "name": "Grape peach synteny (MCScan, simple anchors)",
-      "assemblyNames": ["peach", "grape"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "peach",
+        "grape"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "MCScanSimpleAnchorsAdapter",
         "mcscanSimpleAnchorsLocation": {
@@ -1808,7 +1820,10 @@
         "bed2Location": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
         },
-        "assemblyNames": ["grape", "peach"]
+        "assemblyNames": [
+          "grape",
+          "peach"
+        ]
       }
     },
     {
@@ -1826,7 +1841,9 @@
           }
         }
       },
-      "assemblyNames": ["grape"]
+      "assemblyNames": [
+        "grape"
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -1843,20 +1860,28 @@
           }
         }
       },
-      "assemblyNames": ["peach"]
+      "assemblyNames": [
+        "peach"
+      ]
     },
     {
       "type": "SyntenyTrack",
       "trackId": "fileName-1606319049337",
       "name": "Grape vs Peach (minimap2)",
-      "assemblyNames": ["peach", "grape"],
+      "assemblyNames": [
+        "peach",
+        "grape"
+      ],
       "metadata": {
         "command": "minimap2 -c  Vvinifera_145_Genoscope.12X.fa Ppersica_298_v2.0.fa > out.paf",
         "version": "2.24-r1122"
       },
       "adapter": {
         "type": "PAFAdapter",
-        "assemblyNames": ["peach", "grape"],
+        "assemblyNames": [
+          "peach",
+          "grape"
+        ],
         "pafLocation": {
           "uri": "grape_peach_synteny/subset.paf",
           "locationType": "UriLocation"
@@ -1869,12 +1894,15 @@
           "displayId": "fileName-1606319049337-LinearSyntenyDisplay",
           "height": 100,
           "colorByTag": {
-            "tag": "cl",
+            "tag": "de",
             "mapping": {
-              "ortho": "black",
-              "homol": "green"
+              "<0.1": "black",
+              "<0.2": "green",
+              "<0.45": "yellow",
+              "<0.5": "blue",
+              ">=0.5": "red"
             },
-            "default": "blue"
+            "default": "violet"
           }
         }
       ]
@@ -1883,7 +1911,9 @@
       "type": "QuantitativeTrack",
       "trackId": "gccontent_grape",
       "name": "GCContent",
-      "assemblyNames": ["grape"],
+      "assemblyNames": [
+        "grape"
+      ],
       "adapter": {
         "type": "GCContentAdapter",
         "sequenceAdapter": {
@@ -1907,7 +1937,9 @@
       "type": "QuantitativeTrack",
       "trackId": "gccontent_peach",
       "name": "GCContent",
-      "assemblyNames": ["peach"],
+      "assemblyNames": [
+        "peach"
+      ],
       "adapter": {
         "type": "GCContentAdapter",
         "sequenceAdapter": {
@@ -1931,14 +1963,22 @@
       "type": "SyntenyTrack",
       "trackId": "grape_peach_synteny_tblastx",
       "name": "Grape peach synteny (TBLASTX)",
-      "assemblyNames": ["peach", "grape"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "peach",
+        "grape"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "BlastTabularAdapter",
         "blastTableLocation": {
           "uri": "grape_peach_synteny/peach_vs_grape.tsv.gz"
         },
-        "assemblyNames": ["peach", "grape"]
+        "assemblyNames": [
+          "peach",
+          "grape"
+        ]
       }
     }
   ]

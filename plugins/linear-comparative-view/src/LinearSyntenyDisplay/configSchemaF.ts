@@ -44,7 +44,7 @@ function configSchemaFactory(pluginManager: PluginManager) {
             },
             default: {
               type: 'color',
-              defaultValue: 'blue',
+              defaultValue: 'undefined',
               description: 'The default colour if the tag value is not found in the mapping',
             },
           },

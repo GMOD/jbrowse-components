@@ -80,7 +80,7 @@ export function drawRef(
       // Else if colorByTag is configured, use its default.
       // Else use the model's configured color.
       // Else use original strand-based colour.
-      ctx1.strokeStyle = color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M
+      ctx1.strokeStyle = color || (colorByTag ? (colorByTagDefault === 'undefined' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M
       if (drawCurves) {
         ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
       } else {
@@ -182,7 +182,7 @@ export function drawRef(
               // Else if colorByTag is configured, use its default.
               // Else use the model's configured color.
               // Else use original strand-based colour.
-              ctx1.fillStyle = color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap[letter]
+              ctx1.fillStyle = color || (colorByTag ? (colorByTagDefault === 'undefined' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap[letter]
               continuingFlag = false
 
               if (drawCIGARMatchesOnly) {
@@ -207,8 +207,8 @@ export function drawRef(
         // Else if colorByTag is configured, use its default.
         // Else use the model's configured color.
         // Else use original strand-based colour.
-        ctx1.fillStyle = color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M
-        ctx1.strokeStyle = color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M
+        ctx1.fillStyle = color || (colorByTag ? (colorByTagDefault === 'undefined' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M
+        ctx1.strokeStyle = color || (colorByTag ? (colorByTagDefault === 'undefined' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M
         draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         ctx1.fill()
       }
@@ -243,7 +243,7 @@ export function drawRef(
       viewWidth: view.width,
       hideTiny: true,
       height,
-      color: feature.color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M, // Pass the feature colour or defaultColor to drawMatchSimple
+      color: feature.color || (colorByTag ? (colorByTagDefault === 'undefined' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M, // Pass the feature colour or defaultColor to drawMatchSimple
     })
   }
 }
