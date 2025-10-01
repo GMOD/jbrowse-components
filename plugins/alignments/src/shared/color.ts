@@ -69,7 +69,7 @@ export function getPairedInsertSizeColor(
 const defaultColor = [fillColor.color_unknown, fillColor.color_unknown] as const
 
 // return color scheme with both insert size and orientation coloring,
-// prioritzing orientation coloring
+// prioritizing orientation coloring
 export function getPairedInsertSizeAndOrientationColor(
   f1: { refName: string; pair_orientation?: string; tlen?: number },
   f2: { refName: string },
