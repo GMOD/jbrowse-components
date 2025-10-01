@@ -43,6 +43,8 @@ export function drawRef(
   const { level, height, featPositions } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
+  const { color: modelConfiguredColor, colorByTag } = model.renderProps
+  const { default: colorByTagDefault } = colorByTag || {}
 
   if (ctx3) {
     ctx3.imageSmoothingEnabled = false
@@ -52,9 +54,9 @@ export function drawRef(
   const offsets = view.views.map(v => v.offsetPx)
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
 
-  ctx1.fillStyle = colorMap.M
-  ctx1.strokeStyle = colorMap.M
-  for (const { p11, p12, p21, p22 } of featPositions) {
+  // this loop is optimized to draw many thin lines with a single ctx.stroke
+  // call, a separate loop below draws larger boxes
+  for (const { p11, p12, p21, p22, color } of featPositions) {
     const x11 = p11.offsetPx - offsets[level]!
     const x12 = p12.offsetPx - offsets[level]!
     const x21 = p21.offsetPx - offsets[level + 1]!
@@ -73,21 +75,24 @@ export function drawRef(
       x21 < width + oobLimit &&
       x21 > -oobLimit
     ) {
-      ctx1.beginPath()
       ctx1.moveTo(x11, y1)
+      // Use feature colour if available.
+      // Else if colorByTag is configured, use its default.
+      // Else use the model's configured color.
+      // Else use original strand-based colour.
+      ctx1.strokeStyle = color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M
       if (drawCurves) {
         ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-        ctx1.stroke()
       } else {
         ctx1.lineTo(x21, y2)
-        ctx1.stroke()
       }
     }
   }
+  ctx1.stroke()
 
-  ctx1.fillStyle = colorMap.M
-  ctx1.strokeStyle = colorMap.M
-  for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
+  // this loop only draws small lines as a polyline, the polyline calls
+  // ctx.stroke once is much more efficient than calling stroke() many times
+  for (const { p11, p12, p21, p22, f, cigar, color } of featPositions) {
     const x11 = p11.offsetPx - offsets[level]!
     const x12 = p12.offsetPx - offsets[level]!
     const x21 = p21.offsetPx - offsets[level + 1]!
@@ -169,11 +174,15 @@ export function drawRef(
             ) {
               continuingFlag = true
             } else {
-              // allow rendering the dominant color when using continuing
+              // allow rendering the dominant colour when using continuing
               // flag if the last element of continuing was a large
               // feature, else just use match
               const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
-              ctx1.fillStyle = colorMap[letter]
+              // Use feature colour if available.
+              // Else if colorByTag is configured, use its default.
+              // Else use the model's configured color.
+              // Else use original strand-based colour.
+              ctx1.fillStyle = color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap[letter]
               continuingFlag = false
 
               if (drawCIGARMatchesOnly) {
@@ -194,6 +203,12 @@ export function drawRef(
           }
         }
       } else {
+        // Use feature colour if available.
+        // Else if colorByTag is configured, use its default.
+        // Else use the model's configured color.
+        // Else use original strand-based colour.
+        ctx1.fillStyle = color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M
+        ctx1.strokeStyle = color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M
         draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         ctx1.fill()
       }
@@ -228,10 +243,10 @@ export function drawRef(
       viewWidth: view.width,
       hideTiny: true,
       height,
+      color: feature.color || (colorByTag ? (colorByTagDefault === 'blue' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M, // Pass the feature colour or defaultColor to drawMatchSimple
     })
   }
 }
-
 export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   const { level, clickId, mouseoverId } = model
   const highResolutionScaling = 1

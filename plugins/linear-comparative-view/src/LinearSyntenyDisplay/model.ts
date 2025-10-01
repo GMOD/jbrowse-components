@@ -18,6 +18,7 @@ export interface FeatPos {
   p22: Pos
   f: Feature
   cigar: string[]
+  color?: string
 }
 
 /**
@@ -186,6 +187,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get featMap() {
         return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))
+      },
+
+      /**
+       * #getter
+       * returns an object of props to pass of to the renderer
+       */
+      get renderProps(): {
+        color: string | undefined
+        colorByTag?: { tag: string; mapping: Record<string, string>; default?: string }
+      } {
+        const colorByTagConf = getConf(self, 'colorByTag')
+        const trackColor = getConf(self, 'color')
+        return {
+          color: trackColor === undefined ? undefined : trackColor,
+          colorByTag: colorByTagConf &&
+                      (colorByTagConf.tag !== 'cl' ||
+                       Object.keys(colorByTagConf.mapping as Record<string, string>).length !== 0 ||
+                       colorByTagConf.default !== 'blue')
+            ? {
+                tag: colorByTagConf.tag ?? 'cl',
+                mapping: colorByTagConf.mapping as Record<string, string>,
+                default: colorByTagConf.default ?? 'blue',
+              }
+            : undefined,
+        }
       },
     }))
     .actions(self => ({

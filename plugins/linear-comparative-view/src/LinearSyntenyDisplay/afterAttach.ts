@@ -21,6 +21,7 @@ interface FeatPos {
   p22: Pos
   f: Feature
   cigar: string[]
+  color?: string
 }
 
 type LSV = LinearSyntenyViewModel
@@ -140,8 +141,26 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           ) {
             continue
           }
-
           const cigar = f.get('CIGAR') as string | undefined
+          let color: string | undefined = undefined
+          const { colorByTag } = self.renderProps
+
+          if (colorByTag?.mapping) {
+            const { tag, mapping, default: defaultTagColor } = colorByTag
+            const tagValue = f.get(tag) as string | undefined
+            if (tagValue) {
+              // If f.get(tag) returns "key:type:value", extract value. Otherwise, use directly.
+              const parts = tagValue.split(':')
+              let valueToMap: string = tagValue
+              if (parts.length === 3) {
+                valueToMap = parts[2] || tagValue
+              }
+              color = mapping[valueToMap] || defaultTagColor
+            } else {
+              color = defaultTagColor
+            }
+          }
+
           map.push({
             p11,
             p12,
@@ -149,6 +168,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             p22,
             f,
             cigar: MismatchParser.parseCigar(cigar),
+            color, // Add the extracted colour
           })
         }
 

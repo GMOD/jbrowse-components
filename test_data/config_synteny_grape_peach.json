@@ -1858,10 +1858,26 @@
         "type": "PAFAdapter",
         "assemblyNames": ["peach", "grape"],
         "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz",
+          "uri": "grape_peach_synteny/subset.paf",
           "locationType": "UriLocation"
         }
-      }
+      },
+      "displays": [
+        {
+          "id": "fileName-1606319049337-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+          "displayId": "fileName-1606319049337-LinearSyntenyDisplay",
+          "height": 100,
+          "colorByTag": {
+            "tag": "cl",
+            "mapping": {
+              "ortho": "black",
+              "homol": "green"
+            },
+            "default": "blue"
+          }
+        }
+      ]
     },
     {
       "type": "QuantitativeTrack",
