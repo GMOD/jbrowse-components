@@ -3,8 +3,8 @@ import {
   forEachWithStopTokenCheck,
   updateStatus,
 } from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
 import {
