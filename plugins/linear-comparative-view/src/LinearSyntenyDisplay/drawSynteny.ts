@@ -243,7 +243,6 @@ export function drawRef(
       viewWidth: view.width,
       hideTiny: true,
       height,
-      color: feature.color || (colorByTag ? (colorByTagDefault === 'undefined' ? undefined : colorByTagDefault) : modelConfiguredColor) || colorMap.M, // Pass the feature colour or defaultColor to drawMatchSimple
     })
   }
 }
