@@ -10,6 +10,7 @@
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
     "start": "node scripts/start.js",
+    "webdriver-test": "yarn wdio",
     "electron": "electron . --no-sandbox",
     "electron-ts": "tsc -b tsconfig.electron.json",
     "preelectron": "npm run electron-ts",
@@ -35,7 +36,8 @@
     "build-electron-only-unpacked": "electron-builder build -wml --dir",
     "build-electron-only-unpacked:win": "electron-builder build -w --dir",
     "build-electron-only-unpacked:mac": "electron-builder build -m --dir",
-    "build-electron-only-unpacked:linux": "electron-builder build -l --dir"
+    "build-electron-only-unpacked:linux": "electron-builder build -l --dir",
+    "wdio": "wdio run ./wdio.conf.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.7.1",
