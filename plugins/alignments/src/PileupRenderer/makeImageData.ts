@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
-import Flatbush from 'flatbush'
+import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { renderAlignment } from './renderers/renderAlignment'
 import { renderMismatches } from './renderers/renderMismatches'

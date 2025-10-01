@@ -4,7 +4,7 @@ import {
   updateStatus,
 } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import Flatbush from 'flatbush'
+import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { f2 } from '../shared/constants'
 import {

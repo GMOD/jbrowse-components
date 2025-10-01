@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
-import Flatbush from 'flatbush'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import { minElt } from './util'
