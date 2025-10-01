@@ -48,7 +48,6 @@
     "@mui/material": "^7.0.0",
     "@mui/x-data-grid": "^8.0.0",
     "escape-html": "^1.0.3",
-    "flatbush": "^4.4.1",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
