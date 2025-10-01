@@ -18,7 +18,8 @@ export function cigarToMismatches(
       if (hasRefAndSeq) {
         for (let j = 0; j < len; j++) {
           const base = record.seqAt(soffset + j)
-          if (base.toUpperCase() !== ref[roffset + j]!.toUpperCase()) {
+
+          if (base && base.toUpperCase() !== ref[roffset + j]!.toUpperCase()) {
             mismatches.push({
               start: roffset + j,
               type: 'mismatch',
