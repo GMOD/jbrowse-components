@@ -27,9 +27,9 @@ export function parseCigar(s = '') {
 }
 
 export function getMismatches(
-  record: { seqAt: (idx: number) => string | undefined },
   cigar?: string,
   md?: string,
+  seq?: string,
   ref?: string,
   qual?: Uint8Array,
 ) {
@@ -37,13 +37,13 @@ export function getMismatches(
   const ops = parseCigar(cigar)
   // parse the CIGAR tag if it has one
   if (cigar) {
-    mismatches = mismatches.concat(cigarToMismatches(ops, record, ref, qual))
+    mismatches = mismatches.concat(cigarToMismatches(ops, seq, ref, qual))
   }
 
   // now let's look for CRAM or MD mismatches
-  if (md) {
+  if (md && seq) {
     mismatches = mismatches.concat(
-      mdToMismatches(record, md, ops, mismatches, qual),
+      mdToMismatches(md, ops, mismatches, seq, qual),
     )
   }
 
@@ -68,13 +68,9 @@ export function getOrientedCigar(flip: boolean, cigar: string[]) {
   return cigar
 }
 
-export function getOrientedMismatches(
-  record: any,
-  flip: boolean,
-  cigar: string,
-) {
+export function getOrientedMismatches(flip: boolean, cigar: string) {
   const p = parseCigar(cigar)
-  return cigarToMismatches(flip ? getOrientedCigar(flip, p) : p, record)
+  return cigarToMismatches(flip ? getOrientedCigar(flip, p) : p)
 }
 
 export function getLengthOnRef(cigar: string) {

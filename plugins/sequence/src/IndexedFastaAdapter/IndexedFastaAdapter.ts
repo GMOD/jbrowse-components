@@ -90,7 +90,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
           const size = await fasta.getSequenceSize(refName)
           const regionEnd = Math.min(size || 0, end)
           const chunks = []
-          const chunkSize = 256000
+          const chunkSize = 128000
 
           const s = start - (start % chunkSize)
           const e = end + (chunkSize - (end % chunkSize))
