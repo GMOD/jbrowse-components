@@ -8,7 +8,7 @@ const seq =
 function createRecord(sequence: string) {
   return {
     seq: sequence,
-    seqAt: (idx: number) => sequence[idx]
+    seqAt: (idx: number) => sequence[idx],
   }
 }
 
@@ -43,7 +43,9 @@ test('simple insertion', () => {
   // simple insertion
   expect(
     getMismatches(
-      createRecord('AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTTA'),
+      createRecord(
+        'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTTA',
+      ),
       '89M1I11M',
       '100',
     ),
@@ -63,7 +65,9 @@ test('deletion and a SNP', () => {
   // read GGGGG--ATTTTTT
   //      |||||   ||||||
   //      GGGGGACCTTTTTT
-  expect(getMismatches(createRecord('GGGGGATTTTTT'), '5M2D6M', '5^AC0C5')).toEqual([
+  expect(
+    getMismatches(createRecord('GGGGGATTTTTT'), '5M2D6M', '5^AC0C5'),
+  ).toEqual([
     { start: 5, type: 'deletion', base: '*', length: 2 },
     { start: 7, type: 'mismatch', base: 'A', altbase: 'C', length: 1 },
   ])
@@ -93,7 +97,9 @@ test('non-0-length-MD string', () => {
 })
 
 test('basic skip', () => {
-  expect(getMismatches(createRecord('GGGGGCATTTTT'), '6M200N6M', '5AC5')).toEqual([
+  expect(
+    getMismatches(createRecord('GGGGGCATTTTT'), '6M200N6M', '5AC5'),
+  ).toEqual([
     { base: 'N', length: 200, start: 6, type: 'skip' },
     { altbase: 'A', base: 'C', length: 1, start: 5, type: 'mismatch' },
     { altbase: 'C', base: 'A', length: 1, start: 206, type: 'mismatch' },
@@ -105,7 +111,9 @@ test('vsbuffalo', () => {
   // example 1
   expect(
     getMismatches(
-      createRecord('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'),
+      createRecord(
+        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      ),
       '89M1I11M',
       '100',
     ),
@@ -123,7 +131,9 @@ test('vsbuffalo', () => {
   // example 2
   expect(
     getMismatches(
-      createRecord('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'),
+      createRecord(
+        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      ),
       '9M1I91M',
       '48T42G8',
     ),
@@ -155,26 +165,34 @@ test('vsbuffalo', () => {
 })
 
 test('more skip', () => {
-  expect(getMismatches(createRecord('GGGGGCATTTTT'), '3M200N3M200N3M', '8A')).toEqual([
+  expect(
+    getMismatches(createRecord('GGGGGCATTTTT'), '3M200N3M200N3M', '8A'),
+  ).toEqual([
     { base: 'N', length: 200, start: 3, type: 'skip' },
     { base: 'N', length: 200, start: 206, type: 'skip' },
     { altbase: 'A', base: 'T', length: 1, start: 408, type: 'mismatch' },
   ])
   expect(
-    getMismatches(createRecord(seq), '31M1I17M1D37M', '6G4C20G1A5C5A1^C3A15G1G15').sort(
-      (a, b) => a.start - b.start,
-    ),
+    getMismatches(
+      createRecord(seq),
+      '31M1I17M1D37M',
+      '6G4C20G1A5C5A1^C3A15G1G15',
+    ).sort((a, b) => a.start - b.start),
   ).toMatchSnapshot()
 })
 
 test('clipping', () => {
-  expect(getMismatches(createRecord('AAAAAAAAAC'), '200H10M200H', '9A')).toEqual([
+  expect(
+    getMismatches(createRecord('AAAAAAAAAC'), '200H10M200H', '9A'),
+  ).toEqual([
     { cliplen: 200, base: 'H200', length: 1, start: 0, type: 'hardclip' },
     { cliplen: 200, base: 'H200', length: 1, start: 10, type: 'hardclip' },
     { altbase: 'A', base: 'C', length: 1, start: 9, type: 'mismatch' },
   ])
 
-  expect(getMismatches(createRecord('AAAAAAAAAAGGGGGGGGGC'), '10S10M10S', '9A')).toEqual([
+  expect(
+    getMismatches(createRecord('AAAAAAAAAAGGGGGGGGGC'), '10S10M10S', '9A'),
+  ).toEqual([
     { cliplen: 10, base: 'S10', length: 1, start: 0, type: 'softclip' },
     { cliplen: 10, base: 'S10', length: 1, start: 10, type: 'softclip' },
     { altbase: 'A', base: 'C', length: 1, start: 9, type: 'mismatch' },

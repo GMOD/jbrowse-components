@@ -1,8 +1,12 @@
 import type { Mismatch } from '../shared/types'
 
+interface MinimalRecord {
+  seqAt: (idx: number) => string | undefined
+}
+
 export function cigarToMismatches(
   ops: string[],
-  record: { seq?: string; seqAt: (idx: number) => string | undefined },
+  record: MinimalRecord,
   ref?: string,
   qual?: Uint8Array,
 ) {
@@ -32,11 +36,18 @@ export function cigarToMismatches(
       soffset += len
     }
     if (op === 'I') {
+      let insertedBases = ''
+      for (let j = 0; j < len; j++) {
+        const base = record.seqAt(soffset + j)
+        if (base) {
+          insertedBases += base
+        }
+      }
       mismatches.push({
         start: roffset,
         type: 'insertion',
         base: `${len}`,
-        insertedBases: record.seq?.slice(soffset, soffset + len),
+        insertedBases,
         length: 0,
       })
       soffset += len
@@ -55,14 +66,14 @@ export function cigarToMismatches(
         length: len,
       })
     } else if (op === 'X') {
-      const r = record.seq?.slice(soffset, soffset + len) || []
       const q = qual?.subarray(soffset, soffset + len) || []
 
       for (let j = 0; j < len; j++) {
+        const base = record.seqAt(soffset + j)
         mismatches.push({
           start: roffset + j,
           type: 'mismatch',
-          base: r[j] || 'X',
+          base: base || 'X',
           qual: q[j],
           length: 1,
         })
