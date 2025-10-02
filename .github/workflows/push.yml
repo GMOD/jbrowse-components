@@ -18,12 +18,12 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 1
-
       - name: Check commit message
         id: check_message
         run: |
-          commit_message="${{ github.event.head_commit.message }}"
-          if [[ "$commit_message" == *"[update docs only]"* ]]; then
+          # Directly use the GitHub expression in the conditional check,
+          # which avoids shell interpretation of special characters like () or " in the message.
+          if [[ "${{ github.event.head_commit.message }}" == *"[update docs only]"* ]]; then
             echo "skip_jobs=true" >> $GITHUB_OUTPUT
             echo "Commit message contains [update docs only], skipping regular push jobs"
           else
