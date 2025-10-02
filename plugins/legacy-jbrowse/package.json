@@ -40,7 +40,7 @@
     "@jbrowse/core": "^3.6.5",
     "crc": "^4.0.0",
     "generic-filehandle2": "^2.0.1",
-    "get-value": "^3.0.0",
+    "get-value": "^4.0.1",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
