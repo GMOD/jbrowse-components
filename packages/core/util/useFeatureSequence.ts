@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
+
+import useSWR from 'swr'
 
 import { fetchSeq } from './fetchSeq'
 
 import type { AbstractSessionModel, Feature } from '.'
-import type { ErrorState, SeqState } from '../BaseFeatureWidget/util'
 
-const BPLIMIT = 500_000
+const BPLIMIT = 20_000_000
 
 export function useFeatureSequence({
   session,
@@ -20,59 +21,75 @@ export function useFeatureSequence({
   upDownBp: number
   forceLoad: boolean
 }) {
-  const [sequence, setSequence] = useState<SeqState | ErrorState>()
-  const [error, setError] = useState<unknown>()
-
-  useEffect(() => {
+  const key = useMemo(() => {
     if (!session) {
-      return
+      return null
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        setError(undefined)
-        const start = feature.get('start')
-        const end = feature.get('end')
-        const refName = feature.get('refName')
+    const start = feature.get('start')
+    const end = feature.get('end')
+    const refName = feature.get('refName')
 
-        if (!forceLoad && end - start > BPLIMIT) {
-          setSequence({
-            error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
-          })
-        } else {
-          const b = start - upDownBp
-          const e = end + upDownBp
-          setSequence({
-            seq: await fetchSeq({
-              start,
-              end,
-              refName,
-              assemblyName,
-              session,
-            }),
-            upstream: await fetchSeq({
-              start: Math.max(0, b),
-              end: start,
-              refName,
-              assemblyName,
-              session,
-            }),
-            downstream: await fetchSeq({
-              start: end,
-              end: e,
-              refName,
-              assemblyName,
-              session,
-            }),
-          })
+    return {
+      start,
+      end,
+      refName,
+      assemblyName,
+      upDownBp,
+      forceLoad,
+      sessionId: session.id || 'default',
+    }
+  }, [session, feature, assemblyName, upDownBp, forceLoad])
+
+  const { data: sequence, error } = useSWR(
+    key,
+    async params => {
+      const { start, end, refName, assemblyName, upDownBp, forceLoad } = params
+
+      if (!forceLoad && end - start > BPLIMIT) {
+        return {
+          error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
         }
-      } catch (e) {
-        console.error(e)
-        setError(e)
       }
-    })()
-  }, [feature, session, assemblyName, upDownBp, forceLoad])
+
+      const b = start - upDownBp
+      const e = end + upDownBp
+
+      const [seq, upstream, downstream] = await Promise.all([
+        fetchSeq({
+          start,
+          end,
+          refName,
+          assemblyName,
+          session: session!,
+        }),
+        fetchSeq({
+          start: Math.max(0, b),
+          end: start,
+          refName,
+          assemblyName,
+          session: session!,
+        }),
+        fetchSeq({
+          start: end,
+          end: e,
+          refName,
+          assemblyName,
+          session: session!,
+        }),
+      ])
+
+      return {
+        seq,
+        upstream,
+        downstream,
+      }
+    },
+    {
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
+    },
+  )
 
   return {
     sequence,

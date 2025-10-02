@@ -1,8 +1,8 @@
 import React from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { useTheme } from '@mui/material'
-import { darken, lighten } from '@mui/material/styles'
+import { colord } from '@jbrowse/core/util/colord'
+import { darken, lighten, useTheme } from '@mui/material'
 import { genomeToTranscriptSeqMapping } from 'g2p_mapper'
 import { observer } from 'mobx-react'
 
@@ -104,7 +104,7 @@ const CDS = observer(function CDS(props: {
   const zoomedInEnough = 1 / bpPerPx >= 4
   const dontRenderRect = left + width < 0 || left > screenWidth
   const dontRenderLetters = !zoomedInEnough
-  const doRender = !dontRenderLetters && !dontRenderRect
+  const doRender = !dontRenderLetters && !dontRenderRect && colorByCDS
   const leftWithinBlock = Math.max(left, 0)
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
@@ -143,8 +143,8 @@ const CDS = observer(function CDS(props: {
 
       const isAlternate = index % 2 === 1
       const bgColor = isAlternate
-        ? darken(baseColor, 0.1)
-        : lighten(baseColor, 0.2)
+        ? darken(colord(baseColor).toHex(), 0.1)
+        : lighten(colord(baseColor).toHex(), 0.2)
 
       if (strand === -1) {
         const startX = right - (1 / bpPerPx) * aa.startIndex
