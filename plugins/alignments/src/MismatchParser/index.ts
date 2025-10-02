@@ -27,7 +27,7 @@ export function parseCigar(s = '') {
 }
 
 export function getMismatches(
-  record: { seqAt: (idx: number) => string },
+  record: { seqAt: (idx: number) => string | undefined },
   cigar?: string,
   md?: string,
   ref?: string,
@@ -68,9 +68,13 @@ export function getOrientedCigar(flip: boolean, cigar: string[]) {
   return cigar
 }
 
-export function getOrientedMismatches(flip: boolean, cigar: string) {
+export function getOrientedMismatches(
+  record: any,
+  flip: boolean,
+  cigar: string,
+) {
   const p = parseCigar(cigar)
-  return cigarToMismatches(flip ? getOrientedCigar(flip, p) : p)
+  return cigarToMismatches(flip ? getOrientedCigar(flip, p) : p, record)
 }
 
 export function getLengthOnRef(cigar: string) {

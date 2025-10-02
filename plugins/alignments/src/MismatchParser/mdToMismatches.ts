@@ -3,7 +3,7 @@ import type { Mismatch } from '../shared/types'
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 
 export function mdToMismatches(
-  record: { seqAt: (idx: number) => string },
+  record: { seqAt: (idx: number) => string | undefined },
   mdstring: string,
   ops: string[],
   cigarMismatches: Mismatch[],
