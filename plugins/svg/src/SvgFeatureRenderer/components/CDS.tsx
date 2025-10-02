@@ -29,41 +29,43 @@ function aggregateContiguousAminoAcids(
   strand: number,
 ): AggregatedAminoAcid[] {
   const aggregated: AggregatedAminoAcid[] = []
-  const len = featureEnd - featureStart + 1
+  const len = featureEnd - featureStart
 
   let currentElt: number | undefined = undefined
   let currentAminoAcid: string | null = null
   let startIndex = 0
+  let idx = 0
 
   for (let i = 0; i < len; i++) {
     const pos = strand === -1 ? featureEnd - i : featureStart + i
-    if (pos < featureStart || pos > featureEnd) continue
     const elt = g2p[pos]
-    const aminoAcid = elt !== undefined ? (protein[elt] ?? '&') : '*'
+    const aminoAcid = protein[elt] ?? '&'
 
     if (currentElt === undefined) {
       currentElt = elt
       currentAminoAcid = aminoAcid
-      startIndex = i
+      startIndex = idx
     } else if (currentElt !== elt) {
       aggregated.push({
         aminoAcid: currentAminoAcid!,
         startIndex,
-        endIndex: i - 1,
-        length: i - startIndex,
+        endIndex: idx - 1,
+        length: idx - startIndex,
       })
       currentElt = elt
       currentAminoAcid = aminoAcid
-      startIndex = i
+      startIndex = idx
     }
+
+    idx++
   }
 
   if (currentAminoAcid !== null) {
     aggregated.push({
       aminoAcid: currentAminoAcid,
       startIndex,
-      endIndex: len - 1,
-      length: len - startIndex,
+      endIndex: idx - 1,
+      length: idx - startIndex,
     })
   }
 
