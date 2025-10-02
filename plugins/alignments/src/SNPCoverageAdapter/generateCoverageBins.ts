@@ -1,5 +1,4 @@
-import { sum } from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { forEachWithStopTokenCheck, sum } from '@jbrowse/core/util'
 
 import { processDepth } from './processDepth'
 import { processMismatches } from './processMismatches'
@@ -28,12 +27,18 @@ export async function generateCoverageBins({
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
 
-  let start = performance.now()
-  for (const feature of features) {
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
+  // Fetch sequence once outside the loop if needed for modifications or methylation
+  let regionSequence = ''
+  if (colorBy?.type === 'modifications' || colorBy?.type === 'methylation') {
+    regionSequence =
+      (await fetchSequence({
+        ...region,
+        start: start2,
+        end: region.end + 1,
+      })) || ''
+  }
+
+  forEachWithStopTokenCheck(features, stopToken, feature => {
     processDepth({
       feature,
       bins,
@@ -41,12 +46,6 @@ export async function generateCoverageBins({
     })
 
     if (colorBy?.type === 'modifications') {
-      const regionSequence =
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: region.end + 1,
-        })) || ''
       processModifications({
         feature,
         colorBy,
@@ -55,12 +54,6 @@ export async function generateCoverageBins({
         regionSequence: regionSequence.slice(diff),
       })
     } else if (colorBy?.type === 'methylation') {
-      const regionSequence =
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: region.end + 1,
-        })) || ''
       processReferenceCpGs({
         feature,
         bins,
@@ -69,7 +62,7 @@ export async function generateCoverageBins({
       })
     }
     processMismatches({ feature, skipmap, bins, region })
-  }
+  })
 
   for (const bin of bins) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
