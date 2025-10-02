@@ -1,0 +1,48 @@
+{
+  "name": "flatbush",
+  "version": "4.5.0",
+  "description": "Fast static spatial index for rectangles",
+  "author": "Vladimir Agafonkin",
+  "license": "ISC",
+  "type": "module",
+  "main": "flatbush.js",
+  "module": "index.js",
+  "exports": "./index.js",
+  "sideEffects": false,
+  "types": "index.d.ts",
+  "scripts": {
+    "pretest": "eslint index.js test.js bench.js",
+    "test": "tsc && node --test",
+    "build": "rollup index.js -o flatbush.js -n Flatbush -f umd -p node-resolve",
+    "prepublishOnly": "tsc && npm run build"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "flatbush.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mourner/flatbush.git"
+  },
+  "keywords": [
+    "geometry",
+    "spatial",
+    "tree",
+    "index",
+    "rectangle",
+    "search"
+  ],
+  "dependencies": {
+    "flatqueue": "^3.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "eslint": "^9.33.0",
+    "eslint-config-mourner": "^4.1.0",
+    "rbush": "^4.0.1",
+    "rbush-knn": "^4.0.0",
+    "rollup": "^4.46.2",
+    "typescript": "^5.9.2"
+  }
+}

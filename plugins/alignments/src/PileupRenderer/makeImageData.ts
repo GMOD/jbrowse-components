@@ -1,10 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { renderAlignment } from './renderAlignment'
-import { renderMismatches } from './renderMismatches'
-import { renderSoftClipping } from './renderSoftClipping'
+import { renderAlignment } from './renderers/renderAlignment'
+import { renderMismatches } from './renderers/renderMismatches'
+import { renderSoftClipping } from './renderers/renderSoftClipping'
 import {
   getCharWidthHeight,
   getColorBaseMap,
@@ -56,6 +57,8 @@ export function makeImageData({
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
   const drawIndels = shouldDrawIndels()
+  const coords = [] as number[]
+  const items = [] as { seq: string }[]
   forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
     renderAlignment({
       ctx,
@@ -68,7 +71,7 @@ export function makeImageData({
       charHeight,
       canvasWidth,
     })
-    renderMismatches({
+    const ret = renderMismatches({
       ctx,
       feat,
       renderArgs,
@@ -84,6 +87,12 @@ export function makeImageData({
       colorContrastMap,
       canvasWidth,
     })
+    for (let i = 0, l = ret.coords.length; i < l; i++) {
+      coords.push(ret.coords[i]!)
+    }
+    for (let i = 0, l = ret.items.length; i < l; i++) {
+      items.push(ret.items[i]!)
+    }
     if (showSoftClip) {
       renderSoftClipping({
         ctx,
@@ -96,5 +105,17 @@ export function makeImageData({
       })
     }
   })
-  return undefined
+  const flatbush = new Flatbush(Math.max(items.length, 1))
+  if (coords.length) {
+    for (let i = 0; i < coords.length; i += 4) {
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+    }
+  } else {
+    flatbush.add(0, 0)
+  }
+  flatbush.finish()
+  return {
+    flatbush: flatbush.data,
+    items,
+  }
 }

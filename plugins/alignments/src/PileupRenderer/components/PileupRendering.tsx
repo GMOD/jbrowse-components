@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { bpSpanPx } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
+import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -14,19 +16,16 @@ const PileupRendering = observer(function (props: {
   height: number
   regions: Region[]
   bpPerPx: number
-  sortedBy?: {
-    type: string
-    pos: number
-    refName: string
-  }
-  colorBy?: {
-    type: string
-    tag?: string
-  }
-  filterBy?: {
-    tagFilter?: { tag: string }
-  }
-  onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
+  sortedBy?: SortedBy
+  colorBy?: ColorBy
+  filterBy?: FilterBy
+  items: { seq: string }[]
+  flatbush: any
+  onMouseMove?: (
+    event: React.MouseEvent,
+    featureId?: string,
+    extra?: string,
+  ) => void
 }) {
   const {
     onMouseMove,
@@ -39,7 +38,10 @@ const PileupRendering = observer(function (props: {
     sortedBy,
     colorBy,
     filterBy,
+    flatbush,
+    items,
   } = props
+  const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel || {}
   const [firstRender, setFirstRender] = useState(false)
@@ -127,10 +129,12 @@ const PileupRendering = observer(function (props: {
     const offsetY = event.clientY - rect.top
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
-
+    const search = flatbush2.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
     onMouseMove?.(
       event,
       displayModel?.getFeatureOverlapping(blockKey, clientBp, offsetY),
+
+      search.length ? `Insertion: ${items[search[0]!]!.seq}` : undefined,
     )
   }
 

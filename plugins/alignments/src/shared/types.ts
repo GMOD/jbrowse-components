@@ -111,6 +111,7 @@ export interface Mismatch {
   qual?: number
   start: number
   length: number
+  insertedBases?: string
   type: string
   base: string
   altbase?: string

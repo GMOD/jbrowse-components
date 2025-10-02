@@ -3,8 +3,8 @@ import {
   forEachWithStopTokenCheck,
   updateStatus,
 } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import RBush from 'rbush'
 
 import { f2 } from '../shared/constants'
 import {
@@ -45,15 +45,17 @@ export async function makeImageData(
     }),
   )
   checkStopToken(stopToken)
-  const rbush = new RBush()
 
+  const coords = [] as number[]
+  const items = [] as any[]
   await updateStatus('Drawing variants', statusCallback, () => {
     forEachWithStopTokenCheck(
       mafs,
       stopToken,
       ({ mostFrequentAlt, feature }) => {
         const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-        const flen = feature.get('end') - feature.get('start')
+        const featureId = feature.id()
+        const bpLen = feature.get('end') - feature.get('start')
         const w = Math.max(Math.round(rightPx - leftPx), 2)
         const samp = feature.get('genotypes') as Record<string, string>
         let y = -scrollTop
@@ -82,15 +84,13 @@ export async function makeImageData(
                     referenceDrawingMode === 'draw',
                   )
                 ) {
-                  rbush.insert({
-                    minX: x,
-                    maxX: x + w,
-                    minY: y,
-                    maxY: y + h,
-                    genotype,
+                  items.push({
                     name,
-                    featureId: feature.id(),
+                    genotype,
+                    featureId,
+                    bpLen,
                   })
+                  coords.push(x, y, x + w, y + h)
                 }
               } else {
                 ctx.fillStyle = 'black'
@@ -148,17 +148,16 @@ export async function makeImageData(
                   h,
                   feature.get('type'),
                   feature.get('strand'),
-                  flen > 5 ? 0.75 : 1,
+                  bpLen > 5 ? 0.75 : 1,
                 )
-                rbush.insert({
-                  minX: x,
-                  maxX: x + w,
-                  minY: y,
-                  maxY: y + h,
-                  genotype,
+
+                items.push({
                   name,
-                  featureId: feature.id(),
+                  genotype,
+                  featureId,
+                  bpLen,
                 })
+                coords.push(x, y, x + w, y + h)
               }
             }
             y += rowHeight
@@ -168,8 +167,19 @@ export async function makeImageData(
     )
   })
 
+  const flatbush = new Flatbush(Math.max(items.length, 1))
+  if (items.length) {
+    for (let i = 0; i < coords.length; i += 4) {
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+    }
+  } else {
+    // flatbush does not like 0 items
+    flatbush.add(0, 0)
+  }
+  flatbush.finish()
   return {
-    rbush: rbush.toJSON(),
+    flatbush: flatbush.data,
+    items,
     featureGenotypeMap: Object.fromEntries(
       mafs.map(({ feature }) => [
         feature.id(),
