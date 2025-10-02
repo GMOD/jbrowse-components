@@ -90,11 +90,12 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
+    const len = this.record.end - this.record.start
     return {
       ...this.fields,
       tags: this.tags,
-      qual: this.qual,
-      seq: this.seq,
+      qual: len > 10_000_000 ? 'too long' : this.qual,
+      seq: len > 10_000_000 ? 'too long' : this.seq,
     }
   }
 }

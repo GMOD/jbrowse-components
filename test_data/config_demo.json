@@ -5028,6 +5028,30 @@
         }
       },
       "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap1",
+      "name": "GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/analysis/NIST_HG002_DraftBenchmark_defrabbV0.019-20241113/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap1.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/analysis/NIST_HG002_DraftBenchmark_defrabbV0.019-20241113/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap1.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],
