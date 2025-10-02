@@ -71,7 +71,6 @@
     "@types/pako": "^2.0.0",
     "@types/pluralize": "^0.0.33",
     "@types/range-parser": "^1.2.3",
-    "@types/rbush": "^3.0.0",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
     "@types/set-value": "^4.0.1",

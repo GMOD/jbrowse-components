@@ -1,4 +1,4 @@
-import RBush from 'rbush'
+import Flatbush from '../flatbush'
 
 import type {
   BaseLayout,
@@ -22,23 +22,32 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   public maxHeightReached: boolean
 
-  private rbush: RBush<Layout>
+  private index?: Flatbush
+
+  private indexData: Array<{ name: string; rect: RectTuple }> = []
 
   constructor({ rectangles, totalHeight, maxHeightReached }: SerializedLayout) {
     this.rectangles = new Map(Object.entries(rectangles))
     // rectangles is of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
     this.maxHeightReached = maxHeightReached
-    this.rbush = new RBush()
-    for (const [key, layout] of Object.entries(rectangles)) {
-      this.rbush.insert({
-        minX: layout[0],
-        minY: layout[1],
-        maxX: layout[2],
-        maxY: layout[3],
-        name: key,
-      })
+    this.buildIndex()
+  }
+
+  private buildIndex() {
+    if (this.rectangles.size === 0) {
+      return
     }
+
+    this.index = new Flatbush(this.rectangles.size)
+    this.indexData = []
+
+    for (const [name, rect] of this.rectangles) {
+      this.index.add(rect[0], rect[1], rect[2], rect[3])
+      this.indexData.push({ name, rect })
+    }
+
+    this.index.finish()
   }
 
   addRect(id: string) {
@@ -66,10 +75,16 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
   }
 
   getByCoord(x: number, y: number) {
-    const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-    return this.rbush.collides(rect)
-      ? this.rbush.search(rect)[0]!.name
-      : undefined
+    if (!this.index) {
+      return undefined
+    }
+
+    const results = this.index.search(x, y, x + 1, y + 1)
+    if (results.length > 0) {
+      return this.indexData[results[0]!]?.name
+    }
+
+    return undefined
   }
 
   getByID(id: string) {
