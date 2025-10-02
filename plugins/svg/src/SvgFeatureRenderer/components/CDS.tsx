@@ -36,7 +36,9 @@ function aggregateContiguousAminoAcids(
   let startIndex = 0
 
   for (let i = 0; i < len; i++) {
-    const elt = strand === -1 ? g2p[featureEnd - i] : g2p[featureStart + i]
+    const pos = strand === -1 ? featureEnd - i : featureStart + i
+    if (pos < featureStart || pos > featureEnd) continue
+    const elt = g2p[pos]
     const aminoAcid = elt !== undefined ? (protein[elt] ?? '&') : '*'
 
     if (currentElt === undefined) {
