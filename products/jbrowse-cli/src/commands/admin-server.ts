@@ -1,12 +1,21 @@
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
 import { parseArgs } from 'util'
 
-import { printHelp } from '../utils'
+import cors from 'cors'
+import express from 'express'
+
 import {
+  generateKey,
   parsePort,
   setupConfigFile,
-  setupServer,
+  setupRoutes,
   startServer,
 } from './admin-server-utils'
+import { debug, printHelp } from '../utils'
+
+import type { Request, Response } from 'express'
 
 export async function run(args?: string[]) {
   const options = {
@@ -56,10 +65,51 @@ export async function run(args?: string[]) {
   const port = parsePort({ portStr: flags.port })
 
   // Set up the Express server
-  const { app, key, keyPath, serverRef } = setupServer({
+  // const { app, key, keyPath, serverRef } = setupServer({
+  //   baseDir,
+  //   outFile,
+  //   bodySizeLimit,
+  // })
+  const app = express()
+
+  // Configure middleware
+  app.use(express.static(baseDir))
+  app.use(cors())
+  app.use(express.json({ limit: bodySizeLimit }))
+
+  // Add error handling middleware
+  app.use((err: any, _req: Request, res: Response, next: () => void) => {
+    if (err) {
+      console.error('Server error:', err)
+      res.status(500).setHeader('Content-Type', 'text/plain')
+      res.send('Internal Server Error')
+    } else {
+      next()
+    }
+  })
+
+  // Generate admin key and store it
+  const key = generateKey()
+  const keyPath = path.join(os.tmpdir(), `jbrowse-admin-${key}`)
+
+  try {
+    fs.writeFileSync(keyPath, key)
+    debug(`Admin key stored at ${keyPath}`)
+  } catch (error: any) {
+    console.error(`Failed to write admin key to ${keyPath}:`, error.message)
+    // Continue anyway, as this is not critical
+  }
+
+  // Create server reference for shutdown route
+  const serverRef = { current: null }
+
+  // Set up routes
+  setupRoutes({
+    app,
     baseDir,
     outFile,
-    bodySizeLimit,
+    key,
+    serverRef,
   })
 
   // Start the server and set up shutdown handlers

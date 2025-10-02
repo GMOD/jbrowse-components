@@ -24,7 +24,7 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   private index?: Flatbush
 
-  private indexData: Array<{ name: string; rect: RectTuple }> = []
+  private indexData: { name: string; rect: RectTuple }[] = []
 
   constructor({ rectangles, totalHeight, maxHeightReached }: SerializedLayout) {
     this.rectangles = new Map(Object.entries(rectangles))

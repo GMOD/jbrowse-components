@@ -1,10 +1,6 @@
 import crypto from 'crypto'
 import fs from 'fs'
-import os from 'os'
 import path from 'path'
-
-import cors from 'cors'
-import express from 'express'
 
 import { debug, writeJsonFile } from '../utils'
 
@@ -221,58 +217,6 @@ export function setupRoutes({
       }
     })
   })
-}
-
-/**
- * Sets up the Express server with routes
- */
-export function setupServer({
-  baseDir,
-  outFile,
-  bodySizeLimit,
-}: {
-  baseDir: string
-  outFile: string
-  bodySizeLimit: string
-}) {
-  // Create Express application
-  const app = express()
-
-  // Configure middleware
-  app.use(express.static(baseDir))
-  app.use(cors())
-  app.use(express.json({ limit: bodySizeLimit }))
-
-  // Add error handling middleware
-  app.use((err: any, _req: Request, res: Response, next: () => void) => {
-    if (err) {
-      console.error('Server error:', err)
-      res.status(500).setHeader('Content-Type', 'text/plain')
-      res.send('Internal Server Error')
-    } else {
-      next()
-    }
-  })
-
-  // Generate admin key and store it
-  const key = generateKey()
-  const keyPath = path.join(os.tmpdir(), `jbrowse-admin-${key}`)
-
-  try {
-    fs.writeFileSync(keyPath, key)
-    debug(`Admin key stored at ${keyPath}`)
-  } catch (error: any) {
-    console.error(`Failed to write admin key to ${keyPath}:`, error.message)
-    // Continue anyway, as this is not critical
-  }
-
-  // Create server reference for shutdown route
-  const serverRef = { current: null }
-
-  // Set up routes
-  setupRoutes({ app, baseDir, outFile, key, serverRef })
-
-  return { app, key, keyPath, serverRef }
 }
 
 /**
