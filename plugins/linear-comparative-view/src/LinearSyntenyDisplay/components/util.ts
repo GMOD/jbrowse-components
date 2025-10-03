@@ -31,6 +31,7 @@ interface FeatPos {
   p22: Pos
   f: Feature
   cigar: string[]
+  color?: string
 }
 
 export function drawMatchSimple({
@@ -44,6 +45,7 @@ export function drawMatchSimple({
   oobLimit,
   viewWidth,
   hideTiny,
+  color, // Added color property
 }: {
   feature: FeatPos
   ctx: CanvasRenderingContext2D
@@ -55,6 +57,7 @@ export function drawMatchSimple({
   height: number
   drawCurves?: boolean
   hideTiny?: boolean
+  color?: string
 }) {
   const { p11, p12, p21, p22 } = feature
 
@@ -91,6 +94,11 @@ export function drawMatchSimple({
       ctx.stroke()
     }
   } else {
+    // Set color if provided
+    if (color) {
+      ctx.fillStyle = color
+      ctx.strokeStyle = color
+    }
     draw(ctx, x11, x12, y1, x22, x21, y2, mid, drawCurves)
     cb(ctx)
   }
