@@ -38,6 +38,7 @@
   "dependencies": {
     "@jbrowse/core": "^3.6.5",
     "@mui/material": "^7.0.0",
+    "g2p_mapper": "^1.0.7",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0"

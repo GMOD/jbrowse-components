@@ -75,7 +75,9 @@ const PileupRendering = observer(function (props: {
       height: rectHeight,
     }
   }
+  // @ts-expect-error
   const selected = selectedRect ? makeRect(selectedRect) : undefined
+  // @ts-expect-error
   const highlight = highlightedRect ? makeRect(highlightedRect, 0) : undefined
 
   function onMouseDown(event: React.MouseEvent) {

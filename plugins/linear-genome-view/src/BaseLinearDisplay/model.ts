@@ -49,7 +49,15 @@ export interface Layout {
   name: string
 }
 
-type LayoutRecord = [number, number, number, number]
+type LayoutRecord =
+  | [number, number, number, number]
+  | [
+      number,
+      number,
+      number,
+      number,
+      { label?: string; description?: string; refName: string },
+    ]
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   overrideHeight: number
@@ -149,7 +157,6 @@ function stateModelFactory() {
       get selectedFeatureId() {
         if (isAlive(self)) {
           const { selection } = getSession(self)
-          // does it quack like a feature?
           if (isFeature(selection)) {
             return selection.id()
           }
@@ -188,6 +195,19 @@ function stateModelFactory() {
       get featureUnderMouse() {
         const feat = self.featureIdUnderMouse
         return feat ? this.features.get(feat) : undefined
+      },
+
+      /**
+       * #getter
+       */
+      get layoutFeatures() {
+        const featureMaps = []
+        for (const block of self.blockState.values()) {
+          if (block.layout) {
+            featureMaps.push(block.layout.rectangles)
+          }
+        }
+        return new CompositeMap<string, LayoutRecord>(featureMaps)
       },
 
       /**

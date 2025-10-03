@@ -28,47 +28,11 @@ exports[`ncbi config 1`] = `
       />
       <rect
         data-testid="box-test-offset-272549-0-1"
-        fill="#daa520"
-        fill-opacity="1"
+        fill="goldenrod"
         height="5"
+        stroke=""
         width="8.142447399308901"
         x="796.1137449697653"
-        y="0"
-      />
-      <rect
-        data-testid="box-test-offset-272549-0-2"
-        fill="#daa520"
-        fill-opacity="1"
-        height="5"
-        width="177.52828977648142"
-        x="804.4855570845477"
-        y="0"
-      />
-      <rect
-        data-testid="box-test-offset-272549-0-3"
-        fill="#daa520"
-        fill-opacity="1"
-        height="5"
-        width="27.867812930029057"
-        x="1085.4573335395733"
-        y="0"
-      />
-      <rect
-        data-testid="box-test-offset-272549-0-4"
-        fill="#daa520"
-        fill-opacity="1"
-        height="5"
-        width="15.252753578987097"
-        x="1249.4531051031186"
-        y="0"
-      />
-      <rect
-        data-testid="box-test-offset-272549-0-5"
-        fill="#daa520"
-        fill-opacity="1"
-        height="5"
-        width="30.276142442500703"
-        x="1879.7473432242696"
         y="0"
       />
       <line
@@ -110,47 +74,38 @@ exports[`ncbi config 1`] = `
       />
       <rect
         data-testid="box-test-offset-272549-0-1"
-        fill="#daa520"
-        fill-opacity="1"
+        fill="goldenrod"
         height="5"
+        stroke=""
         width="4.256192369074279"
         x="0"
         y="0"
       />
       <rect
         data-testid="box-test-offset-272549-0-2"
-        fill="#daa520"
-        fill-opacity="1"
+        fill="goldenrod"
         height="5"
+        stroke=""
         width="177.52828977648142"
         x="4.485557084547764"
         y="0"
       />
       <rect
         data-testid="box-test-offset-272549-0-3"
-        fill="#daa520"
-        fill-opacity="1"
+        fill="goldenrod"
         height="5"
+        stroke=""
         width="27.867812930029057"
         x="285.45733353957326"
         y="0"
       />
       <rect
         data-testid="box-test-offset-272549-0-4"
-        fill="#daa520"
-        fill-opacity="1"
+        fill="goldenrod"
         height="5"
+        stroke=""
         width="15.252753578987097"
         x="449.4531051031187"
-        y="0"
-      />
-      <rect
-        data-testid="box-test-offset-272549-0-5"
-        fill="#daa520"
-        fill-opacity="1"
-        height="5"
-        width="30.276142442500703"
-        x="1079.7473432242698"
         y="0"
       />
       <line

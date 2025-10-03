@@ -1277,7 +1277,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             onClick: self.horizontallyFlip,
           },
           {
-            label: 'Color by CDS',
+            label: 'Color by CDS and draw amino acids',
             type: 'checkbox',
             checked: self.colorByCDS,
             icon: PaletteIcon,
