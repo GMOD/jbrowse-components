@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/desktop",
   "version": "3.6.5",
+  "type": "module",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "license": "Apache-2.0",
   "homepage": "./",
@@ -83,7 +84,7 @@
     "date-fns": "^4.0.0",
     "deepmerge": "^4.2.2",
     "electron-context-menu": "^4.1.1",
-    "electron-debug": "^3.0.1",
+    "electron-debug": "^4.1.0",
     "electron-updater": "^6.1.1",
     "electron-window-state": "^5.0.3",
     "json-parse-even-better-errors": "^4.0.0",

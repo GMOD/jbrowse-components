@@ -32,10 +32,11 @@ function normalize<T>(param: T | null | undefined) {
 }
 
 export function Loader({
-  initialTimestamp = Date.now(),
+  initialTimestamp: initialTimestampProp,
 }: {
   initialTimestamp?: number
 }) {
+  const [initialTimestamp] = useState(() => initialTimestampProp ?? Date.now())
   const Str = StringParam
 
   const [config] = useQueryParam('config', Str)

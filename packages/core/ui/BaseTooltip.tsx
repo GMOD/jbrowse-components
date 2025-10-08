@@ -53,6 +53,7 @@ export default function BaseTooltip({
     <Portal container={popperTheme?.defaultProps?.container}>
       <div
         className={classes.tooltip}
+        // eslint-disable-next-line react-hooks/refs
         ref={refs.setFloating}
         style={{
           ...floatingStyles,

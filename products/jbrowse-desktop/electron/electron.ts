@@ -13,11 +13,13 @@ import electron, {
 } from 'electron'
 import contextMenu from 'electron-context-menu'
 import debug from 'electron-debug'
-import { autoUpdater } from 'electron-updater'
+import pkg from 'electron-updater'
 import windowStateKeeper from 'electron-window-state'
 import parseJson from 'json-parse-even-better-errors'
 
-import { getFileStream } from './generateFastaIndex'
+const { autoUpdater } = pkg
+
+import { getFileStream } from './generateFastaIndex.ts'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 
