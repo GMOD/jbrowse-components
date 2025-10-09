@@ -1,16 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
 import { JBrowseApp, createViewState } from '../../src'
 
-type ViewModel = ReturnType<typeof createViewState>
-
 export const HumanDemo = () => {
-  const [viewState, setViewState] = useState<ViewModel>()
-
-  useEffect(() => {
-    const state = createViewState({
+  const [viewState] = useState(() =>
+    createViewState({
       config: {
         assemblies: [
           {
@@ -130,13 +126,8 @@ export const HumanDemo = () => {
           ],
         },
       },
-    })
-    setViewState(state)
-  }, [])
-
-  if (!viewState) {
-    return null
-  }
+    }),
+  )
 
   return (
     <>

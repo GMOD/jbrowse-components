@@ -2,6 +2,7 @@ module.exports = function babelConfig(api) {
   api.cache(true)
   return {
     presets: [
+      'babel-plugin-react-compiler',
       [
         '@babel/preset-react',
         {

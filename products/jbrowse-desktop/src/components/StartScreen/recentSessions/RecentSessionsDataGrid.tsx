@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth } from '@jbrowse/core/util'
@@ -41,10 +41,10 @@ function RecentSessionsList({
 }) {
   const { classes } = useStyles()
   const { height: innerHeight } = useInnerDims()
+  const [now] = useState(() => Date.now())
 
   // Memoize expensive calculations
   const rows = useMemo(() => {
-    const now = Date.now()
     const oneDayLength = 24 * 60 * 60 * 1000
 
     return sessions.map(session => {
@@ -64,7 +64,7 @@ function RecentSessionsList({
         path: session.path,
       }
     })
-  }, [sessions])
+  }, [sessions, now])
 
   const widths = useMemo(() => {
     const arr = ['name', 'path', 'lastModified']

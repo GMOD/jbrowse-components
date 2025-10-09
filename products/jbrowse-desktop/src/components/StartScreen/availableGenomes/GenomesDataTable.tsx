@@ -72,6 +72,7 @@ export default function GenomesDataTable({
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
 }) {
+  'use no memo'
   const [selected, setSelected] = useState<string[]>([])
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [filterOption, setFilterOption] = useState('all')
@@ -156,6 +157,7 @@ export default function GenomesDataTable({
     [selected],
   )
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     // @ts-expect-error
     data,

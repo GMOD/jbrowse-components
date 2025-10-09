@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { getRelativeX } from './util'
 
@@ -25,6 +25,12 @@ export function useRangeSelect(
   const [guideX, setGuideX] = useState<number>()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
+  const handleClose = useCallback(() => {
+    setAnchorPosition(undefined)
+    setStartX(undefined)
+    setCurrentX(undefined)
+  }, [])
+
   useEffect(() => {
     function computeOffsets(offsetX: number) {
       if (startX === undefined) {
@@ -49,6 +55,10 @@ export function useRangeSelect(
       if (startX !== undefined && ref.current) {
         const { clientX, clientY } = event
         const offsetX = getRelativeX(event, ref.current)
+        if (Math.abs(offsetX - startX) <= 3) {
+          handleClose()
+          return
+        }
         // as stated above, store both clientX/Y and offsetX for different
         // purposes
         setAnchorPosition({
@@ -72,18 +82,7 @@ export function useRangeSelect(
       }
     }
     return () => {}
-  }, [startX, mouseDragging, model, ref])
-
-  useEffect(() => {
-    if (
-      !mouseDragging &&
-      currentX !== undefined &&
-      startX !== undefined &&
-      Math.abs(currentX - startX) <= 3
-    ) {
-      handleClose()
-    }
-  }, [mouseDragging, currentX, startX])
+  }, [startX, mouseDragging, model, ref, handleClose])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     if (shiftOnly && !event.shiftKey) {
@@ -111,12 +110,6 @@ export function useRangeSelect(
 
   function mouseOut() {
     setGuideX(undefined)
-  }
-
-  function handleClose() {
-    setAnchorPosition(undefined)
-    setStartX(undefined)
-    setCurrentX(undefined)
   }
 
   function handleMenuItemClick(_: unknown, callback: () => void) {

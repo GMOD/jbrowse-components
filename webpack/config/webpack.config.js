@@ -194,8 +194,6 @@ module.exports = function webpackBuilder(webpackEnv) {
                   ],
                   '@babel/preset-typescript',
                 ],
-
-                plugins: ['babel-plugin-react-compiler'],
               },
             },
             // "postcss" loader applies autoprefixer to our CSS. "css"

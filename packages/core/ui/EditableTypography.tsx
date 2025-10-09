@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from 'react'
+import { forwardRef, useState } from 'react'
 
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
@@ -47,14 +47,6 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
     const [ref2, { width }] = useMeasure()
     const [editedValue, setEditedValue] = useState<string>()
     const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
-    const [blur, setBlur] = useState(false)
-
-    useEffect(() => {
-      if (blur) {
-        inputNode?.blur()
-        setBlur(false)
-      }
-    }, [blur, inputNode])
 
     // possibly tss-react does not understand the passing of props to
     // useStyles, but it appears to work
@@ -103,7 +95,7 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
               inputNode?.blur()
             } else if (event.key === 'Escape') {
               setEditedValue(undefined)
-              setBlur(true)
+              inputNode?.blur()
             }
           }}
           onBlur={() => {
