@@ -14,7 +14,7 @@ import TrackRenderingContainer from './TrackRenderingContainer'
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: 2,
     overflow: 'hidden',
@@ -24,11 +24,15 @@ const useStyles = makeStyles()({
     background: 'none',
   },
   resizeHandle: {
-    height: 3,
+    height: 4,
     boxSizing: 'border-box',
     position: 'relative',
+    background: 'transparent',
+    '&:hover': {
+      background: theme.palette.divider,
+    },
   },
-})
+}))
 
 type LGV = LinearGenomeViewModel
 
