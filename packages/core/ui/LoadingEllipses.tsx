@@ -31,10 +31,12 @@ const useStyles = makeStyles()({
 
 interface Props extends TypographyProps {
   message?: string
+  children?: never
 }
 
 export default function LoadingEllipses({
   message,
+  children,
   variant = 'body2',
   ...rest
 }: Props) {

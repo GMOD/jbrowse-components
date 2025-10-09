@@ -111,7 +111,7 @@ const GroupByTagDialog = observer(function (props: {
             {error ? (
               <ErrorMessage error={error} />
             ) : loading ? (
-              <LoadingEllipses title="Loading unique tags" />
+              <LoadingEllipses message="Loading unique tags" />
             ) : tagSet ? (
               <div>
                 <div>Found unique {tag} values:</div>

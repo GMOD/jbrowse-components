@@ -219,7 +219,7 @@ cat(resultClusters$order,sep='\\n')`
             {results ? (
               <div />
             ) : loading ? (
-              <LoadingEllipses variant="h6" title="Generating score matrix" />
+              <LoadingEllipses variant="h6" message="Generating score matrix" />
             ) : error ? (
               <ErrorMessage error={error} />
             ) : null}

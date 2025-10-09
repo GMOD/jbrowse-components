@@ -55,8 +55,8 @@ const UnindexedFastaAdapterInput = observer(function ({
   return (
     <>
       <Alert severity="warning" style={{ margin: 8 }}>
-        Note: use only relatively small files for this type, it is loaded into
-        memory
+        Note: a FASTA index will be generated on submit, might take a couple
+        minutes and if the file is remote, it will be downloaded in full
       </Alert>
       <div>
         <FileSelector
