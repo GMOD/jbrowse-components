@@ -394,9 +394,7 @@ const OpenSequenceDialog = observer(function ({
         ) : null}
 
         {loading ? (
-          <LoadingEllipses className={classes.message}>
-            {loading}
-          </LoadingEllipses>
+          <LoadingEllipses className={classes.message} message={loading} />
         ) : null}
 
         {error ? <ErrorMessage error={error} /> : null}

@@ -213,7 +213,7 @@ cat(resultClusters$order,sep='\\n')`
             ) : loading ? (
               <LoadingEllipses
                 variant="h6"
-                title="Generating genotype matrix"
+                message="Generating genotype matrix"
               />
             ) : error ? (
               <ErrorMessage error={error} />
