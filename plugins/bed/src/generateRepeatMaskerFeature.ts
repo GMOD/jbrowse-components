@@ -1,12 +1,17 @@
+const REPEAT_MASKER_NUMERIC_FIELD_INDICES = [0, 1, 2, 3, 5, 6] as const
+
 export function isRepeatMaskerDescriptionField(desc?: string): desc is string {
-  const ret = desc?.trim().split(' ')
-  return [0, 1, 2, 3, 5, 6].every(s =>
-    ret?.[s] !== undefined ? !Number.isNaN(+ret[s]) : false,
+  const descriptionFields = desc?.trim().split(' ')
+  return REPEAT_MASKER_NUMERIC_FIELD_INDICES.every(fieldIndex =>
+    descriptionFields?.[fieldIndex] !== undefined
+      ? !Number.isNaN(+descriptionFields[fieldIndex])
+      : false,
   )
 }
 
 function makeRepeatTrackDescription(description?: string) {
   if (isRepeatMaskerDescriptionField(description)) {
+    const fields = description.trim().split(' ')
     const [
       bitsw_score,
       percent_div,
@@ -23,7 +28,8 @@ function makeRepeatTrackDescription(description?: string) {
       matching_repeat_end,
       matching_repeat_remaining,
       repeat_id,
-    ] = description.trim().split(' ')
+    ] = fields
+
     return {
       bitsw_score,
       percent_div,
@@ -60,9 +66,9 @@ export function generateRepeatMaskerFeature({
   description: string
   [key: string]: unknown
 }) {
-  const { subfeatures, ...rest2 } = rest
+  const { subfeatures: _unusedSubfeatures, ...restWithoutSubfeatures } = rest
   return {
-    ...rest2,
+    ...restWithoutSubfeatures,
     ...makeRepeatTrackDescription(description),
     uniqueId,
     refName,

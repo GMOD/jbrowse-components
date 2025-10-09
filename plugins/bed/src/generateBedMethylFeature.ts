@@ -1,4 +1,8 @@
 // this uses modkit bedMethyl. unclear how to reliably detect minimal 9+2 bedMethyl
+const BED_METHYL_NUMERIC_COLUMNS = [9, 10, 11, 12, 13, 14, 15, 16, 17] as const
+const BED_METHYL_THICK_START_COL = 6
+const BED_METHYL_THICK_END_COL = 7
+
 export function isBedMethylFeature({
   splitLine,
   start,
@@ -8,13 +12,15 @@ export function isBedMethylFeature({
   start: number
   end: number
 }) {
-  return (
-    +(splitLine[6] || 0) === start &&
-    +(splitLine[7] || 0) === end &&
-    [9, 10, 11, 12, 13, 14, 15, 16, 17].every(
-      r => splitLine[r] && !Number.isNaN(+splitLine[r]),
-    )
+  const thickStartMatches =
+    +(splitLine[BED_METHYL_THICK_START_COL] || 0) === start
+  const thickEndMatches = +(splitLine[BED_METHYL_THICK_END_COL] || 0) === end
+  const hasRequiredNumericColumns = BED_METHYL_NUMERIC_COLUMNS.every(
+    columnIndex =>
+      splitLine[columnIndex] && !Number.isNaN(+splitLine[columnIndex]),
   )
+
+  return thickStartMatches && thickEndMatches && hasRequiredNumericColumns
 }
 
 export function generateBedMethylFeature({
@@ -36,12 +42,12 @@ export function generateBedMethylFeature({
     ,
     ,
     ,
-    code,
+    /* chrom */ /* chromStart */ /* chromEnd */ code,
     ,
-    strand,
+    /* name */ strand,
     ,
     ,
-    color,
+    /* thickStart */ /* thickEnd */ color,
     n_valid_cov,
     fraction_modified,
     n_mod,

@@ -1,5 +1,8 @@
 import type { MinimalFeature, TranscriptFeat } from './types'
 
+const CDS_STAT_NONE = 'none' as const
+const NEUTRAL_STRAND = 0 as const
+
 export function isUcscTranscript({
   thickStart,
   blockCount,
@@ -9,7 +12,7 @@ export function isUcscTranscript({
   blockCount?: number
   strand?: number
 }) {
-  return thickStart && blockCount && strand !== 0
+  return Boolean(thickStart && blockCount && strand !== NEUTRAL_STRAND)
 }
 
 export function generateUcscTranscript(data: TranscriptFeat) {
@@ -39,36 +42,44 @@ export function generateUcscTranscript(data: TranscriptFeat) {
     .sort((a, b) => a.start - b.start)
 
   const { cdsEndStat, cdsStartStat } = rest2
-  if (cdsStartStat === 'none' && cdsEndStat === 'none') {
+  const hasNoCodingSequence =
+    cdsStartStat === CDS_STAT_NONE && cdsEndStat === CDS_STAT_NONE
+
+  if (hasNoCodingSequence) {
     return {
       ...rest2,
       uniqueId,
       strand,
       type: 'transcript',
       refName,
-      subfeatures: feats.map(e => ({
-        ...e,
+      subfeatures: feats.map(feature => ({
+        ...feature,
         type: 'exon',
       })),
     }
   } else {
     for (const block of feats) {
-      const start = block.start
-      const end = block.end
-      if (thickStart >= end) {
+      const blockStart = block.start
+      const blockEnd = block.end
+
+      if (thickStart >= blockEnd) {
         // left-side UTR
         subfeatures.push({
           type: `${strand > 0 ? 'five' : 'three'}_prime_UTR`,
-          start,
-          end,
+          start: blockStart,
+          end: blockEnd,
           refName,
         })
-      } else if (thickStart > start && thickStart < end && thickEnd >= end) {
+      } else if (
+        thickStart > blockStart &&
+        thickStart < blockEnd &&
+        thickEnd >= blockEnd
+      ) {
         // UTR | CDS
         subfeatures.push(
           {
             type: `${strand > 0 ? 'five' : 'three'}_prime_UTR`,
-            start,
+            start: blockStart,
             end: thickStart,
             refName,
           },
@@ -76,25 +87,29 @@ export function generateUcscTranscript(data: TranscriptFeat) {
             type: 'CDS',
             phase: 0,
             start: thickStart,
-            end,
+            end: blockEnd,
             refName,
           },
         )
-      } else if (thickStart <= start && thickEnd >= end) {
+      } else if (thickStart <= blockStart && thickEnd >= blockEnd) {
         // CDS
         subfeatures.push({
           type: 'CDS',
           phase: 0,
-          start,
-          end,
+          start: blockStart,
+          end: blockEnd,
           refName,
         })
-      } else if (thickStart > start && thickStart < end && thickEnd < end) {
+      } else if (
+        thickStart > blockStart &&
+        thickStart < blockEnd &&
+        thickEnd < blockEnd
+      ) {
         // UTR | CDS | UTR
         subfeatures.push(
           {
             type: `${strand > 0 ? 'five' : 'three'}_prime_UTR`,
-            start,
+            start: blockStart,
             end: thickStart,
             refName,
           },
@@ -108,33 +123,37 @@ export function generateUcscTranscript(data: TranscriptFeat) {
           {
             type: `${strand > 0 ? 'three' : 'five'}_prime_UTR`,
             start: thickEnd,
-            end,
+            end: blockEnd,
             refName,
           },
         )
-      } else if (thickStart <= start && thickEnd > start && thickEnd < end) {
+      } else if (
+        thickStart <= blockStart &&
+        thickEnd > blockStart &&
+        thickEnd < blockEnd
+      ) {
         // CDS | UTR
         subfeatures.push(
           {
             type: 'CDS',
             phase: 0,
-            start,
+            start: blockStart,
             end: thickEnd,
             refName,
           },
           {
             type: `${strand > 0 ? 'three' : 'five'}_prime_UTR`,
             start: thickEnd,
-            end,
+            end: blockEnd,
             refName,
           },
         )
-      } else if (thickEnd <= start) {
+      } else if (thickEnd <= blockStart) {
         // right-side UTR
         subfeatures.push({
           type: `${strand > 0 ? 'three' : 'five'}_prime_UTR`,
-          start,
-          end,
+          start: blockStart,
+          end: blockEnd,
           refName,
         })
       }

@@ -6,7 +6,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { featureData } from '../util'
+import { generateFeature2 } from '../generateFeature2'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -129,7 +129,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       const line = lines[i]!
       const uniqueId = `${this.id}-${refName}-${i}`
       const feat = new SimpleFeature(
-        featureData({
+        generateFeature2({
           line,
           colRef,
           colStart,

@@ -6,7 +6,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import { featureData } from '../util'
+import { generateFeature2 } from '../generateFeature2'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -117,7 +117,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
             }
             observer.next(
               new SimpleFeature(
-                featureData({
+                generateFeature2({
                   line,
                   colRef,
                   colStart,

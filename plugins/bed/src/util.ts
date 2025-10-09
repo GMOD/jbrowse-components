@@ -1,19 +1,6 @@
-import {
-  generateBedMethylFeature,
-  isBedMethylFeature,
-} from './generateBedMethylFeature'
-import {
-  generateRepeatMaskerFeature,
-  isRepeatMaskerDescriptionField,
-} from './generateRepeatMaskerFeature'
-import {
-  generateUcscTranscript,
-  isUcscTranscript,
-} from './generateUcscTranscript'
-
 import type BED from '@gmod/bed'
 
-function defaultParser(fields: string[], splitLine: string[]) {
+export function defaultParser(fields: string[], splitLine: string[]) {
   let hasBlockCount = false
   const r = [] as [string, string][]
 
@@ -92,51 +79,20 @@ export function makeBlocks({
   return subfeatures
 }
 
-export function featureData({
-  line,
-  colRef,
-  colStart,
-  colEnd,
-  scoreColumn,
-  parser,
-  uniqueId,
-  names,
-}: {
-  line: string
-  colRef: number
-  colStart: number
-  colEnd: number
-  scoreColumn: string
-  parser: BED
-  uniqueId: string
-  names?: string[]
-}) {
-  const splitLine = line.split('\t')
-  const refName = splitLine[colRef]!
-  const start = Number.parseInt(splitLine[colStart]!, 10)
-  const end =
-    Number.parseInt(splitLine[colEnd]!, 10) + (colStart === colEnd ? 1 : 0)
+export function arrayify(input?: string | number[]): number[] | undefined {
+  if (input === undefined) {
+    return undefined
+  }
 
-  return featureData2({
-    splitLine,
-    refName,
-    start,
-    end,
-    parser,
-    uniqueId,
-    scoreColumn,
-    names,
-  })
+  return typeof input === 'string'
+    ? input.split(',').map(value => +value)
+    : input
 }
 
 export function featureData2({
   splitLine,
-  refName,
-  start,
-  end,
   parser,
   uniqueId,
-  scoreColumn,
   names,
 }: {
   splitLine: string[]
@@ -151,115 +107,6 @@ export function featureData2({
   const data = names
     ? defaultParser(names, splitLine)
     : parser.parseLine(splitLine, { uniqueId })
-  const {
-    strand: strand2,
-    score: score2,
-    chrom: _1,
-    chromStart: _2,
-    chromEnd: _3,
-    ...rest
-  } = data
 
-  const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
-  const strand =
-    typeof strand2 === 'string' ? (strand2 === '-' ? -1 : 1) : strand2
-
-  const subfeatures = rest.blockCount
-    ? makeBlocks({
-        start,
-        uniqueId,
-        refName,
-        chromStarts: rest.chromStarts,
-        blockCount: rest.blockCount,
-        blockSizes: rest.blockSizes,
-        blockStarts: rest.blockStarts,
-      })
-    : undefined
-
-  if (isBedMethylFeature({ splitLine, start, end })) {
-    return generateBedMethylFeature({
-      splitLine,
-      uniqueId,
-      refName,
-      start,
-      end,
-    })
-  } else if (isRepeatMaskerDescriptionField(rest.description)) {
-    const {
-      chromStarts,
-      blockSizes,
-      blockStarts,
-      type,
-      blockCount,
-      thickStart,
-      thickEnd,
-      description,
-      ...rest2
-    } = rest
-    return generateRepeatMaskerFeature({
-      ...rest2,
-      uniqueId,
-      description,
-      type,
-      score,
-      start,
-      end,
-      strand,
-      refName,
-      subfeatures,
-    })
-  } else if (
-    subfeatures &&
-    isUcscTranscript({
-      strand,
-      blockCount: rest.blockCount,
-      thickStart: rest.thickStart,
-    })
-  ) {
-    const {
-      chromStarts,
-      blockSizes,
-      type,
-      blockCount,
-      thickStart,
-      thickEnd,
-      description,
-    } = rest
-    return generateUcscTranscript({
-      ...rest,
-      description,
-      chromStarts,
-      thickStart,
-      thickEnd,
-      blockSizes,
-      blockCount,
-      type,
-      score,
-      start,
-      end,
-      strand,
-      refName,
-      uniqueId,
-      subfeatures,
-    })
-  } else {
-    return {
-      ...rest,
-      uniqueId,
-      score,
-      start,
-      end,
-      strand,
-      refName,
-      subfeatures,
-    }
-  }
-}
-
-export function arrayify(f?: string | number[]) {
-  return f !== undefined
-    ? typeof f === 'string'
-      ? f.split(',').map(f => +f)
-      : f
-    : undefined
+  return data
 }
