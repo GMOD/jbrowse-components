@@ -956,7 +956,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                           id="_r_s_"
                           style="height: 0px; overflow: hidden;"
                         >
-                          get(feature,'name')+'&lt;br/&gt;'+(mouseoverExtraInformation||'')
+                          join('&lt;br/&gt;',get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id'),mouseoverExtraInformation||'')
                         </textarea>
                         <textarea
                           aria-hidden="true"
