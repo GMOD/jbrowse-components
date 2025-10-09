@@ -25,7 +25,7 @@ const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()(theme => ({
   message: {
-    background: '#ddd',
+    background: theme.palette.grey[300],
     margin: theme.spacing(2),
     padding: theme.spacing(2),
   },
@@ -34,7 +34,7 @@ const useStyles = makeStyles()(theme => ({
     margin: theme.spacing(2),
   },
   stagedAssemblies: {
-    background: '#dfd',
+    background: theme.palette.success.light,
     margin: theme.spacing(4),
     padding: theme.spacing(2),
   },
