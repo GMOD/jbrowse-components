@@ -1,8 +1,8 @@
 module.exports = function babelConfig(api) {
   api.cache(true)
   return {
+    plugins: ['babel-plugin-react-compiler'],
     presets: [
-      'babel-plugin-react-compiler',
       [
         '@babel/preset-react',
         {

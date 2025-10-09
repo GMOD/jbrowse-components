@@ -185,6 +185,7 @@ module.exports = function webpackBuilder(webpackEnv) {
 
               loader: require.resolve('babel-loader'),
               options: {
+                plugins: ['babel-plugin-react-compiler'],
                 presets: [
                   [
                     '@babel/preset-react',
