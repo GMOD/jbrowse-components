@@ -86,8 +86,8 @@ const FastaAdapterInput = observer(function ({
   return (
     <>
       <Alert severity="warning" style={{ margin: 8 }}>
-        Note: use only relatively small files for this type, it will be indexed
-        on submit
+        Note: a FASTA index will be generated on submit, might take a couple
+        minutes and if the file is remote, it will be downloaded in full
       </Alert>
       <FileSelector
         inline
@@ -234,6 +234,8 @@ const OpenSequenceDialog = observer(function ({
   const [cytobandsLocation, setCytobandsLocation] = useState(blank)
   const [showAdvanced, setShowAdvanced] = useState(false)
 
+  console.log({ loading })
+
   function clearState() {
     setFastaLocation(blank)
     setFaiLocation(blank)
@@ -367,7 +369,15 @@ const OpenSequenceDialog = observer(function ({
     }
   }
   return (
-    <Dialog open onClose={() => onClose()} title="Open genome(s)">
+    <Dialog
+      open
+      onClose={() => {
+        if (!loading) {
+          onClose()
+        }
+      }}
+      title="Open genome(s)"
+    >
       <DialogContent>
         <Typography>
           Use this dialog to open an indexed FASTA file (.fa and .fai),
