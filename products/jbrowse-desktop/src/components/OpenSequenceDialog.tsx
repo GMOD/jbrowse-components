@@ -234,8 +234,6 @@ const OpenSequenceDialog = observer(function ({
   const [cytobandsLocation, setCytobandsLocation] = useState(blank)
   const [showAdvanced, setShowAdvanced] = useState(false)
 
-  console.log({ loading })
-
   function clearState() {
     setFastaLocation(blank)
     setFaiLocation(blank)
