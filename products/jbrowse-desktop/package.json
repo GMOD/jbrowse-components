@@ -10,13 +10,13 @@
   "dir": "src",
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
-    "start": "node scripts/start.js",
+    "start": "node scripts/start.cjs",
     "electron": "electron . --no-sandbox",
     "electron-ts": "tsc -b tsconfig.electron.json",
     "preelectron": "npm run electron-ts",
     "prebuild": "npm run electron-ts",
     "prepack": "npm run build",
-    "build": "node scripts/build.js",
+    "build": "node scripts/build.cjs",
     "build-electron": "yarn build && electron-builder build --windows --mac --linux",
     "build-electron:win": "yarn build && electron-builder build --windows",
     "build-electron:mac": "yarn build && electron-builder build --mac",
@@ -195,8 +195,8 @@
     "directories": {
       "buildResources": "assets/"
     },
-    "afterSign": "scripts/notarize.js",
-    "afterPack": "./linux-sandbox-fix.js"
+    "afterSign": "scripts/notarize.cjs",
+    "afterPack": "./linux-sandbox-fix.cjs"
   },
   "private": true
 }
