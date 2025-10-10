@@ -14,15 +14,17 @@ export function useFeatureSequence({
   upDownBp,
   forceLoad,
   assemblyName,
+  shouldFetch = true,
 }: {
   assemblyName: string
   session?: AbstractSessionModel
   feature: Feature
   upDownBp: number
   forceLoad: boolean
+  shouldFetch?: boolean
 }) {
   const key = useMemo(() => {
-    if (!session) {
+    if (!session || !shouldFetch) {
       return null
     }
 
@@ -39,7 +41,7 @@ export function useFeatureSequence({
       forceLoad,
       sessionId: session.id || 'default',
     }
-  }, [session, feature, assemblyName, upDownBp, forceLoad])
+  }, [session, feature, assemblyName, upDownBp, forceLoad, shouldFetch])
 
   const { data: sequence, error } = useSWR(
     key,

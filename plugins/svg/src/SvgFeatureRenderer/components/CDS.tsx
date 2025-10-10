@@ -113,6 +113,7 @@ const CDS = observer(function CDS(props: {
     feature: parent,
     region,
     displayModel,
+    shouldFetch: doRender,
   })
   const g2p = doRender
     ? // @ts-expect-error

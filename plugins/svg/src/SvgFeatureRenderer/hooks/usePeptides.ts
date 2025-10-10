@@ -20,12 +20,14 @@ export function usePeptides({
   displayModel,
   upDownBp = 0,
   forceLoad = true,
+  shouldFetch = true,
 }: {
   feature: Feature
   region: Region
   displayModel: unknown
   upDownBp?: number
   forceLoad?: boolean
+  shouldFetch?: boolean
 }) {
   const session = displayModel ? getSession(displayModel) : undefined
   const { assemblyName } = region
@@ -36,14 +38,16 @@ export function usePeptides({
     feature,
     upDownBp,
     forceLoad,
+    shouldFetch,
   })
   const sequenceData = useSequenceData({
     feature: feature.toJSON(),
     sequence,
   })
+  console.log({ shouldFetch, forceLoad, sequence, sequenceData })
 
-  // If we don't have a valid sequence, return undefined
-  return !sequenceData
+  // If we don't have a valid sequence or should not fetch, return undefined
+  return !sequenceData || !shouldFetch
     ? undefined
     : convertCodingSequenceToPeptides({
         cds: sequenceData.cds,
