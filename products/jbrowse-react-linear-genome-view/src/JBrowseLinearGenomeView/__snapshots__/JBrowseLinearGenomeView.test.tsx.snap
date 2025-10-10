@@ -7598,7 +7598,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-r2p1jw-horizontalHandle-resizeHandle"
+                  class="css-120n0lh-horizontalHandle-resizeHandle"
                   data-resizer="true"
                 />
               </div>

@@ -622,7 +622,7 @@ exports[`renders one track, one region 1`] = `
           </div>
         </div>
         <div
-          class="css-r2p1jw-horizontalHandle-resizeHandle"
+          class="css-120n0lh-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
       </div>
@@ -1703,7 +1703,7 @@ exports[`renders two tracks, two regions 1`] = `
           </div>
         </div>
         <div
-          class="css-r2p1jw-horizontalHandle-resizeHandle"
+          class="css-120n0lh-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
       </div>
@@ -1826,7 +1826,7 @@ exports[`renders two tracks, two regions 1`] = `
           </div>
         </div>
         <div
-          class="css-r2p1jw-horizontalHandle-resizeHandle"
+          class="css-120n0lh-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
       </div>
