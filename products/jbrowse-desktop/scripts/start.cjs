@@ -2,7 +2,7 @@
 process.env.BABEL_ENV = 'development'
 process.env.NODE_ENV = 'development'
 
-const configTransform = require('./config')
+const configTransform = require('./config.cjs')
 const configFactory = require('../../../webpack/config/webpack.config')
 const startServer = require('../../../webpack/scripts/start')
 startServer(configTransform(configFactory('development')))
