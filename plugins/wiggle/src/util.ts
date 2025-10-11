@@ -7,11 +7,13 @@ import {
 export const YSCALEBAR_LABEL_OFFSET = 5
 
 export interface ScaleOpts {
-  domain: number[]
+  domain?: number[]
   range: number[]
   scaleType: string
   pivotValue?: number
   inverted?: boolean
+  minScore?: number
+  maxScore?: number
 }
 
 export interface Source {
@@ -39,6 +41,9 @@ export function getScale({
   pivotValue,
   inverted,
 }: ScaleOpts) {
+  if (!domain) {
+    return undefined
+  }
   let scale:
     | ReturnType<typeof scaleLinear<number>>
     | ReturnType<typeof scaleLog<number>>
