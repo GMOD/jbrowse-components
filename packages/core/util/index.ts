@@ -845,7 +845,7 @@ export const complementTable = {
 } as Record<string, string>
 
 export function revcom(str: string) {
-  let revcomped = []
+  const revcomped = []
   for (let i = str.length - 1; i >= 0; i--) {
     revcomped.push(complementTable[str[i]!] ?? str[i])
   }
@@ -853,7 +853,7 @@ export function revcom(str: string) {
 }
 
 export function reverse(str: string) {
-  let reversed = []
+  const reversed = []
   for (let i = str.length - 1; i >= 0; i--) {
     reversed.push(str[i]!)
   }
@@ -861,10 +861,9 @@ export function reverse(str: string) {
 }
 
 export function complement(str: string) {
-  let comp = []
-
-  for (const element of str) {
-    comp.push(complementTable[element] ?? element)
+  const comp = []
+  for (let i = 0, l = str.length; i < l; i++) {
+    comp.push(complementTable[str[i]!] ?? str[i]!)
   }
   return comp.join('')
 }
