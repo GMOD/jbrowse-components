@@ -44,6 +44,7 @@ export function usePeptides({
     feature: feature.toJSON(),
     sequence,
   })
+  console.log({ shouldFetch, forceLoad, sequence, sequenceData })
 
   // If we don't have a valid sequence or should not fetch, return undefined
   return !sequenceData || !shouldFetch
