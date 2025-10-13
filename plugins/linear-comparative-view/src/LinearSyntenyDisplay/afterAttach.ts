@@ -65,6 +65,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         return
       }
 
+      // Access alpha to make autorun react to alpha changes
+      const { alpha } = self
       const height = self.height
       const width = view.width
       ctx1.clearRect(0, 0, width, height)

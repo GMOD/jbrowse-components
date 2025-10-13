@@ -4,17 +4,25 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
-import { FormGroup } from '@mui/material'
+import { Box, FormGroup, Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import HeaderSearchBoxes from './HeaderSearchBoxes'
 
 import type { LinearComparativeViewModel } from '../model'
+import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
 
 const useStyles = makeStyles()({
   inline: {
     display: 'inline-flex',
+  },
+  alphaSlider: {
+    display: 'flex',
+    alignItems: 'center',
+    marginLeft: 16,
+    marginRight: 16,
+    minWidth: 150,
   },
 })
 
@@ -24,9 +32,28 @@ const Header = observer(function ({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const { views } = model
+  const { views, levels } = model
   const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
   const [sideBySide, setSideBySide] = useState(views.length <= 3)
+
+  // Get the first synteny display from the first level (if it exists)
+  const firstDisplay = levels[0]?.tracks[0]?.displays[0] as
+    | LinearSyntenyDisplayModel
+    | undefined
+  const alpha = firstDisplay?.alpha ?? 1
+
+  const handleAlphaChange = (_event: Event, value: number | number[]) => {
+    const newAlpha = typeof value === 'number' ? value : value[0]!
+    // Set alpha for all synteny displays across all levels
+    for (const level of levels) {
+      for (const track of level.tracks) {
+        for (const display of track.displays) {
+          ;(display as LinearSyntenyDisplayModel).setAlpha(newAlpha)
+        }
+      }
+    }
+  }
+
   return (
     <FormGroup row>
       <CascadingMenuButton
@@ -100,6 +127,24 @@ const Header = observer(function ({
       >
         <SearchIcon />
       </CascadingMenuButton>
+
+      {firstDisplay ? (
+        <Box className={classes.alphaSlider}>
+          <Typography variant="body2" style={{ marginRight: 8 }}>
+            Opacity:
+          </Typography>
+          <Slider
+            value={alpha}
+            onChange={handleAlphaChange}
+            min={0}
+            max={1}
+            step={0.05}
+            valueLabelDisplay="auto"
+            size="small"
+            style={{ minWidth: 100 }}
+          />
+        </Box>
+      ) : null}
 
       {showSearchBoxes ? (
         <span className={sideBySide ? classes.inline : undefined}>

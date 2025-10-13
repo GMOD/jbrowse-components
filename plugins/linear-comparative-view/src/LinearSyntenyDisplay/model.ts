@@ -95,6 +95,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * currently mouseover'd CIGAR subfeature
        */
       cigarMouseoverId: -1,
+
+      /**
+       * #volatile
+       * alpha transparency value for synteny drawing (0-1)
+       */
+      alpha: 1,
     }))
     .actions(self => ({
       /**
@@ -144,6 +150,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setClickId(arg?: string) {
         self.clickId = arg
+      },
+      /**
+       * #action
+       */
+      setAlpha(value: number) {
+        self.alpha = value
       },
     }))
 

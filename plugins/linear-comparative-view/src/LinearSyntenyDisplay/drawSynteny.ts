@@ -166,9 +166,13 @@ export function drawRef(
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
   const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
-  const { level, height, featPositions } = model
+  const { level, height, featPositions, alpha } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
+
+  // Set alpha transparency
+  const savedAlpha = mainCanvas.globalAlpha
+  mainCanvas.globalAlpha = alpha
 
   mainCanvas.beginPath()
   const offsets = view.views.map(v => v.offsetPx)
@@ -320,6 +324,8 @@ export function drawRef(
   // draw click map
   const ctx2 = model.clickMapCanvas?.getContext('2d')
   if (!ctx2) {
+    // Restore alpha before early return
+    mainCanvas.globalAlpha = savedAlpha
     return
   }
   ctx2.imageSmoothingEnabled = false
@@ -347,6 +353,9 @@ export function drawRef(
       height,
     })
   }
+
+  // Restore alpha
+  mainCanvas.globalAlpha = savedAlpha
 }
 
 export function drawMouseoverClickMap(model: LinearSyntenyDisplayModel) {
