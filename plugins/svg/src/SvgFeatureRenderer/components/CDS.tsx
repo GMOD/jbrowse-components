@@ -94,9 +94,10 @@ const CDS = observer(function CDS(props: {
     topLevel,
     displayModel,
   } = props
-  const { start, end } = region
+  const { start, end, reversed } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
   const featureStart = feature.get('start')
+  const flipper = reversed ? -1 : 1
   const featureEnd = feature.get('end')
   const strand = feature.get('strand')
   const width = (featureEnd - featureStart) / bpPerPx
@@ -147,7 +148,7 @@ const CDS = observer(function CDS(props: {
         ? darken(colord(baseColor).toHex(), 0.1)
         : lighten(colord(baseColor).toHex(), 0.2)
 
-      if (strand === -1) {
+      if (strand * flipper === -1) {
         const startX = right - (1 / bpPerPx) * aa.startIndex
         const endX = right - (1 / bpPerPx) * (aa.endIndex + 1)
         const x = (startX + endX) / 2 - 4
