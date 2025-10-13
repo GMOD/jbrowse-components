@@ -7,7 +7,7 @@ import { addDisposer, getSnapshot } from 'mobx-state-tree'
 import {
   debounce,
   drawCigarClickMap,
-  drawMouseoverSynteny,
+  drawMouseoverClickMap,
   drawRef,
 } from './drawSynteny'
 
@@ -35,6 +35,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   const debouncedDrawCigarClickMap = debounce(
     (model: LinearSyntenyDisplayModel, ctx: CanvasRenderingContext2D) => {
       drawCigarClickMap(model, ctx)
+    },
+    400,
+  )
+
+  // Create debounced version of drawMouseoverClickMap (400ms delay)
+  const debouncedDrawMouseoverClickMap = debounce(
+    (model: LinearSyntenyDisplayModel) => {
+      drawMouseoverClickMap(model)
     },
     400,
   )
@@ -78,7 +86,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       ) {
         return
       }
-      drawMouseoverSynteny(self)
+      // Draw mouseover click map with debounce
+      debouncedDrawMouseoverClickMap(self)
     }),
   )
 

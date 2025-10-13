@@ -337,7 +337,7 @@ export function drawRef(
   }
 }
 
-export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
+export function drawMouseoverClickMap(model: LinearSyntenyDisplayModel) {
   const { level, clickId, mouseoverId } = model
   const highResolutionScaling = 1
   const view = getContainingView(model) as LinearSyntenyViewModel

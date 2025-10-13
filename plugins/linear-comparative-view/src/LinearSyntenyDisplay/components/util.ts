@@ -7,6 +7,7 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
+  toLocale,
 } from '@jbrowse/core/util'
 
 import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
@@ -233,7 +234,11 @@ export function onSynContextClick(
   const f = model.featPositions[id]
   if (f) {
     model.setClickId(f.f.id())
-    setAnchorEl({ clientX, clientY, feature: f })
+    setAnchorEl({
+      clientX,
+      clientY,
+      feature: f,
+    })
   }
 }
 
@@ -243,8 +248,8 @@ export function getTooltip({
   cigarOpLen,
 }: {
   feature: Feature
-  cigarOp?: string
   cigarOpLen?: string
+  cigarOp?: string
 }) {
   // @ts-expect-error
   const f1 = feature.toJSON() as {
@@ -275,7 +280,7 @@ export function getTooltip({
     `Query len: ${l1.toLocaleString('en-US')}`,
     `Target len: ${l2.toLocaleString('en-US')}`,
     identity ? `Identity: ${identity.toPrecision(2)}` : '',
-    cigarOp ? `CIGAR operator: ${cigarOp}${cigarOpLen}` : '',
+    cigarOp ? `CIGAR operator: ${toLocale(+cigarOpLen!)}${cigarOp}` : '',
     n1 ? `Name 1: ${n1}` : '',
     n2 ? `Name 2: ${n2}` : '',
   ]
