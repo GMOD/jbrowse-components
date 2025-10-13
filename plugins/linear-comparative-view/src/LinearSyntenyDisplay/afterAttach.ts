@@ -39,12 +39,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     400,
   )
 
-  // Create debounced version of drawMouseoverClickMap (400ms delay)
+  // Create lightly debounced version of drawMouseoverClickMap (100ms delay)
+  // This provides performance benefits while still feeling responsive
   const debouncedDrawMouseoverClickMap = debounce(
     (model: LinearSyntenyDisplayModel) => {
       drawMouseoverClickMap(model)
     },
-    400,
+    100,
   )
 
   addDisposer(
@@ -86,7 +87,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       ) {
         return
       }
-      // Draw mouseover click map with debounce
+      // Access reactive properties so autorun is triggered when they change
+      const { clickId, mouseoverId } = self
+      // Draw mouseover with light debounce for performance
       debouncedDrawMouseoverClickMap(self)
     }),
   )

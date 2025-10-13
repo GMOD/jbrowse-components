@@ -54,6 +54,7 @@ export function drawCigarClickMap(
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
+  const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
   const { level, height, featPositions } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
@@ -135,9 +136,20 @@ export function drawCigarClickMap(
               continuingFlag = true
             } else {
               continuingFlag = false
-              cigarClickMapCanvas.fillStyle = makeColor(idx)
-              draw(cigarClickMapCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-              cigarClickMapCanvas.fill()
+              // When drawCIGARMatchesOnly is enabled, only draw match operations (M, =, X)
+              // Skip insertions (I) and deletions (D, N)
+              // Also skip very thin rectangles which tend to be glitchy
+              const shouldDraw =
+                !drawCIGARMatchesOnly ||
+                ((op === 'M' || op === '=' || op === 'X') &&
+                  Math.abs(cx1 - px1) > 1 &&
+                  Math.abs(cx2 - px2) > 1)
+
+              if (shouldDraw) {
+                cigarClickMapCanvas.fillStyle = makeColor(idx)
+                draw(cigarClickMapCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                cigarClickMapCanvas.fill()
+              }
             }
           }
         }
