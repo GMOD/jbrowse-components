@@ -7,6 +7,22 @@ import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 
+// Simple debounce function
+export function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number,
+): T {
+  let timeout: ReturnType<typeof setTimeout> | null = null
+  return ((...args: Parameters<T>) => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+    timeout = setTimeout(() => {
+      func(...args)
+    }, wait)
+  }) as T
+}
+
 function makeColor(idx: number) {
   const r = Math.floor(idx / (255 * 255)) % 255
   const g = Math.floor(idx / 255) % 255
@@ -31,10 +47,108 @@ export function getId(r: number, g: number, b: number, unitMultiplier: number) {
   return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
 }
 
+export function drawCigarClickMap(
+  model: LinearSyntenyDisplayModel,
+  cigarClickMapCanvas: CanvasRenderingContext2D,
+) {
+  const view = getContainingView(model) as LinearSyntenyViewModel
+  const drawCurves = view.drawCurves
+  const drawCIGAR = view.drawCIGAR
+  const { level, height, featPositions } = model
+  const width = view.width
+  const bpPerPxs = view.views.map(v => v.bpPerPx)
+
+  cigarClickMapCanvas.imageSmoothingEnabled = false
+  cigarClickMapCanvas.clearRect(0, 0, width, height)
+
+  const offsets = view.views.map(v => v.offsetPx)
+
+  for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
+    const x11 = p11.offsetPx - offsets[level]!
+    const x12 = p12.offsetPx - offsets[level]!
+    const x21 = p21.offsetPx - offsets[level + 1]!
+    const x22 = p22.offsetPx - offsets[level + 1]!
+    const l1 = Math.abs(x12 - x11)
+    const l2 = Math.abs(x22 - x21)
+    const minX = Math.min(x21, x22)
+    const maxX = Math.max(x21, x22)
+    const y1 = 0
+    const y2 = height
+    const mid = (y2 - y1) / 2
+
+    if (
+      !(l1 <= lineLimit && l2 <= lineLimit) &&
+      doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)
+    ) {
+      const s1 = f.get('strand')
+      const k1 = s1 === -1 ? x12 : x11
+      const k2 = s1 === -1 ? x11 : x12
+
+      const rev1 = k1 < k2 ? 1 : -1
+      const rev2 = (x21 < x22 ? 1 : -1) * s1
+
+      let cx1 = k1
+      let cx2 = s1 === -1 ? x22 : x21
+      if (cigar.length && drawCIGAR) {
+        let continuingFlag = false
+        let px1 = 0
+        let px2 = 0
+        const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+
+        for (let j = 0; j < cigar.length; j += 2) {
+          const idx = j * unitMultiplier2 + 1
+
+          const len = +cigar[j]!
+          const op = cigar[j + 1] as keyof typeof colorMap
+
+          if (!continuingFlag) {
+            px1 = cx1
+            px2 = cx2
+          }
+
+          const d1 = len / bpPerPxs[level]!
+          const d2 = len / bpPerPxs[level + 1]!
+
+          if (op === 'M' || op === '=' || op === 'X') {
+            cx1 += d1 * rev1
+            cx2 += d2 * rev2
+          } else if (op === 'D' || op === 'N') {
+            cx1 += d1 * rev1
+          }
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          else if (op === 'I') {
+            cx2 += d2 * rev2
+          }
+
+          if (
+            !(
+              Math.max(px1, px2, cx1, cx2) < 0 ||
+              Math.min(px1, px2, cx1, cx2) > width
+            )
+          ) {
+            const isNotLast = j < cigar.length - 2
+            if (
+              Math.abs(cx1 - px1) <= 1 &&
+              Math.abs(cx2 - px2) <= 1 &&
+              isNotLast
+            ) {
+              continuingFlag = true
+            } else {
+              continuingFlag = false
+              cigarClickMapCanvas.fillStyle = makeColor(idx)
+              draw(cigarClickMapCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              cigarClickMapCanvas.fill()
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 export function drawRef(
   model: LinearSyntenyDisplayModel,
-  ctx1: CanvasRenderingContext2D,
-  ctx3?: CanvasRenderingContext2D,
+  mainCanvas: CanvasRenderingContext2D,
 ) {
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
@@ -44,16 +158,12 @@ export function drawRef(
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
-  if (ctx3) {
-    ctx3.imageSmoothingEnabled = false
-  }
-
-  ctx1.beginPath()
+  mainCanvas.beginPath()
   const offsets = view.views.map(v => v.offsetPx)
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
 
-  ctx1.fillStyle = colorMap.M
-  ctx1.strokeStyle = colorMap.M
+  mainCanvas.fillStyle = colorMap.M
+  mainCanvas.strokeStyle = colorMap.M
   for (const { p11, p12, p21, p22 } of featPositions) {
     const x11 = p11.offsetPx - offsets[level]!
     const x12 = p12.offsetPx - offsets[level]!
@@ -73,20 +183,20 @@ export function drawRef(
       x21 < width + oobLimit &&
       x21 > -oobLimit
     ) {
-      ctx1.beginPath()
-      ctx1.moveTo(x11, y1)
+      mainCanvas.beginPath()
+      mainCanvas.moveTo(x11, y1)
       if (drawCurves) {
-        ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-        ctx1.stroke()
+        mainCanvas.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+        mainCanvas.stroke()
       } else {
-        ctx1.lineTo(x21, y2)
-        ctx1.stroke()
+        mainCanvas.lineTo(x21, y2)
+        mainCanvas.stroke()
       }
     }
   }
 
-  ctx1.fillStyle = colorMap.M
-  ctx1.strokeStyle = colorMap.M
+  mainCanvas.fillStyle = colorMap.M
+  mainCanvas.strokeStyle = colorMap.M
   for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
     const x11 = p11.offsetPx - offsets[level]!
     const x12 = p12.offsetPx - offsets[level]!
@@ -173,29 +283,24 @@ export function drawRef(
               // flag if the last element of continuing was a large
               // feature, else just use match
               const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
-              ctx1.fillStyle = colorMap[letter]
+              mainCanvas.fillStyle = colorMap[letter]
               continuingFlag = false
 
               if (drawCIGARMatchesOnly) {
                 if (letter === 'M') {
-                  draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-                  ctx1.fill()
+                  draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                  mainCanvas.fill()
                 }
               } else {
-                draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-                ctx1.fill()
-              }
-              if (ctx3) {
-                ctx3.fillStyle = makeColor(idx)
-                draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-                ctx3.fill()
+                draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                mainCanvas.fill()
               }
             }
           }
         }
       } else {
-        draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
-        ctx1.fill()
+        draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
+        mainCanvas.fill()
       }
     }
   }

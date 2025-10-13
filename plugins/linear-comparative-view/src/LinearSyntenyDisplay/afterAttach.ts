@@ -4,7 +4,12 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
-import { drawMouseoverSynteny, drawRef } from './drawSynteny'
+import {
+  debounce,
+  drawCigarClickMap,
+  drawMouseoverSynteny,
+  drawRef,
+} from './drawSynteny'
 
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
@@ -26,6 +31,14 @@ interface FeatPos {
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
+  // Create debounced version of drawCigarClickMap (400ms delay)
+  const debouncedDrawCigarClickMap = debounce(
+    (model: LinearSyntenyDisplayModel, ctx: CanvasRenderingContext2D) => {
+      drawCigarClickMap(model, ctx)
+    },
+    400,
+  )
+
   addDisposer(
     self,
     autorun(() => {
@@ -46,8 +59,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       const height = self.height
       const width = view.width
       ctx1.clearRect(0, 0, width, height)
-      ctx3.clearRect(0, 0, width, height)
-      drawRef(self, ctx1, ctx3)
+
+      // Draw main canvas immediately
+      drawRef(self, ctx1)
+
+      // Draw cigar click map canvas with debounce
+      debouncedDrawCigarClickMap(self, ctx3)
     }),
   )
 
