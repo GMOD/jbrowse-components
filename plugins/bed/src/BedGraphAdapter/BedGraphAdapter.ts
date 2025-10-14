@@ -1,4 +1,4 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -17,7 +17,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
 
   protected intervalTrees: Record<
     string,
-    Promise<IntervalTree | undefined> | undefined
+    Promise<IntervalTree<Feature> | undefined> | undefined
   > = {}
 
   async getNames() {
@@ -41,13 +41,12 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
       return undefined
     }
     const names = (await this.getNames())?.slice(3) || []
-    const intervalTree = new IntervalTree()
-    // eslint-disable-next-line unicorn/no-for-loop
-    for (let i = 0; i < lines.length; i++) {
+    const intervalTree = new IntervalTree<Feature>()
+    for (let i = 0, l = lines.length; i < l; i++) {
       const line = lines[i]!
       const [refName, s, e, ...rest] = line.split('\t')
-      // eslint-disable-next-line unicorn/no-for-loop
-      for (let j = 0; j < rest.length; j++) {
+
+      for (let j = 0, l2 = rest.length; j < l2; j++) {
         const uniqueId = `${this.id}-${refName}-${i}-${j}`
         const start = +s!
         const end = +e!

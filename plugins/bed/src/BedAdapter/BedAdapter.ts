@@ -1,4 +1,4 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import BED from '@gmod/bed'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
@@ -25,7 +25,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
 
   protected intervalTrees: Record<
     string,
-    Promise<IntervalTree | undefined> | undefined
+    Promise<IntervalTree<Feature> | undefined> | undefined
   > = {}
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -123,7 +123,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     }
     const names = await this.getNames()
 
-    const intervalTree = new IntervalTree()
+    const intervalTree = new IntervalTree<Feature>()
     // eslint-disable-next-line unicorn/no-for-loop
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!
