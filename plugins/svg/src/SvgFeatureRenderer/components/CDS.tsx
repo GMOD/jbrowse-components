@@ -23,7 +23,7 @@ interface AggregatedAminoAcid {
 
 function aggregateContiguousAminoAcids(
   protein: string,
-  g2p: any,
+  g2p: Record<string, number>,
   featureStart: number,
   featureEnd: number,
   strand: number,
@@ -38,7 +38,7 @@ function aggregateContiguousAminoAcids(
 
   for (let i = 0; i < len; i++) {
     const pos = strand === -1 ? featureEnd - i : featureStart + i
-    const elt = g2p[pos]
+    const elt = g2p[pos]!
     const aminoAcid = protein[elt] ?? '&'
 
     if (currentElt === undefined) {
@@ -138,7 +138,8 @@ const CDS = observer(function CDS(props: {
       theme,
     })
 
-    for (const [index, aa] of aggregatedAminoAcids.entries()) {
+    for (let index = 0, l = aggregatedAminoAcids.length; index < l; index++) {
+      const aa = aggregatedAminoAcids[index]!
       const centerIndex = Math.floor((aa.startIndex + aa.endIndex) / 2)
       const isNonTriplet = aa.length % 3 !== 0 || aa.aminoAcid === '&'
       const fillColor = isNonTriplet ? 'red' : 'black'

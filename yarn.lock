@@ -8089,10 +8089,10 @@ functions-have-names@^1.2.3:
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.3.tgz#0404fe4ee2ba2f607f0e0ec3c80bae994133b834"
   integrity sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==
 
-g2p_mapper@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/g2p_mapper/-/g2p_mapper-1.0.7.tgz#0ab2d90091fc6645cdf0d2367cdebd444473c7d6"
-  integrity sha512-6jgkWZZ+vi08flXx6byllexAk7LUa/TWDFz8jVgWDC6V610xM8r2y4DWjCU0RPD0wnDhrptHZ263YRQCxnkz1Q==
+g2p_mapper@^1.0.9:
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/g2p_mapper/-/g2p_mapper-1.0.9.tgz#53b0d2fccd63dd514d1efe35f02e5cdb57e8ae5c"
+  integrity sha512-WU0r6bRjFQAF6Ec4iut7lbcNd/RcEb1yIU2hOmVOINgVh9MLGLIQ049QJqF4f8VprysiifESJwppygqRmCvrIg==
 
 gauge@^4.0.3:
   version "4.0.4"
