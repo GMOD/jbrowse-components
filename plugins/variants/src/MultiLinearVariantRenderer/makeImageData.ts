@@ -48,6 +48,7 @@ export async function makeImageData(
 
   const coords = [] as number[]
   const items = [] as any[]
+  const colorCache = {} as Record<string, string | undefined>
   await updateStatus('Drawing variants', statusCallback, () => {
     forEachWithStopTokenCheck(
       mafs,
@@ -100,14 +101,14 @@ export async function makeImageData(
             y += rowHeight
           }
         } else {
-          const colorCache = {} as Record<string, string | undefined>
           for (let j = 0; j < s; j++) {
             const { name } = sources[j]!
             const genotype = samp[name]
             const x = Math.floor(leftPx)
             const h = Math.max(rowHeight, 1)
             if (genotype) {
-              let c = colorCache[genotype]
+              const cacheKey = `${genotype}:${mostFrequentAlt}`
+              let c = colorCache[cacheKey]
               if (c === undefined) {
                 let alt = 0
                 let uncalled = 0
@@ -136,7 +137,7 @@ export async function makeImageData(
                   total,
                   referenceDrawingMode === 'draw',
                 )
-                colorCache[genotype] = c
+                colorCache[cacheKey] = c
               }
               if (c) {
                 drawColorAlleleCount(
