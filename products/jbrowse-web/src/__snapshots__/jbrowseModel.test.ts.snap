@@ -1442,6 +1442,44 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "subadapters": [
+          {
+            "color": "#f00",
+            "name": "Grain1",
+            "type": "BigWigAdapter",
+            "uri": "v1.cram.bw",
+          },
+          {
+            "color": "#f60",
+            "name": "Grain2",
+            "type": "BigWigAdapter",
+            "uri": "v2.cram.bw",
+          },
+          {
+            "color": "#fa0",
+            "name": "Grain3",
+            "type": "BigWigAdapter",
+            "uri": "v3.cram.bw",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "defaultRendering": "multiline",
+          "displayId": "mytrack-MultiLinearWiggleDisplay",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig (w/ colors and default line rendering)",
+      "trackId": "mytrack",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
         "bigWigLocation": {
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",

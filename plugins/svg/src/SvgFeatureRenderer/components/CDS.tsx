@@ -19,6 +19,7 @@ interface AggregatedAminoAcid {
   startIndex: number
   endIndex: number
   length: number
+  proteinIndex: number
 }
 
 function aggregateContiguousAminoAcids(
@@ -51,6 +52,7 @@ function aggregateContiguousAminoAcids(
         startIndex,
         endIndex: idx - 1,
         length: idx - startIndex,
+        proteinIndex: currentElt,
       })
       currentElt = elt
       currentAminoAcid = aminoAcid
@@ -66,6 +68,7 @@ function aggregateContiguousAminoAcids(
       startIndex,
       endIndex: idx - 1,
       length: idx - startIndex,
+      proteinIndex: currentElt!,
     })
   }
 
@@ -102,7 +105,7 @@ const CDS = observer(function CDS(props: {
   const strand = feature.get('strand')
   const width = (featureEnd - featureStart) / bpPerPx
   const { left = 0, top = 0, right = 0, height = 0 } = featureLayout.absolute
-  const zoomedInEnough = 1 / bpPerPx >= 4
+  const zoomedInEnough = 1 / bpPerPx >= 10
   const dontRenderRect = left + width < 0 || left > screenWidth
   const dontRenderLetters = !zoomedInEnough
   const doRender = !dontRenderLetters && !dontRenderRect && colorByCDS
@@ -152,7 +155,7 @@ const CDS = observer(function CDS(props: {
       if (strand * flipper === -1) {
         const startX = right - (1 / bpPerPx) * aa.startIndex
         const endX = right - (1 / bpPerPx) * (aa.endIndex + 1)
-        const x = (startX + endX) / 2 - 4
+        const x = (startX + endX) / 2
         const rectWidth = startX - endX
 
         elements.push(
@@ -171,12 +174,15 @@ const CDS = observer(function CDS(props: {
             y={top + height - 1}
             fontSize={height}
             fill={fillColor}
+            textAnchor="middle"
           >
-            {aa.aminoAcid}
+            {isNonTriplet || aa.aminoAcid === '*' || aa.aminoAcid === '&'
+              ? aa.aminoAcid
+              : `${aa.aminoAcid}${aa.proteinIndex + 1}`}
           </text>,
         )
       } else {
-        const x = left + (1 / bpPerPx) * centerIndex + 1 / bpPerPx / 2 - 4
+        const x = left + (1 / bpPerPx) * centerIndex + 1 / bpPerPx / 2
         const startX = left + (1 / bpPerPx) * aa.startIndex
         const endX = left + (1 / bpPerPx) * (aa.endIndex + 1)
         const rectWidth = endX - startX
@@ -197,8 +203,11 @@ const CDS = observer(function CDS(props: {
             y={top + height - 1}
             fontSize={height}
             fill={fillColor}
+            textAnchor="middle"
           >
-            {aa.aminoAcid}
+            {isNonTriplet || aa.aminoAcid === '*' || aa.aminoAcid === '&'
+              ? aa.aminoAcid
+              : `${aa.aminoAcid}${aa.proteinIndex + 1}`}
           </text>,
         )
       }

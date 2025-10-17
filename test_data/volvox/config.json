@@ -764,6 +764,41 @@
       }
     },
     {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "mytrack",
+      "name": "MultiWig (w/ colors and default line rendering)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain1",
+            "uri": "v1.cram.bw",
+            "color": "#f00"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain2",
+            "uri": "v2.cram.bw",
+            "color": "#f60"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain3",
+            "uri": "v3.cram.bw",
+            "color": "#fa0"
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "multiline"
+        }
+      ]
+    },
+    {
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray",
       "name": "wiggle_track xyplot",
