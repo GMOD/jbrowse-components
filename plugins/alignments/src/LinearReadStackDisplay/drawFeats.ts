@@ -98,11 +98,70 @@ export function drawFeats(
   }
   console.log('Final chainYOffsets:', chainYOffsets)
 
-  // Third pass: draw features and connecting lines using determined Y-offsets
+  // Third pass: draw connecting lines
   for (const { id, chain } of computedChains) {
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
-      console.log(`Skipping chain ${id}, no Y-offset determined.`)
+      continue
+    }
+
+    if (chain.length === 2) {
+      const v0 = chain[0]!
+      const v1 = chain[1]!
+
+      // Draw connecting line for paired reads
+      const r1s = view.bpToPx({
+        refName: asm.getCanonicalRefName(v0.refName) || v0.refName,
+        coord: v0.start,
+      })?.offsetPx
+      const r2s = view.bpToPx({
+        refName: asm.getCanonicalRefName(v1.refName) || v1.refName,
+        coord: v1.start,
+      })?.offsetPx
+
+      if (r1s !== undefined && r2s !== undefined) {
+        const w = r2s - r1s
+        console.log(`Drawing connecting line for paired read at xPos=${r1s - view.offsetPx}, chainY=${chainY + featureHeight / 2 - 0.5}, width=${w}`)
+        fillRectCtx(r1s - view.offsetPx, chainY + featureHeight / 2 - 0.5, w, 1, ctx, 'black')
+      } else {
+        console.log(`Skipping connecting line for paired read, r1s or r2s is undefined. r1s=${r1s}, r2s=${r2s}`)
+      }
+    } else if (chain.length > 2) {
+      // Draw connecting line for long reads
+      const firstFeat = chain[0]!
+      const lastFeat = chain[chain.length - 1]!
+
+      const firstPx = view.bpToPx({
+        refName: asm.getCanonicalRefName(firstFeat.refName) || firstFeat.refName,
+        coord: firstFeat.start,
+      })?.offsetPx
+      const lastPx = view.bpToPx({
+        refName: asm.getCanonicalRefName(lastFeat.refName) || lastFeat.refName,
+        coord: lastFeat.end,
+      })?.offsetPx
+
+      if (firstPx !== undefined && lastPx !== undefined) {
+        const startX = firstPx - view.offsetPx
+        const endX = lastPx - view.offsetPx
+        const startY = chainY + featureHeight / 2 - 0.5
+        const endY = chainY + featureHeight / 2 - 0.5
+
+        console.log(`Drawing connecting line for long read at startX=${startX}, startY=${startY}, endX=${endX}, endY=${endY}`)
+        ctx.beginPath()
+        ctx.moveTo(startX, startY)
+        ctx.lineTo(endX, endY)
+        ctx.strokeStyle = 'black'
+        ctx.stroke()
+      } else {
+        console.log(`Skipping connecting line for long read, firstPx or lastPx is undefined. firstPx=${firstPx}, lastPx=${lastPx}`)
+      }
+    }
+  }
+
+  // Fourth pass: draw features
+  for (const { id, chain } of computedChains) {
+    const chainY = chainYOffsets.get(id)
+    if (chainY === undefined) {
       continue // Skip if Y-offset was not determined for this chain
     }
 
@@ -151,24 +210,6 @@ export function drawFeats(
           console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
       }
-
-      // Draw connecting line for paired reads
-      const r1s = view.bpToPx({
-        refName: asm.getCanonicalRefName(v0.refName) || v0.refName,
-        coord: v0.start,
-      })?.offsetPx
-      const r2s = view.bpToPx({
-        refName: asm.getCanonicalRefName(v1.refName) || v1.refName,
-        coord: v1.start,
-      })?.offsetPx
-
-      if (r1s !== undefined && r2s !== undefined) {
-        const w = r2s - r1s
-        console.log(`Drawing connecting line for paired read at xPos=${r1s - view.offsetPx}, chainY=${chainY + featureHeight / 2 - 0.5}, width=${w}`)
-        fillRectCtx(r1s - view.offsetPx, chainY + featureHeight / 2 - 0.5, w, 1, ctx, 'black')
-      } else {
-        console.log(`Skipping connecting line for paired read, r1s or r2s is undefined. r1s=${r1s}, r2s=${r2s}`)
-      }
     } else if (chain.length > 2) {
       const c1 = chain[0]!
       let primaryStrand: undefined | number
@@ -195,35 +236,6 @@ export function drawFeats(
         } else {
           console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
-      }
-
-      // Draw connecting line for long reads
-      const firstFeat = chain[0]!
-      const lastFeat = chain[chain.length - 1]!
-
-      const firstPx = view.bpToPx({
-        refName: asm.getCanonicalRefName(firstFeat.refName) || firstFeat.refName,
-        coord: firstFeat.start,
-      })?.offsetPx
-      const lastPx = view.bpToPx({
-        refName: asm.getCanonicalRefName(lastFeat.refName) || lastFeat.refName,
-        coord: lastFeat.end,
-      })?.offsetPx
-
-      if (firstPx !== undefined && lastPx !== undefined) {
-        const startX = firstPx - view.offsetPx
-        const endX = lastPx - view.offsetPx
-        const startY = chainY + featureHeight / 2 - 0.5
-        const endY = chainY + featureHeight / 2 - 0.5
-
-        console.log(`Drawing connecting line for long read at startX=${startX}, startY=${startY}, endX=${endX}, endY=${endY}`)
-        ctx.beginPath()
-        ctx.moveTo(startX, startY)
-        ctx.lineTo(endX, endY)
-        ctx.strokeStyle = 'black'
-        ctx.stroke()
-      } else {
-        console.log(`Skipping connecting line for long read, firstPx or lastPx is undefined. firstPx=${firstPx}, lastPx=${lastPx}`)
       }
     } else {
       // singletons
