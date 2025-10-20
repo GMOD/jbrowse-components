@@ -129,6 +129,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        drawProperPairs: true,
+
+        /**
+         * #property
+         */
         featureHeight: types.maybe(types.number),
 
         /**
@@ -212,6 +217,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setDrawSingletons(f: boolean) {
         self.drawSingletons = f
+      },
+      /**
+       * #action
+       */
+      setDrawProperPairs(f: boolean) {
+        self.drawProperPairs = f
       },
       /**
        * #action
@@ -421,6 +432,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               checked: self.drawSingletons,
               onClick: () => {
                 self.setDrawSingletons(!self.drawSingletons)
+              },
+            },
+            {
+              label: 'Draw proper pairs',
+              type: 'checkbox',
+              checked: self.drawProperPairs,
+              onClick: () => {
+                self.setDrawProperPairs(!self.drawProperPairs)
               },
             },
             {

@@ -40,12 +40,27 @@ export function drawFeats(
   const maxHeight = self.trackMaxHeight ?? 1200
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
   const drawSingletons = self.drawSingletons
+  const drawProperPairs = self.drawProperPairs
   const { chains, stats } = chainData
 
-  // Filter out singletons if drawSingletons is false
-  const filteredChains = drawSingletons
-    ? chains
-    : chains.filter(chain => chain.length > 1)
+  // Filter chains based on settings
+  const filteredChains = chains.filter(chain => {
+    // Filter out singletons if drawSingletons is false
+    if (!drawSingletons && chain.length === 1) {
+      return false
+    }
+
+    // Filter out proper pairs if drawProperPairs is false
+    // A proper pair has length 2 and both reads have the proper pair flag (0x2) set
+    if (!drawProperPairs && chain.length === 2) {
+      const allProperlyPaired = chain.every(feat => (feat.flags & 2) !== 0)
+      if (allProperlyPaired) {
+        return false
+      }
+    }
+
+    return true
+  })
 
   const computedChains: {
     distance: number
