@@ -4,7 +4,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import { fillRect } from '../util'
 
 import type { Mismatch } from '../../shared/types'
-import type { ProcessedRenderArgs } from '../types'
+import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 
 export function renderMismatches({
@@ -38,7 +38,7 @@ export function renderMismatches({
   charHeight: number
   canvasWidth: number
 }) {
-  const items = [] as { seq: string }[]
+  const items = [] as FlatbushItem[]
   const coords = [] as number[]
   const { bpPerPx, regions } = renderArgs
   const { heightPx, topPx, feature } = feat
@@ -62,6 +62,12 @@ export function renderMismatches({
     const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
     if (mismatch.type === 'mismatch') {
+      items.push({
+        type: 'mismatch',
+        seq: mismatch.base,
+      })
+      coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+
       if (!drawSNPsMuted) {
         const baseColor = colorMap[mismatch.base] || '#888'
         const c =
@@ -111,6 +117,11 @@ export function renderMismatches({
           canvasWidth,
           colorMap.deletion,
         )
+        items.push({
+          type: 'deletion',
+          seq: `${mismatch.length}`,
+        })
+        coords.push(leftPx, topPx, rightPx, topPx + heightPx)
         const txt = `${mismatch.length}`
         const rwidth = measureText(txt, 10)
         if (widthPx >= rwidth && heightPx >= heightLim) {
@@ -139,9 +150,10 @@ export function renderMismatches({
           )
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
             items.push({
+              type: 'insertion',
               seq: mismatch.insertedBases || 'unknown',
             })
-            coords.push(leftPx, topPx, leftPx + insW, topPx + heightPx)
+            coords.push(leftPx - 2, topPx, leftPx + insW + 2, topPx + heightPx)
 
             const l = Math.round(pos - insW)
             fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
@@ -188,9 +200,10 @@ export function renderMismatches({
         const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
         const txt = `${len}`
         items.push({
+          type: 'insertion',
           seq: mismatch.insertedBases || 'unknown',
         })
-        coords.push(leftPx - 1, topPx, leftPx + 2, topPx + heightPx)
+        coords.push(leftPx - 3, topPx, leftPx + 4, topPx + heightPx)
         if (bpPerPx > largeInsertionIndicatorScale) {
           fillRect(
             ctx,
