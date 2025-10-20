@@ -49,16 +49,26 @@ export function drawFeats(
       )
       for (const feat of chain) {
         const { refName, start, end, id } = feat
-        layout.addRect(id, start, end, featureHeight, { feat, fill, stroke })
+        const s = view.bpToPx({ refName, coord: start })
+        const e = view.bpToPx({ refName, coord: end })
+        if (s && e) {
+          const width = e.offsetPx - s.offsetPx
+          layout.addRect(id, s.offsetPx, e.offsetPx, featureHeight, { feat, fill, stroke })
+        }
       }
     } else {
       for (const feat of chain) {
         const { refName, start, end, id } = feat
-        layout.addRect(id, start, end, featureHeight, {
-          feat,
-          fill: 'blue',
-          stroke: 'black',
-        })
+        const s = view.bpToPx({ refName, coord: start })
+        const e = view.bpToPx({ refName, coord: end })
+        if (s && e) {
+          const width = e.offsetPx - s.offsetPx
+          layout.addRect(id, s.offsetPx, e.offsetPx, featureHeight, {
+            feat,
+            fill: 'blue',
+            stroke: 'black',
+          })
+        }
       }
     }
   }
@@ -68,8 +78,8 @@ export function drawFeats(
     if (data) {
       const { feat, fill, stroke } = data
       const [left, top, right, bottom] = rect
-      const xPos = (left - view.offsetPx) / view.bpPerPx
-      const width = (right - left) / view.bpPerPx
+      const xPos = left - view.offsetPx
+      const width = right - left
       fillRectCtx(xPos, top, width, bottom - top, ctx, fill)
       strokeRectCtx(xPos, top, width, bottom - top, ctx, stroke)
     }
