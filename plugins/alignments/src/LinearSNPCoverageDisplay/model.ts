@@ -302,13 +302,15 @@ function stateModelFactory(
          */
         renderProps() {
           const { colorBy, visibleModifications } = self
+          const superProps = superRenderProps()
           return {
-            ...superRenderProps(),
+            ...superProps,
             notReady: !this.renderReady(),
             colorBy,
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),
             ),
+            inverted: superProps.inverted,
           }
         },
         /**

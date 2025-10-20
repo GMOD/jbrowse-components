@@ -43,6 +43,7 @@ export async function makeImage(
     bpPerPx,
     colorBy,
     displayCrossHatches,
+    inverted,
     visibleModifications = {},
     scaleOpts,
     height: unadjustedHeight,
@@ -61,7 +62,7 @@ export async function makeImage(
   const offset = YSCALEBAR_LABEL_OFFSET
   const height = unadjustedHeight - offset * 2
 
-  const opts = { ...scaleOpts, range: [0, height] }
+  const opts = { ...scaleOpts, range: [0, height], inverted }
   const viewScale = getScale(opts)
 
   // clipping and insertion indicators, uses a smaller height/2 scale
@@ -69,6 +70,7 @@ export async function makeImage(
     ...opts,
     range: [0, height / 2],
     scaleType: 'linear',
+    inverted,
   })
   const originY = getOrigin(scaleOpts.scaleType)
   const originLinear = getOrigin('linear')
@@ -292,9 +294,16 @@ export async function makeImage(
         const { entryDepth } = snpinfo.noncov[base]!
         const r = 0.6
         ctx.fillStyle = colorMap[base]!
+        // Draw bars from top when not inverted, from bottom when inverted
+        const baseY = inverted
+          ? unadjustedHeight - INTERBASE_INDICATOR_HEIGHT
+          : INTERBASE_INDICATOR_HEIGHT
+        const barY = inverted
+          ? baseY - toHeight2(curr + entryDepth)
+          : baseY + toHeight2(curr)
         ctx.fillRect(
           leftPx - r + extraHorizontallyFlippedOffset,
-          INTERBASE_INDICATOR_HEIGHT + toHeight2(curr),
+          barY,
           r * 2,
           toHeight2(entryDepth),
         )
@@ -325,9 +334,17 @@ export async function makeImage(
         ctx.fillStyle = colorMap[maxBase]!
         ctx.beginPath()
         const l = leftPx + extraHorizontallyFlippedOffset
-        ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)
-        ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
-        ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
+        // Draw indicator at top when not inverted, at bottom when inverted
+        if (inverted) {
+          const bottomY = unadjustedHeight
+          ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, bottomY)
+          ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, bottomY)
+          ctx.lineTo(l, bottomY - INTERBASE_INDICATOR_HEIGHT)
+        } else {
+          ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)
+          ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
+          ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
+        }
         ctx.fill()
       }
     }
@@ -358,8 +375,16 @@ export async function makeImage(
       }
 
       ctx.lineWidth = Math.log(feature.get('score') + 1)
-      ctx.moveTo(left, height - offset * 2)
-      ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
+      // Draw arcs from bottom when not inverted, from top when inverted
+      if (inverted) {
+        const topY = offset * 2
+        ctx.moveTo(left, topY)
+        ctx.bezierCurveTo(left, height, right, height, right, topY)
+      } else {
+        const bottomY = height - offset * 2
+        ctx.moveTo(left, bottomY)
+        ctx.bezierCurveTo(left, 0, right, 0, right, bottomY)
+      }
       ctx.stroke()
     })
   }
