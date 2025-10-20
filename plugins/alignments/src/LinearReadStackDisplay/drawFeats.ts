@@ -247,9 +247,9 @@ export function drawFeats(
         if (s && e) {
           const xPos = s.offsetPx - view.offsetPx
           const width = e.offsetPx - s.offsetPx
-          console.log(`Drawing singleton feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=#f00, stroke=#a00`)
-          fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#f00')
-          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, '#a00')
+          console.log(`Drawing singleton feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=#888, stroke=#666`)
+          fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#888')
+          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, '#666')
           featuresForFlatbush.push({ x1: xPos, y1: chainY, x2: xPos + width, y2: chainY + featureHeight, data: feat })
         } else {
           console.log(`Skipping singleton feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
@@ -270,5 +270,5 @@ export function drawFeats(
   }
   finalFlatbush.finish()
   self.setFeatureLayout(finalFlatbush)
-  self.setFeaturesForFlatbush(featuresForFlatbush.map(f => f.data))
+  self.setFeaturesForFlatbush(featuresForFlatbush)
 }

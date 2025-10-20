@@ -96,7 +96,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #volatile
        */
-      featuresForFlatbush: [] as ReducedFeature[],
+      featuresForFlatbush: [] as { x1: number; y1: number; x2: number; y2: number; data: ReducedFeature }[],
     }))
     .views(self => ({
       /**
@@ -189,7 +189,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setFeaturesForFlatbush(features: ReducedFeature[]) {
+      setFeaturesForFlatbush(features: { x1: number; y1: number; x2: number; y2: number; data: ReducedFeature }[]) {
         self.featuresForFlatbush = features
       },
     }))
