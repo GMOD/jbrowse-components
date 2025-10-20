@@ -375,16 +375,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: 'Somewhat compact',
+                  label: 'Compact (with padding)',
                   onClick: () => {
                     self.setFeatureHeight(3)
                     self.setNoSpacing(false)
                   },
                 },
                 {
-                  label: 'Compact',
+                  label: 'Compact (without padding)',
                   onClick: () => {
-                    self.setFeatureHeight(2)
+                    self.setFeatureHeight(3)
                     self.setNoSpacing(true)
                   },
                 },

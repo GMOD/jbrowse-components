@@ -1,5 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession , max, min } from '@jbrowse/core/util'
+import { getContainingView, getSession, max, min } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
@@ -39,7 +39,13 @@ export function drawFeats(
   const noSpacing = self.noSpacing ?? false
   const maxHeight = self.trackMaxHeight ?? 1200
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
+  const drawSingletons = self.drawSingletons
   const { chains, stats } = chainData
+
+  // Filter out singletons if drawSingletons is false
+  const filteredChains = drawSingletons
+    ? chains
+    : chains.filter(chain => chain.length > 1)
 
   const computedChains: {
     distance: number
@@ -51,7 +57,7 @@ export function drawFeats(
 
   // get bounds on the 'distances' (pixel span that a particular split long
   // read 'chain' would have in view)
-  for (const chain of chains) {
+  for (const chain of filteredChains) {
     let minX = Number.MAX_VALUE
     let maxX = Number.MIN_VALUE
     let chainId = ''
@@ -76,8 +82,20 @@ export function drawFeats(
     })
   }
 
-  // Sort chains by width so smaller chains are drawn first (larger chains on top)
-  computedChains.sort((a, b) => a.distance - b.distance)
+  // Sort chains: singletons first, then by width within each group
+  // (so larger/more complex chains are drawn on top)
+  computedChains.sort((a, b) => {
+    const aIsSingleton = a.chain.length === 1 ? 1 : 0
+    const bIsSingleton = b.chain.length === 1 ? 1 : 0
+
+    // Sort singletons first (higher value = earlier in sort)
+    if (bIsSingleton !== aIsSingleton) {
+      return bIsSingleton - aIsSingleton
+    }
+
+    // Within each group, sort by width (smaller first)
+    return a.distance - b.distance
+  })
 
   const layout = new GranularRectLayout<LayoutData>({
     pitchX: 1,
@@ -90,7 +108,6 @@ export function drawFeats(
 
   // First pass: add all dummy chain rectangles to the layout
   for (const { id, minX, maxX, chain } of computedChains) {
-
     layout.addRect(id, minX, maxX, featureHeight + layoutPadding, {
       feat: chain[0]!, // Use first feature as a placeholder for layout data
       fill: 'transparent',
@@ -104,8 +121,7 @@ export function drawFeats(
   for (const [id, rect] of layout.getRectangles()) {
     const [left, top, right, bottom] = rect
     chainYOffsets.set(id, top) // Store the Y-offset (top) for the chain
-      }
-
+  }
 
   // Initialize array for Flatbush mouseover data
   const featuresForFlatbush: {
@@ -144,7 +160,14 @@ export function drawFeats(
       if (r1s !== undefined && r2s !== undefined) {
         const w = r2s - r1s
 
-        fillRectCtx(r1s - view.offsetPx, chainY + featureHeight / 2 - 0.5, w, 1, ctx, '#ccc')
+        fillRectCtx(
+          r1s - view.offsetPx,
+          chainY + featureHeight / 2 - 0.5,
+          w,
+          1,
+          ctx,
+          '#666',
+        )
       }
     } else if (chain.length > 2) {
       // Draw connecting line for long reads
@@ -152,7 +175,8 @@ export function drawFeats(
       const lastFeat = chain[chain.length - 1]!
 
       const firstPx = view.bpToPx({
-        refName: asm.getCanonicalRefName(firstFeat.refName) || firstFeat.refName,
+        refName:
+          asm.getCanonicalRefName(firstFeat.refName) || firstFeat.refName,
         coord: firstFeat.start,
       })?.offsetPx
       const lastPx = view.bpToPx({
@@ -166,11 +190,9 @@ export function drawFeats(
         const startY = chainY + featureHeight / 2 - 0.5
         const endY = chainY + featureHeight / 2 - 0.5
 
-
         ctx.beginPath()
         ctx.moveTo(startX, startY)
         ctx.lineTo(endX, endY)
-        ctx.strokeStyle = '#ccc'
         ctx.stroke()
       }
     }

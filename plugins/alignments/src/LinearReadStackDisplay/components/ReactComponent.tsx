@@ -28,8 +28,12 @@ const Stack = observer(function ({
     width: number
     height: number
   } | null>(null)
-  const [hoveredFeatureData, setHoveredFeatureData] = useState<ReducedFeature | null>(null)
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null)
+  const [hoveredFeatureData, setHoveredFeatureData] =
+    useState<ReducedFeature | null>(null)
+  const [mousePosition, setMousePosition] = useState<{
+    x: number
+    y: number
+  } | null>(null)
 
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(() => {
@@ -71,7 +75,12 @@ const Stack = observer(function ({
       setMousePosition({ x: event.clientX, y: event.clientY })
 
       // Search for features at this position
-      const results = flatbushIndex.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
+      const results = flatbushIndex.search(
+        offsetX,
+        offsetY,
+        offsetX + 1,
+        offsetY + 1,
+      )
 
       if (results.length > 0) {
         const featureIndex = results[0]!
@@ -115,7 +124,12 @@ const Stack = observer(function ({
       const offsetY = event.clientY - rect.top
 
       // Search for features at this position
-      const results = flatbushIndex.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
+      const results = flatbushIndex.search(
+        offsetX,
+        offsetY,
+        offsetX + 1,
+        offsetY + 1,
+      )
 
       if (results.length > 0) {
         const featureIndex = results[0]!
@@ -148,7 +162,14 @@ const Stack = observer(function ({
       <canvas
         data-testid="stack-mouseover-canvas"
         ref={mouseoverCb}
-        style={{ width, height, position: 'absolute', left: 0, top: 0, pointerEvents: 'none' }}
+        style={{
+          width,
+          height,
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          pointerEvents: 'none',
+        }}
         width={width * 2}
         height={height * 2}
       />
@@ -171,9 +192,18 @@ const Stack = observer(function ({
           placement="bottom-start"
         >
           <div>
-            <div><strong>{hoveredFeatureData.name}</strong></div>
-            <div>{hoveredFeatureData.refName}:{hoveredFeatureData.start.toLocaleString()}-{hoveredFeatureData.end.toLocaleString()}</div>
-            {hoveredFeatureData.tlen !== undefined && hoveredFeatureData.tlen !== 0 ? <div>Template length: {hoveredFeatureData.tlen}</div> : null}
+            <div>
+              <strong>{hoveredFeatureData.name}</strong>
+            </div>
+            <div>
+              {hoveredFeatureData.refName}:
+              {hoveredFeatureData.start.toLocaleString()}-
+              {hoveredFeatureData.end.toLocaleString()}
+            </div>
+            {hoveredFeatureData.tlen !== undefined &&
+            hoveredFeatureData.tlen !== 0 ? (
+              <div>Template length: {hoveredFeatureData.tlen}</div>
+            ) : null}
           </div>
         </BaseTooltip>
       ) : null}

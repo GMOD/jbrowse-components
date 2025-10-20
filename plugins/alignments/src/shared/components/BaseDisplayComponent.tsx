@@ -27,7 +27,10 @@ const useStyles = makeStyles()(theme => ({
 const BlockError = observer(function ({
   model,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel | LinearReadStackDisplayModel
+  model:
+    | LinearReadArcsDisplayModel
+    | LinearReadCloudDisplayModel
+    | LinearReadStackDisplayModel
 }) {
   const { error } = model
   return (
@@ -54,7 +57,10 @@ const BaseDisplayComponent = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel | LinearReadStackDisplayModel
+  model:
+    | LinearReadArcsDisplayModel
+    | LinearReadCloudDisplayModel
+    | LinearReadStackDisplayModel
   children?: React.ReactNode
 }) {
   const { error, regionTooLarge } = model
@@ -71,7 +77,10 @@ const DataDisplay = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel | LinearReadStackDisplayModel
+  model:
+    | LinearReadArcsDisplayModel
+    | LinearReadCloudDisplayModel
+    | LinearReadStackDisplayModel
   children?: React.ReactNode
 }) {
   const { drawn, loading } = model
@@ -90,7 +99,10 @@ const DataDisplay = observer(function ({
 const LoadingBar = observer(function ({
   model,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel | LinearReadStackDisplayModel
+  model:
+    | LinearReadArcsDisplayModel
+    | LinearReadCloudDisplayModel
+    | LinearReadStackDisplayModel
 }) {
   const { classes } = useStyles()
   const { message } = model
