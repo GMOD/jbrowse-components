@@ -3,7 +3,13 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
+import {
+  getSession,
+  getContainingView,
+  getContainingTrack,
+  isSessionModelWithWidgets,
+  SimpleFeature,
+} from '@jbrowse/core/util'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
@@ -257,6 +263,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setMaxHeight(n?: number) {
         self.trackMaxHeight = n
       },
+      /**
+       * #action
+       */
+      selectFeature(feature: ReducedFeature) {
+        const session = getSession(self)
+        if (isSessionModelWithWidgets(session)) {
+          const featureWidget = session.addWidget(
+            'AlignmentsFeatureWidget',
+            'alignmentFeature',
+            {
+              featureData: new SimpleFeature(feature).toJSON(),
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+            },
+          )
+          session.showWidget(featureWidget)
+        }
+        session.setSelection(new SimpleFeature(feature))
+      },
     }))
     .views(self => ({
       get drawn() {
@@ -292,6 +317,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   label: 'Normal',
                   onClick: () => {
                     self.setFeatureHeight(7)
+                    self.setNoSpacing(false)
+                  },
+                },
+                {
+                  label: 'Somewhat compact',
+                  onClick: () => {
+                    self.setFeatureHeight(3)
                     self.setNoSpacing(false)
                   },
                 },

@@ -104,6 +104,31 @@ const Stack = observer(function ({
     setMousePosition(null)
   }, [])
 
+  const onClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (!containerRef.current || !flatbushIndex) {
+        return
+      }
+
+      const rect = containerRef.current.getBoundingClientRect()
+      const offsetX = event.clientX - rect.left
+      const offsetY = event.clientY - rect.top
+
+      // Search for features at this position
+      const results = flatbushIndex.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
+
+      if (results.length > 0) {
+        const featureIndex = results[0]!
+        const feature = model.featuresForFlatbush[featureIndex]
+
+        if (feature) {
+          model.selectFeature(feature.data)
+        }
+      }
+    },
+    [flatbushIndex, model],
+  )
+
   // note: the position absolute below avoids scrollbar from appearing on track
   return (
     <div
@@ -111,6 +136,7 @@ const Stack = observer(function ({
       style={{ position: 'relative', width, height }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
+      onClick={onClick}
     >
       <canvas
         data-testid="stack-canvas"

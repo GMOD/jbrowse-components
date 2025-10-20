@@ -143,7 +143,7 @@ export function drawFeats(
       if (r1s !== undefined && r2s !== undefined) {
         const w = r2s - r1s
 
-        fillRectCtx(r1s - view.offsetPx, chainY + featureHeight / 2 - 0.5, w, 1, ctx, 'black')
+        fillRectCtx(r1s - view.offsetPx, chainY + featureHeight / 2 - 0.5, w, 1, ctx, '#ccc')
       }
     } else if (chain.length > 2) {
       // Draw connecting line for long reads
@@ -169,7 +169,7 @@ export function drawFeats(
         ctx.beginPath()
         ctx.moveTo(startX, startY)
         ctx.lineTo(endX, endY)
-        ctx.strokeStyle = 'black'
+        ctx.strokeStyle = '#ccc'
         ctx.stroke()
       }
     }
