@@ -102,10 +102,19 @@ export function drawFeats(
 
 
   // Initialize array for Flatbush mouseover data
-  const featuresForFlatbush: { x1: number; y1: number; x2: number; y2: number; data: ReducedFeature }[] = []
+  const featuresForFlatbush: {
+    x1: number
+    y1: number
+    x2: number
+    y2: number
+    data: ReducedFeature
+    chainId: string
+    chainMinX: number
+    chainMaxX: number
+  }[] = []
 
   // Third pass: draw connecting lines
-  for (const { id, chain } of computedChains) {
+  for (const { id, chain, minX, maxX } of computedChains) {
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       continue
@@ -161,7 +170,7 @@ export function drawFeats(
   }
 
   // Fourth pass: draw features and populate Flatbush
-  for (const { id, chain } of computedChains) {
+  for (const { id, chain, minX, maxX } of computedChains) {
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       continue // Skip if Y-offset was not determined for this chain
@@ -208,7 +217,16 @@ export function drawFeats(
             ctx,
             pairedStroke || strokeColor[c],
           )
-          featuresForFlatbush.push({ x1: xPos, y1: chainY, x2: xPos + width, y2: chainY + featureHeight, data: feat })
+          featuresForFlatbush.push({
+            x1: xPos,
+            y1: chainY,
+            x2: xPos + width,
+            y2: chainY + featureHeight,
+            data: feat,
+            chainId: id,
+            chainMinX: minX - view.offsetPx,
+            chainMaxX: maxX - view.offsetPx,
+          })
         } else {
           console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
@@ -236,7 +254,16 @@ export function drawFeats(
           console.log(`Drawing feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=${fillColor[c]}, stroke=${strokeColor[c]}`)
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillColor[c])
           strokeRectCtx(xPos, chainY, width, featureHeight, ctx, strokeColor[c])
-          featuresForFlatbush.push({ x1: xPos, y1: chainY, x2: xPos + width, y2: chainY + featureHeight, data: feat })
+          featuresForFlatbush.push({
+            x1: xPos,
+            y1: chainY,
+            x2: xPos + width,
+            y2: chainY + featureHeight,
+            data: feat,
+            chainId: id,
+            chainMinX: minX - view.offsetPx,
+            chainMaxX: maxX - view.offsetPx,
+          })
         } else {
           console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
@@ -253,11 +280,36 @@ export function drawFeats(
           console.log(`Drawing singleton feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=#888, stroke=#666`)
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#888')
           strokeRectCtx(xPos, chainY, width, featureHeight, ctx, '#666')
-          featuresForFlatbush.push({ x1: xPos, y1: chainY, x2: xPos + width, y2: chainY + featureHeight, data: feat })
+          featuresForFlatbush.push({
+            x1: xPos,
+            y1: chainY,
+            x2: xPos + width,
+            y2: chainY + featureHeight,
+            data: feat,
+            chainId: id,
+            chainMinX: minX - view.offsetPx,
+            chainMaxX: maxX - view.offsetPx,
+          })
         } else {
           console.log(`Skipping singleton feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
       }
+    }
+
+    // Add a full-width rectangle for the entire chain to enable mouseover on connecting lines
+    const chainMinXPx = minX - view.offsetPx
+    const chainMaxXPx = maxX - view.offsetPx
+    if (chain.length > 0) {
+      featuresForFlatbush.push({
+        x1: chainMinXPx,
+        y1: chainY,
+        x2: chainMaxXPx,
+        y2: chainY + featureHeight,
+        data: chain[0]!, // Use first feature as representative
+        chainId: id,
+        chainMinX: chainMinXPx,
+        chainMaxX: chainMaxXPx,
+      })
     }
   }
 

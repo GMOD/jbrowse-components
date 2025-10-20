@@ -123,6 +123,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         x2: number
         y2: number
         data: ReducedFeature
+        chainId: string
+        chainMinX: number
+        chainMaxX: number
       }[],
     }))
     .views(self => ({
@@ -229,6 +232,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           x2: number
           y2: number
           data: ReducedFeature
+          chainId: string
+          chainMinX: number
+          chainMaxX: number
         }[],
       ) {
         self.featuresForFlatbush = features

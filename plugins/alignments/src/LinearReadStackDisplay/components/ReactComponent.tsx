@@ -78,10 +78,11 @@ const Stack = observer(function ({
         const feature = model.featuresForFlatbush[featureIndex]
 
         if (feature) {
+          // Highlight the entire chain instead of just the individual feature
           setHoveredFeature({
-            x: feature.x1,
+            x: feature.chainMinX,
             y: feature.y1,
-            width: feature.x2 - feature.x1,
+            width: feature.chainMaxX - feature.chainMinX,
             height: feature.y2 - feature.y1,
           })
           setHoveredFeatureData(feature.data)
@@ -139,7 +140,10 @@ const Stack = observer(function ({
         />
       ) : null}
       {hoveredFeatureData && mousePosition ? (
-        <BaseTooltip clientPoint={{ x: mousePosition.x + 15, y: mousePosition.y }}>
+        <BaseTooltip
+          clientPoint={{ x: mousePosition.x, y: mousePosition.y + 20 }}
+          placement="bottom-start"
+        >
           <div>
             <div><strong>{hoveredFeatureData.name}</strong></div>
             <div>{hoveredFeatureData.refName}:{hoveredFeatureData.start.toLocaleString()}-{hoveredFeatureData.end.toLocaleString()}</div>
