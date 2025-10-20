@@ -103,6 +103,7 @@ export function drawPairChains({
     const w1 = Math.max(r1e - r1s, 2)
     const w2 = Math.max(r2e - r2s, 2)
     const [fill, stroke] = getPairedColor({ type, v0, v1, stats }) || []
+    console.log({ fill, stroke })
     const top = (Math.log(distance) - minD) * scaler
     const halfHeight = featureHeight / 2 - 0.5
     const w = r2s - r1e
