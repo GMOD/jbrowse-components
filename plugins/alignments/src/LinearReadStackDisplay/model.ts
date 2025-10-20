@@ -275,3 +275,5 @@ export type LinearReadStackDisplayStateModel = ReturnType<
 >
 export type LinearReadStackDisplayModel =
   Instance<LinearReadStackDisplayStateModel>
+
+export default stateModelFactory
