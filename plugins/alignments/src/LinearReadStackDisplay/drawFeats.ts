@@ -117,6 +117,7 @@ export function drawFeats(
     chainId: string
     chainMinX: number
     chainMaxX: number
+    chain: ReducedFeature[]
   }[] = []
 
   // Third pass: draw connecting lines
@@ -224,6 +225,7 @@ export function drawFeats(
             chainId: id,
             chainMinX: minX - view.offsetPx,
             chainMaxX: maxX - view.offsetPx,
+            chain,
           })
         }
       }
@@ -257,6 +259,7 @@ export function drawFeats(
             chainId: id,
             chainMinX: minX - view.offsetPx,
             chainMaxX: maxX - view.offsetPx,
+            chain,
           })
         }
       }
@@ -279,6 +282,7 @@ export function drawFeats(
             chainId: id,
             chainMinX: minX - view.offsetPx,
             chainMaxX: maxX - view.offsetPx,
+            chain,
           })
         }
       }
@@ -297,6 +301,7 @@ export function drawFeats(
         chainId: id,
         chainMinX: chainMinXPx,
         chainMaxX: chainMaxXPx,
+        chain,
       })
     }
   }
