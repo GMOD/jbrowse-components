@@ -205,7 +205,7 @@ export function drawFeats(
           const c =
             effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
           const xPos = s.offsetPx - view.offsetPx
-          const width = e.offsetPx - s.offsetPx
+          const width = Math.max(e.offsetPx - s.offsetPx, 3)
 
           fillRectCtx(
             xPos,
@@ -246,7 +246,7 @@ export function drawFeats(
           const c =
             effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
           const xPos = s.offsetPx - view.offsetPx
-          const width = e.offsetPx - s.offsetPx
+          const width = Math.max(e.offsetPx - s.offsetPx, 3)
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillColor[c])
           featuresForFlatbush.push({
             x1: xPos,
@@ -268,7 +268,7 @@ export function drawFeats(
         const e = view.bpToPx({ refName, coord: end })
         if (s && e) {
           const xPos = s.offsetPx - view.offsetPx
-          const width = e.offsetPx - s.offsetPx
+          const width = Math.max(e.offsetPx - s.offsetPx, 3)
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#888')
           featuresForFlatbush.push({
             x1: xPos,
