@@ -2,6 +2,7 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { fillRectCtx, strokeRectCtx } from './util'
 import { fillColor, strokeColor } from '../shared/color'
@@ -80,7 +81,7 @@ export function drawFeats(
 
   // First pass: add all dummy chain rectangles to the layout
   for (const { id, minX, maxX, chain } of computedChains) {
-    console.log(`Attempting to add chain ${id} to layout: minX=${minX}, maxX=${maxX}`)
+
     layout.addRect(id, minX, maxX, featureHeight, {
       feat: chain[0]!, // Use first feature as a placeholder for layout data
       fill: 'transparent',
@@ -94,9 +95,11 @@ export function drawFeats(
   for (const [id, rect] of layout.getRectangles()) {
     const [left, top, right, bottom] = rect
     chainYOffsets.set(id, top) // Store the Y-offset (top) for the chain
-    console.log(`Chain ${id} laid out at Y=${top}`)
-  }
-  console.log('Final chainYOffsets:', chainYOffsets)
+      }
+
+
+  // Initialize array for Flatbush mouseover data
+  const featuresForFlatbush: { x1: number; y1: number; x2: number; y2: number; data: ReducedFeature }[] = []
 
   // Third pass: draw connecting lines
   for (const { id, chain } of computedChains) {
@@ -121,10 +124,8 @@ export function drawFeats(
 
       if (r1s !== undefined && r2s !== undefined) {
         const w = r2s - r1s
-        console.log(`Drawing connecting line for paired read at xPos=${r1s - view.offsetPx}, chainY=${chainY + featureHeight / 2 - 0.5}, width=${w}`)
+
         fillRectCtx(r1s - view.offsetPx, chainY + featureHeight / 2 - 0.5, w, 1, ctx, 'black')
-      } else {
-        console.log(`Skipping connecting line for paired read, r1s or r2s is undefined. r1s=${r1s}, r2s=${r2s}`)
       }
     } else if (chain.length > 2) {
       // Draw connecting line for long reads
@@ -146,19 +147,17 @@ export function drawFeats(
         const startY = chainY + featureHeight / 2 - 0.5
         const endY = chainY + featureHeight / 2 - 0.5
 
-        console.log(`Drawing connecting line for long read at startX=${startX}, startY=${startY}, endX=${endX}, endY=${endY}`)
+
         ctx.beginPath()
         ctx.moveTo(startX, startY)
         ctx.lineTo(endX, endY)
         ctx.strokeStyle = 'black'
         ctx.stroke()
-      } else {
-        console.log(`Skipping connecting line for long read, firstPx or lastPx is undefined. firstPx=${firstPx}, lastPx=${lastPx}`)
       }
     }
   }
 
-  // Fourth pass: draw features
+  // Fourth pass: draw features and populate Flatbush
   for (const { id, chain } of computedChains) {
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
@@ -189,7 +188,7 @@ export function drawFeats(
             effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
           const xPos = s.offsetPx - view.offsetPx
           const width = e.offsetPx - s.offsetPx
-          console.log(`Drawing feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=${pairedFill || fillColor[c]}, stroke=${pairedStroke || strokeColor[c]}`)
+
           fillRectCtx(
             xPos,
             chainY,
@@ -206,6 +205,7 @@ export function drawFeats(
             ctx,
             pairedStroke || strokeColor[c],
           )
+          featuresForFlatbush.push({ x1: xPos, y1: chainY, x2: xPos + width, y2: chainY + featureHeight, data: feat })
         } else {
           console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
@@ -233,6 +233,7 @@ export function drawFeats(
           console.log(`Drawing feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=${fillColor[c]}, stroke=${strokeColor[c]}`)
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillColor[c])
           strokeRectCtx(xPos, chainY, width, featureHeight, ctx, strokeColor[c])
+          featuresForFlatbush.push({ x1: xPos, y1: chainY, x2: xPos + width, y2: chainY + featureHeight, data: feat })
         } else {
           console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
@@ -249,10 +250,25 @@ export function drawFeats(
           console.log(`Drawing singleton feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=#f00, stroke=#a00`)
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#f00')
           strokeRectCtx(xPos, chainY, width, featureHeight, ctx, '#a00')
+          featuresForFlatbush.push({ x1: xPos, y1: chainY, x2: xPos + width, y2: chainY + featureHeight, data: feat })
         } else {
           console.log(`Skipping singleton feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
       }
     }
   }
+
+  // Build and set Flatbush index
+  const finalFlatbush = new Flatbush(Math.max(featuresForFlatbush.length, 1))
+  if (featuresForFlatbush.length) {
+    for (const { x1, y1, x2, y2 } of featuresForFlatbush) {
+      finalFlatbush.add(x1, y1, x2, y2)
+    }
+  } else {
+    // flatbush does not like 0 items
+    finalFlatbush.add(0, 0)
+  }
+  finalFlatbush.finish()
+  self.setFeatureLayout(finalFlatbush)
+  self.setFeaturesForFlatbush(featuresForFlatbush.map(f => f.data))
 }

@@ -11,8 +11,9 @@ import {
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { types } from 'mobx-state-tree'
+import Flatbush from '@jbrowse/core/util/flatbush'
 
-import type { ChainData } from '../shared/fetchChains'
+import type { ChainData, ReducedFeature } from '../shared/fetchChains'
 import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from 'mobx-state-tree'
@@ -84,6 +85,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       ref: null as HTMLCanvasElement | null,
+      /**
+       * #volatile
+       */
+      featureLayout: undefined as Flatbush | undefined,
+      /**
+       * #volatile
+       */
+      mouseoverRef: null as HTMLCanvasElement | null,
+      /**
+       * #volatile
+       */
+      featuresForFlatbush: [] as ReducedFeature[],
     }))
     .views(self => ({
       /**
@@ -160,6 +173,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.filterBySetting = {
           ...filter,
         }
+      },
+      /**
+       * #action
+       */
+      setFeatureLayout(layout: Flatbush) {
+        self.featureLayout = layout
+      },
+      /**
+       * #action
+       */
+      setMouseoverRef(ref: HTMLCanvasElement | null) {
+        self.mouseoverRef = ref
+      },
+      /**
+       * #action
+       */
+      setFeaturesForFlatbush(features: ReducedFeature[]) {
+        self.featuresForFlatbush = features
       },
     }))
     .views(self => ({
