@@ -30,6 +30,10 @@ export default function BlockMsg({
       onMouseDown={event => {
         event.stopPropagation()
       }}
+      onClick={event => {
+        // avoid clicks on block messages from turning into double-click zoom
+        event.stopPropagation()
+      }}
     >
       <Tooltip title={message}>
         <div>{message}</div>
