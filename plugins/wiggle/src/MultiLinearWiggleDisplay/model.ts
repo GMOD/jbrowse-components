@@ -27,7 +27,7 @@ import type {
 import type { Instance } from 'mobx-state-tree'
 
 const randomColor = () =>
-  '#000000'.replaceAll('0', () => (Math.random() * 16).toString(16))
+  '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
