@@ -1093,20 +1093,6 @@
       }
     },
     {
-      "type": "QuantitativeTrack",
-      "trackId": "nanopore_ultralong_cram_coverage",
-      "name": "HG002 Nanopore ultralong coverage",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.regions.bw",
-          "locationType": "UriLocation"
-        }
-      }
-    },
-    {
       "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong",
       "name": "HG002 Nanopore ultralong (BAM)",
