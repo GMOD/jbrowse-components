@@ -11,16 +11,22 @@ import {
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { types } from 'mobx-state-tree'
-import Flatbush from '@jbrowse/core/util/flatbush'
 
 import type { ChainData, ReducedFeature } from '../shared/fetchChains'
 import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { Instance } from 'mobx-state-tree'
 
 // async
 const FilterByTagDialog = lazy(
   () => import('../shared/components/FilterByTagDialog'),
+)
+const SetFeatureHeightDialog = lazy(
+  () => import('../LinearPileupDisplay/components/SetFeatureHeightDialog'),
+)
+const SetMaxHeightDialog = lazy(
+  () => import('../LinearPileupDisplay/components/SetMaxHeightDialog'),
 )
 
 /**
@@ -62,6 +68,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         drawSingletons: true,
+
+        /**
+         * #property
+         */
+        featureHeight: types.maybe(types.number),
+
+        /**
+         * #property
+         */
+        noSpacing: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        trackMaxHeight: types.maybe(types.number),
       }),
     )
     .volatile(() => ({
@@ -96,7 +117,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #volatile
        */
-      featuresForFlatbush: [] as { x1: number; y1: number; x2: number; y2: number; data: ReducedFeature }[],
+      featuresForFlatbush: [] as {
+        x1: number
+        y1: number
+        x2: number
+        y2: number
+        data: ReducedFeature
+      }[],
     }))
     .views(self => ({
       /**
@@ -110,6 +137,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+      /**
+       * #getter
+       */
+      get featureHeightSetting() {
+        return self.featureHeight ?? getConf(self, 'featureHeight')
       },
     }))
     .actions(self => ({
@@ -189,8 +222,34 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setFeaturesForFlatbush(features: { x1: number; y1: number; x2: number; y2: number; data: ReducedFeature }[]) {
+      setFeaturesForFlatbush(
+        features: {
+          x1: number
+          y1: number
+          x2: number
+          y2: number
+          data: ReducedFeature
+        }[],
+      ) {
         self.featuresForFlatbush = features
+      },
+      /**
+       * #action
+       */
+      setFeatureHeight(n?: number) {
+        self.featureHeight = n
+      },
+      /**
+       * #action
+       */
+      setNoSpacing(flag?: boolean) {
+        self.noSpacing = flag
+      },
+      /**
+       * #action
+       */
+      setMaxHeight(n?: number) {
+        self.trackMaxHeight = n
       },
     }))
     .views(self => ({
@@ -220,6 +279,50 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            {
+              label: 'Set feature height...',
+              subMenu: [
+                {
+                  label: 'Normal',
+                  onClick: () => {
+                    self.setFeatureHeight(7)
+                    self.setNoSpacing(false)
+                  },
+                },
+                {
+                  label: 'Compact',
+                  onClick: () => {
+                    self.setFeatureHeight(2)
+                    self.setNoSpacing(true)
+                  },
+                },
+                {
+                  label: 'Manually set height',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SetFeatureHeightDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Set max height...',
+              priority: -1,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SetMaxHeightDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
             {
               label: 'Draw singletons',
               type: 'checkbox',

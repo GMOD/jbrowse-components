@@ -1,15 +1,15 @@
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
-import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
-import { max, min } from '@jbrowse/core/util'
+import { getContainingView, getSession , max, min } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
 import { fillRectCtx, strokeRectCtx } from './util'
-import { fillColor, strokeColor } from '../shared/color'
-import type { LinearReadStackDisplayModel } from './model'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { getPairedColor } from '../LinearReadCloudDisplay/drawPairChains'
+import { fillColor, strokeColor } from '../shared/color'
+
+import type { LinearReadStackDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -35,7 +35,9 @@ export function drawFeats(
   if (!asm) {
     return
   }
-  const featureHeight = getConf(self, 'featureHeight')
+  const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
+  const noSpacing = self.noSpacing ?? false
+  const maxHeight = self.trackMaxHeight ?? 1200
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
   const { chains, stats } = chainData
 
@@ -77,6 +79,7 @@ export function drawFeats(
   const layout = new GranularRectLayout<LayoutData>({
     pitchX: 1,
     pitchY: 1,
+    maxHeight,
   })
 
   // First pass: add all dummy chain rectangles to the layout

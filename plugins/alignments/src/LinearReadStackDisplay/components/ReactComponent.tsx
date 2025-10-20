@@ -1,15 +1,15 @@
-import { useCallback, useRef, useState, useMemo } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
+import type { ReducedFeature } from '../../shared/fetchChains'
 import type { LinearReadStackDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { ReducedFeature } from '../../shared/fetchChains'
 
 type LGV = LinearGenomeViewModel
 

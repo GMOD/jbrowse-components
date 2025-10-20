@@ -24,6 +24,7 @@ function configSchemaF(pluginManager: PluginManager) {
        */
       featureHeight: {
         type: 'number',
+        description: 'the default height of each feature in the display',
         defaultValue: 7,
       },
 
