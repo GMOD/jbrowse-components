@@ -1,26 +1,23 @@
 import type React from 'react'
-import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import FilterListIcon from '@mui/icons-material/ClearAll'
-import PaletteIcon from '@mui/icons-material/Palette'
 import { types } from 'mobx-state-tree'
 
-import type { ChainData } from '../shared/fetchChains'
+import {
+  getColorSchemeMenuItem,
+  getFilterByMenuItem,
+} from '../shared/menuItems'
+
+import type { ChainData, ReducedFeature } from '../shared/fetchChains'
 import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { Instance } from 'mobx-state-tree'
-
-// async
-const FilterByTagDialog = lazy(
-  () => import('../shared/components/FilterByTagDialog'),
-)
 
 /**
  * #stateModel LinearReadCloudDisplay
@@ -84,6 +81,29 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       ref: null as HTMLCanvasElement | null,
+      /**
+       * #volatile
+       */
+      featureLayout: undefined as Flatbush | undefined,
+      /**
+       * #volatile
+       */
+      mouseoverRef: null as HTMLCanvasElement | null,
+      /**
+       * #volatile
+       */
+      featuresForFlatbush: [] as {
+        x1: number
+        y1: number
+        x2: number
+        y2: number
+        data: ReducedFeature
+        chain: ReducedFeature[]
+        chainMinX: number
+        chainMaxX: number
+        chainTop: number
+        chainHeight: number
+      }[],
     }))
     .views(self => ({
       /**
@@ -161,6 +181,37 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ...filter,
         }
       },
+      /**
+       * #action
+       */
+      setFeatureLayout(layout: Flatbush) {
+        self.featureLayout = layout
+      },
+      /**
+       * #action
+       */
+      setMouseoverRef(ref: HTMLCanvasElement | null) {
+        self.mouseoverRef = ref
+      },
+      /**
+       * #action
+       */
+      setFeaturesForFlatbush(
+        features: {
+          x1: number
+          y1: number
+          x2: number
+          y2: number
+          data: ReducedFeature
+          chain: ReducedFeature[]
+          chainMinX: number
+          chainMaxX: number
+          chainTop: number
+          chainHeight: number
+        }[],
+      ) {
+        self.featuresForFlatbush = features
+      },
     }))
     .views(self => ({
       get drawn() {
@@ -197,47 +248,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.setDrawSingletons(!self.drawSingletons)
               },
             },
-            {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  FilterByTagDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
-
-            {
-              label: 'Color scheme',
-              icon: PaletteIcon,
-              subMenu: [
-                {
-                  label: 'Insert size ± 3σ and orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' })
-                  },
-                },
-                {
-                  label: 'Insert size ± 3σ',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
-                },
-                {
-                  label: 'Orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'orientation' })
-                  },
-                },
-                {
-                  label: 'Insert size gradient',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'gradient' })
-                  },
-                },
-              ],
-            },
+            getFilterByMenuItem(self),
+            getColorSchemeMenuItem(self),
           ]
         },
 

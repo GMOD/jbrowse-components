@@ -1,3 +1,7 @@
+/**
+ * Shared canvas drawing utilities for LinearRead displays
+ */
+
 // avoid drawing negative width features for SVG exports
 export function fillRectCtx(
   x: number,

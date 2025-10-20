@@ -3,7 +3,7 @@ import { getContainingView, getSession, max, min } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
-import { fillRectCtx, strokeRectCtx } from './util'
+import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { getPairedColor } from '../LinearReadCloudDisplay/drawPairChains'
 import { fillColor, strokeColor } from '../shared/color'
 

@@ -14,9 +14,12 @@ import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import FilterListIcon from '@mui/icons-material/ClearAll'
-import PaletteIcon from '@mui/icons-material/Palette'
 import { types } from 'mobx-state-tree'
+
+import {
+  getColorSchemeMenuItem,
+  getFilterByMenuItem,
+} from '../shared/menuItems'
 
 import type { ChainData, ReducedFeature } from '../shared/fetchChains'
 import type { ColorBy, FilterBy } from '../shared/types'
@@ -25,9 +28,6 @@ import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { Instance } from 'mobx-state-tree'
 
 // async
-const FilterByTagDialog = lazy(
-  () => import('../shared/components/FilterByTagDialog'),
-)
 const SetFeatureHeightDialog = lazy(
   () => import('../LinearPileupDisplay/components/SetFeatureHeightDialog'),
 )
@@ -442,47 +442,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.setDrawProperPairs(!self.drawProperPairs)
               },
             },
-            {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  FilterByTagDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
-
-            {
-              label: 'Color scheme',
-              icon: PaletteIcon,
-              subMenu: [
-                {
-                  label: 'Insert size ± 3σ and orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' })
-                  },
-                },
-                {
-                  label: 'Insert size ± 3σ',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
-                },
-                {
-                  label: 'Orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'orientation' })
-                  },
-                },
-                {
-                  label: 'Insert size gradient',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'gradient' })
-                  },
-                },
-              ],
-            },
+            getFilterByMenuItem(self),
+            getColorSchemeMenuItem(self),
           ]
         },
 

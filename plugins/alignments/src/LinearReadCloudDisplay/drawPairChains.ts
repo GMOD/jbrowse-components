@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
 
-import { fillRectCtx, strokeRectCtx } from './util'
+import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import {
   getPairedInsertSizeAndOrientationColor,
   getPairedInsertSizeColor,
@@ -33,12 +33,25 @@ export function drawPairChains({
   chainData,
   view,
   asm,
+  featuresForFlatbush,
 }: {
   ctx: CanvasRenderingContext2D
   self: LinearReadCloudDisplayModel
   chainData: ChainData
   view: LinearGenomeViewModel
   asm: Assembly
+  featuresForFlatbush: {
+    x1: number
+    y1: number
+    x2: number
+    y2: number
+    data: ReducedFeature
+    chain: ReducedFeature[]
+    chainMinX: number
+    chainMaxX: number
+    chainTop: number
+    chainHeight: number
+  }[]
 }) {
   const coords: ChainCoord[] = []
   const featureHeight = getConf(self, 'featureHeight')
@@ -103,7 +116,6 @@ export function drawPairChains({
     const w1 = Math.max(r1e - r1s, 2)
     const w2 = Math.max(r2e - r2s, 2)
     const [fill, stroke] = getPairedColor({ type, v0, v1, stats }) || []
-    console.log({ fill, stroke })
     const top = (Math.log(distance) - minD) * scaler
     const halfHeight = featureHeight / 2 - 0.5
     const w = r2s - r1e
@@ -112,6 +124,43 @@ export function drawPairChains({
     strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, stroke)
     fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, fill)
     fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, fill)
+
+    // Add features to flatbush for mouseover
+    const x1_1 = r1s - view.offsetPx
+    const x2_1 = x1_1 + w1
+    const x1_2 = r2s - view.offsetPx
+    const x2_2 = x1_2 + w2
+
+    // Calculate chain bounds
+    const chainMinX = Math.min(x1_1, x1_2)
+    const chainMaxX = Math.max(x2_1, x2_2)
+
+    featuresForFlatbush.push(
+      {
+        x1: x1_1,
+        y1: top,
+        x2: x2_1,
+        y2: top + featureHeight,
+        data: v0,
+        chain: [v0, v1],
+        chainMinX,
+        chainMaxX,
+        chainTop: top,
+        chainHeight: featureHeight,
+      },
+      {
+        x1: x1_2,
+        y1: top,
+        x2: x2_2,
+        y2: top + featureHeight,
+        data: v1,
+        chain: [v0, v1],
+        chainMinX,
+        chainMaxX,
+        chainTop: top,
+        chainHeight: featureHeight,
+      },
+    )
   }
 }
 
