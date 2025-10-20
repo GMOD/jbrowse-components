@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState, useMemo } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -8,6 +9,7 @@ import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
 import type { LinearReadStackDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { ReducedFeature } from '../../shared/fetchChains'
 
 type LGV = LinearGenomeViewModel
 
@@ -26,6 +28,8 @@ const Stack = observer(function ({
     width: number
     height: number
   } | null>(null)
+  const [hoveredFeatureData, setHoveredFeatureData] = useState<ReducedFeature | null>(null)
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null)
 
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(() => {
@@ -54,12 +58,17 @@ const Stack = observer(function ({
     (event: React.MouseEvent) => {
       if (!containerRef.current || !flatbushIndex) {
         setHoveredFeature(null)
+        setHoveredFeatureData(null)
+        setMousePosition(null)
         return
       }
 
       const rect = containerRef.current.getBoundingClientRect()
       const offsetX = event.clientX - rect.left
       const offsetY = event.clientY - rect.top
+
+      // Track mouse position for tooltip
+      setMousePosition({ x: event.clientX, y: event.clientY })
 
       // Search for features at this position
       const results = flatbushIndex.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
@@ -75,11 +84,14 @@ const Stack = observer(function ({
             width: feature.x2 - feature.x1,
             height: feature.y2 - feature.y1,
           })
+          setHoveredFeatureData(feature.data)
         } else {
           setHoveredFeature(null)
+          setHoveredFeatureData(null)
         }
       } else {
         setHoveredFeature(null)
+        setHoveredFeatureData(null)
       }
     },
     [flatbushIndex, model.featuresForFlatbush],
@@ -87,6 +99,8 @@ const Stack = observer(function ({
 
   const onMouseLeave = useCallback(() => {
     setHoveredFeature(null)
+    setHoveredFeatureData(null)
+    setMousePosition(null)
   }, [])
 
   // note: the position absolute below avoids scrollbar from appearing on track
@@ -123,6 +137,17 @@ const Stack = observer(function ({
             pointerEvents: 'none',
           }}
         />
+      ) : null}
+      {hoveredFeatureData && mousePosition ? (
+        <BaseTooltip clientPoint={{ x: mousePosition.x + 15, y: mousePosition.y }}>
+          <div>
+            <div><strong>{hoveredFeatureData.name}</strong></div>
+            <div>{hoveredFeatureData.refName}:{hoveredFeatureData.start.toLocaleString()}-{hoveredFeatureData.end.toLocaleString()}</div>
+            <div>Strand: {hoveredFeatureData.strand === 1 ? '+' : hoveredFeatureData.strand === -1 ? '-' : '.'}</div>
+            {hoveredFeatureData.flags !== undefined ? <div>Flags: {hoveredFeatureData.flags}</div> : null}
+            {hoveredFeatureData.tlen !== undefined && hoveredFeatureData.tlen !== 0 ? <div>Template length: {hoveredFeatureData.tlen}</div> : null}
+          </div>
+        </BaseTooltip>
       ) : null}
     </div>
   )
