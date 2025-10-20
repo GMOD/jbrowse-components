@@ -41,7 +41,9 @@ export function drawFeats(
   const computedChains: {
     distance: number
     minX: number
+    maxX: number
     chain: ReducedFeature[]
+    id: string
   }[] = []
 
   // get bounds on the 'distances' (pixel span that a particular split long
@@ -49,6 +51,7 @@ export function drawFeats(
   for (const chain of chains) {
     let minX = Number.MAX_VALUE
     let maxX = Number.MIN_VALUE
+    let chainId = ''
     for (const elt of chain) {
       const refName = asm.getCanonicalRefName(elt.refName) || elt.refName
       const rs = view.bpToPx({ refName, coord: elt.start })?.offsetPx
@@ -57,11 +60,16 @@ export function drawFeats(
         minX = Math.min(minX, rs)
         maxX = Math.max(maxX, re)
       }
+      if (!chainId) {
+        chainId = elt.id
+      }
     }
     computedChains.push({
       distance: Math.abs(maxX - minX),
       minX,
+      maxX,
       chain,
+      id: chainId,
     })
   }
 
@@ -70,25 +78,96 @@ export function drawFeats(
     pitchY: 1,
   })
 
-  for (const { distance, chain } of computedChains) {
+  // First pass: add all dummy chain rectangles to the layout
+  for (const { id, minX, maxX, chain } of computedChains) {
+    console.log(`Attempting to add chain ${id} to layout: minX=${minX}, maxX=${maxX}`)
+    layout.addRect(id, minX, maxX, featureHeight, {
+      feat: chain[0]!, // Use first feature as a placeholder for layout data
+      fill: 'transparent',
+      stroke: 'transparent',
+      distance: maxX - minX,
+    })
+  }
+
+  // Second pass: retrieve laid-out rectangles and populate chainYOffsets
+  const chainYOffsets = new Map<string, number>()
+  for (const [id, rect] of layout.getRectangles()) {
+    const [left, top, right, bottom] = rect
+    chainYOffsets.set(id, top) // Store the Y-offset (top) for the chain
+    console.log(`Chain ${id} laid out at Y=${top}`)
+  }
+  console.log('Final chainYOffsets:', chainYOffsets)
+
+  // Third pass: draw features and connecting lines using determined Y-offsets
+  for (const { id, chain } of computedChains) {
+    const chainY = chainYOffsets.get(id)
+    if (chainY === undefined) {
+      console.log(`Skipping chain ${id}, no Y-offset determined.`)
+      continue // Skip if Y-offset was not determined for this chain
+    }
+
     if (chain.length === 2) {
       const v0 = chain[0]!
       const v1 = chain[1]!
-      const [fill, stroke] =
+      const [pairedFill, pairedStroke] =
         getPairedColor({ type, v0, v1, stats: chainData.stats }) || []
 
+      let primaryStrand: undefined | number
+      if (!(v0.flags & 2048)) {
+        primaryStrand = v0.strand
+      } else {
+        const res = v0.SA?.split(';')[0]!.split(',')[2]
+        primaryStrand = res === '-' ? -1 : 1
+      }
+
       for (const feat of chain) {
-        const { refName, start, end, id } = feat
+        const { refName, start, end } = feat
         const s = view.bpToPx({ refName, coord: start })
         const e = view.bpToPx({ refName, coord: end })
         if (s && e) {
-          layout.addRect(id, s.offsetPx, e.offsetPx, featureHeight, {
-            feat,
-            fill: fill || 'blue',
-            stroke: stroke || 'black',
-            distance,
-          })
+          const effectiveStrand = feat.strand * primaryStrand
+          const c =
+            effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
+          const xPos = s.offsetPx - view.offsetPx
+          const width = e.offsetPx - s.offsetPx
+          console.log(`Drawing feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=${pairedFill || fillColor[c]}, stroke=${pairedStroke || strokeColor[c]}`)
+          fillRectCtx(
+            xPos,
+            chainY,
+            width,
+            featureHeight,
+            ctx,
+            pairedFill || fillColor[c],
+          )
+          strokeRectCtx(
+            xPos,
+            chainY,
+            width,
+            featureHeight,
+            ctx,
+            pairedStroke || strokeColor[c],
+          )
+        } else {
+          console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
+      }
+
+      // Draw connecting line for paired reads
+      const r1s = view.bpToPx({
+        refName: asm.getCanonicalRefName(v0.refName) || v0.refName,
+        coord: v0.start,
+      })?.offsetPx
+      const r2s = view.bpToPx({
+        refName: asm.getCanonicalRefName(v1.refName) || v1.refName,
+        coord: v1.start,
+      })?.offsetPx
+
+      if (r1s !== undefined && r2s !== undefined) {
+        const w = r2s - r1s
+        console.log(`Drawing connecting line for paired read at xPos=${r1s - view.offsetPx}, chainY=${chainY + featureHeight / 2 - 0.5}, width=${w}`)
+        fillRectCtx(r1s - view.offsetPx, chainY + featureHeight / 2 - 0.5, w, 1, ctx, 'black')
+      } else {
+        console.log(`Skipping connecting line for paired read, r1s or r2s is undefined. r1s=${r1s}, r2s=${r2s}`)
       }
     } else if (chain.length > 2) {
       const c1 = chain[0]!
@@ -101,86 +180,66 @@ export function drawFeats(
       }
 
       for (const feat of chain) {
-        const { refName, start, end, id } = feat
+        const { refName, start, end } = feat
         const s = view.bpToPx({ refName, coord: start })
         const e = view.bpToPx({ refName, coord: end })
         if (s && e) {
           const effectiveStrand = feat.strand * primaryStrand
           const c =
             effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
-          layout.addRect(id, s.offsetPx, e.offsetPx, featureHeight, {
-            feat,
-            fill: fillColor[c],
-            stroke: strokeColor[c],
-            distance,
-          })
+          const xPos = s.offsetPx - view.offsetPx
+          const width = e.offsetPx - s.offsetPx
+          console.log(`Drawing feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=${fillColor[c]}, stroke=${strokeColor[c]}`)
+          fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillColor[c])
+          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, strokeColor[c])
+        } else {
+          console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
       }
-    } else {
-      // singletons
-      for (const feat of chain) {
-        const { refName, start, end, id } = feat
-        const s = view.bpToPx({ refName, coord: start })
-        const e = view.bpToPx({ refName, coord: end })
-        if (s && e) {
-          layout.addRect(id, s.offsetPx, e.offsetPx, featureHeight, {
-            feat,
-            fill: 'blue',
-            stroke: 'black',
-            distance,
-          })
-        }
-      }
-    }
-  }
 
-  for (const [id, rect] of layout.getRectangles()) {
-    const data = layout.getDataByID(id)
-    if (data) {
-      const { fill, stroke } = data
-      const [left, top, right, bottom] = rect
-      const xPos = left - view.offsetPx
-      const width = right - left
-      fillRectCtx(xPos, top, width, bottom - top, ctx, fill)
-      strokeRectCtx(xPos, top, width, bottom - top, ctx, stroke)
-    }
-  }
-
-  // Draw connecting lines after all features have been laid out
-  for (const { chain } of computedChains) {
-    if (chain.length > 1) {
+      // Draw connecting line for long reads
       const firstFeat = chain[0]!
       const lastFeat = chain[chain.length - 1]!
 
-      let firstRect: [number, number, number, number] | undefined
-      let lastRect: [number, number, number, number] | undefined
+      const firstPx = view.bpToPx({
+        refName: asm.getCanonicalRefName(firstFeat.refName) || firstFeat.refName,
+        coord: firstFeat.start,
+      })?.offsetPx
+      const lastPx = view.bpToPx({
+        refName: asm.getCanonicalRefName(lastFeat.refName) || lastFeat.refName,
+        coord: lastFeat.end,
+      })?.offsetPx
 
-      for (const [id, rect] of layout.getRectangles()) {
-        if (id === firstFeat.id) {
-          firstRect = rect
-        }
-        if (id === lastFeat.id) {
-          lastRect = rect
-        }
-        if (firstRect && lastRect) {
-          break
-        }
-      }
+      if (firstPx !== undefined && lastPx !== undefined) {
+        const startX = firstPx - view.offsetPx
+        const endX = lastPx - view.offsetPx
+        const startY = chainY + featureHeight / 2 - 0.5
+        const endY = chainY + featureHeight / 2 - 0.5
 
-      if (firstRect && lastRect) {
-        const [firstLeft, firstTop, , firstBottom] = firstRect
-        const [lastLeft, lastTop, , lastBottom] = lastRect
-
-        const startX = firstLeft - view.offsetPx
-        const endX = lastLeft - view.offsetPx
-        const startY = firstTop + (firstBottom - firstTop) / 2
-        const endY = lastTop + (lastBottom - lastTop) / 2
-
+        console.log(`Drawing connecting line for long read at startX=${startX}, startY=${startY}, endX=${endX}, endY=${endY}`)
         ctx.beginPath()
         ctx.moveTo(startX, startY)
         ctx.lineTo(endX, endY)
         ctx.strokeStyle = 'black'
         ctx.stroke()
+      } else {
+        console.log(`Skipping connecting line for long read, firstPx or lastPx is undefined. firstPx=${firstPx}, lastPx=${lastPx}`)
+      }
+    } else {
+      // singletons
+      for (const feat of chain) {
+        const { refName, start, end } = feat
+        const s = view.bpToPx({ refName, coord: start })
+        const e = view.bpToPx({ refName, coord: end })
+        if (s && e) {
+          const xPos = s.offsetPx - view.offsetPx
+          const width = e.offsetPx - s.offsetPx
+          console.log(`Drawing singleton feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=#f00, stroke=#a00`)
+          fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#f00')
+          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, '#a00')
+        } else {
+          console.log(`Skipping singleton feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
+        }
       }
     }
   }
