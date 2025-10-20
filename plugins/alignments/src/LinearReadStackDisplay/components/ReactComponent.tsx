@@ -147,8 +147,6 @@ const Stack = observer(function ({
           <div>
             <div><strong>{hoveredFeatureData.name}</strong></div>
             <div>{hoveredFeatureData.refName}:{hoveredFeatureData.start.toLocaleString()}-{hoveredFeatureData.end.toLocaleString()}</div>
-            <div>Strand: {hoveredFeatureData.strand === 1 ? '+' : hoveredFeatureData.strand === -1 ? '-' : '.'}</div>
-            {hoveredFeatureData.flags !== undefined ? <div>Flags: {hoveredFeatureData.flags}</div> : null}
             {hoveredFeatureData.tlen !== undefined && hoveredFeatureData.tlen !== 0 ? <div>Template length: {hoveredFeatureData.tlen}</div> : null}
           </div>
         </BaseTooltip>

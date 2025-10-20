@@ -76,16 +76,22 @@ export function drawFeats(
     })
   }
 
+  // Sort chains by width so smaller chains are drawn first (larger chains on top)
+  computedChains.sort((a, b) => a.distance - b.distance)
+
   const layout = new GranularRectLayout<LayoutData>({
     pitchX: 1,
     pitchY: 1,
     maxHeight,
   })
 
+  // Add small padding between rows (unless noSpacing is enabled)
+  const layoutPadding = noSpacing ? 0 : 1
+
   // First pass: add all dummy chain rectangles to the layout
   for (const { id, minX, maxX, chain } of computedChains) {
 
-    layout.addRect(id, minX, maxX, featureHeight, {
+    layout.addRect(id, minX, maxX, featureHeight + layoutPadding, {
       feat: chain[0]!, // Use first feature as a placeholder for layout data
       fill: 'transparent',
       stroke: 'transparent',
@@ -209,14 +215,6 @@ export function drawFeats(
             ctx,
             pairedFill || fillColor[c],
           )
-          strokeRectCtx(
-            xPos,
-            chainY,
-            width,
-            featureHeight,
-            ctx,
-            pairedStroke || strokeColor[c],
-          )
           featuresForFlatbush.push({
             x1: xPos,
             y1: chainY,
@@ -227,8 +225,6 @@ export function drawFeats(
             chainMinX: minX - view.offsetPx,
             chainMaxX: maxX - view.offsetPx,
           })
-        } else {
-          console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
       }
     } else if (chain.length > 2) {
@@ -251,9 +247,7 @@ export function drawFeats(
             effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
           const xPos = s.offsetPx - view.offsetPx
           const width = e.offsetPx - s.offsetPx
-          console.log(`Drawing feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=${fillColor[c]}, stroke=${strokeColor[c]}`)
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillColor[c])
-          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, strokeColor[c])
           featuresForFlatbush.push({
             x1: xPos,
             y1: chainY,
@@ -264,8 +258,6 @@ export function drawFeats(
             chainMinX: minX - view.offsetPx,
             chainMaxX: maxX - view.offsetPx,
           })
-        } else {
-          console.log(`Skipping feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
       }
     } else {
@@ -277,9 +269,7 @@ export function drawFeats(
         if (s && e) {
           const xPos = s.offsetPx - view.offsetPx
           const width = e.offsetPx - s.offsetPx
-          console.log(`Drawing singleton feat ${feat.id} at xPos=${xPos}, chainY=${chainY}, width=${width}, featureHeight=${featureHeight}, fill=#888, stroke=#666`)
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#888')
-          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, '#666')
           featuresForFlatbush.push({
             x1: xPos,
             y1: chainY,
@@ -290,8 +280,6 @@ export function drawFeats(
             chainMinX: minX - view.offsetPx,
             chainMaxX: maxX - view.offsetPx,
           })
-        } else {
-          console.log(`Skipping singleton feat ${feat.id}, s or e is undefined. s=${s}, e=${e}`)
         }
       }
     }
