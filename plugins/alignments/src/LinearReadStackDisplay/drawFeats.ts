@@ -39,7 +39,6 @@ export function drawFeats(
       const feature1 = {
         get: (str: string) => {
           if (str === 'refName') return f1.refName
-          if (str === 'refName') return f1.refName
           if (str === 'start') return f1.start
           if (str === 'end') return f1.end
           if (str === 'strand') return f1.strand
@@ -52,7 +51,6 @@ export function drawFeats(
       }
       const feature2 = {
         get: (str: string) => {
-          if (str === 'refName') return f2.refName
           if (str === 'refName') return f2.refName
           if (str === 'start') return f2.start
           if (str === 'end') return f2.end
