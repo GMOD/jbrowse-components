@@ -13,6 +13,11 @@ export interface LayoutFeature {
   feature: Feature
 }
 
+export interface FlatbushItem {
+  type: 'insertion' | 'deletion' | 'mismatch'
+  seq: string
+}
+
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: ColorBy
   colorTagMap?: Record<string, string>

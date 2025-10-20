@@ -14,7 +14,7 @@ import {
   shouldDrawSNPsMuted,
 } from './util'
 
-import type { ProcessedRenderArgs } from './types'
+import type { FlatbushItem, ProcessedRenderArgs } from './types'
 import type { Feature } from '@jbrowse/core/util'
 
 interface LayoutFeature {
@@ -58,7 +58,7 @@ export function makeImageData({
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
   const drawIndels = shouldDrawIndels()
   const coords = [] as number[]
-  const items = [] as { seq: string }[]
+  const items = [] as FlatbushItem[]
   forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
     renderAlignment({
       ctx,
