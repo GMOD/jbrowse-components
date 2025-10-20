@@ -6,8 +6,15 @@ import { fillRectCtx, strokeRectCtx } from './util'
 import type { LinearReadStackDisplayModel } from './model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { getPairedInsertSizeAndOrientationColor } from '../shared/color'
+import type { ReducedFeature } from '../shared/fetchChains'
 
 type LGV = LinearGenomeViewModel
+
+interface LayoutData {
+  feat: ReducedFeature
+  fill: string
+  stroke: string
+}
 
 export function drawFeats(
   self: LinearReadStackDisplayModel,
@@ -26,7 +33,7 @@ export function drawFeats(
   }
   const featureHeight = getConf(self, 'featureHeight')
 
-  const layout = new GranularRectLayout({
+  const layout = new GranularRectLayout<LayoutData>({
     pitchX: 1,
     pitchY: 1,
   })
@@ -42,12 +49,12 @@ export function drawFeats(
       )
       for (const feat of chain) {
         const { refName, start, end, id } = feat
-        const top = layout.addRect(id, start, end, featureHeight, { feat, fill, stroke })
+        layout.addRect(id, start, end, featureHeight, { feat, fill, stroke })
       }
     } else {
       for (const feat of chain) {
         const { refName, start, end, id } = feat
-        const top = layout.addRect(id, start, end, featureHeight, {
+        layout.addRect(id, start, end, featureHeight, {
           feat,
           fill: 'blue',
           stroke: 'black',
@@ -57,12 +64,14 @@ export function drawFeats(
   }
 
   for (const [id, rect] of layout.getRectangles()) {
-    const { data } = layout.getDataByID(id) || {}
-    const { feat, fill, stroke } = data || {}
-    const [left, top, right, bottom] = rect
-    const xPos = (left - view.offsetPx) / view.bpPerPx
-    const width = (right - left) / view.bpPerPx
-    fillRectCtx(xPos, top, width, bottom - top, ctx, fill)
-    strokeRectCtx(xPos, top, width, bottom - top, ctx, stroke)
+    const data = layout.getDataByID(id)
+    if (data) {
+      const { feat, fill, stroke } = data
+      const [left, top, right, bottom] = rect
+      const xPos = (left - view.offsetPx) / view.bpPerPx
+      const width = (right - left) / view.bpPerPx
+      fillRectCtx(xPos, top, width, bottom - top, ctx, fill)
+      strokeRectCtx(xPos, top, width, bottom - top, ctx, stroke)
+    }
   }
 }
