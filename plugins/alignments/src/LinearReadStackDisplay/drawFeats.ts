@@ -51,10 +51,14 @@ export function drawFeats(
     }
 
     // Filter out proper pairs if drawProperPairs is false
-    // A proper pair has length 2 and both reads have the proper pair flag (0x2) set
+    // Only show pairs that have an interesting color (orientation/insert size issues)
     if (!drawProperPairs && chain.length === 2) {
-      const allProperlyPaired = chain.every(feat => (feat.flags & 2) !== 0)
-      if (allProperlyPaired) {
+      const v0 = chain[0]!
+      const v1 = chain[1]!
+      const color = getPairedColor({ type, v0, v1, stats: chainData.stats })
+      // If getPairedColor returns undefined, it means it's a normal proper pair
+      // and we should filter it out
+      if (color?.[0] === 'grey') {
         return false
       }
     }
