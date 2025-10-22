@@ -40,7 +40,7 @@ export function doAfterAttach<T extends IAnyStateTreeNode>(
       return
     }
 
-    const height = self.layoutHeight || 1
+    const height = 'layoutHeight' in self ? self.layoutHeight || 1 : self.height
     ctx.clearRect(0, 0, canvas.width, height * 2)
     ctx.resetTransform()
     ctx.scale(2, 2)
