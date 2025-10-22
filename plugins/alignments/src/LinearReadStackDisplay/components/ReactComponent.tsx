@@ -20,7 +20,7 @@ const Stack = observer(function ({
 }) {
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
-  const height = model.height
+  const height = model.layoutHeight || 1
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredFeature, setHoveredFeature] = useState<{
     x: number
@@ -200,8 +200,7 @@ const Stack = observer(function ({
               {hoveredFeatureData.start.toLocaleString()}-
               {hoveredFeatureData.end.toLocaleString()}
             </div>
-            {hoveredFeatureData.tlen !== undefined &&
-            hoveredFeatureData.tlen !== 0 ? (
+            {hoveredFeatureData.tlen !== 0 ? (
               <div>Template length: {hoveredFeatureData.tlen}</div>
             ) : null}
           </div>

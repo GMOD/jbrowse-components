@@ -169,8 +169,7 @@ const Cloud = observer(function ({
               {hoveredFeatureData.start.toLocaleString()}-
               {hoveredFeatureData.end.toLocaleString()}
             </div>
-            {hoveredFeatureData.tlen !== undefined &&
-            hoveredFeatureData.tlen !== 0 ? (
+            {hoveredFeatureData.tlen !== 0 ? (
               <div>Template length: {hoveredFeatureData.tlen}</div>
             ) : null}
           </div>

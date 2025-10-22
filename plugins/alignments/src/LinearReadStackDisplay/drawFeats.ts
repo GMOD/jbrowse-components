@@ -1,11 +1,11 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession, max, min } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
-import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { getPairedColor } from '../LinearReadCloudDisplay/drawPairChains'
-import { fillColor, strokeColor } from '../shared/color'
+import { fillRectCtx } from '../shared/canvasUtils'
+import { fillColor } from '../shared/color'
 
 import type { LinearReadStackDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
@@ -41,7 +41,7 @@ export function drawFeats(
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
   const drawSingletons = self.drawSingletons
   const drawProperPairs = self.drawProperPairs
-  const { chains, stats } = chainData
+  const { chains } = chainData
 
   // Filter chains based on settings
   const filteredChains = chains.filter(chain => {
@@ -134,7 +134,7 @@ export function drawFeats(
   // Second pass: retrieve laid-out rectangles and populate chainYOffsets
   const chainYOffsets = new Map<string, number>()
   for (const [id, rect] of layout.getRectangles()) {
-    const [left, top, right, bottom] = rect
+    const top = rect[1]
     chainYOffsets.set(id, top) // Store the Y-offset (top) for the chain
   }
 
@@ -152,7 +152,7 @@ export function drawFeats(
   }[] = []
 
   // Third pass: draw connecting lines
-  for (const { id, chain, minX, maxX } of computedChains) {
+  for (const { id, chain } of computedChains) {
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       continue
@@ -223,7 +223,7 @@ export function drawFeats(
     if (chain.length === 2) {
       const v0 = chain[0]!
       const v1 = chain[1]!
-      const [pairedFill, pairedStroke] =
+      const [pairedFill] =
         getPairedColor({ type, v0, v1, stats: chainData.stats }) || []
 
       let primaryStrand: undefined | number
@@ -356,4 +356,5 @@ export function drawFeats(
   finalFlatbush.finish()
   self.setFeatureLayout(finalFlatbush)
   self.setFeaturesForFlatbush(featuresForFlatbush)
+  self.setLayoutHeight(layout.getTotalHeight())
 }

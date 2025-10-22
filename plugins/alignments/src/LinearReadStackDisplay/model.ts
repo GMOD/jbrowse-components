@@ -4,11 +4,11 @@ import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
-  getSession,
-  getContainingView,
-  getContainingTrack,
-  isSessionModelWithWidgets,
   SimpleFeature,
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import {
   FeatureDensityMixin,
@@ -45,7 +45,6 @@ function chainToSimpleFeature(chain: ReducedFeature[]) {
   }
 
   const firstFeat = chain[0]!
-  const lastFeat = chain[chain.length - 1]!
 
   // Create a synthetic feature that encompasses the entire chain
   const syntheticFeature = new SimpleFeature({
@@ -190,6 +189,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         chainMaxX: number
         chain: ReducedFeature[]
       }[],
+      /**
+       * #volatile
+       */
+      layoutHeight: 0,
     }))
     .views(self => ({
       /**
@@ -330,6 +333,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setLayoutHeight(n: number) {
+        self.layoutHeight = n
+      },
+      /**
+       * #action
+       */
       selectFeature(chain: ReducedFeature[]) {
         const session = getSession(self)
         const syntheticFeature = chainToSimpleFeature(chain)
@@ -386,16 +395,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: 'Compact (with padding)',
+                  label: 'Compact',
                   onClick: () => {
                     self.setFeatureHeight(3)
                     self.setNoSpacing(false)
                   },
                 },
                 {
-                  label: 'Compact (without padding)',
+                  label: 'Super-compact',
                   onClick: () => {
-                    self.setFeatureHeight(3)
+                    self.setFeatureHeight(2)
                     self.setNoSpacing(true)
                   },
                 },

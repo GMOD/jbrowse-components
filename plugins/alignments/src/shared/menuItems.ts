@@ -1,7 +1,8 @@
+import { lazy } from 'react'
+
+import { getSession } from '@jbrowse/core/util'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import PaletteIcon from '@mui/icons-material/Palette'
-import { getSession } from '@jbrowse/core/util'
-import { lazy } from 'react'
 
 const FilterByTagDialog = lazy(() => import('./components/FilterByTagDialog'))
 
