@@ -2,6 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { detectSimplexModifications } from '../../ModificationParser/detectSimplexModifications'
 import { getModTypes } from '../../ModificationParser/getModTypes'
 import { getTagAlt } from '../../util'
 import PileupBaseRPC from '../base'
@@ -48,6 +49,13 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
         }
       }
     }
-    return [...uniqueModifications.values()]
+
+    const modifications = [...uniqueModifications.values()]
+    const simplexModifications = detectSimplexModifications(modifications)
+
+    return {
+      modifications,
+      simplexModifications: [...simplexModifications],
+    }
   }
 }

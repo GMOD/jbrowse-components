@@ -44,6 +44,7 @@ export async function makeImage(
     colorBy,
     displayCrossHatches,
     visibleModifications = {},
+    simplexModifications = [],
     scaleOpts,
     height: unadjustedHeight,
     theme: configTheme,
@@ -129,6 +130,7 @@ export async function makeImage(
   const drawingModifications = colorBy.type === 'modifications'
   const drawingMethylation = colorBy.type === 'methylation'
   const isolatedModification = colorBy.modifications?.isolatedModification
+  const simplexSet = new Set(simplexModifications)
 
   // Second pass: draw the SNP data, and add a minimum feature width of 1px
   // which can be wider than the actual bpPerPx This reduces overdrawing of
@@ -158,16 +160,8 @@ export async function makeImage(
         }
         const cmp = complementBase[mod.base as keyof typeof complementBase]
 
-        // this approach is inspired from the 'simplex' approach in igv
-        // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
-        const detectable =
-          mod.base === 'N'
-            ? score0
-            : (snps[mod.base]?.entryDepth || 0) +
-              (snps[cmp]?.entryDepth || 0) +
-              (refbase === mod.base ? ref['1'] : 0) +
-              (refbase === cmp ? ref['-1'] : 0)
-
+        // Calculate modifiable: total reads (both strands) with base or complement
+        // This is always the same for simplex and duplex
         const modifiable =
           mod.base === 'N'
             ? score0
@@ -175,6 +169,21 @@ export async function makeImage(
               (snps[cmp]?.entryDepth || 0) +
               (refbase === mod.base ? ref.entryDepth : 0) +
               (refbase === cmp ? ref.entryDepth : 0)
+
+        // Calculate detectable based on IGV's simplex/duplex logic
+        // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
+        // For simplex: detectable = positive strand reads with base + negative strand reads with complement
+        // For duplex: detectable = modifiable (all reads)
+        const detectable = mod.base === 'N'
+          ? score0
+          : simplexSet.has(mod.type)
+            ? // Simplex: use strand-specific counts
+              (snps[mod.base]?.['1'] || 0) +
+              (snps[cmp]?.['-1'] || 0) +
+              (refbase === mod.base ? ref['1'] : 0) +
+              (refbase === cmp ? ref['-1'] : 0)
+            : // Duplex: same as modifiable
+              modifiable
 
         const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
@@ -203,16 +212,8 @@ export async function makeImage(
         }
         const cmp = complementBase[mod.base as keyof typeof complementBase]
 
-        // this approach is inspired from the 'simplex' approach in igv
-        // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
-        const detectable =
-          mod.base === 'N'
-            ? score0
-            : (snps[mod.base]?.entryDepth || 0) +
-              (snps[cmp]?.entryDepth || 0) +
-              (refbase === mod.base ? ref['1'] : 0) +
-              (refbase === cmp ? ref['-1'] : 0)
-
+        // Calculate modifiable: total reads (both strands) with base or complement
+        // This is always the same for simplex and duplex
         const modifiable =
           mod.base === 'N'
             ? score0
@@ -220,6 +221,21 @@ export async function makeImage(
               (snps[cmp]?.entryDepth || 0) +
               (refbase === mod.base ? ref.entryDepth : 0) +
               (refbase === cmp ? ref.entryDepth : 0)
+
+        // Calculate detectable based on IGV's simplex/duplex logic
+        // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
+        // For simplex: detectable = positive strand reads with base + negative strand reads with complement
+        // For duplex: detectable = modifiable (all reads)
+        const detectable = mod.base === 'N'
+          ? score0
+          : simplexSet.has(mod.type)
+            ? // Simplex: use strand-specific counts
+              (snps[mod.base]?.['1'] || 0) +
+              (snps[cmp]?.['-1'] || 0) +
+              (refbase === mod.base ? ref['1'] : 0) +
+              (refbase === cmp ? ref['-1'] : 0)
+            : // Duplex: same as modifiable
+              modifiable
 
         const { entryDepth, avgProbability = 0 } = mods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)

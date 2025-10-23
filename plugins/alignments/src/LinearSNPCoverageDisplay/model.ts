@@ -86,6 +86,10 @@ function stateModelFactory(
       /**
        * #volatile
        */
+      simplexModifications: new Set<string>(),
+      /**
+       * #volatile
+       */
       modificationsReady: false,
     }))
     .views(self => ({
@@ -147,6 +151,12 @@ function stateModelFactory(
             })
           }
         }
+      },
+      /**
+       * #action
+       */
+      setSimplexModifications(simplex: string[]) {
+        self.simplexModifications = new Set(simplex)
       },
     }))
     .views(self => {
@@ -265,13 +275,15 @@ function stateModelFactory(
             const { staticBlocks } = view
             const { colorBy } = self
             if (colorBy?.type === 'modifications') {
-              const vals = await getUniqueModifications({
-                model: self,
-                adapterConfig: getConf(self.parentTrack, 'adapter'),
-                blocks: staticBlocks,
-              })
+              const { modifications, simplexModifications } =
+                await getUniqueModifications({
+                  model: self,
+                  adapterConfig: getConf(self.parentTrack, 'adapter'),
+                  blocks: staticBlocks,
+                })
               if (isAlive(self)) {
-                self.updateVisibleModifications(vals)
+                self.updateVisibleModifications(modifications)
+                self.setSimplexModifications(simplexModifications)
                 self.setModificationsReady(true)
               }
             } else {
@@ -301,7 +313,7 @@ function stateModelFactory(
          * #method
          */
         renderProps() {
-          const { colorBy, visibleModifications } = self
+          const { colorBy, visibleModifications, simplexModifications } = self
           return {
             ...superRenderProps(),
             notReady: !this.renderReady(),
@@ -309,6 +321,7 @@ function stateModelFactory(
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),
             ),
+            simplexModifications: [...simplexModifications],
           }
         },
         /**

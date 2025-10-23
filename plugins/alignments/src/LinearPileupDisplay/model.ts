@@ -84,6 +84,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #volatile
        */
+      simplexModifications: new Set<string>(),
+      /**
+       * #volatile
+       */
       modificationsReady: false,
     }))
     .actions(self => ({
@@ -105,6 +109,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             })
           }
         }
+      },
+      /**
+       * #action
+       */
+      setSimplexModifications(simplex: string[]) {
+        self.simplexModifications = new Set(simplex)
       },
       /**
        * #action
@@ -255,7 +265,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderPropsPre() {
-          const { sortedBy, showSoftClipping, visibleModifications } = self
+          const {
+            sortedBy,
+            showSoftClipping,
+            visibleModifications,
+            simplexModifications,
+          } = self
           const superProps = superRenderPropsPre()
           return {
             ...superProps,
@@ -264,6 +279,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),
             ),
+            simplexModifications: [...simplexModifications],
           }
         },
         /**
