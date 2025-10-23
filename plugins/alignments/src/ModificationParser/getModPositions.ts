@@ -20,19 +20,19 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
     }
     const [, base, strand, typestr] = matches
 
+    if (strand === '-') {
+      console.log(
+        `[getModPositions] Processing negative strand mod: ${base}${strand}${typestr} (read strand: ${fstrand})`,
+      )
+    }
+
     // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so split,
     // and they can also be chemical codes (ChEBI) e.g. C+16061
     const types = typestr!.split(/(\d+|.)/)
 
-    if (strand === '-') {
-      console.warn('unsupported negative strand modifications')
-      result.push({
-        type: 'unsupported',
-        positions: [] as number[],
-        base: base!,
-        strand: strand,
-      })
-    }
+    // Note: Negative strand modifications (e.g., T-a) are now supported
+    // They are processed the same way as positive strand modifications
+    // The strand information is preserved for simplex/duplex detection
 
     // this logic based on parse_mm.pl from hts-specs
     for (const type of types) {
@@ -61,13 +61,25 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
         }
       }
 
-      result.push({
+      const entry = {
         type,
         base: base!,
         strand: strand!,
         positions,
-      })
+      }
+
+      if (strand === '-') {
+        console.log('[getModPositions] Negative strand result:', entry)
+      }
+
+      result.push(entry)
     }
   }
+
+  const negStrandMods = result.filter(r => r.strand === '-')
+  if (negStrandMods.length > 0) {
+    console.log('[getModPositions] Total negative strand mods found:', negStrandMods)
+  }
+
   return result
 }

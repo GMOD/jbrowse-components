@@ -132,6 +132,10 @@ export async function makeImage(
   const isolatedModification = colorBy.modifications?.isolatedModification
   const simplexSet = new Set(simplexModifications)
 
+  if (drawingModifications && simplexModifications.length > 0) {
+    console.log('[makeImage] Simplex modifications:', simplexModifications)
+  }
+
   // Second pass: draw the SNP data, and add a minimum feature width of 1px
   // which can be wider than the actual bpPerPx This reduces overdrawing of
   // the grey background over the SNPs
@@ -147,6 +151,15 @@ export async function makeImage(
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
+      console.log(`[makeImage] Position ${feature.get('start')}:`, {
+        mods,
+        nonmods,
+        snps,
+        ref,
+        refbase,
+        score0,
+        visibleModifications,
+      })
       for (const m of Object.keys(nonmods).sort().reverse()) {
         const mod =
           visibleModifications[m.replace('nonmod_', '')] ||
@@ -159,33 +172,53 @@ export async function makeImage(
           continue
         }
         const cmp = complementBase[mod.base as keyof typeof complementBase]
+        const isSimplex = simplexSet.has(mod.type)
 
-        // Calculate modifiable: total reads (both strands) with base or complement
-        // This is always the same for simplex and duplex
-        const modifiable =
+        // IGV logic: getCount(pos, base) returns TOTAL count for that base
+        // In JBrowse: snps[base].entryDepth = count from mismatches
+        //             ref.entryDepth = count from reference matches
+        // We need: total count of base + total count of complement
+        const baseCount =
+          (snps[mod.base]?.entryDepth || 0) +
+          (refbase === mod.base ? ref.entryDepth : 0)
+        const complCount =
+          (snps[cmp]?.entryDepth || 0) + (refbase === cmp ? ref.entryDepth : 0)
+
+        // IGV: int modifiable = alignmentCounts.getCount(pos, base) + alignmentCounts.getCount(pos, compl)
+        const modifiable = mod.base === 'N' ? score0 : baseCount + complCount
+
+        // IGV: int detectable = simplexModifications.contains(key.modification) ?
+        //          alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, compl) :
+        //          modifiable;
+        const detectable =
           mod.base === 'N'
             ? score0
-            : (snps[mod.base]?.entryDepth || 0) +
-              (snps[cmp]?.entryDepth || 0) +
-              (refbase === mod.base ? ref.entryDepth : 0) +
-              (refbase === cmp ? ref.entryDepth : 0)
-
-        // Calculate detectable based on IGV's simplex/duplex logic
-        // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
-        // For simplex: detectable = positive strand reads with base + negative strand reads with complement
-        // For duplex: detectable = modifiable (all reads)
-        const detectable = mod.base === 'N'
-          ? score0
-          : simplexSet.has(mod.type)
-            ? // Simplex: use strand-specific counts
-              (snps[mod.base]?.['1'] || 0) +
-              (snps[cmp]?.['-1'] || 0) +
-              (refbase === mod.base ? ref['1'] : 0) +
-              (refbase === cmp ? ref['-1'] : 0)
-            : // Duplex: same as modifiable
-              modifiable
+            : isSimplex
+              ? // Simplex: getPosCount(base) + getNegCount(complement)
+                (snps[mod.base]?.['1'] || 0) +
+                (snps[cmp]?.['-1'] || 0) +
+                (refbase === mod.base ? ref['1'] : 0) +
+                (refbase === cmp ? ref['-1'] : 0)
+              : // Duplex: same as modifiable
+                modifiable
 
         const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
+
+        console.log(`[nonmods] ${m} at ${feature.get('start')}:`, {
+          base: mod.base,
+          complement: cmp,
+          refbase,
+          isSimplex,
+          baseCount,
+          complCount,
+          modifiable,
+          detectable,
+          entryDepth,
+          'snps[base]': snps[mod.base],
+          'snps[cmp]': snps[cmp],
+          ref,
+          score0,
+        })
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const nonModColor = 'blue'
         const c = alphaColor(nonModColor, avgProbability)
@@ -211,33 +244,53 @@ export async function makeImage(
           continue
         }
         const cmp = complementBase[mod.base as keyof typeof complementBase]
+        const isSimplex = simplexSet.has(mod.type)
 
-        // Calculate modifiable: total reads (both strands) with base or complement
-        // This is always the same for simplex and duplex
-        const modifiable =
+        // IGV logic: getCount(pos, base) returns TOTAL count for that base
+        // In JBrowse: snps[base].entryDepth = count from mismatches
+        //             ref.entryDepth = count from reference matches
+        // We need: total count of base + total count of complement
+        const baseCount =
+          (snps[mod.base]?.entryDepth || 0) +
+          (refbase === mod.base ? ref.entryDepth : 0)
+        const complCount =
+          (snps[cmp]?.entryDepth || 0) + (refbase === cmp ? ref.entryDepth : 0)
+
+        // IGV: int modifiable = alignmentCounts.getCount(pos, base) + alignmentCounts.getCount(pos, compl)
+        const modifiable = mod.base === 'N' ? score0 : baseCount + complCount
+
+        // IGV: int detectable = simplexModifications.contains(key.modification) ?
+        //          alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, compl) :
+        //          modifiable;
+        const detectable =
           mod.base === 'N'
             ? score0
-            : (snps[mod.base]?.entryDepth || 0) +
-              (snps[cmp]?.entryDepth || 0) +
-              (refbase === mod.base ? ref.entryDepth : 0) +
-              (refbase === cmp ? ref.entryDepth : 0)
-
-        // Calculate detectable based on IGV's simplex/duplex logic
-        // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java#L51
-        // For simplex: detectable = positive strand reads with base + negative strand reads with complement
-        // For duplex: detectable = modifiable (all reads)
-        const detectable = mod.base === 'N'
-          ? score0
-          : simplexSet.has(mod.type)
-            ? // Simplex: use strand-specific counts
-              (snps[mod.base]?.['1'] || 0) +
-              (snps[cmp]?.['-1'] || 0) +
-              (refbase === mod.base ? ref['1'] : 0) +
-              (refbase === cmp ? ref['-1'] : 0)
-            : // Duplex: same as modifiable
-              modifiable
+            : isSimplex
+              ? // Simplex: getPosCount(base) + getNegCount(complement)
+                (snps[mod.base]?.['1'] || 0) +
+                (snps[cmp]?.['-1'] || 0) +
+                (refbase === mod.base ? ref['1'] : 0) +
+                (refbase === cmp ? ref['-1'] : 0)
+              : // Duplex: same as modifiable
+                modifiable
 
         const { entryDepth, avgProbability = 0 } = mods[m]!
+
+        console.log(`[mods] ${m} at ${feature.get('start')}:`, {
+          base: mod.base,
+          complement: cmp,
+          refbase,
+          isSimplex,
+          baseCount,
+          complCount,
+          modifiable,
+          detectable,
+          entryDepth,
+          'snps[base]': snps[mod.base],
+          'snps[cmp]': snps[cmp],
+          ref,
+          score0,
+        })
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const baseColor = mod.color || 'black'
         const c = alphaColor(baseColor, avgProbability)

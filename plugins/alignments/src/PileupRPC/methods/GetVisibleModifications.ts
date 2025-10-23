@@ -40,12 +40,15 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
         .pipe(toArray()),
     )
 
+    // Collect all unique base+strand+type combinations for simplex detection
+    // Use a compound key to ensure we capture both A+a and T-a separately
     const uniqueModifications = new Map<string, ModificationType>()
     for (const feat of featuresArray) {
       const mmTag = getTagAlt(feat, 'MM', 'Mm')
       for (const mod of getModTypes(typeof mmTag === 'string' ? mmTag : '')) {
-        if (!uniqueModifications.has(mod.type)) {
-          uniqueModifications.set(mod.type, mod)
+        const key = `${mod.base}${mod.strand}${mod.type}`
+        if (!uniqueModifications.has(key)) {
+          uniqueModifications.set(key, mod)
         }
       }
     }
@@ -53,8 +56,17 @@ export default class PileupGetVisibleModifications extends PileupBaseRPC {
     const modifications = [...uniqueModifications.values()]
     const simplexModifications = detectSimplexModifications(modifications)
 
+    // For visibleModifications display, we only need one entry per type
+    // (but we needed all of them for simplex detection above)
+    const modificationsForDisplay = new Map<string, ModificationType>()
+    for (const mod of modifications) {
+      if (!modificationsForDisplay.has(mod.type)) {
+        modificationsForDisplay.set(mod.type, mod)
+      }
+    }
+
     return {
-      modifications,
+      modifications: [...modificationsForDisplay.values()],
       simplexModifications: [...simplexModifications],
     }
   }
