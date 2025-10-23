@@ -33,6 +33,27 @@ const complementBase = {
 
 const fudgeFactor = 0.6
 
+interface StrandCounts {
+  readonly entryDepth: number
+  readonly '1': number
+  readonly '-1': number
+  readonly '0': number
+}
+
+interface ModificationCountsParams {
+  readonly base: string
+  readonly isSimplex: boolean
+  readonly refbase: string | undefined
+  readonly snps: Readonly<Record<string, Partial<StrandCounts>>>
+  readonly ref: StrandCounts
+  readonly score0: number
+}
+
+interface ModificationCountsResult {
+  readonly modifiable: number
+  readonly detectable: number
+}
+
 /**
  * Calculate modifiable and detectable counts for a modification following IGV's algorithm.
  *
@@ -51,14 +72,7 @@ function calculateModificationCounts({
   snps,
   ref,
   score0,
-}: {
-  base: string
-  isSimplex: boolean
-  refbase: string | undefined
-  snps: Record<string, { entryDepth: number; '1': number; '-1': number }>
-  ref: { entryDepth: number; '1': number; '-1': number }
-  score0: number
-}) {
+}: ModificationCountsParams): ModificationCountsResult {
   // Handle N base (all bases are modifiable/detectable)
   if (base === 'N') {
     return { modifiable: score0, detectable: score0 }
@@ -188,6 +202,7 @@ export async function makeImage(
   const drawingModifications = colorBy.type === 'modifications'
   const drawingMethylation = colorBy.type === 'methylation'
   const isolatedModification = colorBy.modifications?.isolatedModification
+  // Pre-create Set for O(1) simplex lookups during rendering
   const simplexSet = new Set(simplexModifications)
 
   // Second pass: draw the SNP data, and add a minimum feature width of 1px
@@ -205,10 +220,12 @@ export async function makeImage(
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
-      for (const m of Object.keys(nonmods).sort().reverse()) {
-        const mod =
-          visibleModifications[m.replace('nonmod_', '')] ||
-          visibleModifications[m.replace('mod_', '')]
+      // Sort keys once outside the loop
+      const nonmodKeys = Object.keys(nonmods).sort().reverse()
+      for (const m of nonmodKeys) {
+        // Remove prefix once for lookup
+        const modKey = m.replace(/^(nonmod_|mod_)/, '')
+        const mod = visibleModifications[modKey]
         if (!mod) {
           console.warn(`${m} not known yet`)
           continue
@@ -241,8 +258,11 @@ export async function makeImage(
         )
         curr += modFraction * height
       }
-      for (const m of Object.keys(mods).sort().reverse()) {
-        const mod = visibleModifications[m.replace('mod_', '')]
+      // Sort keys once outside the loop
+      const modKeys = Object.keys(mods).sort().reverse()
+      for (const m of modKeys) {
+        const modKey = m.replace('mod_', '')
+        const mod = visibleModifications[modKey]
         if (!mod) {
           console.warn(`${m} not known yet`)
           continue

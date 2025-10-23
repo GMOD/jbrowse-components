@@ -2,10 +2,25 @@ import { revcom } from '@jbrowse/core/util'
 
 import { modificationRegex } from './consts'
 
+/**
+ * Parse MM tag to extract modification positions on the read sequence.
+ *
+ * Performance optimizations:
+ * - Pre-converts delta strings to numbers (avoids repeated +string coercion)
+ * - Uses push + reverse instead of unshift (O(n) vs O(n²) for reverse strand)
+ * - Caches sequence length to avoid repeated property access
+ *
+ * @param mm - MM tag string (e.g., "C+m,2,2,1;A+a,0,3")
+ * @param fseq - Read sequence
+ * @param fstrand - Read strand (-1, 0, or 1)
+ * @returns Array of modification objects with positions
+ */
 export function getModPositions(mm: string, fseq: string, fstrand: number) {
   const seq = fstrand === -1 ? revcom(fseq) : fseq
+  const seqLength = seq.length
   const mods = mm.split(';')
   const result = []
+
   for (const mod of mods) {
     // Empty string
     if (mod === '') {
@@ -28,6 +43,12 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
     // They are processed the same way as positive strand modifications
     // The strand information is preserved for simplex/duplex detection
 
+    // Pre-convert deltas to numbers for performance (avoid repeated string-to-number conversion)
+    const deltas = new Array(split.length - 1)
+    for (let i = 1; i < split.length; i++) {
+      deltas[i - 1] = +split[i]!
+    }
+
     // this logic based on parse_mm.pl from hts-specs
     for (const type of types) {
       if (type === '') {
@@ -35,24 +56,33 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
       }
       let currPos = 0
       const positions = []
-      for (let i = 1, l = split.length; i < l; i++) {
-        let delta = +split[i]!
+      const deltasLength = deltas.length
+
+      for (let i = 0; i < deltasLength; i++) {
+        let delta = deltas[i]
         do {
           if (base === 'N' || base === seq[currPos]) {
             delta--
           }
           currPos++
-        } while (delta >= 0 && currPos < seq.length)
+        } while (delta >= 0 && currPos < seqLength)
+
+        // Store position
         if (fstrand === -1) {
-          const pos = seq.length - currPos
+          const pos = seqLength - currPos
           if (pos >= 0) {
             // avoid negative-number-positions in array, seen in #4629 cause
             // unknown, could warrant some further investigation
-            positions.unshift(pos)
+            positions.push(pos)
           }
         } else {
           positions.push(currPos - 1)
         }
+      }
+
+      // Reverse positions array for reverse strand in one operation (more efficient than unshift)
+      if (fstrand === -1) {
+        positions.reverse()
       }
 
       result.push({

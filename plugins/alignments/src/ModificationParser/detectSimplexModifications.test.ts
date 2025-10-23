@@ -45,8 +45,7 @@ describe('detectSimplexModifications', () => {
   })
 
   it('should handle empty modifications', () => {
-    const modifications: Array<{ type: string; base: string; strand: string }> =
-      []
+    const modifications: { type: string; base: string; strand: string }[] = []
     const result = detectSimplexModifications(modifications)
     expect(result).toEqual(new Set())
   })
