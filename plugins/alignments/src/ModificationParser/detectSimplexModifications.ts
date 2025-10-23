@@ -16,7 +16,7 @@ type ModificationTypeList = readonly ModificationType[]
  * - Simplex: detectable uses strand-specific counts
  * - Duplex: detectable equals modifiable (uses all counts)
  *
- * Reference: IGV's BaseModificationCoverageRenderer.updateBaseModfications
+ * Reference: IGV's BaseModificationCoverageRenderer.updateBaseModifications
  * https://github.com/igvteam/igv/blob/master/src/main/java/org/broad/igv/sam/mods/BaseModificationCoverageRenderer.java
  */
 export function detectSimplexModifications(
