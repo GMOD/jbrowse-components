@@ -11,6 +11,17 @@ import type { ModificationType } from '../../shared/types'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 
+/**
+ * RPC method that collects all unique modifications from alignment features
+ * and detects which are simplex (single-strand) vs duplex (both strands).
+ *
+ * For example:
+ * - C+m without G-m → simplex
+ * - A+a with T-a → duplex (6mA on both strands)
+ *
+ * Returns both the modifications for display and the simplex list for
+ * correct detectable count calculations in the renderer.
+ */
 export default class PileupGetVisibleModifications extends PileupBaseRPC {
   name = 'PileupGetVisibleModifications'
 

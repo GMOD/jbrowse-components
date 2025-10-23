@@ -29,9 +29,67 @@ const complementBase = {
   G: 'C',
   A: 'T',
   T: 'A',
-}
+} as const
 
 const fudgeFactor = 0.6
+
+/**
+ * Calculate modifiable and detectable counts for a modification following IGV's algorithm.
+ *
+ * @param params.base - The canonical base (e.g., 'A' for A+a modification)
+ * @param params.isSimplex - Whether this modification is simplex (only on one strand)
+ * @param params.refbase - The reference base at this position
+ * @param params.snps - SNP counts at this position
+ * @param params.ref - Reference match counts at this position
+ * @param params.score0 - Total coverage at this position
+ * @returns Object with modifiable and detectable counts
+ */
+function calculateModificationCounts({
+  base,
+  isSimplex,
+  refbase,
+  snps,
+  ref,
+  score0,
+}: {
+  base: string
+  isSimplex: boolean
+  refbase: string | undefined
+  snps: Record<string, { entryDepth: number; '1': number; '-1': number }>
+  ref: { entryDepth: number; '1': number; '-1': number }
+  score0: number
+}) {
+  // Handle N base (all bases are modifiable/detectable)
+  if (base === 'N') {
+    return { modifiable: score0, detectable: score0 }
+  }
+
+  const cmp = complementBase[base as keyof typeof complementBase]
+
+  // Calculate total reads for base and complement
+  // IGV: getCount(pos, base) = reads matching that base (from SNPs or ref)
+  const baseCount =
+    (snps[base]?.entryDepth || 0) + (refbase === base ? ref.entryDepth : 0)
+  const complCount =
+    (snps[cmp]?.entryDepth || 0) + (refbase === cmp ? ref.entryDepth : 0)
+
+  // Modifiable: reads that COULD have this modification (base or complement)
+  // IGV: modifiable = getCount(pos, base) + getCount(pos, compl)
+  const modifiable = baseCount + complCount
+
+  // Detectable: reads where we can DETECT this modification
+  // For simplex: only specific strands (+ for base, - for complement)
+  // For duplex: all reads (same as modifiable)
+  // IGV: detectable = simplex ? getPosCount(base) + getNegCount(compl) : modifiable
+  const detectable = isSimplex
+    ? (snps[base]?.['1'] || 0) +
+      (snps[cmp]?.['-1'] || 0) +
+      (refbase === base ? ref['1'] : 0) +
+      (refbase === cmp ? ref['-1'] : 0)
+    : modifiable
+
+  return { modifiable, detectable }
+}
 
 export async function makeImage(
   ctx: CanvasRenderingContext2D,
@@ -132,10 +190,6 @@ export async function makeImage(
   const isolatedModification = colorBy.modifications?.isolatedModification
   const simplexSet = new Set(simplexModifications)
 
-  if (drawingModifications && simplexModifications.length > 0) {
-    console.log('[makeImage] Simplex modifications:', simplexModifications)
-  }
-
   // Second pass: draw the SNP data, and add a minimum feature width of 1px
   // which can be wider than the actual bpPerPx This reduces overdrawing of
   // the grey background over the SNPs
@@ -151,15 +205,6 @@ export async function makeImage(
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
-      console.log(`[makeImage] Position ${feature.get('start')}:`, {
-        mods,
-        nonmods,
-        snps,
-        ref,
-        refbase,
-        score0,
-        visibleModifications,
-      })
       for (const m of Object.keys(nonmods).sort().reverse()) {
         const mod =
           visibleModifications[m.replace('nonmod_', '')] ||
@@ -171,54 +216,16 @@ export async function makeImage(
         if (isolatedModification && mod.type !== isolatedModification) {
           continue
         }
-        const cmp = complementBase[mod.base as keyof typeof complementBase]
-        const isSimplex = simplexSet.has(mod.type)
-
-        // IGV logic: getCount(pos, base) returns TOTAL count for that base
-        // In JBrowse: snps[base].entryDepth = count from mismatches
-        //             ref.entryDepth = count from reference matches
-        // We need: total count of base + total count of complement
-        const baseCount =
-          (snps[mod.base]?.entryDepth || 0) +
-          (refbase === mod.base ? ref.entryDepth : 0)
-        const complCount =
-          (snps[cmp]?.entryDepth || 0) + (refbase === cmp ? ref.entryDepth : 0)
-
-        // IGV: int modifiable = alignmentCounts.getCount(pos, base) + alignmentCounts.getCount(pos, compl)
-        const modifiable = mod.base === 'N' ? score0 : baseCount + complCount
-
-        // IGV: int detectable = simplexModifications.contains(key.modification) ?
-        //          alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, compl) :
-        //          modifiable;
-        const detectable =
-          mod.base === 'N'
-            ? score0
-            : isSimplex
-              ? // Simplex: getPosCount(base) + getNegCount(complement)
-                (snps[mod.base]?.['1'] || 0) +
-                (snps[cmp]?.['-1'] || 0) +
-                (refbase === mod.base ? ref['1'] : 0) +
-                (refbase === cmp ? ref['-1'] : 0)
-              : // Duplex: same as modifiable
-                modifiable
-
-        const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
-
-        console.log(`[nonmods] ${m} at ${feature.get('start')}:`, {
+        const { modifiable, detectable } = calculateModificationCounts({
           base: mod.base,
-          complement: cmp,
+          isSimplex: simplexSet.has(mod.type),
           refbase,
-          isSimplex,
-          baseCount,
-          complCount,
-          modifiable,
-          detectable,
-          entryDepth,
-          'snps[base]': snps[mod.base],
-          'snps[cmp]': snps[cmp],
+          snps,
           ref,
           score0,
         })
+
+        const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const nonModColor = 'blue'
         const c = alphaColor(nonModColor, avgProbability)
@@ -243,54 +250,16 @@ export async function makeImage(
         if (isolatedModification && mod.type !== isolatedModification) {
           continue
         }
-        const cmp = complementBase[mod.base as keyof typeof complementBase]
-        const isSimplex = simplexSet.has(mod.type)
-
-        // IGV logic: getCount(pos, base) returns TOTAL count for that base
-        // In JBrowse: snps[base].entryDepth = count from mismatches
-        //             ref.entryDepth = count from reference matches
-        // We need: total count of base + total count of complement
-        const baseCount =
-          (snps[mod.base]?.entryDepth || 0) +
-          (refbase === mod.base ? ref.entryDepth : 0)
-        const complCount =
-          (snps[cmp]?.entryDepth || 0) + (refbase === cmp ? ref.entryDepth : 0)
-
-        // IGV: int modifiable = alignmentCounts.getCount(pos, base) + alignmentCounts.getCount(pos, compl)
-        const modifiable = mod.base === 'N' ? score0 : baseCount + complCount
-
-        // IGV: int detectable = simplexModifications.contains(key.modification) ?
-        //          alignmentCounts.getPosCount(pos, base) + alignmentCounts.getNegCount(pos, compl) :
-        //          modifiable;
-        const detectable =
-          mod.base === 'N'
-            ? score0
-            : isSimplex
-              ? // Simplex: getPosCount(base) + getNegCount(complement)
-                (snps[mod.base]?.['1'] || 0) +
-                (snps[cmp]?.['-1'] || 0) +
-                (refbase === mod.base ? ref['1'] : 0) +
-                (refbase === cmp ? ref['-1'] : 0)
-              : // Duplex: same as modifiable
-                modifiable
-
-        const { entryDepth, avgProbability = 0 } = mods[m]!
-
-        console.log(`[mods] ${m} at ${feature.get('start')}:`, {
+        const { modifiable, detectable } = calculateModificationCounts({
           base: mod.base,
-          complement: cmp,
+          isSimplex: simplexSet.has(mod.type),
           refbase,
-          isSimplex,
-          baseCount,
-          complCount,
-          modifiable,
-          detectable,
-          entryDepth,
-          'snps[base]': snps[mod.base],
-          'snps[cmp]': snps[cmp],
+          snps,
           ref,
           score0,
         })
+
+        const { entryDepth, avgProbability = 0 } = mods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const baseColor = mod.color || 'black'
         const c = alphaColor(baseColor, avgProbability)

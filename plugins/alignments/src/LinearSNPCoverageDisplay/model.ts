@@ -282,8 +282,6 @@ function stateModelFactory(
                   blocks: staticBlocks,
                 })
               if (isAlive(self)) {
-                console.log('[LinearSNPCoverageDisplay] Received modifications:', modifications)
-                console.log('[LinearSNPCoverageDisplay] Received simplex:', simplexModifications)
                 self.updateVisibleModifications(modifications)
                 self.setSimplexModifications(simplexModifications)
                 self.setModificationsReady(true)

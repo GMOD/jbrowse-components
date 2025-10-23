@@ -22,28 +22,20 @@ export function detectSimplexModifications(
 ): Set<string> {
   const simplexModifications = new Set<string>()
 
-  console.log('[Simplex Detection] All modifications:', modifications)
-
   // First, collect all modifications on the minus strand
   const minusStrandMods = new Set<string>()
   for (const mod of modifications) {
     if (mod.strand === '-') {
       minusStrandMods.add(mod.type)
-      console.log('[Simplex Detection] Found minus strand mod:', mod)
     }
   }
-
-  console.log('[Simplex Detection] Minus strand mods:', [...minusStrandMods])
 
   // Then, find positive strand modifications without minus strand counterparts
   for (const mod of modifications) {
     if (mod.strand === '+' && !minusStrandMods.has(mod.type)) {
       simplexModifications.add(mod.type)
-      console.log('[Simplex Detection] Identified simplex mod:', mod)
     }
   }
-
-  console.log('[Simplex Detection] Final simplex mods:', [...simplexModifications])
 
   return simplexModifications
 }
