@@ -274,14 +274,15 @@ function stateModelFactory(
         createAutorun(
           self,
           async () => {
-            self.setModificationsReady(false)
             if (!self.autorunReady) {
               return
             }
             const view = getContainingView(self) as LGV
+            const singleRegion = view.dynamicBlocks.contentBlocks.length === 1
             const { staticBlocks } = view
             const { colorBy } = self
-            if (colorBy?.type === 'modifications') {
+            if (colorBy?.type === 'modifications' && !singleRegion) {
+              self.setModificationsReady(false)
               const { modifications, simplexModifications } =
                 await getUniqueModifications({
                   model: self,
@@ -293,9 +294,8 @@ function stateModelFactory(
                 self.setSimplexModifications(simplexModifications)
                 self.setModificationsReady(true)
               }
-            } else {
-              self.setModificationsReady(true)
             }
+            self.setModificationsReady(true)
           },
           { delay: 1000 },
         )
