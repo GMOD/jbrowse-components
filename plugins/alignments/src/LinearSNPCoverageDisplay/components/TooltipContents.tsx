@@ -97,20 +97,7 @@ function getModificationLabel(base: string, model: Model): string {
   return base.toUpperCase()
 }
 
-// Helper to get complement base
-const complementBase = {
-  A: 'T',
-  T: 'A',
-  C: 'G',
-  G: 'C',
-} as const
-
-function getDuplexModificationLabel(
-  base: string,
-  model: Model,
-  posStrandCount: number,
-  negStrandCount: number,
-): string {
+function getDuplexModificationLabel(base: string, model: Model): string {
   const isNonmod = base.startsWith('nonmod_')
   const modType = getModificationType(base)
   const mod = model.visibleModifications.get(modType)
@@ -119,25 +106,7 @@ function getDuplexModificationLabel(
   }
 
   const modName = getModificationName(modType)
-  const labels = []
-
-  // The modification in visibleModifications represents the canonical form
-  // For duplex modifications:
-  // - Positive strand reads (fstrand=1) have the canonical base (e.g., A for A+a)
-  // - Negative strand reads (fstrand=-1) have the complement base (e.g., T for T-a)
-
-  // Show positive strand if present
-  if (posStrandCount > 0) {
-    labels.push(`${mod.base}+${modType}`)
-  }
-
-  // Show negative strand if present
-  if (negStrandCount > 0) {
-    const negBase = complementBase[mod.base as keyof typeof complementBase]
-    labels.push(`${negBase}-${modType}`)
-  }
-
-  const label = `${labels.join('/')} ${modName}`
+  const label = modName
   return isNonmod ? `Non-modified ${label}` : label
 }
 
@@ -206,8 +175,6 @@ function RefRow({
 function DuplexModificationRow({
   base,
   score,
-  posStrandCount,
-  negStrandCount,
   readsCounted,
   model,
   tdClass,
@@ -230,12 +197,7 @@ function DuplexModificationRow({
         <ColorSquare model={model} base={base} />
       </td>
       <td className={baseColumnClass}>
-        {getDuplexModificationLabel(
-          base,
-          model,
-          posStrandCount,
-          negStrandCount,
-        )}
+        {getDuplexModificationLabel(base, model)}
       </td>
       <td className={tdClass}>{score.entryDepth}</td>
       <td>
@@ -255,7 +217,6 @@ function SimplexOrRegularRow({
   base,
   score,
   isMod,
-  isSimplex,
   readsCounted,
   model,
   tdClass,
