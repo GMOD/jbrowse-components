@@ -119,8 +119,10 @@ function stateModelFactory() {
        * #getter
        */
       get blockType(): 'staticBlocks' | 'dynamicBlocks' {
-        return 'staticBlocks'
+        return 'dynamicBlocks'
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        */
@@ -129,14 +131,12 @@ function stateModelFactory() {
         if (!view.initialized) {
           throw new Error('view not initialized yet')
         }
-        return view[this.blockType]
+        return view.dynamicBlocks
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * how many milliseconds to wait for the display to
-       * "settle" before re-rendering a block
+       * how many milliseconds to wait for the display to "settle" before
+       * re-rendering a block
        */
       get renderDelay() {
         return 50
