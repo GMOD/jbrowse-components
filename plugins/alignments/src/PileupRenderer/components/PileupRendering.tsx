@@ -140,7 +140,7 @@ const PileupRendering = observer(function (props: {
         : item.type === 'deletion'
           ? `Deletion: ${item.seq}bp`
           : item.type === 'modification'
-            ? `Modification: ${item.seq}`
+            ? `${item.seq}`
             : `Mismatch: ${item.seq}`
       : undefined
     onMouseMove?.(

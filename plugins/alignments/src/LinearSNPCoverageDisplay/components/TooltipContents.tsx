@@ -59,7 +59,7 @@ function getModificationColor(base: string, model: Model): string | undefined {
   if (!base.startsWith('mod_') && !base.startsWith('nonmod_')) {
     return undefined
   }
-  // Non-modified entries should always be blue
+  // Unmodified entries should always be blue
   if (base.startsWith('nonmod_')) {
     return 'blue'
   }
@@ -86,18 +86,20 @@ function shouldShowPercentage(base: string): boolean {
 }
 
 function getModificationLabel(base: string, model: Model): string {
+  console.log({ base })
   const isNonmod = base.startsWith('nonmod_')
   const modType = getModificationType(base)
   const mod = model.visibleModifications.get(modType)
   if (mod) {
     const modName = getModificationName(modType)
     const label = modName
-    return isNonmod ? `Non-modified ${label}` : label
+    return isNonmod ? `Unmodified ${label}` : label
   }
   return base.toUpperCase()
 }
 
 function getDuplexModificationLabel(base: string, model: Model): string {
+  console.log({ base })
   const isNonmod = base.startsWith('nonmod_')
   const modType = getModificationType(base)
   const mod = model.visibleModifications.get(modType)
@@ -107,7 +109,7 @@ function getDuplexModificationLabel(base: string, model: Model): string {
 
   const modName = getModificationName(modType)
   const label = modName
-  return isNonmod ? `Non-modified ${label}` : label
+  return isNonmod ? `Unmodified ${label}` : label
 }
 
 // React components

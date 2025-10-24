@@ -2,7 +2,11 @@ import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
 import { getModificationName } from '../../shared/modificationData'
+import { getModPositions } from '../../ModificationParser/getModPositions'
+import { getModProbabilities } from '../../ModificationParser/getModProbabilities'
+import { getNextRefPos } from '../../MismatchParser'
 import { alphaColor } from '../../shared/util'
+import { getTagAlt } from '../../util'
 import { fillRect } from '../util'
 
 import type { FlatbushItem, ProcessedRenderArgs } from '../types'
@@ -41,8 +45,33 @@ export function renderModifications({
   const isolatedModification = colorBy?.modifications?.isolatedModification
   const twoColor = colorBy?.modifications?.twoColor
 
-  // Get the feature strand for strand-specific tooltip info
+  // Get all modifications with strand info for tooltip
   const fstrand = feature.get('strand') as -1 | 0 | 1
+  const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
+  const modifications = getModPositions(mm, seq, fstrand)
+  const probabilities = getModProbabilities(feature)
+
+  // Build a map of position -> list of modifications with strand info
+  const modsByPosition = new Map<
+    number,
+    Array<{ type: string; base: string; strand: string; prob: number }>
+  >()
+
+  let probIndex = 0
+  for (const { type, base, strand, positions } of modifications) {
+    for (const { ref, idx } of getNextRefPos(cigarOps, positions)) {
+      const prob =
+        probabilities?.[
+          probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
+        ] || 0
+
+      if (!modsByPosition.has(ref)) {
+        modsByPosition.set(ref, [])
+      }
+      modsByPosition.get(ref)!.push({ type, base, strand, prob })
+    }
+    probIndex += positions.length
+  }
 
   // this is a hole-y array, does not work with normal for loop
   // eslint-disable-next-line unicorn/no-array-for-each
@@ -60,8 +89,7 @@ export function renderModifications({
       }
       const col = mod.color || 'black'
       const s = 1 - sum(allProbs)
-      const isNonmod = twoColor && s > max(allProbs)
-      if (isNonmod) {
+      if (twoColor && s > max(allProbs)) {
         const c = alphaColor('blue', s)
         const w = rightPx - leftPx + 0.5
         fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
@@ -71,18 +99,20 @@ export function renderModifications({
         fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
       }
 
-      // Build tooltip showing only the max probability modification
-      const modName = getModificationName(type)
-      const strandSymbol = fstrand === 1 ? '+' : fstrand === -1 ? '-' : ''
-      const displayProb = isNonmod ? s : prob
-      const prefix = isNonmod ? 'Non-modified ' : ''
-      const strandInfo = `${prefix}${mod.base}${strandSymbol}${type} ${modName} (${(displayProb * 100).toFixed(1)}%)`
+      // Add to flatbush for mouseover with strand-specific info showing all modifications
+      const modsAtPos = modsByPosition.get(pos) || []
+      const strandInfo = modsAtPos
+        .map(
+          m =>
+            `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
+        )
+        .join('<br/>')
 
       items.push({
         type: 'modification',
-        seq: strandInfo,
+        seq: strandInfo || mod.base,
         modType: type,
-        probability: displayProb,
+        probability: prob,
       })
       coords.push(leftPx, topPx, rightPx, topPx + heightPx)
 
