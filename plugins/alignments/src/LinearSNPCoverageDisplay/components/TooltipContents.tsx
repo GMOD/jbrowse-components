@@ -47,16 +47,22 @@ interface StrandCounts {
   readonly avgProbability?: number
 }
 
+interface MutableStrandCounts {
+  entryDepth: number
+  '1': number
+  '-1': number
+  avgProbability?: number
+}
+
 function getModificationColor(base: string, model: Model): string | undefined {
   if (!base.startsWith('mod_') && !base.startsWith('nonmod_')) {
     return undefined
   }
-  // Unmodified entries should always be blue
+  // Unmodified entries (consolidated by base letter) should always be blue
   if (base.startsWith('nonmod_')) {
     return 'blue'
   }
-  return model.visibleModifications.get(base.replace(/^(mod_|nonmod_)/, ''))
-    ?.color
+  return model.visibleModifications.get(base.replace(/^mod_/, ''))?.color
 }
 
 function isModification(base: string): boolean {
@@ -79,18 +85,27 @@ function shouldShowPercentage(base: string): boolean {
 
 function getModificationLabel(base: string, model: Model): string {
   const isNonmod = base.startsWith('nonmod_')
+  if (isNonmod) {
+    // For consolidated nonmod entries (e.g., nonmod_C), extract the base letter
+    const genomicBase = base.replace('nonmod_', '')
+    return `Unmodified ${genomicBase}`
+  }
   const modType = getModificationType(base)
   const mod = model.visibleModifications.get(modType)
   if (mod) {
     const modName = getModificationName(modType)
-    const label = modName
-    return isNonmod ? `Unmodified ${label}` : label
+    return modName
   }
   return base.toUpperCase()
 }
 
 function getDuplexModificationLabel(base: string, model: Model): string {
   const isNonmod = base.startsWith('nonmod_')
+  if (isNonmod) {
+    // For consolidated nonmod entries (e.g., nonmod_C), extract the base letter
+    const genomicBase = base.replace('nonmod_', '')
+    return `Unmodified ${genomicBase}`
+  }
   const modType = getModificationType(base)
   const mod = model.visibleModifications.get(modType)
   if (!mod) {
@@ -98,8 +113,7 @@ function getDuplexModificationLabel(base: string, model: Model): string {
   }
 
   const modName = getModificationName(modType)
-  const label = modName
-  return isNonmod ? `Unmodified ${label}` : label
+  return modName
 }
 
 // React components
@@ -246,16 +260,88 @@ function ModificationRows({
   model: Props['model']
   tdClass: string
 }) {
+  // Group nonmod entries by base letter for consolidated display
+  const consolidatedEntries: Record<
+    string,
+    { base: string; score: MutableStrandCounts; isNonmod: boolean }
+  > = {}
+
+  for (const [key, entry] of Object.entries(info)) {
+    for (const [base, score] of Object.entries(entry)) {
+      const isNonmod = base.startsWith('nonmod_')
+      if (isNonmod) {
+        // For nonmods, consolidate by the genomic base letter
+        const modType = getModificationType(base)
+        const mod = model.visibleModifications.get(modType)
+        const genomicBase = mod?.base || 'X'
+        const consolidatedKey = `${key}_nonmod_${genomicBase}`
+
+        if (!consolidatedEntries[consolidatedKey]) {
+          consolidatedEntries[consolidatedKey] = {
+            base: `nonmod_${genomicBase}`,
+            score: {
+              entryDepth: 0,
+              '1': 0,
+              '-1': 0,
+              avgProbability: 0,
+            },
+            isNonmod: true,
+          }
+        }
+
+        // Accumulate counts across all nonmod types for this base
+        const consolidated = consolidatedEntries[consolidatedKey]!
+        consolidated.score.entryDepth += score.entryDepth
+        consolidated.score['1'] += score['1']
+        consolidated.score['-1'] += score['-1']
+
+        // Weighted average of probabilities
+        if (score.avgProbability !== undefined) {
+          const prevAvg = consolidated.score.avgProbability || 0
+          const prevCount = consolidated.score.entryDepth - score.entryDepth
+          consolidated.score.avgProbability =
+            prevCount > 0
+              ? (prevAvg * prevCount + score.avgProbability * score.entryDepth) /
+                consolidated.score.entryDepth
+              : score.avgProbability
+        }
+      } else {
+        // For regular mods, keep them separate
+        consolidatedEntries[`${key}_${base}`] = {
+          base,
+          score: { ...score }, // Create a copy to match MutableStrandCounts type
+          isNonmod: false,
+        }
+      }
+    }
+  }
+
   return (
     <>
-      {Object.entries(info).map(([key, entry]) =>
-        Object.entries(entry).map(([base, score]) => {
+      {Object.entries(consolidatedEntries).map(
+        ([rowKey, { base, score, isNonmod }]) => {
           const modType = getModificationType(base)
-          const isMod = isModification(base)
-          const isSimplex = isMod && model.simplexModifications?.has(modType)
+          const isMod = isModification(base) || isNonmod
+          const isSimplex = !isNonmod && isMod && model.simplexModifications?.has(modType)
           const posStrandCount = score['1'] || 0
           const negStrandCount = score['-1'] || 0
-          const rowKey = `${key}_${base}`
+
+          // For nonmod entries, display as simple row (no duplex/simplex logic)
+          if (isNonmod) {
+            return (
+              <SimplexOrRegularRow
+                key={rowKey}
+                base={base}
+                score={score}
+                isMod={true}
+                isSimplex={false}
+                readsCounted={readsCounted}
+                model={model}
+                tdClass={tdClass}
+                rowKey={rowKey}
+              />
+            )
+          }
 
           // Duplex modifications: single row with strand info
           if (
@@ -292,7 +378,7 @@ function ModificationRows({
               rowKey={rowKey}
             />
           )
-        }),
+        },
       )}
     </>
   )
