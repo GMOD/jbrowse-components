@@ -20,6 +20,35 @@ interface LayoutData {
   distance: number
 }
 
+function drawChevron(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  strand: number,
+  color: string,
+  chevronWidth: number,
+) {
+  ctx.fillStyle = color
+  ctx.beginPath()
+  if (strand === -1) {
+    ctx.moveTo(x - chevronWidth, y + height / 2)
+    ctx.lineTo(x, y + height)
+    ctx.lineTo(x + width, y + height)
+    ctx.lineTo(x + width, y)
+    ctx.lineTo(x, y)
+  } else {
+    ctx.moveTo(x, y)
+    ctx.lineTo(x, y + height)
+    ctx.lineTo(x + width, y + height)
+    ctx.lineTo(x + width + chevronWidth, y + height / 2)
+    ctx.lineTo(x + width, y)
+  }
+  ctx.closePath()
+  ctx.fill()
+}
+
 export function drawFeats(
   self: LinearReadStackDisplayModel,
   ctx: CanvasRenderingContext2D,
@@ -189,7 +218,6 @@ export function drawFeats(
         )
       }
     } else if (chain.length > 2) {
-      // Draw connecting line for long reads
       const firstFeat = chain[0]!
       const lastFeat = chain[chain.length - 1]!
 
@@ -224,6 +252,9 @@ export function drawFeats(
       continue // Skip if Y-offset was not determined for this chain
     }
 
+    const renderChevrons = view.bpPerPx < 10 && featureHeight > 5
+    const chevronWidth = 5
+
     if (chain.length === 2) {
       const v0 = chain[0]!
       const v1 = chain[1]!
@@ -249,14 +280,27 @@ export function drawFeats(
           const xPos = s.offsetPx - view.offsetPx
           const width = Math.max(e.offsetPx - s.offsetPx, 3)
 
-          fillRectCtx(
-            xPos,
-            chainY,
-            width,
-            featureHeight,
-            ctx,
-            pairedFill || fillColor[c],
-          )
+          if (renderChevrons) {
+            drawChevron(
+              ctx,
+              xPos,
+              chainY,
+              width,
+              featureHeight,
+              effectiveStrand,
+              pairedFill || fillColor[c],
+              chevronWidth,
+            )
+          } else {
+            fillRectCtx(
+              xPos,
+              chainY,
+              width,
+              featureHeight,
+              ctx,
+              pairedFill || fillColor[c],
+            )
+          }
           featuresForFlatbush.push({
             x1: xPos,
             y1: chainY,
@@ -274,7 +318,7 @@ export function drawFeats(
       const c1 = chain[0]!
       let primaryStrand: undefined | number
       if (!(c1.flags & 2048)) {
-        primaryStrand = c1.strand
+        primaryStrand = c1.flags & 16 ? -1 : 1
       } else {
         const res = c1.SA?.split(';')[0]!.split(',')[2]
         primaryStrand = res === '-' ? -1 : 1
@@ -290,7 +334,20 @@ export function drawFeats(
             effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
           const xPos = s.offsetPx - view.offsetPx
           const width = Math.max(e.offsetPx - s.offsetPx, 3)
-          fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillColor[c])
+          if (renderChevrons) {
+            drawChevron(
+              ctx,
+              xPos,
+              chainY,
+              width,
+              featureHeight,
+              effectiveStrand,
+              fillColor[c],
+              chevronWidth,
+            )
+          } else {
+            fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillColor[c])
+          }
           featuresForFlatbush.push({
             x1: xPos,
             y1: chainY,
@@ -313,7 +370,20 @@ export function drawFeats(
         if (s && e) {
           const xPos = s.offsetPx - view.offsetPx
           const width = Math.max(e.offsetPx - s.offsetPx, 3)
-          fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#888')
+          if (renderChevrons) {
+            drawChevron(
+              ctx,
+              xPos,
+              chainY,
+              width,
+              featureHeight,
+              feat.strand, // Singletons use their own strand
+              '#888', // Default color for singletons
+              chevronWidth,
+            )
+          } else {
+            fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#888')
+          }
           featuresForFlatbush.push({
             x1: xPos,
             y1: chainY,
