@@ -18,7 +18,7 @@ async function wait(view: any) {
   )
 }
 
-async function testArc(loc: string, track: string) {
+async function testStack(loc: string, track: string) {
   const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
@@ -27,24 +27,24 @@ async function testArc(loc: string, track: string) {
   await user.click(await findByTestId(hts(track), ...opts))
   await user.click(await findByTestId('track_menu_icon', ...opts))
   await user.click(await findByText('Replace lower panel with...'))
-  await user.click((await findAllByText('Arc display'))[0]!)
+  await user.click((await findAllByText('Read stack display'))[0]!)
   await wait(view)
   await new Promise(res => setTimeout(res, 2000))
-  expectCanvasMatch(getByTestId('arc-canvas'))
+  expectCanvasMatch(getByTestId('stack-canvas'))
 }
 
-test('short-read arc display', async () => {
-  await testArc('ctgA:1-50000', 'volvox_sv_cram')
+test('short-read stack display', async () => {
+  await testStack('ctgA:1-50000', 'volvox_sv_cram')
 }, 60000)
 
-test('long-read arc display', async () => {
-  await testArc('ctgA:19,101..32,027', 'volvox-simple-inv.bam')
+test('long-read stack display', async () => {
+  await testStack('ctgA:19,101..32,027', 'volvox-simple-inv.bam')
 }, 60000)
 
-test('long-read arc display, out of view pairing', async () => {
-  await testArc('ctgA:478..6,191', 'volvox-long-reads-sv-cram')
+test('long-read stack display, out of view pairing', async () => {
+  await testStack('ctgA:478..6,191', 'volvox-long-reads-sv-cram')
 }, 60000)
 
-test('short-read arc display, out of view pairing', async () => {
-  await testArc('ctgA:478..6,191', 'volvox_sv_cram')
+test('short-read stack display, out of view pairing', async () => {
+  await testStack('ctgA:478..6,191', 'volvox_sv_cram')
 }, 60000)
