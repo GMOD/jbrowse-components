@@ -12,14 +12,6 @@ const useStyles = makeStyles()(() => ({
   td: {
     whiteSpace: 'nowrap',
   },
-  baseColumn: {
-    maxWidth: '400px',
-    wordBreak: 'break-word',
-  },
-  tooltip: {
-    maxWidth: '600px',
-    overflow: 'hidden',
-  },
   table: {
     width: '100%',
     tableLayout: 'auto',
@@ -151,19 +143,15 @@ function RefRow({
   referenceBase,
   reference,
   readsCounted,
-  baseColumnClass,
 }: {
   referenceBase?: string
   reference: StrandCounts
   readsCounted: number
-  baseColumnClass: string
 }) {
   return (
     <tr>
       <td />
-      <td className={baseColumnClass}>
-        REF {referenceBase ? `(${referenceBase.toUpperCase()})` : ''}
-      </td>
+      <td>REF {referenceBase ? `(${referenceBase.toUpperCase()})` : ''}</td>
       <td>{reference.entryDepth}</td>
       <td>{pct(reference.entryDepth, readsCounted)}</td>
       <td>{formatStrandCounts(reference)}</td>
@@ -178,7 +166,6 @@ function DuplexModificationRow({
   readsCounted,
   model,
   tdClass,
-  baseColumnClass,
   rowKey,
 }: {
   base: string
@@ -188,7 +175,6 @@ function DuplexModificationRow({
   readsCounted: number
   model: Model
   tdClass: string
-  baseColumnClass: string
   rowKey: string
 }) {
   return (
@@ -196,9 +182,7 @@ function DuplexModificationRow({
       <td>
         <ColorSquare model={model} base={base} />
       </td>
-      <td className={baseColumnClass}>
-        {getDuplexModificationLabel(base, model)}
-      </td>
+      <td>{getDuplexModificationLabel(base, model)}</td>
       <td className={tdClass}>{score.entryDepth}</td>
       <td>
         {shouldShowPercentage(base)
@@ -220,7 +204,6 @@ function SimplexOrRegularRow({
   readsCounted,
   model,
   tdClass,
-  baseColumnClass,
   rowKey,
 }: {
   base: string
@@ -230,7 +213,6 @@ function SimplexOrRegularRow({
   readsCounted: number
   model: Model
   tdClass: string
-  baseColumnClass: string
   rowKey: string
 }) {
   return (
@@ -238,9 +220,7 @@ function SimplexOrRegularRow({
       <td>
         <ColorSquare model={model} base={base} />
       </td>
-      <td className={baseColumnClass}>
-        {isMod ? getModificationLabel(base, model) : base.toUpperCase()}
-      </td>
+      <td>{isMod ? getModificationLabel(base, model) : base.toUpperCase()}</td>
       <td className={tdClass}>{score.entryDepth}</td>
       <td>
         {shouldShowPercentage(base)
@@ -260,13 +240,11 @@ function ModificationRows({
   readsCounted,
   model,
   tdClass,
-  baseColumnClass,
 }: {
   info: Record<string, Record<string, StrandCounts>>
   readsCounted: number
   model: Props['model']
   tdClass: string
-  baseColumnClass: string
 }) {
   return (
     <>
@@ -295,7 +273,6 @@ function ModificationRows({
                 readsCounted={readsCounted}
                 model={model}
                 tdClass={tdClass}
-                baseColumnClass={baseColumnClass}
                 rowKey={rowKey}
               />
             )
@@ -312,7 +289,6 @@ function ModificationRows({
               readsCounted={readsCounted}
               model={model}
               tdClass={tdClass}
-              baseColumnClass={baseColumnClass}
               rowKey={rowKey}
             />
           )
@@ -338,8 +314,8 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
     } = feature.get('snpinfo') as BaseCoverageBin
 
     return (
-      <div ref={reactRef} className={classes.tooltip}>
-        <table className={classes.table}>
+      <div ref={reactRef}>
+        <table>
           <caption>
             {[
               name,
@@ -357,14 +333,12 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
               referenceBase={referenceBase}
               reference={reference}
               readsCounted={readsCounted}
-              baseColumnClass={classes.baseColumn}
             />
             <ModificationRows
               info={info}
               readsCounted={readsCounted}
               model={model}
               tdClass={classes.td}
-              baseColumnClass={classes.baseColumn}
             />
           </tbody>
         </table>

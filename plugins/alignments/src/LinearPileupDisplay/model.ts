@@ -115,7 +115,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setSimplexModifications(simplex: string[]) {
-        self.simplexModifications = new Set(simplex)
+        for (const entry of simplex) {
+          self.simplexModifications.add(entry)
+        }
       },
       /**
        * #action
