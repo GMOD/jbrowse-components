@@ -86,7 +86,6 @@ function shouldShowPercentage(base: string): boolean {
 }
 
 function getModificationLabel(base: string, model: Model): string {
-  console.log({ base })
   const isNonmod = base.startsWith('nonmod_')
   const modType = getModificationType(base)
   const mod = model.visibleModifications.get(modType)
@@ -99,7 +98,6 @@ function getModificationLabel(base: string, model: Model): string {
 }
 
 function getDuplexModificationLabel(base: string, model: Model): string {
-  console.log({ base })
   const isNonmod = base.startsWith('nonmod_')
   const modType = getModificationType(base)
   const mod = model.visibleModifications.get(modType)

@@ -1,10 +1,10 @@
 import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 
-import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
-import { getModificationName } from '../../shared/modificationData'
+import { getNextRefPos } from '../../MismatchParser'
 import { getModPositions } from '../../ModificationParser/getModPositions'
 import { getModProbabilities } from '../../ModificationParser/getModProbabilities'
-import { getNextRefPos } from '../../MismatchParser'
+import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
+import { getModificationName } from '../../shared/modificationData'
 import { alphaColor } from '../../shared/util'
 import { getTagAlt } from '../../util'
 import { fillRect } from '../util'
@@ -54,7 +54,7 @@ export function renderModifications({
   // Build a map of position -> list of modifications with strand info
   const modsByPosition = new Map<
     number,
-    Array<{ type: string; base: string; strand: string; prob: number }>
+    { type: string; base: string; strand: string; prob: number }[]
   >()
 
   let probIndex = 0
