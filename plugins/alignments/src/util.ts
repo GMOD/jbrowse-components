@@ -10,6 +10,9 @@ import type { AugmentedRegion, Feature } from '@jbrowse/core/util'
 import type { IAutorunOptions } from 'mobx'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
+// Re-export for backward compatibility
+export { modificationData }
+
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications
 export function getTagAlt(feature: Feature, tag: string, alt: string) {

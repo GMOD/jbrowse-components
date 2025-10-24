@@ -13,7 +13,16 @@ const useStyles = makeStyles()(() => ({
     whiteSpace: 'nowrap',
   },
   baseColumn: {
-    whiteSpace: 'nowrap',
+    maxWidth: '400px',
+    wordBreak: 'break-word',
+  },
+  tooltip: {
+    maxWidth: '600px',
+    overflow: 'hidden',
+  },
+  table: {
+    width: '100%',
+    tableLayout: 'auto',
   },
 }))
 
@@ -46,14 +55,16 @@ interface StrandCounts {
   readonly avgProbability?: number
 }
 
-// Helper functions (no JSX)
 function getModificationColor(base: string, model: Model): string | undefined {
   if (!base.startsWith('mod_') && !base.startsWith('nonmod_')) {
     return undefined
   }
-  return model.visibleModifications.get(
-    base.replace(/^(mod_|nonmod_)/, ''),
-  )?.color
+  // Non-modified entries should always be blue
+  if (base.startsWith('nonmod_')) {
+    return 'blue'
+  }
+  return model.visibleModifications.get(base.replace(/^(mod_|nonmod_)/, ''))
+    ?.color
 }
 
 function isModification(base: string): boolean {
@@ -75,13 +86,59 @@ function shouldShowPercentage(base: string): boolean {
 }
 
 function getModificationLabel(base: string, model: Model): string {
+  const isNonmod = base.startsWith('nonmod_')
   const modType = getModificationType(base)
   const mod = model.visibleModifications.get(modType)
   if (mod) {
     const modName = getModificationName(modType)
-    return `${mod.base}${mod.strand}${modType} ${modName}`
+    const label = `${mod.base}${mod.strand}${modType} ${modName}`
+    return isNonmod ? `Non-modified ${label}` : label
   }
   return base.toUpperCase()
+}
+
+// Helper to get complement base
+const complementBase = {
+  A: 'T',
+  T: 'A',
+  C: 'G',
+  G: 'C',
+} as const
+
+function getDuplexModificationLabel(
+  base: string,
+  model: Model,
+  posStrandCount: number,
+  negStrandCount: number,
+): string {
+  const isNonmod = base.startsWith('nonmod_')
+  const modType = getModificationType(base)
+  const mod = model.visibleModifications.get(modType)
+  if (!mod) {
+    return base.toUpperCase()
+  }
+
+  const modName = getModificationName(modType)
+  const labels = []
+
+  // The modification in visibleModifications represents the canonical form
+  // For duplex modifications:
+  // - Positive strand reads (fstrand=1) have the canonical base (e.g., A for A+a)
+  // - Negative strand reads (fstrand=-1) have the complement base (e.g., T for T-a)
+
+  // Show positive strand if present
+  if (posStrandCount > 0) {
+    labels.push(`${mod.base}+${modType}`)
+  }
+
+  // Show negative strand if present
+  if (negStrandCount > 0) {
+    const negBase = complementBase[mod.base as keyof typeof complementBase]
+    labels.push(`${negBase}-${modType}`)
+  }
+
+  const label = `${labels.join('/')} ${modName}`
+  return isNonmod ? `Non-modified ${label}` : label
 }
 
 // React components
@@ -173,7 +230,12 @@ function DuplexModificationRow({
         <ColorSquare model={model} base={base} />
       </td>
       <td className={baseColumnClass}>
-        {getModificationLabel(base, model)} (duplex)
+        {getDuplexModificationLabel(
+          base,
+          model,
+          posStrandCount,
+          negStrandCount,
+        )}
       </td>
       <td className={tdClass}>{score.entryDepth}</td>
       <td>
@@ -203,7 +265,7 @@ function SimplexOrRegularRow({
   base: string
   score: StrandCounts
   isMod: boolean
-  isSimplex: boolean
+  isSimplex?: boolean
   readsCounted: number
   model: Model
   tdClass: string
@@ -217,7 +279,6 @@ function SimplexOrRegularRow({
       </td>
       <td className={baseColumnClass}>
         {isMod ? getModificationLabel(base, model) : base.toUpperCase()}
-        {isMod && isSimplex ? ' (simplex)' : ''}
       </td>
       <td className={tdClass}>{score.entryDepth}</td>
       <td>
@@ -258,7 +319,11 @@ function ModificationRows({
           const rowKey = `${key}_${base}`
 
           // Duplex modifications: single row with strand info
-          if (isMod && !isSimplex && (posStrandCount > 0 || negStrandCount > 0)) {
+          if (
+            isMod &&
+            !isSimplex &&
+            (posStrandCount > 0 || negStrandCount > 0)
+          ) {
             return (
               <DuplexModificationRow
                 key={rowKey}
@@ -308,8 +373,8 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
     ) as BaseCoverageBin
 
     return (
-      <div ref={reactRef}>
-        <table>
+      <div ref={reactRef} className={classes.tooltip}>
+        <table className={classes.table}>
           <caption>
             {[
               name,
