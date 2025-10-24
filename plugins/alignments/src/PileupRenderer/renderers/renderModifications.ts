@@ -1,6 +1,7 @@
 import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
+import { getModificationName } from '../../shared/modificationData'
 import { getModPositions } from '../../ModificationParser/getModPositions'
 import { getModProbabilities } from '../../ModificationParser/getModProbabilities'
 import { getNextRefPos } from '../../MismatchParser'
@@ -101,7 +102,10 @@ export function renderModifications({
       // Add to flatbush for mouseover with strand-specific info
       const modsAtPos = modsByPosition.get(pos) || []
       const strandInfo = modsAtPos
-        .map(m => `${m.base}${m.strand}${m.type} (${(m.prob * 100).toFixed(1)}%)`)
+        .map(
+          m =>
+            `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
+        )
         .join(', ')
 
       items.push({

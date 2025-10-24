@@ -14,7 +14,8 @@ import { observable } from 'mobx'
 import { types } from 'mobx-state-tree'
 
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { getColorForModification, modificationData } from '../util'
+import { modificationData } from '../shared/modificationData'
+import { getColorForModification } from '../util'
 
 import type {
   ModificationType,
