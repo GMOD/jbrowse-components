@@ -27,7 +27,6 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   sortedBy?: SortedBy
   showSoftClip: boolean
   highResolutionScaling: number
-  modificationThreshold?: number
   statusCallback?: (arg: string) => void
 }
 

@@ -27,6 +27,8 @@ export function processModifications({
   const twoColor = colorBy?.modifications?.twoColor
   const isolatedModification = colorBy?.modifications?.isolatedModification
   const seq = feature.get('seq') as string | undefined
+  const modificationThreshold = colorBy?.modifications?.threshold ?? 10
+  const thresholdFraction = modificationThreshold / 100
 
   if (!seq) {
     return
@@ -40,6 +42,11 @@ export function processModifications({
   getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
     ({ allProbs, prob, type }, pos) => {
       if (isolatedModification && type !== isolatedModification) {
+        return
+      }
+
+      // Check if modification probability exceeds threshold
+      if (prob < thresholdFraction) {
         return
       }
 

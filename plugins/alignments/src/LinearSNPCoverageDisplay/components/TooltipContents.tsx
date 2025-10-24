@@ -290,7 +290,7 @@ function ModificationRows({
         }
 
         // Accumulate counts across all nonmod types for this base
-        const consolidated = consolidatedEntries[consolidatedKey]!
+        const consolidated = consolidatedEntries[consolidatedKey]
         consolidated.score.entryDepth += score.entryDepth
         consolidated.score['1'] += score['1']
         consolidated.score['-1'] += score['-1']
@@ -301,7 +301,8 @@ function ModificationRows({
           const prevCount = consolidated.score.entryDepth - score.entryDepth
           consolidated.score.avgProbability =
             prevCount > 0
-              ? (prevAvg * prevCount + score.avgProbability * score.entryDepth) /
+              ? (prevAvg * prevCount +
+                  score.avgProbability * score.entryDepth) /
                 consolidated.score.entryDepth
               : score.avgProbability
         }
@@ -322,7 +323,8 @@ function ModificationRows({
         ([rowKey, { base, score, isNonmod }]) => {
           const modType = getModificationType(base)
           const isMod = isModification(base) || isNonmod
-          const isSimplex = !isNonmod && isMod && model.simplexModifications?.has(modType)
+          const isSimplex =
+            !isNonmod && isMod && model.simplexModifications?.has(modType)
           const posStrandCount = score['1'] || 0
           const negStrandCount = score['-1'] || 0
 

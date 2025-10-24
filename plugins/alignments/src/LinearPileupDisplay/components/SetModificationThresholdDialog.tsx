@@ -10,10 +10,13 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { ColorBy } from '../../shared/types'
+
 const SetModificationThresholdDialog = observer(function (props: {
   model: {
     modificationThreshold: number
-    setModificationThreshold: (threshold: number) => void
+    colorBy?: ColorBy
+    setColorScheme: (colorBy: ColorBy) => void
   }
   handleClose: () => void
 }) {
@@ -65,7 +68,16 @@ const SetModificationThresholdDialog = observer(function (props: {
             autoFocus
             disabled={!validThreshold}
             onClick={() => {
-              model.setModificationThreshold(numThreshold)
+              const currentColorBy = model.colorBy || {
+                type: 'modifications',
+              }
+              model.setColorScheme({
+                ...currentColorBy,
+                modifications: {
+                  ...currentColorBy.modifications,
+                  threshold: numThreshold,
+                },
+              })
               handleClose()
             }}
           >

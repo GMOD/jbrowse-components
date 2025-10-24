@@ -67,11 +67,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        modificationThreshold: types.optional(types.number, 10),
-
-        /**
-         * #property
-         */
         sortedBy: types.frozen<SortedBy | undefined>(),
       }),
     )
@@ -160,12 +155,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setModificationThreshold(threshold: number) {
-        self.modificationThreshold = threshold
-      },
-      /**
-       * #action
-       */
       setSortedBy(type: string, tag?: string) {
         const { centerLineInfo } = getContainingView(self) as LGV
         if (!centerLineInfo) {
@@ -218,6 +207,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get visibleModificationTypes() {
         return [...self.visibleModifications.keys()]
+      },
+      /**
+       * #getter
+       */
+      get modificationThreshold() {
+        return self.colorBy?.modifications?.threshold ?? 10
       },
       /**
        * #getter
@@ -287,7 +282,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             showSoftClipping,
             visibleModifications,
             simplexModifications,
-            modificationThreshold,
           } = self
           const superProps = superRenderPropsPre()
           return {
@@ -298,7 +292,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               visibleModifications.toJSON(),
             ),
             simplexModifications: [...simplexModifications],
-            modificationThreshold,
           }
         },
         /**
@@ -374,6 +367,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                           onClick: () => {
                             self.setColorScheme({
                               type: 'modifications',
+                              modifications: {
+                                threshold: self.modificationThreshold,
+                              },
                             })
                           },
                         },
@@ -384,6 +380,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                               type: 'modifications',
                               modifications: {
                                 isolatedModification: key,
+                                threshold: self.modificationThreshold,
                               },
                             })
                           },
@@ -396,6 +393,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                               type: 'modifications',
                               modifications: {
                                 twoColor: true,
+                                threshold: self.modificationThreshold,
                               },
                             })
                           },
@@ -408,6 +406,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                               modifications: {
                                 isolatedModification: key,
                                 twoColor: true,
+                                threshold: self.modificationThreshold,
                               },
                             })
                           },
@@ -418,6 +417,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                           onClick: () => {
                             self.setColorScheme({
                               type: 'methylation',
+                              modifications: {
+                                threshold: self.modificationThreshold,
+                              },
                             })
                           },
                         },
