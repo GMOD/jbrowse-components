@@ -7,6 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { LinearReadArcsDisplayModel } from '../../LinearReadArcsDisplay/model'
 import type { LinearReadCloudDisplayModel } from '../../LinearReadCloudDisplay/model'
+import type { LinearReadStackDisplayModel } from '../../LinearReadStackDisplay/model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
@@ -26,7 +27,10 @@ const useStyles = makeStyles()(theme => ({
 const BlockError = observer(function ({
   model,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model:
+    | LinearReadArcsDisplayModel
+    | LinearReadCloudDisplayModel
+    | LinearReadStackDisplayModel
 }) {
   const { error } = model
   return (
@@ -53,7 +57,10 @@ const BaseDisplayComponent = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model:
+    | LinearReadArcsDisplayModel
+    | LinearReadCloudDisplayModel
+    | LinearReadStackDisplayModel
   children?: React.ReactNode
 }) {
   const { error, regionTooLarge } = model
@@ -70,7 +77,10 @@ const DataDisplay = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model:
+    | LinearReadArcsDisplayModel
+    | LinearReadCloudDisplayModel
+    | LinearReadStackDisplayModel
   children?: React.ReactNode
 }) {
   const { drawn, loading } = model
@@ -89,7 +99,10 @@ const DataDisplay = observer(function ({
 const LoadingBar = observer(function ({
   model,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model:
+    | LinearReadArcsDisplayModel
+    | LinearReadCloudDisplayModel
+    | LinearReadStackDisplayModel
 }) {
   const { classes } = useStyles()
   const { message } = model

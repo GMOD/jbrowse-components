@@ -625,6 +625,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_cram_alignments-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_cram_alignments-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-sorted.cram (contigA, default display)",
       "trackId": "volvox_cram_alignments",
@@ -680,6 +684,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_cram_pileup-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_cram_pileup-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "metadata": {
@@ -740,6 +748,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_cram_snpcoverage-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_cram_snpcoverage-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-sorted.cram (contigA, LinearSNPCoverageDisplay)",
       "trackId": "volvox_cram_snpcoverage",
@@ -790,6 +802,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_cram_alignments_ctga-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_cram_alignments_ctga-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-sorted.cram (ctgA, default display)",
@@ -842,6 +858,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_cram_pileup_ctga-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_cram_pileup_ctga-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-sorted.cram (ctgA, LinearPileupDisplay)",
       "trackId": "volvox_cram_pileup_ctga",
@@ -892,6 +912,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_cram_snpcoverage_ctga-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_cram_snpcoverage_ctga-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-sorted.cram (ctgA, LinearSNPCoverageDisplay)",
@@ -948,6 +972,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_alignments-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_alignments-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-sorted.bam (ctgA, larger default height, colorBy mappingQual)",
       "trackId": "volvox_alignments",
@@ -993,6 +1021,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bam_snpcoverage-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_bam_snpcoverage-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-sorted.bam (contigA LinearSNPCoverageDisplay)",
@@ -1040,6 +1072,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_bam_pileup-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_bam_pileup-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-sorted.bam (contigA LinearPileupDisplay)",
       "trackId": "volvox_bam_pileup",
@@ -1086,6 +1122,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_alignments_pileup_coverage-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_alignments_pileup_coverage-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-sorted.bam (ctgA, canvas)",
       "trackId": "volvox_alignments_pileup_coverage",
@@ -1131,6 +1171,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bam_altname-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_bam_altname-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-sorted.bam (contigA)",
@@ -1187,6 +1231,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bam_small_max_height-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_bam_small_max_height-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-sorted.bam (small max height)",
@@ -1315,6 +1363,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_alignments_bam_nonexist-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_alignments_bam_nonexist-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-sorted.bam (bam nonexist 404)",
       "trackId": "volvox_alignments_bam_nonexist",
@@ -1360,6 +1412,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_alignments_bai_nonexist-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_alignments_bai_nonexist-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-sorted.bam (bai nonexist 404)",
@@ -1692,6 +1748,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox-long-reads-sv-bam-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox-long-reads-sv-bam-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-long reads with SV",
       "trackId": "volvox-long-reads-sv-bam",
@@ -1742,6 +1802,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox-long-reads-sv-cram-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox-long-reads-sv-cram-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-long reads with SV (cram)",
@@ -1794,6 +1858,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox-long-reads-cram-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox-long-reads-cram-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-long reads (cram)",
       "trackId": "volvox-long-reads-cram",
@@ -1839,6 +1907,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox-long-reads-bam-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox-long-reads-bam-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-long reads",
@@ -1891,6 +1963,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_samspec_cram-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_samspec_cram-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-samspec (cram)",
       "trackId": "volvox_samspec_cram",
@@ -1936,6 +2012,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_samspec-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_samspec-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-samspec",
@@ -1988,6 +2068,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_sv_cram-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_sv_cram-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-sv (cram)",
       "trackId": "volvox_sv_cram",
@@ -2033,6 +2117,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_sv-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-sv",
@@ -2123,6 +2211,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_cram-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox_cram-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-sorted.cram",
       "trackId": "volvox_cram",
@@ -2168,6 +2260,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bam-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox_bam-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-sorted.bam",
@@ -2779,6 +2875,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox-rg-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox-rg-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-rg (read groups, bam)",
       "trackId": "volvox-rg",
@@ -2829,6 +2929,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox-rg-cram-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox-rg-cram-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-rg (read groups, cram)",
@@ -2962,6 +3066,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "MM-chebi-volvox-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "MM-chebi-volvox-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "MM-chebi-volvox",
       "trackId": "MM-chebi-volvox",
@@ -3014,6 +3122,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "MM-double-volvox-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "MM-double-volvox-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "MM-double-volvox",
@@ -3068,6 +3180,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "MM-multi-volvox-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "MM-multi-volvox-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "MM-multi-volvox",
       "trackId": "MM-multi-volvox",
@@ -3120,6 +3236,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "MM-orient-volvox-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "MM-orient-volvox-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "MM-orient-volvox",
@@ -3299,6 +3419,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "Deep sequencing-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "Deep sequencing-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "Deep sequencing",
       "trackId": "Deep sequencing",
@@ -3414,6 +3538,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "spliced-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "spliced-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-rnaseq demo",
@@ -3771,6 +3899,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox-simple-inv.bam-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox-simple-inv.bam-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-simple-inv.bam",
       "trackId": "volvox-simple-inv.bam",
@@ -3822,6 +3954,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox-simple-inv.cram-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox-simple-inv.cram-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-simple-inv.cram",
       "trackId": "volvox-simple-inv.cram",
@@ -3872,6 +4008,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox-simple-inv-paired.cram-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox-simple-inv-paired.cram-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-simple-inv-paired.cram",
@@ -3925,6 +4065,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox-simple-inv-paired.bam-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox-simple-inv-paired.bam-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-simple-inv-paired.bam",
@@ -4018,6 +4162,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox-inv-pbsim-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
         },
+        {
+          "displayId": "volvox-inv-pbsim-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
+        },
       ],
       "name": "volvox-inv-pbsim",
       "trackId": "volvox-inv-pbsim",
@@ -4070,6 +4218,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "paired_end_stranded_rnaseq-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-stranded-rnaseq",
@@ -4264,6 +4416,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox-sorted.noref.cram-LinearReadCloudDisplay",
           "type": "LinearReadCloudDisplay",
+        },
+        {
+          "displayId": "volvox-sorted.noref.cram-LinearReadStackDisplay",
+          "type": "LinearReadStackDisplay",
         },
       ],
       "name": "volvox-sorted.cram (noref)",

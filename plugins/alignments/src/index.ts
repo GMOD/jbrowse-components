@@ -10,6 +10,7 @@ import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay'
 import LinearPileupDisplayF from './LinearPileupDisplay'
 import LinearReadArcsDisplayF from './LinearReadArcsDisplay'
 import LinearReadCloudDisplayF from './LinearReadCloudDisplay'
+import LinearReadStackDisplayF from './LinearReadStackDisplay'
 import LinearSNPCoverageDisplayF from './LinearSNPCoverageDisplay'
 import PileupRPCMethodsF from './PileupRPC'
 import PileupRendererF from './PileupRenderer'
@@ -35,6 +36,7 @@ export default class AlignmentsPlugin extends Plugin {
       SNPCoverageRendererF,
       LinearReadArcsDisplayF,
       LinearReadCloudDisplayF,
+      LinearReadStackDisplayF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,

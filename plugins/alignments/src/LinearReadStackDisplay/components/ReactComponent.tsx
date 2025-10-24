@@ -8,19 +8,19 @@ import { observer } from 'mobx-react'
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
 import type { ReducedFeature } from '../../shared/fetchChains'
-import type { LinearReadCloudDisplayModel } from '../model'
+import type { LinearReadStackDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const Cloud = observer(function ({
+const Stack = observer(function ({
   model,
 }: {
-  model: LinearReadCloudDisplayModel
+  model: LinearReadStackDisplayModel
 }) {
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
-  const height = model.height
+  const height = model.layoutHeight || 1
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredFeature, setHoveredFeature] = useState<{
     x: number
@@ -90,9 +90,9 @@ const Cloud = observer(function ({
           // Highlight the entire chain instead of just the individual feature
           setHoveredFeature({
             x: feature.chainMinX,
-            y: feature.chainTop,
+            y: feature.y1,
             width: feature.chainMaxX - feature.chainMinX,
-            height: feature.chainHeight,
+            height: feature.y2 - feature.y1,
           })
           setHoveredFeatureData(feature.data)
         } else {
@@ -113,6 +113,36 @@ const Cloud = observer(function ({
     setMousePosition(null)
   }, [])
 
+  const onClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (!containerRef.current || !flatbushIndex) {
+        return
+      }
+
+      const rect = containerRef.current.getBoundingClientRect()
+      const offsetX = event.clientX - rect.left
+      const offsetY = event.clientY - rect.top
+
+      // Search for features at this position
+      const results = flatbushIndex.search(
+        offsetX,
+        offsetY,
+        offsetX + 1,
+        offsetY + 1,
+      )
+
+      if (results.length > 0) {
+        const featureIndex = results[0]!
+        const feature = model.featuresForFlatbush[featureIndex]
+
+        if (feature) {
+          model.selectFeature(feature.chain)
+        }
+      }
+    },
+    [flatbushIndex, model],
+  )
+
   // note: the position absolute below avoids scrollbar from appearing on track
   return (
     <div
@@ -120,16 +150,17 @@ const Cloud = observer(function ({
       style={{ position: 'relative', width, height }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
+      onClick={onClick}
     >
       <canvas
-        data-testid="cloud-canvas"
+        data-testid="stack-canvas"
         ref={cb}
         style={{ width, height, position: 'absolute', left: 0, top: 0 }}
         width={width * 2}
         height={height * 2}
       />
       <canvas
-        data-testid="cloud-mouseover-canvas"
+        data-testid="stack-mouseover-canvas"
         ref={mouseoverCb}
         style={{
           width,
@@ -179,15 +210,15 @@ const Cloud = observer(function ({
   )
 })
 
-const LinearReadCloudReactComponent = observer(function ({
+const LinearReadStackReactComponent = observer(function ({
   model,
 }: {
-  model: LinearReadCloudDisplayModel
+  model: LinearReadStackDisplayModel
 }) {
   return (
     <BaseDisplayComponent model={model}>
-      <Cloud model={model} />
+      <Stack model={model} />
     </BaseDisplayComponent>
   )
 })
-export default LinearReadCloudReactComponent
+export default LinearReadStackReactComponent

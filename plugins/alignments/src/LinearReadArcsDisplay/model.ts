@@ -1,26 +1,22 @@
 import type React from 'react'
-import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import FilterListIcon from '@mui/icons-material/ClearAll'
-import PaletteIcon from '@mui/icons-material/Palette'
 import { types } from 'mobx-state-tree'
+
+import {
+  getColorSchemeMenuItem,
+  getFilterByMenuItem,
+} from '../shared/menuItems'
 
 import type { ChainData } from '../shared/fetchChains'
 import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from 'mobx-state-tree'
-
-// lazies
-const FilterByTagDialog = lazy(
-  () => import('../shared/components/FilterByTagDialog'),
-)
 
 /**
  * #stateModel LinearReadArcsDisplay
@@ -128,6 +124,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setLastDrawnBpPerPx(n: number) {
         self.lastDrawnBpPerPx = n
       },
+
       /**
        * #action
        */
@@ -251,16 +248,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  FilterByTagDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
+            getFilterByMenuItem(self),
             {
               label: 'Line width',
               subMenu: [
@@ -329,36 +317,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.setDrawLongRange(!self.drawLongRange)
               },
             },
-            {
-              label: 'Color scheme',
-              icon: PaletteIcon,
-              subMenu: [
-                {
-                  label: 'Insert size ± 3σ and orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' })
-                  },
-                },
-                {
-                  label: 'Insert size ± 3σ',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
-                },
-                {
-                  label: 'Orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'orientation' })
-                  },
-                },
-                {
-                  label: 'Insert size gradient',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'gradient' })
-                  },
-                },
-              ],
-            },
+            getColorSchemeMenuItem(self),
           ]
         },
       }

@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
 
-import { fillRectCtx, strokeRectCtx } from './util'
+import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { fillColor, strokeColor } from '../shared/color'
 
 import type { LinearReadCloudDisplayModel } from './model'
@@ -21,12 +21,25 @@ export function drawLongReadChains({
   chainData,
   view,
   asm,
+  featuresForFlatbush,
 }: {
   ctx: CanvasRenderingContext2D
   self: LinearReadCloudDisplayModel
   chainData: ChainData
   view: LinearGenomeViewModel
   asm: Assembly
+  featuresForFlatbush: {
+    x1: number
+    y1: number
+    x2: number
+    y2: number
+    data: ReducedFeature
+    chain: ReducedFeature[]
+    chainMinX: number
+    chainMaxX: number
+    chainTop: number
+    chainHeight: number
+  }[]
 }) {
   const computedChains: ComputedChain[] = []
   const { chains } = chainData
@@ -73,6 +86,11 @@ export function drawLongReadChains({
       const res = c1.SA?.split(';')[0]!.split(',')[2]
       primaryStrand = res === '-' ? -1 : 1
     }
+
+    // Calculate chain bounds
+    let chainMinXVal = Number.MAX_VALUE
+    let chainMaxXVal = Number.MIN_VALUE
+
     for (const v0 of chain) {
       const ra = asm.getCanonicalRefName(v0.refName) || v0.refName
       const rs = view.bpToPx({ refName: ra, coord: v0.start })?.offsetPx
@@ -85,6 +103,38 @@ export function drawLongReadChains({
           effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
         strokeRectCtx(l, top, w, featureHeight, ctx, strokeColor[c])
         fillRectCtx(l, top, w, featureHeight, ctx, fillColor[c])
+
+        chainMinXVal = Math.min(chainMinXVal, l)
+        chainMaxXVal = Math.max(chainMaxXVal, l + w)
+
+        // Add feature to flatbush for mouseover
+        featuresForFlatbush.push({
+          x1: l,
+          y1: top,
+          x2: l + w,
+          y2: top + featureHeight,
+          data: v0,
+          chain,
+          chainMinX: chainMinXVal,
+          chainMaxX: chainMaxXVal,
+          chainTop: top,
+          chainHeight: featureHeight,
+        })
+      }
+    }
+
+    // Update chain bounds for all features after processing
+    const chainMinX = chainMinXVal
+    const chainMaxX = chainMaxXVal
+    for (
+      let i = featuresForFlatbush.length - chain.length;
+      i < featuresForFlatbush.length;
+      i++
+    ) {
+      const feat = featuresForFlatbush[i]
+      if (feat) {
+        feat.chainMinX = chainMinX
+        feat.chainMaxX = chainMaxX
       }
     }
   }
