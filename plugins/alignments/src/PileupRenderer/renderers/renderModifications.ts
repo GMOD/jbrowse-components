@@ -34,7 +34,11 @@ export function renderModifications({
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
   const { feature, topPx, heightPx } = feat
-  const { colorBy, visibleModifications = {} } = renderArgs
+  const {
+    colorBy,
+    visibleModifications = {},
+    modificationThreshold = 10,
+  } = renderArgs
 
   const seq = feature.get('seq') as string | undefined
 
@@ -44,6 +48,7 @@ export function renderModifications({
   const start = feature.get('start')
   const isolatedModification = colorBy?.modifications?.isolatedModification
   const twoColor = colorBy?.modifications?.twoColor
+  const thresholdFraction = modificationThreshold / 100
 
   // Get all modifications with strand info for tooltip
   const fstrand = feature.get('strand') as -1 | 0 | 1
@@ -87,6 +92,12 @@ export function renderModifications({
       if (isolatedModification && mod.type !== isolatedModification) {
         return
       }
+
+      // Check if modification probability exceeds threshold
+      if (prob < thresholdFraction) {
+        return
+      }
+
       const col = mod.color || 'black'
       const s = 1 - sum(allProbs)
       if (twoColor && s > max(allProbs)) {

@@ -26,6 +26,12 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
+const SetModificationThresholdDialog = lazy(
+  () =>
+    import(
+      '../LinearPileupDisplay/components/SetModificationThresholdDialog'
+    ),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -74,6 +80,10 @@ function stateModelFactory(
          * #property
          */
         jexlFilters: types.optional(types.array(types.string), []),
+        /**
+         * #property
+         */
+        modificationThreshold: types.optional(types.number, 10),
       }),
     )
     .volatile(() => ({
@@ -158,6 +168,12 @@ function stateModelFactory(
       setSimplexModifications(simplex: string[]) {
         self.simplexModifications = new Set(simplex)
       },
+      /**
+       * #action
+       */
+      setModificationThreshold(threshold: number) {
+        self.modificationThreshold = threshold
+      },
     }))
     .views(self => {
       const { adapterProps: superAdapterProps } = self
@@ -227,11 +243,12 @@ function stateModelFactory(
          */
         adapterProps() {
           const superProps = superAdapterProps()
-          const { filters, filterBy } = self
+          const { filters, filterBy, modificationThreshold } = self
           return {
             ...superProps,
             filters,
             filterBy,
+            modificationThreshold,
           }
         },
       }

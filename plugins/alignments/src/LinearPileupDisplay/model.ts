@@ -29,6 +29,9 @@ import type { Instance } from 'mobx-state-tree'
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
+const SetModificationThresholdDialog = lazy(
+  () => import('./components/SetModificationThresholdDialog'),
+)
 
 type LGV = LinearGenomeViewModel
 
@@ -60,6 +63,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         mismatchAlpha: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        modificationThreshold: types.optional(types.number, 10),
 
         /**
          * #property
@@ -148,6 +156,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       toggleMismatchAlpha() {
         self.mismatchAlpha = !self.mismatchAlpha
+      },
+      /**
+       * #action
+       */
+      setModificationThreshold(threshold: number) {
+        self.modificationThreshold = threshold
       },
       /**
        * #action
@@ -273,6 +287,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             showSoftClipping,
             visibleModifications,
             simplexModifications,
+            modificationThreshold,
           } = self
           const superProps = superRenderPropsPre()
           return {
@@ -283,6 +298,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               visibleModifications.toJSON(),
             ),
             simplexModifications: [...simplexModifications],
+            modificationThreshold,
           }
         },
         /**
@@ -354,7 +370,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   subMenu: self.modificationsReady
                     ? [
                         {
-                          label: 'All modifications',
+                          label: `All modifications (>= ${self.modificationThreshold}% prob)`,
                           onClick: () => {
                             self.setColorScheme({
                               type: 'modifications',
@@ -362,7 +378,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                           },
                         },
                         ...self.visibleModificationTypes.map(key => ({
-                          label: `Show only ${modificationData[key]?.name || key}`,
+                          label: `Show only ${modificationData[key]?.name || key}  (>= ${self.modificationThreshold}% prob)`,
                           onClick: () => {
                             self.setColorScheme({
                               type: 'modifications',
@@ -403,6 +419,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                             self.setColorScheme({
                               type: 'methylation',
                             })
+                          },
+                        },
+                        { type: 'divider' },
+                        {
+                          label: `Adjust threshold (${self.modificationThreshold}%)`,
+                          onClick: () => {
+                            getSession(self).queueDialog(handleClose => [
+                              SetModificationThresholdDialog,
+                              {
+                                model: self,
+                                handleClose,
+                              },
+                            ])
                           },
                         },
                       ]
