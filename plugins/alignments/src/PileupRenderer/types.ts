@@ -14,8 +14,10 @@ export interface LayoutFeature {
 }
 
 export interface FlatbushItem {
-  type: 'insertion' | 'deletion' | 'mismatch'
+  type: 'insertion' | 'deletion' | 'mismatch' | 'modification'
   seq: string
+  modType?: string
+  probability?: number
 }
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {

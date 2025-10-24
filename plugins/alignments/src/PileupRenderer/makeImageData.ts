@@ -60,7 +60,7 @@ export function makeImageData({
   const coords = [] as number[]
   const items = [] as FlatbushItem[]
   forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
-    renderAlignment({
+    const alignmentRet = renderAlignment({
       ctx,
       feat,
       renderArgs,
@@ -71,6 +71,12 @@ export function makeImageData({
       charHeight,
       canvasWidth,
     })
+    for (let i = 0, l = alignmentRet.coords.length; i < l; i++) {
+      coords.push(alignmentRet.coords[i]!)
+    }
+    for (let i = 0, l = alignmentRet.items.length; i < l; i++) {
+      items.push(alignmentRet.items[i]!)
+    }
     const ret = renderMismatches({
       ctx,
       feat,
