@@ -1,8 +1,8 @@
 import { max, sum } from '@jbrowse/core/util'
 
 import { incWithProbabilities } from './util'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 import { parseCigar } from '../MismatchParser'
+import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 
 import type { ColorBy, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'

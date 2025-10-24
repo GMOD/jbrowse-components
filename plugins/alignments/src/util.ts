@@ -11,7 +11,6 @@ import type { IAutorunOptions } from 'mobx'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // Re-export for backward compatibility
-export { modificationData }
 
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications
@@ -144,3 +143,5 @@ export function randomColor(str: string) {
 export function getColorForModification(str: string) {
   return modificationData[str]?.color || randomColor(str)
 }
+
+export { modificationData } from './shared/modificationData'

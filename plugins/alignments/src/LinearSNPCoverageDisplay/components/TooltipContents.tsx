@@ -91,7 +91,7 @@ function getModificationLabel(base: string, model: Model): string {
   const mod = model.visibleModifications.get(modType)
   if (mod) {
     const modName = getModificationName(modType)
-    const label = `${mod.base}${mod.strand}${modType} ${modName}`
+    const label = modName
     return isNonmod ? `Non-modified ${label}` : label
   }
   return base.toUpperCase()
@@ -148,13 +148,13 @@ function TotalRow({ readsCounted }: { readsCounted: number }) {
 }
 
 function RefRow({
-  refbase,
-  ref,
+  referenceBase,
+  reference,
   readsCounted,
   baseColumnClass,
 }: {
-  refbase?: string
-  ref: StrandCounts
+  referenceBase?: string
+  reference: StrandCounts
   readsCounted: number
   baseColumnClass: string
 }) {
@@ -162,11 +162,11 @@ function RefRow({
     <tr>
       <td />
       <td className={baseColumnClass}>
-        REF {refbase ? `(${refbase.toUpperCase()})` : ''}
+        REF {referenceBase ? `(${referenceBase.toUpperCase()})` : ''}
       </td>
-      <td>{ref.entryDepth}</td>
-      <td>{pct(ref.entryDepth, readsCounted)}</td>
-      <td>{formatStrandCounts(ref)}</td>
+      <td>{reference.entryDepth}</td>
+      <td>{pct(reference.entryDepth, readsCounted)}</td>
+      <td>{formatStrandCounts(reference)}</td>
       <td> </td>
     </tr>
   )
@@ -329,9 +329,13 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
     const start = feature.get('start') + 1
     const end = feature.get('end')
     const name = feature.get('refName')
-    const { refbase, readsCounted, depth, ref, ...info } = feature.get(
-      'snpinfo',
-    ) as BaseCoverageBin
+    const {
+      refbase: referenceBase,
+      readsCounted,
+      depth,
+      ref: reference,
+      ...info
+    } = feature.get('snpinfo') as BaseCoverageBin
 
     return (
       <div ref={reactRef} className={classes.tooltip}>
@@ -350,8 +354,8 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
           <tbody>
             <TotalRow readsCounted={readsCounted} />
             <RefRow
-              refbase={refbase}
-              ref={ref}
+              referenceBase={referenceBase}
+              reference={reference}
               readsCounted={readsCounted}
               baseColumnClass={classes.baseColumn}
             />
