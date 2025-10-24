@@ -6,7 +6,7 @@ import { renderPerBaseLettering } from './renderPerBaseLettering'
 import { renderPerBaseQuality } from './renderPerBaseQuality'
 import { parseCigar } from '../../MismatchParser'
 
-import type { ProcessedRenderArgs } from '../types'
+import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 
 export function renderAlignment({
@@ -30,6 +30,8 @@ export function renderAlignment({
   defaultColor: boolean
   canvasWidth: number
 }) {
+  const items = [] as FlatbushItem[]
+  const coords = [] as number[]
   const { config, bpPerPx, regions, colorBy, colorTagMap = {} } = renderArgs
   const { tag = '', type: colorType = '' } = colorBy || {}
   const { feature } = feat
@@ -81,7 +83,7 @@ export function renderAlignment({
 
     case 'modifications': {
       const cigarOps = parseCigar(feature.get('CIGAR'))
-      renderModifications({
+      const ret = renderModifications({
         ctx,
         feat,
         region,
@@ -90,6 +92,12 @@ export function renderAlignment({
         canvasWidth,
         cigarOps,
       })
+      for (let i = 0, l = ret.coords.length; i < l; i++) {
+        coords.push(ret.coords[i]!)
+      }
+      for (let i = 0, l = ret.items.length; i < l; i++) {
+        items.push(ret.items[i]!)
+      }
       break
     }
 
@@ -107,4 +115,6 @@ export function renderAlignment({
       break
     }
   }
+
+  return { coords, items }
 }
