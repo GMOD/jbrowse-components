@@ -27,6 +27,35 @@ interface ChainCoord {
   v1: ReducedFeature
 }
 
+function drawChevron(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  strand: number,
+  color: string,
+  chevronWidth: number,
+) {
+  ctx.fillStyle = color
+  ctx.beginPath()
+  if (strand === -1) {
+    ctx.moveTo(x - chevronWidth, y + height / 2)
+    ctx.lineTo(x, y + height)
+    ctx.lineTo(x + width, y + height)
+    ctx.lineTo(x + width, y)
+    ctx.lineTo(x, y)
+  } else {
+    ctx.moveTo(x, y)
+    ctx.lineTo(x, y + height)
+    ctx.lineTo(x + width, y + height)
+    ctx.lineTo(x + width + chevronWidth, y + height / 2)
+    ctx.lineTo(x + width, y)
+  }
+  ctx.closePath()
+  ctx.fill()
+}
+
 export function drawPairChains({
   ctx,
   self,
@@ -57,6 +86,9 @@ export function drawPairChains({
   const featureHeight = getConf(self, 'featureHeight')
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
   const { chains, stats } = chainData
+
+  const renderChevrons = view.bpPerPx < 10 && featureHeight > 5
+  const chevronWidth = 5
 
   for (const chain of chains) {
     // if we're looking at a paired read (flag 1) then assume it is just
@@ -103,8 +135,21 @@ export function drawPairChains({
       const r1e = view.bpToPx({ refName: ra1, coord: v0.end })?.offsetPx
       if (r1s !== undefined && r1e !== undefined) {
         const w1 = Math.max(r1e - r1s, 2)
-        fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#f00')
-        strokeRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#a00')
+        if (renderChevrons) {
+          drawChevron(
+            ctx,
+            r1s - view.offsetPx,
+            0,
+            w1,
+            featureHeight,
+            v0.strand,
+            '#f00',
+            chevronWidth,
+          )
+        } else {
+          fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#f00')
+          strokeRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#a00')
+        }
       }
     }
   }
@@ -120,10 +165,34 @@ export function drawPairChains({
     const halfHeight = featureHeight / 2 - 0.5
     const w = r2s - r1e
     fillRectCtx(r1e - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
-    strokeRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, stroke)
-    strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, stroke)
-    fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, fill)
-    fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, fill)
+
+    if (renderChevrons) {
+      drawChevron(
+        ctx,
+        r1s - view.offsetPx,
+        top,
+        w1,
+        featureHeight,
+        v0.strand,
+        fill,
+        chevronWidth,
+      )
+      drawChevron(
+        ctx,
+        r2s - view.offsetPx,
+        top,
+        w2,
+        featureHeight,
+        v1.strand,
+        fill,
+        chevronWidth,
+      )
+    } else {
+      strokeRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, stroke)
+      strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, stroke)
+      fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, fill)
+      fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, fill)
+    }
 
     // Add features to flatbush for mouseover
     const x1_1 = r1s - view.offsetPx

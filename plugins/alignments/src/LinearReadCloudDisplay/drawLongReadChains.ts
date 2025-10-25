@@ -15,6 +15,35 @@ interface ComputedChain {
   chain: ReducedFeature[]
 }
 
+function drawChevron(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  strand: number,
+  color: string,
+  chevronWidth: number,
+) {
+  ctx.fillStyle = color
+  ctx.beginPath()
+  if (strand === -1) {
+    ctx.moveTo(x - chevronWidth, y + height / 2)
+    ctx.lineTo(x, y + height)
+    ctx.lineTo(x + width, y + height)
+    ctx.lineTo(x + width, y)
+    ctx.lineTo(x, y)
+  } else {
+    ctx.moveTo(x, y)
+    ctx.lineTo(x, y + height)
+    ctx.lineTo(x + width, y + height)
+    ctx.lineTo(x + width + chevronWidth, y + height / 2)
+    ctx.lineTo(x + width, y)
+  }
+  ctx.closePath()
+  ctx.fill()
+}
+
 export function drawLongReadChains({
   ctx,
   self,
@@ -91,6 +120,9 @@ export function drawLongReadChains({
     let chainMinXVal = Number.MAX_VALUE
     let chainMaxXVal = Number.MIN_VALUE
 
+    const renderChevrons = view.bpPerPx < 10 && featureHeight > 5
+    const chevronWidth = 5
+
     for (const v0 of chain) {
       const ra = asm.getCanonicalRefName(v0.refName) || v0.refName
       const rs = view.bpToPx({ refName: ra, coord: v0.start })?.offsetPx
@@ -101,8 +133,22 @@ export function drawLongReadChains({
         const effectiveStrand = v0.strand * primaryStrand
         const c =
           effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
-        strokeRectCtx(l, top, w, featureHeight, ctx, strokeColor[c])
-        fillRectCtx(l, top, w, featureHeight, ctx, fillColor[c])
+        
+        if (renderChevrons) {
+          drawChevron(
+            ctx,
+            l,
+            top,
+            w,
+            featureHeight,
+            effectiveStrand,
+            fillColor[c],
+            chevronWidth,
+          )
+        } else {
+          strokeRectCtx(l, top, w, featureHeight, ctx, strokeColor[c])
+          fillRectCtx(l, top, w, featureHeight, ctx, fillColor[c])
+        }
 
         chainMinXVal = Math.min(chainMinXVal, l)
         chainMaxXVal = Math.max(chainMaxXVal, l + w)
