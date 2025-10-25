@@ -7,6 +7,7 @@ import { getPairedColor } from '../LinearReadCloudDisplay/drawPairChains'
 import { fillRectCtx } from '../shared/canvasUtils'
 import { fillColor, getSingletonColor } from '../shared/color'
 import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
+import { drawChevron } from '../shared/chevron'
 
 import type { LinearReadStackDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
@@ -19,35 +20,6 @@ interface LayoutData {
   fill: string
   stroke: string
   distance: number
-}
-
-function drawChevron(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  strand: number,
-  color: string,
-  chevronWidth: number,
-) {
-  ctx.fillStyle = color
-  ctx.beginPath()
-  if (strand === -1) {
-    ctx.moveTo(x - chevronWidth, y + height / 2)
-    ctx.lineTo(x, y + height)
-    ctx.lineTo(x + width, y + height)
-    ctx.lineTo(x + width, y)
-    ctx.lineTo(x, y)
-  } else {
-    ctx.moveTo(x, y)
-    ctx.lineTo(x, y + height)
-    ctx.lineTo(x + width, y + height)
-    ctx.lineTo(x + width + chevronWidth, y + height / 2)
-    ctx.lineTo(x + width, y)
-  }
-  ctx.closePath()
-  ctx.fill()
 }
 
 export function drawFeats(

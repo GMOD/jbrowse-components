@@ -6,44 +6,13 @@ import { getPairedColor } from './drawPairChains'
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
 import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
+import { drawChevron } from '../shared/chevron'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-function drawChevron(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  strand: number,
-  color: string,
-  chevronWidth: number,
-  stroke: string,
-) {
-  ctx.fillStyle = color
-  ctx.beginPath()
-  if (strand === -1) {
-    ctx.moveTo(x - chevronWidth, y + height / 2)
-    ctx.lineTo(x, y + height)
-    ctx.lineTo(x + width, y + height)
-    ctx.lineTo(x + width, y)
-    ctx.lineTo(x, y)
-  } else {
-    ctx.moveTo(x, y)
-    ctx.lineTo(x, y + height)
-    ctx.lineTo(x + width, y + height)
-    ctx.lineTo(x + width + chevronWidth, y + height / 2)
-    ctx.lineTo(x + width, y)
-  }
-  ctx.closePath()
-  ctx.fill()
-  ctx.strokeStyle = stroke
-  ctx.stroke()
-}
 
 export function drawFeats(
   self: LinearReadCloudDisplayModel,
