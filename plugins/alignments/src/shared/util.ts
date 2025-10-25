@@ -71,7 +71,7 @@ export function filterTagValue(readVal: unknown, filterVal?: string) {
  * @returns true if chevrons should be rendered
  */
 export function shouldRenderChevrons(bpPerPx: number, featureHeight: number) {
-  return bpPerPx < 20 && featureHeight >= 4
+  return bpPerPx < 50 && featureHeight >= 4
 }
 
 /**

@@ -12,7 +12,7 @@ export const fillColor = {
   color_fwd_diff_chr: '#000',
   color_rev_diff_chr: '#969696',
   color_pair_lr: '#c8c8c8',
-  color_pair_rr: 'navy',
+  color_pair_rr: '#3a3a9d',
   color_pair_rl: 'teal',
   color_pair_ll: 'green',
   color_nostrand: '#c8c8c8',
