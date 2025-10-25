@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay'
+import Header from './Header'
 
 import type { BreakpointViewModel } from '../model'
 
@@ -59,6 +60,7 @@ const BreakpointSplitView = observer(function ({
   const { classes } = useStyles()
   return (
     <div>
+      {model.showHeader ? <Header model={model} /> : null}
       <div className={classes.container}>
         <BreakpointSplitViewLevels model={model} />
         <BreakpointSplitViewOverlay model={model} />
