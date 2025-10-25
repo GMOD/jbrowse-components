@@ -97,14 +97,14 @@ export function getPairedOrientationColor(f: { pair_orientation?: string }) {
   return getPairedOrientationColorOrDefault(f) || defaultColor
 }
 
-export function getSingletonColor(
-  f: { tlen?: number },
-  stats?: ChainStats,
-) {
+export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
   const tlen = Math.abs(f.tlen || 0)
   // If TLEN is abnormally large, color it dark red
   if (stats && tlen > stats.upper) {
-    return [fillColor.color_fwd_missing_mate, strokeColor.color_fwd_missing_mate] as const
+    return [
+      fillColor.color_fwd_missing_mate,
+      strokeColor.color_fwd_missing_mate,
+    ] as const
   }
   // Otherwise use grey for normal-looking singletons
   return ['#888', '#666'] as const

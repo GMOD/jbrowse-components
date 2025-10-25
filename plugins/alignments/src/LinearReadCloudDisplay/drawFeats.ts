@@ -4,7 +4,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getPairedColor } from './drawPairChains'
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { fillColor, strokeColor, getSingletonColor } from '../shared/color'
+import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
@@ -141,7 +141,8 @@ export function drawFeats(
   // Calculate Y-offsets based on distance (logarithmic scaling)
   const distances = computedChains.map(c => c.distance).filter(d => d > 0)
   const maxD = distances.length > 0 ? Math.log(max(distances)) : 0
-  const minD = distances.length > 0 ? Math.max(Math.log(min(distances)) - 1, 0) : 0
+  const minD =
+    distances.length > 0 ? Math.max(Math.log(min(distances)) - 1, 0) : 0
   const scaler = (self.height - 20) / (maxD - minD || 1)
 
   // Calculate Y-offsets for each chain
@@ -360,7 +361,14 @@ export function drawFeats(
             )
           } else {
             fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
-            strokeRectCtx(xPos, chainY, width, featureHeight, ctx, featureStroke)
+            strokeRectCtx(
+              xPos,
+              chainY,
+              width,
+              featureHeight,
+              ctx,
+              featureStroke,
+            )
           }
           featuresForFlatbush.push({
             x1: xPos,
