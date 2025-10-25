@@ -23,6 +23,7 @@ export default defineConfig(
       'docs/*',
       'website/*',
       'packages/core/util/nanoid.js',
+      'packages/core/util/flatbush/index.js',
       'products/**/webpack.config.js',
       'products/jbrowse-desktop/scripts/*',
       'plugin-development-tools/**',
