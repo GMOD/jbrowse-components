@@ -4,6 +4,7 @@ import { max, min } from '@jbrowse/core/util'
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import { fillColor, strokeColor } from '../shared/color'
+import { getPrimaryStrand } from '../shared/primaryStrand'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ChainData, ReducedFeature } from '../shared/fetchChains'
@@ -80,13 +81,7 @@ export function drawLongReadChains({
     const top = (Math.log(w) - minD) * scaler
     fillRectCtx(minX - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
     const c1 = chain[0]!
-    let primaryStrand: undefined | number
-    if (!(c1.flags & 2048)) {
-      primaryStrand = c1.strand
-    } else {
-      const res = c1.SA?.split(';')[0]!.split(',')[2]
-      primaryStrand = res === '-' ? -1 : 1
-    }
+    const primaryStrand = getPrimaryStrand(c1)
 
     // Calculate chain bounds
     let chainMinXVal = Number.MAX_VALUE

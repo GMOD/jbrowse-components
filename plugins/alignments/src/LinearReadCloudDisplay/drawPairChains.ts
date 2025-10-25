@@ -8,6 +8,7 @@ import {
   getPairedInsertSizeColor,
   getPairedOrientationColor,
 } from '../shared/color'
+import { getPrimaryStrand } from '../shared/primaryStrand'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type {
@@ -151,13 +152,7 @@ export function drawPairChains({
     const w = r2s - r1e
     fillRectCtx(r1e - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
 
-    let primaryStrand: undefined | number
-    if (!(v0.flags & 2048)) {
-      primaryStrand = v0.strand
-    } else {
-      const res = v0.SA?.split(';')[0]!.split(',')[2]
-      primaryStrand = res === '-' ? -1 : 1
-    }
+    const primaryStrand = getPrimaryStrand(v0)
 
     const effectiveStrandV0 = v0.strand * primaryStrand
     const effectiveStrandV1 = v1.strand * primaryStrand

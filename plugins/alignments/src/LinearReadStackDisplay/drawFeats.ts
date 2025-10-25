@@ -12,6 +12,10 @@ import {
   getPairedType,
   getSingletonColor,
 } from '../shared/color'
+import {
+  getPrimaryStrand,
+  getPrimaryStrandFromFlags,
+} from '../shared/primaryStrand'
 import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadStackDisplayModel } from './model'
@@ -250,13 +254,7 @@ export function drawFeats(
       const [pairedFill] =
         getPairedColor({ type, v0, v1, stats: chainData.stats }) || []
 
-      let primaryStrand: undefined | number
-      if (!(v0.flags & 2048)) {
-        primaryStrand = v0.strand
-      } else {
-        const res = v0.SA?.split(';')[0]!.split(',')[2]
-        primaryStrand = res === '-' ? -1 : 1
-      }
+      const primaryStrand = getPrimaryStrand(v0)
 
       for (const feat of chain) {
         const { refName, start, end } = feat
@@ -307,13 +305,7 @@ export function drawFeats(
       // Long reads (>2 non-supplementary) or singletons (1 non-supplementary)
       const isSingleton = chain.length === 1
       const c1 = nonSupplementary.length > 0 ? nonSupplementary[0]! : chain[0]!
-      let primaryStrand: undefined | number
-      if (!(c1.flags & 2048)) {
-        primaryStrand = c1.flags & 16 ? -1 : 1
-      } else {
-        const res = c1.SA?.split(';')[0]!.split(',')[2]
-        primaryStrand = res === '-' ? -1 : 1
-      }
+      const primaryStrand = getPrimaryStrandFromFlags(c1)
 
       for (const feat of chain) {
         const { refName, start, end } = feat
