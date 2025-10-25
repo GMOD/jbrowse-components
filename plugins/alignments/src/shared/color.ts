@@ -67,75 +67,14 @@ export const strokeColor = {
   color_unknown: '#444',
 }
 
-export function getPairedInsertSizeColor(
-  f1: { refName: string; tlen?: number },
-  f2: { refName: string },
-  stats?: ChainStats,
-) {
-  const sameRef = f1.refName === f2.refName
-  const tlen = Math.abs(f1.tlen || 0)
-  if (sameRef && tlen > (stats?.upper || 0)) {
-    return [fillColor.color_longinsert, strokeColor.color_longinsert] as const
-  } else if (sameRef && tlen < (stats?.lower || 0)) {
-    return [fillColor.color_shortinsert, strokeColor.color_shortinsert] as const
-  } else if (!sameRef) {
-    return [fillColor.color_interchrom, strokeColor.color_interchrom] as const
-  } else {
-    return undefined
-  }
-}
-
 const defaultColor = [
   fillColor.color_unknown,
   strokeColor.color_unknown,
 ] as const
 
-// return color scheme with both insert size and orientation coloring,
-// prioritizing orientation coloring
-export function getPairedInsertSizeAndOrientationColor(
-  f1: { refName: string; pair_orientation?: string; tlen?: number },
-  f2: { refName: string },
-  stats?: ChainStats,
-) {
-  return (
-    getPairedOrientationColorOrDefault(f1) ||
-    getPairedInsertSizeColor(f1, f2, stats) ||
-    defaultColor
-  )
-}
-
-export function getPairedOrientationColorOrDefault(f: {
-  pair_orientation?: string
-}) {
-  const type = orientationTypes.fr
-  const r = type[f.pair_orientation || ''] as keyof typeof pairMap
-  const type2 = pairMap[r] as keyof typeof fillColor
-  return r === 'LR'
-    ? undefined
-    : ([fillColor[type2], strokeColor[type2]] as const)
-}
-
-export function getPairedOrientationColor(f: { pair_orientation?: string }) {
-  return getPairedOrientationColorOrDefault(f) || defaultColor
-}
-
-export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
-  const tlen = Math.abs(f.tlen || 0)
-  // If TLEN is abnormally large, color it dark red
-  if (stats && tlen > stats.upper) {
-    return [
-      fillColor.color_fwd_missing_mate,
-      strokeColor.color_fwd_missing_mate,
-    ] as const
-  }
-  // Otherwise use grey for normal-looking singletons
-  return ['#888', '#666'] as const
-}
-
 /**
  * Get the pair type classification for a paired-end read
- * Similar to getPairedInsertSizeAndOrientationColor but returns a numeric code
- * instead of colors, avoiding string comparisons
+ * Used internally by color functions and externally for filtering logic
  *
  * @param type - Color scheme type (insertSizeAndOrientation, orientation, insertSize)
  * @param f1 - First read in the pair
@@ -185,4 +124,85 @@ export function getPairedType({
 
   // If all checks pass, it's a proper pair
   return PairType.PROPER_PAIR
+}
+
+/**
+ * Get color for a paired-end read based on insert size only
+ * Uses getPairedType() internally to determine classification
+ */
+export function getPairedInsertSizeColor(
+  f1: { refName: string; tlen?: number },
+  f2: { refName: string },
+  stats?: ChainStats,
+) {
+  const pairType = getPairedType({ type: 'insertSize', f1, f2, stats })
+
+  switch (pairType) {
+    case PairType.LONG_INSERT:
+      return [fillColor.color_longinsert, strokeColor.color_longinsert] as const
+    case PairType.SHORT_INSERT:
+      return [
+        fillColor.color_shortinsert,
+        strokeColor.color_shortinsert,
+      ] as const
+    case PairType.INTER_CHROM:
+      return [fillColor.color_interchrom, strokeColor.color_interchrom] as const
+    case PairType.PROPER_PAIR:
+      return undefined
+    default:
+      return undefined
+  }
+}
+
+/**
+ * Get color for a paired-end read based on orientation only
+ * Returns undefined for proper pairs (LR orientation)
+ */
+export function getPairedOrientationColorOrDefault(f: {
+  pair_orientation?: string
+}) {
+  const type = orientationTypes.fr
+  const r = type[f.pair_orientation || ''] as keyof typeof pairMap
+  const type2 = pairMap[r] as keyof typeof fillColor
+  return r === 'LR'
+    ? undefined
+    : ([fillColor[type2], strokeColor[type2]] as const)
+}
+
+/**
+ * Get color for a paired-end read based on orientation only
+ * Returns default color for proper pairs
+ */
+export function getPairedOrientationColor(f: { pair_orientation?: string }) {
+  return getPairedOrientationColorOrDefault(f) || defaultColor
+}
+
+/**
+ * Get color for a paired-end read based on both insert size and orientation
+ * Prioritizes orientation coloring over insert size coloring
+ * Uses getPairedType() internally to determine classification
+ */
+export function getPairedInsertSizeAndOrientationColor(
+  f1: { refName: string; pair_orientation?: string; tlen?: number },
+  f2: { refName: string },
+  stats?: ChainStats,
+) {
+  return (
+    getPairedOrientationColorOrDefault(f1) ||
+    getPairedInsertSizeColor(f1, f2, stats) ||
+    defaultColor
+  )
+}
+
+export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
+  const tlen = Math.abs(f.tlen || 0)
+  // If TLEN is abnormally large, color it dark red
+  if (stats && tlen > stats.upper) {
+    return [
+      fillColor.color_fwd_missing_mate,
+      strokeColor.color_fwd_missing_mate,
+    ] as const
+  }
+  // Otherwise use grey for normal-looking singletons
+  return ['#888', '#666'] as const
 }
