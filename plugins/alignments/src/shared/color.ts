@@ -38,14 +38,14 @@ export const strokeColor = {
   color_fwd_diff_chr: '#000000',
   color_rev_diff_chr: '#696969',
   color_pair_lr: '#8C8C8C',
-  color_pair_rr: '#00005A',
+  color_pair_rr: '#00002A',
   color_pair_rl: '#005A5A',
   color_pair_ll: '#005A00',
   color_nostrand: '#8C8C8C',
   color_interchrom: '#5A005A',
   color_longinsert: '#B30000',
   color_shortinsert: '#FF3A5C',
-  color_unknown: 'grey',
+  color_unknown: '#444',
 }
 
 export function getPairedInsertSizeColor(
@@ -66,7 +66,10 @@ export function getPairedInsertSizeColor(
   }
 }
 
-const defaultColor = [fillColor.color_unknown, fillColor.color_unknown] as const
+const defaultColor = [
+  fillColor.color_unknown,
+  strokeColor.color_unknown,
+] as const
 
 // return color scheme with both insert size and orientation coloring,
 // prioritizing orientation coloring

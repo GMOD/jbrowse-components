@@ -5,6 +5,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { getPairedColor } from './drawPairChains'
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
+import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
@@ -237,8 +238,7 @@ export function drawFeats(
       continue // Skip if Y-offset was not determined for this chain
     }
 
-    const renderChevrons = view.bpPerPx < 10 && featureHeight > 5
-    const chevronWidth = 5
+    const renderChevrons = shouldRenderChevrons(view.bpPerPx, featureHeight)
 
     // Filter out supplementary alignments for paired-end color calculation
     const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
@@ -278,7 +278,7 @@ export function drawFeats(
               featureHeight,
               effectiveStrand,
               pairedFill || fillColor[c],
-              chevronWidth,
+              CHEVRON_WIDTH,
               pairedStroke || strokeColor[c],
             )
           } else {
@@ -356,7 +356,7 @@ export function drawFeats(
               featureHeight,
               effectiveStrand,
               featureFill,
-              chevronWidth,
+              CHEVRON_WIDTH,
               featureStroke,
             )
           } else {

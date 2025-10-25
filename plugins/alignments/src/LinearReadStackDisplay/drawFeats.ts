@@ -6,6 +6,7 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { getPairedColor } from '../LinearReadCloudDisplay/drawPairChains'
 import { fillRectCtx } from '../shared/canvasUtils'
 import { fillColor, getSingletonColor } from '../shared/color'
+import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadStackDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
@@ -256,8 +257,7 @@ export function drawFeats(
       continue // Skip if Y-offset was not determined for this chain
     }
 
-    const renderChevrons = view.bpPerPx < 10 && featureHeight > 5
-    const chevronWidth = 5
+    const renderChevrons = shouldRenderChevrons(view.bpPerPx, featureHeight)
 
     // Filter out supplementary alignments for paired-end color calculation
     const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
@@ -297,7 +297,7 @@ export function drawFeats(
               featureHeight,
               effectiveStrand,
               pairedFill || fillColor[c],
-              chevronWidth,
+              CHEVRON_WIDTH,
             )
           } else {
             fillRectCtx(
@@ -363,7 +363,7 @@ export function drawFeats(
               featureHeight,
               effectiveStrand,
               featureFill,
-              chevronWidth,
+              CHEVRON_WIDTH,
             )
           } else {
             fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
