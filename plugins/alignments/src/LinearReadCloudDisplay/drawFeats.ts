@@ -3,8 +3,8 @@ import { getContainingView, getSession, max, min } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getPairedColor } from './drawPairChains'
-import { fillRectCtx } from '../shared/canvasUtils'
-import { fillColor } from '../shared/color'
+import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { fillColor, strokeColor, getSingletonColor } from '../shared/color'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
@@ -21,6 +21,7 @@ function drawChevron(
   strand: number,
   color: string,
   chevronWidth: number,
+  stroke: string,
 ) {
   ctx.fillStyle = color
   ctx.beginPath()
@@ -39,6 +40,8 @@ function drawChevron(
   }
   ctx.closePath()
   ctx.fill()
+  ctx.strokeStyle = stroke
+  ctx.stroke()
 }
 
 export function drawFeats(
@@ -168,9 +171,13 @@ export function drawFeats(
       continue
     }
 
-    if (chain.length === 2) {
-      const v0 = chain[0]!
-      const v1 = chain[1]!
+    // Filter out supplementary alignments for determining read type
+    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
+    const isPairedEnd = nonSupplementary.length === 2
+
+    if (isPairedEnd) {
+      const v0 = nonSupplementary[0]!
+      const v1 = nonSupplementary[1]!
 
       // Draw connecting line for paired reads
       const r1s = view.bpToPx({
@@ -194,7 +201,7 @@ export function drawFeats(
           '#666',
         )
       }
-    } else if (chain.length > 2) {
+    } else if (nonSupplementary.length > 2 || nonSupplementary.length === 1) {
       const firstFeat = chain[0]!
       const lastFeat = chain[chain.length - 1]!
 
@@ -232,10 +239,14 @@ export function drawFeats(
     const renderChevrons = view.bpPerPx < 10 && featureHeight > 5
     const chevronWidth = 5
 
-    if (chain.length === 2) {
-      const v0 = chain[0]!
-      const v1 = chain[1]!
-      const [pairedFill] =
+    // Filter out supplementary alignments for paired-end color calculation
+    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
+    const isPairedEnd = nonSupplementary.length === 2
+
+    if (isPairedEnd) {
+      const v0 = nonSupplementary[0]!
+      const v1 = nonSupplementary[1]!
+      const [pairedFill, pairedStroke] =
         getPairedColor({ type, v0, v1, stats: chainData.stats }) || []
 
       let primaryStrand: undefined | number
@@ -267,6 +278,7 @@ export function drawFeats(
               effectiveStrand,
               pairedFill || fillColor[c],
               chevronWidth,
+              pairedStroke || strokeColor[c],
             )
           } else {
             fillRectCtx(
@@ -277,53 +289,14 @@ export function drawFeats(
               ctx,
               pairedFill || fillColor[c],
             )
-          }
-          featuresForFlatbush.push({
-            x1: xPos,
-            y1: chainY,
-            x2: xPos + width,
-            y2: chainY + featureHeight,
-            data: feat,
-            chainId: id,
-            chainMinX: minX - view.offsetPx,
-            chainMaxX: maxX - view.offsetPx,
-            chain,
-          })
-        }
-      }
-    } else if (chain.length > 2) {
-      const c1 = chain[0]!
-      let primaryStrand: undefined | number
-      if (!(c1.flags & 2048)) {
-        primaryStrand = c1.flags & 16 ? -1 : 1
-      } else {
-        const res = c1.SA?.split(';')[0]!.split(',')[2]
-        primaryStrand = res === '-' ? -1 : 1
-      }
-
-      for (const feat of chain) {
-        const { refName, start, end } = feat
-        const s = view.bpToPx({ refName, coord: start })
-        const e = view.bpToPx({ refName, coord: end })
-        if (s && e) {
-          const effectiveStrand = feat.strand * primaryStrand
-          const c =
-            effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
-          const xPos = s.offsetPx - view.offsetPx
-          const width = Math.max(e.offsetPx - s.offsetPx, 3)
-          if (renderChevrons) {
-            drawChevron(
-              ctx,
+            strokeRectCtx(
               xPos,
               chainY,
               width,
               featureHeight,
-              effectiveStrand,
-              fillColor[c],
-              chevronWidth,
+              ctx,
+              pairedStroke || strokeColor[c],
             )
-          } else {
-            fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillColor[c])
           }
           featuresForFlatbush.push({
             x1: xPos,
@@ -339,14 +312,40 @@ export function drawFeats(
         }
       }
     } else {
-      // singletons
+      // Long reads (>2 non-supplementary) or singletons (1 non-supplementary)
+      const isSingleton = chain.length === 1
+      const c1 = nonSupplementary.length > 0 ? nonSupplementary[0]! : chain[0]!
+      let primaryStrand: undefined | number
+      if (!(c1.flags & 2048)) {
+        primaryStrand = c1.flags & 16 ? -1 : 1
+      } else {
+        const res = c1.SA?.split(';')[0]!.split(',')[2]
+        primaryStrand = res === '-' ? -1 : 1
+      }
+
       for (const feat of chain) {
         const { refName, start, end } = feat
         const s = view.bpToPx({ refName, coord: start })
         const e = view.bpToPx({ refName, coord: end })
         if (s && e) {
+          const effectiveStrand = feat.strand * primaryStrand
           const xPos = s.offsetPx - view.offsetPx
           const width = Math.max(e.offsetPx - s.offsetPx, 3)
+
+          // Determine color based on whether it's a singleton
+          let featureFill: string
+          let featureStroke: string
+          if (isSingleton) {
+            const [fill, stroke] = getSingletonColor(feat, chainData.stats)
+            featureFill = fill
+            featureStroke = stroke
+          } else {
+            const c =
+              effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
+            featureFill = fillColor[c]
+            featureStroke = strokeColor[c]
+          }
+
           if (renderChevrons) {
             drawChevron(
               ctx,
@@ -354,12 +353,14 @@ export function drawFeats(
               chainY,
               width,
               featureHeight,
-              feat.strand, // Singletons use their own strand
-              '#888', // Default color for singletons
+              effectiveStrand,
+              featureFill,
               chevronWidth,
+              featureStroke,
             )
           } else {
-            fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#888')
+            fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
+            strokeRectCtx(xPos, chainY, width, featureHeight, ctx, featureStroke)
           }
           featuresForFlatbush.push({
             x1: xPos,
