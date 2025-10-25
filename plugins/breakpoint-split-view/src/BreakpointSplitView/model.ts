@@ -59,6 +59,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
+        showHeader: true,
+        /**
+         * #property
+         */
         views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
@@ -255,6 +259,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setShowHeader(arg: boolean) {
+        self.showHeader = arg
+      },
+
+      /**
+       * #action
+       */
       setMatchedTrackFeatures(obj: Record<string, Feature[][]>) {
         self.matchedTrackFeatures = obj
       },
@@ -322,6 +333,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 },
               ]
             : []),
+          {
+            label: 'Show header',
+            type: 'checkbox',
+            checked: self.showHeader,
+            onClick: () => {
+              self.setShowHeader(!self.showHeader)
+            },
+          },
           {
             label: 'Show intra-view links',
             type: 'checkbox',
