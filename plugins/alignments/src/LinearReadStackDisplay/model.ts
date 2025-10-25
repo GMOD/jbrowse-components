@@ -29,10 +29,10 @@ import type { Instance } from 'mobx-state-tree'
 
 // async
 const SetFeatureHeightDialog = lazy(
-  () => import('../LinearPileupDisplay/components/SetFeatureHeightDialog'),
+  () => import('../shared/components/SetFeatureHeightDialog'),
 )
 const SetMaxHeightDialog = lazy(
-  () => import('../LinearPileupDisplay/components/SetMaxHeightDialog'),
+  () => import('../shared/components/SetMaxHeightDialog'),
 )
 
 /**
