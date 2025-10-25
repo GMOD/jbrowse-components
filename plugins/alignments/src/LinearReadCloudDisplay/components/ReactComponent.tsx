@@ -90,9 +90,9 @@ const Cloud = observer(function ({
           // Highlight the entire chain instead of just the individual feature
           setHoveredFeature({
             x: feature.chainMinX,
-            y: feature.chainTop,
+            y: feature.y1,
             width: feature.chainMaxX - feature.chainMinX,
-            height: feature.chainHeight,
+            height: feature.y2 - feature.y1,
           })
           setHoveredFeatureData(feature.data)
         } else {

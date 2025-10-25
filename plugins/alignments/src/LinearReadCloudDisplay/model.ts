@@ -131,6 +131,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         featureHeight: types.maybe(types.number),
+
+        /**
+         * #property
+         */
+        noSpacing: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -300,6 +305,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setFeatureHeight(n?: number) {
         self.featureHeight = n
+      },
+      /**
+       * #action
+       */
+      setNoSpacing(flag?: boolean) {
+        self.noSpacing = flag
       },
       /**
        * #action
