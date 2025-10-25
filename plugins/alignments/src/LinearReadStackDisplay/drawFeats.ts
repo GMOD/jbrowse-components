@@ -5,7 +5,14 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
 import { getPairedColor } from '../LinearReadCloudDisplay/drawPairChains'
 import { fillRectCtx } from '../shared/canvasUtils'
-import { fillColor } from '../shared/color'
+import { drawChevron } from '../shared/chevron'
+import {
+  PairType,
+  fillColor,
+  getPairedType,
+  getSingletonColor,
+} from '../shared/color'
+import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadStackDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
@@ -55,10 +62,14 @@ export function drawFeats(
     if (!drawProperPairs && chain.length === 2) {
       const v0 = chain[0]!
       const v1 = chain[1]!
-      const color = getPairedColor({ type, v0, v1, stats: chainData.stats })
-      // If getPairedColor returns undefined, it means it's a normal proper pair
-      // and we should filter it out
-      if (color?.[0] === 'grey') {
+      const pairType = getPairedType({
+        type,
+        f1: v0,
+        f2: v1,
+        stats: chainData.stats,
+      })
+      // Filter out proper pairs
+      if (pairType === PairType.PROPER_PAIR) {
         return false
       }
     }
@@ -162,9 +173,13 @@ export function drawFeats(
       continue
     }
 
-    if (chain.length === 2) {
-      const v0 = chain[0]!
-      const v1 = chain[1]!
+    // Filter out supplementary alignments for determining read type
+    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
+    const isPairedEnd = nonSupplementary.length === 2
+
+    if (isPairedEnd) {
+      const v0 = nonSupplementary[0]!
+      const v1 = nonSupplementary[1]!
 
       // Draw connecting line for paired reads
       const r1s = view.bpToPx({
@@ -188,8 +203,7 @@ export function drawFeats(
           '#666',
         )
       }
-    } else if (chain.length > 2) {
-      // Draw connecting line for long reads
+    } else if (nonSupplementary.length > 2 || nonSupplementary.length === 1) {
       const firstFeat = chain[0]!
       const lastFeat = chain[chain.length - 1]!
 
@@ -224,9 +238,15 @@ export function drawFeats(
       continue // Skip if Y-offset was not determined for this chain
     }
 
-    if (chain.length === 2) {
-      const v0 = chain[0]!
-      const v1 = chain[1]!
+    const renderChevrons = shouldRenderChevrons(view.bpPerPx, featureHeight)
+
+    // Filter out supplementary alignments for paired-end color calculation
+    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
+    const isPairedEnd = nonSupplementary.length === 2
+
+    if (isPairedEnd) {
+      const v0 = nonSupplementary[0]!
+      const v1 = nonSupplementary[1]!
       const [pairedFill] =
         getPairedColor({ type, v0, v1, stats: chainData.stats }) || []
 
@@ -249,48 +269,27 @@ export function drawFeats(
           const xPos = s.offsetPx - view.offsetPx
           const width = Math.max(e.offsetPx - s.offsetPx, 3)
 
-          fillRectCtx(
-            xPos,
-            chainY,
-            width,
-            featureHeight,
-            ctx,
-            pairedFill || fillColor[c],
-          )
-          featuresForFlatbush.push({
-            x1: xPos,
-            y1: chainY,
-            x2: xPos + width,
-            y2: chainY + featureHeight,
-            data: feat,
-            chainId: id,
-            chainMinX: minX - view.offsetPx,
-            chainMaxX: maxX - view.offsetPx,
-            chain,
-          })
-        }
-      }
-    } else if (chain.length > 2) {
-      const c1 = chain[0]!
-      let primaryStrand: undefined | number
-      if (!(c1.flags & 2048)) {
-        primaryStrand = c1.strand
-      } else {
-        const res = c1.SA?.split(';')[0]!.split(',')[2]
-        primaryStrand = res === '-' ? -1 : 1
-      }
-
-      for (const feat of chain) {
-        const { refName, start, end } = feat
-        const s = view.bpToPx({ refName, coord: start })
-        const e = view.bpToPx({ refName, coord: end })
-        if (s && e) {
-          const effectiveStrand = feat.strand * primaryStrand
-          const c =
-            effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
-          const xPos = s.offsetPx - view.offsetPx
-          const width = Math.max(e.offsetPx - s.offsetPx, 3)
-          fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillColor[c])
+          if (renderChevrons) {
+            drawChevron(
+              ctx,
+              xPos,
+              chainY,
+              width,
+              featureHeight,
+              effectiveStrand,
+              pairedFill || fillColor[c],
+              CHEVRON_WIDTH,
+            )
+          } else {
+            fillRectCtx(
+              xPos,
+              chainY,
+              width,
+              featureHeight,
+              ctx,
+              pairedFill || fillColor[c],
+            )
+          }
           featuresForFlatbush.push({
             x1: xPos,
             y1: chainY,
@@ -305,15 +304,51 @@ export function drawFeats(
         }
       }
     } else {
-      // singletons
+      // Long reads (>2 non-supplementary) or singletons (1 non-supplementary)
+      const isSingleton = chain.length === 1
+      const c1 = nonSupplementary.length > 0 ? nonSupplementary[0]! : chain[0]!
+      let primaryStrand: undefined | number
+      if (!(c1.flags & 2048)) {
+        primaryStrand = c1.flags & 16 ? -1 : 1
+      } else {
+        const res = c1.SA?.split(';')[0]!.split(',')[2]
+        primaryStrand = res === '-' ? -1 : 1
+      }
+
       for (const feat of chain) {
         const { refName, start, end } = feat
         const s = view.bpToPx({ refName, coord: start })
         const e = view.bpToPx({ refName, coord: end })
         if (s && e) {
+          const effectiveStrand = feat.strand * primaryStrand
           const xPos = s.offsetPx - view.offsetPx
           const width = Math.max(e.offsetPx - s.offsetPx, 3)
-          fillRectCtx(xPos, chainY, width, featureHeight, ctx, '#888')
+
+          // Determine color based on whether it's a singleton
+          let featureFill: string
+          if (isSingleton) {
+            const [fill] = getSingletonColor(feat, chainData.stats)
+            featureFill = fill
+          } else {
+            const c =
+              effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
+            featureFill = fillColor[c]
+          }
+
+          if (renderChevrons) {
+            drawChevron(
+              ctx,
+              xPos,
+              chainY,
+              width,
+              featureHeight,
+              effectiveStrand,
+              featureFill,
+              CHEVRON_WIDTH,
+            )
+          } else {
+            fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
+          }
           featuresForFlatbush.push({
             x1: xPos,
             y1: chainY,

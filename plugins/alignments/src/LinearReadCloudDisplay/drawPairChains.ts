@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
 
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
 import {
   getPairedInsertSizeAndOrientationColor,
   getPairedInsertSizeColor,
@@ -58,6 +59,9 @@ export function drawPairChains({
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
   const { chains, stats } = chainData
 
+  const renderChevrons = view.bpPerPx < 10 && featureHeight > 5
+  const chevronWidth = 5
+
   for (const chain of chains) {
     // if we're looking at a paired read (flag 1) then assume it is just
     // two reads (some small cases may defy this assumption such as
@@ -103,8 +107,34 @@ export function drawPairChains({
       const r1e = view.bpToPx({ refName: ra1, coord: v0.end })?.offsetPx
       if (r1s !== undefined && r1e !== undefined) {
         const w1 = Math.max(r1e - r1s, 2)
-        fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#f00')
-        strokeRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#a00')
+        if (renderChevrons) {
+          drawChevron(
+            ctx,
+            r1s - view.offsetPx,
+            0,
+            w1,
+            featureHeight,
+            v0.strand,
+            '#f00',
+            chevronWidth,
+            '#a00',
+          )
+        } else {
+          fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#f00')
+          strokeRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#a00')
+          featuresForFlatbush.push({
+            x1: r1s - view.offsetPx,
+            y1: 0,
+            x2: r1s - view.offsetPx + w1,
+            y2: featureHeight,
+            data: v0,
+            chain: [v0],
+            chainMinX: r1s - view.offsetPx,
+            chainMaxX: r1s - view.offsetPx + w1,
+            chainTop: 0,
+            chainHeight: featureHeight,
+          })
+        }
       }
     }
   }
@@ -120,10 +150,47 @@ export function drawPairChains({
     const halfHeight = featureHeight / 2 - 0.5
     const w = r2s - r1e
     fillRectCtx(r1e - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
-    strokeRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, stroke)
-    strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, stroke)
-    fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, fill)
-    fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, fill)
+
+    let primaryStrand: undefined | number
+    if (!(v0.flags & 2048)) {
+      primaryStrand = v0.strand
+    } else {
+      const res = v0.SA?.split(';')[0]!.split(',')[2]
+      primaryStrand = res === '-' ? -1 : 1
+    }
+
+    const effectiveStrandV0 = v0.strand * primaryStrand
+    const effectiveStrandV1 = v1.strand * primaryStrand
+
+    if (renderChevrons) {
+      drawChevron(
+        ctx,
+        r1s - view.offsetPx,
+        top,
+        w1,
+        featureHeight,
+        effectiveStrandV0,
+        fill || '#888',
+        chevronWidth,
+        stroke || '#888',
+      )
+      drawChevron(
+        ctx,
+        r2s - view.offsetPx,
+        top,
+        w2,
+        featureHeight,
+        effectiveStrandV1,
+        fill || '#888',
+        chevronWidth,
+        stroke || '#888',
+      )
+    } else {
+      strokeRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, stroke)
+      strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, stroke)
+      fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, fill)
+      fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, fill)
+    }
 
     // Add features to flatbush for mouseover
     const x1_1 = r1s - view.offsetPx

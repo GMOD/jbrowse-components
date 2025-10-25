@@ -1,1 +1,4 @@
-vendored from https://www.npmjs.com/package/flatbush/v/2.0.2
+vendored from copying
+https://raw.githubusercontent.com/mourner/flatbush/refs/heads/main/index.js
+
+currently v4.5.0

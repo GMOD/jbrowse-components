@@ -1,23 +1,37 @@
 import type React from 'react'
+import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
+import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
+import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
+import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
+import { chainToSimpleFeature } from '../shared/chainToSimpleFeature'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
 } from '../shared/menuItems'
 
-import type { ChainData, ReducedFeature } from '../shared/fetchChains'
-import type { ColorBy, FilterBy } from '../shared/types'
+import type { ReducedFeature } from '../shared/fetchChains'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { Instance } from 'mobx-state-tree'
+
+// async
+const SetFeatureHeightDialog = lazy(
+  () => import('./components/SetFeatureHeightDialog'),
+)
 
 /**
  * #stateModel LinearReadCloudDisplay
@@ -34,6 +48,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
+      LinearReadDisplayBaseMixin(),
+      LinearReadDisplayWithLayoutMixin(),
+      LinearReadDisplayWithPairFiltersMixin(),
       types.model({
         /**
          * #property
@@ -43,68 +60,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-
-        /**
-         * #property
-         */
-        filterBySetting: types.frozen<FilterBy | undefined>(),
-
-        /**
-         * #property
-         */
-        colorBySetting: types.frozen<ColorBy | undefined>(),
-
-        /**
-         * #property
-         */
-        drawSingletons: true,
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      loading: false,
-      /**
-       * #volatile
-       */
-      chainData: undefined as ChainData | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnBpPerPx: 0,
-      /**
-       * #volatile
-       */
-      ref: null as HTMLCanvasElement | null,
-      /**
-       * #volatile
-       */
-      featureLayout: undefined as Flatbush | undefined,
-      /**
-       * #volatile
-       */
-      mouseoverRef: null as HTMLCanvasElement | null,
-      /**
-       * #volatile
-       */
-      featuresForFlatbush: [] as {
-        x1: number
-        y1: number
-        x2: number
-        y2: number
-        data: ReducedFeature
-        chain: ReducedFeature[]
-        chainMinX: number
-        chainMaxX: number
-        chainTop: number
-        chainHeight: number
-      }[],
-    }))
     .views(self => ({
       /**
        * #getter
@@ -118,33 +75,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
       },
+      /**
+       * #getter
+       */
+      get featureHeightSetting() {
+        return self.featureHeight ?? getConf(self, 'featureHeight')
+      },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setDrawSingletons(f: boolean) {
-        self.drawSingletons = f
-      },
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(n: number) {
-        self.lastDrawnBpPerPx = n
-      },
-
-      /**
-       * #action
-       */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
       /**
        * #action
        */
@@ -153,69 +91,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
-       * internal, a reference to a HTMLCanvas because we use a autorun to draw
-       * the canvas
        */
-      setRef(ref: HTMLCanvasElement | null) {
-        self.ref = ref
-      },
-
-      setColorScheme(colorBy: { type: string }) {
-        self.colorBySetting = {
-          ...colorBy,
+      selectFeature(chain: ReducedFeature[]) {
+        const session = getSession(self)
+        const syntheticFeature = chainToSimpleFeature(chain)
+        if (isSessionModelWithWidgets(session)) {
+          const featureWidget = session.addWidget(
+            'AlignmentsFeatureWidget',
+            'alignmentFeature',
+            {
+              featureData: syntheticFeature.toJSON(),
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+            },
+          )
+          session.showWidget(featureWidget)
         }
-      },
-
-      /**
-       * #action
-       */
-      setChainData(args: ChainData) {
-        self.chainData = args
-      },
-
-      /**
-       * #action
-       */
-      setFilterBy(filter: FilterBy) {
-        self.filterBySetting = {
-          ...filter,
-        }
-      },
-      /**
-       * #action
-       */
-      setFeatureLayout(layout: Flatbush) {
-        self.featureLayout = layout
-      },
-      /**
-       * #action
-       */
-      setMouseoverRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverRef = ref
-      },
-      /**
-       * #action
-       */
-      setFeaturesForFlatbush(
-        features: {
-          x1: number
-          y1: number
-          x2: number
-          y2: number
-          data: ReducedFeature
-          chain: ReducedFeature[]
-          chainMinX: number
-          chainMaxX: number
-          chainTop: number
-          chainHeight: number
-        }[],
-      ) {
-        self.featuresForFlatbush = features
-      },
-    }))
-    .views(self => ({
-      get drawn() {
-        return self.lastDrawnOffsetPx !== undefined
+        session.setSelection(syntheticFeature)
       },
     }))
     .views(self => {
@@ -241,11 +133,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
+              label: 'Set feature height...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SetFeatureHeightDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+            {
               label: 'Draw singletons',
               type: 'checkbox',
               checked: self.drawSingletons,
               onClick: () => {
                 self.setDrawSingletons(!self.drawSingletons)
+              },
+            },
+            {
+              label: 'Draw proper pairs',
+              type: 'checkbox',
+              checked: self.drawProperPairs,
+              onClick: () => {
+                self.setDrawProperPairs(!self.drawProperPairs)
               },
             },
             getFilterByMenuItem(self),

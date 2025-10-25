@@ -1,4 +1,4 @@
-import FlatQueue from '../flatqueue/index.js'
+import FlatQueue from '../flatqueue'
 
 const ARRAY_TYPES = [
   Int8Array,
@@ -28,7 +28,6 @@ export default class Flatbush {
     }
 
     // @ts-expect-error duck typing array buffers
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (data?.byteLength === undefined || data.buffer) {
       throw new Error(
         'Data must be an instance of ArrayBuffer or SharedArrayBuffer.',
@@ -77,7 +76,6 @@ export default class Flatbush {
     data,
     byteOffset = 0,
   ) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (numItems === undefined) {
       throw new Error('Missing required argument: numItems.')
     }
@@ -446,7 +444,6 @@ function sort(values, boxes, indices, left, right, nodeSize) {
   let i = left - 1
   let j = right + 1
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
     do {
       i++

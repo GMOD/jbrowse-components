@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
 
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
 import { fillColor, strokeColor } from '../shared/color'
 
 import type { LinearReadCloudDisplayModel } from './model'
@@ -91,6 +92,9 @@ export function drawLongReadChains({
     let chainMinXVal = Number.MAX_VALUE
     let chainMaxXVal = Number.MIN_VALUE
 
+    const renderChevrons = view.bpPerPx < 10 && featureHeight > 5
+    const chevronWidth = 5
+
     for (const v0 of chain) {
       const ra = asm.getCanonicalRefName(v0.refName) || v0.refName
       const rs = view.bpToPx({ refName: ra, coord: v0.start })?.offsetPx
@@ -101,8 +105,23 @@ export function drawLongReadChains({
         const effectiveStrand = v0.strand * primaryStrand
         const c =
           effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
-        strokeRectCtx(l, top, w, featureHeight, ctx, strokeColor[c])
-        fillRectCtx(l, top, w, featureHeight, ctx, fillColor[c])
+
+        if (renderChevrons) {
+          drawChevron(
+            ctx,
+            l,
+            top,
+            w,
+            featureHeight,
+            effectiveStrand,
+            fillColor[c],
+            chevronWidth,
+            strokeColor[c],
+          )
+        } else {
+          strokeRectCtx(l, top, w, featureHeight, ctx, strokeColor[c])
+          fillRectCtx(l, top, w, featureHeight, ctx, fillColor[c])
+        }
 
         chainMinXVal = Math.min(chainMinXVal, l)
         chainMaxXVal = Math.max(chainMaxXVal, l + w)

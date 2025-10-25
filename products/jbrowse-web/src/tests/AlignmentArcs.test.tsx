@@ -27,7 +27,7 @@ async function testArc(loc: string, track: string) {
   await user.click(await findByTestId(hts(track), ...opts))
   await user.click(await findByTestId('track_menu_icon', ...opts))
   await user.click(await findByText('Replace lower panel with...'))
-  await user.click((await findAllByText('Arc display'))[0]!)
+  await user.click((await findAllByText('Read arc display'))[0]!)
   await wait(view)
   await new Promise(res => setTimeout(res, 2000))
   expectCanvasMatch(getByTestId('arc-canvas'))
