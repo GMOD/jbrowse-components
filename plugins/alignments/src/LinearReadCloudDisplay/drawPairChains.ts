@@ -36,6 +36,7 @@ function drawChevron(
   strand: number,
   color: string,
   chevronWidth: number,
+  stroke: string,
 ) {
   ctx.fillStyle = color
   ctx.beginPath()
@@ -54,6 +55,8 @@ function drawChevron(
   }
   ctx.closePath()
   ctx.fill()
+  ctx.strokeStyle = stroke
+  ctx.stroke()
 }
 
 export function drawPairChains({
@@ -145,6 +148,7 @@ export function drawPairChains({
             v0.strand,
             '#f00',
             chevronWidth,
+            '#a00',
           )
         } else {
           fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#f00')
@@ -174,8 +178,9 @@ export function drawPairChains({
         w1,
         featureHeight,
         v0.strand,
-        fill,
+        fill || '#888',
         chevronWidth,
+        stroke || '#888',
       )
       drawChevron(
         ctx,
@@ -184,8 +189,9 @@ export function drawPairChains({
         w2,
         featureHeight,
         v1.strand,
-        fill,
+        fill || '#888',
         chevronWidth,
+        stroke || '#888',
       )
     } else {
       strokeRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, stroke)

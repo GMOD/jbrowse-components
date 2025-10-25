@@ -24,6 +24,7 @@ function drawChevron(
   strand: number,
   color: string,
   chevronWidth: number,
+  stroke: string,
 ) {
   ctx.fillStyle = color
   ctx.beginPath()
@@ -42,6 +43,8 @@ function drawChevron(
   }
   ctx.closePath()
   ctx.fill()
+  ctx.strokeStyle = stroke
+  ctx.stroke()
 }
 
 export function drawLongReadChains({
@@ -133,7 +136,7 @@ export function drawLongReadChains({
         const effectiveStrand = v0.strand * primaryStrand
         const c =
           effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
-        
+
         if (renderChevrons) {
           drawChevron(
             ctx,
@@ -144,6 +147,7 @@ export function drawLongReadChains({
             effectiveStrand,
             fillColor[c],
             chevronWidth,
+            strokeColor[c],
           )
         } else {
           strokeRectCtx(l, top, w, featureHeight, ctx, strokeColor[c])
