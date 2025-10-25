@@ -2,12 +2,12 @@ import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
 
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
 import {
   getPairedInsertSizeAndOrientationColor,
   getPairedInsertSizeColor,
   getPairedOrientationColor,
 } from '../shared/color'
-import { drawChevron } from '../shared/chevron'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type {

@@ -4,6 +4,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getPairedColor } from './drawPairChains'
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
 import {
   PairType,
   fillColor,
@@ -12,7 +13,6 @@ import {
   strokeColor,
 } from '../shared/color'
 import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
-import { drawChevron } from '../shared/chevron'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'

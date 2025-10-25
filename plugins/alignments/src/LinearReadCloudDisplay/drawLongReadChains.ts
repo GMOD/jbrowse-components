@@ -2,8 +2,8 @@ import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
 
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { fillColor, strokeColor } from '../shared/color'
 import { drawChevron } from '../shared/chevron'
+import { fillColor, strokeColor } from '../shared/color'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ChainData, ReducedFeature } from '../shared/fetchChains'

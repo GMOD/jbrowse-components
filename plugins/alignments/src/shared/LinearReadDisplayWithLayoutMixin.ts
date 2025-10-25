@@ -1,7 +1,7 @@
 import { types } from 'mobx-state-tree'
 
-import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { ReducedFeature } from './fetchChains'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 
 /**
  * Mixin for LinearRead displays that use Flatbush layout for mouseover functionality

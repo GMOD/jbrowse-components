@@ -5,6 +5,7 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
 import { getPairedColor } from '../LinearReadCloudDisplay/drawPairChains'
 import { fillRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
 import {
   PairType,
   fillColor,
@@ -12,7 +13,6 @@ import {
   getSingletonColor,
 } from '../shared/color'
 import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
-import { drawChevron } from '../shared/chevron'
 
 import type { LinearReadStackDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'

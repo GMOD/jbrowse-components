@@ -15,10 +15,10 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
-import { chainToSimpleFeature } from '../shared/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
+import { chainToSimpleFeature } from '../shared/chainToSimpleFeature'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,

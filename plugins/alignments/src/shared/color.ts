@@ -96,7 +96,9 @@ export function getPairedType({
   // Check orientation first (if applicable)
   if (type === 'insertSizeAndOrientation' || type === 'orientation') {
     const orientationType = orientationTypes.fr
-    const r = orientationType[f1.pair_orientation || ''] as keyof typeof pairMap
+    const r = orientationType[f1.pair_orientation || ''] as
+      | keyof typeof pairMap
+      | undefined
     // If orientation is not LR (proper), it's abnormal
     if (r && r !== 'LR') {
       return PairType.ABNORMAL_ORIENTATION
