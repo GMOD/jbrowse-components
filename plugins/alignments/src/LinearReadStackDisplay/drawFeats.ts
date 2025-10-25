@@ -5,7 +5,12 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
 import { getPairedColor } from '../LinearReadCloudDisplay/drawPairChains'
 import { fillRectCtx } from '../shared/canvasUtils'
-import { fillColor, getSingletonColor } from '../shared/color'
+import {
+  PairType,
+  fillColor,
+  getPairedType,
+  getSingletonColor,
+} from '../shared/color'
 import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
 import { drawChevron } from '../shared/chevron'
 
@@ -57,10 +62,14 @@ export function drawFeats(
     if (!drawProperPairs && chain.length === 2) {
       const v0 = chain[0]!
       const v1 = chain[1]!
-      const color = getPairedColor({ type, v0, v1, stats: chainData.stats })
-      // If getPairedColor returns undefined, it means it's a normal proper pair
-      // and we should filter it out
-      if (color?.[0] === 'grey') {
+      const pairType = getPairedType({
+        type,
+        f1: v0,
+        f2: v1,
+        stats: chainData.stats,
+      })
+      // Filter out proper pairs
+      if (pairType === PairType.PROPER_PAIR) {
         return false
       }
     }

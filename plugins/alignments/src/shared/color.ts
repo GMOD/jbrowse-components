@@ -2,6 +2,25 @@ import { orientationTypes, pairMap } from '../util'
 
 import type { ChainStats } from './fetchChains'
 
+/**
+ * Numeric codes for pair types
+ * Used to classify paired-end reads without relying on color string comparisons
+ */
+export const PairType = {
+  /** Proper pair: correct orientation (LR) and normal insert size */
+  PROPER_PAIR: 0,
+  /** Long insert: same chromosome but insert size exceeds upper threshold */
+  LONG_INSERT: 1,
+  /** Short insert: same chromosome but insert size below lower threshold */
+  SHORT_INSERT: 2,
+  /** Inter-chromosome: mates on different chromosomes */
+  INTER_CHROM: 3,
+  /** Abnormal orientation: RR, RL, LL, etc. (not LR) */
+  ABNORMAL_ORIENTATION: 4,
+} as const
+
+export type PairTypeValue = (typeof PairType)[keyof typeof PairType]
+
 export const fillColor = {
   color_fwd_strand_not_proper: '#ECC8C8',
   color_rev_strand_not_proper: '#BEBED8',
@@ -111,4 +130,59 @@ export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
   }
   // Otherwise use grey for normal-looking singletons
   return ['#888', '#666'] as const
+}
+
+/**
+ * Get the pair type classification for a paired-end read
+ * Similar to getPairedInsertSizeAndOrientationColor but returns a numeric code
+ * instead of colors, avoiding string comparisons
+ *
+ * @param type - Color scheme type (insertSizeAndOrientation, orientation, insertSize)
+ * @param f1 - First read in the pair
+ * @param f2 - Second read in the pair
+ * @param stats - Optional statistics for insert size thresholds
+ * @returns Numeric code representing the pair type
+ */
+export function getPairedType({
+  type,
+  f1,
+  f2,
+  stats,
+}: {
+  type: string
+  f1: { refName: string; pair_orientation?: string; tlen?: number }
+  f2: { refName: string }
+  stats?: ChainStats
+}): PairTypeValue {
+  // Check orientation first (if applicable)
+  if (type === 'insertSizeAndOrientation' || type === 'orientation') {
+    const orientationType = orientationTypes.fr
+    const r = orientationType[f1.pair_orientation || ''] as keyof typeof pairMap
+    // If orientation is not LR (proper), it's abnormal
+    if (r && r !== 'LR') {
+      return PairType.ABNORMAL_ORIENTATION
+    }
+  }
+
+  // Check insert size (if applicable)
+  if (type === 'insertSizeAndOrientation' || type === 'insertSize') {
+    const sameRef = f1.refName === f2.refName
+    const tlen = Math.abs(f1.tlen || 0)
+
+    if (!sameRef) {
+      return PairType.INTER_CHROM
+    }
+
+    if (stats) {
+      if (tlen > stats.upper) {
+        return PairType.LONG_INSERT
+      }
+      if (tlen < stats.lower) {
+        return PairType.SHORT_INSERT
+      }
+    }
+  }
+
+  // If all checks pass, it's a proper pair
+  return PairType.PROPER_PAIR
 }
