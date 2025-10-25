@@ -4,7 +4,6 @@ import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
-  SimpleFeature,
   getContainingTrack,
   getContainingView,
   getSession,
@@ -16,15 +15,17 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
+import { chainToSimpleFeature } from '../shared/chainToSimpleFeature'
+import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
+import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
+import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
 } from '../shared/menuItems'
 
-import type { ChainData, ReducedFeature } from '../shared/fetchChains'
-import type { ColorBy, FilterBy } from '../shared/types'
+import type { ReducedFeature } from '../shared/fetchChains'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { Instance } from 'mobx-state-tree'
 
 // async
@@ -34,56 +35,6 @@ const SetFeatureHeightDialog = lazy(
 const SetMaxHeightDialog = lazy(
   () => import('../shared/components/SetMaxHeightDialog'),
 )
-
-/**
- * Helper function to convert a chain of ReducedFeatures into a SimpleFeature
- * with subfeatures representing each part of the chain
- */
-function chainToSimpleFeature(chain: ReducedFeature[]) {
-  if (chain.length === 0) {
-    throw new Error('Chain cannot be empty')
-  }
-
-  const firstFeat = chain[0]!
-
-  // Create a synthetic feature that encompasses the entire chain
-  const syntheticFeature = new SimpleFeature({
-    uniqueId: firstFeat.id,
-    id: firstFeat.id,
-    name: firstFeat.name,
-    refName: firstFeat.refName,
-    start: Math.min(...chain.map(f => f.start)),
-    end: Math.max(...chain.map(f => f.end)),
-    strand: firstFeat.strand,
-    flags: firstFeat.flags,
-    tlen: firstFeat.tlen,
-    pair_orientation: firstFeat.pair_orientation,
-    clipPos: firstFeat.clipPos,
-    ...(firstFeat.next_ref && { next_ref: firstFeat.next_ref }),
-    ...(firstFeat.next_pos !== undefined && { next_pos: firstFeat.next_pos }),
-    ...(firstFeat.SA && { SA: firstFeat.SA }),
-    // Add subfeatures for each part of the chain
-    subfeatures: chain.map((feat, idx) => ({
-      uniqueId: `${feat.id}_${idx}`,
-      id: `${feat.id}_${idx}`,
-      name: feat.name,
-      refName: feat.refName,
-      start: feat.start,
-      end: feat.end,
-      strand: feat.strand,
-      type: 'alignment_part',
-      flags: feat.flags,
-      tlen: feat.tlen,
-      pair_orientation: feat.pair_orientation,
-      clipPos: feat.clipPos,
-      ...(feat.next_ref && { next_ref: feat.next_ref }),
-      ...(feat.next_pos !== undefined && { next_pos: feat.next_pos }),
-      ...(feat.SA && { SA: feat.SA }),
-    })),
-  })
-
-  return syntheticFeature
-}
 
 /**
  * #stateModel LinearReadStackDisplay
@@ -100,6 +51,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
+      LinearReadDisplayBaseMixin(),
+      LinearReadDisplayWithLayoutMixin(),
+      LinearReadDisplayWithPairFiltersMixin(),
       types.model({
         /**
          * #property
@@ -112,36 +66,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
         /**
          * #property
-         */
-        filterBySetting: types.frozen<FilterBy | undefined>(),
-
-        /**
-         * #property
-         */
-        colorBySetting: types.frozen<ColorBy | undefined>(),
-
-        /**
-         * #property
-         */
-        drawSingletons: true,
-
-        /**
-         * #property
-         */
-        drawProperPairs: true,
-
-        /**
-         * #property
-         */
-        featureHeight: types.maybe(types.number),
-
-        /**
-         * #property
+         * Whether to remove spacing between stacked features
          */
         noSpacing: types.maybe(types.boolean),
 
         /**
          * #property
+         * Maximum height for the layout (prevents infinite stacking)
          */
         trackMaxHeight: types.maybe(types.number),
       }),
@@ -149,48 +80,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .volatile(() => ({
       /**
        * #volatile
-       */
-      loading: false,
-      /**
-       * #volatile
-       */
-      chainData: undefined as ChainData | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnBpPerPx: 0,
-      /**
-       * #volatile
-       */
-      ref: null as HTMLCanvasElement | null,
-      /**
-       * #volatile
-       */
-      featureLayout: undefined as Flatbush | undefined,
-      /**
-       * #volatile
-       */
-      mouseoverRef: null as HTMLCanvasElement | null,
-      /**
-       * #volatile
-       */
-      featuresForFlatbush: [] as {
-        x1: number
-        y1: number
-        x2: number
-        y2: number
-        data: ReducedFeature
-        chainId: string
-        chainMinX: number
-        chainMaxX: number
-        chain: ReducedFeature[]
-      }[],
-      /**
-       * #volatile
+       * Current height of the layout after drawing
        */
       layoutHeight: 0,
     }))
@@ -218,120 +108,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setDrawSingletons(f: boolean) {
-        self.drawSingletons = f
-      },
-      /**
-       * #action
-       */
-      setDrawProperPairs(f: boolean) {
-        self.drawProperPairs = f
-      },
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(n: number) {
-        self.lastDrawnBpPerPx = n
-      },
-
-      /**
-       * #action
-       */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
-      /**
-       * #action
-       */
       reload() {
         self.error = undefined
       },
       /**
        * #action
-       * internal, a reference to a HTMLCanvas because we use a autorun to draw
-       * the canvas
-       */
-      setRef(ref: HTMLCanvasElement | null) {
-        self.ref = ref
-      },
-
-      setColorScheme(colorBy: { type: string }) {
-        self.colorBySetting = {
-          ...colorBy,
-        }
-      },
-
-      /**
-       * #action
-       */
-      setChainData(args: ChainData) {
-        self.chainData = args
-      },
-
-      /**
-       * #action
-       */
-      setFilterBy(filter: FilterBy) {
-        self.filterBySetting = {
-          ...filter,
-        }
-      },
-      /**
-       * #action
-       */
-      setFeatureLayout(layout: Flatbush) {
-        self.featureLayout = layout
-      },
-      /**
-       * #action
-       */
-      setMouseoverRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverRef = ref
-      },
-      /**
-       * #action
-       */
-      setFeaturesForFlatbush(
-        features: {
-          x1: number
-          y1: number
-          x2: number
-          y2: number
-          data: ReducedFeature
-          chainId: string
-          chainMinX: number
-          chainMaxX: number
-          chain: ReducedFeature[]
-        }[],
-      ) {
-        self.featuresForFlatbush = features
-      },
-      /**
-       * #action
-       */
-      setFeatureHeight(n?: number) {
-        self.featureHeight = n
-      },
-      /**
-       * #action
+       * Set whether to remove spacing between features
        */
       setNoSpacing(flag?: boolean) {
         self.noSpacing = flag
       },
       /**
        * #action
+       * Set the maximum height for the layout
        */
       setMaxHeight(n?: number) {
         self.trackMaxHeight = n
       },
       /**
        * #action
+       * Set the current layout height
        */
       setLayoutHeight(n: number) {
         self.layoutHeight = n
@@ -355,11 +151,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           session.showWidget(featureWidget)
         }
         session.setSelection(syntheticFeature)
-      },
-    }))
-    .views(self => ({
-      get drawn() {
-        return self.lastDrawnOffsetPx !== undefined
       },
     }))
     .views(self => {
