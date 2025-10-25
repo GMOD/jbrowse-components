@@ -27,11 +27,6 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { Instance } from 'mobx-state-tree'
 
-// async
-const SetMaxHeightDialog = lazy(
-  () => import('../LinearPileupDisplay/components/SetMaxHeightDialog'),
-)
-
 /**
  * Helper function to convert a chain of ReducedFeatures into a SimpleFeature
  * with subfeatures representing each part of the chain
@@ -342,19 +337,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.setDrawSingletons(!self.drawSingletons)
               },
             },
-            {
-              label: 'Set max height...',
-              priority: -1,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetMaxHeightDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
+
             {
               label: 'Draw proper pairs',
               type: 'checkbox',
