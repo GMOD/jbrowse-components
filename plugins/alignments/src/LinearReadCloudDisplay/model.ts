@@ -27,6 +27,11 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { Instance } from 'mobx-state-tree'
 
+// async
+const SetFeatureHeightDialog = lazy(
+  () => import('../LinearPileupDisplay/components/SetFeatureHeightDialog'),
+)
+
 /**
  * Helper function to convert a chain of ReducedFeatures into a SimpleFeature
  * with subfeatures representing each part of the chain
@@ -121,6 +126,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         drawProperPairs: true,
+
+        /**
+         * #property
+         */
+        featureHeight: types.maybe(types.number),
       }),
     )
     .volatile(() => ({
@@ -161,11 +171,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         x2: number
         y2: number
         data: ReducedFeature
-        chain: ReducedFeature[]
+        chainId: string
         chainMinX: number
         chainMaxX: number
-        chainTop: number
-        chainHeight: number
+        chain: ReducedFeature[]
       }[],
     }))
     .views(self => ({
@@ -180,6 +189,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+      /**
+       * #getter
+       */
+      get featureHeightSetting() {
+        return self.featureHeight ?? getConf(self, 'featureHeight')
       },
     }))
     .actions(self => ({
@@ -272,14 +287,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           x2: number
           y2: number
           data: ReducedFeature
-          chain: ReducedFeature[]
+          chainId: string
           chainMinX: number
           chainMaxX: number
-          chainTop: number
-          chainHeight: number
+          chain: ReducedFeature[]
         }[],
       ) {
         self.featuresForFlatbush = features
+      },
+      /**
+       * #action
+       */
+      setFeatureHeight(n?: number) {
+        self.featureHeight = n
       },
       /**
        * #action
@@ -330,6 +350,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
+              label: 'Set feature height...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SetFeatureHeightDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+            {
               label: 'Draw singletons',
               type: 'checkbox',
               checked: self.drawSingletons,
@@ -337,7 +369,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.setDrawSingletons(!self.drawSingletons)
               },
             },
-
             {
               label: 'Draw proper pairs',
               type: 'checkbox',

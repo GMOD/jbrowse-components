@@ -153,6 +153,18 @@ export function drawPairChains({
         } else {
           fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#f00')
           strokeRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#a00')
+          featuresForFlatbush.push({
+            x1: r1s - view.offsetPx,
+            y1: 0,
+            x2: r1s - view.offsetPx + w1,
+            y2: featureHeight,
+            data: v0,
+            chain: [v0],
+            chainMinX: r1s - view.offsetPx,
+            chainMaxX: r1s - view.offsetPx + w1,
+            chainTop: 0,
+            chainHeight: featureHeight,
+          })
         }
       }
     }
@@ -170,6 +182,17 @@ export function drawPairChains({
     const w = r2s - r1e
     fillRectCtx(r1e - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
 
+    let primaryStrand: undefined | number
+    if (!(v0.flags & 2048)) {
+      primaryStrand = v0.strand
+    } else {
+      const res = v0.SA?.split(';')[0]!.split(',')[2]
+      primaryStrand = res === '-' ? -1 : 1
+    }
+
+    const effectiveStrandV0 = v0.strand * primaryStrand
+    const effectiveStrandV1 = v1.strand * primaryStrand
+
     if (renderChevrons) {
       drawChevron(
         ctx,
@@ -177,7 +200,7 @@ export function drawPairChains({
         top,
         w1,
         featureHeight,
-        v0.strand,
+        effectiveStrandV0,
         fill || '#888',
         chevronWidth,
         stroke || '#888',
@@ -188,7 +211,7 @@ export function drawPairChains({
         top,
         w2,
         featureHeight,
-        v1.strand,
+        effectiveStrandV1,
         fill || '#888',
         chevronWidth,
         stroke || '#888',
