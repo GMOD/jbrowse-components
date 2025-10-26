@@ -14,7 +14,7 @@ test('read from meta', async () => {
     .spyOn(global, 'fetch')
     .mockImplementation((url: string | Request | URL) => {
       const response = `${url}`.includes('names/meta.json') ? meta : {}
-      return Promise.resolve(Response.json(response))
+      return Promise.resolve(new Response(JSON.stringify(response)))
     })
   const hashMap = new HttpMap({ url: rootTemplate })
   await hashMap.getBucket('apple')
@@ -41,7 +41,7 @@ test('get bucket contents', async () => {
       if (`${url}`.includes('names/f.json')) {
         response = last
       }
-      return Promise.resolve(Response.json(response))
+      return Promise.resolve(new Response(JSON.stringify(response)))
     })
   const hashMap = new HttpMap({ url: rootTemplate })
 

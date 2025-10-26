@@ -97,7 +97,7 @@ const WiggleClusterDialogManuals = observer(function ({
   }, [model, samplesPerPixel])
 
   const results = ret
-    ? String.raw`inputMatrix<-matrix(c(${Object.values(ret)
+    ? `inputMatrix<-matrix(c(${Object.values(ret)
         .map(val => val.join(','))
         .join(',\n')}
 ),nrow=${Object.values(ret).length},byrow=TRUE)
@@ -105,7 +105,7 @@ rownames(inputMatrix)<-c(${Object.keys(ret)
         .map(key => `'${key}'`)
         .join(',')})
 resultClusters<-hclust(dist(inputMatrix), method='${clusterMethod}')
-cat(resultClusters$order,sep='\n')`
+cat(resultClusters$order,sep='\\n')`
     : undefined
 
   const resultsTsv = ret
