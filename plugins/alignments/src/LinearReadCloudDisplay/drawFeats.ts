@@ -2,12 +2,12 @@ import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession, max, min } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { getPairedColor } from './drawPairChains'
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import {
   PairType,
   fillColor,
+  getPairedColor,
   getPairedType,
   getSingletonColor,
   strokeColor,
@@ -17,8 +17,8 @@ import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
+import type { FlatbushEntry } from '../shared/flatbushType'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { FlatbushEntry } from '../shared/flatbushType'
 
 type LGV = LinearGenomeViewModel
 

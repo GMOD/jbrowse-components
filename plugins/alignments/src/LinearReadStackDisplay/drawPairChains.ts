@@ -1,23 +1,13 @@
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
-import {
-  fillColor,
-  getPairedInsertSizeAndOrientationColor,
-  getPairedInsertSizeColor,
-  getPairedOrientationColor,
-  strokeColor,
-} from '../shared/color'
+import { fillColor, getPairedColor, strokeColor } from '../shared/color'
 import { CHEVRON_WIDTH } from '../shared/util'
 
 import type { LinearReadStackDisplayModel } from './model'
-import type {
-  ChainData,
-  ChainStats,
-  ReducedFeature,
-} from '../shared/fetchChains'
+import type { ChainData } from '../shared/fetchChains'
+import type { FlatbushEntry } from '../shared/flatbushType'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { FlatbushEntry } from '../shared/flatbushType'
 
 type LGV = LinearGenomeViewModel
 
@@ -134,27 +124,4 @@ export function drawPairChains({
       }
     }
   }
-}
-
-export function getPairedColor({
-  type,
-  v0,
-  v1,
-  stats,
-}: {
-  type: string
-  v0: ReducedFeature
-  v1: ReducedFeature
-  stats?: ChainStats
-}) {
-  if (type === 'insertSizeAndOrientation') {
-    return getPairedInsertSizeAndOrientationColor(v0, v1, stats)
-  }
-  if (type === 'orientation') {
-    return getPairedOrientationColor(v0)
-  }
-  if (type === 'insertSize') {
-    return getPairedInsertSizeColor(v0, v1, stats)
-  }
-  return undefined
 }

@@ -5,10 +5,10 @@ import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
 import { CHEVRON_WIDTH } from '../shared/util'
 
 import type { LinearReadStackDisplayModel } from './model'
-import type { ChainData, ReducedFeature } from '../shared/fetchChains'
+import type { ChainData } from '../shared/fetchChains'
+import type { FlatbushEntry } from '../shared/flatbushType'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { FlatbushEntry } from '../shared/flatbushType'
 
 type LGV = LinearGenomeViewModel
 

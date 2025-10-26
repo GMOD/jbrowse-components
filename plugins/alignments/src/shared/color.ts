@@ -1,6 +1,6 @@
 import { orientationTypes, pairMap } from '../util'
 
-import type { ChainStats } from './fetchChains'
+import type { ChainStats, ReducedFeature } from './fetchChains'
 
 /**
  * Numeric codes for pair types
@@ -242,5 +242,28 @@ export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
     ] as const
   }
   // Otherwise use properly paired coloring for normal-looking singletons
-  return defaultColor //[fillColor.color_pair_lr, strokeColor.color_pair_lr] as const
+  return defaultColor // [fillColor.color_pair_lr, strokeColor.color_pair_lr] as const
+}
+
+export function getPairedColor({
+  type,
+  v0,
+  v1,
+  stats,
+}: {
+  type: string
+  v0: ReducedFeature
+  v1: ReducedFeature
+  stats?: ChainStats
+}) {
+  if (type === 'insertSizeAndOrientation') {
+    return getPairedInsertSizeAndOrientationColor(v0, v1, stats)
+  }
+  if (type === 'orientation') {
+    return getPairedOrientationColor(v0)
+  }
+  if (type === 'insertSize') {
+    return getPairedInsertSizeColor(v0, v1, stats)
+  }
+  return undefined
 }
