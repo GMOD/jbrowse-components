@@ -2,18 +2,10 @@ import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession, max, min } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { drawChevron } from '../shared/chevron'
-import {
-  PairType,
-  fillColor,
-  getPairedColor,
-  getPairedType,
-  getSingletonColor,
-  strokeColor,
-} from '../shared/color'
-import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
-import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
+import { PairType, getPairedType } from '../shared/color'
+import { drawLongReadChains } from '../shared/drawLongReadChains'
+import { drawPairChains } from '../shared/drawPairChains'
+import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
@@ -137,201 +129,41 @@ export function drawFeats(
   // Initialize array for Flatbush mouseover data
   const featuresForFlatbush: FlatbushEntry[] = []
 
-  // Third pass: draw connecting lines
-  for (const { id, chain } of computedChains) {
+  const renderChevrons = shouldRenderChevrons(view.bpPerPx, featureHeight)
+
+  // Delegate rendering to specialized functions for paired and long-read chains
+  drawPairChains({
+    ctx,
+    type,
+    chainData,
+    view,
+    asm,
+    chainYOffsets,
+    renderChevrons,
+    featureHeight,
+    featuresForFlatbush,
+    computedChains,
+  })
+
+  drawLongReadChains({
+    ctx,
+    chainData,
+    view,
+    asm,
+    chainYOffsets,
+    renderChevrons,
+    featureHeight,
+    featuresForFlatbush,
+    computedChains,
+  })
+
+  // Add full-width rectangles for each chain to enable mouseover on connecting lines
+  for (const { id, chain, minX, maxX } of computedChains) {
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       continue
     }
 
-    // Filter out supplementary alignments for determining read type
-    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
-    const isPairedEnd = nonSupplementary.length === 2
-
-    if (isPairedEnd) {
-      const v0 = nonSupplementary[0]!
-      const v1 = nonSupplementary[1]!
-
-      // Check if reads overlap based on genomic coordinates
-      const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
-      const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
-
-      // Draw connecting line for paired reads
-      const r1s = view.bpToPx({
-        refName: refName0,
-        coord: v0.start,
-      })?.offsetPx
-      const r2s = view.bpToPx({
-        refName: refName1,
-        coord: v1.start,
-      })?.offsetPx
-
-      if (r1s !== undefined && r2s !== undefined) {
-        const w = r2s - r1s
-
-        fillRectCtx(
-          r1s - view.offsetPx,
-          chainY + featureHeight / 2 - 0.5,
-          w,
-          1,
-          ctx,
-          '#666',
-        )
-      }
-    } else if (nonSupplementary.length > 2 || nonSupplementary.length === 1) {
-      const firstFeat = chain[0]!
-      const lastFeat = chain[chain.length - 1]!
-
-      const firstPx = view.bpToPx({
-        refName:
-          asm.getCanonicalRefName(firstFeat.refName) || firstFeat.refName,
-        coord: firstFeat.start,
-      })?.offsetPx
-      const lastPx = view.bpToPx({
-        refName: asm.getCanonicalRefName(lastFeat.refName) || lastFeat.refName,
-        coord: lastFeat.end,
-      })?.offsetPx
-
-      if (firstPx !== undefined && lastPx !== undefined) {
-        const startX = firstPx - view.offsetPx
-        const endX = lastPx - view.offsetPx
-        const startY = chainY + featureHeight / 2 - 0.5
-        const endY = chainY + featureHeight / 2 - 0.5
-
-        ctx.beginPath()
-        ctx.moveTo(startX, startY)
-        ctx.lineTo(endX, endY)
-        ctx.stroke()
-      }
-    }
-  }
-
-  // Fourth pass: draw features and populate Flatbush
-  for (const { id, chain, minX, maxX } of computedChains) {
-    const chainY = chainYOffsets.get(id)
-    if (chainY === undefined) {
-      continue // Skip if Y-offset was not determined for this chain
-    }
-
-    const renderChevrons = shouldRenderChevrons(view.bpPerPx, featureHeight)
-
-    // Filter out supplementary alignments for paired-end color calculation
-    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
-    const isPairedEnd = nonSupplementary.length === 2
-
-    if (isPairedEnd) {
-      const v0 = nonSupplementary[0]!
-      const v1 = nonSupplementary[1]!
-      const [pairedFill, pairedStroke] =
-        getPairedColor({ type, v0, v1, stats: chainData.stats }) || []
-
-      for (const feat of chain) {
-        const { refName, start, end } = feat
-        const s = view.bpToPx({ refName, coord: start })
-        const e = view.bpToPx({ refName, coord: end })
-        if (s && e) {
-          const xPos = s.offsetPx - view.offsetPx
-          const width = Math.max(e.offsetPx - s.offsetPx, 3)
-          const fillCol = pairedFill || '#888'
-          const strokeCol = pairedStroke || '#888'
-
-          if (renderChevrons) {
-            drawChevron(
-              ctx,
-              xPos,
-              chainY,
-              width,
-              featureHeight,
-              feat.strand,
-              fillCol,
-              CHEVRON_WIDTH,
-              strokeCol,
-            )
-          } else {
-            fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillCol)
-            strokeRectCtx(xPos, chainY, width, featureHeight, ctx, strokeCol)
-          }
-          featuresForFlatbush.push({
-            x1: xPos,
-            y1: chainY,
-            x2: xPos + width,
-            y2: chainY + featureHeight,
-            data: feat,
-            chainId: id,
-            chainMinX: minX - view.offsetPx,
-            chainMaxX: maxX - view.offsetPx,
-            chain,
-          })
-        }
-      }
-    } else {
-      // Long reads (>2 non-supplementary) or singletons (1 non-supplementary)
-      const isSingleton = chain.length === 1
-      const c1 = nonSupplementary.length > 0 ? nonSupplementary[0]! : chain[0]!
-      const primaryStrand = getPrimaryStrandFromFlags(c1)
-
-      for (const feat of chain) {
-        const { refName, start, end } = feat
-        const s = view.bpToPx({ refName, coord: start })
-        const e = view.bpToPx({ refName, coord: end })
-        if (s && e) {
-          const effectiveStrand = feat.strand * primaryStrand
-          const xPos = s.offsetPx - view.offsetPx
-          const width = Math.max(e.offsetPx - s.offsetPx, 3)
-
-          // Determine color based on whether it's a singleton
-          let featureFill: string
-          let featureStroke: string
-          if (isSingleton) {
-            const [fill, stroke] = getSingletonColor(feat, chainData.stats)
-            featureFill = fill
-            featureStroke = stroke
-          } else {
-            const c =
-              effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
-            featureFill = fillColor[c]
-            featureStroke = strokeColor[c]
-          }
-
-          if (renderChevrons) {
-            drawChevron(
-              ctx,
-              xPos,
-              chainY,
-              width,
-              featureHeight,
-              effectiveStrand,
-              featureFill,
-              CHEVRON_WIDTH,
-              featureStroke,
-            )
-          } else {
-            fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
-            strokeRectCtx(
-              xPos,
-              chainY,
-              width,
-              featureHeight,
-              ctx,
-              featureStroke,
-            )
-          }
-          featuresForFlatbush.push({
-            x1: xPos,
-            y1: chainY,
-            x2: xPos + width,
-            y2: chainY + featureHeight,
-            data: feat,
-            chainId: id,
-            chainMinX: minX - view.offsetPx,
-            chainMaxX: maxX - view.offsetPx,
-            chain,
-          })
-        }
-      }
-    }
-
-    // Add a full-width rectangle for the entire chain to enable mouseover on connecting lines
     const chainMinXPx = minX - view.offsetPx
     const chainMaxXPx = maxX - view.offsetPx
     if (chain.length > 0) {

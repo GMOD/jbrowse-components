@@ -3,9 +3,9 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
-import { drawLongReadChains } from './drawLongReadChains'
-import { drawPairChains } from './drawPairChains'
 import { PairType, getPairedType } from '../shared/color'
+import { drawLongReadChains } from '../shared/drawLongReadChains'
+import { drawPairChains } from '../shared/drawPairChains'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadStackDisplayModel } from './model'
@@ -156,7 +156,7 @@ export function drawFeats(
   // Third pass: draw features
   drawPairChains({
     ctx,
-    self,
+    type,
     chainData,
     view,
     asm,
@@ -164,11 +164,11 @@ export function drawFeats(
     renderChevrons,
     featureHeight,
     featuresForFlatbush,
+    computedChains,
   })
 
   drawLongReadChains({
     ctx,
-    self,
     chainData,
     view,
     asm,
@@ -176,6 +176,7 @@ export function drawFeats(
     renderChevrons,
     featureHeight,
     featuresForFlatbush,
+    computedChains,
   })
 
   // Add full-width rectangles for chain mouseover on connecting lines

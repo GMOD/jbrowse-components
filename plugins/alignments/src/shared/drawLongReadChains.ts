@@ -1,12 +1,11 @@
-import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { drawChevron } from '../shared/chevron'
-import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
-import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
-import { CHEVRON_WIDTH } from '../shared/util'
+import { fillRectCtx, strokeRectCtx } from './canvasUtils'
+import { drawChevron } from './chevron'
+import { fillColor, getSingletonColor, strokeColor } from './color'
+import { getPrimaryStrandFromFlags } from './primaryStrand'
+import { CHEVRON_WIDTH } from './util'
 
-import type { LinearReadStackDisplayModel } from './model'
-import type { ChainData } from '../shared/fetchChains'
-import type { FlatbushEntry } from '../shared/flatbushType'
+import type { ChainData, ReducedFeature } from './fetchChains'
+import type { FlatbushEntry } from './flatbushType'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -21,9 +20,9 @@ export function drawLongReadChains({
   renderChevrons,
   featureHeight,
   featuresForFlatbush,
+  computedChains,
 }: {
   ctx: CanvasRenderingContext2D
-  self: LinearReadStackDisplayModel
   chainData: ChainData
   view: LGV
   asm: Assembly
@@ -31,12 +30,19 @@ export function drawLongReadChains({
   renderChevrons: boolean
   featureHeight: number
   featuresForFlatbush: FlatbushEntry[]
-}) {
-  const { chains } = chainData
-
-  for (const chain of chains) {
-    // Skip if this is a paired-end read (handled by drawPairChains)
+  computedChains: {
+    distance: number
+    minX: number
+    maxX: number
+    chain: ReducedFeature[]
+    id: string
+  }[]
+}): void {
+  for (const { id, chain, minX, maxX } of computedChains) {
+    // Filter out supplementary alignments for read type determination
     const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
+
+    // Skip if this is a paired-end read (handled by drawPairChains)
     if (nonSupplementary.length === 2) {
       continue
     }
@@ -45,9 +51,7 @@ export function drawLongReadChains({
     const c1 = nonSupplementary.length > 0 ? nonSupplementary[0]! : chain[0]!
     const primaryStrand = getPrimaryStrandFromFlags(c1)
 
-    const chainId = c1.id
-    const chainY = chainYOffsets.get(chainId)
-
+    const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       continue
     }
@@ -74,6 +78,7 @@ export function drawLongReadChains({
         const endY = chainY + featureHeight / 2 - 0.5
 
         ctx.beginPath()
+        ctx.strokeStyle = '#666'
         ctx.moveTo(startX, startY)
         ctx.lineTo(endX, endY)
         ctx.stroke()
@@ -127,9 +132,9 @@ export function drawLongReadChains({
           x2: xPos + width,
           y2: chainY + featureHeight,
           data: feat,
-          chainId,
-          chainMinX: xPos,
-          chainMaxX: xPos + width,
+          chainId: id,
+          chainMinX: minX - view.offsetPx,
+          chainMaxX: maxX - view.offsetPx,
           chain,
         })
       }
