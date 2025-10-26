@@ -28,7 +28,7 @@ const plugins = {
 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async () => {
-  return new Response(JSON.stringify(plugins))
+  return Response.json(plugins)
 })
 
 function setup(sessionSnapshot?: Record<string, unknown>, adminMode?: boolean) {

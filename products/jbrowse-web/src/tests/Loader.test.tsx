@@ -23,14 +23,14 @@ const delay = { timeout: 20000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   if (/plugin-store/.exec(`${url}`)) {
-    return new Response(
-      JSON.stringify({
+    return Response.json(
+      {
         plugins: [
           {
             url: 'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
           },
         ],
-      }),
+      },
     )
   } else if (`${url}`.includes('testid')) {
     return new Response(

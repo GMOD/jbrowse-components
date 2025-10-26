@@ -21,7 +21,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
       response = refNamesResponse
     }
 
-    return Promise.resolve(new Response(JSON.stringify(response)))
+    return Promise.resolve(Response.json(response))
   }
 
   const spy = jest.spyOn(global, 'fetch')

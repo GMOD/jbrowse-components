@@ -19,7 +19,7 @@ function mockFetch(url: RequestInfo | URL) {
   if (`${url}`.includes('names/f.json')) {
     response = last
   }
-  return Promise.resolve(new Response(JSON.stringify(response)))
+  return Promise.resolve(Response.json(response))
 }
 
 const rootTemplate = path

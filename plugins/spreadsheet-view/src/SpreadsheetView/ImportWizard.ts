@@ -46,7 +46,7 @@ function getAdapterLoc(adapter: Record<string, FileLocation>) {
 }
 
 // regexp used to guess the type of a file or URL from its file extension
-const fileTypesRegexp = new RegExp(`\\.(${fileTypes.join('|')})(\\.gz)?$`, 'i')
+const fileTypesRegexp = new RegExp(String.raw`\.(${fileTypes.join('|')})(\.gz)?$`, 'i')
 
 /**
  * #stateModel SpreadsheetImportWizard
