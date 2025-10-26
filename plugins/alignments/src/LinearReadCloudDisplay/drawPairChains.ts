@@ -8,7 +8,6 @@ import {
   getPairedInsertSizeColor,
   getPairedOrientationColor,
 } from '../shared/color'
-import { getPrimaryStrand } from '../shared/primaryStrand'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type {
@@ -152,11 +151,6 @@ export function drawPairChains({
     const w = r2s - r1e
     fillRectCtx(r1e - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
 
-    const primaryStrand = getPrimaryStrand(v0)
-
-    const effectiveStrandV0 = v0.strand * primaryStrand
-    const effectiveStrandV1 = v1.strand * primaryStrand
-
     if (renderChevrons) {
       drawChevron(
         ctx,
@@ -164,7 +158,7 @@ export function drawPairChains({
         top,
         w1,
         featureHeight,
-        effectiveStrandV0,
+        v0.strand,
         fill || '#888',
         chevronWidth,
         stroke || '#888',
@@ -175,7 +169,7 @@ export function drawPairChains({
         top,
         w2,
         featureHeight,
-        effectiveStrandV1,
+        v1.strand,
         fill || '#888',
         chevronWidth,
         stroke || '#888',
