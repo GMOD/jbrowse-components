@@ -6,7 +6,10 @@ import type { ReducedFeature } from './fetchChains'
  * Helper function to convert a chain of ReducedFeatures into a SimpleFeature
  * with subfeatures representing each part of the chain
  */
-export function chainToSimpleFeature(chain: ReducedFeature[], readsOverlap?: boolean) {
+export function chainToSimpleFeature(
+  chain: ReducedFeature[],
+  readsOverlap?: boolean,
+) {
   if (chain.length === 0) {
     throw new Error('Chain cannot be empty')
   }

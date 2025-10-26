@@ -12,10 +12,7 @@ import {
   getSingletonColor,
   strokeColor,
 } from '../shared/color'
-import {
-  getPrimaryStrand,
-  getPrimaryStrandFromFlags,
-} from '../shared/primaryStrand'
+import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
 import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
@@ -169,9 +166,7 @@ export function drawFeats(
       const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
       const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
       const readsOverlap =
-        refName0 === refName1 &&
-        v0.start < v1.end &&
-        v1.start < v0.end
+        refName0 === refName1 && v0.start < v1.end && v1.start < v0.end
 
       // Draw connecting line for paired reads
       const r1s = view.bpToPx({
@@ -242,28 +237,21 @@ export function drawFeats(
       const [pairedFill, pairedStroke] =
         getPairedColor({ type, v0, v1, stats: chainData.stats }) || []
 
-      const primaryStrand = getPrimaryStrand(v0)
-
       // Check if reads overlap based on genomic coordinates
       const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
       const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
       const readsOverlap =
-        refName0 === refName1 &&
-        v0.start < v1.end &&
-        v1.start < v0.end
+        refName0 === refName1 && v0.start < v1.end && v1.start < v0.end
 
       for (const feat of chain) {
         const { refName, start, end } = feat
         const s = view.bpToPx({ refName, coord: start })
         const e = view.bpToPx({ refName, coord: end })
         if (s && e) {
-          const effectiveStrand = feat.strand * primaryStrand
-          const c =
-            effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
           const xPos = s.offsetPx - view.offsetPx
           const width = Math.max(e.offsetPx - s.offsetPx, 3)
-          const fillCol = pairedFill || fillColor[c]
-          const strokeCol = pairedStroke || strokeColor[c]
+          const fillCol = pairedFill || '#888'
+          const strokeCol = pairedStroke || '#888'
 
           if (renderChevrons) {
             drawChevron(
@@ -272,7 +260,7 @@ export function drawFeats(
               chainY,
               width,
               featureHeight,
-              effectiveStrand,
+              feat.strand,
               fillCol,
               CHEVRON_WIDTH,
               strokeCol,

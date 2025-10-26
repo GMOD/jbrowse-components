@@ -1,9 +1,11 @@
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import {
+  fillColor,
   getPairedInsertSizeAndOrientationColor,
   getPairedInsertSizeColor,
   getPairedOrientationColor,
+  strokeColor,
 } from '../shared/color'
 import { CHEVRON_WIDTH } from '../shared/util'
 
@@ -73,9 +75,7 @@ export function drawPairChains({
     const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
     const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
     const readsOverlap =
-      refName0 === refName1 &&
-      v0.start < v1.end &&
-      v1.start < v0.end
+      refName0 === refName1 && v0.start < v1.end && v1.start < v0.end
 
     // Draw connecting line for paired reads
     const r1s = view.bpToPx({
@@ -112,8 +112,9 @@ export function drawPairChains({
         if (s && e) {
           const xPos = s.offsetPx - view.offsetPx
           const width = Math.max(e.offsetPx - s.offsetPx, 3)
-          const fillCol = pairedFill || '#888'
-          const strokeCol = readsOverlap ? '#1a1a1a' : (pairedStroke || '#888')
+          const c = feat.strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
+          const fillCol = pairedFill || fillColor[c]
+          const strokeCol = pairedStroke || strokeColor[c]
 
           if (renderChevrons) {
             drawChevron(
@@ -160,7 +161,7 @@ export function getPairedColor({
   v0: ReducedFeature
   v1: ReducedFeature
   stats?: ChainStats
-}): readonly [string, string] | undefined {
+}) {
   if (type === 'insertSizeAndOrientation') {
     return getPairedInsertSizeAndOrientationColor(v0, v1, stats)
   }

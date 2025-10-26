@@ -3,9 +3,9 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
-import { drawPairChains } from './drawPairChains'
 import { drawLongReadChains } from './drawLongReadChains'
-import { getPairedType, PairType } from '../shared/color'
+import { drawPairChains } from './drawPairChains'
+import { PairType, getPairedType } from '../shared/color'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadStackDisplayModel } from './model'

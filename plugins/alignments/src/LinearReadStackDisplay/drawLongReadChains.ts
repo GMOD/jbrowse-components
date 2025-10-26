@@ -1,9 +1,7 @@
 import { fillRectCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
-import {
-  getPrimaryStrandFromFlags,
-} from '../shared/primaryStrand'
+import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
 import { CHEVRON_WIDTH } from '../shared/util'
 
 import type { LinearReadStackDisplayModel } from './model'
@@ -15,7 +13,6 @@ type LGV = LinearGenomeViewModel
 
 export function drawLongReadChains({
   ctx,
-  self,
   chainData,
   view,
   asm,
@@ -131,14 +128,7 @@ export function drawLongReadChains({
           )
         } else {
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
-          strokeRectCtx(
-            xPos,
-            chainY,
-            width,
-            featureHeight,
-            ctx,
-            featureStroke,
-          )
+          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, featureStroke)
         }
 
         featuresForFlatbush.push({
