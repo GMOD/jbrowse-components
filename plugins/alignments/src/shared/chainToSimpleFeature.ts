@@ -14,7 +14,7 @@ export function chainToSimpleFeature(chain: ReducedFeature[]) {
   const firstFeat = chain[0]!
 
   // Create a synthetic feature that encompasses the entire chain
-  const syntheticFeature = new SimpleFeature({
+  return new SimpleFeature({
     uniqueId: firstFeat.id,
     id: firstFeat.id,
     name: firstFeat.name,
@@ -48,6 +48,4 @@ export function chainToSimpleFeature(chain: ReducedFeature[]) {
       ...(feat.SA && { SA: feat.SA }),
     })),
   })
-
-  return syntheticFeature
 }

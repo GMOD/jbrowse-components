@@ -1,6 +1,6 @@
 import { orientationTypes, pairMap } from '../util'
 
-import type { ChainStats } from './fetchChains'
+import type { ChainStats, ReducedFeature } from './fetchChains'
 
 /**
  * Numeric codes for pair types
@@ -17,6 +17,8 @@ export const PairType = {
   INTER_CHROM: 3,
   /** Abnormal orientation: RR, RL, LL, etc. (not LR) */
   ABNORMAL_ORIENTATION: 4,
+  /** Unmapped mate: mate is unmapped */
+  UNMAPPED_MATE: 5,
 } as const
 
 export type PairTypeValue = (typeof PairType)[keyof typeof PairType]
@@ -38,6 +40,7 @@ export const fillColor = {
   color_interchrom: 'purple',
   color_longinsert: 'red',
   color_shortinsert: 'pink',
+  color_unmapped_mate: '#8B008B',
   color_unknown: 'grey',
 }
 
@@ -64,12 +67,13 @@ export const strokeColor = {
   color_interchrom: '#5A005A',
   color_longinsert: '#B30000',
   color_shortinsert: '#FF3A5C',
+  color_unmapped_mate: '#5A005A',
   color_unknown: '#444',
 }
 
 const defaultColor = [
-  fillColor.color_unknown,
-  strokeColor.color_unknown,
+  fillColor.color_pair_lr,
+  strokeColor.color_pair_lr,
 ] as const
 
 /**
@@ -89,10 +93,20 @@ export function getPairedType({
   stats,
 }: {
   type: string
-  f1: { refName: string; pair_orientation?: string; tlen?: number }
+  f1: {
+    refName: string
+    pair_orientation?: string
+    tlen?: number
+    flags?: number
+  }
   f2: { refName: string }
   stats?: ChainStats
 }): PairTypeValue {
+  // Check for unmapped mate first (highest priority)
+  if (f1.flags !== undefined && f1.flags & 8) {
+    return PairType.UNMAPPED_MATE
+  }
+
   // Check orientation first (if applicable)
   if (type === 'insertSizeAndOrientation' || type === 'orientation') {
     const orientationType = orientationTypes.fr
@@ -133,13 +147,18 @@ export function getPairedType({
  * Uses getPairedType() internally to determine classification
  */
 export function getPairedInsertSizeColor(
-  f1: { refName: string; tlen?: number },
+  f1: { refName: string; tlen?: number; flags?: number },
   f2: { refName: string },
   stats?: ChainStats,
 ) {
   const pairType = getPairedType({ type: 'insertSize', f1, f2, stats })
 
   switch (pairType) {
+    case PairType.UNMAPPED_MATE:
+      return [
+        fillColor.color_unmapped_mate,
+        strokeColor.color_unmapped_mate,
+      ] as const
     case PairType.LONG_INSERT:
       return [fillColor.color_longinsert, strokeColor.color_longinsert] as const
     case PairType.SHORT_INSERT:
@@ -162,7 +181,16 @@ export function getPairedInsertSizeColor(
  */
 export function getPairedOrientationColorOrDefault(f: {
   pair_orientation?: string
+  flags?: number
 }) {
+  // Check for unmapped mate first
+  if (f.flags !== undefined && f.flags & 8) {
+    return [
+      fillColor.color_unmapped_mate,
+      strokeColor.color_unmapped_mate,
+    ] as const
+  }
+
   const type = orientationTypes.fr
   const r = type[f.pair_orientation || ''] as keyof typeof pairMap
   const type2 = pairMap[r] as keyof typeof fillColor
@@ -175,7 +203,10 @@ export function getPairedOrientationColorOrDefault(f: {
  * Get color for a paired-end read based on orientation only
  * Returns default color for proper pairs
  */
-export function getPairedOrientationColor(f: { pair_orientation?: string }) {
+export function getPairedOrientationColor(f: {
+  pair_orientation?: string
+  flags?: number
+}) {
   return getPairedOrientationColorOrDefault(f) || defaultColor
 }
 
@@ -185,7 +216,12 @@ export function getPairedOrientationColor(f: { pair_orientation?: string }) {
  * Uses getPairedType() internally to determine classification
  */
 export function getPairedInsertSizeAndOrientationColor(
-  f1: { refName: string; pair_orientation?: string; tlen?: number },
+  f1: {
+    refName: string
+    pair_orientation?: string
+    tlen?: number
+    flags?: number
+  },
   f2: { refName: string },
   stats?: ChainStats,
 ) {
@@ -205,6 +241,29 @@ export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
       strokeColor.color_fwd_missing_mate,
     ] as const
   }
-  // Otherwise use grey for normal-looking singletons
-  return ['#888', '#666'] as const
+  // Otherwise use properly paired coloring for normal-looking singletons
+  return defaultColor // [fillColor.color_pair_lr, strokeColor.color_pair_lr] as const
+}
+
+export function getPairedColor({
+  type,
+  v0,
+  v1,
+  stats,
+}: {
+  type: string
+  v0: ReducedFeature
+  v1: ReducedFeature
+  stats?: ChainStats
+}) {
+  if (type === 'insertSizeAndOrientation') {
+    return getPairedInsertSizeAndOrientationColor(v0, v1, stats)
+  }
+  if (type === 'orientation') {
+    return getPairedOrientationColor(v0)
+  }
+  if (type === 'insertSize') {
+    return getPairedInsertSizeColor(v0, v1, stats)
+  }
+  return undefined
 }
