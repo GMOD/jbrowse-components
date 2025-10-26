@@ -72,8 +72,8 @@ export const strokeColor = {
 }
 
 const defaultColor = [
-  fillColor.color_unknown,
-  strokeColor.color_unknown,
+  fillColor.color_pair_lr,
+  strokeColor.color_pair_lr,
 ] as const
 
 /**
@@ -93,7 +93,12 @@ export function getPairedType({
   stats,
 }: {
   type: string
-  f1: { refName: string; pair_orientation?: string; tlen?: number; flags?: number }
+  f1: {
+    refName: string
+    pair_orientation?: string
+    tlen?: number
+    flags?: number
+  }
   f2: { refName: string }
   stats?: ChainStats
 }): PairTypeValue {
@@ -150,7 +155,10 @@ export function getPairedInsertSizeColor(
 
   switch (pairType) {
     case PairType.UNMAPPED_MATE:
-      return [fillColor.color_unmapped_mate, strokeColor.color_unmapped_mate] as const
+      return [
+        fillColor.color_unmapped_mate,
+        strokeColor.color_unmapped_mate,
+      ] as const
     case PairType.LONG_INSERT:
       return [fillColor.color_longinsert, strokeColor.color_longinsert] as const
     case PairType.SHORT_INSERT:
@@ -177,7 +185,10 @@ export function getPairedOrientationColorOrDefault(f: {
 }) {
   // Check for unmapped mate first
   if (f.flags !== undefined && f.flags & 8) {
-    return [fillColor.color_unmapped_mate, strokeColor.color_unmapped_mate] as const
+    return [
+      fillColor.color_unmapped_mate,
+      strokeColor.color_unmapped_mate,
+    ] as const
   }
 
   const type = orientationTypes.fr
@@ -205,7 +216,12 @@ export function getPairedOrientationColor(f: {
  * Uses getPairedType() internally to determine classification
  */
 export function getPairedInsertSizeAndOrientationColor(
-  f1: { refName: string; pair_orientation?: string; tlen?: number; flags?: number },
+  f1: {
+    refName: string
+    pair_orientation?: string
+    tlen?: number
+    flags?: number
+  },
   f2: { refName: string },
   stats?: ChainStats,
 ) {
@@ -225,6 +241,6 @@ export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
       strokeColor.color_fwd_missing_mate,
     ] as const
   }
-  // Otherwise use grey for normal-looking singletons
-  return ['#888', '#666'] as const
+  // Otherwise use properly paired coloring for normal-looking singletons
+  return defaultColor //[fillColor.color_pair_lr, strokeColor.color_pair_lr] as const
 }

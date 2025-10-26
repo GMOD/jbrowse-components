@@ -8,6 +8,7 @@ import type { LinearReadStackDisplayModel } from './model'
 import type { ChainData, ReducedFeature } from '../shared/fetchChains'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { FlatbushEntry } from '../shared/flatbushType'
 
 type LGV = LinearGenomeViewModel
 
@@ -29,19 +30,8 @@ export function drawLongReadChains({
   chainYOffsets: Map<string, number>
   renderChevrons: boolean
   featureHeight: number
-  featuresForFlatbush: {
-    x1: number
-    y1: number
-    x2: number
-    y2: number
-    data: ReducedFeature
-    chainId: string
-    chainMinX: number
-    chainMaxX: number
-    chain: ReducedFeature[]
-    readsOverlap?: boolean
-  }[]
-}): void {
+  featuresForFlatbush: FlatbushEntry[]
+}) {
   const { chains } = chainData
 
   for (const chain of chains) {

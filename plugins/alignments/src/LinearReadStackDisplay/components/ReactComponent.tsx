@@ -136,7 +136,7 @@ const Stack = observer(function ({
         const feature = model.featuresForFlatbush[featureIndex]
 
         if (feature) {
-          model.selectFeature(feature.chain, feature.readsOverlap)
+          model.selectFeature(feature.chain)
         }
       }
     },

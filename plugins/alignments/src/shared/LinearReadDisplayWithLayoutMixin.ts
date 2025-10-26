@@ -1,7 +1,7 @@
 import { types } from 'mobx-state-tree'
 
-import type { ReducedFeature } from './fetchChains'
 import type Flatbush from '@jbrowse/core/util/flatbush'
+import type { FlatbushEntry } from './flatbushType'
 
 /**
  * Mixin for LinearRead displays that use Flatbush layout for mouseover functionality
@@ -25,17 +25,7 @@ export function LinearReadDisplayWithLayoutMixin() {
        * #volatile
        * Array of feature data for Flatbush spatial index
        */
-      featuresForFlatbush: [] as {
-        x1: number
-        y1: number
-        x2: number
-        y2: number
-        data: ReducedFeature
-        chainId: string
-        chainMinX: number
-        chainMaxX: number
-        chain: ReducedFeature[]
-      }[],
+      featuresForFlatbush: [] as FlatbushEntry[],
     }))
     .actions(self => ({
       /**
@@ -56,19 +46,7 @@ export function LinearReadDisplayWithLayoutMixin() {
        * #action
        * Set the features data for Flatbush index
        */
-      setFeaturesForFlatbush(
-        features: {
-          x1: number
-          y1: number
-          x2: number
-          y2: number
-          data: ReducedFeature
-          chainId: string
-          chainMinX: number
-          chainMaxX: number
-          chain: ReducedFeature[]
-        }[],
-      ) {
+      setFeaturesForFlatbush(features: FlatbushEntry[]) {
         self.featuresForFlatbush = features
       },
     }))

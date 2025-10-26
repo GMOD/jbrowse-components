@@ -6,10 +6,7 @@ import type { ReducedFeature } from './fetchChains'
  * Helper function to convert a chain of ReducedFeatures into a SimpleFeature
  * with subfeatures representing each part of the chain
  */
-export function chainToSimpleFeature(
-  chain: ReducedFeature[],
-  readsOverlap?: boolean,
-) {
+export function chainToSimpleFeature(chain: ReducedFeature[]) {
   if (chain.length === 0) {
     throw new Error('Chain cannot be empty')
   }
@@ -17,7 +14,7 @@ export function chainToSimpleFeature(
   const firstFeat = chain[0]!
 
   // Create a synthetic feature that encompasses the entire chain
-  const syntheticFeature = new SimpleFeature({
+  return new SimpleFeature({
     uniqueId: firstFeat.id,
     id: firstFeat.id,
     name: firstFeat.name,
@@ -32,7 +29,6 @@ export function chainToSimpleFeature(
     ...(firstFeat.next_ref && { next_ref: firstFeat.next_ref }),
     ...(firstFeat.next_pos !== undefined && { next_pos: firstFeat.next_pos }),
     ...(firstFeat.SA && { SA: firstFeat.SA }),
-    ...(readsOverlap !== undefined && { readsOverlap }),
     // Add subfeatures for each part of the chain
     subfeatures: chain.map((feat, idx) => ({
       uniqueId: `${feat.id}_${idx}`,
@@ -52,6 +48,4 @@ export function chainToSimpleFeature(
       ...(feat.SA && { SA: feat.SA }),
     })),
   })
-
-  return syntheticFeature
 }

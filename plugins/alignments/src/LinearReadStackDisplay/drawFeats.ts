@@ -11,6 +11,7 @@ import { shouldRenderChevrons } from '../shared/util'
 import type { LinearReadStackDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { FlatbushEntry } from '../shared/flatbushType'
 
 type LGV = LinearGenomeViewModel
 
@@ -148,18 +149,7 @@ export function drawFeats(
   }
 
   // Initialize array for Flatbush mouseover data
-  const featuresForFlatbush: {
-    x1: number
-    y1: number
-    x2: number
-    y2: number
-    data: ReducedFeature
-    chainId: string
-    chainMinX: number
-    chainMaxX: number
-    chain: ReducedFeature[]
-    readsOverlap?: boolean
-  }[] = []
+  const featuresForFlatbush: FlatbushEntry[] = []
 
   const renderChevrons = shouldRenderChevrons(view.bpPerPx, featureHeight)
 

@@ -118,11 +118,3 @@ export default class PileupRenderer extends BoxRendererType {
     return new PileupLayoutSession(args)
   }
 }
-
-export type {
-  RenderArgs,
-  RenderArgsSerialized,
-  RenderResults,
-  ResultsDeserialized,
-  ResultsSerialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

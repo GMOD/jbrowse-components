@@ -92,9 +92,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      selectFeature(chain: ReducedFeature[], readsOverlap?: boolean) {
+      selectFeature(chain: ReducedFeature[]) {
         const session = getSession(self)
-        const syntheticFeature = chainToSimpleFeature(chain, readsOverlap)
+        const syntheticFeature = chainToSimpleFeature(chain)
         if (isSessionModelWithWidgets(session)) {
           const featureWidget = session.addWidget(
             'AlignmentsFeatureWidget',

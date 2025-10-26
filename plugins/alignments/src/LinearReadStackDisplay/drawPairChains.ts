@@ -17,6 +17,7 @@ import type {
 } from '../shared/fetchChains'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { FlatbushEntry } from '../shared/flatbushType'
 
 type LGV = LinearGenomeViewModel
 
@@ -39,18 +40,7 @@ export function drawPairChains({
   chainYOffsets: Map<string, number>
   renderChevrons: boolean
   featureHeight: number
-  featuresForFlatbush: {
-    x1: number
-    y1: number
-    x2: number
-    y2: number
-    data: ReducedFeature
-    chainId: string
-    chainMinX: number
-    chainMaxX: number
-    chain: ReducedFeature[]
-    readsOverlap?: boolean
-  }[]
+  featuresForFlatbush: FlatbushEntry[]
 }): void {
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
   const { chains } = chainData
@@ -74,8 +64,6 @@ export function drawPairChains({
     // Check if reads overlap based on genomic coordinates
     const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
     const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
-    const readsOverlap =
-      refName0 === refName1 && v0.start < v1.end && v1.start < v0.end
 
     // Draw connecting line for paired reads
     const r1s = view.bpToPx({
@@ -92,17 +80,15 @@ export function drawPairChains({
 
     if (chainY !== undefined && r1s !== undefined && r2s !== undefined) {
       // Draw connecting line if reads don't overlap
-      if (!readsOverlap) {
-        const w = r2s - r1s
-        fillRectCtx(
-          r1s - view.offsetPx,
-          chainY + featureHeight / 2 - 0.5,
-          w,
-          1,
-          ctx,
-          '#666',
-        )
-      }
+      const w = r2s - r1s
+      fillRectCtx(
+        r1s - view.offsetPx,
+        chainY + featureHeight / 2 - 0.5,
+        w,
+        1,
+        ctx,
+        '#666',
+      )
 
       // Draw the paired reads
       for (const feat of chain) {
@@ -143,7 +129,6 @@ export function drawPairChains({
             chainMinX: xPos,
             chainMaxX: xPos + width,
             chain,
-            readsOverlap,
           })
         }
       }

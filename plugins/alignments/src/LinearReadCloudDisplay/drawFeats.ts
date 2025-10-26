@@ -18,6 +18,7 @@ import { CHEVRON_WIDTH, shouldRenderChevrons } from '../shared/util'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { FlatbushEntry } from '../shared/flatbushType'
 
 type LGV = LinearGenomeViewModel
 
@@ -134,18 +135,7 @@ export function drawFeats(
   }
 
   // Initialize array for Flatbush mouseover data
-  const featuresForFlatbush: {
-    x1: number
-    y1: number
-    x2: number
-    y2: number
-    data: ReducedFeature
-    chainId: string
-    chainMinX: number
-    chainMaxX: number
-    chain: ReducedFeature[]
-    readsOverlap?: boolean
-  }[] = []
+  const featuresForFlatbush: FlatbushEntry[] = []
 
   // Third pass: draw connecting lines
   for (const { id, chain } of computedChains) {
@@ -165,8 +155,6 @@ export function drawFeats(
       // Check if reads overlap based on genomic coordinates
       const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
       const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
-      const readsOverlap =
-        refName0 === refName1 && v0.start < v1.end && v1.start < v0.end
 
       // Draw connecting line for paired reads
       const r1s = view.bpToPx({
@@ -178,7 +166,7 @@ export function drawFeats(
         coord: v1.start,
       })?.offsetPx
 
-      if (r1s !== undefined && r2s !== undefined && !readsOverlap) {
+      if (r1s !== undefined && r2s !== undefined) {
         const w = r2s - r1s
 
         fillRectCtx(
@@ -237,12 +225,6 @@ export function drawFeats(
       const [pairedFill, pairedStroke] =
         getPairedColor({ type, v0, v1, stats: chainData.stats }) || []
 
-      // Check if reads overlap based on genomic coordinates
-      const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
-      const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
-      const readsOverlap =
-        refName0 === refName1 && v0.start < v1.end && v1.start < v0.end
-
       for (const feat of chain) {
         const { refName, start, end } = feat
         const s = view.bpToPx({ refName, coord: start })
@@ -279,7 +261,6 @@ export function drawFeats(
             chainMinX: minX - view.offsetPx,
             chainMaxX: maxX - view.offsetPx,
             chain,
-            readsOverlap,
           })
         }
       }
