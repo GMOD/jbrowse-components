@@ -123,11 +123,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Copy branch build to S3
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          cd products/jbrowse-web/build && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
+          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore)
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
+            echo "Invalid ref name: $REF_NAME"
+            exit 1
+          fi
+          cd products/jbrowse-web/build && zip -r "jbrowse-web-${REF_NAME}.zip" . && cd -
           cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
-          aws s3 sync --delete --exclude="*.map" products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+          aws s3 sync --delete --exclude="*.map" products/jbrowse-web/build s3://jbrowse.org/code/jb2/${REF_NAME}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${REF_NAME}/*"
 
       - name: Build LGV
         run: |
@@ -142,10 +149,17 @@ jobs:
 
       - name: Deploy LGV
         if: startsWith(github.ref, 'refs/tags/')
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
+          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore)
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
+            echo "Invalid ref name: $REF_NAME"
+            exit 1
+          fi
           pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${REF_NAME}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${REF_NAME}/*"
         working-directory: products/jbrowse-react-linear-genome-view
 
       - name: Build React App
@@ -160,10 +174,17 @@ jobs:
           aws-region: us-east-1
       - name: Deploy React App
         if: startsWith(github.ref, 'refs/tags/')
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
+          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore)
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
+            echo "Invalid ref name: $REF_NAME"
+            exit 1
+          fi
           pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/$(echo ${{github.ref}} | cut -d "/" -f3-)
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${REF_NAME}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${REF_NAME}/*"
         working-directory: products/jbrowse-react-app
 
       - name: Build CGV
@@ -178,10 +199,17 @@ jobs:
           aws-region: us-east-1
       - name: Deploy CGV
         if: startsWith(github.ref, 'refs/tags/')
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
+          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore)
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
+            echo "Invalid ref name: $REF_NAME"
+            exit 1
+          fi
           pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${REF_NAME}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${REF_NAME}/*"
         working-directory: products/jbrowse-react-circular-genome-view
 
   # Conditionally run the formatchecks job
@@ -205,7 +233,7 @@ jobs:
       - name: Check autogen docs
         run: yarn statedocs && yarn configdocs
       - name: Spellcheck
-        uses: crate-ci/typos@master
+        uses: crate-ci/typos@80c8a4945eec0f6d464eaf9e65ed98ef085283d1
       - name: Lint codebase
         run: yarn lint
       - name: Test codebase
