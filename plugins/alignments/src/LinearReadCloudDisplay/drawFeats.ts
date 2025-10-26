@@ -147,6 +147,7 @@ export function drawFeats(
     chainMinX: number
     chainMaxX: number
     chain: ReducedFeature[]
+    readsOverlap?: boolean
   }[] = []
 
   // Third pass: draw connecting lines
@@ -164,17 +165,25 @@ export function drawFeats(
       const v0 = nonSupplementary[0]!
       const v1 = nonSupplementary[1]!
 
+      // Check if reads overlap based on genomic coordinates
+      const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
+      const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
+      const readsOverlap =
+        refName0 === refName1 &&
+        v0.start < v1.end &&
+        v1.start < v0.end
+
       // Draw connecting line for paired reads
       const r1s = view.bpToPx({
-        refName: asm.getCanonicalRefName(v0.refName) || v0.refName,
+        refName: refName0,
         coord: v0.start,
       })?.offsetPx
       const r2s = view.bpToPx({
-        refName: asm.getCanonicalRefName(v1.refName) || v1.refName,
+        refName: refName1,
         coord: v1.start,
       })?.offsetPx
 
-      if (r1s !== undefined && r2s !== undefined) {
+      if (r1s !== undefined && r2s !== undefined && !readsOverlap) {
         const w = r2s - r1s
 
         fillRectCtx(
@@ -235,6 +244,14 @@ export function drawFeats(
 
       const primaryStrand = getPrimaryStrand(v0)
 
+      // Check if reads overlap based on genomic coordinates
+      const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
+      const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
+      const readsOverlap =
+        refName0 === refName1 &&
+        v0.start < v1.end &&
+        v1.start < v0.end
+
       for (const feat of chain) {
         const { refName, start, end } = feat
         const s = view.bpToPx({ refName, coord: start })
@@ -245,6 +262,8 @@ export function drawFeats(
             effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
           const xPos = s.offsetPx - view.offsetPx
           const width = Math.max(e.offsetPx - s.offsetPx, 3)
+          const fillCol = pairedFill || fillColor[c]
+          const strokeCol = pairedStroke || strokeColor[c]
 
           if (renderChevrons) {
             drawChevron(
@@ -254,27 +273,13 @@ export function drawFeats(
               width,
               featureHeight,
               effectiveStrand,
-              pairedFill || fillColor[c],
+              fillCol,
               CHEVRON_WIDTH,
-              pairedStroke || strokeColor[c],
+              strokeCol,
             )
           } else {
-            fillRectCtx(
-              xPos,
-              chainY,
-              width,
-              featureHeight,
-              ctx,
-              pairedFill || fillColor[c],
-            )
-            strokeRectCtx(
-              xPos,
-              chainY,
-              width,
-              featureHeight,
-              ctx,
-              pairedStroke || strokeColor[c],
-            )
+            fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillCol)
+            strokeRectCtx(xPos, chainY, width, featureHeight, ctx, strokeCol)
           }
           featuresForFlatbush.push({
             x1: xPos,
@@ -286,6 +291,7 @@ export function drawFeats(
             chainMinX: minX - view.offsetPx,
             chainMaxX: maxX - view.offsetPx,
             chain,
+            readsOverlap,
           })
         }
       }
