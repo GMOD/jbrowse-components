@@ -12,9 +12,11 @@
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "typecheck": "tsc",
-    "predeploy": "npm run build",
-    "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/",
-    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\""
+    "predeploy": "npm run build && npm run llms && npm run llms-full",
+    "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp llms.txt s3://jbrowse.org/jb2/ && aws s3 cp llms-full.txt s3://jbrowse.org/jb2/",
+    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\"",
+    "llms": "cat docs/introduction.md > llms.txt",
+    "llms-full": "cat docs/introduction.md docs/quickstart_web.md docs/quickstart_desktop.md docs/quickstart_adminserver.md docs/urlparams.md docs/user_guide.md docs/user_guides/* docs/embedded_components.md docs/jbrowser.md docs/jbrowse_jupyter.md docs/developer_guides/*.md docs/config_guides/*.md ../products/jbrowse-cli/README.md docs/models/*.md docs/config/*.md > llms-full.txt"
   },
   "dependencies": {
     "@cmfcmf/docusaurus-search-local": "^1.1.0",
