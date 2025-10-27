@@ -93,7 +93,7 @@
     "eslint-plugin-react-compiler": "^19.1.0-rc.1",
     "eslint-plugin-react-hooks": "^7.0.0",
     "eslint-plugin-react-refresh": "^0.4.24",
-    "eslint-plugin-unicorn": "^61.0.2",
+    "eslint-plugin-unicorn": "^62.0.0",
     "express": "^5.1.0",
     "express-basic-auth": "^1.2.1",
     "find-yarn-workspace-root": "^2.0.0",
