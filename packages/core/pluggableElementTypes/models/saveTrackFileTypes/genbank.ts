@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { max, min } from '@jbrowse/core/util'
 
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import { fetchSequence } from './fetchSequence'
 
 const coreFields = new Set([
   'uniqueId',
@@ -150,33 +151,4 @@ export async function stringifyGBK({
   const lines = features.map(feat => formatFeatWithSubfeatures(feat, start))
   const seqlines = ['ORIGIN', `\t1 ${contig}`, '//']
   return [l1, l2, ...lines, ...seqlines].join('\n')
-}
-
-async function fetchSequence({
-  session,
-  regions,
-  signal,
-  assemblyName,
-}: {
-  assemblyName: string
-  session: AbstractSessionModel
-  regions: Region[]
-  signal?: AbortSignal
-}) {
-  const { rpcManager, assemblyManager } = session
-  const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`assembly ${assemblyName} not found`)
-  }
-
-  const sessionId = 'getSequence'
-  return rpcManager.call(sessionId, 'CoreGetFeatures', {
-    adapterConfig: getConf(assembly, ['sequence', 'adapter']),
-    regions: regions.map(r => ({
-      ...r,
-      refName: assembly.getCanonicalRefName(r.refName),
-    })),
-    sessionId,
-    signal,
-  }) as Promise<Feature[]>
 }
