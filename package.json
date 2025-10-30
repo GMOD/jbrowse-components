@@ -84,7 +84,7 @@
     "crypto-js": "^4.2.0",
     "css-loader": "^7.1.2",
     "dependency-graph": "^1.0.0",
-    "electron": "38.2.0",
+    "electron": "39.0.0",
     "electron-builder": "^25.1.6",
     "electron-mock-ipc": "^0.3.8",
     "eslint": "^9.17.0",
