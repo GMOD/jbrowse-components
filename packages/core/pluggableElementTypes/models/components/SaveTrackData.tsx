@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
@@ -79,6 +79,7 @@ const SaveTrackDataDialog = observer(function ({
   const [features, setFeatures] = useState<Feature[]>()
   const [type, setType] = useState(Object.keys(options)[0])
   const [str, setStr] = useState('')
+  const [usedAdapterExport, setUsedAdapterExport] = useState(false)
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -106,19 +107,83 @@ const SaveTrackDataDialog = observer(function ({
           visibleRegions?: Region[]
         }
         const session = getSession(model)
-        if (!features || !visibleRegions?.length || !type) {
+        if (!visibleRegions?.length || !type) {
           return
         }
-        const generator = options[type] || {
-          callback: () => 'Unknown',
-        }
-        setStr(
-          await generator.callback({
+
+        // Check if adapter supports export for this format
+        const { pluginManager } = getEnv(model)
+        const adapterConfig = getConf(model, ['adapter'])
+        const adapterType = pluginManager.getAdapterType(adapterConfig.type)
+        const supportsExport =
+          adapterType?.adapterCapabilities?.includes('exportData')
+
+        let result: string
+        let isAdapterExport = false
+
+        if (supportsExport) {
+          // Try to use adapter's getExportData method
+          const { getAdapter } = await import(
+            '@jbrowse/core/data_adapters/dataAdapterCache'
+          )
+          try {
+            const adapter = await getAdapter(
+              pluginManager,
+              session,
+              adapterConfig,
+            )
+            const exportResult = await adapter.getExportData?.(
+              visibleRegions,
+              type,
+            )
+            if (exportResult) {
+              result = exportResult
+              isAdapterExport = true
+            } else {
+              // Fall back to stringify if getExportData returns undefined
+              if (!features) {
+                return
+              }
+              const generator = options[type] || {
+                callback: () => 'Unknown',
+              }
+              result = await generator.callback({
+                features,
+                session,
+                assemblyName: visibleRegions[0]!.assemblyName,
+              })
+            }
+          } catch (e) {
+            // Fall back to stringify if adapter method fails
+            if (!features) {
+              return
+            }
+            const generator = options[type] || {
+              callback: () => 'Unknown',
+            }
+            result = await generator.callback({
+              features,
+              session,
+              assemblyName: visibleRegions[0]!.assemblyName,
+            })
+          }
+        } else {
+          // Use stringify callback
+          if (!features) {
+            return
+          }
+          const generator = options[type] || {
+            callback: () => 'Unknown',
+          }
+          result = await generator.callback({
             features,
             session,
             assemblyName: visibleRegions[0]!.assemblyName,
-          }),
-        )
+          })
+        }
+
+        setUsedAdapterExport(isAdapterExport)
+        setStr(result)
       } catch (e) {
         setError(e)
       }
@@ -147,7 +212,9 @@ const SaveTrackDataDialog = observer(function ({
         </div>
 
         <FormControl>
-          <FormLabel>File type</FormLabel>
+          <FormLabel>
+            File type {usedAdapterExport ? '(adapter export)' : ''}
+          </FormLabel>
           <RadioGroup
             value={type}
             onChange={e => {
