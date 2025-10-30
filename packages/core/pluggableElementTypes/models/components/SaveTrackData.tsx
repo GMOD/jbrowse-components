@@ -36,6 +36,7 @@ const useStyles = makeStyles()({
   },
   textAreaFont: {
     fontFamily: 'Courier New',
+    whiteSpace: 'pre',
   },
 })
 
@@ -85,13 +86,17 @@ const SaveTrackDataDialog = observer(function ({
       try {
         const view = getContainingView(model) as { visibleRegions?: Region[] }
         setError(undefined)
-        setFeatures(await fetchFeatures(model, view.visibleRegions || []))
+        const visibleRegions = view.visibleRegions || []
+        setFeatures(await fetchFeatures(model, visibleRegions))
       } catch (e) {
         console.error(e)
         setError(e)
       }
     })()
   }, [model])
+
+  // @ts-expect-error
+  const regionStr = getContainingView(model).coarseVisibleLocStrings
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -129,6 +134,18 @@ const SaveTrackDataDialog = observer(function ({
           <Typography>No features found</Typography>
         ) : null}
 
+        <div>
+          <TextField
+            label="Region"
+            value={regionStr}
+            slotProps={{
+              input: {
+                readOnly: true,
+              },
+            }}
+          />
+        </div>
+
         <FormControl>
           <FormLabel>File type</FormLabel>
           <RadioGroup
@@ -160,10 +177,12 @@ const SaveTrackDataDialog = observer(function ({
                 ? 'Too large to view here, click "Download" to results to file'
                 : str
           }
-          InputProps={{
-            readOnly: true,
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              readOnly: true,
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />
