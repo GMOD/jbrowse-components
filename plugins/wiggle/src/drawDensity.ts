@@ -42,6 +42,11 @@ export function drawDensity(
   })
 
   const scale2 = getScale({ ...scaleOpts, range: [0, height] })
+
+  if (!scale || !scale2) {
+    return { reducedFeatures: [] }
+  }
+
   const cb =
     color === '#f0f'
       ? (_: Feature, score: number) => scale(score)
@@ -70,6 +75,9 @@ export function drawDensity(
     const score = feature.get('score')
     hasClipping = hasClipping || score > niceMax || score < niceMin
     const w = rightPx - leftPx + fudgeFactor
+    if (!scaleOpts.domain) {
+      return { reducedFeatures: [] }
+    }
     if (score >= scaleOpts.domain[0]!) {
       ctx.fillStyle = cb(feature, score)
       ctx.fillRect(leftPx, 0, w, height)

@@ -5,6 +5,9 @@ test('linear scale', () => {
   const domain = [0, 100]
   const range = [0, 100]
   const scale = getScale({ scaleType, domain, range })
+  if (!scale) {
+    fail('scale not created')
+  }
   expect(scale.domain()).toEqual(domain)
 })
 
@@ -13,6 +16,9 @@ test('log scale', () => {
   const domain = [1, 100]
   const range = [0, 100]
   const scale = getScale({ scaleType, domain, range })
+  if (!scale) {
+    fail('scale not created')
+  }
   expect(scale.domain()).toEqual([1, 128])
 })
 
@@ -22,6 +28,9 @@ test('test inverted', () => {
   const domain = [1, 100]
   const range = [0, 100]
   const scale = getScale({ scaleType, domain, range, inverted })
+  if (!scale) {
+    fail('scale not created')
+  }
   expect(scale.domain()).toEqual([1, 128])
   expect(scale.range()).toEqual(range.reverse())
 })
