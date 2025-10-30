@@ -21,6 +21,7 @@ interface FeatPos {
   p22: Pos
   f: Feature
   cigar: string[]
+  color?: string
 }
 
 type LSV = LinearSyntenyViewModel
@@ -140,8 +141,76 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           ) {
             continue
           }
-
           const cigar = f.get('CIGAR') as string | undefined
+          let color: string | undefined = undefined
+          const { colorByTag } = self.renderProps
+
+          if (colorByTag?.mapping) {
+            const { tag, mapping, default: defaultTagColor } = colorByTag
+            const tagValue = f.get(tag) as string | undefined
+            if (tagValue) {
+              // If f.get(tag) returns "key:type:value", extract value. Otherwise, use directly.
+              const parts = tagValue.split(':')
+              let valueToMap: string = tagValue
+              if (parts.length === 3) {
+                valueToMap = parts[2] || tagValue
+              }
+
+              // Check if the mapping contains numerical range keys
+              const numericalRangeRegex = /^([<>]?=?)\s*(\d+(\.\d*)?)$/
+              const isNumericalMapping = Object.keys(mapping).some(key =>
+                numericalRangeRegex.test(key),
+              )
+
+              if (isNumericalMapping) {
+                const numericalValue = parseFloat(valueToMap)
+                if (!Number.isNaN(numericalValue)) {
+                  for (const key of Object.keys(mapping)) {
+                    const match = numericalRangeRegex.exec(key)
+                    if (match?.[2] !== undefined) {
+                      const operator = match[1]
+                      const threshold = parseFloat(match[2])
+
+                      let matched = false
+                      switch (operator) {
+                        case '<':
+                          matched = numericalValue < threshold
+                          break
+                        case '<=':
+                          matched = numericalValue <= threshold
+                          break
+                        case '>':
+                          matched = numericalValue > threshold
+                          break
+                        case '>=':
+                          matched = numericalValue >= threshold
+                          break
+                        case '': // Exact numerical match
+                          matched = numericalValue === threshold
+                          break
+                      }
+
+                      if (matched) {
+                        color = mapping[key]
+                        break
+                      }
+                    } else if (key === valueToMap) {
+                      // Fallback to categorical if no numerical match and key is exact match
+                      color = mapping[key]
+                      break
+                    }
+                  }
+                }
+              } else {
+                // Original categorical mapping logic
+                color = mapping[valueToMap]
+              }
+              color = color || defaultTagColor
+            } else {
+              color = defaultTagColor
+            }
+          }
+
           map.push({
             p11,
             p12,
@@ -149,6 +218,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             p22,
             f,
             cigar: MismatchParser.parseCigar(cigar),
+            color, // Add the extracted colour
           })
         }
 

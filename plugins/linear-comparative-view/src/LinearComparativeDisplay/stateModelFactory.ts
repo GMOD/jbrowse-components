@@ -73,7 +73,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      renderProps() {
+      get renderProps() {
         return {
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
@@ -207,7 +207,7 @@ function renderBlockData(self: LinearComparativeDisplay) {
     ? {
         rpcManager,
         renderProps: {
-          ...(display.renderProps() as Record<string, unknown>),
+          ...(display.renderProps as Record<string, unknown>),
           model: display,
           level,
           view: parent,
