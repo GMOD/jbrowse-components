@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
@@ -14,7 +14,6 @@ import {
   Radio,
   RadioGroup,
   TextField,
-  Typography,
 } from '@mui/material'
 import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
@@ -27,6 +26,7 @@ import type {
   Region,
 } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import { getRpcSessionId } from '../../../util/tracks'
 
 // icons
 
@@ -55,6 +55,26 @@ async function fetchFeatures(
     signal,
   }) as Promise<Feature[]>
 }
+
+async function stringifyExportData(
+  features: Feature[] | undefined,
+  type: string,
+  options: Record<string, FileTypeExporter>,
+  session: AbstractSessionModel,
+  visibleRegions: Region[],
+): Promise<string | null> {
+  if (!features) {
+    return null
+  }
+  const generator = options[type] || {
+    callback: () => 'Unknown',
+  }
+  return generator.callback({
+    features,
+    session,
+    assemblyName: visibleRegions[0]!.assemblyName,
+  })
+}
 interface FileTypeExporter {
   name: string
   extension: string
@@ -73,28 +93,13 @@ const SaveTrackDataDialog = observer(function ({
   }
   handleClose: () => void
 }) {
-  const options = model.saveTrackFileFormatOptions()
   const { classes } = useStyles()
+  const options = useMemo(() => model.saveTrackFileFormatOptions(), [model])
   const [error, setError] = useState<unknown>()
-  const [features, setFeatures] = useState<Feature[]>()
   const [type, setType] = useState(Object.keys(options)[0])
   const [str, setStr] = useState('')
   const [usedAdapterExport, setUsedAdapterExport] = useState(false)
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        const view = getContainingView(model) as { visibleRegions?: Region[] }
-        setError(undefined)
-        const visibleRegions = view.visibleRegions || []
-        setFeatures(await fetchFeatures(model, visibleRegions))
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
-    })()
-  }, [model])
+  const [loading, setLoading] = useState(false)
 
   // @ts-expect-error
   const regionStr = getContainingView(model).coarseVisibleLocStrings
@@ -103,6 +108,8 @@ const SaveTrackDataDialog = observer(function ({
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
+        setError(undefined)
+        setLoading(true)
         const { visibleRegions } = getContainingView(model) as {
           visibleRegions?: Region[]
         }
@@ -118,86 +125,53 @@ const SaveTrackDataDialog = observer(function ({
         const supportsExport =
           adapterType?.adapterCapabilities?.includes('exportData')
 
-        let result: string
-        let isAdapterExport = false
-
         if (supportsExport) {
-          // Try to use adapter's getExportData method
-          const { getAdapter } = await import(
-            '@jbrowse/core/data_adapters/dataAdapterCache'
-          )
-          try {
-            const adapter = await getAdapter(
-              pluginManager,
-              session,
+          // Try to use adapter's getExportData method via RPC
+          const { rpcManager } = session
+          const sessionId = getRpcSessionId(model)
+          const exportResult = (await rpcManager.call(
+            'getExportData',
+            'CoreGetExportData',
+            {
               adapterConfig,
-            )
-            const exportResult = await adapter.getExportData?.(
-              visibleRegions,
-              type,
-            )
-            if (exportResult) {
-              result = exportResult
-              isAdapterExport = true
-            } else {
-              // Fall back to stringify if getExportData returns undefined
-              if (!features) {
-                return
-              }
-              const generator = options[type] || {
-                callback: () => 'Unknown',
-              }
-              result = await generator.callback({
-                features,
-                session,
-                assemblyName: visibleRegions[0]!.assemblyName,
-              })
-            }
-          } catch (e) {
-            // Fall back to stringify if adapter method fails
-            if (!features) {
-              return
-            }
-            const generator = options[type] || {
-              callback: () => 'Unknown',
-            }
-            result = await generator.callback({
-              features,
-              session,
-              assemblyName: visibleRegions[0]!.assemblyName,
-            })
-          }
-        } else {
-          // Use stringify callback
-          if (!features) {
-            return
-          }
-          const generator = options[type] || {
-            callback: () => 'Unknown',
-          }
-          result = await generator.callback({
-            features,
-            session,
-            assemblyName: visibleRegions[0]!.assemblyName,
-          })
-        }
+              regions: visibleRegions,
+              formatType: type,
+              sessionId,
+            },
+          )) as string | undefined
 
-        setUsedAdapterExport(isAdapterExport)
-        setStr(result)
+          setUsedAdapterExport(true)
+          setStr(exportResult || 'No export data received')
+        } else {
+          const view = getContainingView(model) as { visibleRegions?: Region[] }
+          setError(undefined)
+          const visibleRegions = view.visibleRegions || []
+          const features = await fetchFeatures(model, visibleRegions)
+          // Use stringify callback
+          const stringifyResult = await stringifyExportData(
+            features,
+            type,
+            options,
+            session,
+            visibleRegions,
+          )
+
+          setUsedAdapterExport(false)
+          setStr(stringifyResult || 'No stringify result received')
+        }
       } catch (e) {
         setError(e)
+        console.error(e)
+      } finally {
+        setLoading(false)
       }
     })()
-  }, [type, features, options, model])
+  }, [type, options, model])
 
-  const loading = !features
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Save track data">
       <DialogContent className={classes.root}>
         {error ? <ErrorMessage error={error} /> : null}
-        {features && !features.length ? (
-          <Typography>No features found</Typography>
-        ) : null}
 
         <div>
           <TextField
@@ -240,8 +214,8 @@ const SaveTrackDataDialog = observer(function ({
           value={
             loading
               ? 'Loading...'
-              : str.length > 100_000
-                ? 'Too large to view here, click "Download" to results to file'
+              : str.length > 500_000
+                ? 'File greater than 500kb, too large to view here. Click "Download" to results to file'
                 : str
           }
           slotProps={{

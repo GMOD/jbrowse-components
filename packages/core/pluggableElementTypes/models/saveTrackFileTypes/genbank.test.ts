@@ -1,10 +1,12 @@
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { stringifyGBK } from './genbank' // Only import stringifyGBK
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 // Mock the fetchSequence function from its new module
 jest.mock('./fetchSequence', () => {
-  const SimpleFeature = jest.requireActual('@jbrowse/core/util/simpleFeature').default;
+  const SimpleFeature = jest.requireActual(
+    '@jbrowse/core/util/simpleFeature',
+  ).default
   return {
     fetchSequence: jest.fn(async ({ regions }) => {
       const { start, end, refName } = regions[0]
@@ -33,7 +35,7 @@ function createFeature(data: Record<string, any>): SimpleFeature {
 }
 
 // Mock session object - simplified as fetchSequence is fully mocked
-const mockSession: AbstractSessionModel = {
+const mockSession = {
   name: 'testSession',
   id: 'testSessionId',
   rpcManager: {} as any,
@@ -42,7 +44,7 @@ const mockSession: AbstractSessionModel = {
       getCanonicalRefName: jest.fn(refName => refName),
     })),
   } as any,
-}
+} as AbstractSessionModel
 
 describe('GenBank export', () => {
   // No need for fetchSequenceSpy or before/after hooks for spying anymore
@@ -51,8 +53,8 @@ describe('GenBank export', () => {
   beforeEach(() => {
     // Clear mock calls before each test
     // Need to get the mocked fetchSequence to clear it
-    const { fetchSequence } = require('./fetchSequence');
-    (fetchSequence as jest.Mock).mockClear();
+    const { fetchSequence } = require('./fetchSequence')
+    ;(fetchSequence as jest.Mock).mockClear()
   })
 
   it('can export a simple feature', async () => {
@@ -72,7 +74,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    const { fetchSequence } = require('./fetchSequence');
+    const { fetchSequence } = require('./fetchSequence')
     expect(fetchSequence).toHaveBeenCalledTimes(1)
   })
 
@@ -124,7 +126,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    const { fetchSequence } = require('./fetchSequence');
+    const { fetchSequence } = require('./fetchSequence')
     expect(fetchSequence).toHaveBeenCalledTimes(1)
   })
 
@@ -149,7 +151,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    const { fetchSequence } = require('./fetchSequence');
+    const { fetchSequence } = require('./fetchSequence')
     expect(fetchSequence).toHaveBeenCalledTimes(1)
   })
 
@@ -160,7 +162,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toBe('')
-    const { fetchSequence } = require('./fetchSequence');
+    const { fetchSequence } = require('./fetchSequence')
     expect(fetchSequence).not.toHaveBeenCalled()
   })
 
@@ -197,7 +199,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    const { fetchSequence } = require('./fetchSequence');
+    const { fetchSequence } = require('./fetchSequence')
     expect(fetchSequence).toHaveBeenCalledTimes(1)
   })
 
@@ -221,7 +223,7 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    const { fetchSequence } = require('./fetchSequence');
+    const { fetchSequence } = require('./fetchSequence')
     expect(fetchSequence).toHaveBeenCalledTimes(1)
   })
 })
