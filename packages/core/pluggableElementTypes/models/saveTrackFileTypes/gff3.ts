@@ -33,14 +33,36 @@ const retitle = {
 function fmt(obj: unknown): string {
   if (Array.isArray(obj)) {
     return obj.map(o => fmt(o)).join(',')
-  } else if (typeof obj === 'object') {
+  } else if (typeof obj === 'object' && obj !== null) {
     return JSON.stringify(obj)
   } else {
-    return `${obj}`
+    return String(obj)
   }
 }
 
+function formatAttributes(f: Feature, parentId?: string) {
+  const attributes = []
+  if (parentId) {
+    attributes.push(`Parent=${parentId}`)
+  }
+
+  const tags = Object.keys(f.toJSON()).filter(tag => !coreFields.has(tag))
+
+  for (const tag of tags) {
+    const val = f.get(tag)
+    if (val !== undefined && val !== null) {
+      const formattedVal = fmt(val)
+      if (formattedVal) {
+        const key = retitle[tag] || tag
+        attributes.push(`${key}=${formattedVal}`)
+      }
+    }
+  }
+  return attributes.join(';')
+}
+
 function formatFeat(f: Feature, parentId?: string, parentRef?: string) {
+  const strand = f.get('strand')
   return [
     f.get('refName') || parentRef,
     f.get('source') || '.',
@@ -48,15 +70,9 @@ function formatFeat(f: Feature, parentId?: string, parentRef?: string) {
     f.get('start') + 1,
     f.get('end'),
     f.get('score') || '.',
-    f.get('strand') === 1 ? '+' : f.get('strand') === -1 ? '-' : '.',
+    strand === 1 ? '+' : strand === -1 ? '-' : '.',
     f.get('phase') || '.',
-    (parentId ? `Parent=${parentId};` : '') +
-      Object.keys(f.toJSON())
-        .filter(tag => !coreFields.has(tag))
-        .map(tag => [tag, fmt(f.get(tag))] as const)
-        .filter(tag => !!tag[1])
-        .map(tag => `${retitle[tag[0]] || tag[0]}=${tag[1]}`)
-        .join(';'),
+    formatAttributes(f, parentId),
   ].join('\t')
 }
 export function formatMultiLevelFeat(
