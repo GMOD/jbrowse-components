@@ -23,6 +23,7 @@ const FeatureLabel = observer(function ({
   featureWidth = 0,
   allowedWidthExpansion = 0,
   displayModel = {},
+  bold = false,
 }: {
   text: string
   x: number
@@ -38,6 +39,7 @@ const FeatureLabel = observer(function ({
   exportSVG?: unknown
   region: Region
   viewParams: ViewParams
+  bold?: boolean
 }) {
   const totalWidth = featureWidth + allowedWidthExpansion
   const measuredTextWidth = measureText(text, fontHeight)
@@ -97,6 +99,7 @@ const FeatureLabel = observer(function ({
       y={y + fontHeight}
       fill={color === '#f0f' ? stripAlpha(theme.palette.text.primary) : color}
       fontSize={fontHeight}
+      fontWeight={bold ? 'bold' : 'normal'}
     >
       {measuredTextWidth > totalWidth
         ? `${text.slice(0, totalWidth / (fontHeight * 0.6))}...`

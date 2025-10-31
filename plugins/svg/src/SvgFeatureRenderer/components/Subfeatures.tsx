@@ -5,8 +5,7 @@ import { observer } from 'mobx-react'
 import FeatureLabel from './FeatureLabel'
 import { chooseGlyphComponent, layOut, layOutFeature } from './util'
 
-import type { DisplayModel, ViewParams } from './types'
-import type { ExtraGlyphValidator } from './types'
+import type { DisplayModel, ExtraGlyphValidator, ViewParams } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
@@ -25,7 +24,19 @@ const Subfeatures = observer(function Subfeatures(props: {
   allowedWidthExpansion?: number
   reversed?: boolean
 }) {
-  const { feature, featureLayout, selected, config, bpPerPx, region, displayModel, exportSVG, viewParams, allowedWidthExpansion = 0, reversed } = props
+  const {
+    feature,
+    featureLayout,
+    selected,
+    config,
+    bpPerPx,
+    region,
+    displayModel,
+    exportSVG,
+    viewParams,
+    allowedWidthExpansion = 0,
+    reversed,
+  } = props
 
   const displayMode = readConfObject(config, 'displayMode')
   const labelAllowed = displayMode !== 'collapsed'
@@ -42,20 +53,23 @@ const Subfeatures = observer(function Subfeatures(props: {
 
     // Calculate label information for subfeatures
     const showLabels = labelAllowed && readConfObject(config, 'showLabels')
-    const showDescriptions = labelAllowed && readConfObject(config, 'showDescriptions')
-    const fontHeight = readConfObject(config, ['labels', 'fontSize'], { feature: subfeature })
+    const showDescriptions =
+      labelAllowed && readConfObject(config, 'showDescriptions')
+    const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
+      feature: subfeature,
+    })
 
-    const name = String(readConfObject(config, ['labels', 'name'], { feature: subfeature }) || '')
+    const name = String(
+      readConfObject(config, ['labels', 'name'], { feature: subfeature }) || '',
+    )
     const shouldShowName = /\S/.test(name) && showLabels
 
-    const description = String(readConfObject(config, ['labels', 'description'], { feature: subfeature }) || '')
+    const description = String(
+      readConfObject(config, ['labels', 'description'], {
+        feature: subfeature,
+      }) || '',
+    )
     const shouldShowDescription = /\S/.test(description) && showDescriptions
-
-    const getWidth = (text: string) => {
-      const glyphWidth = subfeatureLayout.width + allowedWidthExpansion
-      const textWidth = measureText(text, fontHeight)
-      return Math.round(Math.min(textWidth, glyphWidth))
-    }
 
     return (
       <g key={`glyph-${subfeatureId}`}>
@@ -68,9 +82,17 @@ const Subfeatures = observer(function Subfeatures(props: {
         {shouldShowName ? (
           <FeatureLabel
             text={name}
-            x={featureLayout.getSubRecord(`${subfeatureId}-nameLabel`)?.absolute.left || 0}
-            y={featureLayout.getSubRecord(`${subfeatureId}-nameLabel`)?.absolute.top || 0}
-            color={readConfObject(config, ['labels', 'nameColor'], { feature: subfeature })}
+            x={
+              featureLayout.getSubRecord(`${subfeatureId}-nameLabel`)?.absolute
+                .left || 0
+            }
+            y={
+              featureLayout.getSubRecord(`${subfeatureId}-nameLabel`)?.absolute
+                .top || 0
+            }
+            color={readConfObject(config, ['labels', 'nameColor'], {
+              feature: subfeature,
+            })}
             featureWidth={subfeatureLayout.width}
             fontHeight={fontHeight}
             allowedWidthExpansion={allowedWidthExpansion}
@@ -86,9 +108,17 @@ const Subfeatures = observer(function Subfeatures(props: {
         {shouldShowDescription ? (
           <FeatureLabel
             text={description}
-            x={featureLayout.getSubRecord(`${subfeatureId}-descriptionLabel`)?.absolute.left || 0}
-            y={featureLayout.getSubRecord(`${subfeatureId}-descriptionLabel`)?.absolute.top || 0}
-            color={readConfObject(config, ['labels', 'descriptionColor'], { feature: subfeature })}
+            x={
+              featureLayout.getSubRecord(`${subfeatureId}-descriptionLabel`)
+                ?.absolute.left || 0
+            }
+            y={
+              featureLayout.getSubRecord(`${subfeatureId}-descriptionLabel`)
+                ?.absolute.top || 0
+            }
+            color={readConfObject(config, ['labels', 'descriptionColor'], {
+              feature: subfeature,
+            })}
             featureWidth={subfeatureLayout.width}
             fontHeight={fontHeight}
             allowedWidthExpansion={allowedWidthExpansion}
@@ -136,7 +166,8 @@ Subfeatures.layOut = ({
     const subfeatures = feature.get('subfeatures')
     const labelAllowed = displayMode !== 'collapsed'
     const showLabels = labelAllowed && readConfObject(config, 'showLabels')
-    const showDescriptions = labelAllowed && readConfObject(config, 'showDescriptions')
+    const showDescriptions =
+      labelAllowed && readConfObject(config, 'showDescriptions')
     const expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
 
     if (subfeatures) {
@@ -166,10 +197,19 @@ Subfeatures.layOut = ({
 
         // Add label layouts at the subLayout level (not as children of subSubLayout)
         // This prevents them from affecting the glyph's height calculations
-        const fontHeight = readConfObject(config, ['labels', 'fontSize'], { feature: subfeature })
-        const name = String(readConfObject(config, ['labels', 'name'], { feature: subfeature }) || '')
+        const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
+          feature: subfeature,
+        })
+        const name = String(
+          readConfObject(config, ['labels', 'name'], { feature: subfeature }) ||
+            '',
+        )
         const shouldShowName = /\S/.test(name) && showLabels
-        const description = String(readConfObject(config, ['labels', 'description'], { feature: subfeature }) || '')
+        const description = String(
+          readConfObject(config, ['labels', 'description'], {
+            feature: subfeature,
+          }) || '',
+        )
         const shouldShowDescription = /\S/.test(description) && showDescriptions
 
         const getWidth = (text: string) => {
