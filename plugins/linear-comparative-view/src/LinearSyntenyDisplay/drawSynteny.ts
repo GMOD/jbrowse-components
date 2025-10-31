@@ -1,6 +1,6 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 
-import { draw, drawMatchSimple } from './components/util'
+import { draw, drawLocationMarkers, drawMatchSimple } from './components/util'
 
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
@@ -40,6 +40,7 @@ export function drawRef(
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
   const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
+  const drawLocationMarkersEnabled = view.drawLocationMarkers
   const { level, height, featPositions } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
@@ -180,10 +181,40 @@ export function drawRef(
                 if (letter === 'M') {
                   draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
                   ctx1.fill()
+                  if (drawLocationMarkersEnabled) {
+                    drawLocationMarkers(
+                      ctx1,
+                      px1,
+                      cx1,
+                      y1,
+                      cx2,
+                      px2,
+                      y2,
+                      mid,
+                      bpPerPxs[level]!,
+                      bpPerPxs[level + 1]!,
+                      drawCurves,
+                    )
+                  }
                 }
               } else {
                 draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
                 ctx1.fill()
+                if (drawLocationMarkersEnabled) {
+                  drawLocationMarkers(
+                    ctx1,
+                    px1,
+                    cx1,
+                    y1,
+                    cx2,
+                    px2,
+                    y2,
+                    mid,
+                    bpPerPxs[level]!,
+                    bpPerPxs[level + 1]!,
+                    drawCurves,
+                  )
+                }
               }
               if (ctx3) {
                 ctx3.fillStyle = makeColor(idx)
@@ -196,6 +227,21 @@ export function drawRef(
       } else {
         draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         ctx1.fill()
+        if (drawLocationMarkersEnabled) {
+          drawLocationMarkers(
+            ctx1,
+            x11,
+            x12,
+            y1,
+            x22,
+            x21,
+            y2,
+            mid,
+            bpPerPxs[level]!,
+            bpPerPxs[level + 1]!,
+            drawCurves,
+          )
+        }
       }
     }
   }
