@@ -114,6 +114,92 @@ export function draw(
   }
 }
 
+export function drawLocationMarkers(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  x2: number,
+  y1: number,
+  x3: number,
+  x4: number,
+  y2: number,
+  mid: number,
+  bpPerPx1: number,
+  bpPerPx2: number,
+  drawCurves?: boolean,
+) {
+  const width1 = Math.abs(x2 - x1)
+  const width2 = Math.abs(x4 - x3)
+  const averageWidth = (width1 + width2) / 2
+
+  // Only draw markers for sufficiently large matches (wider than ~30 pixels)
+  if (averageWidth < 30) {
+    return
+  }
+
+  // Calculate the average bp/px to consider zoom level
+  const averageBpPerPx = (bpPerPx1 + bpPerPx2) / 2
+
+  // Calculate total bp spanned by the feature
+  const totalBp = averageWidth * averageBpPerPx
+
+  // Aim for markers at consistent genomic intervals, adaptive for different scales
+  // This ensures spacing is consistent across differently-sized features
+  let targetBpSpacing = 500_000 // 500 kbp default
+
+  if (totalBp < 200) {
+    targetBpSpacing = 20 // 20 bp for very tiny features
+  } else if (totalBp < 1_000) {
+    targetBpSpacing = 50 // 50 bp for tiny features
+  } else if (totalBp < 10_000) {
+    targetBpSpacing = 500 // 500 bp for very small features
+  } else if (totalBp < 50_000) {
+    targetBpSpacing = 2_000 // 2 kbp for small features
+  } else if (totalBp < 100_000) {
+    targetBpSpacing = 5_000 // 5 kbp for small-medium features
+  } else if (totalBp < 1_000_000) {
+    targetBpSpacing = 50_000 // 50 kbp for medium features
+  } else if (totalBp < 10_000_000) {
+    targetBpSpacing = 250_000 // 250 kbp for large features
+  } else if (totalBp < 100_000_000) {
+    targetBpSpacing = 1_000_000 // 1 Mbp for very large features
+  } else {
+    targetBpSpacing = 5_000_000 // 5 Mbp for huge features
+  }
+
+  // Calculate number of markers based on bp spacing
+  const numMarkers = Math.max(2, Math.floor(totalBp / targetBpSpacing))
+
+  const prevStrokeStyle = ctx.strokeStyle
+  const prevLineWidth = ctx.lineWidth
+
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)' // Dark semi-transparent line
+  ctx.lineWidth = 0.5
+
+  // Draw location markers evenly spaced within the match
+  for (let step = 1; step < numMarkers; step++) {
+    const t = step / numMarkers
+
+    // Linear interpolation along both rows
+    // Top edge goes from x1 to x2, bottom edge goes from x4 to x3
+    const topX = x1 + (x2 - x1) * t
+    const bottomX = x4 + (x3 - x4) * t
+
+    ctx.beginPath()
+    ctx.moveTo(topX, y1)
+
+    if (drawCurves) {
+      ctx.bezierCurveTo(topX, mid, bottomX, mid, bottomX, y2)
+    } else {
+      ctx.lineTo(bottomX, y2)
+    }
+
+    ctx.stroke()
+  }
+
+  ctx.strokeStyle = prevStrokeStyle
+  ctx.lineWidth = prevLineWidth
+}
+
 export function drawBox(
   ctx: CanvasRenderingContext2D,
   x1: number,
