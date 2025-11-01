@@ -113,7 +113,6 @@ export function drawPairChains({
             strokeCol,
           )
         } else {
-          console.log('no chevrons drawPAirChains')
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillCol)
           strokeRectCtx(xPos, chainY, width, featureHeight, ctx, strokeCol)
         }
