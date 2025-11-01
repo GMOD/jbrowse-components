@@ -88,13 +88,13 @@ export function computeChainBounds(
       if (!chainId) {
         chainId = elt.id
       }
-      // Use TLEN from the first feature that has it
-      if (tlenDistance === 0 && elt.tlen) {
+      // Use TLEN from the first feature that has it (only for non-singletons)
+      if (chain.length > 1 && tlenDistance === 0 && elt.tlen) {
         tlenDistance = Math.abs(elt.tlen)
       }
     }
 
-    // For pairs, prefer TLEN over pixel distance; otherwise use pixel distance
+    // For pairs/chains, prefer TLEN over pixel distance; singletons use pixel distance
     const distance = tlenDistance > 0 ? tlenDistance : Math.abs(maxX - minX)
 
     computedChains.push({
