@@ -27,7 +27,7 @@ function calculateCloudYOffsets(
   // Use log(distance + offset) instead of log(distance) to smooth out small values
   // The offset shifts the logarithmic curve, reducing the dramatic variation for small TLEN
   // This provides a smooth compression without hard thresholds
-  const logOffset = 100
+  const logOffset = 10
 
   const maxD = Math.log(max(distances) + logOffset)
   const minD = Math.log(min(distances) + logOffset)

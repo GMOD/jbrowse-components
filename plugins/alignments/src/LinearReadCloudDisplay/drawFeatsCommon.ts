@@ -70,12 +70,13 @@ export function computeChainBounds(
 ) {
   const computedChains: ComputedChain[] = []
 
-  // get bounds on the 'distances' (pixel span that a particular split long
-  // read 'chain' would have in view)
+  // get bounds on the 'distances' (TLEN for pairs, pixel span for others)
   for (const chain of chains) {
     let minX = Number.MAX_VALUE
     let maxX = Number.MIN_VALUE
     let chainId = ''
+    let tlenDistance = 0
+
     for (const elt of chain) {
       const refName = asm.getCanonicalRefName(elt.refName) || elt.refName
       const rs = view.bpToPx({ refName, coord: elt.start })?.offsetPx
@@ -87,9 +88,17 @@ export function computeChainBounds(
       if (!chainId) {
         chainId = elt.id
       }
+      // Use TLEN from the first feature that has it
+      if (tlenDistance === 0 && elt.tlen) {
+        tlenDistance = Math.abs(elt.tlen)
+      }
     }
+
+    // For pairs, prefer TLEN over pixel distance; otherwise use pixel distance
+    const distance = tlenDistance > 0 ? tlenDistance : Math.abs(maxX - minX)
+
     computedChains.push({
-      distance: Math.abs(maxX - minX),
+      distance,
       minX,
       maxX,
       chain,
