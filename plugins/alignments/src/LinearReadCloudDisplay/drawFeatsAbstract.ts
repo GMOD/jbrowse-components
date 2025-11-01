@@ -1,4 +1,4 @@
-import { drawFeats as drawFeats1 } from './drawFeats'
+import { drawFeats as drawFeats1 } from './drawFeatsCloud'
 import { drawFeats as drawFeats2 } from './drawFeatsStack'
 import type { LinearReadCloudDisplayModel } from './model'
 

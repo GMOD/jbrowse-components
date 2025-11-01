@@ -232,7 +232,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }): Promise<React.ReactNode> {
           const { renderSvg } = await import('../shared/renderSvgUtil')
           if (self.drawCloud) {
-            const { drawFeats } = await import('./drawFeats')
+            const { drawFeats } = await import('./drawFeatsCloud')
             return renderSvg(
               self as LinearReadCloudDisplayModel,
               opts,
