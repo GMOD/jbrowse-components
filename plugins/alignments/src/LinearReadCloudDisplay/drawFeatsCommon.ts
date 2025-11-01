@@ -8,7 +8,7 @@ import { drawPairChains } from '../shared/drawPairChains'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
-import type { ReducedFeature } from '../shared/fetchChains'
+import type { ChainData, ReducedFeature } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -31,7 +31,7 @@ export function filterChains(
   drawSingletons: boolean,
   drawProperPairs: boolean,
   type: string,
-  chainData: { stats?: { upper?: number; lower?: number } },
+  chainData: ChainData,
 ) {
   return chains.filter(chain => {
     // Filter out singletons if drawSingletons is false
