@@ -8,10 +8,10 @@ import { drawLongReadChains } from '../shared/drawLongReadChains'
 import { drawPairChains } from '../shared/drawPairChains'
 import { shouldRenderChevrons } from '../shared/util'
 
-import type { LinearReadStackDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearReadCloudDisplayModel } from './model'
 
 type LGV = LinearGenomeViewModel
 
@@ -23,7 +23,7 @@ interface LayoutData {
 }
 
 export function drawFeats(
-  self: LinearReadStackDisplayModel,
+  self: LinearReadCloudDisplayModel,
   ctx: CanvasRenderingContext2D,
 ) {
   const { chainData } = self

@@ -20,7 +20,7 @@ const Cloud = observer(function ({
 }) {
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
-  const height = model.height
+  const height = model.drawCloud ? model.height : model.layoutHeight
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredFeature, setHoveredFeature] = useState<{
     x: number
