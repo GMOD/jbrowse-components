@@ -5017,6 +5017,35 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "HG02031.final",
+      "name": "HG02031_mother",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/ERR3242258/HG02031.final.cram"
+        },
+        "craiLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/ERR3242258/HG02031.final.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "PAY22766-nanopore",
       "name": "Nanopore PAY22766 (6mA rep2)",
       "assemblyNames": ["hg38"],

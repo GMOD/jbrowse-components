@@ -13,6 +13,8 @@ export default defineConfig(
   {
     ignores: [
       'packages/__mocks__/@testing-library/react.tsx',
+      'packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
+      'packages/__mocks__/generic-filehandle2.ts',
       'config/jest/*',
       '**/build/**/*',
       '**/dist/**/*',

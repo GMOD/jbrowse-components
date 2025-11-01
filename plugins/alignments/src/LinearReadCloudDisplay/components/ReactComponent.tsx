@@ -20,7 +20,7 @@ const Cloud = observer(function ({
 }) {
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
-  const height = model.height
+  const height = model.drawCloud ? model.height : model.layoutHeight
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredFeature, setHoveredFeature] = useState<{
     x: number
@@ -153,7 +153,7 @@ const Cloud = observer(function ({
       onClick={onClick}
     >
       <canvas
-        data-testid="cloud-canvas"
+        data-testid={model.drawCloud ? 'cloud-canvas' : 'stack-canvas'}
         ref={cb}
         style={{ width, height, position: 'absolute', left: 0, top: 0 }}
         width={width * 2}

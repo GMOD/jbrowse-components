@@ -60,8 +60,32 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+
+        /**
+         * #property
+         */
+        drawCloud: false,
+
+        /**
+         * #property
+         * Whether to remove spacing between stacked features
+         */
+        noSpacing: types.maybe(types.boolean),
+
+        /**
+         * #property
+         * Maximum height for the layout (prevents infinite stacking)
+         */
+        trackMaxHeight: types.maybe(types.number),
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       * Current height of the layout after drawing
+       */
+      layoutHeight: 0,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -91,6 +115,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
+       * Set whether to remove spacing between features
+       */
+      setNoSpacing(flag?: boolean) {
+        self.noSpacing = flag
+      },
+      /**
+       * #action
+       * Set the maximum height for the layout
+       */
+      setMaxHeight(n?: number) {
+        self.trackMaxHeight = n
+      },
+      /**
+       * #action
+       * Set the current layout height
+       */
+      setLayoutHeight(n: number) {
+        self.layoutHeight = n
+      },
+      /**
+       * #action
        */
       selectFeature(chain: ReducedFeature[]) {
         const session = getSession(self)
@@ -108,6 +153,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           session.showWidget(featureWidget)
         }
         session.setSelection(syntheticFeature)
+      },
+      /**
+       * #action
+       */
+      setDrawCloud(b: boolean) {
+        self.drawCloud = b
       },
     }))
     .views(self => {
@@ -145,6 +196,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
+              label: 'Draw cloud (Y-coordinate as insert size)',
+              type: 'checkbox',
+              checked: self.drawCloud,
+              onClick: () => {
+                self.setDrawCloud(!self.drawCloud)
+              },
+            },
+            {
               label: 'Draw singletons',
               type: 'checkbox',
               checked: self.drawSingletons,
@@ -172,8 +231,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           rasterizeLayers?: boolean
         }): Promise<React.ReactNode> {
           const { renderSvg } = await import('../shared/renderSvgUtil')
-          const { drawFeats } = await import('./drawFeats')
-          return renderSvg(self as LinearReadCloudDisplayModel, opts, drawFeats)
+          if (self.drawCloud) {
+            const { drawFeats } = await import('./drawFeatsCloud')
+            return renderSvg(
+              self as LinearReadCloudDisplayModel,
+              opts,
+              drawFeats,
+            )
+          } else {
+            const { drawFeats } = await import('./drawFeatsStack')
+            return renderSvg(
+              self as LinearReadCloudDisplayModel,
+              opts,
+              drawFeats,
+            )
+          }
         },
       }
     })
@@ -183,7 +255,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ;(async () => {
           try {
             const { doAfterAttach } = await import('../shared/afterAttach')
-            const { drawFeats } = await import('./drawFeats')
+            const { drawFeats } = await import('./drawFeatsAbstract')
             doAfterAttach(self, drawFeats)
           } catch (e) {
             console.error(e)

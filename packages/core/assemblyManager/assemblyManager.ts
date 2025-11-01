@@ -43,8 +43,17 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       getCanonicalAssemblyName(asmName: string) {
         return self.assemblyNameMap[asmName]?.name
+      },
+      /**
+       * #method
+       */
+      getCanonicalAssemblyName2(asmName: string) {
+        return self.assemblyNameMap[asmName]?.name || asmName
       },
       /**
        * #method

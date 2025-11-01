@@ -310,6 +310,7 @@ export default function assemblyFactory(
     .views(self => ({
       /**
        * #method
+       * returns canonical refname
        */
       getCanonicalRefName(refName: string) {
         if (!self.refNameAliases || !self.lowerCaseRefNameAliases) {
@@ -321,6 +322,13 @@ export default function assemblyFactory(
         return (
           self.refNameAliases[refName] || self.lowerCaseRefNameAliases[refName]
         )
+      },
+      /**
+       * #method
+       * returns canonical or fallback
+       */
+      getCanonicalRefName2(asmName: string) {
+        return this.getCanonicalRefName(asmName) || asmName
       },
       /**
        * #method

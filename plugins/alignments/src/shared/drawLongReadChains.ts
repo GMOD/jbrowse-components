@@ -62,12 +62,11 @@ export function drawLongReadChains({
       const lastFeat = chain[chain.length - 1]!
 
       const firstPx = view.bpToPx({
-        refName:
-          asm.getCanonicalRefName(firstFeat.refName) || firstFeat.refName,
+        refName: asm.getCanonicalRefName2(firstFeat.refName),
         coord: firstFeat.start,
       })?.offsetPx
       const lastPx = view.bpToPx({
-        refName: asm.getCanonicalRefName(lastFeat.refName) || lastFeat.refName,
+        refName: asm.getCanonicalRefName2(lastFeat.refName),
         coord: lastFeat.end,
       })?.offsetPx
 
@@ -88,8 +87,9 @@ export function drawLongReadChains({
     // Draw the features
     for (const feat of chain) {
       const { refName, start, end } = feat
-      const s = view.bpToPx({ refName, coord: start })
-      const e = view.bpToPx({ refName, coord: end })
+      const refName2 = asm.getCanonicalRefName2(refName)
+      const s = view.bpToPx({ refName: refName2, coord: start })
+      const e = view.bpToPx({ refName: refName2, coord: end })
       if (s && e) {
         const effectiveStrand = feat.strand * primaryStrand
         const xPos = s.offsetPx - view.offsetPx
