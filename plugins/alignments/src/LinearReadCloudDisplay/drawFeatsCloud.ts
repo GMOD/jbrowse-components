@@ -19,15 +19,24 @@ function calculateCloudYOffsets(
 ) {
   // Calculate Y-offsets based on distance (logarithmic scaling)
   const distances = computedChains.map(c => c.distance).filter(d => d > 0)
-  const maxD = distances.length > 0 ? Math.log(max(distances)) : 0
-  const minD =
-    distances.length > 0 ? Math.max(Math.log(min(distances)) - 1, 0) : 0
+
+  if (distances.length === 0) {
+    return { chainYOffsets: new Map<string, number>() }
+  }
+
+  // Use log(distance + offset) instead of log(distance) to smooth out small values
+  // The offset shifts the logarithmic curve, reducing the dramatic variation for small TLEN
+  // This provides a smooth compression without hard thresholds
+  const logOffset = 100
+
+  const maxD = Math.log(max(distances) + logOffset)
+  const minD = Math.log(min(distances) + logOffset)
   const scaler = (self.height - 20) / (maxD - minD || 1)
 
   // Calculate Y-offsets for each chain
   const chainYOffsets = new Map<string, number>()
   for (const { id, distance } of computedChains) {
-    const top = distance > 0 ? (Math.log(distance) - minD) * scaler : 0
+    const top = distance > 0 ? (Math.log(distance + logOffset) - minD) * scaler : 0
     chainYOffsets.set(id, top)
   }
 
