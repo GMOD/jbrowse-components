@@ -41,8 +41,8 @@ export function doAfterAttach<T extends IAnyStateTreeNode>(
     }
 
     const height = 'layoutHeight' in self ? self.layoutHeight || 1 : self.height
-    ctx.clearRect(0, 0, canvas.width, height * 2)
     ctx.resetTransform()
+    ctx.clearRect(0, 0, canvas.width, height * 2)
     ctx.scale(2, 2)
     cb(self, ctx, canvas.width, height)
     self.setLastDrawnOffsetPx(view.offsetPx)
