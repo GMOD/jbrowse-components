@@ -36,7 +36,8 @@ function calculateCloudYOffsets(
   // Calculate Y-offsets for each chain
   const chainYOffsets = new Map<string, number>()
   for (const { id, distance } of computedChains) {
-    const top = distance > 0 ? (Math.log(distance + logOffset) - minD) * scaler : 0
+    const top =
+      distance > 0 ? (Math.log(distance + logOffset) - minD) * scaler : 0
     chainYOffsets.set(id, top)
   }
 
