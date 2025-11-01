@@ -30,6 +30,7 @@ export function drawFeats(
     return
   }
   const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
+
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
   const drawSingletons = self.drawSingletons
   const drawProperPairs = self.drawProperPairs

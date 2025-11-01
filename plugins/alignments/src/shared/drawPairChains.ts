@@ -51,7 +51,12 @@ export function drawPairChains({
     const v0 = nonSupplementary[0]!
     const v1 = nonSupplementary[1]!
     const [pairedFill, pairedStroke] =
-      getPairedColor({ type, v0, v1, stats: chainData.stats }) || []
+      getPairedColor({
+        type,
+        v0,
+        v1,
+        stats: chainData.stats,
+      }) || []
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
@@ -59,15 +64,12 @@ export function drawPairChains({
     }
 
     // Draw connecting line for paired reads
-    const refName0 = asm.getCanonicalRefName(v0.refName) || v0.refName
-    const refName1 = asm.getCanonicalRefName(v1.refName) || v1.refName
-
     const r1s = view.bpToPx({
-      refName: refName0,
+      refName: asm.getCanonicalRefName2(v0.refName),
       coord: v0.start,
     })?.offsetPx
     const r2s = view.bpToPx({
-      refName: refName1,
+      refName: asm.getCanonicalRefName2(v1.refName),
       coord: v1.start,
     })?.offsetPx
 
@@ -87,8 +89,11 @@ export function drawPairChains({
     // Draw the paired reads
     for (const feat of chain) {
       const { refName, start, end } = feat
-      const s = view.bpToPx({ refName, coord: start })
-      const e = view.bpToPx({ refName, coord: end })
+
+      // Draw connecting line for paired reads
+      const refName2 = asm.getCanonicalRefName(refName) || refName
+      const s = view.bpToPx({ refName: refName2, coord: start })
+      const e = view.bpToPx({ refName: refName2, coord: end })
       if (s && e) {
         const xPos = s.offsetPx - view.offsetPx
         const width = Math.max(e.offsetPx - s.offsetPx, 3)
@@ -108,6 +113,7 @@ export function drawPairChains({
             strokeCol,
           )
         } else {
+          console.log('no chevrons drawPAirChains')
           fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillCol)
           strokeRectCtx(xPos, chainY, width, featureHeight, ctx, strokeCol)
         }
