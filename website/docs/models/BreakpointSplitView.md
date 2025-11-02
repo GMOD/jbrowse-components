@@ -80,6 +80,15 @@ true
 interactiveOverlay: true
 ```
 
+#### property: showHeader
+
+```js
+// type signature
+true
+// code
+showHeader: true
+```
+
 #### property: views
 
 ```js
@@ -194,6 +203,13 @@ setShowIntraviewLinks: (arg: boolean) => void
 ```js
 // type signature
 setLinkViews: (arg: boolean) => void
+```
+
+#### action: setShowHeader
+
+```js
+// type signature
+setShowHeader: (arg: boolean) => void
 ```
 
 #### action: setMatchedTrackFeatures
