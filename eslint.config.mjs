@@ -102,7 +102,6 @@ export default defineConfig(
         },
       ],
 
-      '@typescript-eslint/unified-signatures': 'off',
       'prefer-template': 'error',
       'one-var': ['error', 'never'],
       'react-refresh/only-export-components': 'error',

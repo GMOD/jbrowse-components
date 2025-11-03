@@ -42,7 +42,7 @@
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
     "@fontsource/roboto": "^5.0.2",
-    "@gmod/faidx": "^1.0.1",
+    "@gmod/faidx": "^2.0.0",
     "@jbrowse/app-core": "^3.6.5",
     "@jbrowse/core": "^3.6.5",
     "@jbrowse/plugin-alignments": "^3.6.5",
