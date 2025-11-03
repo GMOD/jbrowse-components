@@ -4,7 +4,6 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
 import type { Fav, LaunchCallback } from '../types'
@@ -16,15 +15,13 @@ const useStyles = makeStyles()(theme => ({
   mb: {
     marginBottom: 5,
   },
+  tableContainer: {
+    overflow: 'auto',
+  },
   headerContainer: {
     display: 'flex',
     alignItems: 'center',
     cursor: 'pointer',
-  },
-  linkText: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
   },
 }))
 
@@ -61,92 +58,79 @@ export default function FavoriteGenomesPanel({
 
       {isVisible ? (
         <div className={classes.panel}>
-          <DataGrid
-            rows={favorites.map(
-              ({ id, shortName, description, commonName, jbrowseConfig }) => ({
-                id,
-                name: [shortName, description, commonName]
-                  .filter(f => !!f)
-                  .join(' - '),
-                shortName,
-                description,
-                jbrowseConfig,
-              }),
-            )}
-            columns={[
-              {
-                field: 'name',
-                headerName: 'Genome',
-                flex: 1,
-                renderCell: ({ row }: any) => {
-                  const handleLaunch = () => {
-                    launch([
-                      {
-                        shortName: row.shortName,
-                        jbrowseConfig: row.jbrowseConfig,
-                      },
-                    ])
-                  }
+          <div className={classes.tableContainer}>
+            <table>
+              <tbody>
+                {[...favorites]
+                  .sort((a, b) => {
+                    const nameA = [a.shortName, a.description, a.commonName]
+                      .filter(f => !!f)
+                      .join(' - ')
+                    const nameB = [b.shortName, b.description, b.commonName]
+                      .filter(f => !!f)
+                      .join(' - ')
+                    return nameA.localeCompare(nameB)
+                  })
+                  .map(
+                    ({
+                      id,
+                      shortName,
+                      description,
+                      commonName,
+                      jbrowseConfig,
+                    }) => {
+                      const name = [shortName, description, commonName]
+                        .filter(f => !!f)
+                        .join(' - ')
 
-                  return (
-                    <Link
-                      href="#"
-                      className={classes.linkText}
-                      onClick={event => {
-                        event.preventDefault()
-                        handleLaunch()
-                      }}
-                    >
-                      {row.name}
-                    </Link>
-                  )
-                },
-              },
-              {
-                field: 'actions',
-                headerName: '',
-                width: 50,
-                sortable: false,
-                renderCell: ({ row }: any) => {
-                  const handleLaunch = () => {
-                    launch([
-                      {
-                        shortName: row.shortName,
-                        jbrowseConfig: row.jbrowseConfig,
-                      },
-                    ])
-                  }
+                      const handleLaunch = () => {
+                        launch([
+                          {
+                            shortName,
+                            jbrowseConfig,
+                          },
+                        ])
+                      }
 
-                  const handleRemove = () => {
-                    setFavorites(favorites.filter(fav => fav.id !== row.id))
-                  }
+                      const handleRemove = () => {
+                        setFavorites(favorites.filter(fav => fav.id !== id))
+                      }
 
-                  return (
-                    <CascadingMenuButton
-                      style={{ padding: 0, margin: 0 }}
-                      menuItems={[
-                        {
-                          label: 'Launch',
-                          onClick: handleLaunch,
-                        },
-                        {
-                          label: 'Remove from favorites',
-                          onClick: handleRemove,
-                        },
-                      ]}
-                    >
-                      <MoreHoriz />
-                    </CascadingMenuButton>
-                  )
-                },
-              },
-            ]}
-            rowHeight={25}
-            columnHeaderHeight={32}
-            hideFooter
-            disableColumnMenu
-            disableRowSelectionOnClick
-          />
+                      return (
+                        <tr key={id}>
+                          <td>
+                            <Link
+                              href="#"
+                              onClick={event => {
+                                event.preventDefault()
+                                handleLaunch()
+                              }}
+                            >
+                              {name}
+                            </Link>{' '}
+                            <CascadingMenuButton
+                              style={{ padding: 0 }}
+                              menuItems={[
+                                {
+                                  label: 'Launch',
+                                  onClick: handleLaunch,
+                                },
+                                {
+                                  label: 'Remove from favorites',
+                                  onClick: handleRemove,
+                                },
+                              ]}
+                            >
+                              <MoreHoriz />
+                            </CascadingMenuButton>
+                          </td>
+                        </tr>
+                      )
+                    },
+                  )}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : null}
     </div>

@@ -9,7 +9,20 @@ import { makeStyles } from 'tss-react/mui'
 
 import { getAllChildren, treeToMap } from '../util'
 
+import type { TreeNode } from '../../generateHierarchy'
 import type { NodeData } from '../util'
+
+function getAllSubcategories(node: TreeNode): string[] {
+  const categoryIds: string[] = []
+  if (node.type === 'category') {
+    for (const child of node.children) {
+      if (child.type === 'category') {
+        categoryIds.push(child.id, ...getAllSubcategories(child))
+      }
+    }
+  }
+  return categoryIds
+}
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
@@ -36,6 +49,10 @@ export default function Category({
   const { classes } = useStyles()
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
   const { menuItems = [], name, model, id, tree } = data
+
+  const currentNode = treeToMap(tree).get(id)
+  const subcategoryIds = currentNode ? getAllSubcategories(currentNode) : []
+  const hasSubcategories = subcategoryIds.length > 0
 
   return (
     <div
@@ -79,7 +96,7 @@ export default function Category({
               },
             },
             {
-              label: 'Show all tracks',
+              label: 'Show all',
               onClick: () => {
                 for (const entry of treeToMap(tree).get(id)?.children || []) {
                   if (entry.type === 'track') {
@@ -89,7 +106,7 @@ export default function Category({
               },
             },
             {
-              label: 'Hide all tracks',
+              label: 'Hide all',
               onClick: () => {
                 for (const entry of treeToMap(tree).get(id)?.children || []) {
                   if (entry.type === 'track') {
@@ -98,6 +115,32 @@ export default function Category({
                 }
               },
             },
+            ...(hasSubcategories
+              ? [
+                  {
+                    label: 'Collapse all subcategories',
+                    onClick: () => {
+                      for (const subcategoryId of subcategoryIds) {
+                        // Only collapse if currently open
+                        if (!model.collapsed.get(subcategoryId)) {
+                          model.toggleCategory(subcategoryId)
+                        }
+                      }
+                    },
+                  },
+                  {
+                    label: 'Expand all subcategories',
+                    onClick: () => {
+                      for (const subcategoryId of subcategoryIds) {
+                        // Only expand if currently collapsed
+                        if (model.collapsed.get(subcategoryId)) {
+                          model.toggleCategory(subcategoryId)
+                        }
+                      }
+                    },
+                  },
+                ]
+              : []),
             ...menuItems,
           ]}
           onMenuItemClick={(_event, callback) => {
