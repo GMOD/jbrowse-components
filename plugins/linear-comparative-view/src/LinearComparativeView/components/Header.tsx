@@ -41,6 +41,7 @@ const Header = observer(function ({
     | LinearSyntenyDisplayModel
     | undefined
   const alpha = firstDisplay?.alpha ?? 1
+  const minAlignmentLength = firstDisplay?.minAlignmentLength ?? 0
 
   const handleAlphaChange = (_event: Event, value: number | number[]) => {
     const newAlpha = typeof value === 'number' ? value : value[0]!
@@ -49,6 +50,18 @@ const Header = observer(function ({
       for (const track of level.tracks) {
         for (const display of track.displays) {
           ;(display as LinearSyntenyDisplayModel).setAlpha(newAlpha)
+        }
+      }
+    }
+  }
+
+  const handleMinLengthChange = (_event: Event, value: number | number[]) => {
+    const newMinLength = typeof value === 'number' ? value : value[0]!
+    // Set minAlignmentLength for all synteny displays across all levels
+    for (const level of levels) {
+      for (const track of level.tracks) {
+        for (const display of track.displays) {
+          ;(display as LinearSyntenyDisplayModel).setMinAlignmentLength(newMinLength)
         }
       }
     }
@@ -129,21 +142,38 @@ const Header = observer(function ({
       </CascadingMenuButton>
 
       {firstDisplay ? (
-        <Box className={classes.alphaSlider}>
-          <Typography variant="body2" style={{ marginRight: 8 }}>
-            Opacity:
-          </Typography>
-          <Slider
-            value={alpha}
-            onChange={handleAlphaChange}
-            min={0}
-            max={1}
-            step={0.05}
-            valueLabelDisplay="auto"
-            size="small"
-            style={{ minWidth: 100 }}
-          />
-        </Box>
+        <>
+          <Box className={classes.alphaSlider}>
+            <Typography variant="body2" style={{ marginRight: 8 }}>
+              Opacity:
+            </Typography>
+            <Slider
+              value={alpha}
+              onChange={handleAlphaChange}
+              min={0}
+              max={1}
+              step={0.05}
+              valueLabelDisplay="auto"
+              size="small"
+              style={{ minWidth: 100 }}
+            />
+          </Box>
+          <Box className={classes.alphaSlider}>
+            <Typography variant="body2" style={{ marginRight: 8 }}>
+              Min length:
+            </Typography>
+            <Slider
+              value={minAlignmentLength}
+              onChange={handleMinLengthChange}
+              min={0}
+              max={100000}
+              step={1000}
+              valueLabelDisplay="auto"
+              size="small"
+              style={{ minWidth: 100 }}
+            />
+          </Box>
+        </>
       ) : null}
 
       {showSearchBoxes ? (

@@ -101,6 +101,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * alpha transparency value for synteny drawing (0-1)
        */
       alpha: 1,
+
+      /**
+       * #volatile
+       * minimum alignment length to display (in bp)
+       */
+      minAlignmentLength: 0,
     }))
     .actions(self => ({
       /**
@@ -156,6 +162,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setAlpha(value: number) {
         self.alpha = value
+      },
+      /**
+       * #action
+       */
+      setMinAlignmentLength(value: number) {
+        self.minAlignmentLength = value
       },
     }))
 

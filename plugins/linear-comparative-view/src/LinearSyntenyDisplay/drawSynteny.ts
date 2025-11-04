@@ -167,9 +167,21 @@ export function drawRef(
   const drawCIGAR = view.drawCIGAR
   const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
   const drawLocationMarkersEnabled = view.drawLocationMarkers
-  const { level, height, featPositions, alpha } = model
+  const { level, height, featPositions, alpha, minAlignmentLength } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
+
+  // Calculate total alignment length per query sequence
+  // Group by query name and sum up all alignment lengths
+  const queryTotalLengths = new Map<string, number>()
+  if (minAlignmentLength > 0) {
+    for (const { f } of featPositions) {
+      const queryName = f.get('name') || f.get('id') || f.id()
+      const alignmentLength = Math.abs(f.get('end') - f.get('start'))
+      const currentTotal = queryTotalLengths.get(queryName) || 0
+      queryTotalLengths.set(queryName, currentTotal + alignmentLength)
+    }
+  }
 
   // Set alpha transparency
   const savedAlpha = mainCanvas.globalAlpha
@@ -181,7 +193,16 @@ export function drawRef(
 
   mainCanvas.fillStyle = colorMap.M
   mainCanvas.strokeStyle = colorMap.M
-  for (const { p11, p12, p21, p22 } of featPositions) {
+  for (const { p11, p12, p21, p22, f } of featPositions) {
+    // Filter by total alignment length for this query sequence
+    if (minAlignmentLength > 0) {
+      const queryName = f.get('name') || f.get('id') || f.id()
+      const totalLength = queryTotalLengths.get(queryName) || 0
+      if (totalLength < minAlignmentLength) {
+        continue
+      }
+    }
+
     const x11 = p11.offsetPx - offsets[level]!
     const x12 = p12.offsetPx - offsets[level]!
     const x21 = p21.offsetPx - offsets[level + 1]!
@@ -215,6 +236,15 @@ export function drawRef(
   mainCanvas.fillStyle = colorMap.M
   mainCanvas.strokeStyle = colorMap.M
   for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
+    // Filter by total alignment length for this query sequence
+    if (minAlignmentLength > 0) {
+      const queryName = f.get('name') || f.get('id') || f.id()
+      const totalLength = queryTotalLengths.get(queryName) || 0
+      if (totalLength < minAlignmentLength) {
+        continue
+      }
+    }
+
     const x11 = p11.offsetPx - offsets[level]!
     const x12 = p12.offsetPx - offsets[level]!
     const x21 = p21.offsetPx - offsets[level + 1]!
@@ -380,6 +410,16 @@ export function drawRef(
   // eslint-disable-next-line unicorn/no-for-loop
   for (let i = 0; i < featPositions.length; i++) {
     const feature = featPositions[i]!
+
+    // Filter by total alignment length for this query sequence
+    if (minAlignmentLength > 0) {
+      const queryName = feature.f.get('name') || feature.f.get('id') || feature.f.id()
+      const totalLength = queryTotalLengths.get(queryName) || 0
+      if (totalLength < minAlignmentLength) {
+        continue
+      }
+    }
+
     const idx = i * unitMultiplier + 1
     ctx2.fillStyle = makeColor(idx)
 
