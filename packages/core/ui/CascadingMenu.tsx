@@ -5,9 +5,7 @@ import { createContext, useContext, useMemo, useState } from 'react'
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import HelpOutline from '@mui/icons-material/HelpOutline'
 import {
-  Dialog,
   DialogContent,
-  DialogTitle,
   Divider,
   IconButton,
   ListItemIcon,
@@ -17,6 +15,7 @@ import {
   MenuItem,
 } from '@mui/material'
 
+import Dialog from './Dialog'
 import HoverMenu from './HoverMenu'
 import { MenuItemEndDecoration } from './Menu'
 import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
@@ -41,18 +40,29 @@ function HelpIconButton({ helpText }: { helpText: string }) {
     setHelpDialogOpen(true)
   }
 
+  const handleClose = (event: React.MouseEvent | React.KeyboardEvent) => {
+    // Prevent backdrop click from propagating to menu item
+    event.stopPropagation()
+    setHelpDialogOpen(false)
+  }
+
   return (
     <>
       <IconButton
         size="small"
         onClick={handleHelpClick}
-        onMouseDown={e => e.stopPropagation()}
         style={{ marginLeft: 4, padding: 4 }}
       >
         <HelpOutline fontSize="small" />
       </IconButton>
-      <Dialog open={helpDialogOpen} onClose={() => setHelpDialogOpen(false)}>
-        <DialogTitle>Help</DialogTitle>
+      <Dialog
+        open={helpDialogOpen}
+        onClose={handleClose}
+        title="Help"
+        onClick={e => {
+          e.stopPropagation()
+        }}
+      >
         <DialogContent>{helpText}</DialogContent>
       </Dialog>
     </>
@@ -243,9 +253,6 @@ function CascadingMenuList({
   onMenuItemClick: Function
 }) {
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
-  const hasCheckboxOrRadio = menuItems.some(
-    m => m.type === 'checkbox' || m.type === 'radio',
-  )
   const hasCheckboxOrRadioWithHelp = menuItems.some(
     m =>
       (m.type === 'checkbox' || m.type === 'radio') &&
