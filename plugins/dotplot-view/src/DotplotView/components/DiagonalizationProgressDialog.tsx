@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
@@ -11,9 +11,9 @@ import {
   Typography,
 } from '@mui/material'
 import { transaction } from 'mobx'
-import { getSnapshot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { DotplotViewModel } from '../model'
 
 interface Region {
@@ -34,6 +34,96 @@ interface DiagonalizationResult {
   }
 }
 
+interface RunDiagonalizationArgs {
+  model: Pick<
+    DotplotViewModel,
+    'tracks' | 'hview' | 'vview' | 'id' | 'type' | 'displayName'
+  >
+  session: AbstractSessionModel
+  stopToken: string
+  setProgress: (progress: number) => void
+  setMessage: (message: string) => void
+}
+
+async function runDiagonalization({
+  model,
+  session,
+  stopToken,
+  setProgress,
+  setMessage,
+}: RunDiagonalizationArgs) {
+  setProgress(0)
+  setMessage('Preparing diagonalization...')
+
+  // Get first track's adapter config
+  const track = model.tracks[0]
+  if (!track) {
+    throw new Error('No tracks found')
+  }
+
+  const display = track.displays[0]
+  if (!display) {
+    throw new Error('No display found')
+  }
+
+  // Call RPC method to run diagonalization on worker
+  const result = (await session.rpcManager.call(
+    model.id,
+    'DiagonalizeDotplot',
+    {
+      sessionId: `diagonalize-${Date.now()}`,
+      view: {
+        hview: model.hview,
+        vview: model.vview,
+      },
+      adapterConfig: display.adapterConfig,
+      stopToken,
+      statusCallback: (msg: string) => {
+        setMessage(msg)
+        // Estimate progress based on message
+        if (msg.includes('Initializing')) {
+          setProgress(5)
+        } else if (msg.includes('Getting renderer')) {
+          setProgress(10)
+        } else if (msg.includes('Fetching features')) {
+          setProgress(20)
+        } else if (msg.includes('Extracting')) {
+          setProgress(30)
+        } else if (msg.includes('Running diagonalization')) {
+          setProgress(40)
+        } else if (msg.includes('Grouping')) {
+          setProgress(50)
+        } else if (msg.includes('Determining')) {
+          setProgress(65)
+        } else if (msg.includes('Sorting')) {
+          setProgress(80)
+        } else if (msg.includes('Building')) {
+          setProgress(90)
+        } else if (msg.includes('complete')) {
+          setProgress(100)
+        }
+      },
+    },
+  )) as DiagonalizationResult
+
+  setMessage('Applying new layout...')
+  setProgress(95)
+
+  // Apply the new ordering
+  if (result.newRegions.length > 0) {
+    transaction(() => {
+      model.vview.setDisplayedRegions(result.newRegions)
+    })
+    setProgress(100)
+    setMessage(
+      `Diagonalization complete! Reordered ${result.stats.regionsReordered} regions, reversed ${result.stats.regionsReversed}`,
+    )
+    return result
+  } else {
+    throw new Error('No regions to reorder')
+  }
+}
+
 const DiagonalizationProgressDialog = observer(function ({
   handleClose,
   model,
@@ -45,158 +135,104 @@ const DiagonalizationProgressDialog = observer(function ({
   >
 }) {
   const [progress, setProgress] = useState(0)
-  const [message, setMessage] = useState('Initializing...')
-  const [error, setError] = useState<string>()
-  const [isComplete, setIsComplete] = useState(false)
-  const stopTokenRef = useRef(createStopToken())
+  const [message, setMessage] = useState('Ready to start diagonalization')
+  const [error, setError] = useState<unknown>()
+  const [isRunning, setIsRunning] = useState(false)
+  const [stopToken, setStopToken] = useState<string>()
 
-  useEffect(() => {
-    // Run diagonalization on mount
-    const runDiagonalization = async () => {
-      const session = getSession(model)
-      const stopToken = stopTokenRef.current
+  const handleStart = async () => {
+    const session = getSession(model)
+    const token = createStopToken()
+    setStopToken(token)
 
-      try {
-        setMessage('Preparing diagonalization...')
+    try {
+      setIsRunning(true)
+      await runDiagonalization({
+        model,
+        session,
+        stopToken: token,
+        setProgress,
+        setMessage,
+      })
 
-        // Get first track's adapter config
-        const track = model.tracks[0]
-        if (!track) {
-          setError('No tracks found')
-          setIsComplete(true)
-          session.notify('No tracks found to diagonalize', 'warning')
-          return
-        }
-
-        const display = track.displays[0]
-        if (!display) {
-          setError('No display found')
-          setIsComplete(true)
-          session.notify('No display found', 'warning')
-          return
-        }
-
-        // Call RPC method to run diagonalization on worker
-        const result = (await session.rpcManager.call(
-          model.id,
-          'DiagonalizeDotplot',
-          {
-            sessionId: `diagonalize-${Date.now()}`,
-            view: {
-              hview: getSnapshot(model.hview),
-              vview: getSnapshot(model.vview),
-            },
-            adapterConfig: getSnapshot(display.adapterConfig),
-            stopToken,
-            statusCallback: (msg: string) => {
-              setMessage(msg)
-              // Estimate progress based on message
-              if (msg.includes('Initializing')) {
-                setProgress(5)
-              } else if (msg.includes('Getting renderer')) {
-                setProgress(10)
-              } else if (msg.includes('Fetching features')) {
-                setProgress(20)
-              } else if (msg.includes('Extracting')) {
-                setProgress(30)
-              } else if (msg.includes('Running diagonalization')) {
-                setProgress(40)
-              } else if (msg.includes('Grouping')) {
-                setProgress(50)
-              } else if (msg.includes('Determining')) {
-                setProgress(65)
-              } else if (msg.includes('Sorting')) {
-                setProgress(80)
-              } else if (msg.includes('Building')) {
-                setProgress(90)
-              } else if (msg.includes('complete')) {
-                setProgress(100)
-              }
-            },
-          },
-        )) as DiagonalizationResult
-
-        setMessage('Applying new layout...')
-        setProgress(95)
-
-        // Apply the new ordering
-        if (result.newRegions.length > 0) {
-          transaction(() => {
-            model.vview.setDisplayedRegions(result.newRegions)
-          })
-          setProgress(100)
-          setMessage(
-            `Diagonalization complete! Reordered ${result.stats.regionsReordered} regions, reversed ${result.stats.regionsReversed}`,
-          )
-          setIsComplete(true)
-
-          // Auto-close after success
-          setTimeout(() => {
-            handleClose()
-          }, 2000)
-        } else {
-          setError('No regions to reorder')
-          setIsComplete(true)
-          session.notify('No regions found to reorder', 'warning')
-        }
-      } catch (err) {
-        console.error('Diagonalization error:', err)
-        const errMsg = `${err}`
-        setError(errMsg.includes('aborted') ? 'Cancelled by user' : `Error: ${err}`)
-        setIsComplete(true)
-        if (!errMsg.includes('aborted')) {
-          session.notify(`Diagonalization failed: ${err}`, 'error')
-        }
-      }
+      // Auto-close after success
+      setTimeout(() => {
+        handleClose()
+      }, 2000)
+    } catch (err) {
+      console.error(err)
+      setError(err)
+    } finally {
+      setIsRunning(false)
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    runDiagonalization()
-
-    // Cleanup stop token on unmount
-    return () => {
-      stopStopToken(stopTokenRef.current)
-    }
-  }, [model, handleClose])
+  }
 
   const handleCancel = () => {
-    stopStopToken(stopTokenRef.current)
+    if (stopToken) {
+      stopStopToken(stopToken)
+      setStopToken(undefined)
+    }
     handleClose()
   }
 
+  const handleDialogClose = () => {
+    // Only allow closing if not running
+    if (!isRunning) {
+      handleClose()
+    }
+  }
+
   return (
-    <Dialog open title="Diagonalizing" onClose={handleCancel}>
+    <Dialog
+      open
+      title="Diagonalize Dotplot"
+      onClose={handleDialogClose}
+      maxWidth="lg"
+    >
       <DialogContent style={{ minWidth: 400 }}>
-        <Typography
-          variant="body1"
-          gutterBottom
-          color={error ? 'error' : 'inherit'}
-        >
-          {error || message}
-        </Typography>
-        <LinearProgress
-          variant="determinate"
-          value={progress}
-          style={{ marginTop: 16 }}
-          color={error ? 'error' : 'primary'}
-        />
-        <Typography
-          variant="caption"
-          color="textSecondary"
-          style={{ marginTop: 8, display: 'block' }}
-        >
-          {Math.round(progress)}% complete
-        </Typography>
+        {message ? <Typography>{message}</Typography> : null}
+        {error ? <ErrorMessage error={error} /> : null}
+        {isRunning ? (
+          <>
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              style={{ marginTop: 16 }}
+              color={error ? 'error' : 'primary'}
+            />
+            <Typography
+              variant="caption"
+              color="textSecondary"
+              style={{ marginTop: 8, display: 'block' }}
+            >
+              {Math.round(progress)}% complete
+            </Typography>
+          </>
+        ) : null}
       </DialogContent>
       <DialogActions>
-        {!isComplete ? (
-          <Button onClick={handleCancel} color="secondary">
+        {!isRunning ? (
+          <>
+            <Button onClick={handleClose} color="secondary" variant="contained">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                handleStart()
+              }}
+              color="primary"
+              variant="contained"
+            >
+              Start
+            </Button>
+          </>
+        ) : null}
+        {isRunning ? (
+          <Button onClick={handleCancel} color="secondary" variant="contained">
             Cancel
           </Button>
         ) : null}
-        <Button onClick={handleClose} color="primary" disabled={!isComplete}>
-          {isComplete ? 'Done' : 'Processing...'}
-        </Button>
       </DialogActions>
     </Dialog>
   )

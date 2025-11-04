@@ -80,7 +80,7 @@ const DotplotControls = observer(function ({
               'Zooms out to display all genome assemblies in their entirety. Useful for getting a high-level overview or resetting the view after zooming into specific regions.',
           },
           {
-            label: 'Re-order chromosomes to minimize overlaps',
+            label: 'Re-order chromosomes',
             icon: ShuffleIcon,
             onClick: () => {
               getSession(model).queueDialog(handleClose => [
@@ -92,7 +92,7 @@ const DotplotControls = observer(function ({
               ])
             },
             helpText:
-              "Diagonalization algorithmically reorders and reorients chromosomes to minimize crossing synteny lines, creating a more diagonal pattern. This makes it easier to identify large-scale genomic rearrangements, inversions, and translocations. The process runs on the webworker for better performance.",
+              'Diagonalization algorithmically reorders and reorients chromosomes to minimize crossing synteny lines, creating a more diagonal pattern. This makes it easier to identify large-scale genomic rearrangements, inversions, and translocations. The process runs on the webworker for better performance.',
           },
           {
             type: 'checkbox',
@@ -116,6 +116,8 @@ const DotplotControls = observer(function ({
           },
           {
             label: 'Click and drag mode',
+            helpText:
+              'Configure how clicking and dragging behaves in the dotplot view. Choose between panning and region selection as the default action.',
             subMenu: [
               {
                 label:
@@ -126,6 +128,8 @@ const DotplotControls = observer(function ({
                 onClick: () => {
                   model.setCursorMode('move')
                 },
+                helpText:
+                  'Click and drag to pan the view. Hold Ctrl/Cmd while dragging to select a region for zooming or creating a linear synteny view.',
               },
               {
                 label:
@@ -136,11 +140,15 @@ const DotplotControls = observer(function ({
                 onClick: () => {
                   model.setCursorMode('crosshair')
                 },
+                helpText:
+                  'Click and drag to select a region for zooming or creating a linear synteny view. Hold Ctrl/Cmd while dragging to pan the view instead.',
               },
             ],
           },
           {
             label: 'Wheel scroll mode',
+            helpText:
+              'Configure how mouse wheel scrolling behaves in the dotplot view.',
             subMenu: [
               {
                 label: 'Pans view',
@@ -149,6 +157,8 @@ const DotplotControls = observer(function ({
                 onClick: () => {
                   model.setWheelMode('pan')
                 },
+                helpText:
+                  'Mouse wheel scrolling will pan the view up/down. Useful for navigating through the genome without changing zoom level.',
               },
               {
                 label: 'Zooms view',
@@ -157,6 +167,8 @@ const DotplotControls = observer(function ({
                 onClick: () => {
                   model.setWheelMode('zoom')
                 },
+                helpText:
+                  'Mouse wheel scrolling will zoom in/out of the view. Provides quick zoom control for detailed inspection of regions.',
               },
               {
                 label: 'Disable',
@@ -165,6 +177,8 @@ const DotplotControls = observer(function ({
                 onClick: () => {
                   model.setWheelMode('none')
                 },
+                helpText:
+                  'Mouse wheel scrolling will be disabled for the dotplot view. Use this to prevent accidental zoom or pan when scrolling the page.',
               },
             ],
           },

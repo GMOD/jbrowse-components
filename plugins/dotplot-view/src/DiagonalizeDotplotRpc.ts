@@ -145,10 +145,15 @@ async function diagonalizeRegions(
     }
   }
 
+  // Preserve regions without alignments at the end
+  const regionsWithoutAlignments = currentRegions.filter(
+    r => !newQueryRegions.some(nr => nr.refName === r.refName),
+  )
+
   updateProgress(100, 'Diagonalization complete!')
 
   return {
-    newRegions: newQueryRegions,
+    newRegions: [...newQueryRegions, ...regionsWithoutAlignments],
     stats: {
       totalAlignments: alignments.length,
       regionsProcessed: queryOrdering.length,
