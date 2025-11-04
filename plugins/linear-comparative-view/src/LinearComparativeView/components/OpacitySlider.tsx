@@ -46,8 +46,17 @@ const OpacitySlider = observer(function ({
 
   const alpha = firstDisplay?.alpha ?? 1
 
+  // Use a cubic function for logarithmic-like scaling
+  // More granularity near 0, coarser towards 1
+  const exponent = 3
+  const alphaToSlider = (a: number) => Math.pow(a, 1 / exponent)
+  const sliderToAlpha = (s: number) => Math.pow(s, exponent)
+
+  const sliderValue = alphaToSlider(alpha)
+
   const handleAlphaChange = (_event: Event, value: number | number[]) => {
-    const newAlpha = typeof value === 'number' ? value : value[0]!
+    const sliderVal = typeof value === 'number' ? value : value[0]!
+    const newAlpha = sliderToAlpha(sliderVal)
     // Set alpha for all synteny displays across all levels
     for (const level of levels) {
       for (const track of level.tracks) {
@@ -64,17 +73,18 @@ const OpacitySlider = observer(function ({
         Opacity:
       </Typography>
       <Slider
-        value={alpha}
+        value={sliderValue}
         onChange={handleAlphaChange}
         min={0}
         max={1}
-        step={0.05}
+        step={0.01}
         valueLabelDisplay="auto"
         size="small"
         style={{ minWidth: 100 }}
         slots={{
           valueLabel: ValueLabelComponent,
         }}
+        valueLabelFormat={(value: number) => sliderToAlpha(value).toFixed(3)}
       />
     </Box>
   )

@@ -100,7 +100,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        * alpha transparency value for synteny drawing (0-1)
        */
-      alpha: 1,
+      alpha: 0.2,
 
       /**
        * #volatile

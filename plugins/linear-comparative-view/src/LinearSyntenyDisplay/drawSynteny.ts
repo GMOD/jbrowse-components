@@ -1,4 +1,5 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 
 import { draw, drawLocationMarkers, drawMatchSimple } from './components/util'
 
@@ -29,7 +30,6 @@ function makeColor(idx: number) {
   const b = idx % 255
   return `rgb(${r},${g},${b})`
 }
-
 const colorMap = {
   I: '#ff03',
   N: '#0a03',
@@ -37,6 +37,10 @@ const colorMap = {
   X: 'brown',
   M: '#f003',
   '=': '#f003',
+}
+
+function applyAlpha(color: string, alpha: number) {
+  return colord(color).alpha(alpha).toHex()
 }
 
 const lineLimit = 3
@@ -192,16 +196,22 @@ export function drawRef(
     }
   }
 
-  // Set alpha transparency
-  const savedAlpha = mainCanvas.globalAlpha
-  mainCanvas.globalAlpha = alpha
+  // Precalculate colors with alpha applied to avoid repeated calls
+  const colorMapWithAlpha = {
+    I: applyAlpha(colorMap.I, alpha),
+    N: applyAlpha(colorMap.N, alpha),
+    D: applyAlpha(colorMap.D, alpha),
+    X: applyAlpha(colorMap.X, alpha),
+    M: applyAlpha(colorMap.M, alpha),
+    '=': applyAlpha(colorMap['='], alpha),
+  }
 
   mainCanvas.beginPath()
   const offsets = view.views.map(v => v.offsetPx)
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
 
-  mainCanvas.fillStyle = colorMap.M
-  mainCanvas.strokeStyle = colorMap.M
+  mainCanvas.fillStyle = colorMapWithAlpha.M
+  mainCanvas.strokeStyle = colorMapWithAlpha.M
   for (const { p11, p12, p21, p22, f } of featPositions) {
     // Filter by total alignment length for this query sequence
     if (minAlignmentLength > 0) {
@@ -242,8 +252,8 @@ export function drawRef(
     }
   }
 
-  mainCanvas.fillStyle = colorMap.M
-  mainCanvas.strokeStyle = colorMap.M
+  mainCanvas.fillStyle = colorMapWithAlpha.M
+  mainCanvas.strokeStyle = colorMapWithAlpha.M
   for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
     // Filter by total alignment length for this query sequence
     if (minAlignmentLength > 0) {
@@ -336,7 +346,7 @@ export function drawRef(
               // flag if the last element of continuing was a large
               // feature, else just use match
               const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
-              mainCanvas.fillStyle = colorMap[letter]
+              mainCanvas.fillStyle = colorMapWithAlpha[letter]
               continuingFlag = false
 
               if (drawCIGARMatchesOnly) {
@@ -391,8 +401,6 @@ export function drawRef(
   // draw click map
   const ctx2 = model.clickMapCanvas?.getContext('2d')
   if (!ctx2) {
-    // Restore alpha before early return
-    mainCanvas.globalAlpha = savedAlpha
     return
   }
   ctx2.imageSmoothingEnabled = false
@@ -431,9 +439,6 @@ export function drawRef(
       height,
     })
   }
-
-  // Restore alpha
-  mainCanvas.globalAlpha = savedAlpha
 }
 
 export function drawMouseoverClickMap(model: LinearSyntenyDisplayModel) {
