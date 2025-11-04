@@ -33,31 +33,55 @@ export function filterChains(
   type: string,
   chainData: ChainData,
 ) {
-  return chains.filter(chain => {
+  const filtered: ReducedFeature[][] = []
+
+  for (const chain_ of chains) {
+    const chain = chain_
+
     // Filter out singletons if drawSingletons is false
     if (!drawSingletons && chain.length === 1) {
-      return false
+      continue
     }
 
     // Filter out proper pairs if drawProperPairs is false
-    // Only show pairs that have an interesting color (orientation/insert size issues)
-    if (!drawProperPairs && chain.length === 2) {
-      const v0 = chain[0]!
-      const v1 = chain[1]!
-      const pairType = getPairedType({
-        type,
-        f1: v0,
-        f2: v1,
-        stats: chainData.stats,
-      })
-      // Filter out proper pairs
-      if (pairType === PairType.PROPER_PAIR) {
-        return false
+    // Check if this is a paired-end read using SAM flag 1 (read paired)
+    let isPairedEnd = false
+    for (const element of chain) {
+      if (element.flags & 1) {
+        isPairedEnd = true
+        break
       }
     }
 
-    return true
-  })
+    if (!drawProperPairs && isPairedEnd) {
+      // Collect non-supplementary alignments
+      const nonSupplementary: ReducedFeature[] = []
+      for (const element of chain) {
+        if (!(element.flags & 2048)) {
+          nonSupplementary.push(element)
+        }
+      }
+
+      if (nonSupplementary.length === 2) {
+        const v0 = nonSupplementary[0]!
+        const v1 = nonSupplementary[1]!
+        const pairType = getPairedType({
+          type,
+          f1: v0,
+          f2: v1,
+          stats: chainData.stats,
+        })
+        // Filter out proper pairs
+        if (pairType === PairType.PROPER_PAIR) {
+          continue
+        }
+      }
+    }
+
+    filtered.push(chain)
+  }
+
+  return filtered
 }
 
 /**
@@ -71,13 +95,16 @@ export function computeChainBounds(
   const computedChains: ComputedChain[] = []
 
   // get bounds on the 'distances' (TLEN for pairs, pixel span for others)
-  for (const chain of chains) {
+  for (const chain_ of chains) {
+    const chain = chain_
     let minX = Number.MAX_VALUE
     let maxX = Number.MIN_VALUE
     let chainId = ''
     let tlenDistance = 0
+    const chainLength = chain.length
 
-    for (const elt of chain) {
+    for (let j = 0; j < chainLength; j++) {
+      const elt = chain[j]!
       const refName = asm.getCanonicalRefName(elt.refName) || elt.refName
       const rs = view.bpToPx({ refName, coord: elt.start })?.offsetPx
       const re = view.bpToPx({ refName, coord: elt.end })?.offsetPx
@@ -89,7 +116,7 @@ export function computeChainBounds(
         chainId = elt.id
       }
       // Use TLEN from the first feature that has it (only for non-singletons)
-      if (chain.length > 1 && tlenDistance === 0 && elt.tlen) {
+      if (chainLength > 1 && tlenDistance === 0 && elt.tlen) {
         tlenDistance = Math.abs(elt.tlen)
       }
     }
@@ -135,8 +162,10 @@ export function buildFlatbushIndex(
   self: LinearReadCloudDisplayModel,
 ) {
   const finalFlatbush = new Flatbush(Math.max(featuresForFlatbush.length, 1))
-  if (featuresForFlatbush.length) {
-    for (const { x1, y1, x2, y2 } of featuresForFlatbush) {
+  const length = featuresForFlatbush.length
+  if (length) {
+    for (let i = 0; i < length; i++) {
+      const { x1, y1, x2, y2 } = featuresForFlatbush[i]!
       finalFlatbush.add(x1, y1, x2, y2)
     }
   } else {
@@ -158,7 +187,8 @@ export function addChainMouseoverRects(
   view: LGV,
   featuresForFlatbush: FlatbushEntry[],
 ) {
-  for (const { id, chain, minX, maxX } of computedChains) {
+  for (const computedChain of computedChains) {
+    const { id, chain, minX, maxX } = computedChain
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       continue
@@ -265,6 +295,7 @@ export function drawFeatsCommon(
     featureHeight,
     featuresForFlatbush,
     computedChains,
+    flipStrandLongReadChains: self.flipStrandLongReadChains,
   })
 
   // Add full-width rectangles for each chain to enable mouseover on connecting lines

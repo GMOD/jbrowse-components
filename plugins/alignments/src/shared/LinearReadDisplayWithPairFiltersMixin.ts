@@ -21,6 +21,12 @@ export function LinearReadDisplayWithPairFiltersMixin() {
 
       /**
        * #property
+       * Whether to flip strand for long read chains (multiply by primaryStrand)
+       */
+      flipStrandLongReadChains: true,
+
+      /**
+       * #property
        * Custom feature height override (if set, overrides configuration)
        */
       featureHeight: types.maybe(types.number),
@@ -39,6 +45,13 @@ export function LinearReadDisplayWithPairFiltersMixin() {
        */
       setDrawProperPairs(f: boolean) {
         self.drawProperPairs = f
+      },
+      /**
+       * #action
+       * Toggle whether to flip strand for long read chains
+       */
+      setFlipStrandLongReadChains(f: boolean) {
+        self.flipStrandLongReadChains = f
       },
       /**
        * #action

@@ -29,7 +29,7 @@ async function testCloud(loc: string, track: string) {
   await user.click(await findByText('Replace lower panel with...'))
   await user.click((await findAllByText('Linked reads display'))[0]!)
   await user.click(await findByTestId('track_menu_icon', ...opts))
-  await user.click((await findAllByText(/Draw cloud/))[0]!)
+  await user.click((await findAllByText(/Toggle read cloud/))[0]!)
   await wait(view)
   await new Promise(res => setTimeout(res, 2000))
   expectCanvasMatch(getByTestId('cloud-canvas'))
