@@ -48,3 +48,7 @@ test('long-read stack display, out of view pairing', async () => {
 test('short-read stack display, out of view pairing', async () => {
   await testStack('ctgA:478..6,191', 'volvox_sv_cram')
 }, 60000)
+
+test('short-read stack display at ctgA:33,623..35,216', async () => {
+  await testStack('ctgA:33,623..35,216', 'volvox_sv_cram')
+}, 60000)

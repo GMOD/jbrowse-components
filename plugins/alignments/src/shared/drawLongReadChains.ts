@@ -41,13 +41,15 @@ export function drawLongReadChains({
   flipStrandLongReadChains: boolean
 }): void {
   for (const { id, chain, minX, maxX } of computedChains) {
-    // Filter out supplementary alignments for read type determination
-    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
-
-    // Skip if this is a paired-end read (handled by drawPairChains)
-    if (nonSupplementary.length === 2) {
+    // Check if this is a paired-end read using SAM flag 1 (read paired)
+    // All paired-end reads are handled by drawPairChains
+    const isPairedEnd = chain.some(feat => feat.flags & 1)
+    if (isPairedEnd) {
       continue
     }
+
+    // Filter out supplementary alignments for read type determination
+    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
 
     const isSingleton = chain.length === 1
     const c1 = nonSupplementary.length > 0 ? nonSupplementary[0]! : chain[0]!

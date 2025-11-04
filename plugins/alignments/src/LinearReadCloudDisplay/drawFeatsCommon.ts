@@ -40,19 +40,23 @@ export function filterChains(
     }
 
     // Filter out proper pairs if drawProperPairs is false
-    // Only show pairs that have an interesting color (orientation/insert size issues)
-    if (!drawProperPairs && chain.length === 2) {
-      const v0 = chain[0]!
-      const v1 = chain[1]!
-      const pairType = getPairedType({
-        type,
-        f1: v0,
-        f2: v1,
-        stats: chainData.stats,
-      })
-      // Filter out proper pairs
-      if (pairType === PairType.PROPER_PAIR) {
-        return false
+    // Check if this is a paired-end read using SAM flag 1 (read paired)
+    const isPairedEnd = chain.some(feat => feat.flags & 1)
+    if (!drawProperPairs && isPairedEnd) {
+      const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
+      if (nonSupplementary.length === 2) {
+        const v0 = nonSupplementary[0]!
+        const v1 = nonSupplementary[1]!
+        const pairType = getPairedType({
+          type,
+          f1: v0,
+          f2: v1,
+          stats: chainData.stats,
+        })
+        // Filter out proper pairs
+        if (pairType === PairType.PROPER_PAIR) {
+          return false
+        }
       }
     }
 

@@ -1,6 +1,6 @@
 import { fillRectCtx, strokeRectCtx } from './canvasUtils'
 import { drawChevron } from './chevron'
-import { getPairedColor } from './color'
+import { getPairedColor, getSingletonColor } from './color'
 import { CHEVRON_WIDTH } from './util'
 
 import type { ChainData, ReducedFeature } from './fetchChains'
@@ -40,65 +40,78 @@ export function drawPairChains({
   }[]
 }): void {
   for (const { id, chain, minX, maxX } of computedChains) {
-    // Filter out supplementary alignments for paired-end check
-    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
-
-    // Skip if not a paired-end read (only 2 non-supplementary features)
-    if (nonSupplementary.length !== 2) {
+    // Check if this is a paired-end read using SAM flag 1 (read paired)
+    const isPairedEnd = chain.some(feat => feat.flags & 1)
+    if (!isPairedEnd) {
       continue
     }
 
-    const v0 = nonSupplementary[0]!
-    const v1 = nonSupplementary[1]!
-    const [pairedFill, pairedStroke] =
-      getPairedColor({
-        type,
-        v0,
-        v1,
-        stats: chainData.stats,
-      }) || []
+    // Filter out supplementary alignments for paired-end processing
+    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       continue
     }
 
-    // Draw connecting line for paired reads
-    const r1s = view.bpToPx({
-      refName: asm.getCanonicalRefName2(v0.refName),
-      coord: v0.start,
-    })?.offsetPx
-    const r2s = view.bpToPx({
-      refName: asm.getCanonicalRefName2(v1.refName),
-      coord: v1.start,
-    })?.offsetPx
+    // Determine if we have both mates visible
+    const hasBothMates = nonSupplementary.length === 2
 
-    if (r1s !== undefined && r2s !== undefined) {
-      const w = r2s - r1s
+    let pairedFill: string
+    let pairedStroke: string
 
-      fillRectCtx(
-        r1s - view.offsetPx,
-        chainY + featureHeight / 2 - 0.5,
-        w,
-        1,
-        ctx,
-        '#666',
-      )
+    if (hasBothMates) {
+      const v0 = nonSupplementary[0]!
+      const v1 = nonSupplementary[1]!
+      const colors = getPairedColor({
+        type,
+        v0,
+        v1,
+        stats: chainData.stats,
+      })
+      pairedFill = colors?.[0] || '#888'
+      pairedStroke = colors?.[1] || '#888'
+
+      // Draw connecting line for paired reads
+      const r1s = view.bpToPx({
+        refName: asm.getCanonicalRefName2(v0.refName),
+        coord: v0.start,
+      })?.offsetPx
+      const r2s = view.bpToPx({
+        refName: asm.getCanonicalRefName2(v1.refName),
+        coord: v1.start,
+      })?.offsetPx
+
+      if (r1s !== undefined && r2s !== undefined) {
+        const w = r2s - r1s
+
+        fillRectCtx(
+          r1s - view.offsetPx,
+          chainY + featureHeight / 2 - 0.5,
+          w,
+          1,
+          ctx,
+          '#666',
+        )
+      }
+    } else {
+      // Singleton: use getSingletonColor which returns red for large TLEN
+      const feat = nonSupplementary[0] || chain[0]!
+      const [fill, stroke] = getSingletonColor(feat, chainData.stats)
+      pairedFill = fill
+      pairedStroke = stroke
     }
 
-    // Draw the paired reads
+    // Draw the paired-end features (both mates or singleton)
     for (const feat of chain) {
       const { refName, start, end } = feat
 
-      // Draw connecting line for paired reads
       const refName2 = asm.getCanonicalRefName(refName) || refName
       const s = view.bpToPx({ refName: refName2, coord: start })
       const e = view.bpToPx({ refName: refName2, coord: end })
       if (s && e) {
         const xPos = s.offsetPx - view.offsetPx
         const width = Math.max(e.offsetPx - s.offsetPx, 3)
-        const fillCol = pairedFill || '#888'
-        const strokeCol = pairedStroke || '#888'
 
         if (renderChevrons) {
           drawChevron(
@@ -108,13 +121,13 @@ export function drawPairChains({
             width,
             featureHeight,
             feat.strand,
-            fillCol,
+            pairedFill,
             CHEVRON_WIDTH,
-            strokeCol,
+            pairedStroke,
           )
         } else {
-          fillRectCtx(xPos, chainY, width, featureHeight, ctx, fillCol)
-          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, strokeCol)
+          fillRectCtx(xPos, chainY, width, featureHeight, ctx, pairedFill)
+          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, pairedStroke)
         }
 
         featuresForFlatbush.push({

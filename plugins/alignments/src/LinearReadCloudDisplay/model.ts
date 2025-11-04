@@ -215,7 +215,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Draw cloud (Y-coordinate as insert size)',
+              label: 'Use Y-coordinate according to TLEN ("read cloud")',
               type: 'checkbox',
               checked: self.drawCloud,
               onClick: () => {
@@ -239,7 +239,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label: 'Flip strand for long read chains',
+              label:
+                'Flip strand relative to primary alignment for long read chains',
               type: 'checkbox',
               checked: self.flipStrandLongReadChains,
               onClick: () => {
