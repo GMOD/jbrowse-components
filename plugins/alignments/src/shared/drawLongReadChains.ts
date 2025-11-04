@@ -43,9 +43,18 @@ export function drawLongReadChains({
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 
-  for (const { id, chain, minX, maxX } of computedChains) {
+  for (const computedChain of computedChains) {
+    const { id, chain, minX, maxX } = computedChain
+
     // Guard clause: skip paired-end reads (handled by drawPairChains)
-    if (chain.some(feat => feat.flags & 1)) {
+    let isPairedEnd = false
+    for (const element of chain) {
+      if (element.flags & 1) {
+        isPairedEnd = true
+        break
+      }
+    }
+    if (isPairedEnd) {
       continue
     }
 
@@ -54,7 +63,13 @@ export function drawLongReadChains({
       continue
     }
 
-    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
+    // Collect non-supplementary alignments
+    const nonSupplementary: ReducedFeature[] = []
+    for (const element of chain) {
+      if (!(element.flags & 2048)) {
+        nonSupplementary.push(element)
+      }
+    }
     const isSingleton = chain.length === 1
     const c1 = nonSupplementary[0] || chain[0]!
     const primaryStrand = getPrimaryStrandFromFlags(c1)
@@ -84,7 +99,12 @@ export function drawLongReadChains({
     }
 
     // Draw the features
-    for (const feat of chain) {
+    const viewOffsetPx = view.offsetPx
+    const chainMinXPx = minX - viewOffsetPx
+    const chainMaxXPx = maxX - viewOffsetPx
+
+    for (let i = 0, l = chain.length; i < l; i++) {
+      const feat = chain[i]!
       const s = view.bpToPx({
         refName: asm.getCanonicalRefName2(feat.refName),
         coord: feat.start,
@@ -110,7 +130,7 @@ export function drawLongReadChains({
             strokeColor[getStrandColorKey(effectiveStrand)],
           ]
 
-      const xPos = s.offsetPx - view.offsetPx
+      const xPos = s.offsetPx - viewOffsetPx
       const width = Math.max(e.offsetPx - s.offsetPx, 3)
 
       if (renderChevrons) {
@@ -137,8 +157,8 @@ export function drawLongReadChains({
         y2: chainY + featureHeight,
         data: feat,
         chainId: id,
-        chainMinX: minX - view.offsetPx,
-        chainMaxX: maxX - view.offsetPx,
+        chainMinX: chainMinXPx,
+        chainMaxX: chainMaxXPx,
         chain,
       })
     }

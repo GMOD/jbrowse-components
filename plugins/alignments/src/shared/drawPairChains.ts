@@ -39,9 +39,18 @@ export function drawPairChains({
     id: string
   }[]
 }): void {
-  for (const { id, chain, minX, maxX } of computedChains) {
+  for (const computedChain of computedChains) {
+    const { id, chain, minX, maxX } = computedChain
+
     // Guard clause: skip non-paired-end chains
-    if (!chain.some(feat => feat.flags & 1)) {
+    let isPairedEnd = false
+    for (const element of chain) {
+      if (element.flags & 1) {
+        isPairedEnd = true
+        break
+      }
+    }
+    if (!isPairedEnd) {
       continue
     }
 
@@ -50,22 +59,29 @@ export function drawPairChains({
       continue
     }
 
-    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
+    // Collect non-supplementary alignments
+    const nonSupplementary: ReducedFeature[] = []
+    for (const element of chain) {
+      if (!(element.flags & 2048)) {
+        nonSupplementary.push(element)
+      }
+    }
     const hasBothMates = nonSupplementary.length === 2
 
     // Get colors based on whether both mates are visible
     const [pairedFill, pairedStroke] = hasBothMates
-      ? (getPairedColor({
+      ? getPairedColor({
           type,
           v0: nonSupplementary[0]!,
           v1: nonSupplementary[1]!,
           stats: chainData.stats,
-        }) || ['#888', '#888'])
+        }) || ['#888', '#888']
       : getSingletonColor(nonSupplementary[0] || chain[0]!, chainData.stats)
 
     // Draw connecting line for pairs with both mates visible
     if (hasBothMates) {
-      const [v0, v1] = nonSupplementary
+      const v0 = nonSupplementary[0]!
+      const v1 = nonSupplementary[1]!
       const r1s = view.bpToPx({
         refName: asm.getCanonicalRefName2(v0.refName),
         coord: v0.start,
@@ -88,7 +104,12 @@ export function drawPairChains({
     }
 
     // Draw the paired-end features (both mates or singleton)
-    for (const feat of chain) {
+    const viewOffsetPx = view.offsetPx
+    const chainMinXPx = minX - viewOffsetPx
+    const chainMaxXPx = maxX - viewOffsetPx
+
+    for (let i = 0, l = chain.length; i < l; i++) {
+      const feat = chain[i]!
       const s = view.bpToPx({
         refName: asm.getCanonicalRefName2(feat.refName),
         coord: feat.start,
@@ -102,7 +123,7 @@ export function drawPairChains({
         continue
       }
 
-      const xPos = s.offsetPx - view.offsetPx
+      const xPos = s.offsetPx - viewOffsetPx
       const width = Math.max(e.offsetPx - s.offsetPx, 3)
 
       if (renderChevrons) {
@@ -129,8 +150,8 @@ export function drawPairChains({
         y2: chainY + featureHeight,
         data: feat,
         chainId: id,
-        chainMinX: minX - view.offsetPx,
-        chainMaxX: maxX - view.offsetPx,
+        chainMinX: chainMinXPx,
+        chainMaxX: chainMaxXPx,
         chain,
       })
     }

@@ -215,7 +215,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Use Y-coordinate according to TLEN ("read cloud")',
+              label: 'Toggle read cloud (y-coordinate proportional to TLEN)',
               type: 'checkbox',
               checked: self.drawCloud,
               onClick: () => {

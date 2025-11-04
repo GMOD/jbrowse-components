@@ -59,7 +59,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        showHeader: true,
+        showHeader: false,
         /**
          * #property
          */
