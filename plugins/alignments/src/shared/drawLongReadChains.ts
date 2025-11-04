@@ -21,6 +21,7 @@ export function drawLongReadChains({
   featureHeight,
   featuresForFlatbush,
   computedChains,
+  flipStrandLongReadChains,
 }: {
   ctx: CanvasRenderingContext2D
   chainData: ChainData
@@ -37,6 +38,7 @@ export function drawLongReadChains({
     chain: ReducedFeature[]
     id: string
   }[]
+  flipStrandLongReadChains: boolean
 }): void {
   for (const { id, chain, minX, maxX } of computedChains) {
     // Filter out supplementary alignments for read type determination
@@ -91,7 +93,10 @@ export function drawLongReadChains({
       const s = view.bpToPx({ refName: refName2, coord: start })
       const e = view.bpToPx({ refName: refName2, coord: end })
       if (s && e) {
-        const effectiveStrand = feat.strand * primaryStrand
+        const effectiveStrand =
+          isSingleton || !flipStrandLongReadChains
+            ? feat.strand
+            : feat.strand * primaryStrand
         const xPos = s.offsetPx - view.offsetPx
         const width = Math.max(e.offsetPx - s.offsetPx, 3)
 

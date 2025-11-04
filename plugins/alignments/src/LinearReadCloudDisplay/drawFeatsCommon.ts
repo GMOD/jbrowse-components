@@ -265,6 +265,7 @@ export function drawFeatsCommon(
     featureHeight,
     featuresForFlatbush,
     computedChains,
+    flipStrandLongReadChains: self.flipStrandLongReadChains,
   })
 
   // Add full-width rectangles for each chain to enable mouseover on connecting lines

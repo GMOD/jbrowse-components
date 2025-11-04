@@ -238,6 +238,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.setDrawProperPairs(!self.drawProperPairs)
               },
             },
+            {
+              label: 'Flip strand for long read chains',
+              type: 'checkbox',
+              checked: self.flipStrandLongReadChains,
+              onClick: () => {
+                self.setFlipStrandLongReadChains(!self.flipStrandLongReadChains)
+              },
+            },
             getFilterByMenuItem(self),
             getColorSchemeMenuItem(self),
           ]
