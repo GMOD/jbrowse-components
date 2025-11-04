@@ -185,15 +185,34 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...superTrackMenuItems(),
             {
               label: 'Set feature height...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetFeatureHeightDialog,
-                  {
-                    model: self,
-                    handleClose,
+              subMenu: [
+                {
+                  label: 'Normal',
+                  onClick: () => {
+                    self.setFeatureHeight(7)
+                    self.setNoSpacing(false)
                   },
-                ])
-              },
+                },
+                {
+                  label: 'Compact',
+                  onClick: () => {
+                    self.setFeatureHeight(3)
+                    self.setNoSpacing(true)
+                  },
+                },
+                {
+                  label: 'Manually set height...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SetFeatureHeightDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+              ],
             },
             {
               label: 'Draw cloud (Y-coordinate as insert size)',
