@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
-import { Box, FormGroup, Slider, Typography } from '@mui/material'
+import { Box, FormGroup, Slider, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -12,6 +12,7 @@ import HeaderSearchBoxes from './HeaderSearchBoxes'
 
 import type { LinearComparativeViewModel } from '../model'
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
+import type { SliderValueLabelProps } from '@mui/material'
 
 const useStyles = makeStyles()({
   inline: {
@@ -25,6 +26,21 @@ const useStyles = makeStyles()({
     minWidth: 150,
   },
 })
+
+function ValueLabelComponent(props: SliderValueLabelProps) {
+  const { children, open, value } = props
+  return (
+    <Tooltip
+      open={open}
+      enterTouchDelay={0}
+      placement="top"
+      title={value}
+      arrow
+    >
+      {children}
+    </Tooltip>
+  )
+}
 
 const Header = observer(function ({
   model,
@@ -43,6 +59,15 @@ const Header = observer(function ({
   const alpha = firstDisplay?.alpha ?? 1
   const minAlignmentLength = firstDisplay?.minAlignmentLength ?? 0
 
+  // Local state for min length slider with log scale
+  const [minLengthValue, setMinLengthValue] = useState(
+    Math.log2(Math.max(1, minAlignmentLength)) * 100,
+  )
+
+  useEffect(() => {
+    setMinLengthValue(Math.log2(Math.max(1, minAlignmentLength)) * 100)
+  }, [minAlignmentLength])
+
   const handleAlphaChange = (_event: Event, value: number | number[]) => {
     const newAlpha = typeof value === 'number' ? value : value[0]!
     // Set alpha for all synteny displays across all levels
@@ -50,18 +75,6 @@ const Header = observer(function ({
       for (const track of level.tracks) {
         for (const display of track.displays) {
           ;(display as LinearSyntenyDisplayModel).setAlpha(newAlpha)
-        }
-      }
-    }
-  }
-
-  const handleMinLengthChange = (_event: Event, value: number | number[]) => {
-    const newMinLength = typeof value === 'number' ? value : value[0]!
-    // Set minAlignmentLength for all synteny displays across all levels
-    for (const level of levels) {
-      for (const track of level.tracks) {
-        for (const display of track.displays) {
-          ;(display as LinearSyntenyDisplayModel).setMinAlignmentLength(newMinLength)
         }
       }
     }
@@ -156,6 +169,9 @@ const Header = observer(function ({
               valueLabelDisplay="auto"
               size="small"
               style={{ minWidth: 100 }}
+              slots={{
+                valueLabel: ValueLabelComponent,
+              }}
             />
           </Box>
           <Box className={classes.alphaSlider}>
@@ -163,14 +179,34 @@ const Header = observer(function ({
               Min length:
             </Typography>
             <Slider
-              value={minAlignmentLength}
-              onChange={handleMinLengthChange}
+              value={minLengthValue}
+              onChange={(_, val) => {
+                setMinLengthValue(val as number)
+              }}
+              onChangeCommitted={() => {
+                const newMinLength = Math.round(2 ** (minLengthValue / 100))
+                // Set minAlignmentLength for all synteny displays across all levels
+                for (const level of levels) {
+                  for (const track of level.tracks) {
+                    for (const display of track.displays) {
+                      ;(
+                        display as LinearSyntenyDisplayModel
+                      ).setMinAlignmentLength(newMinLength)
+                    }
+                  }
+                }
+              }}
               min={0}
-              max={100000}
-              step={1000}
+              max={Math.log2(1000000) * 100}
               valueLabelDisplay="auto"
+              valueLabelFormat={newValue =>
+                Math.round(2 ** (newValue / 100)).toLocaleString()
+              }
               size="small"
               style={{ minWidth: 100 }}
+              slots={{
+                valueLabel: ValueLabelComponent,
+              }}
             />
           </Box>
         </>
