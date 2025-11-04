@@ -732,7 +732,6 @@ export default function stateModelFactory(pm: PluginManager) {
               ])
             },
           },
-
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
