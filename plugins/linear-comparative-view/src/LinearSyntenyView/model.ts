@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
+import ShuffleIcon from '@mui/icons-material/Shuffle'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { saveAs } from 'file-saver'
@@ -155,7 +156,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: VisibilityIcon,
             },
             {
-              label: 'Diagonalize',
+              label: 'Re-order chromosomes to minimize overlaps',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   DiagonalizationProgressDialog,
@@ -165,28 +166,53 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                 ])
               },
+              icon: ShuffleIcon,
               description:
-                'Reorder and reorient query regions to minimize crossing lines',
+                "Reorder and reorient query regions to minimize crossing lines, also known as 'diagonalizing'",
             },
             {
-              label: 'Draw CIGAR',
-              checked: self.drawCIGAR,
-              type: 'checkbox',
-              description:
-                'If disabled, only draws the broad scale CIGAR match',
-              onClick: () => {
-                self.setDrawCIGAR(!self.drawCIGAR)
-              },
-            },
-            {
-              label: 'Draw only CIGAR matches',
-              checked: self.drawCIGARMatchesOnly,
-              type: 'checkbox',
-              description:
-                'If enabled, it hides the insertions and deletions in the CIGAR strings, helps with divergent',
-              onClick: () => {
-                self.setDrawCIGARMatchesOnly(!self.drawCIGARMatchesOnly)
-              },
+              label: 'Draw',
+              subMenu: [
+                {
+                  label: 'Draw CIGAR',
+                  checked: self.drawCIGAR,
+                  type: 'checkbox',
+                  description:
+                    'If disabled, only draws the broad scale CIGAR match',
+                  onClick: () => {
+                    self.setDrawCIGAR(!self.drawCIGAR)
+                  },
+                },
+                {
+                  label: 'Draw only CIGAR matches',
+                  checked: self.drawCIGARMatchesOnly,
+                  type: 'checkbox',
+                  description:
+                    'If enabled, it hides the insertions and deletions in the CIGAR strings, helps with divergent',
+                  onClick: () => {
+                    self.setDrawCIGARMatchesOnly(!self.drawCIGARMatchesOnly)
+                  },
+                },
+                {
+                  label: 'Use curved lines',
+                  type: 'checkbox',
+                  checked: self.drawCurves,
+                  icon: Curves,
+                  onClick: () => {
+                    self.setDrawCurves(!self.drawCurves)
+                  },
+                },
+                {
+                  label: 'Draw location markers',
+                  type: 'checkbox',
+                  checked: self.drawLocationMarkers,
+                  description:
+                    'Draw periodic markers to show location within large matches',
+                  onClick: () => {
+                    self.setDrawLocationMarkers(!self.drawLocationMarkers)
+                  },
+                },
+              ],
             },
             {
               label: 'Link views',
@@ -195,25 +221,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: LinkIcon,
               onClick: () => {
                 self.setLinkViews(!self.linkViews)
-              },
-            },
-            {
-              label: 'Use curved lines',
-              type: 'checkbox',
-              checked: self.drawCurves,
-              icon: Curves,
-              onClick: () => {
-                self.setDrawCurves(!self.drawCurves)
-              },
-            },
-            {
-              label: 'Draw location markers',
-              type: 'checkbox',
-              checked: self.drawLocationMarkers,
-              description:
-                'Draw periodic markers to show location within large matches',
-              onClick: () => {
-                self.setDrawLocationMarkers(!self.drawLocationMarkers)
               },
             },
             {
