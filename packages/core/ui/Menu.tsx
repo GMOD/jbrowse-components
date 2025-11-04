@@ -118,6 +118,7 @@ export interface BaseMenuItem {
   subLabel?: string
   icon?: React.ComponentType<SvgIconProps>
   disabled?: boolean
+  helpText?: string
 }
 
 export interface NormalMenuItem extends BaseMenuItem {
