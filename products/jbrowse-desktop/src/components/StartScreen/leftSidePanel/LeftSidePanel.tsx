@@ -66,7 +66,7 @@ export default function LauncherPanel({
         await loadPluginManager(
           await ipcRenderer.invoke('createInitialAutosaveFile', {
             ...deepmerge.all(entries),
-            defaultSession: {
+            defaultSession: entries[0]?.defaultSession ?? {
               name: `New session ${new Date().toLocaleString('en-US')}`,
             },
           }),
