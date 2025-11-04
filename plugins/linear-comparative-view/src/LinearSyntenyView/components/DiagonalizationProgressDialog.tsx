@@ -42,7 +42,7 @@ const DiagonalizationProgressDialog = observer(function ({
           return
         }
 
-        const [refView, queryView] = model.views
+        const queryView = model.views[1]!
 
         setProgress(5)
         setMessage('Collecting alignment data...')
@@ -107,11 +107,7 @@ const DiagonalizationProgressDialog = observer(function ({
             queryView.setDisplayedRegions(result.newRegions)
           })
           setProgress(100)
-          setMessage('Diagonalization complete!')
-          session.notify(
-            `Successfully diagonalized ${result.stats.regionsReordered} regions (${result.stats.regionsReversed} reversed)`,
-            'success',
-          )
+          setMessage('Diagonalization complete')
 
           // Auto-close after success
           setTimeout(() => {
@@ -137,7 +133,11 @@ const DiagonalizationProgressDialog = observer(function ({
   return (
     <Dialog open title="Diagonalizing" onClose={handleClose}>
       <DialogContent style={{ minWidth: 400 }}>
-        <Typography variant="body1" gutterBottom color={error ? 'error' : 'inherit'}>
+        <Typography
+          variant="body1"
+          gutterBottom
+          color={error ? 'error' : 'inherit'}
+        >
           {error || message}
         </Typography>
         <LinearProgress

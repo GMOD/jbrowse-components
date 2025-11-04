@@ -17,7 +17,7 @@ export interface Region {
   refName: string
   start: number
   end: number
-  reversed: boolean
+  reversed?: boolean
   assemblyName: string
 }
 
