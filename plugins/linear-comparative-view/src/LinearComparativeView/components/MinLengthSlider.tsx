@@ -4,8 +4,8 @@ import { Box, Slider, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import type { LinearComparativeViewModel } from '../model'
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
+import type { LinearComparativeViewModel } from '../model'
 import type { SliderValueLabelProps } from '@mui/material'
 
 const useStyles = makeStyles()({
@@ -65,7 +65,7 @@ const MinLengthSlider = observer(function ({
       <Slider
         value={minLengthValue}
         onChange={(_, val) => {
-          setMinLengthValue(val as number)
+          setMinLengthValue(val)
         }}
         onChangeCommitted={() => {
           const newMinLength = Math.round(2 ** (minLengthValue / 100))
@@ -73,9 +73,9 @@ const MinLengthSlider = observer(function ({
           for (const level of levels) {
             for (const track of level.tracks) {
               for (const display of track.displays) {
-                ;(
-                  display as LinearSyntenyDisplayModel
-                ).setMinAlignmentLength(newMinLength)
+                ;(display as LinearSyntenyDisplayModel).setMinAlignmentLength(
+                  newMinLength,
+                )
               }
             }
           }

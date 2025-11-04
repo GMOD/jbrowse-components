@@ -2,8 +2,8 @@ import { Box, Slider, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import type { LinearComparativeViewModel } from '../model'
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
+import type { LinearComparativeViewModel } from '../model'
 import type { SliderValueLabelProps } from '@mui/material'
 
 const useStyles = makeStyles()({

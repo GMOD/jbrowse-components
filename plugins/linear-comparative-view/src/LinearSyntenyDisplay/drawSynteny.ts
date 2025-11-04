@@ -97,8 +97,6 @@ export function drawCigarClickMap(
         const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
 
         for (let j = 0; j < cigar.length; j += 2) {
-          const idx = j * unitMultiplier2 + 1
-
           const len = +cigar[j]!
           const op = cigar[j + 1] as keyof typeof colorMap
 
@@ -146,8 +144,19 @@ export function drawCigarClickMap(
                   Math.abs(cx2 - px2) > 1)
 
               if (shouldDraw) {
+                const idx = j * unitMultiplier2 + 1
                 cigarClickMapCanvas.fillStyle = makeColor(idx)
-                draw(cigarClickMapCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                draw(
+                  cigarClickMapCanvas,
+                  px1,
+                  cx1,
+                  y1,
+                  cx2,
+                  px2,
+                  y2,
+                  mid,
+                  drawCurves,
+                )
                 cigarClickMapCanvas.fill()
               }
             }
@@ -280,11 +289,8 @@ export function drawRef(
         // px1/px2 are the previous x positions on the top and bottom rows
         let px1 = 0
         let px2 = 0
-        const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
 
         for (let j = 0; j < cigar.length; j += 2) {
-          const idx = j * unitMultiplier2 + 1
-
           const len = +cigar[j]!
           const op = cigar[j + 1] as keyof typeof colorMap
 
@@ -398,7 +404,8 @@ export function drawRef(
 
     // Filter by total alignment length for this query sequence
     if (minAlignmentLength > 0) {
-      const queryName = feature.f.get('name') || feature.f.get('id') || feature.f.id()
+      const queryName =
+        feature.f.get('name') || feature.f.get('id') || feature.f.id()
       const totalLength = queryTotalLengths.get(queryName) || 0
       if (totalLength < minAlignmentLength) {
         continue

@@ -31,9 +31,10 @@ export interface DiagonalizationResult {
   }
 }
 
-export interface ProgressCallback {
-  (progress: number, message: string): void | Promise<void>
-}
+export type ProgressCallback = (
+  progress: number,
+  message: string,
+) => void | Promise<void>
 
 /**
  * Diagonalize a set of regions based on alignment data.
@@ -159,15 +160,6 @@ export async function diagonalizeRegions(
   const newQueryRegions: Region[] = []
   let regionsReversed = 0
 
-  console.log('Query ordering:', queryOrdering)
-  console.log(
-    'Current query regions:',
-    currentRegions.map(r => ({
-      refName: r.refName,
-      assemblyName: r.assemblyName,
-    })),
-  )
-
   for (const { refName, shouldReverse } of queryOrdering) {
     const region = currentRegions.find(r => r.refName === refName)
     if (region) {
@@ -182,8 +174,6 @@ export async function diagonalizeRegions(
       console.warn(`Could not find region for refName: ${refName}`)
     }
   }
-
-  console.log('New query regions count:', newQueryRegions.length)
 
   await updateProgress(100, 'Diagonalization complete!')
 

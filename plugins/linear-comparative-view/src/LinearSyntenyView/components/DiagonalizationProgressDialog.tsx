@@ -14,8 +14,8 @@ import { observer } from 'mobx-react'
 
 import { diagonalizeRegions } from '../util/diagonalize'
 
-import type { AlignmentData } from '../util/diagonalize'
 import type { LinearSyntenyViewModel } from '../model'
+import type { AlignmentData } from '../util/diagonalize'
 
 const DiagonalizationProgressDialog = observer(function ({
   handleClose,

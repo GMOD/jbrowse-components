@@ -66,6 +66,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       }
 
       // Access alpha to make autorun react to alpha changes
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { alpha } = self
       const height = self.height
       const width = view.width
@@ -90,6 +91,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         return
       }
       // Access reactive properties so autorun is triggered when they change
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { clickId, mouseoverId } = self
       // Draw mouseover with light debounce for performance
       debouncedDrawMouseoverClickMap(self)
