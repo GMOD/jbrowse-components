@@ -30,6 +30,7 @@ function RecentSessionsList({
   setPluginManager,
   favorites,
   toggleFavorite,
+  addToQuickstartList,
 }: {
   setError: (e: unknown) => void
   setSessionToRename: (arg: RecentSessionData) => void
@@ -38,6 +39,7 @@ function RecentSessionsList({
   sessions: RecentSessionData[]
   favorites: string[]
   toggleFavorite: (sessionPath: string) => void
+  addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
   const { classes } = useStyles()
   const { height: innerHeight } = useInnerDims()
@@ -109,6 +111,7 @@ function RecentSessionsList({
             setError={setError}
             toggleFavorite={toggleFavorite}
             setSessionToRename={setSessionToRename}
+            addToQuickstartList={addToQuickstartList}
           />
         ),
       },
@@ -138,6 +141,7 @@ function RecentSessionsList({
       setError,
       toggleFavorite,
       setSessionToRename,
+      addToQuickstartList,
     ],
   )
 
