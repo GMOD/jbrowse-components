@@ -1,4 +1,4 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -16,11 +16,14 @@ import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 type StatusCallback = (arg: string) => void
 
 export default class Gff3Adapter extends BaseFeatureDataAdapter {
-  calculatedIntervalTreeMap: Record<string, IntervalTree> = {}
+  calculatedIntervalTreeMap: Record<string, IntervalTree<Feature>> = {}
 
   gffFeatures?: Promise<{
     header: string
-    intervalTreeMap: Record<string, (sc?: StatusCallback) => IntervalTree>
+    intervalTreeMap: Record<
+      string,
+      (sc?: StatusCallback) => IntervalTree<Feature>
+    >
   }>
 
   private async loadDataP(opts?: BaseOptions) {
@@ -38,7 +41,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         (sc?: (arg: string) => void) => {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GFF data')
-            const intervalTree = new IntervalTree()
+            const intervalTree = new IntervalTree<Feature>()
             for (const obj of parseStringSync(lines)
               .flat()
               .map(

@@ -175,7 +175,7 @@ they are not relevant to your interest.
 
 <Figure caption="The arc display showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
 
-### Using the "Read cloud display"
+### Using the "Linked reads display"
 
 Similar to the "Arc display" we also offer what we call the "Read cloud"
 display. It is similar in some ways to the "Arc display" but renders paired-end

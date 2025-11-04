@@ -1,4 +1,4 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
@@ -14,12 +14,15 @@ import type { Feature, Region } from '@jbrowse/core/util'
 type StatusCallback = (arg: string) => void
 
 export default class VcfAdapter extends BaseFeatureDataAdapter {
-  calculatedIntervalTreeMap: Record<string, IntervalTree> = {}
+  calculatedIntervalTreeMap: Record<string, IntervalTree<Feature>> = {}
 
   vcfFeatures?: Promise<{
     header: string
     parser: VcfParser
-    intervalTreeMap: Record<string, (sc?: StatusCallback) => IntervalTree>
+    intervalTreeMap: Record<
+      string,
+      (sc?: StatusCallback) => IntervalTree<Feature>
+    >
   }>
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -49,7 +52,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing VCF data')
             let idx = 0
-            const intervalTree = new IntervalTree()
+            const intervalTree = new IntervalTree<Feature>()
             for (const line of lines) {
               const f = new VcfFeature({
                 variant: parser.parseLine(line),

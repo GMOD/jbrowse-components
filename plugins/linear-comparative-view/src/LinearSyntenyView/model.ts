@@ -46,6 +46,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         drawCurves: false,
+        /**
+         * #property
+         */
+        drawLocationMarkers: false,
       }),
     )
     .volatile(() => ({
@@ -91,6 +95,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setDrawCIGARMatchesOnly(arg: boolean) {
         self.drawCIGARMatchesOnly = arg
+      },
+      /**
+       * #action
+       */
+      setDrawLocationMarkers(arg: boolean) {
+        self.drawLocationMarkers = arg
       },
       /**
        * #action
@@ -177,6 +187,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: Curves,
               onClick: () => {
                 self.setDrawCurves(!self.drawCurves)
+              },
+            },
+            {
+              label: 'Draw location markers',
+              type: 'checkbox',
+              checked: self.drawLocationMarkers,
+              description:
+                'Draw periodic markers to show location within large matches',
+              onClick: () => {
+                self.setDrawLocationMarkers(!self.drawLocationMarkers)
               },
             },
             {

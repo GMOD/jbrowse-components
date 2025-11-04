@@ -40,9 +40,11 @@ const FilterByTagDialog = lazy(
 )
 const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog'))
 const SetFeatureHeightDialog = lazy(
-  () => import('./components/SetFeatureHeightDialog'),
+  () => import('../shared/components/SetFeatureHeightDialog'),
 )
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
+const SetMaxHeightDialog = lazy(
+  () => import('../shared/components/SetMaxHeightDialog'),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([

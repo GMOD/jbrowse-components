@@ -86,6 +86,7 @@ export interface ColorBy {
   modifications?: {
     twoColor?: boolean
     isolatedModification?: string
+    threshold?: number
   }
 }
 

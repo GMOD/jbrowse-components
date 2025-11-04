@@ -6,6 +6,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
+import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -19,7 +20,7 @@ const PileupRendering = observer(function (props: {
   sortedBy?: SortedBy
   colorBy?: ColorBy
   filterBy?: FilterBy
-  items: { seq: string }[]
+  items: FlatbushItem[]
   flatbush: any
   onMouseMove?: (
     event: React.MouseEvent,
@@ -132,11 +133,20 @@ const PileupRendering = observer(function (props: {
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
     const search = flatbush2.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
+    const item = search.length ? items[search[0]!] : undefined
+    const label = item
+      ? item.type === 'insertion'
+        ? `Insertion: ${item.seq}`
+        : item.type === 'deletion'
+          ? `Deletion: ${item.seq}bp`
+          : item.type === 'modification'
+            ? item.seq
+            : `Mismatch: ${item.seq}`
+      : undefined
     onMouseMove?.(
       event,
       displayModel?.getFeatureOverlapping(blockKey, clientBp, offsetY),
-
-      search.length ? `Insertion: ${items[search[0]!]!.seq}` : undefined,
+      label,
     )
   }
 

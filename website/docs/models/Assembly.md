@@ -149,9 +149,20 @@ hasName: (name: string) => any
 
 #### method: getCanonicalRefName
 
+returns canonical refname
+
 ```js
 // type signature
 getCanonicalRefName: (refName: string) => string
+```
+
+#### method: getCanonicalRefName2
+
+returns canonical or fallback
+
+```js
+// type signature
+getCanonicalRefName2: (asmName: string) => any
 ```
 
 #### method: getRefNameColor

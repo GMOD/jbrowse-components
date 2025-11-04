@@ -1,6 +1,6 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 
-import { draw, drawMatchSimple } from './components/util'
+import { draw, drawLocationMarkers, drawMatchSimple } from './components/util'
 
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
@@ -166,6 +166,7 @@ export function drawRef(
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
   const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
+  const drawLocationMarkersEnabled = view.drawLocationMarkers
   const { level, height, featPositions, alpha } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
@@ -306,10 +307,40 @@ export function drawRef(
                 if (letter === 'M') {
                   draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
                   mainCanvas.fill()
+                  if (drawLocationMarkersEnabled) {
+                    drawLocationMarkers(
+                      mainCanvas,
+                      px1,
+                      cx1,
+                      y1,
+                      cx2,
+                      px2,
+                      y2,
+                      mid,
+                      bpPerPxs[level]!,
+                      bpPerPxs[level + 1]!,
+                      drawCurves,
+                    )
+                  }
                 }
               } else {
                 draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
                 mainCanvas.fill()
+                if (drawLocationMarkersEnabled) {
+                  drawLocationMarkers(
+                    mainCanvas,
+                    px1,
+                    cx1,
+                    y1,
+                    cx2,
+                    px2,
+                    y2,
+                    mid,
+                    bpPerPxs[level]!,
+                    bpPerPxs[level + 1]!,
+                    drawCurves,
+                  )
+                }
               }
             }
           }
@@ -317,6 +348,21 @@ export function drawRef(
       } else {
         draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         mainCanvas.fill()
+        if (drawLocationMarkersEnabled) {
+          drawLocationMarkers(
+            mainCanvas,
+            x11,
+            x12,
+            y1,
+            x22,
+            x21,
+            y2,
+            mid,
+            bpPerPxs[level]!,
+            bpPerPxs[level + 1]!,
+            drawCurves,
+          )
+        }
       }
     }
   }

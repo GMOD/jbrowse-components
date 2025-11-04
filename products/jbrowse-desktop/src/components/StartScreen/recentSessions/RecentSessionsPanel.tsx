@@ -245,6 +245,7 @@ export default function RecentSessionPanel({
               setFavorites([...favorites, sessionPath])
             }
           }}
+          addToQuickstartList={entry => addToQuickstartList([entry])}
         />
       ) : null}
     </div>

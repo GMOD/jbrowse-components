@@ -13,6 +13,8 @@ export default defineConfig(
   {
     ignores: [
       'packages/__mocks__/@testing-library/react.tsx',
+      'packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
+      'packages/__mocks__/generic-filehandle2.ts',
       'config/jest/*',
       '**/build/**/*',
       '**/dist/**/*',
@@ -23,6 +25,7 @@ export default defineConfig(
       'docs/*',
       'website/*',
       'packages/core/util/nanoid.js',
+      'packages/core/util/flatbush/index.js',
       'products/**/webpack.config.js',
       'products/jbrowse-desktop/scripts/*',
       'plugin-development-tools/**',
@@ -107,6 +110,8 @@ export default defineConfig(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
+      'unicorn/prefer-response-static-json': 'off',
+      'unicorn/text-encoding-identifier-case': 'off',
       'unicorn/prefer-global-this': 'off',
       'unicorn/prefer-structured-clone': 'off',
       'unicorn/no-new-array': 'off',

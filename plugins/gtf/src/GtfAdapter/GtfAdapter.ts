@@ -1,4 +1,4 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   SimpleFeature,
@@ -22,12 +22,17 @@ import type { Observer } from 'rxjs'
 
 type StatusCallback = (arg: string) => void
 
+type SimpleFeat = SimpleFeatureSerialized
+
 export default class GtfAdapter extends BaseFeatureDataAdapter {
-  calculatedIntervalTreeMap: Record<string, IntervalTree> = {}
+  calculatedIntervalTreeMap: Record<string, IntervalTree<SimpleFeat>> = {}
 
   gtfFeatures?: Promise<{
     header: string
-    intervalTreeMap: Record<string, (sc?: StatusCallback) => IntervalTree>
+    intervalTreeMap: Record<
+      string,
+      (sc?: StatusCallback) => IntervalTree<SimpleFeat>
+    >
   }>
 
   private async loadDataP(opts?: BaseOptions) {
@@ -62,11 +67,14 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
         (sc?: (arg: string) => void) => {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GTF data')
-            const intervalTree = new IntervalTree()
+            const intervalTree = new IntervalTree<SimpleFeat>()
             for (const obj of (parseStringSync(lines) as FeatureLoc[][])
               .flat()
               .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))) {
-              intervalTree.insert([obj.start as number, obj.end as number], obj)
+              intervalTree.insert(
+                [obj.start as number, obj.end as number],
+                obj as SimpleFeatureSerialized,
+              )
             }
 
             this.calculatedIntervalTreeMap[refName] = intervalTree
@@ -131,7 +139,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const aggregateField = this.getConf('aggregateField')
+    const aggregateField = this.getConf('aggregateField') as string
     const { start, end, refName } = query
     const { intervalTreeMap } = await this.loadData(opts)
     const feats = intervalTreeMap[refName]?.(opts.statusCallback).search([
@@ -177,12 +185,8 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       }
 
       const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
-
-      if (feats.some(f => f.uniqueId === undefined)) {
-        throw new Error('found uniqueId undefined')
-      }
       for (const feat of feats) {
-        const aggr = feat[aggregateField]
+        const aggr = feat[aggregateField] as string
         if (!parentAggregation[aggr]) {
           parentAggregation[aggr] = []
         }

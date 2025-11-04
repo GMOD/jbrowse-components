@@ -19,6 +19,7 @@ export interface JBrowseConfig {
   assemblies: { name: string }[]
   tracks: { trackId: string }[]
   plugins?: PluginDefinition[]
+  defaultSession?: Record<string, unknown>
 }
 
 export interface UCSCListGenome {

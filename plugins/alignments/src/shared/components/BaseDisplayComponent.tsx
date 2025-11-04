@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'
@@ -5,9 +7,19 @@ import { Button, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import type { LinearReadArcsDisplayModel } from '../../LinearReadArcsDisplay/model'
-import type { LinearReadCloudDisplayModel } from '../../LinearReadCloudDisplay/model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// Duck-typed interface to avoid circular dependencies
+interface BaseDisplayModel {
+  error?: unknown
+  regionTooLarge?: boolean
+  reload: () => void
+  regionCannotBeRendered: () => React.ReactElement | null
+  drawn: boolean
+  loading: boolean
+  lastDrawnOffsetPx?: number
+  message?: string
+}
 
 const useStyles = makeStyles()(theme => ({
   loading: {
@@ -23,11 +35,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const BlockError = observer(function ({
-  model,
-}: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
-}) {
+const BlockError = observer(function ({ model }: { model: BaseDisplayModel }) {
   const { error } = model
   return (
     <BlockMsg
@@ -53,7 +61,7 @@ const BaseDisplayComponent = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model: BaseDisplayModel
   children?: React.ReactNode
 }) {
   const { error, regionTooLarge } = model
@@ -70,7 +78,7 @@ const DataDisplay = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model: BaseDisplayModel
   children?: React.ReactNode
 }) {
   const { drawn, loading } = model
@@ -86,11 +94,7 @@ const DataDisplay = observer(function ({
   )
 })
 
-const LoadingBar = observer(function ({
-  model,
-}: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
-}) {
+const LoadingBar = observer(function ({ model }: { model: BaseDisplayModel }) {
   const { classes } = useStyles()
   const { message } = model
   return (

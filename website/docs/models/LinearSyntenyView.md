@@ -62,6 +62,15 @@ false
 drawCurves: false
 ```
 
+#### property: drawLocationMarkers
+
+```js
+// type signature
+false
+// code
+drawLocationMarkers: false
+```
+
 ### LinearSyntenyView - Methods
 
 #### method: headerMenuItems
@@ -123,6 +132,13 @@ setDrawCIGAR: (arg: boolean) => void
 ```js
 // type signature
 setDrawCIGARMatchesOnly: (arg: boolean) => void
+```
+
+#### action: setDrawLocationMarkers
+
+```js
+// type signature
+setDrawLocationMarkers: (arg: boolean) => void
 ```
 
 #### action: showAllRegions

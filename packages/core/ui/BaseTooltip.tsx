@@ -34,7 +34,19 @@ export default function BaseTooltip({
   children,
   placement = 'right',
 }: {
-  placement?: 'left' | 'right'
+  placement?:
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'right'
+    | 'right-start'
+    | 'right-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'left'
+    | 'left-start'
+    | 'left-end'
   clientPoint?: { x: number; y: number }
   children: React.ReactNode
 }) {
