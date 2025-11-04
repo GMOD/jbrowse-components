@@ -40,28 +40,27 @@ export function drawLongReadChains({
   }[]
   flipStrandLongReadChains: boolean
 }): void {
+  const getStrandColorKey = (strand: number) =>
+    strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
+
   for (const { id, chain, minX, maxX } of computedChains) {
-    // Check if this is a paired-end read using SAM flag 1 (read paired)
-    // All paired-end reads are handled by drawPairChains
-    const isPairedEnd = chain.some(feat => feat.flags & 1)
-    if (isPairedEnd) {
+    // Guard clause: skip paired-end reads (handled by drawPairChains)
+    if (chain.some(feat => feat.flags & 1)) {
       continue
     }
-
-    // Filter out supplementary alignments for read type determination
-    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
-
-    const isSingleton = chain.length === 1
-    const c1 = nonSupplementary.length > 0 ? nonSupplementary[0]! : chain[0]!
-    const primaryStrand = getPrimaryStrandFromFlags(c1)
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       continue
     }
 
-    // Draw connecting line for long reads
-    if (nonSupplementary.length > 2 || nonSupplementary.length === 1) {
+    const nonSupplementary = chain.filter(feat => !(feat.flags & 2048))
+    const isSingleton = chain.length === 1
+    const c1 = nonSupplementary[0] || chain[0]!
+    const primaryStrand = getPrimaryStrandFromFlags(c1)
+
+    // Draw connecting line for multi-segment long reads
+    if (!isSingleton) {
       const firstFeat = chain[0]!
       const lastFeat = chain[chain.length - 1]!
 
@@ -75,76 +74,73 @@ export function drawLongReadChains({
       })?.offsetPx
 
       if (firstPx !== undefined && lastPx !== undefined) {
-        const startX = firstPx - view.offsetPx
-        const endX = lastPx - view.offsetPx
-        const startY = chainY + featureHeight / 2 - 0.5
-        const endY = chainY + featureHeight / 2 - 0.5
-
+        const lineY = chainY + featureHeight / 2 - 0.5
         ctx.beginPath()
         ctx.strokeStyle = '#666'
-        ctx.moveTo(startX, startY)
-        ctx.lineTo(endX, endY)
+        ctx.moveTo(firstPx - view.offsetPx, lineY)
+        ctx.lineTo(lastPx - view.offsetPx, lineY)
         ctx.stroke()
       }
     }
 
     // Draw the features
     for (const feat of chain) {
-      const { refName, start, end } = feat
-      const refName2 = asm.getCanonicalRefName2(refName)
-      const s = view.bpToPx({ refName: refName2, coord: start })
-      const e = view.bpToPx({ refName: refName2, coord: end })
-      if (s && e) {
-        const effectiveStrand =
-          isSingleton || !flipStrandLongReadChains
-            ? feat.strand
-            : feat.strand * primaryStrand
-        const xPos = s.offsetPx - view.offsetPx
-        const width = Math.max(e.offsetPx - s.offsetPx, 3)
+      const s = view.bpToPx({
+        refName: asm.getCanonicalRefName2(feat.refName),
+        coord: feat.start,
+      })
+      const e = view.bpToPx({
+        refName: asm.getCanonicalRefName2(feat.refName),
+        coord: feat.end,
+      })
 
-        // Determine color based on whether it's a singleton
-        let featureFill: string
-        let featureStroke: string
-        if (isSingleton) {
-          const [fill, stroke] = getSingletonColor(feat, chainData.stats)
-          featureFill = fill
-          featureStroke = stroke
-        } else {
-          const c =
-            effectiveStrand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
-          featureFill = fillColor[c]
-          featureStroke = strokeColor[c]
-        }
-
-        if (renderChevrons) {
-          drawChevron(
-            ctx,
-            xPos,
-            chainY,
-            width,
-            featureHeight,
-            effectiveStrand,
-            featureFill,
-            CHEVRON_WIDTH,
-            featureStroke,
-          )
-        } else {
-          fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
-          strokeRectCtx(xPos, chainY, width, featureHeight, ctx, featureStroke)
-        }
-
-        featuresForFlatbush.push({
-          x1: xPos,
-          y1: chainY,
-          x2: xPos + width,
-          y2: chainY + featureHeight,
-          data: feat,
-          chainId: id,
-          chainMinX: minX - view.offsetPx,
-          chainMaxX: maxX - view.offsetPx,
-          chain,
-        })
+      if (!s || !e) {
+        continue
       }
+
+      const effectiveStrand =
+        isSingleton || !flipStrandLongReadChains
+          ? feat.strand
+          : feat.strand * primaryStrand
+
+      const [featureFill, featureStroke] = isSingleton
+        ? getSingletonColor(feat, chainData.stats)
+        : [
+            fillColor[getStrandColorKey(effectiveStrand)],
+            strokeColor[getStrandColorKey(effectiveStrand)],
+          ]
+
+      const xPos = s.offsetPx - view.offsetPx
+      const width = Math.max(e.offsetPx - s.offsetPx, 3)
+
+      if (renderChevrons) {
+        drawChevron(
+          ctx,
+          xPos,
+          chainY,
+          width,
+          featureHeight,
+          effectiveStrand,
+          featureFill,
+          CHEVRON_WIDTH,
+          featureStroke,
+        )
+      } else {
+        fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
+        strokeRectCtx(xPos, chainY, width, featureHeight, ctx, featureStroke)
+      }
+
+      featuresForFlatbush.push({
+        x1: xPos,
+        y1: chainY,
+        x2: xPos + width,
+        y2: chainY + featureHeight,
+        data: feat,
+        chainId: id,
+        chainMinX: minX - view.offsetPx,
+        chainMaxX: maxX - view.offsetPx,
+        chain,
+      })
     }
   }
 }
