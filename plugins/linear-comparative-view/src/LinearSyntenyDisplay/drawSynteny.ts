@@ -378,21 +378,6 @@ export function drawRef(
       } else {
         draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         mainCanvas.fill()
-        if (drawLocationMarkersEnabled) {
-          drawLocationMarkers(
-            mainCanvas,
-            x11,
-            x12,
-            y1,
-            x22,
-            x21,
-            y2,
-            mid,
-            bpPerPxs[level]!,
-            bpPerPxs[level + 1]!,
-            drawCurves,
-          )
-        }
       }
     }
   }

@@ -61,14 +61,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       importFormSyntenyTrackSelections:
         observable.array<ImportFormSyntenyTrack>(),
-      /**
-       * #volatile
-       */
-      diagonalizationProgress: 0,
-      /**
-       * #volatile
-       */
-      diagonalizationMessage: '',
     }))
     .actions(self => ({
       /**
@@ -116,277 +108,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDiagonalizationProgress(progress: number, message: string) {
-        self.diagonalizationProgress = progress
-        self.diagonalizationMessage = message
-      },
-      /**
-       * #action
-       */
       showAllRegions() {
         transaction(() => {
           for (const view of self.views) {
             view.showAllRegionsInAssembly()
           }
         })
-      },
-      /**
-       * #action
-       * Diagonalize the synteny view by reordering and reorienting displayed
-       * regions based on alignment data. This minimizes crossing lines in the
-       * visualization.
-       */
-      async diagonalize() {
-        const session = getSession(self)
-
-        // Open progress dialog
-        let dialogHandle: (() => void) | undefined
-        session.queueDialog(handleClose => {
-          dialogHandle = handleClose
-          return [
-            DiagonalizationProgressDialog,
-            {
-              handleClose,
-              model: self,
-            },
-          ]
-        })
-
-        // Helper to update progress
-        const updateProgress = (progress: number, message: string) => {
-          self.setDiagonalizationProgress(progress, message)
-          // Small delay to allow UI to update
-          return new Promise(resolve => setTimeout(resolve, 0))
-        }
-
-        try {
-          // Only works with exactly 2 views (reference and query)
-          if (self.views.length !== 2) {
-            await updateProgress(100, 'Error: Requires exactly 2 views')
-            session.notify('Diagonalization requires exactly 2 views', 'warning')
-            return
-          }
-
-          const [refView, queryView] = self.views
-
-          console.log('Reference view assembly:', refView.assemblyNames)
-          console.log('Query view assembly:', queryView.assemblyNames)
-          console.log('Reference view regions:', refView.displayedRegions.map(r => r.refName))
-          console.log('Query view regions:', queryView.displayedRegions.map(r => r.refName))
-
-          await updateProgress(5, 'Collecting alignment data...')
-
-          // Collect all alignment data from all synteny tracks
-          interface AlignmentData {
-            queryRefName: string
-            refRefName: string
-            queryStart: number
-            queryEnd: number
-            refStart: number
-            refEnd: number
-            strand: number
-          }
-
-          const alignments: AlignmentData[] = []
-
-          for (const level of self.levels) {
-            console.log('Processing level:', level.level)
-            for (const track of level.tracks) {
-              for (const display of track.displays) {
-                const { featPositions } = display as {
-                  featPositions: {
-                    f: {
-                      get: (key: string) => unknown
-                    }
-                  }[]
-                }
-
-                console.log('FeatPositions count:', featPositions.length)
-
-                for (const { f } of featPositions) {
-                  const mate = f.get('mate') as {
-                    refName: string
-                    start: number
-                    end: number
-                  }
-
-                  const queryRefName = f.get('refName') as string
-                  const refRefName = mate.refName
-                  const queryStart = f.get('start') as number
-                  const queryEnd = f.get('end') as number
-                  const refStart = mate.start
-                  const refEnd = mate.end
-                  const strand = (f.get('strand') as number) || 1
-
-                  alignments.push({
-                    queryRefName,
-                    refRefName,
-                    queryStart,
-                    queryEnd,
-                    refStart,
-                    refEnd,
-                    strand,
-                  })
-                }
-              }
-            }
-          }
-
-          console.log('Total alignments collected:', alignments.length)
-          if (alignments.length > 0) {
-            console.log('Sample alignment:', alignments[0])
-          }
-
-          if (alignments.length === 0) {
-            await updateProgress(100, 'No alignments found')
-            session.notify('No alignments found to diagonalize', 'warning')
-            return
-          }
-
-          await updateProgress(
-            20,
-            `Grouping ${alignments.length} alignments by query...`,
-          )
-
-          // Group alignments by query refName
-          const queryGroups = new Map<
-            string,
-            {
-              refAlignments: Map<string, { bases: number; positions: number[] }>
-              strandWeightedSum: number
-            }
-          >()
-
-          for (const aln of alignments) {
-            if (!queryGroups.has(aln.queryRefName)) {
-              queryGroups.set(aln.queryRefName, {
-                refAlignments: new Map(),
-                strandWeightedSum: 0,
-              })
-            }
-
-            const group = queryGroups.get(aln.queryRefName)!
-            const alnLength = Math.abs(aln.queryEnd - aln.queryStart)
-
-            // Track aligned bases per reference region
-            if (!group.refAlignments.has(aln.refRefName)) {
-              group.refAlignments.set(aln.refRefName, {
-                bases: 0,
-                positions: [],
-              })
-            }
-
-            const refData = group.refAlignments.get(aln.refRefName)!
-            refData.bases += alnLength
-            refData.positions.push((aln.refStart + aln.refEnd) / 2)
-
-            // Calculate weighted strand sum
-            const direction = aln.strand >= 0 ? 1 : -1
-            group.strandWeightedSum += direction * alnLength
-          }
-
-          await updateProgress(50, 'Determining optimal ordering and orientation...')
-
-          // Determine ordering and orientation for query regions
-          const queryOrdering: {
-            refName: string
-            bestRefName: string
-            bestRefPos: number
-            shouldReverse: boolean
-          }[] = []
-
-          for (const [queryRefName, group] of queryGroups) {
-            // Find reference region with most aligned bases
-            let bestRefName = ''
-            let maxBases = 0
-            let bestPositions: number[] = []
-
-            for (const [refName, data] of group.refAlignments) {
-              if (data.bases > maxBases) {
-                maxBases = data.bases
-                bestRefName = refName
-                bestPositions = data.positions
-              }
-            }
-
-            // Calculate weighted mean position in reference
-            const bestRefPos =
-              bestPositions.reduce((a, b) => a + b, 0) / bestPositions.length
-
-            // Determine if we should reverse based on major strand
-            const shouldReverse = group.strandWeightedSum < 0
-
-            queryOrdering.push({
-              refName: queryRefName,
-              bestRefName,
-              bestRefPos,
-              shouldReverse,
-            })
-          }
-
-          await updateProgress(70, `Sorting ${queryOrdering.length} query regions...`)
-
-          // Sort query regions by reference region and position
-          queryOrdering.sort((a, b) => {
-            // First by reference region name
-            if (a.bestRefName !== b.bestRefName) {
-              return a.bestRefName.localeCompare(b.bestRefName)
-            }
-            // Then by position within reference
-            return a.bestRefPos - b.bestRefPos
-          })
-
-          await updateProgress(85, 'Building new region layout...')
-
-          // Build new displayedRegions for query view
-          const newQueryRegions = []
-          const currentQueryRegions = queryView.displayedRegions
-
-          console.log('Query ordering:', queryOrdering)
-          console.log('Current query regions:', currentQueryRegions.map(r => ({
-            refName: r.refName,
-            assemblyName: r.assemblyName,
-          })))
-
-          for (const { refName, shouldReverse } of queryOrdering) {
-            const region = currentQueryRegions.find(r => r.refName === refName)
-            if (region) {
-              newQueryRegions.push({
-                ...region,
-                reversed: shouldReverse,
-              })
-            } else {
-              console.warn(`Could not find region for refName: ${refName}`)
-            }
-          }
-
-          console.log('New query regions count:', newQueryRegions.length)
-
-          // Apply the new ordering
-          if (newQueryRegions.length > 0) {
-            await updateProgress(95, 'Applying new layout...')
-            transaction(() => {
-              queryView.setDisplayedRegions(newQueryRegions)
-            })
-            await updateProgress(100, 'Diagonalization complete!')
-            session.notify(
-              `Successfully diagonalized ${newQueryRegions.length} query regions`,
-              'success',
-            )
-          } else {
-            await updateProgress(100, 'No regions to reorder')
-            session.notify('No query regions found to reorder', 'warning')
-          }
-        } catch (error) {
-          console.error('Diagonalization error:', error)
-          await updateProgress(100, `Error: ${error}`)
-          session.notify(`Diagonalization failed: ${error}`, 'error')
-        } finally {
-          // Auto-close dialog after a brief delay
-          setTimeout(() => {
-            dialogHandle?.()
-          }, 1500)
-        }
       },
     }))
     .actions(self => ({
@@ -430,8 +157,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Diagonalize',
               onClick: () => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                self.diagonalize()
+                getSession(self).queueDialog(handleClose => [
+                  DiagonalizationProgressDialog,
+                  {
+                    handleClose,
+                    model: self,
+                  },
+                ])
               },
               description:
                 'Reorder and reorient query regions to minimize crossing lines',
