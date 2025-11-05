@@ -261,6 +261,14 @@ cat(resultClusters$order,sep='\n')`
             const { sourcesWithoutLayout } = model
             if (sourcesWithoutLayout) {
               try {
+                // Preserve color and other layout customizations
+                const currentLayout = model.layout.length
+                  ? model.layout
+                  : sourcesWithoutLayout
+                const sourcesByName = Object.fromEntries(
+                  currentLayout.map(s => [s.name, s]),
+                )
+
                 model.setLayout(
                   paste
                     .split('\n')
@@ -268,11 +276,15 @@ cat(resultClusters$order,sep='\n')`
                     .filter(f => !!f)
                     .map(r => +r)
                     .map(idx => {
-                      const ret = sourcesWithoutLayout[idx - 1]
-                      if (!ret) {
+                      const sourceItem = sourcesWithoutLayout[idx - 1]
+                      if (!sourceItem) {
                         throw new Error(`out of bounds at ${idx}`)
                       }
-                      return ret
+                      // Preserve customizations from current layout
+                      return {
+                        ...sourceItem,
+                        ...sourcesByName[sourceItem.name],
+                      }
                     }),
                 )
               } catch (e) {
