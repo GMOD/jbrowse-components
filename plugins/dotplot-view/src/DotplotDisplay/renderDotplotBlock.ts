@@ -17,6 +17,9 @@ export function renderBlockData(self: IAnyStateTreeNode) {
   readConfObject(self.configuration)
   getSnapshot(parent)
 
+  // Access alpha and minAlignmentLength to make reaction reactive to changes
+  const { alpha, minAlignmentLength } = self
+
   if (parent.initialized) {
     const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
     return {
@@ -34,6 +37,8 @@ export function renderBlockData(self: IAnyStateTreeNode) {
         rendererType: rendererType.name,
         sessionId: getRpcSessionId(self),
         timeout: 1000000, // 10000,
+        alpha: self.alpha,
+        minAlignmentLength: self.minAlignmentLength,
       },
     }
   }

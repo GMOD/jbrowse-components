@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { colord } from '@jbrowse/core/util/colord'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { getSnapshot } from 'mobx-state-tree'
 
@@ -16,6 +17,8 @@ export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   height: number
   width: number
   highResolutionScaling: number
+  alpha?: number
+  minAlignmentLength?: number
   view: {
     hview: Dotplot1DViewModel
     vview: Dotplot1DViewModel
@@ -33,11 +36,24 @@ function drawCir(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1) {
   ctx.fill()
 }
 
+function applyAlpha(color: string, alpha: number) {
+  return colord(color).alpha(alpha).toRgbString()
+}
+
 export async function drawDotplot(
   ctx: CanvasRenderingContext2D,
   props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
 ) {
-  const { config, views, height, drawCigar, theme } = props
+  const {
+    config,
+    views,
+    height,
+    drawCigar,
+    theme,
+    alpha = 1,
+    minAlignmentLength = 0,
+  } = props
+  console.log({ alpha, props })
   const color = readConfObject(config, 'color')
   const posColor = readConfObject(config, 'posColor')
   const negColor = readConfObject(config, 'negColor')
@@ -136,7 +152,20 @@ export async function drawDotplot(
     width: vview.width,
   }
   const t = createJBrowseTheme(theme)
-  for (const feature of hview.features || []) {
+  const features = hview.features || []
+
+  // Filter by minAlignmentLength if specified
+  const filteredFeatures =
+    minAlignmentLength > 0
+      ? features.filter(feature => {
+          const start = feature.get('start')
+          const end = feature.get('end')
+          const alignmentLength = Math.abs(end - start)
+          return alignmentLength >= minAlignmentLength
+        })
+      : features
+
+  for (const feature of filteredFeatures) {
     const strand = feature.get('strand') || 1
     const start = strand === 1 ? feature.get('start') : feature.get('end')
     const end = strand === 1 ? feature.get('end') : feature.get('start')
@@ -168,8 +197,12 @@ export async function drawDotplot(
           ? t.palette.text.primary
           : color
     }
-    ctx.fillStyle = r
-    ctx.strokeStyle = r
+
+    // Apply alpha transparency
+    const colorWithAlpha = applyAlpha(r, alpha)
+    console.log(colorWithAlpha)
+    ctx.fillStyle = colorWithAlpha
+    ctx.strokeStyle = colorWithAlpha
 
     const b10 = bpToPx({ self: hsnap, refName, coord: start })
     const b20 = bpToPx({ self: hsnap, refName, coord: end })

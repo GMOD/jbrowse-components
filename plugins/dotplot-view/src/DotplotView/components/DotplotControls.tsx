@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import { lazy, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -14,6 +14,8 @@ import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { CursorMouse, CursorMove } from './CursorIcon'
+import MinLengthSlider from './MinLengthSlider'
+import OpacitySlider from './OpacitySlider'
 
 import type { DotplotViewModel } from '../model'
 
@@ -26,6 +28,11 @@ const DotplotControls = observer(function ({
 }: {
   model: DotplotViewModel
 }) {
+  const [showDynamicControls, setShowDynamicControls] = useState(true)
+
+  // Check if we have any displays to show sliders
+  const hasDisplays = model.tracks[0]?.displays[0]
+
   return (
     <div>
       <IconButton
@@ -116,6 +123,16 @@ const DotplotControls = observer(function ({
               'Show or hide directional pan buttons that allow you to navigate the dotplot view by clicking arrows. Useful for precise navigation without using mouse drag.',
           },
           {
+            label: 'Show dynamic controls',
+            type: 'checkbox',
+            checked: showDynamicControls,
+            onClick: () => {
+              setShowDynamicControls(!showDynamicControls)
+            },
+            helpText:
+              'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust dotplot visualization parameters in real-time.',
+          },
+          {
             label: 'Click and drag mode',
             helpText:
               'Configure how clicking and dragging behaves in the dotplot view. Choose between panning and region selection as the default action.',
@@ -185,6 +202,13 @@ const DotplotControls = observer(function ({
       >
         <MoreVert />
       </CascadingMenuButton>
+
+      {hasDisplays && showDynamicControls ? (
+        <>
+          <OpacitySlider model={model} />
+          <MinLengthSlider model={model} />
+        </>
+      ) : null}
     </div>
   )
 })
