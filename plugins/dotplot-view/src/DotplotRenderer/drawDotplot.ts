@@ -19,6 +19,12 @@ export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   highResolutionScaling: number
   alpha?: number
   minAlignmentLength?: number
+  colorBy?:
+    | 'identity'
+    | 'meanQueryIdentity'
+    | 'mappingQuality'
+    | 'strand'
+    | 'default'
   view: {
     hview: Dotplot1DViewModel
     vview: Dotplot1DViewModel
@@ -37,6 +43,10 @@ function drawCir(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1) {
 }
 
 function applyAlpha(color: string, alpha: number) {
+  // Skip colord processing if alpha is 1 (optimization)
+  if (alpha === 1) {
+    return color
+  }
   return colord(color).alpha(alpha).toRgbString()
 }
 
@@ -52,12 +62,13 @@ export async function drawDotplot(
     theme,
     alpha = 1,
     minAlignmentLength = 0,
+    colorBy: colorByOverride,
   } = props
-  console.log({ alpha, props })
   const color = readConfObject(config, 'color')
   const posColor = readConfObject(config, 'posColor')
   const negColor = readConfObject(config, 'negColor')
-  const colorBy = readConfObject(config, 'colorBy')
+  // Use override if provided, otherwise fall back to config
+  const colorBy = colorByOverride ?? readConfObject(config, 'colorBy')
   const lineWidth = readConfObject(config, 'lineWidth')
   const thresholds = readConfObject(config, 'thresholds')
   const palette = readConfObject(config, 'thresholdsPalette') as string[]
@@ -154,6 +165,21 @@ export async function drawDotplot(
   const t = createJBrowseTheme(theme)
   const features = hview.features || []
 
+  // Pre-compute colors with alpha for common cases (major optimization)
+  let posColorWithAlpha: string | undefined
+  let negColorWithAlpha: string | undefined
+  let defaultColorWithAlpha: string | undefined
+
+  if (colorBy === 'strand') {
+    // Pre-compute strand colors once instead of per-feature
+    posColorWithAlpha = applyAlpha(posColor, alpha)
+    negColorWithAlpha = applyAlpha(negColor, alpha)
+  } else if (colorBy === 'default' && !isCallback) {
+    // Pre-compute default color once instead of per-feature
+    const c = color === '#f0f' ? t.palette.text.primary : color
+    defaultColorWithAlpha = applyAlpha(c, alpha)
+  }
+
   // Filter by minAlignmentLength if specified
   const filteredFeatures =
     minAlignmentLength > 0
@@ -166,41 +192,49 @@ export async function drawDotplot(
       : features
 
   for (const feature of filteredFeatures) {
+    // Cache feature properties to avoid repeated .get() calls (optimization)
     const strand = feature.get('strand') || 1
-    const start = strand === 1 ? feature.get('start') : feature.get('end')
-    const end = strand === 1 ? feature.get('end') : feature.get('start')
+    const fStart = feature.get('start')
+    const fEnd = feature.get('end')
     const refName = feature.get('refName')
     const mate = feature.get('mate')
     const mateRef = mate.refName
 
-    let r = 'black'
-    if (colorBy === 'identity') {
-      const identity = feature.get('identity')
+    // Calculate start/end based on strand using cached values
+    const start = strand === 1 ? fStart : fEnd
+    const end = strand === 1 ? fEnd : fStart
 
-      // eslint-disable-next-line unicorn/no-for-loop
-      for (let i = 0; i < thresholds.length; i++) {
-        if (identity > +thresholds[i]) {
-          r = palette[i] || 'black'
-          break
+    let colorWithAlpha: string
+
+    // Use pre-computed colors for common cases (major optimization)
+    if (colorBy === 'strand') {
+      // Use pre-computed colors (avoids applyAlpha call per feature)
+      colorWithAlpha = strand === -1 ? negColorWithAlpha! : posColorWithAlpha!
+    } else if (colorBy === 'default' && !isCallback) {
+      // Use pre-computed color (avoids applyAlpha call per feature)
+      colorWithAlpha = defaultColorWithAlpha!
+    } else {
+      // Calculate color dynamically for other modes
+      let r = 'black'
+      if (colorBy === 'identity') {
+        const identity = feature.get('identity')
+        // eslint-disable-next-line unicorn/no-for-loop
+        for (let i = 0; i < thresholds.length; i++) {
+          if (identity > +thresholds[i]) {
+            r = palette[i] || 'black'
+            break
+          }
         }
+      } else if (colorBy === 'meanQueryIdentity') {
+        r = `hsl(${feature.get('meanScore') * 200},100%,40%)`
+      } else if (colorBy === 'mappingQuality') {
+        r = `hsl(${feature.get('mappingQual')},100%,40%)`
+      } else if (colorBy === 'default' && isCallback) {
+        r = readConfObject(config, 'color', { feature })
       }
-    } else if (colorBy === 'meanQueryIdentity') {
-      r = `hsl(${feature.get('meanScore') * 200},100%,40%)`
-    } else if (colorBy === 'mappingQuality') {
-      r = `hsl(${feature.get('mappingQual')},100%,40%)`
-    } else if (colorBy === 'strand') {
-      r = strand === -1 ? negColor : posColor
-    } else if (colorBy === 'default') {
-      r = isCallback
-        ? readConfObject(config, 'color', { feature })
-        : color === '#f0f'
-          ? t.palette.text.primary
-          : color
+      colorWithAlpha = applyAlpha(r, alpha)
     }
 
-    // Apply alpha transparency
-    const colorWithAlpha = applyAlpha(r, alpha)
-    console.log(colorWithAlpha)
     ctx.fillStyle = colorWithAlpha
     ctx.strokeStyle = colorWithAlpha
 

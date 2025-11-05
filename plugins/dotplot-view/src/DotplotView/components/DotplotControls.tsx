@@ -13,6 +13,7 @@ import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ColorBySelector from './ColorBySelector'
 import { CursorMouse, CursorMove } from './CursorIcon'
 import MinLengthSlider from './MinLengthSlider'
 import OpacitySlider from './OpacitySlider'
@@ -207,6 +208,7 @@ const DotplotControls = observer(function ({
         <>
           <OpacitySlider model={model} />
           <MinLengthSlider model={model} />
+          <ColorBySelector model={model} />
         </>
       ) : null}
     </div>

@@ -17,8 +17,8 @@ export function renderBlockData(self: IAnyStateTreeNode) {
   readConfObject(self.configuration)
   getSnapshot(parent)
 
-  // Access alpha and minAlignmentLength to make reaction reactive to changes
-  const { alpha, minAlignmentLength } = self
+  // Access alpha, minAlignmentLength, and colorBy to make reaction reactive to changes
+  const { alpha, minAlignmentLength, colorBy } = self
 
   if (parent.initialized) {
     const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
@@ -39,6 +39,7 @@ export function renderBlockData(self: IAnyStateTreeNode) {
         timeout: 1000000, // 10000,
         alpha: self.alpha,
         minAlignmentLength: self.minAlignmentLength,
+        colorBy: self.colorBy,
       },
     }
   }

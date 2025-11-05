@@ -90,14 +90,10 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      let pafRecords = await this.setup(opts)
-      const { config } = opts
+      let pafRecords = getWeightedMeans(await this.setup(opts))
 
       // note: this is not the adapter config, it is responding to a display
       // setting passed in via the opts parameter
-      if (config && readConfObject(config, 'colorBy') === 'meanQueryIdentity') {
-        pafRecords = getWeightedMeans(pafRecords)
-      }
       const assemblyNames = this.getAssemblyNames()
 
       // The index of the assembly name in the query list corresponds to the

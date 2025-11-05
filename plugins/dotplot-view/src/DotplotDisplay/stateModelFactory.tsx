@@ -80,6 +80,17 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * minimum alignment length to display (in bp)
            */
           minAlignmentLength: 0,
+          /**
+           * #volatile
+           * color by setting that overrides the config setting
+           */
+          colorBy: undefined as
+            | 'identity'
+            | 'meanQueryIdentity'
+            | 'mappingQuality'
+            | 'strand'
+            | 'default'
+            | undefined,
         })),
     )
     .views(self => ({
@@ -223,6 +234,20 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMinAlignmentLength(value: number) {
         self.minAlignmentLength = value
+      },
+      /**
+       * #action
+       */
+      setColorBy(
+        value:
+          | 'identity'
+          | 'meanQueryIdentity'
+          | 'mappingQuality'
+          | 'strand'
+          | 'default'
+          | undefined,
+      ) {
+        self.colorBy = value
       },
     }))
 }
