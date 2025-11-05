@@ -1,10 +1,11 @@
-import { Slider, Tooltip, Typography } from '@mui/material'
+import { Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import SliderTooltip from './SliderTooltip'
+
 import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory'
 import type { DotplotViewModel } from '../model'
-import type { SliderValueLabelProps } from '@mui/material'
 
 const useStyles = makeStyles()({
   container: {
@@ -15,21 +16,6 @@ const useStyles = makeStyles()({
     minWidth: 150,
   },
 })
-
-function ValueLabelComponent(props: SliderValueLabelProps) {
-  const { children, open, value } = props
-  return (
-    <Tooltip
-      open={open}
-      enterTouchDelay={0}
-      placement="top"
-      title={value}
-      arrow
-    >
-      {children}
-    </Tooltip>
-  )
-}
 
 const OpacitySlider = observer(function ({
   model,
@@ -79,7 +65,7 @@ const OpacitySlider = observer(function ({
         size="small"
         style={{ minWidth: 100 }}
         slots={{
-          valueLabel: ValueLabelComponent,
+          valueLabel: SliderTooltip,
         }}
         valueLabelFormat={value => sliderToAlpha(value).toFixed(3)}
       />
