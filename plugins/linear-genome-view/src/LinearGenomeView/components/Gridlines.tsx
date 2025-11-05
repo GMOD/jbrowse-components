@@ -1,7 +1,8 @@
 import { memo, useEffect, useMemo, useRef } from 'react'
 
-import { reaction } from 'mobx'
+import { reaction, trace } from 'mobx'
 import { observer } from 'mobx-react'
+import { useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import {
@@ -47,49 +48,101 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const RenderedBlockLines = memo(
-  observer(function RenderedBlockLines({
+  function RenderedBlockLines({
     block,
     bpPerPx,
+    majorColor,
+    minorColor,
   }: {
     block: ContentBlock
     bpPerPx: number
+    majorColor: string
+    minorColor: string
   }) {
-    const { classes, cx } = useStyles()
-    const ticks = makeTicks(block.start, block.end, bpPerPx)
+    const svgRef = useRef<SVGSVGElement>(null)
+    const lastRenderedKey = useRef<string>('')
     console.log('wtf3')
+
+    // Update SVG lines directly without React, with manual caching
+    useEffect(() => {
+      const svg = svgRef.current
+      if (!svg) {
+        return
+      }
+
+      // Create a cache key based on actual values
+      const cacheKey = `${block.key}-${block.start}-${block.end}-${block.reversed}-${bpPerPx}-${majorColor}-${minorColor}`
+
+      // Skip if nothing actually changed
+      if (lastRenderedKey.current === cacheKey) {
+        return
+      }
+
+      console.log('wtf123')
+      lastRenderedKey.current = cacheKey
+
+      const ticks = makeTicks(block.start, block.end, bpPerPx)
+
+      // Clear existing lines
+      svg.innerHTML = ''
+
+      // Create lines directly in SVG
+      const fragment = document.createDocumentFragment()
+      ticks.forEach(({ type, base }) => {
+        const x =
+          (block.reversed ? block.end - base : base - block.start) / bpPerPx
+        const line = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'line',
+        )
+        line.setAttribute('x1', String(x))
+        line.setAttribute('y1', '0')
+        line.setAttribute('x2', String(x))
+        line.setAttribute('y2', '100%')
+        line.setAttribute(
+          'stroke',
+          type === 'major' || type === 'labeledMajor' ? majorColor : minorColor,
+        )
+        line.setAttribute('stroke-width', '1')
+        fragment.appendChild(line)
+      })
+      svg.appendChild(fragment)
+    }) // No dependencies - runs every render but has manual cache check
 
     return (
       <ContentBlockComponent block={block}>
-        {ticks.map(({ type, base }) => {
-          const x =
-            (block.reversed ? block.end - base : base - block.start) / bpPerPx
-          return (
-            <div
-              key={base}
-              className={cx(
-                classes.tick,
-                type === 'major' || type === 'labeledMajor'
-                  ? classes.majorTick
-                  : classes.minorTick,
-              )}
-              style={{ transform: `translateX(${x}px)` }}
-            />
-          )
-        })}
+        <svg
+          ref={svgRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+          }}
+        />
       </ContentBlockComponent>
     )
-  }),
+  },
   (prevProps, nextProps) => {
     // Only re-render if block key or bpPerPx actually changes
     return (
       prevProps.block.key === nextProps.block.key &&
-      prevProps.bpPerPx === nextProps.bpPerPx
+      prevProps.bpPerPx === nextProps.bpPerPx &&
+      prevProps.majorColor === nextProps.majorColor &&
+      prevProps.minorColor === nextProps.minorColor
     )
   },
 )
 
 const RenderedVerticalGuides = observer(function ({ model }: { model: LGV }) {
   const { coarseStaticBlocks, bpPerPx } = model
+  const theme = useTheme()
+  trace()
+
+  const majorColor = theme.palette.action.disabled
+  const minorColor = theme.palette.divider
 
   // Create a stable key based on block keys to prevent unnecessary re-renders
   const blocksKey = useMemo(
@@ -108,7 +161,13 @@ const RenderedVerticalGuides = observer(function ({ model }: { model: LGV }) {
           const k = `${block.key}-${index}`
           if (block.type === 'ContentBlock') {
             return (
-              <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
+              <RenderedBlockLines
+                key={k}
+                block={block}
+                bpPerPx={bpPerPx}
+                majorColor={majorColor}
+                minorColor={minorColor}
+              />
             )
           } else if (block.type === 'ElidedBlock') {
             return <ElidedBlockComponent key={k} width={block.widthPx} />
@@ -127,7 +186,7 @@ const RenderedVerticalGuides = observer(function ({ model }: { model: LGV }) {
     ) : (
       coarseStaticBlocks
     )
-  }, [blocksKey, coarseStaticBlocks, bpPerPx])
+  }, [blocksKey, coarseStaticBlocks, bpPerPx, majorColor, minorColor])
 
   return blockElements
 })
