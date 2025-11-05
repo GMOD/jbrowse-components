@@ -7,6 +7,7 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
+  toLocale,
 } from '@jbrowse/core/util'
 
 import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
@@ -175,26 +176,26 @@ export function drawLocationMarkers(
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)' // Dark semi-transparent line
   ctx.lineWidth = 0.5
 
-  // Draw location markers evenly spaced within the match
-  for (let step = 1; step < numMarkers; step++) {
-    const t = step / numMarkers
-
-    // Linear interpolation along both rows
-    // Top edge goes from x1 to x2, bottom edge goes from x4 to x3
-    const topX = x1 + (x2 - x1) * t
-    const bottomX = x4 + (x3 - x4) * t
-
-    ctx.beginPath()
-    ctx.moveTo(topX, y1)
-
-    if (drawCurves) {
+  // Create single path for all markers
+  ctx.beginPath()
+  if (drawCurves) {
+    for (let step = 1; step < numMarkers; step++) {
+      const t = step / numMarkers
+      const topX = x1 + (x2 - x1) * t
+      const bottomX = x4 + (x3 - x4) * t
+      ctx.moveTo(topX, y1)
       ctx.bezierCurveTo(topX, mid, bottomX, mid, bottomX, y2)
-    } else {
+    }
+  } else {
+    for (let step = 1; step < numMarkers; step++) {
+      const t = step / numMarkers
+      const topX = x1 + (x2 - x1) * t
+      const bottomX = x4 + (x3 - x4) * t
+      ctx.moveTo(topX, y1)
       ctx.lineTo(bottomX, y2)
     }
-
-    ctx.stroke()
   }
+  ctx.stroke()
 
   ctx.strokeStyle = prevStrokeStyle
   ctx.lineWidth = prevLineWidth
@@ -319,7 +320,11 @@ export function onSynContextClick(
   const f = model.featPositions[id]
   if (f) {
     model.setClickId(f.f.id())
-    setAnchorEl({ clientX, clientY, feature: f })
+    setAnchorEl({
+      clientX,
+      clientY,
+      feature: f,
+    })
   }
 }
 
@@ -329,8 +334,8 @@ export function getTooltip({
   cigarOpLen,
 }: {
   feature: Feature
-  cigarOp?: string
   cigarOpLen?: string
+  cigarOp?: string
 }) {
   // @ts-expect-error
   const f1 = feature.toJSON() as {
@@ -361,7 +366,7 @@ export function getTooltip({
     `Query len: ${l1.toLocaleString('en-US')}`,
     `Target len: ${l2.toLocaleString('en-US')}`,
     identity ? `Identity: ${identity.toPrecision(2)}` : '',
-    cigarOp ? `CIGAR operator: ${cigarOp}${cigarOpLen}` : '',
+    cigarOp ? `CIGAR operator: ${toLocale(+cigarOpLen!)}${cigarOp}` : '',
     n1 ? `Name 1: ${n1}` : '',
     n2 ? `Name 2: ${n2}` : '',
   ]

@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 
-import { Slider, Typography } from '@mui/material'
+import { Box, Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import SliderTooltip from './SliderTooltip'
 
-import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory'
-import type { DotplotViewModel } from '../model'
+import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
+import type { LinearComparativeViewModel } from '../model'
 
 const useStyles = makeStyles()({
   container: {
@@ -22,13 +22,14 @@ const useStyles = makeStyles()({
 const MinLengthSlider = observer(function ({
   model,
 }: {
-  model: DotplotViewModel
+  model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
+  const { levels } = model
 
-  // Get the first display from the first track (if it exists)
-  const firstDisplay = model.tracks[0]?.displays[0] as
-    | DotplotDisplayModel
+  // Get the first synteny display from the first level (if it exists)
+  const firstDisplay = levels[0]?.tracks[0]?.displays[0] as
+    | LinearSyntenyDisplayModel
     | undefined
 
   const minAlignmentLength = firstDisplay?.minAlignmentLength ?? 0
@@ -43,7 +44,7 @@ const MinLengthSlider = observer(function ({
   }, [minAlignmentLength])
 
   return (
-    <span className={classes.container}>
+    <Box className={classes.container}>
       <Typography variant="body2" style={{ marginRight: 8 }}>
         Min length:
       </Typography>
@@ -54,12 +55,14 @@ const MinLengthSlider = observer(function ({
         }}
         onChangeCommitted={() => {
           const newMinLength = Math.round(2 ** (minLengthValue / 100))
-          // Set minAlignmentLength for all displays across all tracks
-          for (const track of model.tracks) {
-            for (const display of track.displays) {
-              ;(display as DotplotDisplayModel).setMinAlignmentLength(
-                newMinLength,
-              )
+          // Set minAlignmentLength for all synteny displays across all levels
+          for (const level of levels) {
+            for (const track of level.tracks) {
+              for (const display of track.displays) {
+                ;(display as LinearSyntenyDisplayModel).setMinAlignmentLength(
+                  newMinLength,
+                )
+              }
             }
           }
         }}
@@ -75,7 +78,7 @@ const MinLengthSlider = observer(function ({
           valueLabel: SliderTooltip,
         }}
       />
-    </span>
+    </Box>
   )
 })
 

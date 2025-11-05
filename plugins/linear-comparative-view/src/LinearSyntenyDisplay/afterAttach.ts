@@ -4,7 +4,11 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
-import { drawMouseoverSynteny, drawRef } from './drawSynteny'
+import {
+  drawCigarClickMap,
+  drawMouseoverClickMap,
+  drawRef,
+} from './drawSynteny'
 
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
@@ -43,11 +47,17 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         return
       }
 
+      // Access alpha to make autorun react to alpha changes
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { alpha } = self
       const height = self.height
       const width = view.width
       ctx1.clearRect(0, 0, width, height)
-      ctx3.clearRect(0, 0, width, height)
-      drawRef(self, ctx1, ctx3)
+
+      // Draw main canvas immediately
+      drawRef(self, ctx1)
+
+      drawCigarClickMap(self, ctx3)
     }),
   )
 
@@ -61,7 +71,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       ) {
         return
       }
-      drawMouseoverSynteny(self)
+      // Access reactive properties so autorun is triggered when they change
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { clickId, mouseoverId } = self
+      drawMouseoverClickMap(self)
     }),
   )
 
