@@ -164,7 +164,8 @@ export function drawRef(
   const drawCIGAR = view.drawCIGAR
   const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
   const drawLocationMarkersEnabled = view.drawLocationMarkers
-  const { level, height, featPositions, alpha, minAlignmentLength } = model
+  const { level, height, featPositions, alpha, minAlignmentLength, colorBy } =
+    model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
@@ -180,6 +181,10 @@ export function drawRef(
     }
   }
 
+  // Define colors for strand-based coloring
+  const posColor = 'red'
+  const negColor = 'blue'
+
   // Precalculate colors with alpha applied to avoid repeated calls
   const colorMapWithAlpha = {
     I: applyAlpha(colorMap.I, alpha),
@@ -189,6 +194,10 @@ export function drawRef(
     M: applyAlpha(colorMap.M, alpha),
     '=': applyAlpha(colorMap['='], alpha),
   }
+
+  // Precalculate strand colors with alpha
+  const posColorWithAlpha = applyAlpha(posColor, alpha)
+  const negColorWithAlpha = applyAlpha(negColor, alpha)
 
   mainCanvas.beginPath()
   const offsets = view.views.map(v => v.offsetPx)
@@ -224,6 +233,14 @@ export function drawRef(
       x21 < width + oobLimit &&
       x21 > -oobLimit
     ) {
+      // Set color based on strand if colorBy is 'strand'
+      if (colorBy === 'strand') {
+        const strand = f.get('strand')
+        const strandColor =
+          strand === -1 ? negColorWithAlpha : posColorWithAlpha
+        mainCanvas.strokeStyle = strandColor
+      }
+
       mainCanvas.beginPath()
       mainCanvas.moveTo(x11, y1)
       if (drawCurves) {
@@ -232,6 +249,11 @@ export function drawRef(
       } else {
         mainCanvas.lineTo(x21, y2)
         mainCanvas.stroke()
+      }
+
+      // Reset to default color if needed
+      if (colorBy === 'strand') {
+        mainCanvas.strokeStyle = colorMapWithAlpha.M
       }
     }
   }
@@ -330,7 +352,16 @@ export function drawRef(
               // flag if the last element of continuing was a large
               // feature, else just use match
               const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
-              mainCanvas.fillStyle = colorMapWithAlpha[letter]
+
+              // Use strand-based coloring if colorBy is 'strand'
+              if (colorBy === 'strand') {
+                const strand = f.get('strand')
+                mainCanvas.fillStyle =
+                  strand === -1 ? negColorWithAlpha : posColorWithAlpha
+              } else {
+                mainCanvas.fillStyle = colorMapWithAlpha[letter]
+              }
+
               continuingFlag = false
 
               if (drawCIGARMatchesOnly) {
@@ -376,8 +407,20 @@ export function drawRef(
           }
         }
       } else {
+        // Use strand-based coloring if colorBy is 'strand'
+        if (colorBy === 'strand') {
+          const strand = f.get('strand')
+          mainCanvas.fillStyle =
+            strand === -1 ? negColorWithAlpha : posColorWithAlpha
+        }
+
         draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         mainCanvas.fill()
+
+        // Reset to default color if needed
+        if (colorBy === 'strand') {
+          mainCanvas.fillStyle = colorMapWithAlpha.M
+        }
       }
     }
   }

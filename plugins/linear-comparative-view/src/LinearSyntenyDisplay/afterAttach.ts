@@ -4,7 +4,6 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
-import { debounce } from './debounce'
 import {
   drawCigarClickMap,
   drawMouseoverClickMap,
@@ -31,23 +30,6 @@ interface FeatPos {
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
-  // Create debounced version of drawCigarClickMap (400ms delay)
-  const debouncedDrawCigarClickMap = debounce(
-    (model: LinearSyntenyDisplayModel, ctx: CanvasRenderingContext2D) => {
-      drawCigarClickMap(model, ctx)
-    },
-    400,
-  )
-
-  // Create lightly debounced version of drawMouseoverClickMap (100ms delay)
-  // This provides performance benefits while still feeling responsive
-  const debouncedDrawMouseoverClickMap = debounce(
-    (model: LinearSyntenyDisplayModel) => {
-      drawMouseoverClickMap(model)
-    },
-    100,
-  )
-
   addDisposer(
     self,
     autorun(() => {
@@ -75,8 +57,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       // Draw main canvas immediately
       drawRef(self, ctx1)
 
-      // Draw cigar click map canvas with debounce
-      debouncedDrawCigarClickMap(self, ctx3)
+      drawCigarClickMap(self, ctx3)
     }),
   )
 
@@ -93,8 +74,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       // Access reactive properties so autorun is triggered when they change
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { clickId, mouseoverId } = self
-      // Draw mouseover with light debounce for performance
-      debouncedDrawMouseoverClickMap(self)
+      drawMouseoverClickMap(self)
     }),
   )
 

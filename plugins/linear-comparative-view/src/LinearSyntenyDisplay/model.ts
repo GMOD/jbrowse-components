@@ -39,6 +39,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * color scheme to use for rendering synteny features
+         */
+        colorBy: types.optional(types.string, 'default'),
       }),
     )
     .volatile(() => ({
@@ -168,6 +173,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMinAlignmentLength(value: number) {
         self.minAlignmentLength = value
+      },
+      /**
+       * #action
+       */
+      setColorBy(value: string) {
+        self.colorBy = value
       },
     }))
 

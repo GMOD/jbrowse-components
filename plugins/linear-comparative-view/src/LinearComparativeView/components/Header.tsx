@@ -8,6 +8,7 @@ import { FormGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import ColorBySelector from './ColorBySelector'
 import HeaderSearchBoxes from './HeaderSearchBoxes'
 import MinLengthSlider from './MinLengthSlider'
 import OpacitySlider from './OpacitySlider'
@@ -108,6 +109,7 @@ const Header = observer(function ({
 
       {hasDisplays && showDynamicControls ? (
         <>
+          <ColorBySelector model={model} />
           <OpacitySlider model={model} />
           <MinLengthSlider model={model} />
         </>
