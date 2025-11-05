@@ -20,6 +20,7 @@ import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 
 import type { ReducedModel } from './types'
+import type { Source } from '../../../util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const WiggleClusterDialogAuto = observer(function ({
@@ -124,11 +125,11 @@ const WiggleClusterDialogAuto = observer(function ({
                 )) as { order: number[] }
 
                 // Preserve color and other layout customizations
-                const currentLayout = model.layout.length
+                const currentLayout = model.layout?.length
                   ? model.layout
                   : sourcesWithoutLayout
                 const sourcesByName = Object.fromEntries(
-                  currentLayout.map(s => [s.name, s]),
+                  currentLayout.map((s: Source) => [s.name, s]),
                 )
 
                 model.setLayout(

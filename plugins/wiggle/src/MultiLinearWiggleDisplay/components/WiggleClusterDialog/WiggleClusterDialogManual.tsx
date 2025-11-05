@@ -25,6 +25,7 @@ import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import type { ReducedModel } from './types'
+import type { Source } from '../../../util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
@@ -262,11 +263,11 @@ cat(resultClusters$order,sep='\n')`
             if (sourcesWithoutLayout) {
               try {
                 // Preserve color and other layout customizations
-                const currentLayout = model.layout.length
+                const currentLayout = model.layout?.length
                   ? model.layout
                   : sourcesWithoutLayout
                 const sourcesByName = Object.fromEntries(
-                  currentLayout.map(s => [s.name, s]),
+                  currentLayout.map((s: Source) => [s.name, s]),
                 )
 
                 model.setLayout(
