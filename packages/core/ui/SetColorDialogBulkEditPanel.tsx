@@ -20,8 +20,8 @@ export default function SetColorDialogBulkEditPanel({
   onClose,
   currLayout,
 }: {
-  currLayout: Array<{ name: string; [key: string]: unknown }>
-  onClose: (arg?: Array<{ name: string; [key: string]: unknown }>) => void
+  currLayout: { name: string; [key: string]: unknown }[]
+  onClose: (arg?: { name: string; [key: string]: unknown }[]) => void
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
@@ -47,7 +47,7 @@ export default function SetColorDialogBulkEditPanel({
           maxRows={10}
           fullWidth
           value={val}
-          onChange={(event) => {
+          onChange={event => {
             setVal(event.target.value)
           }}
           slotProps={{
@@ -66,16 +66,16 @@ export default function SetColorDialogBulkEditPanel({
           onClick={() => {
             const lines = val
               .split('\n')
-              .map((f) => f.trim())
-              .filter((f) => !!f)
+              .map(f => f.trim())
+              .filter(f => !!f)
             const fields = lines[0]!.split(/[,\t]/gm)
             if (fields.includes('name')) {
               setError('')
               const oldLayout = Object.fromEntries(
-                currLayout.map((record) => [record.name, record]),
+                currLayout.map(record => [record.name, record]),
               )
               const newData = Object.fromEntries(
-                lines.slice(1).map((line) => {
+                lines.slice(1).map(line => {
                   const cols = line.split(/[,\t]/gm)
                   const newRecord = Object.fromEntries(
                     cols.map((col, idx) => [fields[idx], col]),
@@ -91,7 +91,7 @@ export default function SetColorDialogBulkEditPanel({
               )
 
               onClose(
-                currLayout.map((record) => ({
+                currLayout.map(record => ({
                   ...record,
                   ...newData[record.name],
                 })),
@@ -109,16 +109,16 @@ export default function SetColorDialogBulkEditPanel({
           onClick={() => {
             const lines = val
               .split('\n')
-              .map((f) => f.trim())
-              .filter((f) => !!f)
+              .map(f => f.trim())
+              .filter(f => !!f)
             const fields = lines[0]!.split(/[,\t]/gm)
             if (fields.includes('name')) {
               setError('')
               const oldLayout = Object.fromEntries(
-                currLayout.map((record) => [record.name, record]),
+                currLayout.map(record => [record.name, record]),
               )
               const newData = Object.fromEntries(
-                lines.slice(1).map((line) => {
+                lines.slice(1).map(line => {
                   const cols = line.split(/[,\t]/gm)
                   const newRecord = Object.fromEntries(
                     cols.map((col, idx) => [fields[idx], col]),
@@ -134,7 +134,7 @@ export default function SetColorDialogBulkEditPanel({
               )
 
               onClose(
-                currLayout.map((record) => ({
+                currLayout.map(record => ({
                   ...newData[record.name],
                 })),
               )

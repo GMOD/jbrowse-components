@@ -6,8 +6,10 @@ import { map } from 'rxjs/operators'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import type { FileLocation } from '@jbrowse/core/util/types'
+import type {
+  AugmentedRegion as Region,
+  FileLocation,
+} from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
@@ -166,10 +168,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         }
       }
       return {
-        name: displayName,
-        __name: name,
-        type,
         ...rest,
+        name: displayName,
+        source,
+        type,
       }
     })
   }

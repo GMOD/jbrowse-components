@@ -6,27 +6,26 @@ export default function SetColorDialogRowPalettizer({
   setCurrLayout,
   currLayout,
 }: {
-  currLayout: Array<{ name: string; [key: string]: unknown }>
-  setCurrLayout: (arg: Array<{ name: string; [key: string]: unknown }>) => void
+  currLayout: { name: string; [key: string]: unknown }[]
+  setCurrLayout: (arg: { name: string; [key: string]: unknown }[]) => void
 }) {
   if (!currLayout.length || !currLayout[0]) {
     return null
   }
 
-  const fields = Object.keys(currLayout[0]!)
-    .filter(
-      (f) =>
-        f !== 'name' &&
-        f !== 'color' &&
-        f !== 'label' &&
-        f !== 'id' &&
-        f !== 'HP',
-    )
+  const fields = Object.keys(currLayout[0]).filter(
+    f =>
+      f !== 'name' &&
+      f !== 'color' &&
+      f !== 'label' &&
+      f !== 'id' &&
+      f !== 'HP',
+  )
 
   return (
     <div>
       Create color palette based on...
-      {fields.map((r) => (
+      {fields.map(r => (
         <Button
           key={r}
           variant="contained"
@@ -48,7 +47,7 @@ export default function SetColorDialogRowPalettizer({
             )
 
             setCurrLayout(
-              currLayout.map((row) => ({
+              currLayout.map(row => ({
                 ...row,
                 color: ret[row[r] as string],
               })),
@@ -61,7 +60,7 @@ export default function SetColorDialogRowPalettizer({
       <Button
         onClick={() => {
           setCurrLayout(
-            currLayout.map((row) => ({
+            currLayout.map(row => ({
               ...row,
               color: undefined,
             })),

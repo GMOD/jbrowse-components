@@ -14,7 +14,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const { drawXY } = await import('../drawXY')
     let feats = [] as Feature[]
     forEachWithStopTokenCheck(sources, stopToken, source => {
-      const features = groups[source.name] || []
+      const features = groups[source.source] || []
       const { reducedFeatures } = drawXY(ctx, {
         ...props,
         features,

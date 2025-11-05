@@ -22,11 +22,11 @@ const useStyles = makeStyles()({
 
 interface SetColorDialogProps {
   model: {
-    sources?: Array<{
+    sources?: {
       name: string
       [key: string]: unknown
-    }>
-    setLayout: (s: Array<{ name: string; [key: string]: unknown }>) => void
+    }[]
+    setLayout: (s: { name: string; [key: string]: unknown }[]) => void
     clearLayout: () => void
   }
   handleClose: () => void
@@ -35,8 +35,8 @@ interface SetColorDialogProps {
   enableRowPalettizer?: boolean
   showTipsStorageKey?: string
   SourcesGridComponent: React.ComponentType<{
-    rows: Array<{ name: string; [key: string]: unknown }>
-    onChange: (rows: Array<{ name: string; [key: string]: unknown }>) => void
+    rows: { name: string; [key: string]: unknown }[]
+    onChange: (rows: { name: string; [key: string]: unknown }[]) => void
     showTips: boolean
   }>
 }
@@ -53,22 +53,15 @@ export default function SetColorDialog({
   const { classes } = useStyles()
   const { sources } = model
   const [showBulkEditor, setShowBulkEditor] = useState(false)
-  const [currLayout, setCurrLayout] = useState(
-    structuredClone(sources || []),
-  )
+  const [currLayout, setCurrLayout] = useState(structuredClone(sources || []))
   const [showTips, setShowTips] = useLocalStorage(showTipsStorageKey, false)
 
   return (
-    <DraggableDialog
-      open
-      onClose={handleClose}
-      maxWidth="xl"
-      title={title}
-    >
+    <DraggableDialog open onClose={handleClose} maxWidth="xl" title={title}>
       {showBulkEditor && enableBulkEdit ? (
         <SetColorDialogBulkEditPanel
           currLayout={currLayout}
-          onClose={(arg) => {
+          onClose={arg => {
             if (arg) {
               setCurrLayout(arg)
             }

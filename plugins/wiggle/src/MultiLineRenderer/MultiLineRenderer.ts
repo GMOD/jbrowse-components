@@ -15,7 +15,7 @@ export default class MultiLineRenderer extends WiggleBaseRenderer {
     forEachWithStopTokenCheck(sources, stopToken, source => {
       const { reducedFeatures } = drawLine(ctx, {
         ...props,
-        features: groups[source.name] || [],
+        features: groups[source.source] || [],
         colorCallback: () => source.color || 'blue',
       })
       feats = feats.concat(reducedFeatures)

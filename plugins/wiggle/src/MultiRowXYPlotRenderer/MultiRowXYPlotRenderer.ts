@@ -19,7 +19,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     forEachWithStopTokenCheck(sources, stopToken, source => {
       const { reducedFeatures } = drawXY(ctx, {
         ...props,
-        features: groups[source.name] || [],
+        features: groups[source.source] || [],
         height,
         colorCallback: () => source.color || 'blue',
       })

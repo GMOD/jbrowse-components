@@ -18,7 +18,7 @@ const LegendItem = function ({
   model: WiggleDisplayModel
   exportSVG?: boolean
 }) {
-  const boxHeight = rowHeight //Math.min(20, rowHeight)
+  const boxHeight = Math.min(20, rowHeight)
   const {
     needsCustomLegend,
     graphType,
@@ -26,7 +26,7 @@ const LegendItem = function ({
     rowHeightTooSmallForScalebar,
     renderColorBoxes,
   } = model
-  const svgFontSize = rowHeight
+  const svgFontSize = Math.min(rowHeight, 12)
   const canDisplayLabel = rowHeight >= 6
   const colorBoxWidth = renderColorBoxes ? 15 : 0
   const legendWidth = labelWidth + colorBoxWidth + 5
