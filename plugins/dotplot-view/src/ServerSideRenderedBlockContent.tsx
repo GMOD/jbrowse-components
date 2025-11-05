@@ -29,30 +29,19 @@ const useStyles = makeStyles()(theme => {
 })
 
 function LoadingMessage() {
-  // only show the loading message after 300ms to prevent excessive flickering
-  const [shown, setShown] = useState(false)
   const { classes } = useStyles()
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setShown(true)
-    }, 300)
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [])
-
-  return shown ? (
+  return (
     <div className={classes.loading}>
       <LoadingEllipses />
     </div>
-  ) : null
+  )
 }
 
 function BlockMessage({ messageText }: { messageText: string }) {
   const { classes } = useStyles()
   return (
     <div className={classes.blockMessage}>
-      <Typography>{messageText}</Typography>
+      <LoadingEllipses message={messageText} />
     </div>
   )
 }
