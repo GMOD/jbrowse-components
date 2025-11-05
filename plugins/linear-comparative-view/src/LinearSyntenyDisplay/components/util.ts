@@ -176,26 +176,27 @@ export function drawLocationMarkers(
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)' // Dark semi-transparent line
   ctx.lineWidth = 0.5
 
-  // Draw location markers evenly spaced within the match
-  for (let step = 1; step < numMarkers; step++) {
-    const t = step / numMarkers
-
-    // Linear interpolation along both rows
-    // Top edge goes from x1 to x2, bottom edge goes from x4 to x3
-    const topX = x1 + (x2 - x1) * t
-    const bottomX = x4 + (x3 - x4) * t
-
-    ctx.beginPath()
-    ctx.moveTo(topX, y1)
-
-    if (drawCurves) {
+  // MAJOR OPTIMIZATION: Create single path for all markers
+  // This reduces canvas API calls from N*2 to just 2 (beginPath + stroke)
+  ctx.beginPath()
+  if (drawCurves) {
+    for (let step = 1; step < numMarkers; step++) {
+      const t = step / numMarkers
+      const topX = x1 + (x2 - x1) * t
+      const bottomX = x4 + (x3 - x4) * t
+      ctx.moveTo(topX, y1)
       ctx.bezierCurveTo(topX, mid, bottomX, mid, bottomX, y2)
-    } else {
+    }
+  } else {
+    for (let step = 1; step < numMarkers; step++) {
+      const t = step / numMarkers
+      const topX = x1 + (x2 - x1) * t
+      const bottomX = x4 + (x3 - x4) * t
+      ctx.moveTo(topX, y1)
       ctx.lineTo(bottomX, y2)
     }
-
-    ctx.stroke()
   }
+  ctx.stroke()
 
   ctx.strokeStyle = prevStrokeStyle
   ctx.lineWidth = prevLineWidth
