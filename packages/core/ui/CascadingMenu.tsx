@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import type React from 'react'
-import { createContext, useContext, useMemo } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
+import HelpOutline from '@mui/icons-material/HelpOutline'
 import {
+  DialogContent,
   Divider,
+  IconButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
@@ -12,6 +15,7 @@ import {
   MenuItem,
 } from '@mui/material'
 
+import Dialog from './Dialog'
 import HoverMenu from './HoverMenu'
 import { MenuItemEndDecoration } from './Menu'
 import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
@@ -28,9 +32,52 @@ const CascadingContext = createContext({
   rootPopupState: PopupState | undefined
 })
 
+function HelpIconButton({ helpText }: { helpText: string }) {
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false)
+
+  const handleHelpClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    setHelpDialogOpen(true)
+  }
+
+  const handleClose = (event: React.MouseEvent | React.KeyboardEvent) => {
+    // Prevent backdrop click from propagating to menu item
+    event.stopPropagation()
+    setHelpDialogOpen(false)
+  }
+
+  return (
+    <>
+      <IconButton
+        size="small"
+        onClick={handleHelpClick}
+        style={{ marginLeft: 4, padding: 4 }}
+      >
+        <HelpOutline fontSize="small" />
+      </IconButton>
+      <Dialog
+        open={helpDialogOpen}
+        onClose={handleClose}
+        title="Help"
+        onClick={e => {
+          e.stopPropagation()
+        }}
+      >
+        <DialogContent>{helpText}</DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+function HelpIconSpacer() {
+  // Empty spacer that matches HelpIconButton dimensions for alignment
+  return <div style={{ marginLeft: 4, padding: 4, width: 28, height: 28 }} />
+}
+
 function CascadingMenuItem({
   onClick,
   closeAfterItemClick,
+  children,
   ...props
 }: {
   closeAfterItemClick: boolean
@@ -39,6 +86,7 @@ function CascadingMenuItem({
   children: React.ReactNode
 }) {
   const { rootPopupState, parentPopupState } = useContext(CascadingContext)
+
   if (!rootPopupState) {
     throw new Error('must be used inside a CascadingMenu')
   }
@@ -60,7 +108,9 @@ function CascadingMenuItem({
           parentPopupState.setChildHandle(undefined)
         }
       }}
-    />
+    >
+      {children}
+    </MenuItem>
   )
 }
 
@@ -203,6 +253,13 @@ function CascadingMenuList({
   onMenuItemClick: Function
 }) {
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
+  const hasCheckboxOrRadioWithHelp = menuItems.some(
+    m =>
+      (m.type === 'checkbox' || m.type === 'radio') &&
+      'helpText' in m &&
+      m.helpText,
+  )
+
   return (
     <>
       {menuItems
@@ -258,6 +315,15 @@ function CascadingMenuList({
               />
               <CascadingSpacer />
               <EndDecoration item={item} />
+              {item.type === 'checkbox' || item.type === 'radio' ? (
+                'helpText' in item && item.helpText ? (
+                  <HelpIconButton helpText={item.helpText} />
+                ) : hasCheckboxOrRadioWithHelp ? (
+                  <HelpIconSpacer />
+                ) : null
+              ) : 'helpText' in item && item.helpText ? (
+                <HelpIconButton helpText={item.helpText} />
+              ) : null}
             </CascadingMenuItem>
           )
         })}
