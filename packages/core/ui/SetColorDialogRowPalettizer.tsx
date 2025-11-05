@@ -2,18 +2,12 @@ import { set1 } from '@jbrowse/core/ui/colors'
 import { randomColor } from '@jbrowse/core/util/color'
 import { Button } from '@mui/material'
 
-interface RowDataBase {
-  name: string
-  color?: string
-  [key: string]: unknown
-}
-
-export default function SetColorDialogRowPalettizer<T extends RowDataBase = RowDataBase>({
+export default function SetColorDialogRowPalettizer({
   setCurrLayout,
   currLayout,
 }: {
-  currLayout: T[]
-  setCurrLayout: (arg: T[]) => void
+  currLayout: Array<{ name: string; [key: string]: unknown }>
+  setCurrLayout: (arg: Array<{ name: string; [key: string]: unknown }>) => void
 }) {
   if (!currLayout.length || !currLayout[0]) {
     return null

@@ -9,11 +9,6 @@ import SetColorDialogBulkEditPanel from './SetColorDialogBulkEditPanel'
 import SetColorDialogHelpfulTips from './SetColorDialogHelpfulTips'
 import SetColorDialogRowPalettizer from './SetColorDialogRowPalettizer'
 
-interface RowDataBase {
-  name: string
-  [key: string]: unknown
-}
-
 const useStyles = makeStyles()({
   content: {
     minWidth: 800,
@@ -25,10 +20,13 @@ const useStyles = makeStyles()({
   },
 })
 
-interface SetColorDialogProps<T extends RowDataBase = RowDataBase> {
+interface SetColorDialogProps {
   model: {
-    sources?: T[]
-    setLayout: (s: T[]) => void
+    sources?: Array<{
+      name: string
+      [key: string]: unknown
+    }>
+    setLayout: (s: Array<{ name: string; [key: string]: unknown }>) => void
     clearLayout: () => void
   }
   handleClose: () => void
@@ -37,13 +35,13 @@ interface SetColorDialogProps<T extends RowDataBase = RowDataBase> {
   enableRowPalettizer?: boolean
   showTipsStorageKey?: string
   SourcesGridComponent: React.ComponentType<{
-    rows: T[]
-    onChange: (rows: T[]) => void
+    rows: Array<{ name: string; [key: string]: unknown }>
+    onChange: (rows: Array<{ name: string; [key: string]: unknown }>) => void
     showTips: boolean
   }>
 }
 
-export default function SetColorDialog<T extends RowDataBase = RowDataBase>({
+export default function SetColorDialog({
   model,
   handleClose,
   title = 'Color/arrangement editor',
@@ -51,7 +49,7 @@ export default function SetColorDialog<T extends RowDataBase = RowDataBase>({
   enableRowPalettizer = false,
   showTipsStorageKey = 'setColorDialog-showTips',
   SourcesGridComponent,
-}: SetColorDialogProps<T>) {
+}: SetColorDialogProps) {
   const { classes } = useStyles()
   const { sources } = model
   const [showBulkEditor, setShowBulkEditor] = useState(false)

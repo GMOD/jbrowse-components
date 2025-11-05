@@ -10,23 +10,18 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-interface RowDataBase {
-  name: string
-  [key: string]: unknown
-}
-
 const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
 })
 
-export default function SetColorDialogBulkEditPanel<T extends RowDataBase = RowDataBase>({
+export default function SetColorDialogBulkEditPanel({
   onClose,
   currLayout,
 }: {
-  currLayout: T[]
-  onClose: (arg?: T[]) => void
+  currLayout: Array<{ name: string; [key: string]: unknown }>
+  onClose: (arg?: Array<{ name: string; [key: string]: unknown }>) => void
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')

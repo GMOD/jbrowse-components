@@ -17,13 +17,13 @@ export default function SetColorDialog({
 }) {
   return (
     <SharedSetColorDialog
-      model={model}
+      model={model as any}
       handleClose={handleClose}
       title="Multi-wiggle color/arrangement editor"
       enableBulkEdit
       enableRowPalettizer
       showTipsStorageKey="multiwiggle-showTips"
-      SourcesGridComponent={SourcesGrid}
+      SourcesGridComponent={SourcesGrid as any}
     />
   )
 }
