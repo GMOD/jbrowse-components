@@ -15,15 +15,13 @@ const ColorBySelector = observer(function ({
     | DotplotDisplayModel
     | undefined
 
-  const colorBy = firstDisplay?.colorBy ?? ''
+  const colorBy = firstDisplay?.colorBy ?? 'default'
 
   const setColorBy = (value: string) => {
     // Set colorBy for all displays across all tracks
     for (const track of model.tracks) {
       for (const display of track.displays) {
-        ;(display as DotplotDisplayModel).setColorBy(
-          value === '' ? undefined : (value as any),
-        )
+        ;(display as DotplotDisplayModel).setColorBy(value)
       }
     }
   }
@@ -34,8 +32,8 @@ const ColorBySelector = observer(function ({
         {
           label: 'Default',
           type: 'radio',
-          checked: colorBy === '',
-          onClick: () => { setColorBy('') },
+          checked: colorBy === 'default',
+          onClick: () => { setColorBy('default') },
           helpText:
             'Use the default color scheme specified in the track configuration. This respects the color settings defined in the config file.',
         },
@@ -70,6 +68,14 @@ const ColorBySelector = observer(function ({
           onClick: () => { setColorBy('strand') },
           helpText:
             'Color alignments by strand orientation. Forward strand alignments and reverse strand alignments are shown in different colors, making it easy to identify inversions and strand-specific patterns.',
+        },
+        {
+          label: 'Query',
+          type: 'radio',
+          checked: colorBy === 'query',
+          onClick: () => { setColorBy('query') },
+          helpText:
+            'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
         },
       ]}
     >

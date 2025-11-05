@@ -1,3 +1,4 @@
+import { category10 } from '@jbrowse/core/ui/colors'
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
@@ -13,6 +14,23 @@ function makeColor(idx: number) {
   const g = Math.floor(idx / 255) % 255
   const b = idx % 255
   return `rgb(${r},${g},${b})`
+}
+
+// Simple hash function to generate consistent colors for query names
+function hashString(str: string) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return Math.abs(hash)
+}
+
+// Generate a color from a query name using the category10 color palette
+function getQueryColor(queryName: string) {
+  const hash = hashString(queryName)
+  return category10[hash % category10.length]!
 }
 const colorMap = {
   I: '#ff03',
@@ -199,6 +217,17 @@ export function drawRef(
   const posColorWithAlpha = applyAlpha(posColor, alpha)
   const negColorWithAlpha = applyAlpha(negColor, alpha)
 
+  // Cache for query colors with alpha applied
+  const queryColorCache = new Map<string, string>()
+
+  const getQueryColorWithAlpha = (queryName: string) => {
+    if (!queryColorCache.has(queryName)) {
+      const color = getQueryColor(queryName)
+      queryColorCache.set(queryName, applyAlpha(color, alpha))
+    }
+    return queryColorCache.get(queryName)!
+  }
+
   mainCanvas.beginPath()
   const offsets = view.views.map(v => v.offsetPx)
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
@@ -233,12 +262,15 @@ export function drawRef(
       x21 < width + oobLimit &&
       x21 > -oobLimit
     ) {
-      // Set color based on strand if colorBy is 'strand'
+      // Set color based on colorBy setting
       if (colorBy === 'strand') {
         const strand = f.get('strand')
         const strandColor =
           strand === -1 ? negColorWithAlpha : posColorWithAlpha
         mainCanvas.strokeStyle = strandColor
+      } else if (colorBy === 'query') {
+        const queryName = f.get('refName')
+        mainCanvas.strokeStyle = getQueryColorWithAlpha(queryName)
       }
 
       mainCanvas.beginPath()
@@ -252,7 +284,7 @@ export function drawRef(
       }
 
       // Reset to default color if needed
-      if (colorBy === 'strand') {
+      if (colorBy === 'strand' || colorBy === 'query') {
         mainCanvas.strokeStyle = colorMapWithAlpha.M
       }
     }
@@ -353,11 +385,14 @@ export function drawRef(
               // feature, else just use match
               const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
 
-              // Use strand-based coloring if colorBy is 'strand'
+              // Use custom coloring based on colorBy setting
               if (colorBy === 'strand') {
                 const strand = f.get('strand')
                 mainCanvas.fillStyle =
                   strand === -1 ? negColorWithAlpha : posColorWithAlpha
+              } else if (colorBy === 'query') {
+                const queryName = f.get('refName')
+                mainCanvas.fillStyle = getQueryColorWithAlpha(queryName)
               } else {
                 mainCanvas.fillStyle = colorMapWithAlpha[letter]
               }
@@ -407,18 +442,21 @@ export function drawRef(
           }
         }
       } else {
-        // Use strand-based coloring if colorBy is 'strand'
+        // Use custom coloring based on colorBy setting
         if (colorBy === 'strand') {
           const strand = f.get('strand')
           mainCanvas.fillStyle =
             strand === -1 ? negColorWithAlpha : posColorWithAlpha
+        } else if (colorBy === 'query') {
+          const queryName = f.get('refName')
+          mainCanvas.fillStyle = getQueryColorWithAlpha(queryName)
         }
 
         draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         mainCanvas.fill()
 
         // Reset to default color if needed
-        if (colorBy === 'strand') {
+        if (colorBy === 'strand' || colorBy === 'query') {
           mainCanvas.fillStyle = colorMapWithAlpha.M
         }
       }

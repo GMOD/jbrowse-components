@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { category10 } from '@jbrowse/core/ui/colors'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { colord } from '@jbrowse/core/util/colord'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
@@ -13,6 +14,23 @@ import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes
 
 const { parseCigar } = MismatchParser
 
+// Simple hash function to generate consistent colors for query names
+function hashString(str: string) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return Math.abs(hash)
+}
+
+// Generate a color from a query name using the category10 color palette
+function getQueryColor(queryName: string) {
+  const hash = hashString(queryName)
+  return category10[hash % category10.length]!
+}
+
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   adapterConfig: AnyConfigurationModel
   height: number
@@ -20,12 +38,7 @@ export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   highResolutionScaling: number
   alpha?: number
   minAlignmentLength?: number
-  colorBy?:
-    | 'identity'
-    | 'meanQueryIdentity'
-    | 'mappingQuality'
-    | 'strand'
-    | 'default'
+  colorBy?: string
   view: {
     hview: Dotplot1DViewModel
     vview: Dotplot1DViewModel
@@ -93,6 +106,17 @@ export async function drawDotplot(
   let negColorWithAlpha: string | undefined
   let defaultColorWithAlpha: string | undefined
 
+  // Cache for query colors with alpha applied
+  const queryColorCache = new Map<string, string>()
+
+  const getQueryColorWithAlpha = (queryName: string) => {
+    if (!queryColorCache.has(queryName)) {
+      const c = getQueryColor(queryName)
+      queryColorCache.set(queryName, applyAlpha(c, alpha))
+    }
+    return queryColorCache.get(queryName)!
+  }
+
   if (colorBy === 'strand') {
     // Pre-compute strand colors once instead of per-feature
     posColorWithAlpha = applyAlpha(posColor, alpha)
@@ -131,6 +155,10 @@ export async function drawDotplot(
     if (colorBy === 'strand') {
       // Use pre-computed colors (avoids applyAlpha call per feature)
       colorWithAlpha = strand === -1 ? negColorWithAlpha! : posColorWithAlpha!
+    } else if (colorBy === 'query') {
+      // Color by query sequence name
+      const queryName = refName
+      colorWithAlpha = getQueryColorWithAlpha(queryName)
     } else if (colorBy === 'default' && !isCallback) {
       // Use pre-computed color (avoids applyAlpha call per feature)
       colorWithAlpha = defaultColorWithAlpha!

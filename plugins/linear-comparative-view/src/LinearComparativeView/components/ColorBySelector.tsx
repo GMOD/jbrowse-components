@@ -47,6 +47,14 @@ const ColorBySelector = observer(function ({
           helpText:
             'Color alignments by strand orientation. Forward strand alignments and reverse strand alignments are shown in different colors, making it easy to identify inversions and strand-specific patterns.',
         },
+        {
+          label: 'Query',
+          type: 'radio',
+          checked: colorBy === 'query',
+          onClick: () => { setColorBy('query') },
+          helpText:
+            'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
+        },
       ]}
     >
       <PaletteIcon />
