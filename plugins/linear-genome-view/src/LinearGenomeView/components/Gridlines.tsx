@@ -157,6 +157,7 @@ const RenderedVerticalGuides = observer(function ({ model }: { model: LGV }) {
   )
 
   // Memoize block elements to prevent recreation on every render
+  // Note: blocksKey changes only when actual blocks change, not when coarseStaticBlocks reference changes
   const blockElements = useMemo(
     () =>
       coarseStaticBlocks ? (
@@ -188,7 +189,28 @@ const RenderedVerticalGuides = observer(function ({ model }: { model: LGV }) {
           })}
         </>
       ) : null,
-    [blocksKey, bpPerPx, majorColor, minorColor, coarseStaticBlocks],
+    // Claude Code reasoning for the disable:
+    //
+    // The Pattern:
+    //
+    // const blocksKey = useMemo(() =>
+    //   coarseStaticBlocks?.map(b => `${b.key}-${b.widthPx}`).join(','),
+    //   [coarseStaticBlocks]
+    // )
+    //
+    // const blockElements = useMemo(() => {
+    //   // Use coarseStaticBlocks here
+    // }, [blocksKey, ...]) // But depend on blocksKey, not coarseStaticBlocks
+    //
+    // This is a legitimate use case for eslint-disable because:
+    // - We have a derived value (blocksKey) that better represents when to update
+    // - The linter can't understand this semantic relationship
+    // - The disable is narrow in scope and well-documented
+    //
+    // The alternative (using refs) adds complexity without benefit
+    //
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [blocksKey, bpPerPx, majorColor, minorColor],
   )
 
   return blockElements

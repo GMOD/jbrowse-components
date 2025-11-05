@@ -74,7 +74,7 @@ export default function SelectionContextMenu({
             }
           : undefined
       }
-      style={{ zIndex: 800 }}
+      style={{ zIndex: 11000 }}
       menuItems={getSelectionMenuItems(
         model,
         mousedown,

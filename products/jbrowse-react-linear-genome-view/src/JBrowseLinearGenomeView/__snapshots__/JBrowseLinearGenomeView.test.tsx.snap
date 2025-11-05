@@ -434,11 +434,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               data-testid="tracksContainer"
             >
               <div
-                class="css-n6mj5o-verticalGuidesZoomContainer"
+                class="css-1vexmld-verticalGuidesZoomContainer"
               >
                 <div
-                  class="css-14511yq-verticalGuidesContainer"
-                  style="left: -800px; width: 2400px;"
+                  class="css-pntkbn-verticalGuidesContainer"
+                  style="transform: translateX(-800px); width: 2400px;"
                 >
                   <div
                     class="css-a9ifge-boundaryPaddingBlock"
@@ -448,355 +448,707 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     class="css-1dmfa10-contentBlock"
                     style="width: 800px;"
                   >
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: -20px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 0px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 20px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 40px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 60px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 80px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 100px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 120px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 140px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 160px;"
-                    />
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: 180px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 200px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 220px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 240px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 260px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 280px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 300px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 320px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 340px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 360px;"
-                    />
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: 380px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 400px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 420px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 440px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 460px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 480px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 500px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 520px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 540px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 560px;"
-                    />
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: 580px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 600px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 620px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 640px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 660px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 680px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 700px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 720px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 740px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 760px;"
-                    />
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: 780px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 800px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 820px;"
-                    />
+                    <svg
+                      style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
+                    >
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="-20"
+                        x2="-20"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="0"
+                        x2="0"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="20"
+                        x2="20"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="40"
+                        x2="40"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="60"
+                        x2="60"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="80"
+                        x2="80"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="100"
+                        x2="100"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="120"
+                        x2="120"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="140"
+                        x2="140"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="160"
+                        x2="160"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="180"
+                        x2="180"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="200"
+                        x2="200"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="220"
+                        x2="220"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="240"
+                        x2="240"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="260"
+                        x2="260"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="280"
+                        x2="280"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="300"
+                        x2="300"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="320"
+                        x2="320"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="340"
+                        x2="340"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="360"
+                        x2="360"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="380"
+                        x2="380"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="400"
+                        x2="400"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="420"
+                        x2="420"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="440"
+                        x2="440"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="460"
+                        x2="460"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="480"
+                        x2="480"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="500"
+                        x2="500"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="520"
+                        x2="520"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="540"
+                        x2="540"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="560"
+                        x2="560"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="580"
+                        x2="580"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="600"
+                        x2="600"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="620"
+                        x2="620"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="640"
+                        x2="640"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="660"
+                        x2="660"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="680"
+                        x2="680"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="700"
+                        x2="700"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="720"
+                        x2="720"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="740"
+                        x2="740"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="760"
+                        x2="760"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="780"
+                        x2="780"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="800"
+                        x2="800"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="820"
+                        x2="820"
+                        y1="0"
+                        y2="100%"
+                      />
+                    </svg>
                   </div>
                   <div
                     class="css-1dmfa10-contentBlock"
                     style="width: 800px;"
                   >
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: -20px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 0px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 20px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 40px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 60px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 80px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 100px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 120px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 140px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 160px;"
-                    />
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: 180px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 200px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 220px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 240px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 260px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 280px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 300px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 320px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 340px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 360px;"
-                    />
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: 380px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 400px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 420px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 440px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 460px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 480px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 500px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 520px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 540px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 560px;"
-                    />
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: 580px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 600px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 620px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 640px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 660px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 680px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 700px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 720px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 740px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 760px;"
-                    />
-                    <div
-                      class="css-1qcgmte-tick-majorTick"
-                      style="left: 780px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 800px;"
-                    />
-                    <div
-                      class="css-i794sq-tick-minorTick"
-                      style="left: 820px;"
-                    />
+                    <svg
+                      style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
+                    >
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="-20"
+                        x2="-20"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="0"
+                        x2="0"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="20"
+                        x2="20"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="40"
+                        x2="40"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="60"
+                        x2="60"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="80"
+                        x2="80"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="100"
+                        x2="100"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="120"
+                        x2="120"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="140"
+                        x2="140"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="160"
+                        x2="160"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="180"
+                        x2="180"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="200"
+                        x2="200"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="220"
+                        x2="220"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="240"
+                        x2="240"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="260"
+                        x2="260"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="280"
+                        x2="280"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="300"
+                        x2="300"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="320"
+                        x2="320"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="340"
+                        x2="340"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="360"
+                        x2="360"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="380"
+                        x2="380"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="400"
+                        x2="400"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="420"
+                        x2="420"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="440"
+                        x2="440"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="460"
+                        x2="460"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="480"
+                        x2="480"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="500"
+                        x2="500"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="520"
+                        x2="520"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="540"
+                        x2="540"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="560"
+                        x2="560"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="580"
+                        x2="580"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="600"
+                        x2="600"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="620"
+                        x2="620"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="640"
+                        x2="640"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="660"
+                        x2="660"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="680"
+                        x2="680"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="700"
+                        x2="700"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="720"
+                        x2="720"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="740"
+                        x2="740"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="760"
+                        x2="760"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.26)"
+                        stroke-width="1"
+                        x1="780"
+                        x2="780"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="800"
+                        x2="800"
+                        y1="0"
+                        y2="100%"
+                      />
+                      <line
+                        stroke="rgba(0, 0, 0, 0.12)"
+                        stroke-width="1"
+                        x1="820"
+                        x2="820"
+                        y1="0"
+                        y2="100%"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -811,11 +1163,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="height: 17px; box-sizing: border-box;"
                 >
                   <div
-                    class="css-n6mj5o-verticalGuidesZoomContainer"
+                    class="css-1vexmld-verticalGuidesZoomContainer"
                   >
                     <div
-                      class="css-14511yq-verticalGuidesContainer"
-                      style="left: -801px; width: 2400px;"
+                      class="css-pntkbn-verticalGuidesContainer"
+                      style="transform: translateX(-801px); width: 2400px;"
                     >
                       <div
                         class="css-a9ifge-boundaryPaddingBlock"
@@ -825,355 +1177,707 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         class="css-1dmfa10-contentBlock"
                         style="width: 800px;"
                       >
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: -20px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 0px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 20px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 40px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 60px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 80px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 100px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 120px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 140px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 160px;"
-                        />
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: 180px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 200px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 220px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 240px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 260px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 280px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 300px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 320px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 340px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 360px;"
-                        />
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: 380px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 400px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 420px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 440px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 460px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 480px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 500px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 520px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 540px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 560px;"
-                        />
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: 580px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 600px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 620px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 640px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 660px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 680px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 700px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 720px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 740px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 760px;"
-                        />
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: 780px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 800px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 820px;"
-                        />
+                        <svg
+                          style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
+                        >
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="-20"
+                            x2="-20"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="0"
+                            x2="0"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="20"
+                            x2="20"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="40"
+                            x2="40"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="60"
+                            x2="60"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="80"
+                            x2="80"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="100"
+                            x2="100"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="120"
+                            x2="120"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="140"
+                            x2="140"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="160"
+                            x2="160"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="180"
+                            x2="180"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="200"
+                            x2="200"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="220"
+                            x2="220"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="240"
+                            x2="240"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="260"
+                            x2="260"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="280"
+                            x2="280"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="300"
+                            x2="300"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="320"
+                            x2="320"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="340"
+                            x2="340"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="360"
+                            x2="360"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="380"
+                            x2="380"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="400"
+                            x2="400"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="420"
+                            x2="420"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="440"
+                            x2="440"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="460"
+                            x2="460"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="480"
+                            x2="480"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="500"
+                            x2="500"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="520"
+                            x2="520"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="540"
+                            x2="540"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="560"
+                            x2="560"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="580"
+                            x2="580"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="600"
+                            x2="600"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="620"
+                            x2="620"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="640"
+                            x2="640"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="660"
+                            x2="660"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="680"
+                            x2="680"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="700"
+                            x2="700"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="720"
+                            x2="720"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="740"
+                            x2="740"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="760"
+                            x2="760"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="780"
+                            x2="780"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="800"
+                            x2="800"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="820"
+                            x2="820"
+                            y1="0"
+                            y2="100%"
+                          />
+                        </svg>
                       </div>
                       <div
                         class="css-1dmfa10-contentBlock"
                         style="width: 800px;"
                       >
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: -20px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 0px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 20px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 40px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 60px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 80px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 100px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 120px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 140px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 160px;"
-                        />
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: 180px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 200px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 220px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 240px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 260px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 280px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 300px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 320px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 340px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 360px;"
-                        />
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: 380px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 400px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 420px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 440px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 460px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 480px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 500px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 520px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 540px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 560px;"
-                        />
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: 580px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 600px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 620px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 640px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 660px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 680px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 700px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 720px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 740px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 760px;"
-                        />
-                        <div
-                          class="css-1qcgmte-tick-majorTick"
-                          style="left: 780px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 800px;"
-                        />
-                        <div
-                          class="css-i794sq-tick-minorTick"
-                          style="left: 820px;"
-                        />
+                        <svg
+                          style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
+                        >
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="-20"
+                            x2="-20"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="0"
+                            x2="0"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="20"
+                            x2="20"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="40"
+                            x2="40"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="60"
+                            x2="60"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="80"
+                            x2="80"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="100"
+                            x2="100"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="120"
+                            x2="120"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="140"
+                            x2="140"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="160"
+                            x2="160"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="180"
+                            x2="180"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="200"
+                            x2="200"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="220"
+                            x2="220"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="240"
+                            x2="240"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="260"
+                            x2="260"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="280"
+                            x2="280"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="300"
+                            x2="300"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="320"
+                            x2="320"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="340"
+                            x2="340"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="360"
+                            x2="360"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="380"
+                            x2="380"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="400"
+                            x2="400"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="420"
+                            x2="420"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="440"
+                            x2="440"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="460"
+                            x2="460"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="480"
+                            x2="480"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="500"
+                            x2="500"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="520"
+                            x2="520"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="540"
+                            x2="540"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="560"
+                            x2="560"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="580"
+                            x2="580"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="600"
+                            x2="600"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="620"
+                            x2="620"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="640"
+                            x2="640"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="660"
+                            x2="660"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="680"
+                            x2="680"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="700"
+                            x2="700"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="720"
+                            x2="720"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="740"
+                            x2="740"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="760"
+                            x2="760"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.26)"
+                            stroke-width="1"
+                            x1="780"
+                            x2="780"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="800"
+                            x2="800"
+                            y1="0"
+                            y2="100%"
+                          />
+                          <line
+                            stroke="rgba(0, 0, 0, 0.12)"
+                            stroke-width="1"
+                            x1="820"
+                            x2="820"
+                            y1="0"
+                            y2="100%"
+                          />
+                        </svg>
                       </div>
                     </div>
                   </div>
