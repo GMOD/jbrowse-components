@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -90,7 +89,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      let pafRecords = getWeightedMeans(await this.setup(opts))
+      const pafRecords = getWeightedMeans(await this.setup(opts))
 
       // note: this is not the adapter config, it is responding to a display
       // setting passed in via the opts parameter

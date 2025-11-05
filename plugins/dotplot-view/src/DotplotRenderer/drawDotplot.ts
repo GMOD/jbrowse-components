@@ -5,10 +5,10 @@ import { colord } from '@jbrowse/core/util/colord'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { getSnapshot } from 'mobx-state-tree'
 
+import { clampWithWarnX, clampWithWarnY, type Warning } from './clamp'
 import type { Dotplot1DViewModel } from '../DotplotView/model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import type { Feature } from '@jbrowse/core/util'
 
 const { parseCigar } = MismatchParser
 
@@ -29,17 +29,6 @@ export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
     hview: Dotplot1DViewModel
     vview: Dotplot1DViewModel
   }
-}
-
-const r = 'fell outside of range due to CIGAR string'
-const lt = '(less than min coordinate of feature)'
-const gt = '(greater than max coordinate of feature)'
-const fudgeFactor = 1 // allow 1px fuzzyness before warn
-
-function drawCir(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1) {
-  ctx.beginPath()
-  ctx.arc(x, y, r / 2, 0, 2 * Math.PI)
-  ctx.fill()
 }
 
 function applyAlpha(color: string, alpha: number) {
@@ -77,80 +66,13 @@ export async function drawDotplot(
   const vview = views[1]!
   const db1 = hview.dynamicBlocks.contentBlocks[0]?.offsetPx
   const db2 = vview.dynamicBlocks.contentBlocks[0]?.offsetPx
-  const warnings = [] as { message: string; effect: string }[]
+  const warnings = [] as Warning[]
   ctx.lineWidth = lineWidth
 
   // we operate on snapshots of these attributes of the hview/vview because
   // it is significantly faster than accessing the mobx objects
   const { bpPerPx: hBpPerPx } = hview
   const { bpPerPx: vBpPerPx } = vview
-
-  function clampWithWarnX(
-    num: number,
-    min: number,
-    max: number,
-    feature: Feature,
-  ) {
-    const strand = feature.get('strand') || 1
-    if (strand === -1) {
-      ;[max, min] = [min, max]
-    }
-    if (num < min - fudgeFactor) {
-      let start = feature.get('start')
-      let end = feature.get('end')
-      const refName = feature.get('refName')
-      if (strand === -1) {
-        ;[end, start] = [start, end]
-      }
-
-      warnings.push({
-        message: `feature at (X ${refName}:${start}-${end}) ${r} ${lt}`,
-        effect: 'clipped the feature',
-      })
-      return min
-    }
-    if (num > max + fudgeFactor) {
-      const strand = feature.get('strand') || 1
-      const start = strand === 1 ? feature.get('start') : feature.get('end')
-      const end = strand === 1 ? feature.get('end') : feature.get('start')
-      const refName = feature.get('refName')
-
-      warnings.push({
-        message: `feature at (X ${refName}:${start}-${end}) ${r} ${gt}`,
-        effect: 'clipped the feature',
-      })
-      return max
-    }
-    return num
-  }
-
-  function clampWithWarnY(
-    num: number,
-    min: number,
-    max: number,
-    feature: Feature,
-  ) {
-    if (num < min - fudgeFactor) {
-      const mate = feature.get('mate')
-      const { refName, start, end } = mate
-      warnings.push({
-        message: `feature at (Y ${refName}:${start}-${end}) ${r} ${lt}`,
-        effect: 'clipped the feature',
-      })
-      return min
-    }
-    if (num > max + fudgeFactor) {
-      const mate = feature.get('mate')
-      const { refName, start, end } = mate
-
-      warnings.push({
-        message: `feature at (Y ${refName}:${start}-${end}) ${r} ${gt}`,
-        effect: 'clipped the feature',
-      })
-      return max
-    }
-    return num
-  }
 
   const hsnap = {
     ...getSnapshot(hview),
@@ -180,22 +102,20 @@ export async function drawDotplot(
     defaultColorWithAlpha = applyAlpha(c, alpha)
   }
 
-  // Filter by minAlignmentLength if specified
-  const filteredFeatures =
-    minAlignmentLength > 0
-      ? features.filter(feature => {
-          const start = feature.get('start')
-          const end = feature.get('end')
-          const alignmentLength = Math.abs(end - start)
-          return alignmentLength >= minAlignmentLength
-        })
-      : features
-
-  for (const feature of filteredFeatures) {
+  for (const feature of features) {
     // Cache feature properties to avoid repeated .get() calls (optimization)
     const strand = feature.get('strand') || 1
     const fStart = feature.get('start')
     const fEnd = feature.get('end')
+
+    // Filter by minAlignmentLength if specified (inline for performance)
+    if (minAlignmentLength > 0) {
+      const alignmentLength = Math.abs(fEnd - fStart)
+      if (alignmentLength < minAlignmentLength) {
+        continue
+      }
+    }
+
     const refName = feature.get('refName')
     const mate = feature.get('mate')
     const mateRef = mate.refName
@@ -253,7 +173,9 @@ export async function drawDotplot(
       const e1 = e10.offsetPx - db2!
       const e2 = e20.offsetPx - db2!
       if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
-        drawCir(ctx, b1, height - e1, lineWidth)
+        ctx.beginPath()
+        ctx.arc(b1, height - e1, lineWidth / 2, 0, 2 * Math.PI)
+        ctx.fill()
       } else {
         let currX = b1
         let currY = e1
@@ -277,8 +199,8 @@ export async function drawDotplot(
             } else if (op === 'I') {
               currY += val / vBpPerPx
             }
-            currX = clampWithWarnX(currX, b1, b2, feature)
-            currY = clampWithWarnY(currY, e1, e2, feature)
+            currX = clampWithWarnX(currX, b1, b2, feature, warnings)
+            currY = clampWithWarnY(currY, e1, e2, feature, warnings)
 
             // only draw a line segment if it is bigger than 0.5px
             if (
@@ -303,12 +225,12 @@ export async function drawDotplot(
       if (warnings.length <= 5) {
         if (b10 === undefined || b20 === undefined) {
           warnings.push({
-            message: `feature at (X ${refName}:${start}-${end}) not plotted, fell outside of range`,
+            message: `feature at (X-coord: ${refName}:${start}-${end}) not plotted, fell outside of range`,
             effect: 'feature not rendered',
           })
         } else {
           warnings.push({
-            message: `feature at (Y ${mateRef}:${mate.start}-${mate.end}) not plotted, fell outside of range`,
+            message: `feature at (Y-coord: ${mateRef}:${mate.start}-${mate.end}) not plotted, fell outside of range`,
             effect: 'feature not rendered',
           })
         }

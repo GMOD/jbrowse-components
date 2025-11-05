@@ -30,7 +30,7 @@ const ColorBySelector = observer(function ({
 
   const colorBy = firstDisplay?.colorBy ?? ''
 
-  const handleColorByChange = (event: SelectChangeEvent<string>) => {
+  const handleColorByChange = (event: SelectChangeEvent) => {
     const value = event.target.value
     // Set colorBy for all displays across all tracks
     for (const track of model.tracks) {

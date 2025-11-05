@@ -18,8 +18,6 @@ export function renderBlockData(self: IAnyStateTreeNode) {
   getSnapshot(parent)
 
   // Access alpha, minAlignmentLength, and colorBy to make reaction reactive to changes
-  const { alpha, minAlignmentLength, colorBy } = self
-
   if (parent.initialized) {
     const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
     return {
