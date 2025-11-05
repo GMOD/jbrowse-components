@@ -63,7 +63,6 @@ const DotplotControls = observer(function ({
         menuItems={[
           {
             label: 'Square view - same bp per pixel',
-            icon: CropDinIcon,
             onClick: () => {
               model.squareView()
             },
@@ -72,7 +71,6 @@ const DotplotControls = observer(function ({
           },
           {
             label: 'Rectangular view - same total bp',
-            icon: CropLandscapeIcon,
             onClick: () => {
               model.squareViewProportional()
             },
@@ -81,7 +79,6 @@ const DotplotControls = observer(function ({
           },
           {
             label: 'Show all regions',
-            icon: SettingsOverscanIcon,
             onClick: () => {
               model.showAllRegions()
             },
@@ -203,12 +200,12 @@ const DotplotControls = observer(function ({
       >
         <MoreVert />
       </CascadingMenuButton>
+      <ColorBySelector model={model} />
 
       {hasDisplays && showDynamicControls ? (
         <>
           <OpacitySlider model={model} />
           <MinLengthSlider model={model} />
-          <ColorBySelector model={model} />
         </>
       ) : null}
     </div>

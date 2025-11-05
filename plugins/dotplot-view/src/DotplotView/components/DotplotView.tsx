@@ -111,7 +111,6 @@ const DotplotViewInternal = observer(function ({
 
   // Cursor mode and validation
   const {
-    ctrlKeyWasUsed,
     ctrlKeyDown,
     validPan,
     validSelect,

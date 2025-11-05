@@ -1,28 +1,15 @@
-import { Box, FormControl, MenuItem, Select, Typography } from '@mui/material'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory'
 import type { DotplotViewModel } from '../model'
-import type { SelectChangeEvent } from '@mui/material'
-
-const useStyles = makeStyles()({
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    marginLeft: 16,
-    marginRight: 16,
-    minWidth: 150,
-  },
-})
 
 const ColorBySelector = observer(function ({
   model,
 }: {
   model: DotplotViewModel
 }) {
-  const { classes } = useStyles()
-
   // Get the first display from the first track (if it exists)
   const firstDisplay = model.tracks[0]?.displays[0] as
     | DotplotDisplayModel
@@ -30,8 +17,7 @@ const ColorBySelector = observer(function ({
 
   const colorBy = firstDisplay?.colorBy ?? ''
 
-  const handleColorByChange = (event: SelectChangeEvent) => {
-    const value = event.target.value
+  const setColorBy = (value: string) => {
     // Set colorBy for all displays across all tracks
     for (const track of model.tracks) {
       for (const display of track.displays) {
@@ -43,28 +29,52 @@ const ColorBySelector = observer(function ({
   }
 
   return (
-    <Box className={classes.container}>
-      <Typography variant="body2" style={{ marginRight: 8 }}>
-        Color by:
-      </Typography>
-      <FormControl size="small" style={{ minWidth: 150 }}>
-        <Select
-          value={colorBy}
-          onChange={handleColorByChange}
-          displayEmpty
-          size="small"
-        >
-          <MenuItem value="">
-            <em>Config default</em>
-          </MenuItem>
-          <MenuItem value="default">Default</MenuItem>
-          <MenuItem value="identity">Identity</MenuItem>
-          <MenuItem value="meanQueryIdentity">Mean Query Identity</MenuItem>
-          <MenuItem value="mappingQuality">Mapping Quality</MenuItem>
-          <MenuItem value="strand">Strand</MenuItem>
-        </Select>
-      </FormControl>
-    </Box>
+    <CascadingMenuButton
+      menuItems={[
+        {
+          label: 'Default',
+          type: 'radio',
+          checked: colorBy === '',
+          onClick: () => setColorBy(''),
+          helpText:
+            'Use the default color scheme specified in the track configuration. This respects the color settings defined in the config file.',
+        },
+        {
+          label: 'Identity',
+          type: 'radio',
+          checked: colorBy === 'identity',
+          onClick: () => setColorBy('identity'),
+          helpText:
+            'Color alignments by sequence identity percentage. Higher identity matches appear in warmer colors, while lower identity matches appear cooler. Useful for identifying highly conserved vs. divergent regions.',
+        },
+        {
+          label: 'Mean Query Identity',
+          type: 'radio',
+          checked: colorBy === 'meanQueryIdentity',
+          onClick: () => setColorBy('meanQueryIdentity'),
+          helpText:
+            'Color alignments based on the mean identity across the query sequence. This provides a smoothed view of overall alignment quality, reducing noise from local variations. For instance, a single long query of e.g. a contig of an assembly, when aligned to the target, may get split into many smaller "hits". This score aggregates across them, and colors them all the same. Similar code exists in the program dotPlotly',
+        },
+        {
+          label: 'Mapping Quality',
+          type: 'radio',
+          checked: colorBy === 'mappingQuality',
+          onClick: () => setColorBy('mappingQuality'),
+          helpText:
+            'Color alignments by mapping quality score (MAPQ). Higher quality mappings (more unique/confident) appear in darker colors. Useful for identifying ambiguous or multi-mapping regions.',
+        },
+        {
+          label: 'Strand',
+          type: 'radio',
+          checked: colorBy === 'strand',
+          onClick: () => setColorBy('strand'),
+          helpText:
+            'Color alignments by strand orientation. Forward strand alignments and reverse strand alignments are shown in different colors, making it easy to identify inversions and strand-specific patterns.',
+        },
+      ]}
+    >
+      <PaletteIcon />
+    </CascadingMenuButton>
   )
 })
 

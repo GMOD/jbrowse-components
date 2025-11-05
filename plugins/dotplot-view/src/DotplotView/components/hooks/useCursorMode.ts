@@ -13,7 +13,6 @@ export function useCursorMode(cursorMode: string) {
     (cursorMode === 'crosshair' && !ctrlKeyWasUsed)
 
   return {
-    ctrlKeyWasUsed,
     ctrlKeyDown,
     validPan,
     validSelect,

@@ -1,13 +1,15 @@
-import { useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 type Coord = [number, number] | undefined
 
 interface Rect {
   left: number
   top: number
+  width: number
+  height: number
 }
 
-const blank = { left: 0, top: 0, width: 0, height: 0 }
+const blank: Rect = { left: 0, top: 0, width: 0, height: 0 }
 
 // produces offsetX/offsetY coordinates from a clientX and an element's
 // getBoundingClientRect
@@ -20,14 +22,21 @@ export function useMouseCoordinates() {
   const [mousedownClient, setMouseDownClient] = useState<Coord>()
   const [mouseupClient, setMouseUpClient] = useState<Coord>()
   const [mouseOvered, setMouseOvered] = useState(false)
+  const [rect, setRect] = useState<Rect>(blank)
   const ref = useRef<HTMLDivElement>(null)
   const root = useRef<HTMLDivElement>(null)
 
-  const svg = ref.current?.getBoundingClientRect() || blank
-  const rootRect = ref.current?.getBoundingClientRect() || blank
-  const mousedown = getOffset(mousedownClient, svg)
-  const mousecurr = getOffset(mousecurrClient, svg)
-  const mouseup = getOffset(mouseupClient, svg)
+  useLayoutEffect(() => {
+    if (ref.current) {
+      setRect(ref.current.getBoundingClientRect())
+    }
+  }, [mousecurrClient, mousedownClient, mouseupClient])
+
+  const svg = rect
+  const rootRect = rect
+  const mousedown = getOffset(mousedownClient, rect)
+  const mousecurr = getOffset(mousecurrClient, rect)
+  const mouseup = getOffset(mouseupClient, rect)
   const mouserect = mouseup || mousecurr
   const mouserectClient = mouseupClient || mousecurrClient
   const xdistance = mousedown && mouserect ? mouserect[0] - mousedown[0] : 0
