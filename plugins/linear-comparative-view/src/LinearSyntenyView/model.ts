@@ -177,6 +177,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 "This operation 'diagonalizes' the data which algorithmically reorders and reorients chromosomes to minimize crossing synteny lines, creating a more diagonal pattern. This makes it easier to identify large-scale genomic rearrangements, inversions, and translocations. The process may take a few moments for large genomes.",
             },
             {
+              label: 'Show dynamic controls',
+              type: 'checkbox',
+              checked: self.showDynamicControls,
+              onClick: () => {
+                self.setShowDynamicControls(!self.showDynamicControls)
+              },
+              helpText:
+                'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust synteny visualization parameters in real-time.',
+            },
+            {
               label: 'Draw',
               subMenu: [
                 {

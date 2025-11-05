@@ -1,8 +1,6 @@
 import type { CSSProperties } from 'react'
-import { useEffect, useState } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
-import { Typography } from '@mui/material'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -20,11 +18,6 @@ const useStyles = makeStyles()(theme => {
       backgroundColor: bg,
       padding: '10px',
     },
-    blockError: {
-      backgroundColor: bg,
-      padding: '10px',
-      color: 'red',
-    },
   }
 })
 
@@ -40,19 +33,14 @@ function LoadingMessage() {
 function BlockMessage({ messageText }: { messageText: string }) {
   const { classes } = useStyles()
   return (
-    <div className={classes.blockMessage}>
+    <div className={classes.loading}>
       <LoadingEllipses message={messageText} />
     </div>
   )
 }
 
 function BlockError({ error }: { error: unknown }) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.blockError}>
-      <Typography>{`${error}`}</Typography>
-    </div>
-  )
+  return <ErrorMessage error={error} />
 }
 
 const ServerSideRenderedDotplotContent = observer(function ({

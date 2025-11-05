@@ -65,7 +65,7 @@ const OpacitySlider = observer(function ({
   }
 
   return (
-    <Box className={classes.container}>
+    <span className={classes.container}>
       <Typography variant="body2" style={{ marginRight: 8 }}>
         Opacity:
       </Typography>
@@ -81,9 +81,9 @@ const OpacitySlider = observer(function ({
         slots={{
           valueLabel: ValueLabelComponent,
         }}
-        valueLabelFormat={(value: number) => sliderToAlpha(value).toFixed(3)}
+        valueLabelFormat={value => sliderToAlpha(value).toFixed(3)}
       />
-    </Box>
+    </span>
   )
 })
 

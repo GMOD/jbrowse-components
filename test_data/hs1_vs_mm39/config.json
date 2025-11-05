@@ -50,29 +50,21 @@
   "tracks": [
     {
       "type": "FeatureTrack",
-      "trackId": "liftoff_genes",
-      "name": "liftOff genes",
-      "assemblyNames": ["hs1"],
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "GtfAdapter",
-        "gtfLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/genes/catLiftOffGenesV1.gtf.gz",
-          "locationType": "UriLocation"
-        }
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "refgene",
-      "name": "refGene",
+      "trackId": "mm39-ncbiRefSeqCurated",
+      "name": "NCBI RefSeq - RefSeq Curated",
       "assemblyNames": ["mm39"],
-      "category": ["Annotation"],
       "adapter": {
-        "type": "GtfAdapter",
-        "gtfLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/genes/refGene.gtf.gz",
-          "locationType": "UriLocation"
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://jbrowse.org/ucsc/mm39/ncbiRefSeqCurated.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "https://jbrowse.org/ucsc/mm39/ncbiRefSeqCurated.gff.gz.csi"
+          }
         }
       }
     },

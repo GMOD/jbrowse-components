@@ -5,7 +5,8 @@ import { colord } from '@jbrowse/core/util/colord'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { getSnapshot } from 'mobx-state-tree'
 
-import { clampWithWarnX, clampWithWarnY, type Warning } from './clamp'
+import { type Warning, clampWithWarnX, clampWithWarnY } from './clamp'
+
 import type { Dotplot1DViewModel } from '../DotplotView/model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'

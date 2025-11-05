@@ -4,8 +4,8 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
+import { debounce } from './debounce'
 import {
-  debounce,
   drawCigarClickMap,
   drawMouseoverClickMap,
   drawRef,

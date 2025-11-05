@@ -26,10 +26,9 @@ const Header = observer(function ({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const { views, levels } = model
+  const { views, levels, showDynamicControls } = model
   const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
   const [sideBySide, setSideBySide] = useState(views.length <= 3)
-  const [showDynamicControls, setShowDynamicControls] = useState(true)
 
   // Check if we have any displays to show sliders
   const hasDisplays = levels[0]?.tracks[0]?.displays[0]
@@ -85,16 +84,6 @@ const Header = observer(function ({
             onClick: () => {
               setShowSearchBoxes(!showSearchBoxes)
             },
-          },
-          {
-            label: 'Show dynamic controls',
-            type: 'checkbox',
-            checked: showDynamicControls,
-            onClick: () => {
-              setShowDynamicControls(!showDynamicControls)
-            },
-            helpText:
-              'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust synteny visualization parameters in real-time.',
           },
           {
             label: 'Orientation - Side-by-side',

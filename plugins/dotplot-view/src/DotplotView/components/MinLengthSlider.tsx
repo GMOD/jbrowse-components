@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Box, Slider, Tooltip, Typography } from '@mui/material'
+import { Slider, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -57,7 +57,7 @@ const MinLengthSlider = observer(function ({
   }, [minAlignmentLength])
 
   return (
-    <Box className={classes.container}>
+    <span className={classes.container}>
       <Typography variant="body2" style={{ marginRight: 8 }}>
         Min length:
       </Typography>
@@ -89,7 +89,7 @@ const MinLengthSlider = observer(function ({
           valueLabel: ValueLabelComponent,
         }}
       />
-    </Box>
+    </span>
   )
 })
 

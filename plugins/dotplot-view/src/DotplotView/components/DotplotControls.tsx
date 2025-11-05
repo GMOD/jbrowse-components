@@ -35,7 +35,7 @@ const DotplotControls = observer(function ({
   const hasDisplays = model.tracks[0]?.displays[0]
 
   return (
-    <div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
       <IconButton
         onClick={() => {
           model.zoomOut()
