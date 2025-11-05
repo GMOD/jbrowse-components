@@ -3,8 +3,8 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { Dotplot1DView } from './DotplotView/model'
 
-import type { Feature, Region } from '@jbrowse/core/util'
 import type { Dotplot1DViewModel } from './DotplotView/model'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 // Copied types from linear-comparative-view to avoid cross-package imports
 interface AlignmentData {
@@ -202,7 +202,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
       return v
     }) as [Dotplot1DViewModel, Dotplot1DViewModel]
 
-    const targetView = views[0]!
+    const targetView = views[0]
 
     checkStopToken(stopToken)
     statusCallback?.('Getting renderer...')
@@ -249,10 +249,10 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
 
       if (mate) {
         alignments.push({
-          queryRefName: feat.get('refName') as string,
+          queryRefName: feat.get('refName'),
           refRefName: mate.refName,
-          queryStart: feat.get('start') as number,
-          queryEnd: feat.get('end') as number,
+          queryStart: feat.get('start'),
+          queryEnd: feat.get('end'),
           refStart: mate.start,
           refEnd: mate.end,
           strand: (feat.get('strand') as number) || 1,

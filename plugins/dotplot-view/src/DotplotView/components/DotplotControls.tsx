@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
@@ -10,7 +12,6 @@ import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { lazy } from 'react'
 
 import { CursorMouse, CursorMove } from './CursorIcon'
 
@@ -120,8 +121,7 @@ const DotplotControls = observer(function ({
               'Configure how clicking and dragging behaves in the dotplot view. Choose between panning and region selection as the default action.',
             subMenu: [
               {
-                label:
-                  'Pan by default, select region when ctrl/cmd key is held',
+                label: 'Pan by default',
                 icon: CursorMove,
                 type: 'radio',
                 checked: model.cursorMode === 'move',
@@ -132,8 +132,7 @@ const DotplotControls = observer(function ({
                   'Click and drag to pan the view. Hold Ctrl/Cmd while dragging to select a region for zooming or creating a linear synteny view.',
               },
               {
-                label:
-                  'Select region by default, pan when ctrl/cmd key is held',
+                label: 'Select region by default',
                 icon: CursorMouse,
                 type: 'radio',
                 checked: model.cursorMode === 'crosshair',
@@ -151,7 +150,7 @@ const DotplotControls = observer(function ({
               'Configure how mouse wheel scrolling behaves in the dotplot view.',
             subMenu: [
               {
-                label: 'Pans view',
+                label: 'Pan view',
                 type: 'radio',
                 checked: model.wheelMode === 'pan',
                 onClick: () => {
@@ -161,7 +160,7 @@ const DotplotControls = observer(function ({
                   'Mouse wheel scrolling will pan the view up/down. Useful for navigating through the genome without changing zoom level.',
               },
               {
-                label: 'Zooms view',
+                label: 'Zoom view',
                 type: 'radio',
                 checked: model.wheelMode === 'zoom',
                 onClick: () => {

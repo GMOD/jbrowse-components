@@ -13,8 +13,8 @@ import {
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { DotplotViewModel } from '../model'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 interface Region {
   refName: string
