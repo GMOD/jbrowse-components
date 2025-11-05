@@ -1,8 +1,8 @@
 import { memo, useEffect, useMemo, useRef } from 'react'
 
-import { reaction, trace } from 'mobx'
-import { observer } from 'mobx-react'
 import { useTheme } from '@mui/material'
+import { reaction } from 'mobx'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import {
@@ -61,7 +61,6 @@ const RenderedBlockLines = memo(
   }) {
     const svgRef = useRef<SVGSVGElement>(null)
     const lastRenderedKey = useRef<string>('')
-    console.log('wtf3')
 
     // Update SVG lines directly without React, with manual caching
     useEffect(() => {
@@ -78,7 +77,6 @@ const RenderedBlockLines = memo(
         return
       }
 
-      console.log('wtf123')
       lastRenderedKey.current = cacheKey
 
       const ticks = makeTicks(block.start, block.end, bpPerPx)
@@ -88,7 +86,7 @@ const RenderedBlockLines = memo(
 
       // Create lines directly in SVG
       const fragment = document.createDocumentFragment()
-      ticks.forEach(({ type, base }) => {
+      for (const { type, base } of ticks) {
         const x =
           (block.reversed ? block.end - base : base - block.start) / bpPerPx
         const line = document.createElementNS(
@@ -104,9 +102,9 @@ const RenderedBlockLines = memo(
           type === 'major' || type === 'labeledMajor' ? majorColor : minorColor,
         )
         line.setAttribute('stroke-width', '1')
-        fragment.appendChild(line)
-      })
-      svg.appendChild(fragment)
+        fragment.append(line)
+      }
+      svg.append(fragment)
     }) // No dependencies - runs every render but has manual cache check
 
     return (
@@ -139,12 +137,17 @@ const RenderedBlockLines = memo(
 const RenderedVerticalGuides = observer(function ({ model }: { model: LGV }) {
   const { coarseStaticBlocks, bpPerPx } = model
   const theme = useTheme()
-  trace()
 
-  const majorColor = theme.palette.action.disabled
-  const minorColor = theme.palette.divider
+  // Memoize theme colors to prevent unnecessary recalculations
+  const { majorColor, minorColor } = useMemo(
+    () => ({
+      majorColor: theme.palette.action.disabled,
+      minorColor: theme.palette.divider,
+    }),
+    [theme.palette.action.disabled, theme.palette.divider],
+  )
 
-  // Create a stable key based on block keys to prevent unnecessary re-renders
+  // Create stable key to prevent unnecessary re-renders when blocks haven't changed
   const blocksKey = useMemo(
     () =>
       coarseStaticBlocks
@@ -153,40 +156,40 @@ const RenderedVerticalGuides = observer(function ({ model }: { model: LGV }) {
     [coarseStaticBlocks],
   )
 
-  const blockElements = useMemo(() => {
-    console.log('wtf2')
-    return coarseStaticBlocks ? (
-      <>
-        {coarseStaticBlocks.map((block, index) => {
-          const k = `${block.key}-${index}`
-          if (block.type === 'ContentBlock') {
-            return (
-              <RenderedBlockLines
-                key={k}
-                block={block}
-                bpPerPx={bpPerPx}
-                majorColor={majorColor}
-                minorColor={minorColor}
-              />
-            )
-          } else if (block.type === 'ElidedBlock') {
-            return <ElidedBlockComponent key={k} width={block.widthPx} />
-          } else if (block.type === 'InterRegionPaddingBlock') {
-            return (
-              <InterRegionPaddingBlockComponent
-                key={k}
-                width={block.widthPx}
-                boundary={block.variant === 'boundary'}
-              />
-            )
-          }
-          return null
-        })}
-      </>
-    ) : (
-      coarseStaticBlocks
-    )
-  }, [blocksKey, coarseStaticBlocks, bpPerPx, majorColor, minorColor])
+  // Memoize block elements to prevent recreation on every render
+  const blockElements = useMemo(
+    () =>
+      coarseStaticBlocks ? (
+        <>
+          {coarseStaticBlocks.map((block, index) => {
+            const k = `${block.key}-${index}`
+            if (block.type === 'ContentBlock') {
+              return (
+                <RenderedBlockLines
+                  key={k}
+                  block={block}
+                  bpPerPx={bpPerPx}
+                  majorColor={majorColor}
+                  minorColor={minorColor}
+                />
+              )
+            } else if (block.type === 'ElidedBlock') {
+              return <ElidedBlockComponent key={k} width={block.widthPx} />
+            } else if (block.type === 'InterRegionPaddingBlock') {
+              return (
+                <InterRegionPaddingBlockComponent
+                  key={k}
+                  width={block.widthPx}
+                  boundary={block.variant === 'boundary'}
+                />
+              )
+            }
+            return null
+          })}
+        </>
+      ) : null,
+    [blocksKey, bpPerPx, majorColor, minorColor, coarseStaticBlocks],
+  )
 
   return blockElements
 })
@@ -201,7 +204,6 @@ const Gridlines = observer(function ({
   const { classes } = useStyles()
   const containerRef = useRef<HTMLDivElement>(null)
   const guidesRef = useRef<HTMLDivElement>(null)
-  console.log('wtf1')
 
   // Use MobX reaction to update DOM directly without triggering React re-renders
   useEffect(() => {

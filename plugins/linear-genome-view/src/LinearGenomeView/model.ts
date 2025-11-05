@@ -1907,20 +1907,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
             () => {
               if (self.initialized) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
-              }
-            },
-            { delay: 150 },
-          ),
-        )
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              if (self.initialized) {
                 self.setCoarseStaticBlocks(self.staticBlocks)
               }
             },
-            { delay: 150 },
+            { delay: 300 },
           ),
         )
 
