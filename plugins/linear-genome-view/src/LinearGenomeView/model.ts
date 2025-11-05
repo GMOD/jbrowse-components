@@ -288,6 +288,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
+      coarseStaticBlocks: undefined as BlockSet | undefined,
+      /**
+       * #volatile
+       */
       leftOffset: undefined as undefined | BpOffset,
       /**
        * #volatile
@@ -1481,6 +1485,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
       },
+      /**
+       * #action
+       */
+      setCoarseStaticBlocks(blocks: BlockSet) {
+        self.coarseStaticBlocks = blocks
+      },
     }))
     .actions(self => ({
       /**
@@ -1897,9 +1907,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
             () => {
               if (self.initialized) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
+                self.setCoarseStaticBlocks(self.staticBlocks)
               }
             },
-            { delay: 150 },
+            { delay: 300 },
           ),
         )
 
