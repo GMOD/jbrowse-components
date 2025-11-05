@@ -42,6 +42,10 @@ const colorMap = {
 }
 
 function applyAlpha(color: string, alpha: number) {
+  // Skip colord processing if alpha is 1 (optimization)
+  if (alpha === 1) {
+    return color
+  }
   return colord(color).alpha(alpha).toHex()
 }
 
@@ -69,6 +73,10 @@ export function drawCigarClickMap(
   cigarClickMapCanvas.clearRect(0, 0, width, height)
 
   const offsets = view.views.map(v => v.offsetPx)
+
+  // Cache reciprocals for division in CIGAR loop
+  const bpPerPxInv0 = 1 / bpPerPxs[level]!
+  const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
   for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
     const x11 = p11.offsetPx - offsets[level]!
@@ -111,8 +119,8 @@ export function drawCigarClickMap(
             px2 = cx2
           }
 
-          const d1 = len / bpPerPxs[level]!
-          const d2 = len / bpPerPxs[level + 1]!
+          const d1 = len * bpPerPxInv0
+          const d2 = len * bpPerPxInv1
 
           if (op === 'M' || op === '=' || op === 'X') {
             cx1 += d1 * rev1
@@ -230,10 +238,26 @@ export function drawRef(
 
   mainCanvas.beginPath()
   const offsets = view.views.map(v => v.offsetPx)
+  const offsetsL0 = offsets[level]!
+  const offsetsL1 = offsets[level + 1]!
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
+  const y1 = 0
+  const y2 = height
+  const mid = (y2 - y1) / 2
+
+  // Cache colorBy checks outside loop for performance
+  const useStrandColorThin = colorBy === 'strand'
+  const useQueryColorThin = colorBy === 'query'
 
   mainCanvas.fillStyle = colorMapWithAlpha.M
   mainCanvas.strokeStyle = colorMapWithAlpha.M
+
+  // Group features by color to batch state changes
+  const thinLinesByColor = new Map<
+    string,
+    { x11: number; x21: number; y1: number; y2: number; mid: number }[]
+  >()
+
   for (const { p11, p12, p21, p22, f } of featPositions) {
     // Filter by total alignment length for this query sequence
     if (minAlignmentLength > 0) {
@@ -244,15 +268,12 @@ export function drawRef(
       }
     }
 
-    const x11 = p11.offsetPx - offsets[level]!
-    const x12 = p12.offsetPx - offsets[level]!
-    const x21 = p21.offsetPx - offsets[level + 1]!
-    const x22 = p22.offsetPx - offsets[level + 1]!
+    const x11 = p11.offsetPx - offsetsL0
+    const x12 = p12.offsetPx - offsetsL0
+    const x21 = p21.offsetPx - offsetsL1
+    const x22 = p22.offsetPx - offsetsL1
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
-    const y1 = 0
-    const y2 = height
-    const mid = (y2 - y1) / 2
 
     // drawing a line if the results are thin results in much less pixellation
     // than filling in a thin polygon
@@ -262,37 +283,68 @@ export function drawRef(
       x21 < width + oobLimit &&
       x21 > -oobLimit
     ) {
-      // Set color based on colorBy setting
-      if (colorBy === 'strand') {
+      // Determine color key for batching
+      let colorKey = 'default'
+      if (useStrandColorThin) {
         const strand = f.get('strand')
-        const strandColor =
-          strand === -1 ? negColorWithAlpha : posColorWithAlpha
-        mainCanvas.strokeStyle = strandColor
-      } else if (colorBy === 'query') {
-        const queryName = f.get('refName')
-        mainCanvas.strokeStyle = getQueryColorWithAlpha(queryName)
+        colorKey = strand === -1 ? 'neg' : 'pos'
+      } else if (useQueryColorThin) {
+        colorKey = f.get('refName')
       }
 
-      mainCanvas.beginPath()
-      mainCanvas.moveTo(x11, y1)
-      if (drawCurves) {
-        mainCanvas.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-        mainCanvas.stroke()
-      } else {
-        mainCanvas.lineTo(x21, y2)
-        mainCanvas.stroke()
+      if (!thinLinesByColor.has(colorKey)) {
+        thinLinesByColor.set(colorKey, [])
       }
-
-      // Reset to default color if needed
-      if (colorBy === 'strand' || colorBy === 'query') {
-        mainCanvas.strokeStyle = colorMapWithAlpha.M
-      }
+      thinLinesByColor.get(colorKey)!.push({ x11, x21, y1, y2, mid })
     }
   }
+
+  // Now draw all thin lines batched by color
+  for (const [colorKey, lines] of thinLinesByColor) {
+    // Set color once for all lines in this batch
+    if (colorKey === 'pos') {
+      mainCanvas.strokeStyle = posColorWithAlpha
+    } else if (colorKey === 'neg') {
+      mainCanvas.strokeStyle = negColorWithAlpha
+    } else if (colorKey !== 'default') {
+      mainCanvas.strokeStyle = getQueryColorWithAlpha(colorKey)
+    } else {
+      mainCanvas.strokeStyle = colorMapWithAlpha.M
+    }
+
+    // Create single path for all lines with same color
+    mainCanvas.beginPath()
+    if (drawCurves) {
+      for (const { x11, x21, y1, y2, mid } of lines) {
+        mainCanvas.moveTo(x11, y1)
+        mainCanvas.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+      }
+    } else {
+      for (const { x11, x21, y1, y2 } of lines) {
+        mainCanvas.moveTo(x11, y1)
+        mainCanvas.lineTo(x21, y2)
+      }
+    }
+    mainCanvas.stroke()
+  }
+
+  // Cache bpPerPx values and reciprocals for division in CIGAR loop
+  const bpPerPx0 = bpPerPxs[level]!
+  const bpPerPx1 = bpPerPxs[level + 1]!
+  const bpPerPxInv0 = 1 / bpPerPx0
+  const bpPerPxInv1 = 1 / bpPerPx1
+
+  // Cache colorBy checks outside loop for performance
+  const useStrandColor = colorBy === 'strand'
+  const useQueryColor = colorBy === 'query'
 
   mainCanvas.fillStyle = colorMapWithAlpha.M
   mainCanvas.strokeStyle = colorMapWithAlpha.M
   for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
+    // Cache feature properties at loop start
+    const strand = f.get('strand')
+    const refName = f.get('refName')
+
     // Filter by total alignment length for this query sequence
     if (minAlignmentLength > 0) {
       const queryName = f.get('name') || f.get('id') || f.id()
@@ -302,23 +354,20 @@ export function drawRef(
       }
     }
 
-    const x11 = p11.offsetPx - offsets[level]!
-    const x12 = p12.offsetPx - offsets[level]!
-    const x21 = p21.offsetPx - offsets[level + 1]!
-    const x22 = p22.offsetPx - offsets[level + 1]!
+    const x11 = p11.offsetPx - offsetsL0
+    const x12 = p12.offsetPx - offsetsL0
+    const x21 = p21.offsetPx - offsetsL1
+    const x22 = p22.offsetPx - offsetsL1
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const minX = Math.min(x21, x22)
     const maxX = Math.max(x21, x22)
-    const y1 = 0
-    const y2 = height
-    const mid = (y2 - y1) / 2
 
     if (
       !(l1 <= lineLimit && l2 <= lineLimit) &&
       doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)
     ) {
-      const s1 = f.get('strand')
+      const s1 = strand
       const k1 = s1 === -1 ? x12 : x11
       const k2 = s1 === -1 ? x11 : x12
 
@@ -347,8 +396,8 @@ export function drawRef(
             px2 = cx2
           }
 
-          const d1 = len / bpPerPxs[level]!
-          const d2 = len / bpPerPxs[level + 1]!
+          const d1 = len * bpPerPxInv0
+          const d2 = len * bpPerPxInv1
 
           if (op === 'M' || op === '=' || op === 'X') {
             cx1 += d1 * rev1
@@ -386,13 +435,11 @@ export function drawRef(
               const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
 
               // Use custom coloring based on colorBy setting
-              if (colorBy === 'strand') {
-                const strand = f.get('strand')
+              if (useStrandColor) {
                 mainCanvas.fillStyle =
                   strand === -1 ? negColorWithAlpha : posColorWithAlpha
-              } else if (colorBy === 'query') {
-                const queryName = f.get('refName')
-                mainCanvas.fillStyle = getQueryColorWithAlpha(queryName)
+              } else if (useQueryColor) {
+                mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
               } else {
                 mainCanvas.fillStyle = colorMapWithAlpha[letter]
               }
@@ -413,8 +460,8 @@ export function drawRef(
                       px2,
                       y2,
                       mid,
-                      bpPerPxs[level]!,
-                      bpPerPxs[level + 1]!,
+                      bpPerPx0,
+                      bpPerPx1,
                       drawCurves,
                     )
                   }
@@ -432,8 +479,8 @@ export function drawRef(
                     px2,
                     y2,
                     mid,
-                    bpPerPxs[level]!,
-                    bpPerPxs[level + 1]!,
+                    bpPerPx0,
+                    bpPerPx1,
                     drawCurves,
                   )
                 }
@@ -443,20 +490,18 @@ export function drawRef(
         }
       } else {
         // Use custom coloring based on colorBy setting
-        if (colorBy === 'strand') {
-          const strand = f.get('strand')
+        if (useStrandColor) {
           mainCanvas.fillStyle =
             strand === -1 ? negColorWithAlpha : posColorWithAlpha
-        } else if (colorBy === 'query') {
-          const queryName = f.get('refName')
-          mainCanvas.fillStyle = getQueryColorWithAlpha(queryName)
+        } else if (useQueryColor) {
+          mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
         }
 
         draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         mainCanvas.fill()
 
         // Reset to default color if needed
-        if (colorBy === 'strand' || colorBy === 'query') {
+        if (useStrandColor || useQueryColor) {
           mainCanvas.fillStyle = colorMapWithAlpha.M
         }
       }

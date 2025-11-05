@@ -1,3 +1,5 @@
+import { memo, useMemo } from 'react'
+
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -40,7 +42,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function RenderedBlockLines({
+const RenderedBlockLines = memo(function RenderedBlockLines({
   block,
   bpPerPx,
 }: {
@@ -48,10 +50,14 @@ function RenderedBlockLines({
   bpPerPx: number
 }) {
   const { classes, cx } = useStyles()
-  const ticks = makeTicks(block.start, block.end, bpPerPx)
-  return (
-    <ContentBlockComponent block={block}>
-      {ticks.map(({ type, base }) => {
+  const ticks = useMemo(
+    () => makeTicks(block.start, block.end, bpPerPx),
+    [block.start, block.end, bpPerPx],
+  )
+
+  const tickElements = useMemo(
+    () =>
+      ticks.map(({ type, base }) => {
         const x =
           (block.reversed ? block.end - base : base - block.start) / bpPerPx
         return (
@@ -66,15 +72,20 @@ function RenderedBlockLines({
             style={{ left: x }}
           />
         )
-      })}
-    </ContentBlockComponent>
+      }),
+    [ticks, block.reversed, block.end, block.start, bpPerPx, classes, cx],
   )
-}
+
+  return (
+    <ContentBlockComponent block={block}>{tickElements}</ContentBlockComponent>
+  )
+})
 const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
   const { staticBlocks, bpPerPx } = model
-  return (
-    <>
-      {staticBlocks.map((block, index) => {
+
+  const blockElements = useMemo(
+    () =>
+      staticBlocks.map((block, index) => {
         const k = `${block.key}-${index}`
         if (block.type === 'ContentBlock') {
           return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
@@ -90,9 +101,11 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
           )
         }
         return null
-      })}
-    </>
+      }),
+    [staticBlocks, bpPerPx],
   )
+
+  return <>{blockElements}</>
 })
 const Gridlines = observer(function ({
   model,

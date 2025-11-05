@@ -35,7 +35,9 @@ const ColorBySelector = observer(function ({
           label: 'Default',
           type: 'radio',
           checked: colorBy === 'default',
-          onClick: () => { setColorBy('default') },
+          onClick: () => {
+            setColorBy('default')
+          },
           helpText:
             'Use the default color scheme with CIGAR operation coloring. Insertions, deletions, matches, and mismatches are shown in different colors with transparency.',
         },
@@ -43,7 +45,9 @@ const ColorBySelector = observer(function ({
           label: 'Strand',
           type: 'radio',
           checked: colorBy === 'strand',
-          onClick: () => { setColorBy('strand') },
+          onClick: () => {
+            setColorBy('strand')
+          },
           helpText:
             'Color alignments by strand orientation. Forward strand alignments and reverse strand alignments are shown in different colors, making it easy to identify inversions and strand-specific patterns.',
         },
@@ -51,7 +55,9 @@ const ColorBySelector = observer(function ({
           label: 'Query',
           type: 'radio',
           checked: colorBy === 'query',
-          onClick: () => { setColorBy('query') },
+          onClick: () => {
+            setColorBy('query')
+          },
           helpText:
             'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
         },
