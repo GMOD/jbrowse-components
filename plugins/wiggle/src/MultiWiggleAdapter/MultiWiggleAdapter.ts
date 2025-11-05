@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
@@ -15,6 +16,38 @@ interface WiggleOptions extends BaseOptions {
 function getFilename(uri: string) {
   const filename = uri.slice(uri.lastIndexOf('/') + 1)
   return filename.slice(0, filename.lastIndexOf('.'))
+}
+
+/**
+ * Extract filename from a FileLocation object based on the adapter type
+ * For BigWigAdapter, accesses the bigWigLocation if present
+ * Handles UriLocation, LocalPathLocation, and BlobLocation types
+ */
+function getFilenameFromFileLocation(
+  config: any,
+  fallbackName?: string,
+): string {
+  try {
+    // Handle BigWigAdapter specifically
+    if (config.type === 'BigWigAdapter' && config.bigWigLocation) {
+      const location = config.bigWigLocation as FileLocation
+      if ('uri' in location && location.uri) {
+        return getFilename(location.uri)
+      }
+      if ('localPath' in location && location.localPath) {
+        return getFilename(location.localPath)
+      }
+      if ('blob' in location && location.blob) {
+        const blob = location.blob as File
+        return blob.name ? getFilename(blob.name) : fallbackName || ''
+      }
+    }
+
+    // Fallback for other adapter types or locations
+    return fallbackName || ''
+  } catch (e) {
+    return fallbackName || ''
+  }
 }
 
 interface AdapterEntry {
@@ -120,10 +153,24 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // something, but it is static for this particular multi-wiggle adapter type
   async getSources(_regions: Region[]) {
     const adapters = await this.getAdapters()
-    return adapters.map(({ dataAdapter, source, name, ...rest }) => ({
-      name: source,
-      __name: name,
-      ...rest,
-    }))
+    return adapters.map(({ dataAdapter, source, name, type, ...rest }) => {
+      // Try to extract filename from FileLocation for BigWigAdapter
+      let displayName = source
+      if (type === 'BigWigAdapter') {
+        const extractedName = getFilenameFromFileLocation(
+          { type, ...rest },
+          source,
+        )
+        if (extractedName) {
+          displayName = extractedName
+        }
+      }
+      return {
+        name: displayName,
+        __name: name,
+        type,
+        ...rest,
+      }
+    })
   }
 }

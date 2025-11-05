@@ -1,4 +1,4 @@
-export default function HelpfulTips() {
+export default function SetColorDialogHelpfulTips() {
   return (
     <>
       Helpful tips
