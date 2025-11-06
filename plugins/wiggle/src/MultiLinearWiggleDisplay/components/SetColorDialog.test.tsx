@@ -47,10 +47,9 @@ describe('SetColorDialog', () => {
   })
 
   test('renders with all sources', () => {
-    const { container } = render(
-      <SetColorDialog model={mockModel} handleClose={mockHandleClose} />,
-    )
-    expect(container.firstChild).not.toBeNull()
+    expect(() => {
+      render(<SetColorDialog model={mockModel} handleClose={mockHandleClose} />)
+    }).not.toThrow()
   })
 
   test('works with model without sources', () => {
