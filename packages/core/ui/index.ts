@@ -16,8 +16,4 @@ export { default as ExternalLink } from './ExternalLink'
 export { default as SanitizedHTML } from './SanitizedHTML'
 export { default as BaseTooltip } from './BaseTooltip'
 export * from './Menu'
-export { default as SetColorDialog } from './SetColorDialog'
-export { default as SetColorDialogBulkEditPanel } from './SetColorDialogBulkEditPanel'
-export { default as SetColorDialogHelpfulTips } from './SetColorDialogHelpfulTips'
-export { default as SetColorDialogRowPalettizer } from './SetColorDialogRowPalettizer'
 export const VIEW_HEADER_HEIGHT = 28

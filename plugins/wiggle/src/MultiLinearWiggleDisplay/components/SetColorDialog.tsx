@@ -1,5 +1,4 @@
-import SharedSetColorDialog from '@jbrowse/core/ui/SetColorDialog'
-
+import SharedSetColorDialog from './ui/SetColorDialog'
 import SourcesGrid from './SourcesGrid'
 
 import type { Source } from '../../util'
