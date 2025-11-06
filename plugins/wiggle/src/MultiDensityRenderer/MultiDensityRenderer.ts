@@ -15,7 +15,7 @@ export default class MultiDensityPlotRenderer extends WiggleBaseRenderer {
     const { drawDensity } = await import('../drawDensity')
     ctx.save()
     forEachWithStopTokenCheck(sources, stopToken, source => {
-      const features = groups[source.source] || []
+      const features = groups[source.name] || []
       const { reducedFeatures } = drawDensity(ctx, {
         ...props,
         features,

@@ -53,7 +53,7 @@ const MultiWiggleRendering = observer(function (props: {
     let featureUnderMouse: Feature | undefined
     if (isMultiRow) {
       for (const feature of features.values()) {
-        if (feature.get('source') !== source.source) {
+        if (feature.get('source') !== source.name) {
           continue
         }
         if (

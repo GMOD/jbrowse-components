@@ -26,7 +26,7 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
       | undefined
     const source = feature.get('source')
     const summary = feature.get('summary')
-    const obj = Object.fromEntries(model.sources.map(ent => [ent.source, ent]))
+    const obj = Object.fromEntries(model.sources.map(ent => [ent.name, ent]))
     const obj2 = obj[source]
 
     return (

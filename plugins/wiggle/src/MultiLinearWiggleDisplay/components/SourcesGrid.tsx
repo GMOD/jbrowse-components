@@ -43,7 +43,6 @@ function SourcesGrid({
   const [selected, setSelected] = useState([] as GridRowId[])
   const {
     name: _name,
-    source: _source,
     color: _color,
     baseUri: _baseUri,
     ...rest

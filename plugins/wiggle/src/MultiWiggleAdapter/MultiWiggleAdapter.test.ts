@@ -375,12 +375,12 @@ describe('MultiWiggleAdapter.getSources', () => {
       const sources = await adapter.getSources([])
 
       expect(sources).toHaveLength(3)
-      expect(sources[0]!.source).toBe('source-1')
-      expect(sources[1]!.source).toBe('source-2')
-      expect(sources[2]!.source).toBe('source-3')
+      expect(sources[0]!.name).toBe('source-1')
+      expect(sources[1]!.name).toBe('source-2')
+      expect(sources[2]!.name).toBe('source-3')
 
       // Verify all sources are unique
-      const uniqueSourcesSet = new Set(sources.map(s => s.source))
+      const uniqueSourcesSet = new Set(sources.map(s => s.name))
       expect(uniqueSourcesSet.size).toBe(3)
     })
 
@@ -411,12 +411,12 @@ describe('MultiWiggleAdapter.getSources', () => {
       const sources = await adapter.getSources([])
 
       expect(sources).toHaveLength(3)
-      expect(sources[0]!.source).toBe('duplicate')
-      expect(sources[1]!.source).toBe('duplicate-1')
-      expect(sources[2]!.source).toBe('duplicate-2')
+      expect(sources[0]!.name).toBe('duplicate')
+      expect(sources[1]!.name).toBe('duplicate-1')
+      expect(sources[2]!.name).toBe('duplicate-2')
 
       // Verify all sources are unique
-      const uniqueSourcesSet = new Set(sources.map(s => s.source))
+      const uniqueSourcesSet = new Set(sources.map(s => s.name))
       expect(uniqueSourcesSet.size).toBe(3)
     })
 
@@ -453,13 +453,13 @@ describe('MultiWiggleAdapter.getSources', () => {
       const sources = await adapter.getSources([])
 
       expect(sources).toHaveLength(4)
-      expect(sources[0]!.source).toBe('unique1')
-      expect(sources[1]!.source).toBe('duplicate')
-      expect(sources[2]!.source).toBe('duplicate-1')
-      expect(sources[3]!.source).toBe('unique2')
+      expect(sources[0]!.name).toBe('unique1')
+      expect(sources[1]!.name).toBe('duplicate')
+      expect(sources[2]!.name).toBe('duplicate-1')
+      expect(sources[3]!.name).toBe('unique2')
 
       // Verify all sources are unique
-      const uniqueSourcesSet = new Set(sources.map(s => s.source))
+      const uniqueSourcesSet = new Set(sources.map(s => s.name))
       expect(uniqueSourcesSet.size).toBe(4)
     })
   })

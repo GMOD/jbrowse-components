@@ -15,7 +15,6 @@ export interface ScaleOpts {
 }
 
 export interface Source {
-  source: string
   baseUri?: string
   name: string
   color?: string

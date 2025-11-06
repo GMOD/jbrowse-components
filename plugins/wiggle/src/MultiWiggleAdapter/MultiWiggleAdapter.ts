@@ -170,7 +170,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
             name ||
             getFilenameFromFileLocation({ type, bigWigLocation }) ||
             source,
-          source: uniqueSource,
+          id: uniqueSource,
         }
       },
     )
