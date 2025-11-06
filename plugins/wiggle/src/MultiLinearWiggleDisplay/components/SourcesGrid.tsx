@@ -44,6 +44,7 @@ function SourcesGrid({
   const {
     name: _name,
     color: _color,
+    source: _source,
     baseUri: _baseUri,
     ...rest
   } = rows.length > 0 ? rows[0]! : {}

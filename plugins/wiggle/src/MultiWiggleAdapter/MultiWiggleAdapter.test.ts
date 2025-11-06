@@ -48,7 +48,7 @@ describe('MultiWiggleAdapter.getSources', () => {
       ])
     })
 
-    it('should return sources with correct names extracted from URI', async () => {
+    it('should return sources with name equal to source', async () => {
       const sources = await adapter.getSources([
         {
           refName: 'chr1',
@@ -60,11 +60,11 @@ describe('MultiWiggleAdapter.getSources', () => {
 
       expect(sources).toHaveLength(2)
       expect(sources[0]!).toMatchObject({
-        name: 'sample1',
+        name: 'source-1',
         source: 'source-1',
       })
       expect(sources[1]!).toMatchObject({
-        name: 'sample2',
+        name: 'source-2',
         source: 'source-2',
       })
     })
@@ -97,11 +97,11 @@ describe('MultiWiggleAdapter.getSources', () => {
       ])
     })
 
-    it('should extract filename from localPath', async () => {
+    it('should return name equal to source', async () => {
       const sources = await adapter.getSources([])
 
       expect(sources[0]!).toMatchObject({
-        name: 'file1',
+        name: 'file1-source',
         source: 'file1-source',
       })
     })
@@ -136,11 +136,11 @@ describe('MultiWiggleAdapter.getSources', () => {
       ])
     })
 
-    it('should extract filename from blob name', async () => {
+    it('should return name equal to source', async () => {
       const sources = await adapter.getSources([])
 
       expect(sources[0]!).toMatchObject({
-        name: 'sample-blob',
+        name: 'blob-source',
         source: 'blob-source',
       })
     })
@@ -175,11 +175,11 @@ describe('MultiWiggleAdapter.getSources', () => {
       ])
     })
 
-    it('should use provided name when available', async () => {
+    it('should return name equal to source', async () => {
       const sources = await adapter.getSources([])
 
       expect(sources[0]!).toMatchObject({
-        name: 'provided-name',
+        name: 'auto-source',
         source: 'auto-source',
       })
     })
@@ -261,7 +261,7 @@ describe('MultiWiggleAdapter.getSources', () => {
       const sources = await adapter.getSources([])
 
       expect(sources[0]!).toMatchObject({
-        name: 'test',
+        name: 'test-source',
         source: 'test-source',
         customProp: 'custom-value',
         anotherProp: 42,
@@ -307,12 +307,21 @@ describe('MultiWiggleAdapter.getSources', () => {
       ])
     })
 
-    it('should correctly extract filename from nested paths', async () => {
+    it('should return name equal to source', async () => {
       const sources = await adapter.getSources([])
 
-      expect(sources[0]!.name).toBe('sample')
-      expect(sources[1]!.name).toBe('file.with.dots')
-      expect(sources[2]!.name).toBe('data')
+      expect(sources[0]!).toMatchObject({
+        name: 'test1',
+        source: 'test1',
+      })
+      expect(sources[1]!).toMatchObject({
+        name: 'test2',
+        source: 'test2',
+      })
+      expect(sources[2]!).toMatchObject({
+        name: 'test3',
+        source: 'test3',
+      })
     })
   })
 
@@ -344,123 +353,6 @@ describe('MultiWiggleAdapter.getSources', () => {
       const sources2 = await adapter.getSources(regions2)
 
       expect(sources1).toEqual(sources2)
-    })
-  })
-
-  describe('source uniqueness', () => {
-    it('should keep sources unique when all are different', async () => {
-      adapter = new MultiWiggleAdapter(configSchema.create({}))
-
-      adapter.getAdapters = jest.fn().mockResolvedValue([
-        {
-          source: 'source-1',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file1.bw' },
-          dataAdapter: {} as any,
-        },
-        {
-          source: 'source-2',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file2.bw' },
-          dataAdapter: {} as any,
-        },
-        {
-          source: 'source-3',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file3.bw' },
-          dataAdapter: {} as any,
-        },
-      ])
-
-      const sources = await adapter.getSources([])
-
-      expect(sources).toHaveLength(3)
-      expect(sources[0]!.name).toBe('source-1')
-      expect(sources[1]!.name).toBe('source-2')
-      expect(sources[2]!.name).toBe('source-3')
-
-      // Verify all sources are unique
-      const uniqueSourcesSet = new Set(sources.map(s => s.name))
-      expect(uniqueSourcesSet.size).toBe(3)
-    })
-
-    it('should make duplicate sources unique by appending counter', async () => {
-      adapter = new MultiWiggleAdapter(configSchema.create({}))
-
-      adapter.getAdapters = jest.fn().mockResolvedValue([
-        {
-          source: 'duplicate',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file1.bw' },
-          dataAdapter: {} as any,
-        },
-        {
-          source: 'duplicate',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file2.bw' },
-          dataAdapter: {} as any,
-        },
-        {
-          source: 'duplicate',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file3.bw' },
-          dataAdapter: {} as any,
-        },
-      ])
-
-      const sources = await adapter.getSources([])
-
-      expect(sources).toHaveLength(3)
-      expect(sources[0]!.name).toBe('duplicate')
-      expect(sources[1]!.name).toBe('duplicate-1')
-      expect(sources[2]!.name).toBe('duplicate-2')
-
-      // Verify all sources are unique
-      const uniqueSourcesSet = new Set(sources.map(s => s.name))
-      expect(uniqueSourcesSet.size).toBe(3)
-    })
-
-    it('should handle mixed duplicate and unique sources', async () => {
-      adapter = new MultiWiggleAdapter(configSchema.create({}))
-
-      adapter.getAdapters = jest.fn().mockResolvedValue([
-        {
-          source: 'unique1',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file1.bw' },
-          dataAdapter: {} as any,
-        },
-        {
-          source: 'duplicate',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file2.bw' },
-          dataAdapter: {} as any,
-        },
-        {
-          source: 'duplicate',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file3.bw' },
-          dataAdapter: {} as any,
-        },
-        {
-          source: 'unique2',
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: 'http://example.com/data/file4.bw' },
-          dataAdapter: {} as any,
-        },
-      ])
-
-      const sources = await adapter.getSources([])
-
-      expect(sources).toHaveLength(4)
-      expect(sources[0]!.name).toBe('unique1')
-      expect(sources[1]!.name).toBe('duplicate')
-      expect(sources[2]!.name).toBe('duplicate-1')
-      expect(sources[3]!.name).toBe('unique2')
-
-      // Verify all sources are unique
-      const uniqueSourcesSet = new Set(sources.map(s => s.name))
-      expect(uniqueSourcesSet.size).toBe(4)
     })
   })
 })

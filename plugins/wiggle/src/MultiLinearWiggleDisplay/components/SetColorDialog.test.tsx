@@ -1,5 +1,7 @@
-import { fireEvent, render } from '@testing-library/react'
+import { render } from '@testing-library/react'
+
 import SetColorDialog from './SetColorDialog'
+
 import type { Source } from '../../util'
 describe('SetColorDialog', () => {
   const mockSetLayout = jest.fn()
@@ -8,17 +10,20 @@ describe('SetColorDialog', () => {
   const mockSources: Source[] = [
     {
       name: 'source1',
+      source: 'source1',
       color: '#FF0000',
       baseUri: 'http://example.com',
       group: 'group1',
     },
     {
       name: 'source2',
+      source: 'source2',
       color: '#00FF00',
       group: 'group1',
     },
     {
       name: 'source3',
+      source: 'source3',
     },
   ]
   const mockModel = {
@@ -45,6 +50,7 @@ describe('SetColorDialog', () => {
       sources: [
         {
           name: 'single_source',
+          source: 'single_source',
           color: '#FF0000',
         },
       ],
@@ -83,7 +89,13 @@ describe('SetColorDialog', () => {
     expect(mockHandleClose).not.toHaveBeenCalled()
   })
   test('sources with partial properties work correctly', () => {
-    const partialsources: Source[] = [{ name: 'src1' }, { name: 'src2' }]
+    const partialsources: Source[] = [
+      {
+        name: 'src1',
+        source: 'src1',
+      },
+      { name: 'src2', source: 'src2' },
+    ]
     const modelWithPartialSources = {
       sources: partialsources,
       setLayout: mockSetLayout,
@@ -108,18 +120,21 @@ describe('SetColorDialog', () => {
     const complexSources: Source[] = [
       {
         name: 'track1',
+        source: 'track1',
         color: '#FF0000',
         baseUri: 'https://example.com',
         group: 'RNA-seq',
       },
       {
         name: 'track2',
+        source: 'track2',
         color: '#00FF00',
         baseUri: 'https://example.com',
         group: 'Proteomics',
       },
       {
         name: 'track3',
+        source: 'track3',
         baseUri: 'https://example.com',
       },
     ]
@@ -137,26 +152,31 @@ describe('SetColorDialog', () => {
     const groupedSources: Source[] = [
       {
         name: 'rna1',
+        source: 'rna1',
         color: '#FF0000',
         group: 'RNA-seq',
       },
       {
         name: 'rna2',
+        source: 'rna2',
         color: '#FF3333',
         group: 'RNA-seq',
       },
       {
         name: 'dna1',
+        source: 'dna1',
         color: '#0000FF',
         group: 'ChIP-seq',
       },
       {
         name: 'dna2',
+        source: 'dna2',
         color: '#3333FF',
         group: 'ChIP-seq',
       },
       {
         name: 'atac1',
+        source: 'atac1',
         color: '#00FF00',
         group: 'ATAC-seq',
       },
@@ -176,11 +196,13 @@ describe('SetColorDialog', () => {
     const testSources: Source[] = [
       {
         name: 'track1',
+        source: 'track1',
         color: '#FF0000',
         group: 'GroupA',
       },
       {
         name: 'track2',
+        source: 'track2',
         color: '#00FF00',
         group: 'GroupA',
       },
@@ -210,10 +232,12 @@ describe('SetColorDialog', () => {
       expect.arrayContaining([
         expect.objectContaining({
           name: 'track1',
+          source: 'track1',
           group: 'GroupA',
         }),
         expect.objectContaining({
           name: 'track2',
+          source: 'track2',
           group: 'GroupB',
         }),
       ]),
@@ -223,16 +247,19 @@ describe('SetColorDialog', () => {
     const sameGroupSources: Source[] = [
       {
         name: 'experiment1',
+        source: 'experiment1',
         color: '#FF0000',
         group: 'Experiment-A',
       },
       {
         name: 'experiment2',
+        source: 'experiment2',
         color: '#FF3333',
         group: 'Experiment-A',
       },
       {
         name: 'experiment3',
+        source: 'experiment3',
         color: '#FF6666',
         group: 'Experiment-A',
       },
@@ -254,24 +281,29 @@ describe('SetColorDialog', () => {
     const mixedSources: Source[] = [
       {
         name: 'grouped1',
+        source: 'grouped1',
         color: '#FF0000',
         group: 'GroupA',
       },
       {
         name: 'ungrouped1',
+        source: 'ungrouped1',
         color: '#00FF00',
       },
       {
         name: 'grouped2',
+        source: 'grouped2',
         color: '#FF3333',
         group: 'GroupA',
       },
       {
         name: 'ungrouped2',
+        source: 'ungrouped2',
         color: '#00FF00',
       },
       {
         name: 'grouped3',
+        source: 'grouped3',
         color: '#0000FF',
         group: 'GroupB',
       },
@@ -293,16 +325,19 @@ describe('SetColorDialog', () => {
     const emptyGroupSources: Source[] = [
       {
         name: 'source1',
+        source: 'source1',
         color: '#FF0000',
         group: '',
       },
       {
         name: 'source2',
+        source: 'source2',
         color: '#00FF00',
         group: 'ValidGroup',
       },
       {
         name: 'source3',
+        source: 'source3',
         color: '#0000FF',
         group: '',
       },
@@ -324,11 +359,13 @@ describe('SetColorDialog', () => {
     const groupedSources: Source[] = [
       {
         name: 'rna1',
+        source: 'rna1',
         color: '#FF0000',
         group: 'RNA-seq',
       },
       {
         name: 'rna2',
+        source: 'rna2',
         color: '#FF3333',
         group: 'RNA-seq',
       },
@@ -350,11 +387,13 @@ describe('SetColorDialog', () => {
       expect.arrayContaining([
         expect.objectContaining({
           name: 'rna1',
+          source: 'rna1',
           color: '#00FF00',
           group: 'RNA-seq',
         }),
         expect.objectContaining({
           name: 'rna2',
+          source: 'rna2',
           color: '#33FF33',
           group: 'RNA-seq',
         }),
@@ -365,15 +404,18 @@ describe('SetColorDialog', () => {
     const mixedSources: Source[] = [
       {
         name: 'groupA_1',
+        source: 'groupA_1',
         color: '#FF0000',
         group: 'GroupA',
       },
       {
         name: 'ungrouped',
+        source: 'ungrouped',
         color: '#00FF00',
       },
       {
         name: 'groupB_1',
+        source: 'groupB_1',
         color: '#0000FF',
         group: 'GroupB',
       },
@@ -396,14 +438,17 @@ describe('SetColorDialog', () => {
       expect.arrayContaining([
         expect.objectContaining({
           name: 'groupA_1',
+          source: 'groupA_1',
           group: 'GroupA',
         }),
         expect.objectContaining({
           name: 'groupB_1',
+          source: 'groupB_1',
           group: 'GroupB',
         }),
         expect.objectContaining({
           name: 'ungrouped',
+          source: 'ungrouped',
         }),
       ]),
     )
@@ -412,11 +457,13 @@ describe('SetColorDialog', () => {
     const sources: Source[] = [
       {
         name: 'track1',
+        source: 'track1',
         color: '#FF0000',
         group: 'OriginalGroup',
       },
       {
         name: 'track2',
+        source: 'track2',
         color: '#00FF00',
         group: 'OriginalGroup',
       },
@@ -444,10 +491,12 @@ describe('SetColorDialog', () => {
       expect.arrayContaining([
         expect.objectContaining({
           name: 'track1',
+          source: 'track1',
           group: 'NewGroup',
         }),
         expect.objectContaining({
           name: 'track2',
+          source: 'track2',
           group: 'NewGroup',
         }),
       ]),
