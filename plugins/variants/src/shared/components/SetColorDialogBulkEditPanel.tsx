@@ -10,24 +10,23 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-import type { Source } from '../types'
-
 const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
 })
 
-export default function BulkEditPanel({
+export default function SetColorDialogBulkEditPanel({
   onClose,
   currLayout,
 }: {
-  currLayout: Source[]
-  onClose: (arg?: Source[]) => void
+  currLayout: { name: string; [key: string]: unknown }[]
+  onClose: (arg?: { name: string; [key: string]: unknown }[]) => void
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
   const [error, setError] = useState<unknown>()
+
   return (
     <>
       <DialogContent>

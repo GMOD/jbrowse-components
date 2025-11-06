@@ -9,7 +9,11 @@ import type { WiggleDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { GridRowId } from '@mui/x-data-grid'
 
-export function moveUp(arr: { name: string }[], sel: GridRowId[], by = 1) {
+export function moveUp<T extends { name: string }>(
+  arr: T[],
+  sel: GridRowId[],
+  by = 1,
+) {
   const idxs = sel
     .map(l => arr.findIndex(v => v.name === l))
     .sort((a, b) => a - b)
@@ -25,7 +29,11 @@ export function moveUp(arr: { name: string }[], sel: GridRowId[], by = 1) {
   return arr
 }
 
-export function moveDown(arr: { name: string }[], sel: GridRowId[], by = 1) {
+export function moveDown<T extends { name: string }>(
+  arr: T[],
+  sel: GridRowId[],
+  by = 1,
+) {
   const idxs = sel
     .map(l => arr.findIndex(v => v.name === l))
     .sort((a, b) => b - a)

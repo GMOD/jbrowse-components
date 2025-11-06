@@ -10,6 +10,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface Source {
   name: string
+  source: string
   color?: string
   group?: string
 }
