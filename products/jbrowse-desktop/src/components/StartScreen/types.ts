@@ -31,5 +31,6 @@ export interface Fav {
   shortName: string
   description: string
   jbrowseConfig: string
+  jbrowseMinimalConfig?: string
   commonName: string
 }

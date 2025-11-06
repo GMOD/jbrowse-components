@@ -112,6 +112,9 @@ export default function GenomesDataTable({
             commonName: row.commonName,
             description: row.description || row.commonName,
             jbrowseConfig: row.jbrowseConfig,
+            ...(row.jbrowseMinimalConfig && {
+              jbrowseMinimalConfig: row.jbrowseMinimalConfig,
+            }),
           },
         ])
       }

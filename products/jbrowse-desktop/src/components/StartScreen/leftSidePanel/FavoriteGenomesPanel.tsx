@@ -78,6 +78,7 @@ export default function FavoriteGenomesPanel({
                       description,
                       commonName,
                       jbrowseConfig,
+                      jbrowseMinimalConfig,
                     }) => {
                       const name = [shortName, description, commonName]
                         .filter(f => !!f)
@@ -90,6 +91,17 @@ export default function FavoriteGenomesPanel({
                             jbrowseConfig,
                           },
                         ])
+                      }
+
+                      const handleMinimalLaunch = () => {
+                        if (jbrowseMinimalConfig) {
+                          launch([
+                            {
+                              shortName,
+                              jbrowseConfig: jbrowseMinimalConfig,
+                            },
+                          ])
+                        }
                       }
 
                       const handleRemove = () => {
@@ -112,9 +124,17 @@ export default function FavoriteGenomesPanel({
                               style={{ padding: 0 }}
                               menuItems={[
                                 {
-                                  label: 'Launch',
+                                  label: 'Launch (full config)',
                                   onClick: handleLaunch,
                                 },
+                                ...(jbrowseMinimalConfig
+                                  ? [
+                                      {
+                                        label: 'Launch (minimal config)',
+                                        onClick: handleMinimalLaunch,
+                                      },
+                                    ]
+                                  : []),
                                 {
                                   label: 'Remove from favorites',
                                   onClick: handleRemove,
