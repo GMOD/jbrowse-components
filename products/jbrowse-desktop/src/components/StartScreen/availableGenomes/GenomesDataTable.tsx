@@ -119,7 +119,7 @@ export default function GenomesDataTable({
     [setFavorites, favorites, favs],
   )
 
-  const { data, genArkError, mainGenomesError, genArkData, mainGenomesData } =
+  const { data, error } =
     useGenomesData({
       searchQuery,
       filterOption,
@@ -308,13 +308,13 @@ export default function GenomesDataTable({
         </IconButton>
       </div>
 
-      {genArkError || mainGenomesError ? (
-        <ErrorMessage error={genArkError || mainGenomesError} />
+      {error ? (
+        <ErrorMessage error={error} />
       ) : null}
 
       {categoriesLoading ? (
         <SkeletonLoader />
-      ) : data.length === 0 && !genArkData && !mainGenomesData ? (
+      ) : data.length === 0 && !url ? (
         <SkeletonLoader />
       ) : (
         <div>

@@ -15,6 +15,7 @@ import type { LaunchCallback } from '../types'
 interface Entry {
   suppressed: boolean
   jbrowseConfig: string
+  jbrowseMinimalConfig?: string
   accession: string
   commonName: string
   ncbiAssemblyName: string
@@ -91,6 +92,20 @@ export function getColumnDefinitions({
             onClose()
           }
 
+          const handleMinimalLaunch = (event: React.MouseEvent) => {
+            event.preventDefault()
+            if (row.jbrowseMinimalConfig) {
+              launch([
+                {
+                  jbrowseConfig: row.jbrowseMinimalConfig,
+                  shortName: row.id,
+                },
+              ])
+              onClose()
+            }
+          }
+          console.log({ row })
+
           return (
             <div>
               <HighlightedText
@@ -106,6 +121,16 @@ export function getColumnDefinitions({
                 launch
               </Link>
               )
+              {row.jbrowseMinimalConfig && (
+                <>
+                  {' '}
+                  (
+                  <Link href="#" onClick={handleMinimalLaunch}>
+                    minimal
+                  </Link>
+                  )
+                </>
+              )}
               <CascadingMenuButton
                 menuItems={[
                   {
@@ -187,6 +212,19 @@ export function getColumnDefinitions({
             onClose()
           }
 
+          const handleMinimalLaunch = (event: React.MouseEvent) => {
+            event.preventDefault()
+            if (row.jbrowseMinimalConfig) {
+              launch([
+                {
+                  jbrowseConfig: row.jbrowseMinimalConfig,
+                  shortName: row.accession,
+                },
+              ])
+              onClose()
+            }
+          }
+
           return (
             <div>
               <HighlightedText
@@ -202,6 +240,16 @@ export function getColumnDefinitions({
                 launch
               </Link>
               )
+              {row.jbrowseMinimalConfig && (
+                <>
+                  {' '}
+                  (
+                  <Link href="#" onClick={handleMinimalLaunch}>
+                    minimal
+                  </Link>
+                  )
+                </>
+              )}
               {row.ncbiRefSeqCategory === 'reference genome' ? (
                 <Tooltip title="NCBI designated reference">
                   <Check style={{ color: 'green' }} />

@@ -4,15 +4,18 @@ import useSWR from 'swr'
 
 import { fetchjson } from '../util'
 
-import type { Fav, UCSCListGenome } from '../types'
+import type { Fav } from '../types'
 
 interface Entry {
   jbrowseConfig: string
+  jbrowseMinimalConfig?: string
   accession: string
   commonName: string
   ncbiAssemblyName: string
   ncbiName: string
   ncbiRefSeqCategory: string
+  orderKey: number
+  id: string
 }
 
 export function useGenomesData({
@@ -30,39 +33,27 @@ export function useGenomesData({
   favorites: Fav[]
   url?: string
 }) {
-  const { data: genArkData, error: genArkError } = useSWR(url, () =>
-    url ? (fetchjson(url) as Promise<Entry[]>) : undefined,
-  )
-
-  const { data: mainGenomesData, error: mainGenomesError } = useSWR(
-    'ucscGenomeList',
-    () =>
-      fetchjson('https://jbrowse.org/ucsc/list.json') as Promise<{
-        ucscGenomes: Record<string, UCSCListGenome>
-      }>,
+  const { data, error: dataError } = useSWR(url, () =>
+    url ? (fetchjson(url) as Promise<Entry[] | { ucscGenomes: Record<string, Entry> }>) : undefined,
   )
 
   const preRows = useMemo(() => {
-    if (typeOption === 'mainGenomes') {
-      return mainGenomesData
-        ? Object.entries(mainGenomesData.ucscGenomes).map(([key, value]) => ({
-            ...value,
-            id: key,
-            name: key,
-            accession: key,
-            commonName: value.organism,
-            jbrowseConfig: `https://jbrowse.org/ucsc/${key}/config.json`,
-          }))
-        : undefined
-    } else {
-      return genArkData
-        ?.map(r => ({
+    if (!data) {
+      return undefined
+    }
+    // Handle both array format and object format with ucscGenomes key
+    if (Array.isArray(data)) {
+      return data
+        .map(r => ({
           ...r,
           id: r.accession,
         }))
         .filter(f => !!f.id)
+    } else if ('ucscGenomes' in data) {
+      return Object.values(data.ucscGenomes)
     }
-  }, [typeOption, genArkData, mainGenomesData])
+    return undefined
+  }, [data])
 
   const rows = useMemo(() => {
     return (function () {
@@ -115,10 +106,7 @@ export function useGenomesData({
     data: showOnlyFavs
       ? searchFilteredRows?.filter(row => favs.has(row.id)) || []
       : searchFilteredRows || [],
-    genArkError,
-    mainGenomesError,
-    genArkData,
-    mainGenomesData,
+    error: dataError,
     favs,
   }
 }
