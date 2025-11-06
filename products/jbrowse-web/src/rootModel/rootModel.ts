@@ -356,7 +356,7 @@ export default function RootModel({
         const { defaultSession } = self.jbrowse
         this.setSession({
           ...defaultSession,
-          name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+          name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
         })
       },
       /**
