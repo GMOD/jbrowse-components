@@ -155,13 +155,24 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // something, but it is static for this particular multi-wiggle adapter type
   async getSources(_regions: Region[]) {
     const adapters = await this.getAdapters()
-    return adapters.map(({ dataAdapter, source, name, type, ...rest }) => {
-      return {
-        ...rest,
-        name: name || getFilenameFromFileLocation({ type, ...rest }) || source,
-        source,
-        type,
-      }
-    })
+    const seenSources = new Map<string, number>()
+
+    return adapters.map(
+      ({ dataAdapter, bigWigLocation, source, name, type, ...rest }) => {
+        const count = (seenSources.get(source) ?? 0) + 1
+        seenSources.set(source, count)
+
+        // Append counter to duplicates to ensure uniqueness
+        const uniqueSource = count > 1 ? `${source}-${count - 1}` : source
+        return {
+          ...rest,
+          name:
+            name ||
+            getFilenameFromFileLocation({ type, bigWigLocation }) ||
+            source,
+          source: uniqueSource,
+        }
+      },
+    )
   }
 }
