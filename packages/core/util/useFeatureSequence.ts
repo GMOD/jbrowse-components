@@ -59,8 +59,6 @@ export function useFeatureSequence({
       return
     }
 
-    let mounted = true
-
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -103,25 +101,17 @@ export function useFeatureSequence({
           }),
         ] as const)
 
-        if (mounted) {
-          setSequence({
-            seq,
-            upstream,
-            downstream,
-          })
-        }
+        setSequence({
+          seq,
+          upstream,
+          downstream,
+        })
       } catch (err) {
-        if (mounted) {
-          setError(err)
-        }
+        setError(err)
       } finally {
         setLoading(false)
       }
     })()
-
-    return () => {
-      mounted = false
-    }
   }, [key, session])
 
   return {
