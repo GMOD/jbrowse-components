@@ -122,15 +122,14 @@ export default function GenomesDataTable({
     [setFavorites, favorites, favs],
   )
 
-  const { data, error } =
-    useGenomesData({
-      searchQuery,
-      filterOption,
-      typeOption,
-      showOnlyFavs,
-      favorites,
-      url,
-    })
+  const { data, error } = useGenomesData({
+    searchQuery,
+    filterOption,
+    typeOption,
+    showOnlyFavs,
+    favorites,
+    url,
+  })
 
   const tableColumns = useMemo(
     () =>
@@ -311,9 +310,7 @@ export default function GenomesDataTable({
         </IconButton>
       </div>
 
-      {error ? (
-        <ErrorMessage error={error} />
-      ) : null}
+      {error ? <ErrorMessage error={error} /> : null}
 
       {categoriesLoading ? (
         <SkeletonLoader />

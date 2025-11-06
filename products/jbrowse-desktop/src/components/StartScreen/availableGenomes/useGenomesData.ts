@@ -34,7 +34,11 @@ export function useGenomesData({
   url?: string
 }) {
   const { data, error: dataError } = useSWR(url, () =>
-    url ? (fetchjson(url) as Promise<Entry[] | { ucscGenomes: Record<string, Entry> }>) : undefined,
+    url
+      ? (fetchjson(url) as Promise<
+          Entry[] | { ucscGenomes: Record<string, Entry> }
+        >)
+      : undefined,
   )
 
   const preRows = useMemo(() => {
