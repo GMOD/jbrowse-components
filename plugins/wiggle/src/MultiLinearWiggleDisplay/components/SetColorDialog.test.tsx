@@ -52,34 +52,44 @@ describe('SetColorDialog', () => {
     }).not.toThrow()
   })
 
-  test('works with model without sources', () => {
-    const modelWithoutSources = {
+  test('works with model with single source', () => {
+    const modelWithSingleSource = {
+      sources: [
+        {
+          name: 'single_source',
+          source: 'file.bw',
+          color: '#FF0000',
+        },
+      ],
       setLayout: mockSetLayout,
       clearLayout: mockClearLayout,
     }
 
-    const { container } = render(
-      <SetColorDialog
-        model={modelWithoutSources}
-        handleClose={mockHandleClose}
-      />,
-    )
-    expect(container).toBeTruthy()
+    expect(() => {
+      render(
+        <SetColorDialog
+          model={modelWithSingleSource}
+          handleClose={mockHandleClose}
+        />,
+      )
+    }).not.toThrow()
   })
 
-  test('works with minimal model', () => {
-    const minimalModel = {
-      setLayout: jest.fn(),
-      clearLayout: jest.fn(),
+  test('works with model with empty sources array', () => {
+    const modelWithEmptySources = {
+      sources: [],
+      setLayout: mockSetLayout,
+      clearLayout: mockClearLayout,
     }
 
-    const { container } = render(
-      <SetColorDialog
-        model={minimalModel}
-        handleClose={mockHandleClose}
-      />,
-    )
-    expect(container).toBeTruthy()
+    expect(() => {
+      render(
+        <SetColorDialog
+          model={modelWithEmptySources}
+          handleClose={mockHandleClose}
+        />,
+      )
+    }).not.toThrow()
   })
 
   test('accepts handleClose callback', () => {

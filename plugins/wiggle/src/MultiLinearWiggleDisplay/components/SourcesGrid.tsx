@@ -47,7 +47,7 @@ function SourcesGrid({
     color: _color,
     baseUri: _baseUri,
     ...rest
-  } = rows[0]!
+  } = rows.length > 0 ? rows[0]! : {}
   const [widgetColor, setWidgetColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
     idx: 0,
