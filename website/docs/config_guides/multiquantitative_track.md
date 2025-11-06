@@ -87,4 +87,5 @@ Example with group field:
 }
 ```
 
-The "name" field on the sub-adapter will be used as the sub-track label
+The "name" or "source" field on the sub-adapters will be used as the sub-track
+label (where, "source" will be given priority over "name" if specified)
