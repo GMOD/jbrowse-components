@@ -104,8 +104,6 @@ export function getColumnDefinitions({
               onClose()
             }
           }
-          console.log({ row })
-
           return (
             <div>
               <HighlightedText
@@ -113,30 +111,32 @@ export function getColumnDefinitions({
                 query={searchQuery}
               />{' '}
               (
-              <Link href={websiteUrl} target="_blank">
-                info
-              </Link>
-              ) (
               <Link href="#" onClick={handleLaunch}>
                 launch
               </Link>
               )
-              {row.jbrowseMinimalConfig && (
-                <>
-                  {' '}
-                  (
-                  <Link href="#" onClick={handleMinimalLaunch}>
-                    minimal
-                  </Link>
-                  )
-                </>
-              )}
               <CascadingMenuButton
                 menuItems={[
+                  {
+                    label: 'More info',
+                    helpText:
+                      'Launches external web browser (not in-app) with more info about this instance',
+                    onClick: () => {
+                      window.open(websiteUrl, '_blank')
+                    },
+                  },
                   {
                     label: 'Launch',
                     onClick: handleLaunch,
                   },
+                  ...(row.jbrowseMinimalConfig
+                    ? [
+                        {
+                          label: 'Launch (minimal config)',
+                          onClick: handleMinimalLaunch,
+                        },
+                      ]
+                    : []),
                   {
                     label: isFavorite
                       ? 'Remove from favorites'
@@ -232,10 +232,6 @@ export function getColumnDefinitions({
                 query={searchQuery}
               />{' '}
               (
-              <Link href={websiteUrl} target="_blank">
-                info
-              </Link>
-              ) (
               <Link href="#" onClick={handleLaunch}>
                 launch
               </Link>
@@ -263,9 +259,23 @@ export function getColumnDefinitions({
               <CascadingMenuButton
                 menuItems={[
                   {
+                    label: 'Info',
+                    onClick: () => {
+                      window.open(websiteUrl, '_blank')
+                    },
+                  },
+                  {
                     label: 'Launch',
                     onClick: handleLaunch,
                   },
+                  ...(row.jbrowseMinimalConfig
+                    ? [
+                        {
+                          label: 'Launch (minimal)',
+                          onClick: handleMinimalLaunch,
+                        },
+                      ]
+                    : []),
                   {
                     label: isFavorite
                       ? 'Remove from favorites'
