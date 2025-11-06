@@ -137,38 +137,13 @@ export function drawLocationMarkers(
     return
   }
 
-  // Calculate the average bp/px to consider zoom level
-  const averageBpPerPx = (bpPerPx1 + bpPerPx2) / 2
-
-  // Calculate total bp spanned by the feature
-  const totalBp = averageWidth * averageBpPerPx
-
-  // Aim for markers at consistent genomic intervals, adaptive for different scales
-  // This ensures spacing is consistent across differently-sized features
-  let targetBpSpacing = 500_000 // 500 kbp default
-
-  if (totalBp < 200) {
-    targetBpSpacing = 20 // 20 bp for very tiny features
-  } else if (totalBp < 1_000) {
-    targetBpSpacing = 50 // 50 bp for tiny features
-  } else if (totalBp < 10_000) {
-    targetBpSpacing = 500 // 500 bp for very small features
-  } else if (totalBp < 50_000) {
-    targetBpSpacing = 2_000 // 2 kbp for small features
-  } else if (totalBp < 100_000) {
-    targetBpSpacing = 5_000 // 5 kbp for small-medium features
-  } else if (totalBp < 1_000_000) {
-    targetBpSpacing = 50_000 // 50 kbp for medium features
-  } else if (totalBp < 10_000_000) {
-    targetBpSpacing = 250_000 // 250 kbp for large features
-  } else if (totalBp < 100_000_000) {
-    targetBpSpacing = 1_000_000 // 1 Mbp for very large features
-  } else {
-    targetBpSpacing = 5_000_000 // 5 Mbp for huge features
-  }
-
-  // Calculate number of markers based on bp spacing
-  const numMarkers = Math.max(2, Math.floor(totalBp / targetBpSpacing))
+  // Aim for markers at consistent pixel spacing for even visual density
+  // Target spacing of ~20 pixels between markers regardless of feature size
+  const targetPixelSpacing = 20
+  const numMarkers = Math.max(
+    2,
+    Math.floor(averageWidth / targetPixelSpacing) + 1,
+  )
 
   const prevStrokeStyle = ctx.strokeStyle
   const prevLineWidth = ctx.lineWidth
@@ -179,7 +154,7 @@ export function drawLocationMarkers(
   // Create single path for all markers
   ctx.beginPath()
   if (drawCurves) {
-    for (let step = 1; step < numMarkers; step++) {
+    for (let step = 0; step < numMarkers; step++) {
       const t = step / numMarkers
       const topX = x1 + (x2 - x1) * t
       const bottomX = x4 + (x3 - x4) * t
@@ -187,7 +162,7 @@ export function drawLocationMarkers(
       ctx.bezierCurveTo(topX, mid, bottomX, mid, bottomX, y2)
     }
   } else {
-    for (let step = 1; step < numMarkers; step++) {
+    for (let step = 0; step < numMarkers; step++) {
       const t = step / numMarkers
       const topX = x1 + (x2 - x1) * t
       const bottomX = x4 + (x3 - x4) * t
