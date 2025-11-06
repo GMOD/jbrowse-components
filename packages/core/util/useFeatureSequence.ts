@@ -1,6 +1,4 @@
-import { useMemo } from 'react'
-
-import useSWR from 'swr'
+import { useEffect, useMemo, useState } from 'react'
 
 import { fetchSeq } from './fetchSeq'
 
@@ -23,6 +21,17 @@ export function useFeatureSequence({
   forceLoad: boolean
   shouldFetch?: boolean
 }) {
+  const [sequence, setSequence] = useState<
+    | {
+        seq: string
+        upstream: string
+        downstream: string
+      }
+    | { error: string }
+  >()
+  const [error, setError] = useState<unknown>()
+  const [loading, setLoading] = useState(false)
+
   const key = useMemo(() => {
     if (!session || !shouldFetch) {
       return null
@@ -43,58 +52,81 @@ export function useFeatureSequence({
     }
   }, [session, feature, assemblyName, upDownBp, forceLoad, shouldFetch])
 
-  const { data: sequence, error } = useSWR(
-    key,
-    async params => {
-      const { start, end, refName, assemblyName, upDownBp, forceLoad } = params
+  useEffect(() => {
+    if (!key) {
+      setSequence(undefined)
+      setError(undefined)
+      return
+    }
 
-      if (!forceLoad && end - start > BPLIMIT) {
-        return {
-          error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
+    let mounted = true
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
+      try {
+        setLoading(true)
+        setError(undefined)
+
+        const { start, end, refName, assemblyName, upDownBp, forceLoad } = key
+
+        if (!forceLoad && end - start > BPLIMIT) {
+          setSequence({
+            error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
+          })
+          return
         }
+
+        const b = start - upDownBp
+        const e = end + upDownBp
+
+        const [seq, upstream, downstream] = await Promise.all([
+          fetchSeq({
+            start,
+            end,
+            refName,
+            assemblyName,
+            session: session!,
+          }),
+          fetchSeq({
+            start: Math.max(0, b),
+            end: start,
+            refName,
+            assemblyName,
+            session: session!,
+          }),
+          fetchSeq({
+            start: end,
+            end: e,
+            refName,
+            assemblyName,
+            session: session!,
+          }),
+        ] as const)
+
+        if (mounted) {
+          setSequence({
+            seq,
+            upstream,
+            downstream,
+          })
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err)
+        }
+      } finally {
+        setLoading(false)
       }
+    })()
 
-      const b = start - upDownBp
-      const e = end + upDownBp
-
-      const [seq, upstream, downstream] = await Promise.all([
-        fetchSeq({
-          start,
-          end,
-          refName,
-          assemblyName,
-          session: session!,
-        }),
-        fetchSeq({
-          start: Math.max(0, b),
-          end: start,
-          refName,
-          assemblyName,
-          session: session!,
-        }),
-        fetchSeq({
-          start: end,
-          end: e,
-          refName,
-          assemblyName,
-          session: session!,
-        }),
-      ])
-
-      return {
-        seq,
-        upstream,
-        downstream,
-      }
-    },
-    {
-      shouldRetryOnError: false,
-      revalidateOnFocus: false,
-    },
-  )
+    return () => {
+      mounted = false
+    }
+  }, [key, session])
 
   return {
     sequence,
+    loading,
     error,
   }
 }

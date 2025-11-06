@@ -58,7 +58,6 @@
     "rxjs": "^7.0.0",
     "serialize-error": "^8.0.0",
     "source-map-js": "^1.0.2",
-    "swr": "^2.3.6",
     "tss-react": "^4.0.0"
   },
   "peerDependencies": {
