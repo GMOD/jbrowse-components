@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
-import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { cast, getEnv, types } from 'mobx-state-tree'
 
@@ -239,7 +238,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Edit filters',
-              icon: FilterAltIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   AddFiltersDialog,
