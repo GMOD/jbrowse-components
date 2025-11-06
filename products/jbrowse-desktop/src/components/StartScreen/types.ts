@@ -22,14 +22,6 @@ export interface JBrowseConfig {
   defaultSession?: Record<string, unknown>
 }
 
-export interface UCSCListGenome {
-  name: string
-  orderKey: number
-  description: string
-  scientificName: string
-  organism: string
-}
-
 export type LaunchCallback = (
   sel: { shortName: string; jbrowseConfig: string }[],
 ) => void
@@ -39,5 +31,6 @@ export interface Fav {
   shortName: string
   description: string
   jbrowseConfig: string
+  jbrowseMinimalConfig?: string
   commonName: string
 }

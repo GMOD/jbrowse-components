@@ -112,6 +112,9 @@ export default function GenomesDataTable({
             commonName: row.commonName,
             description: row.description || row.commonName,
             jbrowseConfig: row.jbrowseConfig,
+            ...(row.jbrowseMinimalConfig && {
+              jbrowseMinimalConfig: row.jbrowseMinimalConfig,
+            }),
           },
         ])
       }
@@ -119,15 +122,14 @@ export default function GenomesDataTable({
     [setFavorites, favorites, favs],
   )
 
-  const { data, genArkError, mainGenomesError, genArkData, mainGenomesData } =
-    useGenomesData({
-      searchQuery,
-      filterOption,
-      typeOption,
-      showOnlyFavs,
-      favorites,
-      url,
-    })
+  const { data, error } = useGenomesData({
+    searchQuery,
+    filterOption,
+    typeOption,
+    showOnlyFavs,
+    favorites,
+    url,
+  })
 
   const tableColumns = useMemo(
     () =>
@@ -308,13 +310,11 @@ export default function GenomesDataTable({
         </IconButton>
       </div>
 
-      {genArkError || mainGenomesError ? (
-        <ErrorMessage error={genArkError || mainGenomesError} />
-      ) : null}
+      {error ? <ErrorMessage error={error} /> : null}
 
       {categoriesLoading ? (
         <SkeletonLoader />
-      ) : data.length === 0 && !genArkData && !mainGenomesData ? (
+      ) : data.length === 0 && !url ? (
         <SkeletonLoader />
       ) : (
         <div>
