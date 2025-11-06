@@ -25,10 +25,7 @@ function getFilename(uri: string) {
  * For BigWigAdapter, accesses the bigWigLocation if present
  * Handles UriLocation, LocalPathLocation, and BlobLocation types
  */
-function getFilenameFromFileLocation(
-  config: any,
-  fallbackName?: string,
-): string {
+function getFilenameFromFileLocation(config: any) {
   try {
     // Handle BigWigAdapter specifically
     if (config.type === 'BigWigAdapter' && config.bigWigLocation) {
@@ -41,20 +38,21 @@ function getFilenameFromFileLocation(
       }
       if ('blob' in location && location.blob) {
         const blob = location.blob as File
-        return blob.name ? getFilename(blob.name) : fallbackName || ''
+        return blob.name ? getFilename(blob.name) : undefined
       }
     }
 
     // Fallback for other adapter types or locations
-    return fallbackName || ''
+    return undefined
   } catch (e) {
-    return fallbackName || ''
+    return undefined
   }
 }
 
 interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
   source: string
+  name?: string
   [key: string]: unknown
 }
 
@@ -75,9 +73,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     let subConfs = this.getConf('subadapters')
     if (!subConfs?.length) {
       const entries = this.getConf('bigWigs') as string[]
-      subConfs = entries.map(entry => ({
+      subConfs = entries.map((entry, idx) => ({
         type: 'BigWigAdapter',
-        source: getFilename(entry),
+        source: `${getFilename(entry)}_${idx}`,
+        name: getFilename(entry),
         bigWigLocation: {
           uri: entry,
         },
@@ -89,7 +88,8 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
         return {
-          source: conf.name || dataAdapter.id,
+          source: dataAdapter.id,
+          name: conf.name,
           ...conf,
           dataAdapter,
         }
@@ -156,20 +156,9 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   async getSources(_regions: Region[]) {
     const adapters = await this.getAdapters()
     return adapters.map(({ dataAdapter, source, name, type, ...rest }) => {
-      // Try to extract filename from FileLocation for BigWigAdapter
-      let displayName = source
-      if (type === 'BigWigAdapter') {
-        const extractedName = getFilenameFromFileLocation(
-          { type, ...rest },
-          source,
-        )
-        if (extractedName) {
-          displayName = extractedName
-        }
-      }
       return {
         ...rest,
-        name: displayName,
+        name: name || getFilenameFromFileLocation({ type, ...rest }) || source,
         source,
         type,
       }
