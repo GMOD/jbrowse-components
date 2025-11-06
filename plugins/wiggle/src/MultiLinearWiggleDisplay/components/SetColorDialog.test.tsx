@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import SetColorDialog from './SetColorDialog'
 
@@ -168,5 +168,385 @@ describe('SetColorDialog', () => {
       />,
     )
     expect(container).toBeTruthy()
+  })
+
+  test('row palettizer - sources with multiple different groups renders', () => {
+    const groupedSources: Source[] = [
+      {
+        name: 'rna1',
+        source: 'rna_sample1.bw',
+        color: '#FF0000',
+        group: 'RNA-seq',
+      },
+      {
+        name: 'rna2',
+        source: 'rna_sample2.bw',
+        color: '#FF3333',
+        group: 'RNA-seq',
+      },
+      {
+        name: 'dna1',
+        source: 'dna_sample1.bw',
+        color: '#0000FF',
+        group: 'ChIP-seq',
+      },
+      {
+        name: 'dna2',
+        source: 'dna_sample2.bw',
+        color: '#3333FF',
+        group: 'ChIP-seq',
+      },
+      {
+        name: 'atac1',
+        source: 'atac_sample1.bw',
+        color: '#00FF00',
+        group: 'ATAC-seq',
+      },
+    ]
+
+    const groupedModel = {
+      sources: groupedSources,
+      setLayout: mockSetLayout,
+      clearLayout: mockClearLayout,
+    }
+
+    expect(() => {
+      render(
+        <SetColorDialog
+          model={groupedModel}
+          handleClose={mockHandleClose}
+        />,
+      )
+    }).not.toThrow()
+  })
+
+  test('row palettizer - setLayout receives modified sources with group changes', () => {
+    const testSources: Source[] = [
+      {
+        name: 'track1',
+        source: 'file1.bw',
+        color: '#FF0000',
+        group: 'GroupA',
+      },
+      {
+        name: 'track2',
+        source: 'file2.bw',
+        color: '#00FF00',
+        group: 'GroupA',
+      },
+    ]
+
+    const testModel = {
+      sources: testSources,
+      setLayout: mockSetLayout,
+      clearLayout: mockClearLayout,
+    }
+
+    render(<SetColorDialog model={testModel} handleClose={mockHandleClose} />)
+
+    // Simulate setLayout being called with modified sources
+    const modifiedSources: Source[] = [
+      { ...testSources[0]!, color: '#FF5555', group: 'GroupA' },
+      { ...testSources[1]!, color: '#00FF00', group: 'GroupB' },
+    ]
+    testModel.setLayout(modifiedSources)
+
+    expect(mockSetLayout).toHaveBeenCalledWith(modifiedSources)
+    expect(mockSetLayout).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'track1',
+          group: 'GroupA',
+        }),
+        expect.objectContaining({
+          name: 'track2',
+          group: 'GroupB',
+        }),
+      ]),
+    )
+  })
+
+  test('row palettizer - same group sources have consistent structure', () => {
+    const sameGroupSources: Source[] = [
+      {
+        name: 'experiment1',
+        source: 'exp1.bw',
+        color: '#FF0000',
+        group: 'Experiment-A',
+      },
+      {
+        name: 'experiment2',
+        source: 'exp2.bw',
+        color: '#FF3333',
+        group: 'Experiment-A',
+      },
+      {
+        name: 'experiment3',
+        source: 'exp3.bw',
+        color: '#FF6666',
+        group: 'Experiment-A',
+      },
+    ]
+
+    const sameGroupModel = {
+      sources: sameGroupSources,
+      setLayout: mockSetLayout,
+      clearLayout: mockClearLayout,
+    }
+
+    render(
+      <SetColorDialog
+        model={sameGroupModel}
+        handleClose={mockHandleClose}
+      />,
+    )
+
+    expect(sameGroupModel.sources).toHaveLength(3)
+    expect(sameGroupModel.sources.every(s => s.group === 'Experiment-A')).toBe(
+      true,
+    )
+  })
+
+  test('row palettizer - mixed grouped and ungrouped sources all have required fields', () => {
+    const mixedSources: Source[] = [
+      {
+        name: 'grouped1',
+        source: 'grouped1.bw',
+        color: '#FF0000',
+        group: 'GroupA',
+      },
+      {
+        name: 'ungrouped1',
+        source: 'ungrouped1.bw',
+        color: '#00FF00',
+      },
+      {
+        name: 'grouped2',
+        source: 'grouped2.bw',
+        color: '#FF3333',
+        group: 'GroupA',
+      },
+      {
+        name: 'ungrouped2',
+        source: 'ungrouped2.bw',
+        color: '#00FF00',
+      },
+      {
+        name: 'grouped3',
+        source: 'grouped3.bw',
+        color: '#0000FF',
+        group: 'GroupB',
+      },
+    ]
+
+    const mixedModel = {
+      sources: mixedSources,
+      setLayout: mockSetLayout,
+      clearLayout: mockClearLayout,
+    }
+
+    render(
+      <SetColorDialog
+        model={mixedModel}
+        handleClose={mockHandleClose}
+      />,
+    )
+
+    expect(mixedModel.sources).toHaveLength(5)
+    expect(mixedModel.sources.every(s => s.name && s.source)).toBe(true)
+    const groupedCount = mixedModel.sources.filter(s => s.group).length
+    const ungroupedCount = mixedModel.sources.filter(s => !s.group).length
+    expect(groupedCount).toBe(3)
+    expect(ungroupedCount).toBe(2)
+  })
+
+  test('row palettizer - sources with empty group strings maintained', () => {
+    const emptyGroupSources: Source[] = [
+      {
+        name: 'source1',
+        source: 'file1.bw',
+        color: '#FF0000',
+        group: '',
+      },
+      {
+        name: 'source2',
+        source: 'file2.bw',
+        color: '#00FF00',
+        group: 'ValidGroup',
+      },
+      {
+        name: 'source3',
+        source: 'file3.bw',
+        color: '#0000FF',
+        group: '',
+      },
+    ]
+
+    const emptyGroupModel = {
+      sources: emptyGroupSources,
+      setLayout: mockSetLayout,
+      clearLayout: mockClearLayout,
+    }
+
+    render(
+      <SetColorDialog
+        model={emptyGroupModel}
+        handleClose={mockHandleClose}
+      />,
+    )
+
+    expect(emptyGroupModel.sources).toHaveLength(3)
+    const emptyGroups = emptyGroupModel.sources.filter(s => s.group === '')
+    expect(emptyGroups).toHaveLength(2)
+    expect(emptyGroupModel.sources[1]?.group).toBe('ValidGroup')
+  })
+
+  test('row palettizer - setLayout called with color changes for grouped sources', () => {
+    const groupedSources: Source[] = [
+      {
+        name: 'rna1',
+        source: 'rna1.bw',
+        color: '#FF0000',
+        group: 'RNA-seq',
+      },
+      {
+        name: 'rna2',
+        source: 'rna2.bw',
+        color: '#FF3333',
+        group: 'RNA-seq',
+      },
+    ]
+
+    const model = {
+      sources: groupedSources,
+      setLayout: mockSetLayout,
+      clearLayout: mockClearLayout,
+    }
+
+    render(<SetColorDialog model={model} handleClose={mockHandleClose} />)
+
+    // Simulate changing color of grouped sources
+    const modifiedSources: Source[] = [
+      { ...groupedSources[0]!, color: '#00FF00' },
+      { ...groupedSources[1]!, color: '#33FF33' },
+    ]
+    model.setLayout(modifiedSources)
+
+    expect(mockSetLayout).toHaveBeenCalledWith(modifiedSources)
+    expect(mockSetLayout).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'rna1',
+          color: '#00FF00',
+          group: 'RNA-seq',
+        }),
+        expect.objectContaining({
+          name: 'rna2',
+          color: '#33FF33',
+          group: 'RNA-seq',
+        }),
+      ]),
+    )
+  })
+
+  test('row palettizer - setLayout called with reordered mixed groups', () => {
+    const mixedSources: Source[] = [
+      {
+        name: 'groupA_1',
+        source: 'a1.bw',
+        color: '#FF0000',
+        group: 'GroupA',
+      },
+      {
+        name: 'ungrouped',
+        source: 'ungrouped.bw',
+        color: '#00FF00',
+      },
+      {
+        name: 'groupB_1',
+        source: 'b1.bw',
+        color: '#0000FF',
+        group: 'GroupB',
+      },
+    ]
+
+    const model = {
+      sources: mixedSources,
+      setLayout: mockSetLayout,
+      clearLayout: mockClearLayout,
+    }
+
+    render(<SetColorDialog model={model} handleClose={mockHandleClose} />)
+
+    // Simulate reordering to group all GroupA sources together
+    const reorderedSources: Source[] = [
+      mixedSources[0]!,
+      mixedSources[2]!,
+      mixedSources[1]!,
+    ]
+    model.setLayout(reorderedSources)
+
+    expect(mockSetLayout).toHaveBeenCalledWith(reorderedSources)
+    expect(mockSetLayout).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'groupA_1',
+          group: 'GroupA',
+        }),
+        expect.objectContaining({
+          name: 'groupB_1',
+          group: 'GroupB',
+        }),
+        expect.objectContaining({
+          name: 'ungrouped',
+        }),
+      ]),
+    )
+  })
+
+  test('row palettizer - setLayout called when changing source group attribute', () => {
+    const sources: Source[] = [
+      {
+        name: 'track1',
+        source: 'file1.bw',
+        color: '#FF0000',
+        group: 'OriginalGroup',
+      },
+      {
+        name: 'track2',
+        source: 'file2.bw',
+        color: '#00FF00',
+        group: 'OriginalGroup',
+      },
+    ]
+
+    const model = {
+      sources,
+      setLayout: mockSetLayout,
+      clearLayout: mockClearLayout,
+    }
+
+    render(<SetColorDialog model={model} handleClose={mockHandleClose} />)
+
+    // Simulate changing group for sources
+    const regroupedSources: Source[] = [
+      { ...sources[0]!, group: 'NewGroup' },
+      { ...sources[1]!, group: 'NewGroup' },
+    ]
+    model.setLayout(regroupedSources)
+
+    expect(mockSetLayout).toHaveBeenCalledWith(regroupedSources)
+    expect(mockSetLayout).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'track1',
+          group: 'NewGroup',
+        }),
+        expect.objectContaining({
+          name: 'track2',
+          group: 'NewGroup',
+        }),
+      ]),
+    )
   })
 })
