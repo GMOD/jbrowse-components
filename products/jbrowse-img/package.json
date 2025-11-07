@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "3.7.0",
+  "version": "3.6.5",
   "main": "dist/index.js",
   "module": "esm/index.js",
   "author": "JBrowse Team",
@@ -27,7 +27,7 @@
     "@babel/runtime": "^7.17.9",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
-    "@jbrowse/react-linear-genome-view2": "^3.7.0",
+    "@jbrowse/react-linear-genome-view2": "^3.6.5",
     "canvas": "^3.0.0",
     "jsdom": "27.0.0",
     "mobx": "^6.6.0",
