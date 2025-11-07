@@ -129,7 +129,7 @@
       "perMachine": true
     },
     "win": {
-      "sign": "./sign.js",
+      "sign": "./sign.cjs",
       "signingHashAlgorithms": [
         "sha256"
       ],
