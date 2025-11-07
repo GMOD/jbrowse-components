@@ -423,7 +423,7 @@ export function drawRef(
 
         for (let j = 0; j < cigar.length; j += 2) {
           const len = +cigar[j]!
-          const op = cigar[j + 1] as keyof typeof colorMap
+          const op = cigar[j + 1] as keyof typeof defaultCigarColors
 
           if (!continuingFlag) {
             px1 = cx1
