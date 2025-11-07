@@ -97,11 +97,7 @@ export function BaseRootModelFactory({
        * #action
        */
       setDefaultSession() {
-        const def = self.jbrowse?.defaultSession || {}
-        this.setSession({
-          ...def,
-          name: `${def.name || 'New session'} ${new Date().toLocaleString()}`,
-        })
+        this.setSession(self.jbrowse.defaultSession)
       },
       /**
        * #action
