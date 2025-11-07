@@ -32,7 +32,8 @@ function getQueryColor(queryName: string) {
   const hash = hashString(queryName)
   return category10[hash % category10.length]!
 }
-const colorMap = {
+// Default CIGAR operation colors
+const defaultCigarColors = {
   I: '#ff03',
   N: '#0a03',
   D: '#00f3',
@@ -40,6 +41,40 @@ const colorMap = {
   M: '#f003',
   '=': '#f003',
 }
+
+// Strand-specific CIGAR operation colors (purple deletion instead of blue)
+const strandCigarColors = {
+  I: '#ff03',
+  N: '#a020f0', // Purple for deletion
+  D: '#a020f0', // Purple for deletion
+  X: 'brown',
+  M: '#f003',
+  '=': '#f003',
+}
+
+// Color scheme configuration
+const colorSchemes = {
+  default: {
+    cigarColors: defaultCigarColors,
+  },
+  strand: {
+    posColor: 'red',
+    negColor: 'blue',
+    cigarColors: strandCigarColors,
+  },
+  query: {
+    cigarColors: defaultCigarColors,
+  },
+}
+
+type ColorScheme = keyof typeof colorSchemes
+
+// Get the appropriate color map for the current scheme
+function getColorMap(scheme: ColorScheme) {
+  return colorSchemes[scheme].cigarColors
+}
+
+const colorMap = defaultCigarColors
 
 function applyAlpha(color: string, alpha: number) {
   // Skip colord processing if alpha is 1 (optimization)
@@ -207,18 +242,28 @@ export function drawRef(
     }
   }
 
+  // Get the appropriate color map for the current scheme
+  const schemeConfig = colorSchemes[colorBy as ColorScheme] || colorSchemes.default
+  const activeColorMap = schemeConfig.cigarColors
+
   // Define colors for strand-based coloring
-  const posColor = 'red'
-  const negColor = 'blue'
+  const posColor =
+    colorBy === 'strand'
+      ? (colorSchemes.strand.posColor as string)
+      : 'red'
+  const negColor =
+    colorBy === 'strand'
+      ? (colorSchemes.strand.negColor as string)
+      : 'blue'
 
   // Precalculate colors with alpha applied to avoid repeated calls
   const colorMapWithAlpha = {
-    I: applyAlpha(colorMap.I, alpha),
-    N: applyAlpha(colorMap.N, alpha),
-    D: applyAlpha(colorMap.D, alpha),
-    X: applyAlpha(colorMap.X, alpha),
-    M: applyAlpha(colorMap.M, alpha),
-    '=': applyAlpha(colorMap['='], alpha),
+    I: applyAlpha(activeColorMap.I, alpha),
+    N: applyAlpha(activeColorMap.N, alpha),
+    D: applyAlpha(activeColorMap.D, alpha),
+    X: applyAlpha(activeColorMap.X, alpha),
+    M: applyAlpha(activeColorMap.M, alpha),
+    '=': applyAlpha(activeColorMap['='], alpha),
   }
 
   // Precalculate strand colors with alpha
@@ -435,10 +480,12 @@ export function drawRef(
               const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
 
               // Use custom coloring based on colorBy setting
-              if (useStrandColor) {
+              // Always keep yellow/blue for insertions/deletions regardless of colorBy
+              const isInsertionOrDeletion = letter === 'I' || letter === 'D' || letter === 'N'
+              if (useStrandColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle =
                   strand === -1 ? negColorWithAlpha : posColorWithAlpha
-              } else if (useQueryColor) {
+              } else if (useQueryColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
               } else {
                 mainCanvas.fillStyle = colorMapWithAlpha[letter]

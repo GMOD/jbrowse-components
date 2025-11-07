@@ -204,7 +204,8 @@ const LinearSyntenyRendering = observer(function ({
               // this is hacky but the index sometimes returns odd number which
               // is invalid due to the color-to-id mapping, check it is even to
               // ensure better validity
-              if (cigarIdx % 2 === 0) {
+              // Also check that the CIGAR pixel data is not all zeros (no CIGAR data drawn)
+              if (cigarIdx % 2 === 0 && (r2 !== 0 || g2 !== 0 || b2 !== 0)) {
                 setTooltip(
                   getTooltip({
                     feature: f,
@@ -212,6 +213,8 @@ const LinearSyntenyRendering = observer(function ({
                     cigarOpLen: cigar[cigarIdx],
                   }),
                 )
+              } else {
+                setTooltip('')
               }
             }
           }
