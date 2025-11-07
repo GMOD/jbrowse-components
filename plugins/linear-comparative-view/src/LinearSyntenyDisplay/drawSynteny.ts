@@ -438,7 +438,9 @@ export function drawRef(
             cx2 += d2 * rev2
           } else if (op === 'D' || op === 'N') {
             cx1 += d1 * rev1
-          } else if (op === 'I') {
+          }
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          else if (op === 'I') {
             cx2 += d2 * rev2
           }
 

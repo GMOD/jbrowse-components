@@ -233,7 +233,7 @@ export default defineConfig(
       'products/jbrowse-img/**/*',
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-desktop/scripts/*',
-      'products/jbrowse-desktop/sign.js',
+      'products/jbrowse-desktop/sign.cjs',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
     ],
