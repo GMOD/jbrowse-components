@@ -69,13 +69,6 @@ const colorSchemes = {
 
 type ColorScheme = keyof typeof colorSchemes
 
-// Get the appropriate color map for the current scheme
-function getColorMap(scheme: ColorScheme) {
-  return colorSchemes[scheme].cigarColors
-}
-
-const colorMap = defaultCigarColors
-
 function applyAlpha(color: string, alpha: number) {
   // Skip colord processing if alpha is 1 (optimization)
   if (alpha === 1) {
@@ -147,7 +140,7 @@ export function drawCigarClickMap(
 
         for (let j = 0; j < cigar.length; j += 2) {
           const len = +cigar[j]!
-          const op = cigar[j + 1] as keyof typeof colorMap
+          const op = cigar[j + 1] as keyof typeof defaultCigarColors
 
           if (!continuingFlag) {
             px1 = cx1
@@ -243,18 +236,14 @@ export function drawRef(
   }
 
   // Get the appropriate color map for the current scheme
-  const schemeConfig = colorSchemes[colorBy as ColorScheme] || colorSchemes.default
+  const schemeConfig =
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    colorSchemes[colorBy as ColorScheme] || colorSchemes.default
   const activeColorMap = schemeConfig.cigarColors
 
   // Define colors for strand-based coloring
-  const posColor =
-    colorBy === 'strand'
-      ? (colorSchemes.strand.posColor as string)
-      : 'red'
-  const negColor =
-    colorBy === 'strand'
-      ? (colorSchemes.strand.negColor as string)
-      : 'blue'
+  const posColor = colorBy === 'strand' ? colorSchemes.strand.posColor : 'red'
+  const negColor = colorBy === 'strand' ? colorSchemes.strand.negColor : 'blue'
 
   // Precalculate colors with alpha applied to avoid repeated calls
   const colorMapWithAlpha = {
@@ -449,9 +438,7 @@ export function drawRef(
             cx2 += d2 * rev2
           } else if (op === 'D' || op === 'N') {
             cx1 += d1 * rev1
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          else if (op === 'I') {
+          } else if (op === 'I') {
             cx2 += d2 * rev2
           }
 
@@ -481,7 +468,8 @@ export function drawRef(
 
               // Use custom coloring based on colorBy setting
               // Always keep yellow/blue for insertions/deletions regardless of colorBy
-              const isInsertionOrDeletion = letter === 'I' || letter === 'D' || letter === 'N'
+              const isInsertionOrDeletion =
+                letter === 'I' || letter === 'D' || letter === 'N'
               if (useStrandColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle =
                   strand === -1 ? negColorWithAlpha : posColorWithAlpha
