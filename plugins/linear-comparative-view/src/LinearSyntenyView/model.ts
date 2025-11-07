@@ -214,7 +214,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     'When comparing divergent genomes, showing all insertions and deletions can clutter the view. This option filters the CIGAR visualization to show only the matching regions, providing a cleaner view of conserved syntenic blocks while hiding small-scale indels.',
                 },
                 {
-                  label: 'Use curved lines',
+                  label: 'Draw curved lines',
                   type: 'checkbox',
                   checked: self.drawCurves,
                   icon: Curves,
