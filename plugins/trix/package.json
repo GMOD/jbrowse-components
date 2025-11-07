@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-trix",
-  "version": "3.6.5",
+  "version": "3.7.0",
   "description": "JBrowse 2 trix text search adapter",
   "keywords": [
     "jbrowse",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@gmod/trix": "^3.0.2",
-    "@jbrowse/core": "^3.6.5",
+    "@jbrowse/core": "^3.7.0",
     "@mui/material": "^7.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
