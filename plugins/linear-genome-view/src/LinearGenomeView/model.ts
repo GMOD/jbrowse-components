@@ -1122,9 +1122,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           './svgcomponents/SVGLinearGenomeView'
         )
         const html = await renderToSvg(self as LinearGenomeViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
-        saveAs(blob, opts.filename || 'image.svg')
+
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
     }))
     .actions(self => {

@@ -478,7 +478,9 @@ export default function RootModel({
                   label: 'Export session',
                   icon: GetAppIcon,
                   onClick: async (session: IAnyStateTreeNode) => {
+                    // eslint-disable-next-line @typescript-eslint/no-deprecated
                     const { saveAs } = await import('file-saver-es')
+
                     saveAs(
                       new Blob(
                         [
@@ -491,6 +493,7 @@ export default function RootModel({
                         { type: 'text/plain;charset=utf-8' },
                       ),
                       'session.json',
+                      { autoBom: false },
                     )
                   },
                 },

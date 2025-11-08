@@ -384,6 +384,7 @@ export function SharedLinearPileupDisplayMixin(
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: () => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.copyFeatureToClipboard(feat)
                   },
                 },

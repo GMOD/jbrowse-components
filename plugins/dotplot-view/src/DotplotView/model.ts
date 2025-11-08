@@ -638,9 +638,12 @@ export default function stateModelFactory(pm: PluginManager) {
       async exportSvg(opts: ExportSvgOptions = {}) {
         const { renderToSvg } = await import('./svgcomponents/SVGDotplotView')
         const html = await renderToSvg(self as DotplotViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
-        saveAs(blob, opts.filename || 'image.svg')
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {

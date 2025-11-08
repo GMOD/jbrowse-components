@@ -395,6 +395,7 @@ function stateModelFactory() {
                 label: 'Copy info to clipboard',
                 icon: ContentCopyIcon,
                 onClick: () => {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   self.copyInfoToClipboard(feat)
                 },
               },

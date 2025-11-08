@@ -193,6 +193,7 @@ const GetSequenceDialog = observer(function ({
         </Button>
         <Button
           onClick={async () => {
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             const { saveAs } = await import('file-saver-es')
             saveAs(
               new Blob([sequence || ''], {

@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { fireEvent, waitFor } from '@testing-library/react'
-import FileSaver from 'file-saver-es'
+import { saveAs } from 'file-saver-es'
 
 import { createView, doBeforeEach, hts, setup } from './util'
 import volvoxConfig from '../../test_data/volvox/config.json'
@@ -49,12 +49,12 @@ test('export svg of circular', async () => {
 
   await waitFor(() => {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(FileSaver.saveAs).toHaveBeenCalled()
+    expect(saveAs).toHaveBeenCalled()
   }, delay)
 
   // @ts-expect-error
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
+  const svg = saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/circular_snapshot.svg`, svg)
   expect(svg).toMatchSnapshot()

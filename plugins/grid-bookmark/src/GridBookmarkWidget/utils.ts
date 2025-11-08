@@ -53,6 +53,7 @@ export async function downloadBookmarkFile(
       ? bookmarksWithValidAssemblies
       : selectedBookmarks
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { saveAs } = await import('file-saver-es')
 
   if (fileFormat === 'BED') {
@@ -75,11 +76,13 @@ export async function downloadBookmarkFile(
         (a, b) => a + b,
         fileHeader,
       )
-      const blob = new Blob([fileContent || ''], {
-        type: 'text/x-bed;charset=utf-8',
-      })
-      const fileName = `jbrowse_bookmarks_${assembly}.bed`
-      saveAs(blob, fileName)
+
+      saveAs(
+        new Blob([fileContent || ''], {
+          type: 'text/x-bed;charset=utf-8',
+        }),
+        `jbrowse_bookmarks_${assembly}.bed`,
+      )
     }
   } else {
     // TSV
@@ -96,11 +99,12 @@ export async function downloadBookmarkFile(
       })
       .reduce((a, b) => a + b, fileHeader)
 
-    const blob = new Blob([fileContents || ''], {
-      type: 'text/tab-separated-values;charset=utf-8',
-    })
-    const fileName = 'jbrowse_bookmarks.tsv'
-    saveAs(blob, fileName)
+    saveAs(
+      new Blob([fileContents || ''], {
+        type: 'text/tab-separated-values;charset=utf-8',
+      }),
+      'jbrowse_bookmarks.tsv',
+    )
   }
 }
 

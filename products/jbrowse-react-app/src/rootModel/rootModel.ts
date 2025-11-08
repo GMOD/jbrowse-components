@@ -213,18 +213,22 @@ export default function RootModel({
                   label: 'Export session',
                   icon: GetAppIcon,
                   onClick: async (session: IAnyStateTreeNode) => {
+                    // eslint-disable-next-line @typescript-eslint/no-deprecated
                     const { saveAs } = await import('file-saver-es')
-                    const sessionBlob = new Blob(
-                      [
-                        JSON.stringify(
-                          { session: getSnapshot(session) },
-                          null,
-                          2,
-                        ),
-                      ],
-                      { type: 'text/plain;charset=utf-8' },
+
+                    saveAs(
+                      new Blob(
+                        [
+                          JSON.stringify(
+                            { session: getSnapshot(session) },
+                            null,
+                            2,
+                          ),
+                        ],
+                        { type: 'text/plain;charset=utf-8' },
+                      ),
+                      'session.json',
                     )
-                    saveAs(sessionBlob, 'session.json')
                   },
                 },
 
