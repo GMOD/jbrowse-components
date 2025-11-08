@@ -1,10 +1,7 @@
-import { ThemeProvider } from '@mui/material/styles'
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
-import { renderToString } from 'react-dom/server'
 
 import RendererType from './RendererType'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
-import { createJBrowseTheme } from '../../ui'
 import SerializableFilterChain from './util/serializableFilterChain'
 import { getSerializedSvg, updateStatus } from '../../util'
 import { checkStopToken } from '../../util/stopToken'
@@ -138,15 +135,13 @@ export default class ServerSideRenderer extends RendererType {
    */
   serializeResultsInWorker(
     results: RenderResults,
-    args: RenderArgsDeserialized,
+    _args: RenderArgsDeserialized,
   ): ResultsSerialized {
-    const html = renderToString(
-      <ThemeProvider theme={createJBrowseTheme(args.theme)}>
-        {results.reactElement}
-      </ThemeProvider>,
-    )
     results.reactElement = undefined
-    return { ...results, html }
+    return {
+      ...results,
+      html: '',
+    }
   }
 
   /**
