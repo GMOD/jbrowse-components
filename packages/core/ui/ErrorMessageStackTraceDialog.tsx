@@ -7,7 +7,6 @@ import {
   Typography,
   alpha,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { SourceMapConsumer } from 'source-map-js'
 import { makeStyles } from 'tss-react/mui'
 
@@ -206,7 +205,8 @@ export default function ErrorMessageStackTraceDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => {
+          onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(errorBoxText)
             setClicked(true)
             setTimeout(() => {

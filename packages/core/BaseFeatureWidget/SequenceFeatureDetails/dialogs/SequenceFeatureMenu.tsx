@@ -2,8 +2,6 @@ import { forwardRef, lazy, useState } from 'react'
 
 import MoreVert from '@mui/icons-material/MoreVert'
 import Settings from '@mui/icons-material/Settings'
-import copy from 'copy-to-clipboard'
-import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../../../ui/CascadingMenuButton'
@@ -35,7 +33,8 @@ const SequenceFeatureMenu = observer(
           menuItems={[
             {
               label: 'Copy plaintext',
-              onClick: () => {
+              onClick: async () => {
+                const { default: copy } = await import('copy-to-clipboard')
                 const r = ref?.current
                 if (r) {
                   copy(r.textContent || '', { format: 'text/plain' })
@@ -44,7 +43,8 @@ const SequenceFeatureMenu = observer(
             },
             {
               label: 'Copy HTML',
-              onClick: () => {
+              onClick: async () => {
+                const { default: copy } = await import('copy-to-clipboard')
                 const r = ref?.current
                 if (r) {
                   copy(r.outerHTML, { format: 'text/html' })
@@ -53,7 +53,8 @@ const SequenceFeatureMenu = observer(
             },
             {
               label: 'Download plaintext',
-              onClick: () => {
+              onClick: async () => {
+                const { saveAs } = await import('file-saver-es')
                 const r = ref?.current
                 if (r) {
                   saveAs(
@@ -67,7 +68,8 @@ const SequenceFeatureMenu = observer(
             },
             {
               label: 'Download HTML',
-              onClick: () => {
+              onClick: async () => {
+                const { saveAs } = await import('file-saver-es')
                 const r = ref?.current
                 if (r) {
                   saveAs(

@@ -1,5 +1,4 @@
 import { assembleLocString, getSession } from '@jbrowse/core/util'
-import { saveAs } from 'file-saver'
 
 import type { GridBookmarkModel } from './model'
 import type { AbstractViewModel } from '@jbrowse/core/util/types'
@@ -44,7 +43,7 @@ export async function navToBookmark(
   }
 }
 
-export function downloadBookmarkFile(
+export async function downloadBookmarkFile(
   fileFormat: string,
   model: GridBookmarkModel,
 ) {
@@ -53,6 +52,8 @@ export function downloadBookmarkFile(
     selectedBookmarks.length === 0
       ? bookmarksWithValidAssemblies
       : selectedBookmarks
+
+  const { saveAs } = await import('file-saver-es')
 
   if (fileFormat === 'BED') {
     const fileHeader = ''
@@ -136,7 +137,7 @@ export async function fromUrlSafeB64(b64: string) {
     b64.replaceAll('-', '+').replaceAll('_', '/'),
   )
   const { toByteArray } = await import('base64-js')
-  const { inflate } = await import('pako')
+  const { inflate } = await import('@progress/pako-esm')
   const bytes = toByteArray(originalB64)
   const inflated = inflate(bytes)
   return new TextDecoder().decode(inflated)
@@ -149,7 +150,7 @@ export async function fromUrlSafeB64(b64: string) {
  */
 export async function toUrlSafeB64(str: string) {
   const bytes = new TextEncoder().encode(str)
-  const { deflate } = await import('pako')
+  const { deflate } = await import('@progress/pako-esm')
   const { fromByteArray } = await import('base64-js')
   const deflated = deflate(bytes)
   const encoded = fromByteArray(deflated)

@@ -15,8 +15,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
-import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -179,7 +177,8 @@ const GetSequenceDialog = observer(function ({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => {
+          onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(sequence)
             setCopied(true)
             setTimeout(() => {
@@ -193,7 +192,8 @@ const GetSequenceDialog = observer(function ({
           {copied ? 'Copied' : 'Copy to clipboard'}
         </Button>
         <Button
-          onClick={() => {
+          onClick={async () => {
+            const { saveAs } = await import('file-saver-es')
             saveAs(
               new Blob([sequence || ''], {
                 type: 'text/x-fasta;charset=utf-8',

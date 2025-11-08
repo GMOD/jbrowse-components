@@ -4,7 +4,6 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
 import { addDisposer, getPath, onAction, types } from 'mobx-state-tree'
 
@@ -90,6 +89,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
         const html = await renderToSvg(self as BreakpointViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
+        const { saveAs } = await import('file-saver-es')
         saveAs(blob, opts.filename || 'image.svg')
       },
     }))

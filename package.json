@@ -67,7 +67,6 @@
     "@types/node": "^20.0.0",
     "@types/node-fetch": "^2.5.7",
     "@types/offscreencanvas": "^2019.6.4",
-    "@types/pako": "^2.0.0",
     "@types/pluralize": "^0.0.33",
     "@types/range-parser": "^1.2.3",
     "@types/react": "^19.0.1",

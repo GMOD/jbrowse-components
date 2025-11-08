@@ -35,7 +35,6 @@ import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import { saveAs } from 'file-saver'
 import { autorun, transaction, when } from 'mobx'
 import {
   addDisposer,
@@ -1124,6 +1123,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         const html = await renderToSvg(self as LinearGenomeViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
+        const { saveAs } = await import('file-saver-es')
         saveAs(blob, opts.filename || 'image.svg')
       },
     }))

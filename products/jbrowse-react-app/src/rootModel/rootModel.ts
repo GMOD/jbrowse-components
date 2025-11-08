@@ -11,7 +11,6 @@ import AddIcon from '@mui/icons-material/Add'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import StorageIcon from '@mui/icons-material/Storage'
-import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
 import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
 
@@ -213,7 +212,8 @@ export default function RootModel({
                 {
                   label: 'Export session',
                   icon: GetAppIcon,
-                  onClick: (session: IAnyStateTreeNode) => {
+                  onClick: async (session: IAnyStateTreeNode) => {
+                    const { saveAs } = await import('file-saver-es')
                     const sessionBlob = new Blob(
                       [
                         JSON.stringify(

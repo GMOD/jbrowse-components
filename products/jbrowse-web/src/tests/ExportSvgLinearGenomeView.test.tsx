@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { fireEvent, waitFor } from '@testing-library/react'
-import FileSaver from 'file-saver'
+import FileSaver from 'file-saver-es'
 
 import { createView, doBeforeEach, hts, setup } from './util'
 
@@ -10,7 +10,7 @@ import { createView, doBeforeEach, hts, setup } from './util'
 global.Blob = (content, options) => ({ content, options })
 
 // mock from https://stackoverflow.com/questions/44686077
-jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
+jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
 
 setup()
 

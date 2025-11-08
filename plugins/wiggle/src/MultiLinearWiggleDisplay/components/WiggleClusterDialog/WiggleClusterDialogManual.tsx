@@ -18,8 +18,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
-import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
@@ -131,7 +129,8 @@ cat(resultClusters$order,sep='\n')`
             >
               <Button
                 variant="contained"
-                onClick={() => {
+                onClick={async () => {
+                  const { saveAs } = await import('file-saver-es')
                   saveAs(
                     new Blob([results || ''], {
                       type: 'text/plain;charset=utf-8',
@@ -145,7 +144,8 @@ cat(resultClusters$order,sep='\n')`
               or{' '}
               <Button
                 variant="contained"
-                onClick={() => {
+                onClick={async () => {
+                  const { default: copy } = await import('copy-to-clipboard')
                   copy(results || '')
                 }}
               >
@@ -154,7 +154,8 @@ cat(resultClusters$order,sep='\n')`
               or{' '}
               <Button
                 variant="contained"
-                onClick={() => {
+                onClick={async () => {
+                  const { saveAs } = await import('file-saver-es')
                   saveAs(
                     new Blob([resultsTsv || ''], {
                       type: 'text/plain;charset=utf-8',
