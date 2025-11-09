@@ -1,4 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { measureText } from '@jbrowse/core/util'
+import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 import Box from './Box'
 import CDS from './CDS'
@@ -13,8 +15,12 @@ import type {
   SubfeatureLayOutArgs,
 } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
-import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { BaseLayout } from '@jbrowse/core/util/layouts'
+
+// used to make features have a little padding for their labels
+const xPadding = 3
+const yPadding = 5
 
 /**
  * Selects the appropriate glyph component to render a feature based on its
@@ -176,5 +182,119 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
       config,
       extraGlyphs,
     })
+  }
+}
+
+/**
+ * Pre-computes layout for all features to populate the layout object with
+ * collision detection and positioning information upfront, before React rendering.
+ * This is called in the worker to do expensive layout computations before
+ * sending results back to the client.
+ *
+ * Note: This performs layout for collision detection and positioning only.
+ * React components still compute their detailed rendering layout (SceneGraph)
+ * since it contains React components that cannot be serialized.
+ */
+export function layoutFeatures({
+  features,
+  bpPerPx,
+  region,
+  config,
+  layout,
+  extraGlyphs,
+  displayMode,
+}: {
+  features: Map<string, Feature>
+  bpPerPx: number
+  region: Region
+  config: AnyConfigurationModel
+  layout: BaseLayout<unknown>
+  extraGlyphs?: ExtraGlyphValidator[]
+  displayMode: string
+}): void {
+  for (const feature of features.values()) {
+    const { reversed } = region
+    const labelAllowed = displayMode !== 'collapsed'
+
+    const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
+    const GlyphComponent = chooseGlyphComponent({
+      config,
+      feature,
+      extraGlyphs,
+    })
+    const featureLayout = (GlyphComponent.layOut || layOut)({
+      layout: rootLayout,
+      feature,
+      bpPerPx,
+      reversed,
+      config,
+      extraGlyphs,
+    })
+
+    let expansion = 0
+    if (labelAllowed) {
+      const showLabels = readConfObject(config, 'showLabels')
+      const showDescriptions = readConfObject(config, 'showDescriptions')
+      const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
+        feature,
+      })
+      expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+      const name = String(
+        readConfObject(config, ['labels', 'name'], { feature }) || '',
+      )
+      const shouldShowName = /\S/.test(name) && showLabels
+
+      const getWidth = (text: string) => {
+        const glyphWidth = rootLayout.width + expansion
+        const textWidth = measureText(text, fontHeight)
+        return Math.round(Math.min(textWidth, glyphWidth))
+      }
+
+      const description = String(
+        readConfObject(config, ['labels', 'description'], { feature }) || '',
+      )
+      const shouldShowDescription = /\S/.test(description) && showDescriptions
+
+      if (shouldShowName) {
+        rootLayout.addChild(
+          'nameLabel',
+          0,
+          featureLayout.bottom,
+          getWidth(name),
+          fontHeight,
+        )
+      }
+
+      if (shouldShowDescription) {
+        const aboveLayout = shouldShowName
+          ? rootLayout.getSubRecord('nameLabel')
+          : featureLayout
+        if (!aboveLayout) {
+          throw new Error('failed to layout nameLabel')
+        }
+
+        rootLayout.addChild(
+          'descriptionLabel',
+          0,
+          aboveLayout.bottom,
+          getWidth(description),
+          fontHeight,
+        )
+      }
+    }
+
+    // Perform collision detection and positioning
+    // This populates the layout object with the feature's positioning
+    layout.addRect(
+      feature.id(),
+      feature.get('start'),
+      feature.get('start') + rootLayout.width * bpPerPx + xPadding * bpPerPx,
+      rootLayout.height + yPadding,
+      {
+        label: feature.get('name') || feature.get('id'),
+        description: feature.get('description') || feature.get('note'),
+        refName: feature.get('refName'),
+      },
+    )
   }
 }
