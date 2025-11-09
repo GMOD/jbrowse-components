@@ -13,6 +13,7 @@ export default function register(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearReadArcsDisplay',
       displayName: 'Read arc display',
+      helpText: 'Connect paired end reads and long split reads using arcs',
       configSchema,
       stateModel: stateModelF(configSchema),
       trackType: 'AlignmentsTrack',

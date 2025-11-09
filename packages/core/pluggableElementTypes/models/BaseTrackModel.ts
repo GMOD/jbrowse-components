@@ -219,14 +219,18 @@ export function createBaseTrackModel(
                   type: 'subMenu',
                   label: 'Display types',
                   priority: -1000,
-                  subMenu: compatDisp.map(d => ({
-                    type: 'radio',
-                    label: pm.getDisplayType(d.type)!.displayName,
-                    checked: d.displayId === shownId,
-                    onClick: () => {
-                      self.replaceDisplay(shownId, d.displayId)
-                    },
-                  })),
+                  subMenu: compatDisp.map(d => {
+                    const displayType = pm.getDisplayType(d.type)!
+                    return {
+                      type: 'radio',
+                      label: displayType.displayName,
+                      helpText: displayType.helpText,
+                      checked: d.displayId === shownId,
+                      onClick: () => {
+                        self.replaceDisplay(shownId, d.displayId)
+                      },
+                    }
+                  }),
                 },
               ]
             : []),

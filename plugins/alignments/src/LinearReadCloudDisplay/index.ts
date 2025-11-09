@@ -13,6 +13,8 @@ export default function register(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearReadCloudDisplay',
       displayName: 'Linked reads display',
+      helpText:
+        'Display paired-end and split read (supplementary read) alignments as linked entities',
       configSchema,
       stateModel: stateModelF(configSchema),
       trackType: 'AlignmentsTrack',
