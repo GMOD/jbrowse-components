@@ -11,12 +11,44 @@ export function hasPairedReads(features: ChainData) {
   return false
 }
 
+/**
+ * Cache of precomputed alpha colors for each base color
+ * Maps baseColor -> array of 11 precomputed colors for p values [0, 0.1, 0.2, ..., 1.0]
+ */
+const alphaColorCache = new Map<string, string[]>()
+
+/**
+ * Precompute 11 alpha color variants for a given base color
+ * (bins at p = 0.0, 0.1, 0.2, ..., 0.9, 1.0)
+ */
+function precomputeAlphaColors(baseColor: string): string[] {
+  const bins: string[] = []
+  for (let i = 0; i <= 10; i++) {
+    const p = i / 10
+    const alpha = Math.min(1, p * p + 0.1)
+    bins[i] = colord(baseColor).alpha(alpha).toHslString()
+  }
+  return bins
+}
+
+/**
+ * Get alpha-blended color from precomputed bins
+ * Selects the nearest bin for fast lookup instead of computing alpha each time
+ */
 export function alphaColor(baseColor: string, p: number) {
-  return p !== 1
-    ? colord(baseColor)
-        .alpha(Math.min(1, p * p + 0.1))
-        .toHslString()
-    : baseColor
+  if (p === 1) {
+    return baseColor
+  }
+
+  let bins = alphaColorCache.get(baseColor)
+  if (!bins) {
+    bins = precomputeAlphaColors(baseColor)
+    alphaColorCache.set(baseColor, bins)
+  }
+
+  // Find nearest bin (0-10 scale)
+  const binIndex = Math.max(0, Math.min(10, Math.round(p * 10)))
+  return bins[binIndex]!
 }
 
 export const defaultFilterFlags = {

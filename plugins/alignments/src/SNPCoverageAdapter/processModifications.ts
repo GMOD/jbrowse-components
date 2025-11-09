@@ -2,7 +2,7 @@ import { max, sum } from '@jbrowse/core/util'
 
 import { incWithProbabilities } from './util'
 import { parseCigar } from '../MismatchParser'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
+import { getMaxProbModAtEachPosition } from '../shared/getMaxProbModAtEachPosition'
 
 import type { ColorBy, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
@@ -14,12 +14,14 @@ export function processModifications({
   region,
   bins,
   regionSequence,
+  cigarOps: cigarOpsArg,
 }: {
   bins: PreBaseCoverageBin[]
   feature: Feature
   region: Region
   colorBy?: ColorBy
   regionSequence: string
+  cigarOps?: ReturnType<typeof parseCigar>
 }) {
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
@@ -34,11 +36,10 @@ export function processModifications({
     return
   }
 
-  const cigarOps = parseCigar(feature.get('CIGAR'))
+  const cigarOps = cigarOpsArg ?? parseCigar(feature.get('CIGAR'))
 
   // Get only the maximum probability modification at each position
-  // this is a hole-y array, does not work with normal for loop
-  // eslint-disable-next-line unicorn/no-array-for-each
+  // Returns a Map of position -> modification info
   getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
     ({ allProbs, prob, type }, pos) => {
       if (isolatedModification && type !== isolatedModification) {
@@ -58,7 +59,8 @@ export function processModifications({
             readsCounted: 0,
             snps: {},
             ref: {
-              probabilities: [],
+              probabilitySum: 0,
+              probabilityCount: 0,
               entryDepth: 0,
               '-1': 0,
               0: 0,

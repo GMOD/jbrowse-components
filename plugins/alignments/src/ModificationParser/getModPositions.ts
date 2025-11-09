@@ -1,6 +1,15 @@
-import { revcom } from '@jbrowse/core/util'
-
 import { modificationRegex } from './consts'
+
+/**
+ * Map of base to its reverse complement
+ */
+const revCompMap = {
+  A: 'T',
+  T: 'A',
+  C: 'G',
+  G: 'C',
+  N: 'N',
+} as const
 
 /**
  * Parse MM tag to extract modification positions on the read sequence.
@@ -12,10 +21,10 @@ import { modificationRegex } from './consts'
  * @returns Array of modification objects with positions
  */
 export function getModPositions(mm: string, fseq: string, fstrand: number) {
-  const seq = fstrand === -1 ? revcom(fseq) : fseq
-  const seqLength = seq.length
+  const seqLength = fseq.length
   const mods = mm.split(';')
   const result = []
+  const isReverseStrand = fstrand === -1
 
   for (const mod of mods) {
     // Empty string
@@ -50,20 +59,38 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
 
       // For reverse strand, pre-allocate array and fill backwards to avoid reverse()
       // This is worthwhile because we avoid an O(n) reverse() operation
-      const positions = fstrand === -1 ? new Array(splitLength - 1) : []
-      let writeIndex = fstrand === -1 ? splitLength - 2 : 0
+      const positions = isReverseStrand ? new Array(splitLength - 1) : []
+      let writeIndex = isReverseStrand ? splitLength - 2 : 0
+
+      // Get the base to match against. On reverse strand, we need to check reverse complement
+      const matchBase =
+        base === 'N'
+          ? 'N'
+          : isReverseStrand
+            ? revCompMap[base as keyof typeof revCompMap]!
+            : base
 
       for (let i = 1; i < splitLength; i++) {
         let delta = +split[i]!
         do {
-          if (base === 'N' || base === seq[currPos]) {
+          if (matchBase === 'N') {
             delta--
+          } else if (isReverseStrand) {
+            // On reverse strand, check reverse complement of base at mirror position
+            if (matchBase === fseq[seqLength - 1 - currPos]) {
+              delta--
+            }
+          } else {
+            // On forward strand, check base directly
+            if (matchBase === fseq[currPos]) {
+              delta--
+            }
           }
           currPos++
         } while (delta >= 0 && currPos < seqLength)
 
         // Calculate and store position
-        if (fstrand === -1) {
+        if (isReverseStrand) {
           const pos = seqLength - currPos
           if (pos >= 0) {
             // avoid negative-number-positions in array, seen in #4629 cause
@@ -81,8 +108,9 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
 
       // For reverse strand, slice off any unfilled slots at the beginning
       // (happens when some positions were negative and skipped)
-      const validPositions =
-        fstrand === -1 ? positions.slice(writeIndex + 1) : positions
+      const validPositions = isReverseStrand
+        ? positions.slice(writeIndex + 1)
+        : positions
 
       result.push({
         type,

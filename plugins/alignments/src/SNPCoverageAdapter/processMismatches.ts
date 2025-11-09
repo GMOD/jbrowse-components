@@ -18,18 +18,25 @@ export function processMismatches({
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
+  const regionStart = region.start
+
+  // Precompute skip tags once
+  const tags = feature.get('tags')
+  const xs = tags?.XS || tags?.TS
+  const ts = tags?.ts
 
   // normal SNP based coloring
   for (const mismatch of mismatches) {
     const mstart = fstart + mismatch.start
     const mlen = mismatchLen(mismatch)
     const mend = mstart + mlen
-    for (let j = mstart; j < mstart + mlen; j++) {
-      const epos = j - region.start
+    const { base, altbase, type } = mismatch
+    const interbase = isInterbase(type)
+
+    for (let j = mstart; j < mend; j++) {
+      const epos = j - regionStart
       if (epos >= 0 && epos < bins.length) {
         const bin = bins[epos]!
-        const { base, altbase, type } = mismatch
-        const interbase = isInterbase(type)
 
         if (type === 'deletion' || type === 'skip') {
           inc(bin, fstrand, 'delskips', type)
@@ -45,14 +52,11 @@ export function processMismatches({
       }
     }
 
-    if (mismatch.type === 'skip') {
+    if (type === 'skip') {
       // for upper case XS and TS: reports the literal strand of the genomic
       // transcript
-      const tags = feature.get('tags')
-      const xs = tags?.XS || tags?.TS
       // for lower case ts from minimap2: genomic transcript flipped by read
       // strand
-      const ts = tags?.ts
       const effectiveStrand =
         xs === '+'
           ? 1

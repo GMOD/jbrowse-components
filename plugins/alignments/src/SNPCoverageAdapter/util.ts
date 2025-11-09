@@ -29,7 +29,8 @@ export function inc(
   if (thisBin === undefined) {
     thisBin = bin[type][field] = {
       entryDepth: 0,
-      probabilities: [],
+      probabilitySum: 0,
+      probabilityCount: 0,
       '-1': 0,
       '0': 0,
       '1': 0,
@@ -50,13 +51,15 @@ export function incWithProbabilities(
   if (thisBin === undefined) {
     thisBin = bin[type][field] = {
       entryDepth: 0,
-      probabilities: [],
+      probabilitySum: 0,
+      probabilityCount: 0,
       '-1': 0,
       '0': 0,
       '1': 0,
     }
   }
   thisBin.entryDepth++
-  thisBin.probabilities.push(probability)
+  thisBin.probabilitySum += probability
+  thisBin.probabilityCount++
   thisBin[strand]++
 }

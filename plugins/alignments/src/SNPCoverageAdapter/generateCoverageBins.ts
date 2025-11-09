@@ -1,10 +1,10 @@
-import { sum } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { processDepth } from './processDepth'
 import { processMismatches } from './processMismatches'
 import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
+import { parseCigar } from '../MismatchParser'
 
 import type { Opts } from './util'
 import type { PreBaseCoverageBin, SkipMap } from '../shared/types'
@@ -28,7 +28,9 @@ export async function generateCoverageBins({
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
 
-  let regionSequence
+  let regionSequence: string | undefined
+  let slicedRegionSequence: string | undefined
+
   let start = performance.now()
   for (const feature of features) {
     if (performance.now() - start > 400) {
@@ -42,38 +44,50 @@ export async function generateCoverageBins({
     })
 
     if (colorBy?.type === 'modifications') {
-      regionSequence ??=
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: region.end + 1,
-        })) || ''
+      if (!slicedRegionSequence) {
+        regionSequence ??=
+          (await fetchSequence({
+            ...region,
+            start: start2,
+            end: region.end + 1,
+          })) || ''
+        slicedRegionSequence = regionSequence.slice(diff)
+      }
+
+      const cigarOps = parseCigar(feature.get('CIGAR'))
 
       processModifications({
         feature,
         colorBy,
         bins,
         region,
-        regionSequence: regionSequence.slice(diff),
+        regionSequence: slicedRegionSequence,
+        cigarOps,
       })
     } else if (colorBy?.type === 'methylation') {
-      regionSequence ??=
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: region.end + 1,
-        })) || ''
+      if (!regionSequence) {
+        regionSequence =
+          (await fetchSequence({
+            ...region,
+            start: start2,
+            end: region.end + 1,
+          })) || ''
+      }
+
+      const cigarOps = parseCigar(feature.get('CIGAR'))
 
       processReferenceCpGs({
         feature,
         bins,
         region,
         regionSequence,
+        cigarOps,
       })
     }
     processMismatches({ feature, skipmap, bins, region })
   }
 
+  // Calculate avgProbability values and convert to final format
   for (const bin of bins) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (bin) {
@@ -82,10 +96,14 @@ export async function generateCoverageBins({
           return [
             key,
             {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
-                : undefined,
+              entryDepth: val.entryDepth,
+              '-1': val['-1'],
+              '0': val['0'],
+              '1': val['1'],
+              avgProbability:
+                val.probabilityCount > 0
+                  ? val.probabilitySum / val.probabilityCount
+                  : undefined,
             },
           ] as const
         }),
@@ -95,10 +113,14 @@ export async function generateCoverageBins({
           return [
             key,
             {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
-                : undefined,
+              entryDepth: val.entryDepth,
+              '-1': val['-1'],
+              '0': val['0'],
+              '1': val['1'],
+              avgProbability:
+                val.probabilityCount > 0
+                  ? val.probabilitySum / val.probabilityCount
+                  : undefined,
             },
           ] as const
         }),

@@ -1,5 +1,3 @@
-import { doesIntersect2 } from '@jbrowse/core/util'
-
 import { parseCigar } from '../MismatchParser'
 import { incWithProbabilities } from './util'
 import { getMethBins } from '../ModificationParser/getMethBins'
@@ -8,16 +6,30 @@ import type { Mismatch, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
+function isPositionInDeletion(
+  pos: number,
+  dels: Array<{ start: number; length: number }>,
+): boolean {
+  for (const del of dels) {
+    if (pos >= del.start && pos < del.start + del.length) {
+      return true
+    }
+  }
+  return false
+}
+
 export function processReferenceCpGs({
   feature,
   region,
   bins,
   regionSequence,
+  cigarOps: cigarOpsArg,
 }: {
   bins: PreBaseCoverageBin[]
   feature: Feature
   region: Region
   regionSequence: string
+  cigarOps?: ReturnType<typeof parseCigar>
 }) {
   const fstart = feature.get('start')
   const fend = feature.get('end')
@@ -26,19 +38,22 @@ export function processReferenceCpGs({
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
   const r = regionSequence.toLowerCase()
   if (seq) {
-    const cigarOps = parseCigar(feature.get('CIGAR'))
+    const cigarOps = cigarOpsArg ?? parseCigar(feature.get('CIGAR'))
     const { methBins, methProbs } = getMethBins(feature, cigarOps)
     const dels = mismatches.filter(f => f.type === 'deletion')
+
+    const regionStart = region.start
 
     // methylation based coloring takes into account both reference sequence
     // CpG detection and reads
     for (let i = 0; i < fend - fstart; i++) {
       const j = i + fstart
-      const l1 = r[j - region.start + 1]
-      const l2 = r[j - region.start + 2]
+      const offset = j - regionStart
+      const l1 = r[offset + 1]
+      const l2 = r[offset + 2]
       if (l1 === 'c' && l2 === 'g') {
-        const bin0 = bins[j - region.start]
-        const bin1 = bins[j - region.start + 1]
+        const bin0 = bins[offset]
+        const bin1 = bins[offset + 1]
         const b0 = methBins[i]
         const b1 = methBins[i + 1]
         const p0 = methProbs[i]
@@ -61,16 +76,7 @@ export function processReferenceCpGs({
           }
         } else {
           if (bin0) {
-            if (
-              !dels.some(d =>
-                doesIntersect2(
-                  j,
-                  j + 1,
-                  d.start + fstart,
-                  d.start + fstart + d.length,
-                ),
-              )
-            ) {
+            if (!isPositionInDeletion(j, dels)) {
               incWithProbabilities(
                 bin0,
                 fstrand,
@@ -83,16 +89,7 @@ export function processReferenceCpGs({
             }
           }
           if (bin1) {
-            if (
-              !dels.some(d =>
-                doesIntersect2(
-                  j + 1,
-                  j + 2,
-                  d.start + fstart,
-                  d.start + fstart + d.length,
-                ),
-              )
-            ) {
+            if (!isPositionInDeletion(j + 1, dels)) {
               incWithProbabilities(
                 bin1,
                 fstrand,

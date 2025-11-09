@@ -1473,23 +1473,6 @@ export function localStorageSetBoolean(key: string, value: boolean) {
   localStorageSetItem(key, JSON.stringify(value))
 }
 
-export function forEachWithStopTokenCheck<T>(
-  iter: Iterable<T>,
-  stopToken: string | undefined,
-  arg: (arg: T, idx: number) => void,
-  durationMs = 400,
-) {
-  let start = performance.now()
-  let i = 0
-  for (const t of iter) {
-    if (performance.now() - start > durationMs) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
-    arg(t, i++)
-  }
-}
-
 export function testAdapter(
   fileName: string,
   regex: RegExp,
@@ -1510,3 +1493,4 @@ export {
 export { blobToDataURL } from './blobToDataURL'
 export { makeAbortableReaction } from './makeAbortableReaction'
 export * from './aborting'
+export * from './forEachWithStopTokenCheck'

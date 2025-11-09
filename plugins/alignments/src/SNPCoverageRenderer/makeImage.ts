@@ -195,15 +195,22 @@ export async function makeImage(
   // "cliffs"
   let prevTotal = 0
 
+  const recipBpPerPx = 1 / bpPerPx
+
   // extraHorizontallyFlippedOffset is used to draw interbase items, which
   // are located to the left when forward and right when reversed
-  const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
+  const extraHorizontallyFlippedOffset = region.reversed ? recipBpPerPx : 0
 
   const drawingModifications = colorBy.type === 'modifications'
   const drawingMethylation = colorBy.type === 'methylation'
   const isolatedModification = colorBy.modifications?.isolatedModification
   // Pre-create Set for O(1) simplex lookups during rendering
   const simplexSet = new Set(simplexModifications)
+
+  // Pre-create arc stroke colors
+  const arcPosColor = 'rgba(255,200,200,0.7)'
+  const arcNegColor = 'rgba(200,200,255,0.7)'
+  const arcNeutralColor = 'rgba(200,200,200,0.7)'
 
   // Second pass: draw the SNP data, and add a minimum feature width of 1px
   // which can be wider than the actual bpPerPx This reduces overdrawing of
@@ -220,9 +227,16 @@ export async function makeImage(
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
+      // Cache expensive calculations
+      const modHeight = toHeight(score0)
+      const modBottom = toY(score0) + modHeight
+      const roundedLeftPx = Math.round(leftPx)
+
       // Sort keys once outside the loop
       const nonmodKeys = Object.keys(nonmods).sort().reverse()
-      for (const m of nonmodKeys) {
+      const nonmodLen = nonmodKeys.length
+      for (let i = 0; i < nonmodLen; i++) {
+        const m = nonmodKeys[i]
         // Remove prefix once for lookup
         const modKey = m.replace(/^(nonmod_|mod_)/, '')
         const mod = visibleModifications[modKey]
@@ -246,21 +260,21 @@ export async function makeImage(
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const nonModColor = 'blue'
         const c = alphaColor(nonModColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
 
         ctx.fillStyle = c
         ctx.fillRect(
-          Math.round(leftPx),
-          bottom - (curr + modFraction * height),
+          roundedLeftPx,
+          modBottom - (curr + modFraction * modHeight),
           w,
-          modFraction * height,
+          modFraction * modHeight,
         )
-        curr += modFraction * height
+        curr += modFraction * modHeight
       }
       // Sort keys once outside the loop
       const modKeys = Object.keys(mods).sort().reverse()
-      for (const m of modKeys) {
+      const modLen = modKeys.length
+      for (let i = 0; i < modLen; i++) {
+        const m = modKeys[i]
         const modKey = m.replace('mod_', '')
         const mod = visibleModifications[modKey]
         if (!mod) {
@@ -283,70 +297,80 @@ export async function makeImage(
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const baseColor = mod.color || 'black'
         const c = alphaColor(baseColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
 
         ctx.fillStyle = c
         ctx.fillRect(
-          Math.round(leftPx),
-          bottom - (curr + modFraction * height),
+          roundedLeftPx,
+          modBottom - (curr + modFraction * modHeight),
           w,
-          modFraction * height,
+          modFraction * modHeight,
         )
-        curr += modFraction * height
+        curr += modFraction * modHeight
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = snpinfo
       let curr = 0
+      const methHeight = toHeight(score0)
+      const methBottom = toY(score0) + methHeight
+      const roundedLeftPx = Math.round(leftPx)
 
-      for (const base of Object.keys(mods).sort().reverse()) {
+      const modKeys = Object.keys(mods).sort().reverse()
+      const modLen = modKeys.length
+      for (let i = 0; i < modLen; i++) {
+        const base = modKeys[i]
         const { entryDepth } = mods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          roundedLeftPx,
+          methBottom - ((entryDepth + curr) / depth) * methHeight,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * methHeight,
         )
         curr += entryDepth
       }
-      for (const base of Object.keys(nonmods).sort().reverse()) {
+      const nonmodKeys = Object.keys(nonmods).sort().reverse()
+      const nonmodLen = nonmodKeys.length
+      for (let i = 0; i < nonmodLen; i++) {
+        const base = nonmodKeys[i]
         const { entryDepth } = nonmods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          roundedLeftPx,
+          methBottom - ((entryDepth + curr) / depth) * methHeight,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * methHeight,
         )
         curr += entryDepth
       }
     } else {
       const { depth, snps } = snpinfo
       let curr = 0
-      for (const base of Object.keys(snps).sort().reverse()) {
+      const snpHeight = toHeight(score0)
+      const snpBottom = toY(score0) + snpHeight
+      const roundedLeftPx = Math.round(leftPx)
+
+      const snpKeys = Object.keys(snps).sort().reverse()
+      const snpLen = snpKeys.length
+      for (let i = 0; i < snpLen; i++) {
+        const base = snpKeys[i]
         const { entryDepth } = snps[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          roundedLeftPx,
+          snpBottom - ((entryDepth + curr) / depth) * snpHeight,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * snpHeight,
         )
         curr += entryDepth
       }
     }
 
     const interbaseEvents = Object.keys(snpinfo.noncov)
+    const interbaseLen = interbaseEvents.length
     if (showInterbaseCounts) {
       let curr = 0
-      for (const base of interbaseEvents) {
+      for (let i = 0; i < interbaseLen; i++) {
+        const base = interbaseEvents[i]
         const { entryDepth } = snpinfo.noncov[base]!
         const r = 0.6
         ctx.fillStyle = colorMap[base]!
@@ -364,7 +388,8 @@ export async function makeImage(
       let accum = 0
       let max = 0
       let maxBase = ''
-      for (const base of interbaseEvents) {
+      for (let i = 0; i < interbaseLen; i++) {
+        const base = interbaseEvents[i]
         const { entryDepth } = snpinfo.noncov[base]!
         accum += entryDepth
         if (entryDepth > max) {
@@ -403,16 +428,13 @@ export async function makeImage(
 
       ctx.beginPath()
       const effectiveStrand = feature.get('effectiveStrand')
-      const pos = 'rgba(255,200,200,0.7)'
-      const neg = 'rgba(200,200,255,0.7)'
-      const neutral = 'rgba(200,200,200,0.7)'
 
       if (effectiveStrand === 1) {
-        ctx.strokeStyle = pos
+        ctx.strokeStyle = arcPosColor
       } else if (effectiveStrand === -1) {
-        ctx.strokeStyle = neg
+        ctx.strokeStyle = arcNegColor
       } else {
-        ctx.strokeStyle = neutral
+        ctx.strokeStyle = arcNeutralColor
       }
 
       ctx.lineWidth = Math.log(feature.get('score') + 1)
