@@ -126,8 +126,8 @@ jobs:
         env:
           REF_NAME: ${{ github.ref_name }}
         run: |
-          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore)
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
+          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore, period)
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
             echo "Invalid ref name: $REF_NAME"
             exit 1
           fi
@@ -152,8 +152,8 @@ jobs:
         env:
           REF_NAME: ${{ github.ref_name }}
         run: |
-          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore)
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
+          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore, period)
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
             echo "Invalid ref name: $REF_NAME"
             exit 1
           fi
@@ -177,8 +177,8 @@ jobs:
         env:
           REF_NAME: ${{ github.ref_name }}
         run: |
-          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore)
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
+          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore, period)
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
             echo "Invalid ref name: $REF_NAME"
             exit 1
           fi
@@ -202,8 +202,8 @@ jobs:
         env:
           REF_NAME: ${{ github.ref_name }}
         run: |
-          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore)
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
+          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore, period)
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
             echo "Invalid ref name: $REF_NAME"
             exit 1
           fi
