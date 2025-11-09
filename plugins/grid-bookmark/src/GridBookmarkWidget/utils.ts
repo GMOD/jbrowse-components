@@ -141,9 +141,9 @@ export async function fromUrlSafeB64(b64: string) {
     b64.replaceAll('-', '+').replaceAll('_', '/'),
   )
   const { toByteArray } = await import('base64-js')
-  const { inflate } = await import('@progress/pako-esm')
+  const { inflate } = await import('pako-esm2')
   const bytes = toByteArray(originalB64)
-  const inflated = inflate(bytes)
+  const inflated = inflate(bytes, undefined)
   return new TextDecoder().decode(inflated)
 }
 
@@ -154,9 +154,9 @@ export async function fromUrlSafeB64(b64: string) {
  */
 export async function toUrlSafeB64(str: string) {
   const bytes = new TextEncoder().encode(str)
-  const { deflate } = await import('@progress/pako-esm')
+  const { deflate } = await import('pako-esm2')
   const { fromByteArray } = await import('base64-js')
-  const deflated = deflate(bytes)
+  const deflated = deflate(bytes, undefined)
   const encoded = fromByteArray(deflated)
   const pos = encoded.indexOf('=')
   return pos > 0
