@@ -5,7 +5,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
 import {
@@ -13,13 +12,11 @@ import {
   dataDir,
   readConf,
   readConfAlt,
+  runCommand,
   runInTmpDir,
 } from '../testUtil'
 
 const { copyFile, writeFile, mkdir } = fs.promises
-
-// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
 
 test('add-assembly no load flag', async () => {
   const { error } = await runCommand('add-assembly {}')
@@ -306,7 +303,8 @@ test('can specify a refNameAliases file', async () => {
 test('can specify a refNameAliases file type custom', async () => {
   await runInTmpDir(async ctx => {
     await runCommand([
-      'add-assembly {"type":"CustomAdapter"}',
+      'add-assembly',
+      '{"type":"CustomAdapter"}',
       '--name',
       'simple',
       '--refNameAliases',
@@ -323,7 +321,8 @@ test('can specify a refNameAliases file type custom', async () => {
 test('can specify a custom name and alias and refNameColors', async () => {
   await runInTmpDir(async ctx => {
     await runCommand([
-      'add-assembly {"type":"CustomAdapter"}',
+      'add-assembly',
+      '{"type":"CustomAdapter"}',
       '--name',
       'simple',
       '--refNameColors',
@@ -371,12 +370,20 @@ test('relative path', async () => {
     await mkdir('jbrowse')
     await copyFile(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
     process.chdir('jbrowse')
+
+    // Suppress the expected warning about file being outside JBrowse directory
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
     await runCommand([
       'add-assembly',
       path.join('..', 'simple.2bit'),
       '--load',
       'inPlace',
     ])
+
+    // Restore console.warn
+    consoleSpy.mockRestore()
+
     expect(readConf(ctx, 'jbrowse')).toMatchSnapshot()
   })
 })

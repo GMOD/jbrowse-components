@@ -5,10 +5,10 @@ title: Multi-quantitative tracks
 
 import Figure from '../figure'
 
-In 2.1.0, we created the ability to have "Multi-quantitative tracks" which is a
-single track composed of multiple quantitative stopTokens, which have their
-Y-scalebar synchronized. There are 5 rendering modes for the multi-quantitative
-tracks.
+JBrowse can show "Multi-quantitative tracks" which is a single track composed of
+multiple quantitative signals, which have their Y-scalebar synchronized.
+
+There are 5 rendering modes for the multi-quantitative tracks.
 
 - xyplot
 - multirowxyplot

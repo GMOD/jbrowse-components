@@ -36,6 +36,9 @@ export default function stateModelFactory(
       }),
     )
     .views(self => ({
+      /**
+       * #getter
+       */
       get nrow() {
         return self.sources?.length || 1
       },
@@ -62,6 +65,13 @@ export default function stateModelFactory(
           ? self.totalHeight / this.nrow
           : self.rowHeightSetting
       },
+
+      /**
+       * #getter
+       */
+      get featuresReady() {
+        return !!self.featuresVolatile
+      },
     }))
 
     .views(self => ({
@@ -72,10 +82,10 @@ export default function stateModelFactory(
         const superProps = self.adapterProps()
         return {
           ...superProps,
-          notReady:
-            superProps.notReady || !self.sources || !self.featuresVolatile,
+          notReady: superProps.notReady || !self.sources || !self.featuresReady,
           renderingMode: self.renderingMode,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
           height: self.totalHeight,
           sources: self.sources,
         }

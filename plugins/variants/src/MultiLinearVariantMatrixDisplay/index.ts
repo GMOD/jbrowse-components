@@ -13,7 +13,7 @@ export default function LinearVariantMatrixDisplayF(
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
       name: 'LinearVariantMatrixDisplay',
-      displayName: 'Multi-variant display (matrix)',
+      displayName: 'Multi-sample variant display (matrix)',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',

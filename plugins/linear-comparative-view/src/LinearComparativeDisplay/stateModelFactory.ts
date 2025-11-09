@@ -39,10 +39,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile((/* self */) => ({
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
       renderInProgress: undefined as string | undefined,
+      /**
+       * #volatile
+       */
       features: undefined as Feature[] | undefined,
+      /**
+       * #volatile
+       */
       message: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      loadingStatus: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -90,6 +103,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.message = messageText
           self.error = undefined
           stopToken = undefined
+        },
+
+        /**
+         * #action
+         * controlled by a reaction
+         */
+        setLoadingStatus(messageText: string) {
+          self.loadingStatus = messageText
         },
 
         /**
@@ -186,7 +207,8 @@ function renderBlockData(self: LinearComparativeDisplay) {
     ? {
         rpcManager,
         renderProps: {
-          ...display.renderProps(),
+          ...(display.renderProps() as Record<string, unknown>),
+          model: display,
           level,
           view: parent,
           adapterConfig,
@@ -204,16 +226,20 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   }
 
   const { rpcManager, renderProps } = props
-  const { adapterConfig, level } = renderProps
-  const view = renderProps.view.views[level]
-  const features = (await rpcManager.call('getFeats', 'CoreGetFeatures', {
-    regions: view.staticBlocks.contentBlocks,
-    sessionId: 'getFeats',
-    adapterConfig,
-  })) as Feature[]
-
+  const { model, sessionId, adapterConfig, level } = renderProps
+  const view = renderProps.view.views[level]!
   return {
-    features: dedupe(features, f => f.id()),
+    features: dedupe(
+      (await rpcManager.call('getFeats', 'CoreGetFeatures', {
+        regions: view.staticBlocks.contentBlocks,
+        sessionId,
+        adapterConfig,
+        statusCallback: (arg: string) => {
+          model.setLoadingStatus(arg)
+        },
+      })) as Feature[],
+      f => f.id(),
+    ),
   }
 }
 

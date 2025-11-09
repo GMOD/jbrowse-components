@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/model.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseLinearDisplay.md)
 
@@ -121,6 +121,13 @@ CompositeMap<unknown, unknown>
 any
 ```
 
+#### getter: layoutFeatures
+
+```js
+// type
+CompositeMap<string, LayoutRecord>
+```
+
 #### getter: getFeatureOverlapping
 
 ```js
@@ -143,6 +150,13 @@ any
 ```
 
 ### BaseLinearDisplay - Methods
+
+#### method: copyInfoToClipboard
+
+```js
+// type signature
+copyInfoToClipboard: (feature: Feature) => void
+```
 
 #### method: trackMenuItems
 
@@ -221,6 +235,13 @@ setFeatureIdUnderMouse: (feature?: string) => void
 ```js
 // type signature
 setContextMenuFeature: (feature?: Feature) => void
+```
+
+#### action: setMouseoverExtraInformation
+
+```js
+// type signature
+setMouseoverExtraInformation: (extra?: string) => void
 ```
 
 #### action: reload

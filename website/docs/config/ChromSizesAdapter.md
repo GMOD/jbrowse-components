@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### ChromSizesAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "ChromSizesAdapter",
+  "uri": "yourfile.chrom.sizes"
+}
+```
+
 ### ChromSizesAdapter - Slots
 
 #### slot: chromSizesLocation

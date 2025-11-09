@@ -1,64 +1,107 @@
-// note that these are currently put into the style section instead of being
-// defined in classes to aid copy and paste to an external document e.g. word
-export const intronColor = undefined
-export const utrColor = 'rgb(200,240,240)'
-export const proteinColor = 'rgb(220,160,220)'
-export const cdsColor = 'rgb(220,220,180)'
-export const updownstreamColor = 'rgba(250,200,200)'
-export const genomeColor = 'rgb(200,280,200)'
-
+/**
+ * Splits a string into chunks for display with optional coordinate spacing.
+ */
 export function splitString({
   str,
   charactersPerRow,
   showCoordinates,
   currRemainder = 0,
-  splitSize = 10,
+  spacingInterval = 10,
 }: {
   str: string
   charactersPerRow: number
   showCoordinates: boolean
   currRemainder?: number
-  splitStart?: number
-  splitSize?: number
+  spacingInterval?: number
 }) {
   const numChunks = Math.ceil(str.length / charactersPerRow)
-  const chunks = new Array(numChunks)
-  let splitStart = currRemainder % 10
+  const segments = new Array(numChunks)
+  // Initialize position counter for coordinate spacing
+  let positionCounter = currRemainder % spacingInterval
 
-  let iter = 0
-  let offset = 0
-  for (; iter < numChunks + 1; ++iter) {
-    const inc = iter === 0 ? charactersPerRow - currRemainder : charactersPerRow
-    const r = str.slice(offset, offset + inc)
-    if (!r) {
+  let chunkIndex = 0
+  let stringOffset = 0
+
+  // Process the string in chunks
+  for (; chunkIndex < numChunks + 1; ++chunkIndex) {
+    // For the first chunk, adjust for remainder from previous section
+    const chunkSize =
+      chunkIndex === 0 ? charactersPerRow - currRemainder : charactersPerRow
+
+    const currentChunk = str.slice(stringOffset, stringOffset + chunkSize)
+
+    // Break if no more content
+    if (!currentChunk) {
       break
     }
-    if (showCoordinates) {
-      let res = ''
-      for (let i = 0, j = splitStart; i < r.length; i++, j++) {
-        // note: this adds a space at the start but it causes trouble to try to
-        // say e.g. j%splitSize==0 && j to try to only add non-zero spaces
-        if (j % splitSize === 0) {
-          res += ' '
-          j = 0
-        }
-        res += r[i]
-      }
-      if (res) {
-        chunks[iter] = res
-      }
-    } else {
-      chunks[iter] = r
-    }
-    splitStart = 0 // after newline, reset
-    offset += inc
+
+    segments[chunkIndex] = showCoordinates
+      ? formatWithCoordinateSpacing(
+          currentChunk,
+          positionCounter,
+          spacingInterval,
+        )
+      : currentChunk
+
+    // Reset position counter after each row
+    positionCounter = 0
+    stringOffset += chunkSize
   }
 
+  // Calculate remainder for the next section
   return {
-    segments: chunks,
-    remainder:
-      ((chunks.at(-1)?.replaceAll(' ', '').length || 0) +
-        (iter < 2 ? currRemainder : 0)) %
+    segments,
+    remainder: calculateRemainder(
+      segments,
+      chunkIndex,
+      currRemainder,
       charactersPerRow,
+    ),
   }
+}
+
+/**
+ * Formats a string chunk with spaces at regular intervals to help with
+ * coordinate visualization.
+ */
+function formatWithCoordinateSpacing(
+  chunk: string,
+  startPosition: number,
+  spacingInterval: number,
+) {
+  if (!chunk) {
+    return ''
+  }
+
+  let formattedChunk = ''
+
+  for (let i = 0, j = startPosition; i < chunk.length; i++, j++) {
+    // Add space at interval boundaries
+    if (j % spacingInterval === 0) {
+      formattedChunk += ' '
+      j = 0 // Reset counter after adding space
+    }
+    formattedChunk += chunk[i]
+  }
+
+  return formattedChunk
+}
+
+/**
+ * Calculates the remainder count for continuing to the next section.
+ */
+function calculateRemainder(
+  segments: string[],
+  chunkIndex: number,
+  currRemainder: number,
+  charactersPerRow: number,
+) {
+  // Get the length of the last segment without spaces
+  const lastSegmentLength = segments.at(-1)?.replaceAll(' ', '').length || 0
+
+  // If we're on the first chunk, include the previous remainder
+  const additionalRemainder = chunkIndex < 2 ? currRemainder : 0
+
+  // Calculate the new remainder
+  return (lastSegmentLength + additionalRemainder) % charactersPerRow
 }

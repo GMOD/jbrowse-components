@@ -1,4 +1,4 @@
-import { groupBy } from '@jbrowse/core/util'
+import { forEachWithStopTokenCheck, groupBy } from '@jbrowse/core/util'
 
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 
@@ -8,13 +8,13 @@ import type { Feature } from '@jbrowse/core/util'
 export default class MultiDensityPlotRenderer extends WiggleBaseRenderer {
   // @ts-expect-error
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
-    const { sources, features } = props
+    const { stopToken, sources, features } = props
     const groups = groupBy(features.values(), f => f.get('source'))
     const height = props.height / sources.length
     let feats = [] as Feature[]
     const { drawDensity } = await import('../drawDensity')
     ctx.save()
-    sources.forEach(source => {
+    forEachWithStopTokenCheck(sources, stopToken, source => {
       const features = groups[source.name] || []
       const { reducedFeatures } = drawDensity(ctx, {
         ...props,

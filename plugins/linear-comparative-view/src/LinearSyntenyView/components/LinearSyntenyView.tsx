@@ -10,9 +10,11 @@ const LinearSyntenyImportForm = lazy(
   () => import('./ImportForm/LinearSyntenyImportForm'),
 )
 
-type LSV = LinearSyntenyViewModel
-
-const LinearSyntenyView = observer(function ({ model }: { model: LSV }) {
+const LinearSyntenyView = observer(function ({
+  model,
+}: {
+  model: LinearSyntenyViewModel
+}) {
   return !model.initialized ? (
     <LinearSyntenyImportForm model={model} />
   ) : (

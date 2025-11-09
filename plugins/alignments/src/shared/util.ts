@@ -14,7 +14,7 @@ export function hasPairedReads(features: ChainData) {
 export function alphaColor(baseColor: string, p: number) {
   return p !== 1
     ? colord(baseColor)
-        .alpha(p * p)
+        .alpha(Math.min(1, p * p + 0.1))
         .toHslString()
     : baseColor
 }
@@ -63,3 +63,18 @@ export function filterTagValue(readVal: unknown, filterVal?: string) {
     ? readVal === undefined
     : `${readVal}` !== `${filterVal}`
 }
+
+/**
+ * Determine if chevrons should be rendered based on zoom level and feature height
+ * @param bpPerPx - base pairs per pixel (zoom level)
+ * @param featureHeight - height of the feature in pixels
+ * @returns true if chevrons should be rendered
+ */
+export function shouldRenderChevrons(bpPerPx: number, featureHeight: number) {
+  return bpPerPx < 50 && featureHeight >= 3
+}
+
+/**
+ * Width of chevron pointer in pixels
+ */
+export const CHEVRON_WIDTH = 5

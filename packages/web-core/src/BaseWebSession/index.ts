@@ -402,9 +402,9 @@ export function BaseWebSession({
               }
               const now = Date.now()
               snap.trackId += `-${now}`
-              snap.displays.forEach(display => {
+              for (const display of snap.displays) {
                 display.displayId += `-${now}`
-              })
+              }
               // the -sessionTrack suffix to trackId is used as metadata for
               // the track selector to store the track in a special category,
               // and default category is also cleared

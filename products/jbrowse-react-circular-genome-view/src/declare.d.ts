@@ -1,1 +1,1 @@
-declare module '@jbrowse/react-circular-genome-view'
+declare module '@jbrowse/react-circular-genome-view2'

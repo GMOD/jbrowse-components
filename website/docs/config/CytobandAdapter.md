@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### CytobandAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "CytobandAdapter",
+  "uri": "yourfile.bed"
+}
+```
+
 ### CytobandAdapter - Slots
 
 #### slot: cytobandLocation
@@ -25,6 +36,8 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 cytobandLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/cytoband.txt.gz' },
+      defaultValue: {
+        uri: '/path/to/cytoband.txt.gz',
+      },
     }
 ```

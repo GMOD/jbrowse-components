@@ -228,9 +228,9 @@ export default function f(_pluginManager: PluginManager) {
        * #action
        */
       updateBulkBookmarkHighlights(color: string) {
-        self.selectedBookmarks.forEach(bookmark => {
+        for (const bookmark of self.selectedBookmarks) {
           this.updateBookmarkHighlight(bookmark, color)
-        })
+        }
       },
       /**
        * #action
@@ -250,14 +250,14 @@ export default function f(_pluginManager: PluginManager) {
       setBookmarkHighlightsVisible(arg: boolean) {
         const { views } = getSession(self)
         // hacky, but mst walk() on session leads to 'too much recursion'
-        views.forEach(view => {
+        for (const view of views) {
           // @ts-expect-error
           view.setBookmarkHighlightsVisible?.(arg)
           // @ts-expect-error
           view.views?.map(view => {
             view.setBookmarkHighlightsVisible?.(arg)
           })
-        })
+        }
       },
       /**
        * #action
@@ -265,14 +265,14 @@ export default function f(_pluginManager: PluginManager) {
       setBookmarkLabelsVisible(arg: boolean) {
         const { views } = getSession(self)
         // hacky, but mst walk() on session leads to 'too much recursion'
-        views.forEach(view => {
+        for (const view of views) {
           // @ts-expect-error
           view.setBookmarkLabelsVisible?.(arg)
           // @ts-expect-error
           view.views?.map(view => {
             view.setBookmarkHighlightsVisible?.(arg)
           })
-        })
+        }
       },
     }))
     .actions(self => ({

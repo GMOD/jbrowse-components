@@ -16,7 +16,6 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           class="css-10rokvf-container"
         >
           <button
-            aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-iwqq6r-MuiButtonBase-root-MuiIconButton-root-iconRoot"
             data-testid="view_menu_icon"
             tabindex="0"
@@ -82,11 +81,11 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           <div
             class="css-1vtmdlf-root"
             data-testid="test_view"
-            style="width: 800px; height: 400px;"
+            style="width: 808px; height: 400px;"
           >
             <div
               class="css-4l8qn4-scroller"
-              style="width: 800px; height: 400px;"
+              style="width: 808px; height: 400px;"
             >
               <svg
                 height="216.3661977236758"
@@ -98,7 +97,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 >
                   <text
                     class="css-wdlapd-rulerLabel"
-                    dominant-baseline="baseline"
+                    dominant-baseline="middle"
                     fill="#996600"
                     fill-opacity="1"
                     text-anchor="middle"
@@ -119,7 +118,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   />
                   <text
                     class="css-wdlapd-rulerLabel"
-                    dominant-baseline="baseline"
+                    dominant-baseline="middle"
                     fill="#666600"
                     fill-opacity="1"
                     text-anchor="middle"

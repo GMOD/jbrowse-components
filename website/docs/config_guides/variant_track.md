@@ -3,9 +3,6 @@ id: variant_track
 title: Variant track configuration
 ---
 
-- `defaultRendering` - options: 'pileup' or 'svg'. default 'svg'
-- `adapter` - a variant type adapter config e.g. a VcfTabixAdapter
-
 Example config:
 
 ```json
@@ -32,10 +29,10 @@ Example config:
 
 #### VcfTabixAdapter configuration options
 
-- `vcfGzLocation` - a 'file location' for the BigWig
-- `index` - a subconfiguration schema containing
-  - indexType: options TBI or CSI. default TBI
-  - location: the location of the index
+- `vcfGzLocation` - a 'file location' for the bgzip'd VCF file
+- `index` - a sub-configuration schema containing
+  - indexType: 'TBI' or 'CSI'. Default: 'TBI'
+  - location: a 'file location' for the index
 
 Example VcfTabixAdapter adapter config:
 

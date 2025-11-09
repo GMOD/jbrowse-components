@@ -1,4 +1,4 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -19,7 +19,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
 
   protected intervalTrees: Record<
     string,
-    Promise<IntervalTree | undefined> | undefined
+    Promise<IntervalTree<Feature> | undefined> | undefined
   > = {}
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -102,7 +102,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   private async loadFeatureTreeP(refName: string) {
     const { feats1, feats2 } = await this.loadData()
     const names = await this.getNames()
-    const intervalTree = new IntervalTree()
+    const intervalTree = new IntervalTree<Feature>()
     const ret1 =
       feats1[refName]?.map((f, i) =>
         featureData(f, `${this.id}-${refName}-${i}-r1`, false, names),
@@ -135,12 +135,10 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureTree(refName)
-      intervalTree?.search([start, end]).forEach(f => {
+      for (const f of intervalTree?.search([start, end]) || []) {
         observer.next(f)
-      })
+      }
       observer.complete()
     }, opts.stopToken)
   }
-
-  public freeResources(): void {}
 }

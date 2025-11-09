@@ -17,13 +17,13 @@ module.exports.parse = event => {
   const body = event.isBase64Encoded
     ? Buffer.from(event.body, 'base64').toString('ascii')
     : event.body
-  body.split(boundary).forEach(item => {
+  for (const item of body.split(boundary)) {
     if (/name=".+"/g.test(item)) {
       result[item.match(/name=".+"/g)[0].slice(6, -1)] = item.slice(
         item.search(/name=".+"/g) + item.match(/name=".+"/g)[0].length + 4,
         -4,
       )
     }
-  })
+  }
   return result
 }

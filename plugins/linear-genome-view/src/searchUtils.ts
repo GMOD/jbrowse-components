@@ -19,7 +19,7 @@ export async function navToOption({
   const location = option.getLocation()
   const trackId = option.getTrackId()
   if (location) {
-    await model.navToLocString(location, assemblyName)
+    await model.navToLocString(location, assemblyName, 0.2)
     if (trackId) {
       model.showTrack(trackId)
     }

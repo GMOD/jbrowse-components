@@ -5,15 +5,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
-
-import { readConf, runInTmpDir } from '../testUtil'
+import { readConf, runCommand, runInTmpDir } from '../testUtil'
 
 const twoPath = path.join(__dirname, '..', '..', 'test', 'data', 'simple.2bit')
-
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
 
 test('remove track', async () => {
   await runInTmpDir(async ctx => {

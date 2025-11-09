@@ -104,6 +104,4 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
       observer.complete()
     })
   }
-
-  public freeResources(/* { region } */): void {}
 }

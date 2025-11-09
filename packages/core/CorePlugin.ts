@@ -15,9 +15,9 @@ export default class CorePlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     // register all our core rpc methods
-    Object.values(coreRpcMethods).forEach(RpcMethod => {
+    for (const RpcMethod of Object.values(coreRpcMethods)) {
       pluginManager.addRpcMethod(() => new RpcMethod(pluginManager))
-    })
+    }
 
     CytobandAdapterF(pluginManager)
 

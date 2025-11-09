@@ -40,22 +40,24 @@ export const YScaleBars = observer(function (props: {
   exportSVG?: boolean
 }) {
   const { model, orientation, exportSVG } = props
-  const { stats, needsFullHeightScalebar, sources } = model
+  const { showSidebar, stats, needsFullHeightScalebar, sources } = model
   return stats && sources ? (
     <Wrapper {...props}>
-      {needsFullHeightScalebar ? (
-        <FullHeightScaleBar
-          model={model}
-          orientation={orientation}
-          exportSVG={exportSVG}
-        />
-      ) : (
-        <IndividualScaleBars
-          model={model}
-          orientation={orientation}
-          exportSVG={exportSVG}
-        />
-      )}
+      {showSidebar ? (
+        needsFullHeightScalebar ? (
+          <FullHeightScaleBar
+            model={model}
+            orientation={orientation}
+            exportSVG={exportSVG}
+          />
+        ) : (
+          <IndividualScaleBars
+            model={model}
+            orientation={orientation}
+            exportSVG={exportSVG}
+          />
+        )
+      ) : null}
     </Wrapper>
   ) : null
 })

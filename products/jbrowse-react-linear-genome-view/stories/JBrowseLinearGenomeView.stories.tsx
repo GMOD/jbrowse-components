@@ -1,6 +1,8 @@
 export {
   DefaultSession,
   DisableAddTrack,
+  ExternalNavigateLocstring,
+  ExternalNavigateObject,
   HumanExomeExample,
   NextstrainExample,
   OneLinearGenomeView,
@@ -8,6 +10,8 @@ export {
   UsingLocObject,
   WithAggregateTextSearching,
   WithCustomTheme,
+  WithDarkTheme,
+  WithDisableZoomAndSideScroll,
   WithErrorHandler,
   WithExternalPlugin,
   WithInlinePlugins,

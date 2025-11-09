@@ -32,9 +32,9 @@ export default function LaunchDotplotView(pluginManager: PluginManager) {
         // http://localhost:3000/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}
 
         const idsNotFound = [] as string[]
-        tracks.forEach(track => {
+        for (const track of tracks) {
           tryTrack(model, track, idsNotFound)
-        })
+        }
 
         if (idsNotFound.length) {
           throw new Error(

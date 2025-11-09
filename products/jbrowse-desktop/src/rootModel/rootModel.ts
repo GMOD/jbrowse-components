@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable, DNA, SaveAs } from '@jbrowse/core/ui/Icons'
+import { Cable, DNA } from '@jbrowse/core/ui/Icons'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -18,6 +18,7 @@ import ExtensionIcon from '@mui/icons-material/Extension'
 import OpenIcon from '@mui/icons-material/FolderOpen'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import RedoIcon from '@mui/icons-material/Redo'
+import SaveAsIcon from '@mui/icons-material/SaveAs'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
@@ -161,7 +162,7 @@ export default function rootModelFactory({
                 },
                 {
                   label: 'Save session as...',
-                  icon: SaveAs,
+                  icon: SaveAsIcon,
                   onClick: async () => {
                     try {
                       self.setSessionPath(
@@ -189,9 +190,11 @@ export default function rootModelFactory({
                           model: self,
                           onClose: (confs?: AnyConfigurationModel[]) => {
                             try {
-                              confs?.forEach(conf => {
-                                self.jbrowse.addAssemblyConf(conf)
-                              })
+                              if (confs) {
+                                for (const conf of confs) {
+                                  self.jbrowse.addAssemblyConf(conf)
+                                }
+                              }
                             } catch (e) {
                               console.error(e)
                               self.session?.notifyError(`${e}`, e)

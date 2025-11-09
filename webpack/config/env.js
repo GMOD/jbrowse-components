@@ -1,8 +1,6 @@
 const fs = require('fs')
 const path = require('path')
 
-const paths = require('./paths')
-
 // Make sure that including paths.js after env.js will read .env variables.
 
 delete require.cache[require.resolve('./paths')]
@@ -13,32 +11,6 @@ if (!NODE_ENV) {
     'The NODE_ENV environment variable is required but was not specified.',
   )
 }
-
-// https://github.com/bkeepers/dotenv#what-other-env-files-can-i-use
-const dotenvFiles = [
-  `${paths.dotenv}.${NODE_ENV}.local`,
-  // Don't include `.env.local` for `test` environment
-  // since normally you expect tests to produce the same
-  // results for everyone
-  NODE_ENV !== 'test' && `${paths.dotenv}.local`,
-  `${paths.dotenv}.${NODE_ENV}`,
-  paths.dotenv,
-].filter(Boolean)
-
-// Load environment variables from .env* files. Suppress warnings using silent
-// if this file is missing. dotenv will never modify any environment variables
-// that have already been set.  Variable expansion is supported in .env files.
-// https://github.com/motdotla/dotenv
-// https://github.com/motdotla/dotenv-expand
-dotenvFiles.forEach(dotenvFile => {
-  if (fs.existsSync(dotenvFile)) {
-    require('dotenv-expand').expand(
-      require('dotenv').config({
-        path: dotenvFile,
-      }),
-    )
-  }
-})
 
 // We support resolving modules according to `NODE_PATH`.
 // This lets you use absolute paths in imports inside large monorepos:
@@ -63,7 +35,6 @@ const REACT_APP = /^REACT_APP_/i
 function getClientEnvironment(publicUrl) {
   const raw = Object.keys(process.env)
     .filter(key => REACT_APP.test(key))
-
     .reduce(
       (env, key) => {
         env[key] = process.env[key]

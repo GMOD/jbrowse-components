@@ -41,7 +41,7 @@ const AddConnectionWidget = observer(function ({ model }: { model: unknown }) {
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
 
-  // useMemo is needed for react@18+mobx-react@9, previous code called configScema.create directly in a setConfigModel useState hook setter but this caused infinite loop
+  // useMemo is needed for react@18+mobx-react@9, previous code called configSchema.create directly in a setConfigModel useState hook setter but this caused infinite loop
   const configModel = useMemo(
     () => connectionType?.configSchema.create({ connectionId }, getEnv(model)),
     [connectionId, connectionType, model],

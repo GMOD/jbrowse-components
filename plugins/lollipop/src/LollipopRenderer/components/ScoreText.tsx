@@ -29,7 +29,11 @@ export default function ScoreText({
   }
   return (
     <text
-      style={{ fontSize: fontHeight, fill: contrastingTextColor(innerColor) }}
+      style={{
+        pointerEvents: 'none',
+        fontSize: fontHeight,
+        fill: contrastingTextColor(innerColor),
+      }}
       x={anchorX}
       y={y + radiusPx - fontHeight / 2.4}
       textAnchor="middle"

@@ -58,12 +58,12 @@ export async function getSAFeatures({
   }
   const features = [feat, ...suppAlns] as ReducedFeature[]
 
-  features.forEach((f, idx) => {
+  for (const [idx, f] of features.entries()) {
     f.refName = assembly.getCanonicalRefName(f.refName) || f.refName
     f.syntenyId = idx
     f.mate.syntenyId = idx
     f.mate.uniqueId = `${f.uniqueId}_mate`
-  })
+  }
   features.sort((a, b) => a.clipPos - b.clipPos)
   return features
 }

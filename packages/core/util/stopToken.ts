@@ -48,8 +48,8 @@ export function stopStopToken(stopToken: string) {
   URL.revokeObjectURL?.(stopToken)
 }
 
-export function checkStopToken(stopToken?: string) {
-  // avoid doing synchronous web worker on main thread
+export function checkStopToken(stopToken: string | undefined) {
+  // avoid doing synchronous XHR on main thread
   if (typeof jest === 'undefined' && stopToken !== undefined && isWebWorker()) {
     const xhr = new XMLHttpRequest()
 

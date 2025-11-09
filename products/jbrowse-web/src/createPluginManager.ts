@@ -9,7 +9,13 @@ import sessionModelFactory from './sessionModel'
 
 import type { SessionLoaderModel } from './SessionLoader'
 
-export function createPluginManager(model: SessionLoaderModel) {
+export function createPluginManager(
+  model: SessionLoaderModel,
+  reloadPluginManagerCallback: (
+    configSnapshot: Record<string, unknown>,
+    sessionSnapshot: Record<string, unknown>,
+  ) => void,
+) {
   // it is ready when a session has loaded and when there is no config error
   //
   // Assuming that the query changes model.sessionError or
@@ -19,7 +25,7 @@ export function createPluginManager(model: SessionLoaderModel) {
       plugin: new P(),
       metadata: { isCore: true },
     })),
-    ...model.runtimePlugins.map(({ plugin: P, definition }) => ({
+    ...(model.runtimePlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
       metadata: {
@@ -27,7 +33,7 @@ export function createPluginManager(model: SessionLoaderModel) {
         url: definition.url,
       },
     })),
-    ...model.sessionPlugins.map(({ plugin: P, definition }) => ({
+    ...(model.sessionPlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
       metadata: {
@@ -51,6 +57,8 @@ export function createPluginManager(model: SessionLoaderModel) {
       },
       { pluginManager },
     )
+
+    rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
     // @ts-expect-error
     if (!model.configSnapshot.configuration?.rpc?.defaultDriver) {
@@ -76,7 +84,7 @@ export function createPluginManager(model: SessionLoaderModel) {
       } else if (sessionSpec) {
         // @ts-expect-error
         afterInitializedCb = () => loadSessionSpec(sessionSpec, pluginManager)
-      } else if (rootModel.jbrowse.defaultSession?.views?.length) {
+      } else {
         rootModel.setDefaultSession()
       }
     } catch (e) {

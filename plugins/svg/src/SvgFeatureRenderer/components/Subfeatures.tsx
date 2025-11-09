@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import { chooseGlyphComponent, layOut, layOutFeature } from './util'
 
-import type { ExtraGlyphValidator } from './util'
+import type { ExtraGlyphValidator } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -16,6 +16,8 @@ const Subfeatures = observer(function Subfeatures(props: {
   const { feature, featureLayout, selected } = props
 
   return feature.get('subfeatures')?.map(subfeature => {
+    // bad or old code might not be a string id but try to assume it is
+
     const subfeatureId = String(subfeature.id())
     const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
     if (!subfeatureLayout) {
@@ -61,32 +63,35 @@ Subfeatures.layOut = ({
   const displayMode = readConfObject(config, 'displayMode')
   if (displayMode !== 'reducedRepresentation') {
     let topOffset = 0
-    feature.get('subfeatures')?.forEach(subfeature => {
-      const SubfeatureGlyphComponent = chooseGlyphComponent({
-        feature: subfeature,
-        extraGlyphs,
-        config,
-      })
-      const subfeatureHeight = readConfObject(config, 'height', {
-        feature: subfeature,
-      }) as number
+    const subfeatures = feature.get('subfeatures')
+    if (subfeatures) {
+      for (const subfeature of subfeatures) {
+        const SubfeatureGlyphComponent = chooseGlyphComponent({
+          feature: subfeature,
+          extraGlyphs,
+          config,
+        })
+        const subfeatureHeight = readConfObject(config, 'height', {
+          feature: subfeature,
+        }) as number
 
-      const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
-        layout: subLayout,
-        feature: subfeature,
-        bpPerPx,
-        reversed,
-        config,
-        extraGlyphs,
-      })
-      subSubLayout.move(0, topOffset)
-      topOffset +=
-        displayMode === 'collapse'
-          ? 0
-          : (displayMode === 'compact'
-              ? subfeatureHeight / 3
-              : subfeatureHeight) + 2
-    })
+        const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
+          layout: subLayout,
+          feature: subfeature,
+          bpPerPx,
+          reversed,
+          config,
+          extraGlyphs,
+        })
+        subSubLayout.move(0, topOffset)
+        topOffset +=
+          displayMode === 'collapse'
+            ? 0
+            : (displayMode === 'compact'
+                ? subfeatureHeight / 3
+                : subfeatureHeight) + 2
+      }
+    }
   }
   return subLayout
 }

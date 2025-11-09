@@ -11,9 +11,9 @@ default application state that is loaded for all your users.
 
 The session is a representation of the 'internal state' of the app, so it can be
 hard to programmatically write, but you can manually use the app, get to a state
-you want it to be in, and then select "File->Export session". This will give you
-a session.json file, and then you can copy the "session" from this file into the
-"defaultSession" in your config.json
+you want it to be in, and then select "File -> Export session". This will give
+you a session.json file, and then you can copy the "session" from this file into
+the "defaultSession" in your config.json
 
 Example session (reduced for example purposes)
 

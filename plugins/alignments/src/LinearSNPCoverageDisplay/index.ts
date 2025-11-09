@@ -12,6 +12,8 @@ export default function register(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearSNPCoverageDisplay',
       displayName: 'SNPCoverage display',
+      helpText:
+        'Display coverage histogram and SNP composition for each genomic position',
       configSchema,
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',

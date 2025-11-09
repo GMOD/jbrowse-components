@@ -1,8 +1,5 @@
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
 import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
@@ -41,8 +38,7 @@ export interface ChainData {
 export async function fetchChains(
   self: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel,
 ) {
-  // @ts-expect-error
-  const { rpcSessionId: sessionId } = getContainingTrack(self)
+  const sessionId = getRpcSessionId(self)
   const { rpcManager } = getSession(self)
   const view = getContainingView(self) as LGV
 

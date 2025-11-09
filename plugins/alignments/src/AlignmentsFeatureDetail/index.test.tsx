@@ -24,6 +24,7 @@ test('open up a widget', () => {
     { pluginManager },
   )
   session.widget.setFeatureData({
+    uniqueId: 'hello',
     seq: 'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
     start: 2,
     end: 102,

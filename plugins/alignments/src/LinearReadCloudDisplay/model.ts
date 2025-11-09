@@ -3,23 +3,34 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import FilterListIcon from '@mui/icons-material/ClearAll'
-import PaletteIcon from '@mui/icons-material/Palette'
 import { types } from 'mobx-state-tree'
 
-import type { ChainData } from '../shared/fetchChains'
-import type { ColorBy, FilterBy } from '../shared/types'
+import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
+import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
+import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
+import { chainToSimpleFeature } from '../shared/chainToSimpleFeature'
+import {
+  getColorSchemeMenuItem,
+  getFilterByMenuItem,
+} from '../shared/menuItems'
+
+import type { ReducedFeature } from '../shared/fetchChains'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from 'mobx-state-tree'
 
 // async
-const FilterByTagDialog = lazy(
-  () => import('../shared/components/FilterByTagDialog'),
+const SetFeatureHeightDialog = lazy(
+  () => import('./components/SetFeatureHeightDialog'),
 )
 
 /**
@@ -37,6 +48,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
+      LinearReadDisplayBaseMixin(),
+      LinearReadDisplayWithLayoutMixin(),
+      LinearReadDisplayWithPairFiltersMixin(),
       types.model({
         /**
          * #property
@@ -50,40 +64,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        filterBySetting: types.frozen<FilterBy | undefined>(),
+        drawCloud: false,
 
         /**
          * #property
+         * Whether to remove spacing between stacked features
          */
-        colorBySetting: types.frozen<ColorBy | undefined>(),
+        noSpacing: types.maybe(types.boolean),
 
         /**
          * #property
+         * Maximum height for the layout (prevents infinite stacking)
          */
-        drawSingletons: true,
+        trackMaxHeight: types.maybe(types.number),
       }),
     )
     .volatile(() => ({
       /**
        * #volatile
+       * Current height of the layout after drawing
        */
-      loading: false,
-      /**
-       * #volatile
-       */
-      chainData: undefined as ChainData | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnBpPerPx: 0,
-      /**
-       * #volatile
-       */
-      ref: null as HTMLCanvasElement | null,
+      layoutHeight: 0,
     }))
     .views(self => ({
       /**
@@ -98,33 +99,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
       },
+      /**
+       * #getter
+       */
+      get featureHeightSetting() {
+        return self.featureHeight ?? getConf(self, 'featureHeight')
+      },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setDrawSingletons(f: boolean) {
-        self.drawSingletons = f
-      },
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(n: number) {
-        self.lastDrawnBpPerPx = n
-      },
-
-      /**
-       * #action
-       */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
       /**
        * #action
        */
@@ -133,38 +115,50 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
-       * internal, a reference to a HTMLCanvas because we use a autorun to draw
-       * the canvas
+       * Set whether to remove spacing between features
        */
-      setRef(ref: HTMLCanvasElement | null) {
-        self.ref = ref
+      setNoSpacing(flag?: boolean) {
+        self.noSpacing = flag
       },
-
-      setColorScheme(colorBy: { type: string }) {
-        self.colorBySetting = {
-          ...colorBy,
-        }
+      /**
+       * #action
+       * Set the maximum height for the layout
+       */
+      setMaxHeight(n?: number) {
+        self.trackMaxHeight = n
       },
-
+      /**
+       * #action
+       * Set the current layout height
+       */
+      setLayoutHeight(n: number) {
+        self.layoutHeight = n
+      },
       /**
        * #action
        */
-      setChainData(args: ChainData) {
-        self.chainData = args
+      selectFeature(chain: ReducedFeature[]) {
+        const session = getSession(self)
+        const syntheticFeature = chainToSimpleFeature(chain)
+        if (isSessionModelWithWidgets(session)) {
+          const featureWidget = session.addWidget(
+            'AlignmentsFeatureWidget',
+            'alignmentFeature',
+            {
+              featureData: syntheticFeature.toJSON(),
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+            },
+          )
+          session.showWidget(featureWidget)
+        }
+        session.setSelection(syntheticFeature)
       },
-
       /**
        * #action
        */
-      setFilterBy(filter: FilterBy) {
-        self.filterBySetting = {
-          ...filter,
-        }
-      },
-    }))
-    .views(self => ({
-      get drawn() {
-        return self.lastDrawnOffsetPx !== undefined
+      setDrawCloud(b: boolean) {
+        self.drawCloud = b
       },
     }))
     .views(self => {
@@ -190,6 +184,45 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
+              label: 'Set feature height...',
+              subMenu: [
+                {
+                  label: 'Normal',
+                  onClick: () => {
+                    self.setFeatureHeight(7)
+                    self.setNoSpacing(false)
+                  },
+                },
+                {
+                  label: 'Compact',
+                  onClick: () => {
+                    self.setFeatureHeight(3)
+                    self.setNoSpacing(true)
+                  },
+                },
+                {
+                  label: 'Manually set height...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SetFeatureHeightDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Toggle read cloud (y-coordinate proportional to TLEN)',
+              type: 'checkbox',
+              checked: self.drawCloud,
+              onClick: () => {
+                self.setDrawCloud(!self.drawCloud)
+              },
+            },
+            {
               label: 'Draw singletons',
               type: 'checkbox',
               checked: self.drawSingletons,
@@ -198,46 +231,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label: 'Filter by',
-              icon: FilterListIcon,
+              label: 'Draw proper pairs',
+              type: 'checkbox',
+              checked: self.drawProperPairs,
               onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  FilterByTagDialog,
-                  { model: self, handleClose },
-                ])
+                self.setDrawProperPairs(!self.drawProperPairs)
               },
             },
-
             {
-              label: 'Color scheme',
-              icon: PaletteIcon,
-              subMenu: [
-                {
-                  label: 'Insert size ± 3σ and orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' })
-                  },
-                },
-                {
-                  label: 'Insert size ± 3σ',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
-                },
-                {
-                  label: 'Orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'orientation' })
-                  },
-                },
-                {
-                  label: 'Insert size gradient',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'gradient' })
-                  },
-                },
-              ],
+              label:
+                'Flip strand relative to primary alignment for long read chains',
+              type: 'checkbox',
+              checked: self.flipStrandLongReadChains,
+              onClick: () => {
+                self.setFlipStrandLongReadChains(!self.flipStrandLongReadChains)
+              },
             },
+            getFilterByMenuItem(self),
+            getColorSchemeMenuItem(self),
           ]
         },
 
@@ -248,8 +259,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           rasterizeLayers?: boolean
         }): Promise<React.ReactNode> {
           const { renderSvg } = await import('../shared/renderSvgUtil')
-          const { drawFeats } = await import('./drawFeats')
-          return renderSvg(self as LinearReadCloudDisplayModel, opts, drawFeats)
+          if (self.drawCloud) {
+            const { drawFeats } = await import('./drawFeatsCloud')
+            return renderSvg(
+              self as LinearReadCloudDisplayModel,
+              opts,
+              drawFeats,
+            )
+          } else {
+            const { drawFeats } = await import('./drawFeatsStack')
+            return renderSvg(
+              self as LinearReadCloudDisplayModel,
+              opts,
+              drawFeats,
+            )
+          }
         },
       }
     })
@@ -259,7 +283,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ;(async () => {
           try {
             const { doAfterAttach } = await import('../shared/afterAttach')
-            const { drawFeats } = await import('./drawFeats')
+            const { drawFeats } = await import('./drawFeatsAbstract')
             doAfterAttach(self, drawFeats)
           } catch (e) {
             console.error(e)

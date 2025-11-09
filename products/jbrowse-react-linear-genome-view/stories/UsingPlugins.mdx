@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/blocks'
+import { Meta, Story } from '@storybook/addon-docs/blocks'
 import {
   WithInlinePlugins,
   WithExternalPlugin,
@@ -7,6 +7,14 @@ import {
 <Meta title="Using Plugins" />
 
 # Using plugins
+
+## Notice: Using plugins with webworkers enabled
+
+If you are using webworkers, you have to add your plugin to both the main thread
+and the webworker
+
+Example PR
+https://github.com/GMOD/jbrowse-react-linear-genome-view-cra5-demo/pull/1/files
 
 ## Plugins defined in your code
 
@@ -34,7 +42,7 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 import GWASPlugin from 'jbrowse-plugin-gwas'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
+import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 import { getVolvoxConfig } from './util'
 
 

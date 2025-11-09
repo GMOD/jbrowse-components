@@ -9,13 +9,42 @@ import { fetchResults } from './util'
 import { handleSelectedRegion, navToOption } from '../../searchUtils'
 import { SPACING, WIDGET_HEIGHT } from '../consts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../model'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   headerRefName: {
     minWidth: 100,
   },
-}))
+})
+
+async function onSelect({
+  option,
+  model,
+  assemblyName,
+}: {
+  option: BaseResult
+  model: LinearGenomeViewModel
+  assemblyName: string
+}) {
+  const { assemblyManager } = getSession(model)
+  const assembly = assemblyManager.get(assemblyName)
+  if (option.hasLocation()) {
+    await navToOption({
+      option,
+      model,
+      assemblyName,
+    })
+  } else if (option.results?.length) {
+    model.setSearchResults(option.results, option.getLabel())
+  } else if (assembly) {
+    await handleSelectedRegion({
+      input: option.getLabel(),
+      assembly,
+      model,
+    })
+  }
+}
 
 const SearchBox = observer(function ({
   model,
@@ -38,17 +67,11 @@ const SearchBox = observer(function ({
     <RefNameAutocomplete
       onSelect={async option => {
         try {
-          if (option.hasLocation()) {
-            await navToOption({ option, model, assemblyName })
-          } else if (option.results?.length) {
-            model.setSearchResults(option.results, option.getLabel())
-          } else if (assembly) {
-            await handleSelectedRegion({
-              input: option.getLabel(),
-              assembly,
-              model,
-            })
-          }
+          await onSelect({
+            model,
+            assemblyName,
+            option,
+          })
         } catch (e) {
           console.error(e)
           getSession(model).notify(`${e}`, 'warning')

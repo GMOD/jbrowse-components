@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 
+import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
@@ -23,6 +25,10 @@ const useStyles = makeStyles()(theme => ({
   },
   viewHeader: {
     display: 'flex',
+    height: VIEW_HEADER_HEIGHT,
+    top: 0,
+    zIndex: 900,
+    background: theme.palette.secondary.main,
   },
   viewTitle: {
     display: 'flex',
@@ -60,14 +66,20 @@ const ViewHeader = observer(function ({
   view,
   onClose,
   onMinimize,
+  className,
 }: {
   view: IBaseViewModel
   onClose: () => void
   onMinimize: () => void
+  className?: string
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
+  let stickyViewHeaders = false
+  if (isSessionWithMultipleViews(session)) {
+    ;({ stickyViewHeaders } = session)
+  }
 
   // scroll the view into view when first mounted. note: this effect will run
   // only once, because of the empty array second param
@@ -77,7 +89,11 @@ const ViewHeader = observer(function ({
     }
   }, [])
   return (
-    <div ref={scrollRef} className={classes.viewHeader}>
+    <div
+      ref={scrollRef}
+      className={cx(classes.viewHeader, className)}
+      style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
+    >
       <ViewMenu model={view} IconProps={{ className: classes.icon }} />
       <div className={classes.grow} />
       <div className={classes.viewTitle}>

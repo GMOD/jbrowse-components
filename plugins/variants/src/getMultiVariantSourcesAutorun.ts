@@ -29,8 +29,8 @@ export function getMultiVariantSourcesAutorun(self: {
           }
           const { rpcManager } = getSession(self)
           const { adapterConfig } = self
-          const token = createStopToken()
-          self.setSourcesLoading(token)
+          const stopToken = createStopToken()
+          self.setSourcesLoading(stopToken)
           const sessionId = getRpcSessionId(self)
           const sources = (await rpcManager.call(
             sessionId,
@@ -38,6 +38,7 @@ export function getMultiVariantSourcesAutorun(self: {
             {
               sessionId,
               adapterConfig,
+              stopToken,
             },
           )) as Source[]
           if (isAlive(self)) {

@@ -31,7 +31,7 @@ export class BlockSet {
   }
 
   forEach<T, U = this>(func: Func<T>, thisarg?: U) {
-    // eslint-disable-next-line unicorn/no-array-method-this-argument
+    // eslint-disable-next-line unicorn/no-array-method-this-argument,unicorn/no-array-for-each
     this.blocks.forEach(func, thisarg)
   }
 

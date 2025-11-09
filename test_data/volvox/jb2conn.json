@@ -1,0 +1,67 @@
+{
+  "assemblies": [
+    {
+      "name": "connection_asm",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "connection_asm_refseq",
+        "metadata": {
+          "date": "2020-08-20"
+        },
+        "formatAbout": {
+          "config": "jexl:{extraField:'important data'}"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        },
+        "displays": [
+          {
+            "type": "LinearReferenceSequenceDisplay",
+            "displayId": "volvox_refseq-LinearReferenceSequenceDisplay"
+          },
+          {
+            "type": "LinearGCContentDisplay",
+            "displayId": "volvox_refseq-LinearGCContentDisplay",
+            "windowSize": 10,
+            "windowDelta": 10
+          }
+        ]
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "adapterId": "W6DyPGJ0UU",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "alias1",
+              "aliases": ["A", "contigA"]
+            },
+            {
+              "refName": "ctgB",
+              "uniqueId": "alias2",
+              "aliases": ["B", "contigB"]
+            }
+          ]
+        }
+      }
+    }
+  ],
+
+  "tracks": [
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_sv_test_conn",
+      "name": "volvox SV track from connection",
+      "assemblyNames": ["connection_asm"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "volvox.dup.vcf.gz"
+      }
+    }
+  ]
+}

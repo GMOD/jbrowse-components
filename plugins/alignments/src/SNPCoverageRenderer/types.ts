@@ -16,6 +16,7 @@ export interface RenderArgsDeserializedWithFeatures
   ticks: { values: number[] }
   displayCrossHatches: boolean
   visibleModifications?: Record<string, ModificationTypeWithColor>
+  simplexModifications?: string[]
   statusCallback?: (arg: string) => void
   colorBy: ColorBy
 }

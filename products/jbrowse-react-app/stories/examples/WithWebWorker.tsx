@@ -1,41 +1,10 @@
 // replace with this in your code:
-// import {createViewState,JBrowseApp} from '@jbrowse/react-app'
+// import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
 import volvoxConfig from '../../public/test_data/volvox/config.json'
 import { JBrowseApp, createViewState } from '../../src'
 // replace with this in your code:
-// import makeWorkerInstance from '@jbrowse/react-app/esm/makeWorkerInstance'
+// import makeWorkerInstance from '@jbrowse/react-app2/esm/makeWorkerInstance'
 import makeWorkerInstance from '../../src/makeWorkerInstance'
-
-const defaultSession = {
-  name: 'Integration test example',
-  views: [
-    {
-      id: 'integration_test',
-      type: 'LinearGenomeView',
-      offsetPx: 1200,
-      bpPerPx: 1,
-      displayedRegions: [
-        {
-          refName: 'ctgA',
-          start: 0,
-          end: 50001,
-          assemblyName: 'volvox',
-        },
-      ],
-    },
-  ],
-  widgets: {
-    hierarchicalTrackSelector: {
-      id: 'hierarchicalTrackSelector',
-      type: 'HierarchicalTrackSelectorWidget',
-      filterText: '',
-      view: 'integration_test',
-    },
-  },
-  activeWidgets: {
-    hierarchicalTrackSelector: 'hierarchicalTrackSelector',
-  },
-}
 
 export const WithWebWorker = () => {
   const state = createViewState({
@@ -46,11 +15,22 @@ export const WithWebWorker = () => {
           defaultDriver: 'WebWorkerRpcDriver',
         },
       },
-      defaultSession,
+      defaultSession: {
+        name: 'Web worker example',
+        views: [
+          {
+            type: 'LinearGenomeView',
+            init: {
+              assembly: 'volvox',
+              loc: 'ctgA:1000-2000',
+              tracks: ['Deep sequencing'],
+            },
+          },
+        ],
+      },
     },
     makeWorkerInstance,
   })
-  state.session.views[0]?.showTrack('Deep sequencing')
 
   return (
     <div>

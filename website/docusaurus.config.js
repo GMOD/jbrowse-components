@@ -4,6 +4,11 @@ const data = JSON.parse(fs.readFileSync('./docusaurus.config.json'))
 
 module.exports = {
   ...data,
+
+  future: {
+    experimental_faster: true,
+    v4: true,
+  },
   themeConfig: {
     colorMode: {
       disableSwitch: true,
@@ -15,6 +20,12 @@ module.exports = {
         src: 'img/logo.svg',
       },
       items: [
+        {
+          to: 'http://genomes.jbrowse.org/',
+          label: 'Genomes',
+          className: 'new_feature',
+          position: 'left',
+        },
         {
           to: 'docs/',
           activeBasePath: 'docs',
@@ -150,7 +161,12 @@ module.exports = {
   presets: [
     [
       '@docusaurus/preset-classic',
+
       {
+        gtag: {
+          trackingID: 'G-TRMBQZRJW7',
+          anonymizeIP: true,
+        },
         docs: {
           sidebarPath: require.resolve('./sidebars.json'),
           // Please change this to your repo.
@@ -158,6 +174,8 @@ module.exports = {
             'https://github.com/GMOD/jbrowse-components/edit/main/website/',
         },
         blog: {
+          onUntruncatedBlogPosts: 'ignore',
+          onInlineAuthors: 'ignore',
           blogSidebarCount: 'ALL',
           // Please change this to your repo.
           editUrl:

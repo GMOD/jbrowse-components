@@ -14,9 +14,14 @@ export interface ScaleOpts {
   inverted?: boolean
 }
 
+// There was confusion about whether source or name was required, and effort to
+// remove one or the other was thwarted. Adapters like BigWigAdapter, even in
+// the BigWigAdapter configSchema.ts, use a 'source' field though, while the
+// word 'name' still allowed in the config too. To solve, we made name===source
 export interface Source {
   baseUri?: string
   name: string
+  source: string
   color?: string
   group?: string
 }
@@ -159,7 +164,7 @@ export function getNiceDomain({
 }
 
 export function toP(s = 0) {
-  return +(+s).toPrecision(6)
+  return +s.toPrecision(6)
 }
 
 export function round(value: number) {

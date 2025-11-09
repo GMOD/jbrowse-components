@@ -128,7 +128,7 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
     // @ts-expect-error
     if (isUnionType(maybeUnionType)) {
       const typeNames: string[] = []
-      getUnionSubTypes(maybeUnionType).forEach(type => {
+      for (let type of getUnionSubTypes(maybeUnionType)) {
         type = resolveLateType(type)
         let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
         if (!typeName.length) {
@@ -140,7 +140,7 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
           throw new Error(`invalid config schema type ${type}`)
         }
         typeNames.push(...typeName)
-      })
+      }
       return typeNames
     }
   }

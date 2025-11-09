@@ -21,8 +21,6 @@ describe('base data adapter', () => {
           Promise.reject(new Error('something blew up')),
         )
       }
-
-      freeResources(): void {}
     }
     const adapter = new Adapter(ConfigurationSchema('empty', {}).create())
     const features = adapter.getFeatures({
@@ -59,8 +57,6 @@ describe('base data adapter', () => {
           observer.complete()
         })
       }
-
-      freeResources(): void {}
     }
     const adapter = new Adapter(ConfigurationSchema('empty', {}).create())
     const features = adapter.getFeatures({

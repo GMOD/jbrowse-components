@@ -1,8 +1,9 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
-import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
+import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { observer } from 'mobx-react'
+import { destroy } from 'mobx-state-tree'
 import {
   QueryParamProvider,
   StringParam,
@@ -19,11 +20,9 @@ import { createPluginManager } from '../createPluginManager'
 import factoryReset from '../factoryReset'
 
 import type { SessionLoaderModel } from '../SessionLoader'
-import type { WebRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const SessionTriaged = lazy(() => import('./SessionTriaged'))
-const StartScreen = lazy(() => import('./StartScreen'))
 const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
 
 // return value if defined, else convert null to undefined for use with
@@ -33,10 +32,11 @@ function normalize<T>(param: T | null | undefined) {
 }
 
 export function Loader({
-  initialTimestamp = Date.now(),
+  initialTimestamp: initialTimestampProp,
 }: {
   initialTimestamp?: number
 }) {
+  const [initialTimestamp] = useState(() => initialTimestampProp ?? Date.now())
   const Str = StringParam
 
   const [config] = useQueryParam('config', Str)
@@ -93,43 +93,64 @@ export function Loader({
   return <Renderer loader={loader} />
 }
 
-const PluginManagerLoaded = observer(function ({
-  pluginManager,
-}: {
-  pluginManager: PluginManager
-}) {
-  const { rootModel } = pluginManager
-  return !rootModel?.session ? (
-    <Suspense fallback={<LoadingEllipses />}>
-      <StartScreen
-        rootModel={rootModel as WebRootModel}
-        onFactoryReset={factoryReset}
-      />
-    </Suspense>
-  ) : (
-    <JBrowse pluginManager={pluginManager} />
-  )
-})
-
 const Renderer = observer(function ({
-  loader,
+  loader: firstLoader,
 }: {
   loader: SessionLoaderModel
 }) {
+  const [loader, setLoader] = useState(firstLoader)
+  const pluginManager = useRef<PluginManager | undefined>(undefined)
+  const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
+  const reloadPluginManager = useCallback(
+    (
+      configSnapshot: Record<string, unknown>,
+      sessionSnapshot: Record<string, unknown>,
+    ) => {
+      const newLoader = SessionLoader.create({
+        configPath: loader.configPath,
+        sessionQuery: loader.sessionQuery,
+        password: loader.password,
+        adminKey: loader.adminKey,
+        loc: loader.loc,
+        assembly: loader.assembly,
+        tracks: loader.tracks,
+        sessionTracks: loader.sessionTracks,
+        tracklist: loader.tracklist,
+        highlight: loader.highlight,
+        nav: loader.nav,
+        hubURL: loader.hubURL,
+        initialTimestamp: Date.now(),
+        configSnapshot,
+        sessionSnapshot,
+      })
+      setLoader(newLoader)
+      setPluginManagerCreated(false)
+    },
+    [loader],
+  )
   const { configError, ready, sessionTriaged } = loader
-  const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    try {
-      if (ready) {
-        setPluginManager(createPluginManager(loader))
+    const isJest = typeof jest !== 'undefined'
+    if (ready) {
+      try {
+        if (pluginManager.current?.rootModel && !isJest) {
+          destroy(pluginManager.current.rootModel)
+        }
+        pluginManager.current = createPluginManager(loader, reloadPluginManager)
+        setPluginManagerCreated(true)
+      } catch (e) {
+        console.error(e)
+        setError(e)
       }
-    } catch (e) {
-      console.error(e)
-      setError(e)
     }
-  }, [loader, ready])
+    return () => {
+      if (pluginManager.current?.rootModel && !isJest) {
+        destroy(pluginManager.current.rootModel)
+      }
+    }
+  }, [ready, loader, reloadPluginManager])
 
   const err = configError || error
   if (err) {
@@ -139,13 +160,9 @@ const Renderer = observer(function ({
       </Suspense>
     )
   } else if (sessionTriaged) {
-    return (
-      <Suspense fallback={null}>
-        <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
-      </Suspense>
-    )
-  } else if (pluginManager) {
-    return <PluginManagerLoaded pluginManager={pluginManager} />
+    return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
+  } else if (pluginManagerCreated && pluginManager.current) {
+    return <JBrowse pluginManager={pluginManager.current} />
   } else {
     return <Loading />
   }

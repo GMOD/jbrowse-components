@@ -86,6 +86,7 @@ export interface ColorBy {
   modifications?: {
     twoColor?: boolean
     isolatedModification?: string
+    threshold?: number
   }
 }
 
@@ -111,6 +112,7 @@ export interface Mismatch {
   qual?: number
   start: number
   length: number
+  insertedBases?: string
   type: string
   base: string
   altbase?: string

@@ -7,6 +7,7 @@ import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrow
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import PushPinIcon from '@mui/icons-material/PushPin'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model'
@@ -21,8 +22,21 @@ const TrackLabelMenu = observer(function ({
   const session = getSession(track)
   const trackConf = track.configuration
   const minimized = track.minimized
+  const pinned = track.pinned
+  const { isTopLevelView } = view
 
   const items = [
+    ...(!isTopLevelView
+      ? []
+      : [
+          {
+            label: pinned ? 'Unpin track' : 'Pin track',
+            icon: PushPinIcon,
+            onClick: () => {
+              track.setPinned(!pinned)
+            },
+          },
+        ]),
     {
       label: 'Track order',
       type: 'subMenu',

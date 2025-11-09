@@ -4,7 +4,6 @@ export interface BaseOptions {
   sessionId?: string
   statusCallback?: (message: string) => void
   headers?: Record<string, string>
-  [key: string]: unknown
 }
 
 export type SearchType = 'full' | 'prefix' | 'exact'

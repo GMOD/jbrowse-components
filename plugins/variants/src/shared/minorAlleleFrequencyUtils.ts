@@ -1,4 +1,4 @@
-import { sum } from '@jbrowse/core/util'
+import { forEachWithStopTokenCheck, sum } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -19,17 +19,38 @@ export function findSecondLargestNumber(arr: Iterable<number>) {
 }
 
 export function calculateAlleleCounts(feat: Feature) {
-  const samp = feat.get('genotypes') as Record<string, string>
-  const alleleCounts = new Map()
-  for (const val of Object.values(samp)) {
-    const alleles = val.split(/[/|]/)
-    for (const allele of alleles) {
-      alleleCounts.set(allele, (alleleCounts.get(allele) || 0) + 1)
+  const genotypes = feat.get('genotypes') as Record<string, string>
+  const alleleCounts = { 0: 0, 1: 0, '.': 0 } as Record<string, number>
+  const cacheSplit = {} as Record<string, string[]>
+  const vals = Object.values(genotypes)
+  const len = vals.length
+  for (let i = 0; i < len; i++) {
+    const genotype = vals[i]!
+    const alleles =
+      cacheSplit[genotype] || (cacheSplit[genotype] = genotype.split(/[/|]/))
+
+    for (let i = 0, len = alleles.length; i < len; i++) {
+      const a = alleles[i]!
+      alleleCounts[a] = (alleleCounts[a] ?? 0) + 1
     }
   }
+
+  return alleleCounts
+}
+
+export function calculateMinorAlleleFrequency(
+  alleleCounts: Record<string, number>,
+) {
+  return (
+    findSecondLargestNumber(Object.values(alleleCounts)) /
+    (sum(Object.values(alleleCounts)) || 1)
+  )
+}
+
+function getMostFrequentAlt(alleleCounts: Record<string, number>) {
   let mostFrequentAlt
   let max = 0
-  for (const [alt, altCount] of alleleCounts.entries()) {
+  for (const [alt, altCount] of Object.entries(alleleCounts)) {
     if (alt !== '.' && alt !== '0') {
       if (altCount > max) {
         mostFrequentAlt = alt
@@ -37,40 +58,40 @@ export function calculateAlleleCounts(feat: Feature) {
       }
     }
   }
-
-  return { alleleCounts, mostFrequentAlt }
+  return mostFrequentAlt
 }
 
-export function calculateMinorAlleleFrequency(
-  alleleCounts: Map<string, number>,
-) {
-  return (
-    findSecondLargestNumber(alleleCounts.values()) /
-    (sum(alleleCounts.values()) || 1)
-  )
-}
-
-export function getFeaturesThatPassMinorAlleleFrequencyFilter(
-  feats: Iterable<Feature>,
-  minorAlleleFrequencyFilter: number,
-) {
+export function getFeaturesThatPassMinorAlleleFrequencyFilter({
+  features,
+  minorAlleleFrequencyFilter,
+  lengthCutoffFilter,
+  stopToken,
+}: {
+  features: Iterable<Feature>
+  minorAlleleFrequencyFilter: number
+  lengthCutoffFilter: number
+  stopToken?: string
+}) {
   const results = [] as {
     feature: Feature
     mostFrequentAlt: string
+    alleleCounts: Record<string, number>
   }[]
-  for (const feature of feats) {
-    if (feature.get('end') - feature.get('start') <= 10) {
-      const { mostFrequentAlt, alleleCounts } = calculateAlleleCounts(feature)
+  forEachWithStopTokenCheck(features, stopToken, feature => {
+    if (feature.get('end') - feature.get('start') <= lengthCutoffFilter) {
+      const alleleCounts = calculateAlleleCounts(feature)
       if (
         calculateMinorAlleleFrequency(alleleCounts) >=
         minorAlleleFrequencyFilter
       ) {
         results.push({
           feature,
-          mostFrequentAlt,
+          mostFrequentAlt: getMostFrequentAlt(alleleCounts)!,
+          alleleCounts,
         })
       }
     }
-  }
+  })
+
   return results
 }

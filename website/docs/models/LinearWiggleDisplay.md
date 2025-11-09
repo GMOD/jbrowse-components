@@ -80,7 +80,7 @@ boolean
 
 ```js
 // type
-any
+boolean
 ```
 
 #### getter: ticks

@@ -17,6 +17,8 @@ import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
   root: {
+    // above breakpoint split view
+    zIndex: 200,
     background: alpha(theme.palette.background.paper, 0.8),
     '&:hover': {
       background: theme.palette.background.paper,
@@ -46,7 +48,7 @@ const TrackLabel = observer(
     const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
-    const minimized = track.minimized
+    const { minimized } = track
     const trackId = getConf(track, 'trackId')
     const trackName = getTrackName(trackConf, session)
 

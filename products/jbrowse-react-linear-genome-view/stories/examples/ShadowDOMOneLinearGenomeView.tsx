@@ -11,7 +11,7 @@ import { JBrowseLinearGenomeView, createViewState } from '../../src'
 import type { EmotionCache } from '@emotion/cache'
 
 // in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
+// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 
 type ViewState = ReturnType<typeof createViewState>
 

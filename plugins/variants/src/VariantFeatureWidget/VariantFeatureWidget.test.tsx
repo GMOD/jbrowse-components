@@ -25,6 +25,7 @@ test('renders with just the required model elements', () => {
     { pluginManager },
   )
   model.widget.setFeatureData({
+    uniqueId: 'hello',
     refName: 'ctgA',
     start: 176,
     end: 177,

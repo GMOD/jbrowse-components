@@ -13,24 +13,30 @@ const TrixTextSearchAdapter = ConfigurationSchema(
      */
     ixFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: 'out.ix', locationType: 'UriLocation' },
-      description: 'the location of the trix ix file',
+      defaultValue: {
+        uri: 'out.ix',
+        locationType: 'UriLocation',
+      },
     },
     /**
      * #slot
      */
     ixxFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: 'out.ixx', locationType: 'UriLocation' },
-      description: 'the location of the trix ixx file',
+      defaultValue: {
+        uri: 'out.ixx',
+        locationType: 'UriLocation',
+      },
     },
     /**
      * #slot
      */
     metaFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: 'meta.json', locationType: 'UriLocation' },
-      description: 'the location of the metadata json file for the trix index',
+      defaultValue: {
+        uri: 'meta.json',
+        locationType: 'UriLocation',
+      },
     },
     /**
      * #slot
@@ -55,6 +61,36 @@ const TrixTextSearchAdapter = ConfigurationSchema(
      * #identifier
      */
     explicitIdentifier: 'textSearchAdapterId',
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes file.ixx also exists:
+     * ```json
+     * {
+     *   "type": "TrixTextSearchAdapter",
+     *   "uri": "file.ix",
+     *   "assemblyNames": ["hg19"],
+     *   "textSearchAdapterId": "hg19SearchIndex"
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      return snap.uri
+        ? {
+            ...snap,
+            ixFilePath: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            ixxFilePath: {
+              uri: `${snap.uri}x`,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
   },
 )
 

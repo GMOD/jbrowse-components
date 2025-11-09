@@ -55,24 +55,30 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         fetchSequence: (region: Region) => this.fetchSequence(region),
       })
 
-      bins.forEach((bin, index) => {
-        const start = region.start + index
-        observer.next(
-          new SimpleFeature({
-            id: `${this.id}-${start}`,
-            data: {
-              score: bin.depth,
-              snpinfo: bin,
-              start,
-              end: start + 1,
-              refName: region.refName,
-            },
-          }),
-        )
-      })
+      let index = 0
+      for (const bin of bins) {
+        // bins is a holey array
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (bin) {
+          const start = region.start + index
+          observer.next(
+            new SimpleFeature({
+              id: `${this.id}-${start}`,
+              data: {
+                score: bin.depth,
+                snpinfo: bin,
+                start,
+                end: start + 1,
+                refName: region.refName,
+              },
+            }),
+          )
+        }
+        index++
+      }
 
       // make fake features from the coverage
-      Object.entries(skipmap).forEach(([key, skip]) => {
+      for (const [key, skip] of Object.entries(skipmap)) {
         observer.next(
           new SimpleFeature({
             id: key,
@@ -86,7 +92,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             },
           }),
         )
-      })
+      }
 
       observer.complete()
     }, opts.stopToken)
@@ -104,6 +110,4 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     const { subadapter } = await this.configure()
     return subadapter.getRefNames(opts)
   }
-
-  freeResources(/* { region } */): void {}
 }

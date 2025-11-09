@@ -1,7 +1,8 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -16,7 +17,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
 
   protected intervalTrees: Record<
     string,
-    Promise<IntervalTree | undefined> | undefined
+    Promise<IntervalTree<Feature> | undefined> | undefined
   > = {}
 
   async getNames() {
@@ -40,11 +41,12 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
       return undefined
     }
     const names = (await this.getNames())?.slice(3) || []
-    const intervalTree = new IntervalTree()
-    for (let i = 0; i < lines.length; i++) {
+    const intervalTree = new IntervalTree<Feature>()
+    for (let i = 0, l = lines.length; i < l; i++) {
       const line = lines[i]!
       const [refName, s, e, ...rest] = line.split('\t')
-      for (let j = 0; j < rest.length; j++) {
+
+      for (let j = 0, l2 = rest.length; j < l2; j++) {
         const uniqueId = `${this.id}-${refName}-${i}-${j}`
         const start = +s!
         const end = +e!
@@ -78,33 +80,30 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     const pm = this.pluginManager
     const bedLoc = this.getConf('bedGraphLocation')
     const buffer = await fetchAndMaybeUnzip(openLocation(bedLoc, pm), opts)
-    // 512MB  max chrome string length is 512MB
-    if (buffer.length > 536_870_888) {
-      throw new Error('Data exceeds maximum string length (512MB)')
-    }
-    const data = new TextDecoder('utf8', { fatal: true }).decode(buffer)
-    const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
-    const headerLines = []
-    let i = 0
-    for (; i < lines.length && lines[i]!.startsWith('#'); i++) {
-      headerLines.push(lines[i])
-    }
-    const header = headerLines.join('\n')
     const features = {} as Record<string, string[]>
-    for (; i < lines.length; i++) {
-      const line = lines[i]!
-      const tab = line.indexOf('\t')
-      const refName = line.slice(0, tab)
-      if (!features[refName]) {
-        features[refName] = []
-      }
-      features[refName].push(line)
-    }
+    const headerLines = [] as string[]
+    parseLineByLine(
+      buffer,
+      line => {
+        if (line.startsWith('#')) {
+          headerLines.push(line)
+        } else {
+          const tab = line.indexOf('\t')
+          const refName = line.slice(0, tab)
+          if (!features[refName]) {
+            features[refName] = []
+          }
+          features[refName].push(line)
+        }
+        return true
+      },
+      opts.statusCallback,
+    )
 
     const columnNames = this.getConf('columnNames')
 
     return {
-      header,
+      header: headerLines.join('\n'),
       features,
       columnNames,
     }
@@ -136,12 +135,10 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
-      intervalTree?.search([start, end]).forEach(f => {
-        observer.next(f)
-      })
+      for (const feature of intervalTree?.search([start, end]) || []) {
+        observer.next(feature)
+      }
       observer.complete()
     })
   }
-
-  public freeResources(): void {}
 }

@@ -55,12 +55,14 @@ export async function writeAWSAnalytics(
     }
 
     // stringifies the track type counts, gets processed in lambda
+    // eslint-disable-next-line unicorn/no-array-for-each
     tracks.forEach((track: Track) => {
       const key = `track-types-${track.type}`
       stats[key] = stats[key] + 1 || 1
     })
 
     // stringifies the session track type counts, gets processed in lambda
+    // eslint-disable-next-line unicorn/no-array-for-each
     session?.sessionTracks.forEach((track: Track) => {
       const key = `sessionTrack-types-${track.type}`
       stats[key] = stats[key] + 1 || 1
@@ -105,9 +107,9 @@ export async function writeGAAnalytics(
   const gaData: AnalyticsObj = {}
   const googleDimensions = 'tracks-count ver electron loadTime pluginNames'
 
-  googleDimensions.split(/\s+/).forEach((key, index) => {
+  for (const [index, key] of googleDimensions.split(/\s+/).entries()) {
     gaData[`dimension${index + 1}`] = stats[key]
-  })
+  }
 
   gaData.metric1 = Math.round(stats.loadTime)
 

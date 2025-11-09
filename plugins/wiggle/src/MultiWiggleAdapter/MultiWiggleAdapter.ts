@@ -6,7 +6,10 @@ import { map } from 'rxjs/operators'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import type {
+  AugmentedRegion as Region,
+  FileLocation,
+} from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
@@ -17,9 +20,38 @@ function getFilename(uri: string) {
   return filename.slice(0, filename.lastIndexOf('.'))
 }
 
+/**
+ * Extract filename from a config, only works for BigWigAdapter
+ * Could try to generalize across more adapter types potentially
+ */
+function getFilenameFromAdapterConfig(config: any) {
+  try {
+    // Handle BigWigAdapter specifically
+    if (config.type === 'BigWigAdapter' && config.bigWigLocation) {
+      const location = config.bigWigLocation as FileLocation
+      if ('uri' in location && location.uri) {
+        return getFilename(location.uri)
+      }
+      if ('localPath' in location && location.localPath) {
+        return getFilename(location.localPath)
+      }
+      if ('blob' in location && location.blob) {
+        const blob = location.blob as File
+        return blob.name ? getFilename(blob.name) : undefined
+      }
+    }
+
+    // Fallback for other adapter types or locations
+    return undefined
+  } catch (e) {
+    return undefined
+  }
+}
+
 interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
   source: string
+  name: string
   [key: string]: unknown
 }
 
@@ -49,17 +81,28 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       }))
     }
 
-    return Promise.all(
+    // There was confusion about whether source or name was required, and
+    // effort to remove one or the other was thwarted. Adapters like
+    // BigWigAdapter, even in the BigWigAdapter configSchema.ts, use a 'source'
+    // field though, while the word 'name' still allowed in the config too. To
+    // solve, we made name===source
+    const ret = await Promise.all(
       subConfs.map(async (conf: any) => {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
+        const source =
+          conf.source ||
+          conf.name ||
+          getFilenameFromAdapterConfig(conf) ||
+          dataAdapter.id
         return {
-          source: conf.name || dataAdapter.id,
           ...conf,
           dataAdapter,
+          source,
         }
       }),
     )
+    return ret
   }
 
   // note: can't really have dis-agreeing refNames
@@ -79,11 +122,9 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
       )) as MaybeStats[]
     ).filter(f => !!f)
-    const scoreMin = min(stats.map(s => s.scoreMin))
-    const scoreMax = max(stats.map(s => s.scoreMax))
     return {
-      scoreMin,
-      scoreMax,
+      scoreMin: min(stats.map(s => s.scoreMin)),
+      scoreMax: max(stats.map(s => s.scoreMax)),
     }
   }
 
@@ -120,12 +161,11 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // something, but it is static for this particular multi-wiggle adapter type
   async getSources(_regions: Region[]) {
     const adapters = await this.getAdapters()
-    return adapters.map(({ dataAdapter, source, name, ...rest }) => ({
-      name: source,
-      __name: name,
-      ...rest,
-    }))
+    return adapters.map(({ type, bigWigLocation, dataAdapter, ...rest }) => {
+      return {
+        ...rest,
+        name: rest.source,
+      }
+    })
   }
-
-  public freeResources(): void {}
 }

@@ -18,6 +18,18 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### BgzipFastaAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes yourfile.fa.fai and
+yourfile.fa.gzi:
+
+```json
+{
+  "type": "BgzipFastaAdapter",
+  "uri": "yourfile.fa"
+}
+```
+
 ### BgzipFastaAdapter - Slots
 
 #### slot: fastaLocation

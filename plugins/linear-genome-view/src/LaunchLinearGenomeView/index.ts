@@ -54,7 +54,7 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
           view.setHideHeader(!nav)
         }
         if (highlight !== undefined) {
-          highlight.forEach(async h => {
+          for (const h of highlight) {
             const p = parseLocString(h, refName =>
               assemblyManager.isValidRefName(refName, assembly),
             )
@@ -67,15 +67,19 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
                 assemblyName: assembly,
               })
             }
-          })
+          }
         }
 
-        await handleSelectedRegion({ input: loc, model: view, assembly: asm })
+        await handleSelectedRegion({
+          input: loc,
+          model: view,
+          assembly: asm,
+        })
 
         const idsNotFound = [] as string[]
-        tracks.forEach(track => {
+        for (const track of tracks) {
           tryTrack(view, track, idsNotFound)
-        })
+        }
         if (idsNotFound.length) {
           throw new Error(
             `Could not resolve identifiers: ${idsNotFound.join(',')}`,

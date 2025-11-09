@@ -18,7 +18,8 @@ import SVGBackground from './SVGBackground'
 import SVGLinearGenomeView from './SVGLinearGenomeView'
 import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
 
-import type { ExportSvgOptions, LinearSyntenyViewModel } from '../model'
+import type { LinearSyntenyViewModel } from '../model'
+import type { ExportSvgOptions } from '../types'
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -145,7 +146,6 @@ export async function renderToSvg(
           clipPath={`url(#synclip-${i})`}
         >
           {rendering?.map((r, i) => (
-            /* biome-ignore lint/suspicious/noArrayIndexKey: */
             <ReactRendering key={i} rendering={r} />
           ))}
         </g>

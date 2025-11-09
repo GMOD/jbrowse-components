@@ -12,7 +12,7 @@ import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // in your code
-// import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
+// import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 // specifically coded to fetch from the first track (view.tracks[0])
 const VisibleFeatures = observer(function ({

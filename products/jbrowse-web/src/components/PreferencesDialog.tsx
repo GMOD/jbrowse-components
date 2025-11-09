@@ -1,11 +1,15 @@
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
+  Checkbox,
   DialogActions,
   DialogContent,
+  FormControlLabel,
+  FormGroup,
   MenuItem,
   TextField,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { ThemeOptions } from '@mui/material'
@@ -16,7 +20,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-export default function PreferencesDialog({
+const PreferencesDialog = observer(function ({
   handleClose,
   session,
 }: {
@@ -25,6 +29,8 @@ export default function PreferencesDialog({
     allThemes: () => Record<string, ThemeOptions & { name?: string }>
     themeName?: string
     setThemeName: (arg: string) => void
+    stickyViewHeaders: boolean
+    setStickyViewHeaders(sticky: boolean): void
   }
 }) {
   const { classes } = useStyles()
@@ -45,10 +51,21 @@ export default function PreferencesDialog({
             </MenuItem>
           ))}
         </TextField>
+        <FormGroup>
+          <FormControlLabel
+            control={<Checkbox checked={session.stickyViewHeaders} />}
+            label="Keep view header visible"
+            onChange={(_, checked) => {
+              session.setStickyViewHeaders(checked)
+            }}
+          />
+        </FormGroup>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Close</Button>
       </DialogActions>
     </Dialog>
   )
-}
+})
+
+export default PreferencesDialog

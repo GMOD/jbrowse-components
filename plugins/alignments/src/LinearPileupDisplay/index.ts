@@ -12,6 +12,8 @@ export default function register(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearPileupDisplay',
       displayName: 'Pileup display',
+      helpText:
+        'Display stacked aligned reads showing exact placement and sequences relative to the reference genome',
       configSchema,
       stateModel: modelFactory(configSchema),
       subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },

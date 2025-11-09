@@ -1,3 +1,5 @@
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter/BaseOptions'
 
 /* paf2delta from paftools.js in the minimap2 repository, license reproduced below
@@ -43,37 +45,30 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let y = 0
   let seen_gt = false
 
-  const records = []
+  const records = [] as {
+    qname: string
+    qstart: number
+    qend: number
+    tname: string
+    tstart: number
+    tend: number
+    strand: number
+    extra: Record<string, unknown>
+  }[]
   const regex = new RegExp(/^>(\S+)\s+(\S+)\s+(\d+)\s+(\d+)/)
 
-  let blockStart = 0
-  let i = 0
-  let j = 0
-  const decoder = new TextDecoder('utf8')
-  while (blockStart < buffer.length) {
-    if (j++ % 10_000 === 0) {
-      statusCallback(
-        `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
-      )
-    }
-    const n = buffer.indexOf(10, blockStart)
-    if (n === -1) {
-      break
-    }
-    const b = buffer.subarray(blockStart, n)
-    const line = decoder.decode(b).trim()
-    blockStart = n + 1
-    i++
-    if (line) {
+  parseLineByLine(
+    buffer,
+    line => {
       const m = regex.exec(line)
       if (m !== null) {
         rname = m[1]!
         qname = m[2]!
         seen_gt = true
-        continue
+        return true
       }
       if (!seen_gt) {
-        continue
+        return true
       }
       const t = line.split(' ')
       if (t.length === 7) {
@@ -83,10 +78,10 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
         const t3 = +t[3]!
         const t4 = +t[4]!
         strand = (t0 < t1 && t2 < t3) || (t0 > t1 && t2 > t3) ? 1 : -1
-        rs = +Math.min(t0, t1) - 1
-        re = +Math.max(t1, t0)
-        qs = +Math.min(t2, t3) - 1
-        qe = +Math.max(t3, t2)
+        rs = Math.min(t0, t1) - 1
+        re = Math.max(t1, t0)
+        qs = Math.min(t2, t3) - 1
+        qe = Math.max(t3, t2)
         x = y = 0
         NM = t4
         cigar = []
@@ -97,13 +92,13 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
           const cigar_str = []
 
           if (re - rs - x !== qe - qs - y) {
-            throw new Error(`inconsistent alignment on line ${i}`)
+            throw new Error(`inconsistent alignment on line ${line}`)
           }
           cigar.push((re - rs - x) << 4)
           for (const entry of cigar) {
             const rlen = entry >> 4
             blen += rlen
-            cigar_str.push(rlen + 'MID'.charAt(cigar[i]! & 0xf))
+            cigar_str.push(rlen + 'MID'.charAt(entry & 0xf))
           }
 
           records.push({
@@ -150,7 +145,9 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
           } // insertion
         }
       }
-    }
-  }
+      return true
+    },
+    statusCallback,
+  )
   return records
 }

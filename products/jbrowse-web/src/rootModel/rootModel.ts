@@ -16,7 +16,6 @@ import {
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
-import AppsIcon from '@mui/icons-material/Apps'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -28,12 +27,17 @@ import StarIcon from '@mui/icons-material/Star'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { formatDistanceToNow } from 'date-fns'
-import { saveAs } from 'file-saver'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getType,
+  isAlive,
+  types,
+} from 'mobx-state-tree'
 
-// other
 import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
@@ -42,7 +46,10 @@ import { filterSessionInPlace } from '../util'
 import type { SessionDB, SessionMetadata } from '../types'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  SessionWithWidgets,
+} from '@jbrowse/core/util'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
 import type { IDBPDatabase } from 'idb'
 import type {
@@ -151,6 +158,15 @@ export default function RootModel({
        * #volatile
        */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
+      reloadPluginManagerCallback: (
+        _configSnapshot: Record<string, unknown>,
+        _sessionSnapshot: Record<string, unknown>,
+      ) => {
+        console.error('reloadPluginManagerCallback unimplemented')
+      },
     }))
 
     .actions(self => ({
@@ -211,6 +227,9 @@ export default function RootModel({
                       // triggered the autorun
                       if (self.sessionDB) {
                         await sessionDB.put('sessions', getSnapshot(s), s.id)
+                        if (!isAlive(self)) {
+                          return
+                        }
 
                         const ret = await self.sessionDB.get('metadata', s.id)
                         await sessionDB.put(
@@ -242,24 +261,50 @@ export default function RootModel({
             self.session?.notifyError(`${e}`, e)
           }
 
+          let savingFailed = false
           addDisposer(
             self,
             autorun(
-              async () => {
+              () => {
                 if (self.session) {
-                  sessionStorage.setItem(
-                    'current',
-                    JSON.stringify({
-                      session: getSnapshot(self.session),
-                      createdAt: new Date(),
-                    }),
-                  )
+                  const s = self.session as AbstractSessionModel
+                  const sessionSnap = getSnapshot(s)
+                  try {
+                    sessionStorage.setItem(
+                      'current',
+                      JSON.stringify({
+                        session: sessionSnap,
+                        createdAt: new Date(),
+                      }),
+                    )
+                    if (savingFailed) {
+                      savingFailed = false
+                      s.notify('Auto-saving restored', 'info')
+                    }
 
-                  // this check is not able to be modularized into it's own
-                  // autorun at current time because it depends on session
-                  // storage snapshot being set above
-                  if (self.pluginsUpdated) {
-                    window.location.reload()
+                    // this check is not able to be modularized into it's own
+                    // autorun at current time because it depends on session
+                    // storage snapshot being set above
+                    if (self.pluginsUpdated) {
+                      self.reloadPluginManagerCallback(
+                        structuredClone(getSnapshot(self.jbrowse)),
+                        structuredClone(sessionSnap),
+                      )
+                    }
+                  } catch (e) {
+                    console.error(e)
+                    const msg = `${e}`
+                    if (!savingFailed) {
+                      savingFailed = true
+                      if (msg.includes('quota')) {
+                        s.notifyError(
+                          'Unable to auto-save session, exceeded sessionStorage quota. This may be because a very large feature was stored in session',
+                          e,
+                        )
+                      } else {
+                        s.notifyError(msg, e)
+                      }
+                    }
                   }
                 }
               },
@@ -271,7 +316,7 @@ export default function RootModel({
       /**
        * #action
        */
-      setSession(sessionSnapshot?: SnapshotIn<BaseSessionType>) {
+      setSession(sessionSnapshot: SnapshotIn<BaseSessionType>) {
         const oldSession = self.session
         self.session = cast(sessionSnapshot)
         if (self.session) {
@@ -295,11 +340,22 @@ export default function RootModel({
       /**
        * #action
        */
+      setReloadPluginManagerCallback(
+        callback: (
+          configSnapshot: Record<string, unknown>,
+          sessionSnapshot: Record<string, unknown>,
+        ) => void,
+      ) {
+        self.reloadPluginManagerCallback = callback
+      },
+      /**
+       * #action
+       */
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
         this.setSession({
           ...defaultSession,
-          name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+          name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
         })
       },
       /**
@@ -387,87 +443,127 @@ export default function RootModel({
           self.jbrowse,
           'preConfiguredSessions',
         )
-        const favs = self.savedSessionMetadata
-          ?.filter(f => f.favorite)
-          .slice(0, 5)
-        const rest = self.savedSessionMetadata
-          ?.filter(f => !f.favorite)
-          .slice(0, 5)
 
         const ret = [
           {
             label: 'File',
-            menuItems: [
-              {
-                label: 'New session',
-                icon: AddIcon,
-                onClick: () => {
-                  self.setDefaultSession()
+            menuItems: () => {
+              const favs = self.savedSessionMetadata
+                ?.filter(f => f.favorite)
+                .slice(0, 5)
+              const rest = self.savedSessionMetadata
+                ?.filter(f => !f.favorite)
+                .slice(0, 5)
+
+              return [
+                {
+                  label: 'New session',
+                  icon: AddIcon,
+                  onClick: () => {
+                    self.setDefaultSession()
+                  },
                 },
-              },
-              {
-                label: 'Import session...',
-                icon: PublishIcon,
-                onClick: (session: SessionWithWidgets) => {
-                  const widget = session.addWidget(
-                    'ImportSessionWidget',
-                    'importSessionWidget',
-                  )
-                  session.showWidget(widget)
+                {
+                  label: 'Import session...',
+                  icon: PublishIcon,
+                  onClick: (session: SessionWithWidgets) => {
+                    const widget = session.addWidget(
+                      'ImportSessionWidget',
+                      'importSessionWidget',
+                    )
+                    session.showWidget(widget)
+                  },
                 },
-              },
-              {
-                label: 'Export session',
-                icon: GetAppIcon,
-                onClick: (session: IAnyStateTreeNode) => {
-                  saveAs(
-                    new Blob(
-                      [
-                        JSON.stringify(
-                          { session: getSnapshot(session) },
-                          null,
-                          2,
-                        ),
-                      ],
-                      { type: 'text/plain;charset=utf-8' },
-                    ),
-                    'session.json',
-                  )
-                },
-              },
-              {
-                label: 'Duplicate session',
-                icon: FileCopyIcon,
-                onClick: () => {
-                  // @ts-expect-error
-                  const { id, ...rest } = getSnapshot(self.session)
-                  self.setSession(rest)
-                },
-              },
-              ...(preConfiguredSessions?.length
-                ? [
-                    {
-                      label: 'Pre-configured sessions...',
-                      subMenu: preConfiguredSessions.map(
-                        (r: { name: string }) => ({
-                          label: r.name,
-                          onClick: () => {
-                            self.setSession(r)
-                          },
-                        }),
+                {
+                  label: 'Export session',
+                  icon: GetAppIcon,
+                  onClick: async (session: IAnyStateTreeNode) => {
+                    // eslint-disable-next-line @typescript-eslint/no-deprecated
+                    const { saveAs } = await import('file-saver-es')
+
+                    saveAs(
+                      new Blob(
+                        [
+                          JSON.stringify(
+                            { session: getSnapshot(session) },
+                            null,
+                            2,
+                          ),
+                        ],
+                        { type: 'text/plain;charset=utf-8' },
                       ),
-                    },
-                  ]
-                : []),
-              ...(favs?.length
-                ? [
-                    {
-                      label: 'Favorite sessions...',
-                      subMenu: [
-                        ...favs.slice(0, 5).map(r => ({
+                      'session.json',
+                      { autoBom: false },
+                    )
+                  },
+                },
+                {
+                  label: 'Duplicate session',
+                  icon: FileCopyIcon,
+                  onClick: () => {
+                    // @ts-expect-error
+                    const { id, ...rest } = getSnapshot(self.session)
+                    self.setSession(rest)
+                  },
+                },
+                ...(preConfiguredSessions?.length
+                  ? [
+                      {
+                        label: 'Pre-configured sessions...',
+                        subMenu: preConfiguredSessions.map(
+                          (r: { name: string }) => ({
+                            label: r.name,
+                            onClick: () => {
+                              self.setSession(r)
+                            },
+                          }),
+                        ),
+                      },
+                    ]
+                  : []),
+                ...(favs?.length
+                  ? [
+                      {
+                        label: 'Favorite sessions...',
+                        subMenu: [
+                          ...favs.slice(0, 5).map(r => ({
+                            label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                            disabled: r.id === self.session.id,
+                            icon: StarIcon,
+                            onClick: () => {
+                              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                              ;(async () => {
+                                try {
+                                  await self.activateSession(r.id)
+                                } catch (e) {
+                                  self.session.notifyError(`${e}`, e)
+                                }
+                              })()
+                            },
+                          })),
+                          {
+                            label: 'More...',
+                            icon: FolderOpenIcon,
+                            onClick: (session: SessionWithWidgets) => {
+                              const widget = session.addWidget(
+                                'SessionManager',
+                                'sessionManager',
+                              )
+                              session.showWidget(widget)
+                            },
+                          },
+                        ],
+                      },
+                    ]
+                  : []),
+                {
+                  label: 'Recent sessions...',
+                  type: 'subMenu',
+                  subMenu: rest?.length
+                    ? [
+                        ...rest.map(r => ({
                           label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
                           disabled: r.id === self.session.id,
-                          icon: StarIcon,
                           onClick: () => {
                             // eslint-disable-next-line @typescript-eslint/no-floating-promises
                             ;(async () => {
@@ -490,86 +586,45 @@ export default function RootModel({
                             session.showWidget(widget)
                           },
                         },
-                      ],
-                    },
-                  ]
-                : []),
-              {
-                label: 'Recent sessions...',
-                type: 'subMenu',
-                subMenu: rest?.length
-                  ? [
-                      ...rest.map(r => ({
-                        label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                        disabled: r.id === self.session.id,
-                        onClick: () => {
-                          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                          ;(async () => {
-                            try {
-                              await self.activateSession(r.id)
-                            } catch (e) {
-                              self.session.notifyError(`${e}`, e)
-                            }
-                          })()
-                        },
-                      })),
-                      {
-                        label: 'More...',
-                        icon: FolderOpenIcon,
-                        onClick: (session: SessionWithWidgets) => {
-                          const widget = session.addWidget(
-                            'SessionManager',
-                            'sessionManager',
-                          )
-                          session.showWidget(widget)
-                        },
-                      },
-                    ]
-                  : [{ label: 'No autosaves found', onClick: () => {} }],
-              },
-              { type: 'divider' },
-              {
-                label: 'Open track...',
-                icon: StorageIcon,
-                onClick: (session: SessionWithWidgets) => {
-                  if (session.views.length === 0) {
-                    session.notify('Please open a view to add a track first')
-                  } else if (session.views.length > 0) {
-                    const widget = session.addWidget(
-                      'AddTrackWidget',
-                      'addTrackWidget',
-                      { view: session.views[0]!.id },
-                    )
-                    session.showWidget(widget)
-                    if (session.views.length > 1) {
-                      session.notify(
-                        'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
+                      ]
+                    : [{ label: 'No autosaves found', onClick: () => {} }],
+                },
+                { type: 'divider' },
+                {
+                  label: 'Open track...',
+                  icon: StorageIcon,
+                  onClick: (session: SessionWithWidgets) => {
+                    if (session.views.length === 0) {
+                      session.notify('Please open a view to add a track first')
+                    } else if (session.views.length > 0) {
+                      const widget = session.addWidget(
+                        'AddTrackWidget',
+                        'addTrackWidget',
+                        { view: session.views[0]!.id },
                       )
+                      session.showWidget(widget)
+                      if (session.views.length > 1) {
+                        session.notify(
+                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
+                        )
+                      }
                     }
-                  }
+                  },
                 },
-              },
-              {
-                label: 'Open connection...',
-                icon: Cable,
-                onClick: (session: SessionWithWidgets) => {
-                  session.showWidget(
-                    session.addWidget(
-                      'AddConnectionWidget',
-                      'addConnectionWidget',
-                    ),
-                  )
+                {
+                  label: 'Open connection...',
+                  icon: Cable,
+                  onClick: (session: SessionWithWidgets) => {
+                    session.showWidget(
+                      session.addWidget(
+                        'AddConnectionWidget',
+                        'addConnectionWidget',
+                      ),
+                    )
+                  },
                 },
-              },
-              { type: 'divider' },
-              {
-                label: 'Return to splash screen',
-                icon: AppsIcon,
-                onClick: () => {
-                  self.setSession(undefined)
-                },
-              },
-            ],
+              ]
+            },
           },
           ...(adminMode
             ? [

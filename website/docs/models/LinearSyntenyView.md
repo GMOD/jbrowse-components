@@ -44,6 +44,15 @@ true
 drawCIGAR: true
 ```
 
+#### property: /
+
+```js
+// type signature
+false
+// code
+drawCIGARMatchesOnly: false
+```
+
 #### property: drawCurves
 
 ```js
@@ -51,6 +60,15 @@ drawCIGAR: true
 false
 // code
 drawCurves: false
+```
+
+#### property: drawLocationMarkers
+
+```js
+// type signature
+false
+// code
+drawLocationMarkers: false
 ```
 
 ### LinearSyntenyView - Methods
@@ -107,6 +125,20 @@ setDrawCurves: (arg: boolean) => void
 ```js
 // type signature
 setDrawCIGAR: (arg: boolean) => void
+```
+
+#### action: setDrawCIGARMatchesOnly
+
+```js
+// type signature
+setDrawCIGARMatchesOnly: (arg: boolean) => void
+```
+
+#### action: setDrawLocationMarkers
+
+```js
+// type signature
+setDrawLocationMarkers: (arg: boolean) => void
 ```
 
 #### action: showAllRegions

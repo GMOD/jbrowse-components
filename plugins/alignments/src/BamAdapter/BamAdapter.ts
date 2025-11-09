@@ -88,9 +88,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     // mapping between ref ref ID numbers and names
     const idToName: string[] = []
     const nameToId: Record<string, number> = {}
-    samHeader
-      ?.filter(l => l.tag === 'SQ')
-      .forEach((sqLine, refId) => {
+    if (samHeader) {
+      for (const [refId, sqLine] of samHeader
+        .filter(l => l.tag === 'SQ')
+        .entries()) {
         const SN = sqLine.data.find(item => item.tag === 'SN')
         if (SN) {
           // this is the ref name
@@ -98,7 +99,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           nameToId[refName] = refId
           idToName[refId] = refName
         }
-      })
+      }
+    }
 
     this.samHeader = { idToName, nameToId }
     return this.samHeader
@@ -146,17 +148,17 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const seqChunks = await firstValueFrom(features.pipe(toArray()))
 
     let sequence = ''
-    seqChunks
-      .sort((a, b) => a.get('start') - b.get('start'))
-      .forEach(chunk => {
-        const chunkStart = chunk.get('start')
-        const chunkEnd = chunk.get('end')
-        const trimStart = Math.max(start - chunkStart, 0)
-        const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
-        const trimLength = trimEnd - trimStart
-        const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        sequence += chunkSeq.slice(trimStart, trimStart + trimLength)
-      })
+    for (const chunk of seqChunks.sort(
+      (a, b) => a.get('start') - b.get('start'),
+    )) {
+      const chunkStart = chunk.get('start')
+      const chunkEnd = chunk.get('end')
+      const trimStart = Math.max(start - chunkStart, 0)
+      const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
+      const trimLength = trimEnd - trimStart
+      const chunkSeq = chunk.get('seq') || chunk.get('residues')
+      sequence += chunkSeq.slice(trimStart, trimStart + trimLength)
+    }
 
     if (sequence.length !== end - start) {
       throw new Error(
@@ -249,8 +251,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     }
     return super.getMultiRegionFeatureDensityStats(regions, opts)
   }
-
-  freeResources(/* { region } */): void {}
 
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number) {

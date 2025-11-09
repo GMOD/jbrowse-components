@@ -15,10 +15,7 @@ export function chooseGridPitch(
 ) {
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
-  const majorMagnitude = Number.parseInt(
-    Number(minMajorPitchBp).toExponential().split(/e/i)[1]!,
-    10,
-  )
+  const majorMagnitude = +minMajorPitchBp.toExponential().split(/e/i)[1]!
 
   let majorPitch = 10 ** majorMagnitude
   while (majorPitch < minMajorPitchBp) {
@@ -92,11 +89,17 @@ export function makeTicks(
  *
  * Used by navToLocations and navToLocString
  */
-export async function generateLocations(
-  regions: ParsedLocString[],
-  assemblyManager: AssemblyManager,
-  assemblyName?: string,
-) {
+export async function generateLocations({
+  regions,
+  assemblyManager,
+  assemblyName,
+  grow,
+}: {
+  regions: ParsedLocString[]
+  assemblyManager: AssemblyManager
+  assemblyName?: string
+  grow?: number
+}) {
   return Promise.all(
     regions.map(async region => {
       const asmName = region.assemblyName || assemblyName
@@ -121,10 +124,23 @@ export async function generateLocations(
         throw new Error(`Could not find refName ${refName} in ${asmName}`)
       }
 
-      return {
-        ...(region as Omit<typeof region, symbol>),
-        assemblyName: asmName,
-        parentRegion,
+      const { start, end } = region
+      if (grow && start && end) {
+        const len = end - start
+        const margin = len * grow
+        return {
+          ...(region as Omit<typeof region, symbol>),
+          start: Math.max(0, start - margin),
+          end: end + margin,
+          assemblyName: asmName,
+          parentRegion,
+        }
+      } else {
+        return {
+          ...(region as Omit<typeof region, symbol>),
+          assemblyName: asmName,
+          parentRegion,
+        }
       }
     }),
   )

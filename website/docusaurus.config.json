@@ -5,10 +5,9 @@
   "baseUrl": "/jb2/",
   "favicon": "img/favicon.ico",
   "trailingSlash": true,
-  "onBrokenLinks": "ignore",
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {
-    "currentVersion": "v3.0.5"
+    "currentVersion": "v3.7.0"
   }
 }

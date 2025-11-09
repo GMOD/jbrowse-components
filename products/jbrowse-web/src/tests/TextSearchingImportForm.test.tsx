@@ -1,4 +1,4 @@
-import { fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, waitFor, within } from '@testing-library/react'
 
 import { doBeforeEach, doSetupForImportForm, setup } from './util'
 
@@ -8,69 +8,53 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 30000 }
+const delay = { timeout: 30_000 }
 const opts = [{}, delay]
 
-test('search eden.1 and hit open', async () => {
-  const { findByPlaceholderText, findByText, getInputValue } =
-    await doSetupForImportForm()
+async function getInput() {
+  const rest = await doSetupForImportForm()
+  return {
+    ...rest,
+    input: (await rest.findByPlaceholderText(
+      'Search for location',
+      ...opts,
+    )) as HTMLInputElement,
+  }
+}
 
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
+test('search eden.1 and hit open', async () => {
+  const { input, findByText, getInputValue } = await getInput()
 
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.click(await findByText('Open'))
   await waitFor(() => {
-    expect(getInputValue()).toBe('ctgA:1,055..9,005')
+    expect(getInputValue()).toBe('ctgA:1..10,590')
   }, delay)
-}, 30000)
+}, 30_000)
 
 test('dialog with multiple results, searching seg02', async () => {
-  const { autocomplete, findByPlaceholderText, findByText } =
-    await doSetupForImportForm()
-
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
+  const { autocomplete, input, findByText } = await getInput()
 
   fireEvent.change(input, { target: { value: 'seg02' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   fireEvent.click(await findByText('Open'))
   await findByText('Search results', ...opts)
-}, 30000)
+}, 30_000)
 
 test('search eden.1 and hit enter', async () => {
-  const { autocomplete, findByPlaceholderText, findByText, getInputValue } =
-    await doSetupForImportForm()
-
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
+  const { getInputValue, autocomplete, input, findByText } = await getInput()
 
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   fireEvent.click(await findByText('Open'))
   await waitFor(() => {
-    expect(getInputValue()).toBe('ctgA:1,055..9,005')
+    expect(getInputValue()).toBe('ctgA:1..10,590')
   }, delay)
-}, 30000)
+}, 30_000)
 
 test('lower case refname, searching: contigb', async () => {
-  const { autocomplete, findByPlaceholderText, findByText, getInputValue } =
-    await doSetupForImportForm()
+  const { getInputValue, autocomplete, input, findByText } = await getInput()
 
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
   fireEvent.change(input, { target: { value: 'contigb' } })
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
   fireEvent.keyDown(autocomplete, { key: 'Enter' })
@@ -80,39 +64,39 @@ test('lower case refname, searching: contigb', async () => {
   await waitFor(() => {
     expect(getInputValue()).toBe('ctgB:1..6,079')
   }, delay)
-}, 30000)
+}, 30_000)
+
+test('lower case refname, click ctgB', async () => {
+  const { getInputValue, findByRole, input, findByText } = await getInput()
+
+  fireEvent.mouseDown(input)
+  fireEvent.click(within(await findByRole('listbox')).getByText(/ctgB/))
+  fireEvent.click(await findByText('Open'))
+
+  await waitFor(() => {
+    expect(getInputValue()).toBe('ctgB:1..6,079')
+  }, delay)
+}, 30_000)
 
 test('description of gene, searching: kinase', async () => {
-  const { findByPlaceholderText, findByText, getInputValue, autocomplete } =
-    await doSetupForImportForm()
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
+  const { getInputValue, autocomplete, input, findByText } = await getInput()
+
   fireEvent.change(input, { target: { value: 'kinase' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
   fireEvent.click(await findByText('EDEN (protein kinase)', ...opts))
   fireEvent.click(await findByText('Open'))
   await waitFor(() => {
-    expect(getInputValue()).toBe('ctgA:1,055..9,005')
+    expect(getInputValue()).toBe('ctgA:1..10,590')
   }, delay)
-}, 30000)
+}, 30_000)
 
 test('search matches description for feature in two places', async () => {
-  const { autocomplete, findByPlaceholderText, findByText } =
-    await doSetupForImportForm()
-
-  const input = (await findByPlaceholderText(
-    'Search for location',
-    {},
-    { timeout: 10000 },
-  )) as HTMLInputElement
+  const { autocomplete, input, findByText } = await getInput()
 
   fireEvent.change(input, { target: { value: 'fingerprint' } })
   fireEvent.click(await findByText(/b101.2/, ...opts))
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   fireEvent.click(await findByText('Open'))
   await findByText('Search results', ...opts)
-}, 30000)
+}, 30_000)

@@ -1,8 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-// locals
-import LegendBar from '../shared/components/LegendBar'
+import LegendBar from '../shared/components/MultiVariantLegendBar'
 
 import type { MultiLinearVariantDisplayModel } from './model'
 import type {

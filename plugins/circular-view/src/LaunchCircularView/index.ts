@@ -40,9 +40,9 @@ export default function LaunchCircularViewF(pluginManager: PluginManager) {
 
       view.setDisplayedRegions(asm.regions || [])
 
-      tracks.forEach(track => {
+      for (const track of tracks) {
         view.showTrack(track)
-      })
+      }
     },
   )
 }

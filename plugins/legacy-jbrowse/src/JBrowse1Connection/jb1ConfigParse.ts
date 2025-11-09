@@ -1,8 +1,8 @@
 /* eslint no-cond-assign: ["error", "except-parens"] */
 import { objectHash } from '@jbrowse/core/util'
-import getValue from 'get-value'
 import setValue from 'set-value'
 
+import getValue from './get-value'
 import { isSource, isTrack } from './util'
 
 import type { Config, Names, Source, Store, Track } from './types'
@@ -81,7 +81,9 @@ function parse(text: string, url: string): Config {
             existing = []
           }
 
+          // @ts-expect-error
           existing.push(parsedValue)
+          // @ts-expect-error
           parsedValue = existing
         }
         if (parsedValue === 'true') {
@@ -101,7 +103,7 @@ function parse(text: string, url: string): Config {
     }
   }
 
-  text.split(/\n|\r\n|\r/).forEach((textLine, i): void => {
+  for (const [i, textLine] of text.split(/\n|\r\n|\r/).entries()) {
     lineNumber = i + 1
     const line = textLine.replace(/^\s*#.+/, '')
 
@@ -152,7 +154,7 @@ function parse(text: string, url: string): Config {
       keyPath = undefined
       value = undefined
     }
-  })
+  }
 
   recordVal()
 
@@ -248,11 +250,11 @@ export function regularizeConf(conf: Config, url: string): Config {
       addBase.push(conf.names)
     }
 
-    addBase.forEach((t): void => {
+    for (const t of addBase) {
       if (!t.baseUrl) {
         t.baseUrl = conf.baseUrl || '/'
       }
-    })
+    }
 
     // resolve the refSeqs and nameUrl if present
     if (conf.refSeqs && typeof conf.refSeqs === 'string') {
@@ -264,7 +266,7 @@ export function regularizeConf(conf: Config, url: string): Config {
   }
 
   conf.stores = conf.stores || {}
-  ;(conf.tracks || []).forEach((trackConfig: Track): void => {
+  for (let trackConfig of conf.tracks || []) {
     // if there is a `config` subpart, just copy its keys in to the top-level
     // config
     if (trackConfig.config) {
@@ -275,7 +277,7 @@ export function regularizeConf(conf: Config, url: string): Config {
 
     // skip if it's a new-style track def
     if (trackConfig.store) {
-      return
+      continue
     }
 
     let trackClassName: string
@@ -301,7 +303,7 @@ export function regularizeConf(conf: Config, url: string): Config {
       }
       synthesizeTrackStoreConfig(conf, trackConfig.histograms)
     }
-  })
+  }
 
   return conf
 }

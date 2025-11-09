@@ -1,15 +1,15 @@
 import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { Menu } from '@jbrowse/core/ui'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import FloatingLabels from './FloatingLabels'
 import LinearBlocks from './LinearBlocks'
+import MenuPage from './MenuPage'
 
-import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import type { Coord } from './types'
+import type { BaseLinearDisplayModel } from '../model'
 
 const useStyles = makeStyles()({
   display: {
@@ -20,8 +20,6 @@ const useStyles = makeStyles()({
     minHeight: '100%',
   },
 })
-
-type Coord = [number, number]
 
 const BaseLinearDisplay = observer(function (props: {
   model: BaseLinearDisplayModel
@@ -90,49 +88,6 @@ const BaseLinearDisplay = observer(function (props: {
     </div>
   )
 })
-
-function MenuPage({
-  onClose,
-  contextCoord,
-  model,
-}: {
-  model: BaseLinearDisplayModel
-  contextCoord: Coord
-  onClose: () => void
-}) {
-  const items = model.contextMenuItems()
-  const theme = useTheme()
-  return (
-    <Menu
-      open={items.length > 0}
-      onMenuItemClick={(_, callback) => {
-        callback()
-        onClose()
-      }}
-      onClose={() => {
-        onClose()
-        model.setContextMenuFeature(undefined)
-      }}
-      slotProps={{
-        transition: {
-          onExit: () => {
-            onClose()
-            model.setContextMenuFeature(undefined)
-          },
-        },
-      }}
-      anchorReference="anchorPosition"
-      anchorPosition={{
-        top: contextCoord[1],
-        left: contextCoord[0],
-      }}
-      style={{
-        zIndex: theme.zIndex.tooltip,
-      }}
-      menuItems={items}
-    />
-  )
-}
 
 export default BaseLinearDisplay
 

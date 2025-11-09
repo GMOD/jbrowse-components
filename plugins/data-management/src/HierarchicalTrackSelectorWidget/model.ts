@@ -17,6 +17,7 @@ import { findSubCategories, findTopLevelCategories } from './util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { GridRowId } from '@mui/x-data-grid'
 import type { Instance } from 'mobx-state-tree'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
@@ -115,7 +116,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      recentlyUsed: [] as string[],
+      recentlyUsed: [] as GridRowId[],
       /**
        * #volatile
        */
@@ -274,7 +275,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addToRecentlyUsed(id: string) {
+      addToRecentlyUsed(id: GridRowId) {
         if (!self.recentlyUsed.includes(id)) {
           self.recentlyUsedCounter = Math.min(
             self.recentlyUsedCounter + 1,
@@ -457,7 +458,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           },
           ...connectionInstances.flatMap(c => ({
             group: getConf(c, 'name'),
-            tracks: c.tracks,
+            tracks: filterTracks(c.tracks, self),
             noCategories: false,
             menuItems: [],
           })),

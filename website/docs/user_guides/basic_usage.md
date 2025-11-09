@@ -134,8 +134,8 @@ specify the index file explicitly.
 :::info Note
 
 If you are an administrator, you can add tracks with the
-[command line](/docs/quickstart_web/#adding-tracks) or with the
-[admin server](/docs/tutorials/config_gui).
+[command line](/docs/quickstart_web/#adding-tracks) (CLI) or with the
+[admin server](/docs/quickstart_adminserver) (GUI).
 
 :::
 

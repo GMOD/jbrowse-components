@@ -8,8 +8,12 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class DeltaAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
-    const loc = openLocation(this.getConf('deltaLocation'), this.pluginManager)
-    const buf = await fetchAndMaybeUnzip(loc, opts)
-    return paf_delta2paf(buf)
+    return paf_delta2paf(
+      await fetchAndMaybeUnzip(
+        openLocation(this.getConf('deltaLocation'), this.pluginManager),
+        opts,
+      ),
+      opts,
+    )
   }
 }

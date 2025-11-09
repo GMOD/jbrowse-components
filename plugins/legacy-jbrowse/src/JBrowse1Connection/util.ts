@@ -1,4 +1,4 @@
-import getValue from 'get-value'
+import getValue from './get-value'
 
 import type { Source, Track } from './types'
 

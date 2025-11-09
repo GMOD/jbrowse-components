@@ -4,11 +4,11 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
 import { addDisposer, getPath, onAction, types } from 'mobx-state-tree'
 
-import { calc, getBlockFeatures, getClip, intersect } from './util'
+import { getClip } from './getClip'
+import { calc, getBlockFeatures, intersect } from './util'
 
 import type { ExportSvgOptions } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -25,7 +25,6 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
  * - [BaseViewModel](../baseviewmodel)
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
-  const minHeight = 40
   const defaultHeight = 400
   return types
     .compose(
@@ -39,14 +38,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(
-          types.refinement(
-            'viewHeight',
-            types.number,
-            (n: number) => n >= minHeight,
-          ),
-          defaultHeight,
-        ),
+        height: types.optional(types.number, defaultHeight),
         /**
          * #property
          */
@@ -66,6 +58,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
+        showHeader: false,
+        /**
+         * #property
+         */
         views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
@@ -73,7 +69,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       width: 800,
+      /**
+       * #volatile
+       */
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
     }))
     .views(self => ({
@@ -86,8 +88,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           './svgcomponents/SVGBreakpointSplitView'
         )
         const html = await renderToSvg(self as BreakpointViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
+
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
     }))
     .views(self => ({
@@ -213,13 +220,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
-        self.views.forEach(view => {
+        for (const view of self.views) {
           const ret = getPath(view)
           if (!ret.endsWith(path)) {
             // @ts-ignore
             view[actionName](args?.[0])
           }
-        })
+        }
       },
 
       /**
@@ -227,9 +234,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number) {
         self.width = newWidth
-        self.views.forEach(v => {
+        for (const v of self.views) {
           v.setWidth(newWidth)
-        })
+        }
       },
 
       /**
@@ -256,6 +263,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setShowHeader(arg: boolean) {
+        self.showHeader = arg
+      },
+
+      /**
+       * #action
+       */
       setMatchedTrackFeatures(obj: Record<string, Feature[][]>) {
         self.matchedTrackFeatures = obj
       },
@@ -272,15 +286,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(async () => {
             try {
+              // check all views 'initialized'
               if (!self.views.every(view => view.initialized)) {
                 return
               }
+              // check that tracks are 'ready' (not notReady)
+              if (
+                self.matchedTracks.some(track => track.displays[0].notReady?.())
+              ) {
+                return
+              }
+
               self.setMatchedTrackFeatures(
                 Object.fromEntries(
                   await Promise.all(
                     self.matchedTracks.map(async track => [
                       track.configuration.trackId,
-                      await getBlockFeatures(self as any, track),
+                      await getBlockFeatures(self, track),
                     ]),
                   ),
                 ),
@@ -315,6 +337,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 },
               ]
             : []),
+          {
+            label: 'Show header',
+            type: 'checkbox',
+            checked: self.showHeader,
+            onClick: () => {
+              self.setShowHeader(!self.showHeader)
+            },
+          },
           {
             label: 'Show intra-view links',
             type: 'checkbox',

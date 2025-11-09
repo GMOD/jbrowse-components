@@ -922,7 +922,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_alignments_alignments",
-          "height": 400,
+          "height": 600,
           "pileupDisplay": {
             "colorBy": {
               "type": "mappingQuality",
@@ -1398,6 +1398,49 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "bigWigLocation": {
               "uri": "v1.cram.bw",
             },
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "v2.cram.bw",
+            },
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "v3.cram.bw",
+            },
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "v4.cram.bw",
+            },
+            "type": "BigWigAdapter",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_microarray_multi2-MultiLinearWiggleDisplay",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig no names",
+      "trackId": "volvox_microarray_multi2",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "subadapters": [
+          {
+            "bigWigLocation": {
+              "uri": "v1.cram.bw",
+            },
             "name": "k1",
             "source": "j1",
             "type": "BigWigAdapter",
@@ -1438,6 +1481,44 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "name": "MultiWig",
       "trackId": "volvox_microarray_multi",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "subadapters": [
+          {
+            "color": "#f00",
+            "name": "Grain1",
+            "type": "BigWigAdapter",
+            "uri": "v1.cram.bw",
+          },
+          {
+            "color": "#f60",
+            "name": "Grain2",
+            "type": "BigWigAdapter",
+            "uri": "v2.cram.bw",
+          },
+          {
+            "color": "#fa0",
+            "name": "Grain3",
+            "type": "BigWigAdapter",
+            "uri": "v3.cram.bw",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "defaultRendering": "multiline",
+          "displayId": "mytrack-MultiLinearWiggleDisplay",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig (w/ colors and default line rendering)",
+      "trackId": "mytrack",
       "type": "MultiQuantitativeTrack",
     },
     {
@@ -2238,6 +2319,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "aggregateField": "geneName",
         "bigBedLocation": {
           "locationType": "UriLocation",
           "uri": "volvox.bb",
@@ -3412,6 +3494,45 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox.filtered.lowercase",
       "trackId": "volvox.filtered.lowercase",
       "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "pafLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_del.paf",
+        },
+        "queryAssembly": "volvox_del2",
+        "targetAssembly": "volvox",
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+        "volvox_del2",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_del2.paf-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        {
+          "displayId": "volvox_del2.paf-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        {
+          "displayId": "volvox_del2.paf-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+        {
+          "displayId": "volvox_del2.paf-LGVSyntenyDisplay",
+          "type": "LGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_del2.paf",
+      "trackId": "volvox_del2.paf",
+      "type": "SyntenyTrack",
     },
     {
       "adapter": {

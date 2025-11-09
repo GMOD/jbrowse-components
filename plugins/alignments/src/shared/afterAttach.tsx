@@ -40,10 +40,12 @@ export function doAfterAttach<T extends IAnyStateTreeNode>(
       return
     }
 
-    ctx.clearRect(0, 0, canvas.width, self.height * 2)
+    const height = 'layoutHeight' in self ? self.layoutHeight || 1 : self.height
     ctx.resetTransform()
+    // Clear entire canvas to avoid artifacts when content height changes on scroll
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.scale(2, 2)
-    cb(self, ctx, canvas.width, self.height)
+    cb(self, ctx, canvas.width, height)
     self.setLastDrawnOffsetPx(view.offsetPx)
     self.setLastDrawnBpPerPx(view.bpPerPx)
   }

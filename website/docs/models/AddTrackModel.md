@@ -144,11 +144,11 @@ any
 string
 ```
 
-#### getter: trackConfig
+#### getter: getTrackConfig
 
 ```js
 // type
-any
+(timestamp: number) => any
 ```
 
 #### getter: warningMessage

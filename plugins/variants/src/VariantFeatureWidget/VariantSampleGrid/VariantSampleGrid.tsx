@@ -1,128 +1,117 @@
 import { useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { ErrorMessage } from '@jbrowse/core/ui'
+import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { measureGridWidth } from '@jbrowse/core/util'
-import { Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
 
+import Checkbox2 from '../Checkbox2'
+import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
 import SampleFilters from './VariantSampleFilters'
+import { getSampleGridRows } from './getSampleGridRows'
 
+import type { Filters, InfoFields, VariantFieldDescriptions } from './types'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { GridColDef } from '@mui/x-data-grid'
 
-interface Entry {
-  sample: string
-  id: string
-  [key: string]: string
-}
+// Define a type for the column display mode
+type ColumnDisplayMode = 'all' | 'gtOnly' | 'genotypeOnly'
 
-type InfoFields = Record<string, unknown>
-type Filters = Record<string, string>
-
-interface FormatRecord {
-  Description?: string
-}
-interface Descriptions {
-  FORMAT?: Record<string, FormatRecord>
-}
-
-export default function VariantSamples(props: {
+export default function VariantSampleGrid(props: {
   feature: SimpleFeatureSerialized
-  descriptions?: Descriptions | null
+  descriptions?: VariantFieldDescriptions | null
 }) {
   const { feature, descriptions = {} } = props
   const [filter, setFilter] = useState<Filters>({})
+  const [columnDisplayMode, setColumnDisplayMode] =
+    useState<ColumnDisplayMode>('all')
+  const [showFilters, setShowFilters] = useState(false)
   const samples = (feature.samples || {}) as Record<string, InfoFields>
-  const preFilteredRows = Object.entries(samples)
+  const ALT = feature.ALT as string[]
+  const REF = feature.REF as string
 
-  let error: unknown
-  let rows = [] as Entry[]
-  const filters = Object.keys(filter)
+  // Use the getSampleGridRows function to process the data
+  const { rows, error } = getSampleGridRows(samples, REF, ALT, filter)
 
-  // catch some error thrown from regex
-  // note: maps all values into a string, if this is not done rows are not
-  // sortable by the data-grid
-  try {
-    rows = preFilteredRows
-      .map(row => {
-        return {
-          ...Object.fromEntries(
-            Object.entries(row[1]).map(e => [e[0], `${e[1]}`]),
-          ),
-          sample: row[0],
-          id: row[0],
-        } as Entry
-      })
-      .filter(row =>
-        filters.length
-          ? filters.every(key => {
-              const currFilter = filter[key]
-              return currFilter
-                ? new RegExp(currFilter, 'i').exec(row[key]!)
-                : true
-            })
-          : true,
-      )
-  } catch (e) {
-    error = e
-  }
-
-  const [checked, setChecked] = useState(false)
-  const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
+  const colKeySet = new Set(['sample', ...Object.keys(rows[0] || {})])
+  colKeySet.delete('id')
+  const keys = [...colKeySet]
   const widths = keys.map(e => measureGridWidth(rows.map(r => r[e])))
-  const columns = keys.map((field, index) => ({
-    field,
-    description: descriptions?.FORMAT?.[field]?.Description,
-    width: widths[index],
-  }))
+  const columns = keys.map(
+    (field, index) =>
+      ({
+        field,
+        description: descriptions?.FORMAT?.[field]?.Description,
+        width: widths[index],
+      }) satisfies GridColDef<(typeof rows)[0]>,
+  )
 
-  // disableRowSelectionOnClick helps avoid
-  // https://github.com/mui-org/material-ui-x/issues/1197
-  return !preFilteredRows.length ? null : (
-    <BaseCard {...props} title="Samples">
-      {error ? <Typography color="error">{`${error}`}</Typography> : null}
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={checked}
+  const s1 = new Set(['sample', 'GT'])
+  const s2 = new Set(['sample', 'GT', 'genotype'])
+
+  return !rows.length ? null : (
+    <>
+      <BaseCard {...props} title="Genotype frequencies">
+        <ErrorBoundary FallbackComponent={ErrorMessage}>
+          <VariantGenotypeFrequencyTable rows={rows} />
+        </ErrorBoundary>
+      </BaseCard>
+      <BaseCard {...props} title="Samples">
+        {error ? <Typography color="error">{`${error}`}</Typography> : null}
+        <div>
+          <Checkbox2
+            label="Show filters"
+            checked={showFilters}
             onChange={event => {
-              setChecked(event.target.checked)
+              setShowFilters(event.target.checked)
             }}
           />
-        }
-        label={<Typography variant="body2">Show options</Typography>}
-      />
-      {checked ? (
-        <SampleFilters
-          setFilter={setFilter}
-          columns={columns}
-          filter={filter}
-        />
-      ) : null}
+          <ToggleButtonGroup
+            value={columnDisplayMode}
+            exclusive
+            size="small"
+            onChange={(_, newValue) => {
+              if (newValue !== null) {
+                setColumnDisplayMode(newValue as ColumnDisplayMode)
+              }
+            }}
+          >
+            <ToggleButton value="all">All</ToggleButton>
+            <ToggleButton value="gtOnly">GT only</ToggleButton>
+            <ToggleButton value="genotypeOnly">
+              GT+resolved genotype
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </div>
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <DataGrid
-          rows={rows}
-          hideFooter={rows.length < 100}
-          columns={columns}
-          disableRowSelectionOnClick
-          rowHeight={25}
-          columnHeaderHeight={35}
-          disableColumnMenu
-          slots={{ toolbar: checked ? GridToolbar : null }}
-          slotProps={{
-            toolbar: {
-              printOptions: {
-                disableToolbarButton: true,
-              },
-            },
-          }}
-        />
-      </div>
-    </BaseCard>
+        {showFilters ? (
+          <SampleFilters
+            setFilter={setFilter}
+            columns={columns}
+            filter={filter}
+          />
+        ) : null}
+
+        <DataGridFlexContainer>
+          <DataGrid
+            rows={rows}
+            hideFooter={rows.length < 100}
+            columns={
+              columnDisplayMode === 'gtOnly'
+                ? columns.filter(f => s1.has(f.field))
+                : columnDisplayMode === 'genotypeOnly'
+                  ? columns.filter(f => s2.has(f.field))
+                  : columns
+            }
+            rowHeight={25}
+            columnHeaderHeight={35}
+            showToolbar
+          />
+        </DataGridFlexContainer>
+      </BaseCard>
+    </>
   )
 }

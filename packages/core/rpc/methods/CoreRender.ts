@@ -1,7 +1,6 @@
 import { validateRendererType } from './util'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '../../util'
-import { checkStopToken } from '../../util/stopToken'
 
 import type {
   RenderArgs,
@@ -10,9 +9,6 @@ import type {
   ResultsSerialized,
 } from './util'
 
-/**
- * fetches features from an adapter and call a renderer with them
- */
 export default class CoreRender extends RpcMethodType {
   name = 'CoreRender'
 
@@ -29,14 +25,10 @@ export default class CoreRender extends RpcMethodType {
       return superArgs
     }
 
-    const { rendererType } = args
-
-    const RendererType = validateRendererType(
-      rendererType,
-      this.pluginManager.getRendererType(rendererType),
-    )
-
-    return RendererType.serializeArgsInClient(superArgs)
+    return validateRendererType(
+      args.rendererType,
+      this.pluginManager.getRendererType(args.rendererType),
+    ).serializeArgsInClient(superArgs)
   }
 
   async execute(
@@ -47,25 +39,19 @@ export default class CoreRender extends RpcMethodType {
     if (rpcDriver !== 'MainThreadRpcDriver') {
       deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     }
-    const { sessionId, rendererType, stopToken } = deserializedArgs
+    const { sessionId, rendererType } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
-
-    checkStopToken(stopToken)
 
     const RendererType = validateRendererType(
       rendererType,
       this.pluginManager.getRendererType(rendererType),
     )
 
-    const result =
-      rpcDriver === 'MainThreadRpcDriver'
-        ? await RendererType.render(deserializedArgs)
-        : await RendererType.renderInWorker(deserializedArgs)
-
-    checkStopToken(stopToken)
-    return result
+    return rpcDriver === 'MainThreadRpcDriver'
+      ? await RendererType.render(deserializedArgs)
+      : await RendererType.renderInWorker(deserializedArgs)
   }
 
   async deserializeReturn(
@@ -77,15 +63,9 @@ export default class CoreRender extends RpcMethodType {
     if (rpcDriver === 'MainThreadRpcDriver') {
       return des
     }
-
-    const { rendererType } = args
-    const RendererType = validateRendererType(
-      rendererType,
-      this.pluginManager.getRendererType(rendererType),
-    )
-    return RendererType.deserializeResultsInClient(
-      des as ResultsSerialized,
-      args,
-    )
+    return validateRendererType(
+      args.rendererType,
+      this.pluginManager.getRendererType(args.rendererType),
+    ).deserializeResultsInClient(des as ResultsSerialized, args)
   }
 }

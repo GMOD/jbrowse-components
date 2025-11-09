@@ -14,10 +14,6 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.text.primary,
     margin: SPACING,
   },
-
-  buttonSpacer: {
-    marginRight: theme.spacing(2),
-  },
 }))
 
 export default function HeaderPanControls({ model }: { model: LGV }) {

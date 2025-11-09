@@ -29,6 +29,8 @@ const ScalebarRefNameLabels = observer(function ({ model }: { model: LGV }) {
 
   // find the block that needs pinning to the left side for context
   let lastLeftBlock = 0
+
+  // eslint-disable-next-line unicorn/no-array-for-each
   staticBlocks.forEach((block, i) => {
     if (block.offsetPx - offsetPx < 0) {
       lastLeftBlock = i

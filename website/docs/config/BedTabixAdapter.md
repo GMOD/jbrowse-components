@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### BedTabixAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
+
+```json
+{
+  "type": "BedTabixAdapter",
+  "uri": "yourfile.bed.gz"
+}
+```
+
 ### BedTabixAdapter - Slots
 
 #### slot: bedGzLocation
@@ -25,7 +36,10 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 bedGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.bed.gz',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

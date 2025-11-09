@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import {
   Alert,
   Button,
@@ -12,7 +12,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
@@ -133,6 +132,7 @@ const ShareBookmarksDialog = observer(function ({
           disabled={loading}
           startIcon={<ContentCopyIcon />}
           onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(url)
             session.notify('Copied to clipboard', 'success')
             onClose()

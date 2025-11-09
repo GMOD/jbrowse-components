@@ -14,7 +14,7 @@ import { makeStyles } from 'tss-react/mui'
 import { moveDown, moveUp } from './util'
 
 import type { Source } from '../../util'
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -40,8 +40,14 @@ function SourcesGrid({
 }) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const [selected, setSelected] = useState([] as string[])
-  const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]!
+  const [selected, setSelected] = useState([] as GridRowId[])
+  const {
+    name: _name,
+    color: _color,
+    source: _source,
+    baseUri: _baseUri,
+    ...rest
+  } = rows.length > 0 ? rows[0]! : {}
   const [widgetColor, setWidgetColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
     idx: 0,
@@ -59,37 +65,37 @@ function SourcesGrid({
         Change color of selected items
       </Button>
       <Button
+        disabled={!selected.length}
         onClick={() => {
           onChange(moveUp([...rows], selected))
         }}
-        disabled={!selected.length}
       >
         <KeyboardArrowUpIcon />
         {showTips ? 'Move selected items up' : null}
       </Button>
       <Button
+        disabled={!selected.length}
         onClick={() => {
           onChange(moveDown([...rows], selected))
         }}
-        disabled={!selected.length}
       >
         <KeyboardArrowDownIcon />
         {showTips ? 'Move selected items down' : null}
       </Button>
       <Button
+        disabled={!selected.length}
         onClick={() => {
           onChange(moveUp([...rows], selected, rows.length))
         }}
-        disabled={!selected.length}
       >
         <KeyboardDoubleArrowUpIcon />
         {showTips ? 'Move selected items to top' : null}
       </Button>
       <Button
+        disabled={!selected.length}
         onClick={() => {
           onChange(moveDown([...rows], selected, rows.length))
         }}
-        disabled={!selected.length}
       >
         <KeyboardDoubleArrowDownIcon />
         {showTips ? 'Move selected items to bottom' : null}
@@ -99,12 +105,12 @@ function SourcesGrid({
         color={widgetColor}
         onChange={c => {
           setWidgetColor(c)
-          selected.forEach(id => {
+          for (const id of selected) {
             const elt = rows.find(f => f.name === id)
             if (elt) {
               elt.color = c
             }
-          })
+          }
 
           onChange([...rows])
         }}
@@ -114,11 +120,11 @@ function SourcesGrid({
       />
       <div style={{ height: 400, width: '100%' }}>
         <DataGrid
+          disableRowSelectionOnClick
           getRowId={row => row.name}
           checkboxSelection
-          disableRowSelectionOnClick
           onRowSelectionModelChange={arg => {
-            setSelected(arg as string[])
+            setSelected([...arg.ids])
           }}
           rows={rows}
           rowHeight={25}

@@ -7,23 +7,32 @@ import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
+import Gridlines from './Gridlines'
 import TrackLabelContainer from './TrackLabelContainer'
 import TrackRenderingContainer from './TrackRenderingContainer'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: 2,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  unpinnedTrack: {
+    background: 'none',
   },
   resizeHandle: {
-    height: 3,
+    height: 4,
     boxSizing: 'border-box',
     position: 'relative',
-    zIndex: 2,
+    background: 'transparent',
+    '&:hover': {
+      background: theme.palette.divider,
+    },
   },
-})
+}))
 
 type LGV = LinearGenomeViewModel
 
@@ -34,7 +43,7 @@ const TrackContainer = observer(function ({
   model: LGV
   track: BaseTrackModel
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const display = track.displays[0]
   const { draggingTrackId, showTrackOutlines } = model
   const ref = useRef<HTMLDivElement>(null)
@@ -42,7 +51,7 @@ const TrackContainer = observer(function ({
   return (
     <Paper
       ref={ref}
-      className={classes.root}
+      className={cx(classes.root, track.pinned ? null : classes.unpinnedTrack)}
       variant={showTrackOutlines ? 'outlined' : undefined}
       elevation={showTrackOutlines ? undefined : 0}
       onClick={event => {
@@ -52,6 +61,8 @@ const TrackContainer = observer(function ({
         }
       }}
     >
+      {/* offset 1px since for left track border */}
+      {track.pinned ? <Gridlines model={model} offset={1} /> : null}
       <TrackLabelContainer track={track} view={model} />
       <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
         <TrackRenderingContainer

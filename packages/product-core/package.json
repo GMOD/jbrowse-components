@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/product-core",
-  "version": "3.0.5",
+  "version": "3.7.0",
   "sideEffects": false,
   "description": "JBrowse 2 code shared between products but not used by plugins",
   "keywords": [
@@ -43,9 +43,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "@jbrowse/core": "^3.0.5",
-    "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0",
+    "@jbrowse/core": "^3.7.0",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
     "copy-to-clipboard": "^3.3.1",
     "librpc-web-mod": "^1.0.0",
     "mobx": "^6.0.0",

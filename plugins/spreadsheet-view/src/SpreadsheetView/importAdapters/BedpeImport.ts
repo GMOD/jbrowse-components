@@ -28,7 +28,7 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
   ]
   const numExtraColumns = Math.max(
     0,
-    (rest[0]?.split('\t')?.length || 0) - coreColumns.length,
+    (rest[0]?.split('\t').length || 0) - coreColumns.length,
   )
 
   const extraNames = lastHeaderLine?.includes('\t')

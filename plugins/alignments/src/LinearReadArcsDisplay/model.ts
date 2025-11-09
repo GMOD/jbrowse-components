@@ -1,26 +1,21 @@
 import type React from 'react'
-import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import FilterListIcon from '@mui/icons-material/ClearAll'
-import PaletteIcon from '@mui/icons-material/Palette'
 import { types } from 'mobx-state-tree'
 
-import type { ChainData } from '../shared/fetchChains'
-import type { ColorBy, FilterBy } from '../shared/types'
+import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
+import {
+  getColorSchemeMenuItem,
+  getFilterByMenuItem,
+} from '../shared/menuItems'
+
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from 'mobx-state-tree'
-
-// lazies
-const FilterByTagDialog = lazy(
-  () => import('../shared/components/FilterByTagDialog'),
-)
 
 /**
  * #stateModel LinearReadArcsDisplay
@@ -38,6 +33,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
+      LinearReadDisplayBaseMixin(),
       types.model({
         /**
          * #property
@@ -50,57 +46,29 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
         /**
          * #property
+         * Width of the arc lines (thin, bold, extra bold)
          */
         lineWidth: types.maybe(types.number),
 
         /**
          * #property
+         * Jitter amount for x-position to better visualize overlapping arcs
          */
         jitter: types.maybe(types.number),
 
         /**
          * #property
-         */
-        colorBySetting: types.frozen<ColorBy | undefined>(),
-
-        /**
-         * #property
-         */
-        filterBySetting: types.frozen<FilterBy | undefined>(),
-
-        /**
-         * #property
+         * Whether to draw inter-region vertical lines
          */
         drawInter: true,
 
         /**
          * #property
+         * Whether to draw long-range connections
          */
         drawLongRange: true,
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      loading: false,
-      /**
-       * #volatile
-       */
-      chainData: undefined as ChainData | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnBpPerPx: 0,
-      /**
-       * #volatile
-       */
-      ref: null as HTMLCanvasElement | null,
-    }))
     .views(self => ({
       /**
        * #getter
@@ -119,55 +87,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(n: number) {
-        self.lastDrawnBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
-
-      /**
-       * #action
-       */
       reload() {
         self.error = undefined
       },
       /**
        * #action
-       * internal, a reference to a HTMLCanvas because we use a autorun to draw
-       * the canvas
-       */
-      setRef(ref: HTMLCanvasElement | null) {
-        self.ref = ref
-      },
-
-      /**
-       * #action
-       */
-      setColorScheme(colorBy: { type: string }) {
-        self.colorBySetting = {
-          ...colorBy,
-        }
-      },
-
-      /**
-       * #action
-       */
-      setChainData(args: ChainData) {
-        self.chainData = args
-      },
-
-      /**
-       * #action
+       * Toggle drawing of inter-region vertical lines
        */
       setDrawInter(f: boolean) {
         self.drawInter = f
@@ -175,6 +100,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #action
+       * Toggle drawing of long-range connections
        */
       setDrawLongRange(f: boolean) {
         self.drawLongRange = f
@@ -182,16 +108,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #action
-       */
-      setFilterBy(filter: FilterBy) {
-        self.filterBySetting = {
-          ...filter,
-        }
-      },
-
-      /**
-       * #action
-       * thin, bold, extrabold, etc
+       * Set the line width (thin=1, bold=2, extrabold=5, etc)
        */
       setLineWidth(n: number) {
         self.lineWidth = n
@@ -199,21 +116,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #action
-       * jitter val, helpful to jitter the x direction so you see better
-       * evidence when e.g. 100 long reads map to same x position
+       * Set jitter amount for x-position
+       * Helpful to jitter the x direction so you see better evidence
+       * when e.g. 100 long reads map to same x position
        */
       setJitter(n: number) {
         self.jitter = n
       },
     }))
-
     .views(self => ({
-      /**
-       * #getter
-       */
-      get drawn() {
-        return self.lastDrawnOffsetPx !== undefined
-      },
       /**
        * #getter
        */
@@ -251,16 +162,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  FilterByTagDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
+            getFilterByMenuItem(self),
             {
               label: 'Line width',
               subMenu: [
@@ -329,36 +231,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.setDrawLongRange(!self.drawLongRange)
               },
             },
-            {
-              label: 'Color scheme',
-              icon: PaletteIcon,
-              subMenu: [
-                {
-                  label: 'Insert size ± 3σ and orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' })
-                  },
-                },
-                {
-                  label: 'Insert size ± 3σ',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
-                },
-                {
-                  label: 'Orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'orientation' })
-                  },
-                },
-                {
-                  label: 'Insert size gradient',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'gradient' })
-                  },
-                },
-              ],
-            },
+            getColorSchemeMenuItem(self),
           ]
         },
       }

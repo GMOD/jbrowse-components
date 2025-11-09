@@ -93,6 +93,4 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  public freeResources() {}
 }

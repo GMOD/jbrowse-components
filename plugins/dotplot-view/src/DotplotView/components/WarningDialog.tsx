@@ -36,8 +36,8 @@ function getTrackWarnings({
     effect: string
     id: string
   }[]
-  for (let i = 0; i < trackWarnings.length; i++) {
-    const track = trackWarnings[i]!
+  for (const [i, trackWarning] of trackWarnings.entries()) {
+    const track = trackWarning
     const name = getConf(track, 'name')
     const d = track.displays[0]!
     for (let j = 0; j < d.warnings.length; j++) {

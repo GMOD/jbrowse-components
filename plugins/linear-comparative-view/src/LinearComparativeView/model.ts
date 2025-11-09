@@ -62,6 +62,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
+        showDynamicControls: true,
+        /**
+         * #property
+         */
         levels: types.array(LinearSyntenyViewHelper),
         /**
          * #property
@@ -150,13 +154,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
-        self.views.forEach(view => {
+        for (const view of self.views) {
           const ret = getPath(view)
           if (!ret.endsWith(path)) {
             // @ts-expect-error
             view[actionName](args?.[0])
           }
-        })
+        }
       },
 
       /**
@@ -171,6 +175,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
         self.views = cast(views)
+        const levels = []
+        for (let i = 0; i < views.length - 1; i++) {
+          levels.push({ level: i })
+        }
+        self.levels = cast(levels)
       },
 
       /**
@@ -193,6 +202,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setLinkViews(arg: boolean) {
         self.linkViews = arg
+      },
+      /**
+       * #action
+       */
+      setShowDynamicControls(arg: boolean) {
+        self.showDynamicControls = arg
       },
       /**
        * #action
@@ -221,6 +236,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       toggleTrack(trackId: string, level = 0) {
         self.levels[level]?.toggleTrack(trackId)
       },
+
       /**
        * #action
        */

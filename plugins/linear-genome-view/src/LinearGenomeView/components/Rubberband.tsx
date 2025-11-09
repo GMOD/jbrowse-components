@@ -6,7 +6,6 @@ import { makeStyles } from 'tss-react/mui'
 
 import RubberbandSpan from './RubberbandSpan'
 import VerticalGuide from './VerticalGuide'
-// hooks
 import { useRangeSelect } from './useRangeSelect'
 
 import type { LinearGenomeViewModel } from '..'
@@ -18,6 +17,7 @@ const useStyles = makeStyles()({
     cursor: 'crosshair',
     width: '100%',
     minHeight: 8,
+    zIndex: 825,
   },
 })
 
@@ -30,6 +30,7 @@ const Rubberband = observer(function ({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
+  const { stickyViewHeaders, rubberbandTop } = model
 
   const {
     guideX,
@@ -59,6 +60,8 @@ const Rubberband = observer(function ({
           numOfBpSelected={numOfBpSelected}
           width={width}
           left={left}
+          top={rubberbandTop}
+          sticky={stickyViewHeaders}
         />
       ) : null}
       {anchorPosition ? (
@@ -77,6 +80,10 @@ const Rubberband = observer(function ({
       <div
         data-testid="rubberband_controls"
         className={classes.rubberbandControl}
+        style={{
+          top: rubberbandTop,
+          position: stickyViewHeaders ? 'sticky' : undefined,
+        }}
         ref={ref}
         onMouseDown={mouseDown}
         onMouseMove={mouseMove}

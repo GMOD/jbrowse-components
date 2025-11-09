@@ -92,6 +92,13 @@ getFeatureByID: (blockKey: string, id: string) => any
 searchFeatureByID: (id: string) => any
 ```
 
+#### method: notReady
+
+```js
+// type signature
+notReady: () => any
+```
+
 #### method: trackMenuItems
 
 ```js

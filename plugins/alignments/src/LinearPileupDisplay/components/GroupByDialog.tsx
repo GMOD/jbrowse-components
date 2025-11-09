@@ -111,7 +111,7 @@ const GroupByTagDialog = observer(function (props: {
             {error ? (
               <ErrorMessage error={error} />
             ) : loading ? (
-              <LoadingEllipses title="Loading unique tags" />
+              <LoadingEllipses message="Loading unique tags" />
             ) : tagSet ? (
               <div>
                 <div>Found unique {tag} values:</div>
@@ -137,7 +137,7 @@ const GroupByTagDialog = observer(function (props: {
               if (tagSet) {
                 const ret = [...tagSet, undefined] as (string | undefined)[]
                 for (const tagValue of ret) {
-                  const t1 = `${trackConf.trackId}-${tag}:${tagValue}-${+Date.now()}-sessionTrack`
+                  const t1 = `${trackConf.trackId}-${tag}:${tagValue}-${Date.now()}-sessionTrack`
                   // @ts-expect-error
                   session.addTrackConf({
                     ...trackConf,
@@ -165,8 +165,8 @@ const GroupByTagDialog = observer(function (props: {
                 }
               }
             } else if (type === 'strand') {
-              const t1 = `${trackConf.trackId}-${tag}:(-)-${+Date.now()}-sessionTrack`
-              const t2 = `${trackConf.trackId}-${tag}:(+)-${+Date.now()}-sessionTrack`
+              const t1 = `${trackConf.trackId}-${tag}:(-)-${Date.now()}-sessionTrack`
+              const t2 = `${trackConf.trackId}-${tag}:(+)-${Date.now()}-sessionTrack`
 
               // @ts-expect-error
               session.addTrackConf({

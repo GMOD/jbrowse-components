@@ -19,10 +19,12 @@ const LaunchSyntenyViewDialog = lazy(
 
 const LinkToSyntenyView = observer(function ({
   model,
+  feat,
 }: {
   model: SyntenyFeatureDetailModel
+  feat: SimpleFeatureSerialized
 }) {
-  const { featureData, view, level, trackId } = model
+  const { view, level, trackId } = model
   return (
     <ul>
       {view.type === 'LinearSyntenyView' ? (
@@ -36,17 +38,15 @@ const LinkToSyntenyView = observer(function ({
                 // level is "pre-known", and stored in the SyntenyFeatureWidget
                 // model state e.g. when clicking on a feature from a
                 // LinearSyntenyRendering
-                views[level]?.navTo(featureData)
-                views[level + 1]?.navTo(
-                  featureData.mate as SimpleFeatureSerialized,
-                )
+                views[level]?.navTo(feat)
+                views[level + 1]?.navTo(feat.mate as SimpleFeatureSerialized)
               } else {
                 // best effort to find the right level. this is triggered for
                 // example if a user clicks on a feature in a LGVSyntenyDisplay
                 // in an existing LinearSyntenyView, there is no real proper
                 // level "pre-known" to this situation
-                const f1 = featureData
-                const f2 = featureData.mate as SimpleFeatureSerialized
+                const f1 = feat
+                const f2 = feat.mate as SimpleFeatureSerialized
                 const r1 = f1.assemblyName as string
                 const r2 = f2.assemblyName as string
                 const v1 = views.find(view => view.assemblyNames[0] === r1)
@@ -77,7 +77,7 @@ const LinkToSyntenyView = observer(function ({
           href="#"
           onClick={event => {
             event.preventDefault()
-            const feature = new SimpleFeature(featureData)
+            const feature = new SimpleFeature(feat)
             const session = getSession(model)
             session.queueDialog(handleClose => [
               LaunchSyntenyViewDialog,

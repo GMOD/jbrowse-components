@@ -8,7 +8,7 @@ import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
   trackLabel: {
-    zIndex: 3,
+    zIndex: 2,
   },
 
   trackLabelOffset: {

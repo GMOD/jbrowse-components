@@ -2,6 +2,11 @@
  * Used by plugin build systems to determine if a module is provided by JBrowse
  * globally and thus doesn't need to be bundled. A check in ./modules.tsx makes
  * sure this is in sync with the re-exported modules.
+ *
+ * Using this instead of just Object.keys(modules) allows this file to be
+ * easily used by downstream tooling like simple esbuild scripts, rollup
+ * configs, etc. without actually importing all the modules in modules.tsx,
+ * which a Object.keys(modules) would do
  */
 export default [
   'mobx',
@@ -131,6 +136,7 @@ export default [
   '@material-ui/core/Toolbar',
   '@material-ui/core/Tooltip',
   '@material-ui/core/Typography',
+
   '@mui/material/Accordion',
   '@mui/material/AccordionActions',
   '@mui/material/AccordionDetails',
@@ -242,11 +248,13 @@ export default [
   '@mui/material/Toolbar',
   '@mui/material/Tooltip',
   '@mui/material/Typography',
+
   '@material-ui/lab/ToggleButton',
   '@material-ui/lab/ToggleButtonGroup',
   '@material-ui/lab/Autocomplete',
   '@material-ui/lab/Alert',
   '@material-ui/lab',
+
   '@jbrowse/core/Plugin',
   '@jbrowse/core/pluggableElementTypes',
   '@jbrowse/core/pluggableElementTypes/ViewType',
@@ -254,7 +262,6 @@ export default [
   '@jbrowse/core/pluggableElementTypes/DisplayType',
   '@jbrowse/core/pluggableElementTypes/TrackType',
   '@jbrowse/core/pluggableElementTypes/WidgetType',
-
   '@jbrowse/core/pluggableElementTypes/models',
   '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType',
   '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType',
@@ -264,6 +271,7 @@ export default [
   '@jbrowse/core/configuration',
   '@jbrowse/core/util/types/mst',
   '@jbrowse/core/ui',
+  '@jbrowse/core/ui/theme',
   '@jbrowse/core/util',
   '@jbrowse/core/util/color',
   '@jbrowse/core/util/layouts',

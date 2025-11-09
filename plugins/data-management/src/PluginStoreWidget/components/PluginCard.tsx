@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { ExternalLink } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import AddIcon from '@mui/icons-material/Add'
@@ -10,7 +11,6 @@ import {
   Card,
   CardActions,
   CardContent,
-  Link,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -60,13 +60,9 @@ const PluginCard = observer(function PluginCard({
     <Card variant="outlined" key={name} className={classes.card}>
       <CardContent>
         <Typography variant="h5">
-          <Link
-            href={`${plugin.location}#readme`}
-            target="_blank"
-            rel="noopener"
-          >
+          <ExternalLink href={`${plugin.location}#readme`}>
             {plugin.name}
-          </Link>
+          </ExternalLink>
         </Typography>
         <div className={classes.dataField}>
           <PersonIcon className={classes.mr} />

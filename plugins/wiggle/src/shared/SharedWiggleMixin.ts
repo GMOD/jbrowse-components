@@ -272,7 +272,10 @@ export default function SharedWiggleMixin(
        * #getter
        */
       get rendererTypeNameSimple() {
-        return self.rendererTypeNameState ?? getConf(self, 'defaultRendering')
+        return (
+          self.rendererTypeNameState ??
+          (getConf(self, 'defaultRendering') as string)
+        )
       },
 
       /**
@@ -287,21 +290,21 @@ export default function SharedWiggleMixin(
        * #getter
        */
       get scaleType() {
-        return self.scale ?? getConf(self, 'scaleType')
+        return self.scale ?? (getConf(self, 'scaleType') as string)
       },
 
       /**
        * #getter
        */
       get maxScore() {
-        return self.constraints.max ?? getConf(self, 'maxScore')
+        return self.constraints.max ?? (getConf(self, 'maxScore') as number)
       },
 
       /**
        * #getter
        */
       get minScore() {
-        return self.constraints.min ?? getConf(self, 'minScore')
+        return self.constraints.min ?? (getConf(self, 'minScore') as number)
       },
     }))
     .views(self => ({
@@ -351,7 +354,7 @@ export default function SharedWiggleMixin(
        * #getter
        */
       get autoscaleType() {
-        return self.autoscale ?? getConf(self, 'autoscale')
+        return self.autoscale ?? (getConf(self, 'autoscale') as string)
       },
     }))
     .views(self => {
@@ -390,16 +393,20 @@ export default function SharedWiggleMixin(
       /**
        * #getter
        */
-      get filled(): boolean {
-        const { fill, rendererConfig } = self
-        return fill ?? readConfObject(rendererConfig, 'filled')
+      get filled() {
+        return (
+          self.fill ??
+          (readConfObject(self.rendererConfig, 'filled') as boolean)
+        )
       },
       /**
        * #getter
        */
-      get summaryScoreModeSetting(): string {
-        const { summaryScoreMode: mode, rendererConfig } = self
-        return mode ?? readConfObject(rendererConfig, 'summaryScoreMode')
+      get summaryScoreModeSetting() {
+        return (
+          self.summaryScoreMode ??
+          (readConfObject(self.rendererConfig, 'summaryScoreMode') as string)
+        )
       },
 
       /**
@@ -411,7 +418,7 @@ export default function SharedWiggleMixin(
           stats: self.stats,
           autoscaleType: self.autoscaleType,
           scaleType: self.scaleType,
-          inverted: getConf(self, 'inverted'),
+          inverted: getConf(self, 'inverted') as boolean,
         }
       },
 
@@ -425,9 +432,14 @@ export default function SharedWiggleMixin(
       /**
        * #getter
        */
-      get displayCrossHatchesSetting(): boolean {
-        const { displayCrossHatches: hatches, rendererConfig } = self
-        return hatches ?? readConfObject(rendererConfig, 'displayCrossHatches')
+      get displayCrossHatchesSetting() {
+        return (
+          self.displayCrossHatches ??
+          (readConfObject(
+            self.rendererConfig,
+            'displayCrossHatches',
+          ) as boolean)
+        )
       },
       /**
        * #getter
@@ -513,7 +525,10 @@ export default function SharedWiggleMixin(
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SetMinMaxDialog,
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
             },
           },
