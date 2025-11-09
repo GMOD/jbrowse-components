@@ -1,6 +1,6 @@
 ---
 id: creating_widget
-title: Creating a custom widget
+title: Creating custom widgets
 ---
 
 Here is an example of registering a custom widget

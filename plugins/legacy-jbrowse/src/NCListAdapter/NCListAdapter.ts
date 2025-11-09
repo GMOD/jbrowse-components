@@ -33,11 +33,9 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
       urlTemplate: rootUrlTemplate.uri,
       readFile: (url: string) =>
         new RemoteFile(
-          String(
-            rootUrlTemplate.baseUri
-              ? new URL(url, rootUrlTemplate.baseUri).toString()
-              : url,
-          ),
+          rootUrlTemplate.baseUri
+            ? new URL(url, rootUrlTemplate.baseUri).toString()
+            : url,
         ).readFile(),
     })
   }
@@ -86,5 +84,4 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
    * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
-  freeResources() {}
 }

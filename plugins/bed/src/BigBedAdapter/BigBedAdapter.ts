@@ -57,6 +57,33 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return Object.keys(header.refsByName)
   }
 
+  // allow using BigBedAdapter for aliases with chromAlias.bb file from UCSC
+  public async getRefNameAliases(opts?: BaseOptions) {
+    const { header } = await this.configure(opts)
+    const ret = await Promise.all(
+      Object.keys(header.refsByName).map(
+        async refName =>
+          (
+            await firstValueFrom(
+              this.getFeatures({
+                assemblyName: '',
+                refName,
+                start: 0,
+                end: 1,
+              }).pipe(toArray()),
+            )
+          )[0]!,
+      ),
+    )
+    return ret
+      .map(r => r.toJSON())
+      .map(r => ({
+        refName: r.ucsc,
+        aliases: [r.ncbi, r.refseq, r.genbank],
+        override: true,
+      }))
+  }
+
   public async getData() {
     const refNames = await this.getRefNames()
     const features = []
@@ -77,15 +104,20 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
   async getHeader(opts?: BaseOptions) {
     const { parser, header } = await this.configure(opts)
     const { version, fileType } = header
-    const { fields, ...rest } = parser.autoSql
+    const { fields, ...autoSql } = parser.autoSql
     return {
       version,
       fileType,
-      autoSql: { ...rest },
-      fields: Object.fromEntries(
-        fields.map(({ name, comment }) => [name, comment]),
-      ),
+      autoSql,
+      fields: await this.getMetadata(opts),
     }
+  }
+  async getMetadata(opts?: BaseOptions) {
+    const { parser } = await this.configure(opts)
+    const { fields } = parser.autoSql
+    return Object.fromEntries(
+      fields.map(({ name, comment }) => [name, comment]),
+    )
   }
 
   public async getFeaturesHelper({
@@ -101,7 +133,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const { stopToken, statusCallback = () => {} } = opts
+    const { statusCallback = () => {} } = opts
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
     const { parser, bigbed } = await updateStatus(
@@ -114,139 +146,185 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       statusCallback,
       () =>
         bigbed.getFeatures(query.refName, query.start, query.end, {
-          stopToken,
           basesPerSpan: query.end - query.start,
         }),
     )
 
-    if (allowRedispatch && feats.length) {
-      let minStart = Number.POSITIVE_INFINITY
-      let maxEnd = Number.NEGATIVE_INFINITY
-      let hasAnyAggregationField = false
+    await updateStatus('Processing features', statusCallback, async () => {
+      const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
+      const parentAggregationFlat = []
+
+      if (feats.some(f => f.uniqueId === undefined)) {
+        throw new Error('found uniqueId undefined')
+      }
       for (const feat of feats) {
-        if (feat.start < minStart) {
-          minStart = feat.start
-        }
-        if (feat.end > maxEnd) {
-          maxEnd = feat.end
-        }
-        // @ts-expect-error
-        if (feat[aggregateField]) {
-          hasAnyAggregationField = true
-        }
-      }
-
-      if (
-        hasAnyAggregationField &&
-        (maxEnd > query.end || minStart < query.start)
-      ) {
-        await this.getFeaturesHelper({
-          query: {
-            ...query,
-            start: minStart,
-            end: maxEnd,
-          },
-          opts,
-          observer,
-          allowRedispatch: false,
-          originalQuery: query,
+        const splitLine = [
+          query.refName,
+          `${feat.start}`,
+          `${feat.end}`,
+          ...(feat.rest?.split('\t') || []),
+        ]
+        const data = parser.parseLine(splitLine, {
+          uniqueId: feat.uniqueId!,
         })
-        return
-      }
-    }
 
-    const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
+        const aggr = data[aggregateField]
+        const aggrIsNotNone = aggr && aggr !== 'none'
+        if (aggrIsNotNone && !parentAggregation[aggr]) {
+          parentAggregation[aggr] = []
+        }
+        const {
+          uniqueId,
+          type,
+          chrom,
+          chromStart,
+          chromEnd,
+          description,
+          chromStarts: chromStarts2,
+          blockStarts: blockStarts2,
+          blockSizes: blockSizes2,
+          score: score2,
+          blockCount,
+          thickStart,
+          thickEnd,
+          strand,
+          ...rest
+        } = data
 
-    if (feats.some(f => f.uniqueId === undefined)) {
-      throw new Error('found uniqueId undefined')
-    }
-    for (const feat of feats) {
-      const splitLine = [
-        query.refName,
-        `${feat.start}`,
-        `${feat.end}`,
-        ...(feat.rest?.split('\t') || []),
-      ]
-      const data = parser.parseLine(splitLine, {
-        uniqueId: feat.uniqueId!,
-      })
-
-      const aggr = data[aggregateField]
-      if (!parentAggregation[aggr]) {
-        parentAggregation[aggr] = []
-      }
-      const {
-        uniqueId,
-        type,
-        chrom,
-        chromStart,
-        chromEnd,
-        description,
-        chromStarts: chromStarts2,
-        blockStarts: blockStarts2,
-        blockSizes: blockSizes2,
-        score: score2,
-        blockCount,
-        thickStart,
-        thickEnd,
-        strand,
-        ...rest
-      } = data
-
-      const f = featureData2({
-        ...rest,
-        scoreColumn,
-        splitLine,
-        parser,
-        uniqueId,
-        start: feat.start,
-        end: feat.end,
-        refName: query.refName,
-      })
-      if (aggr) {
-        parentAggregation[aggr].push(f)
-      } else {
-        if (
-          doesIntersect2(f.start, f.end, originalQuery.start, originalQuery.end)
-        ) {
-          observer.next(
-            new SimpleFeature({
-              id: `${this.id}-${uniqueId}`,
-              data: f,
-            }),
-          )
+        const f = featureData2({
+          ...rest,
+          scoreColumn,
+          splitLine,
+          parser,
+          uniqueId,
+          start: feat.start,
+          end: feat.end,
+          refName: query.refName,
+        })
+        if (aggrIsNotNone) {
+          parentAggregation[aggr]!.push(f)
+          parentAggregationFlat.push(f)
+        } else {
+          if (
+            doesIntersect2(
+              f.start,
+              f.end,
+              originalQuery.start,
+              originalQuery.end,
+            )
+          ) {
+            observer.next(
+              new SimpleFeature({
+                id: `${this.id}-${uniqueId}`,
+                data: f,
+              }),
+            )
+          }
         }
       }
-    }
 
-    Object.entries(parentAggregation).map(([name, subfeatures]) => {
-      const s = min(subfeatures.map(f => f.start))
-      const e = max(subfeatures.map(f => f.end))
-      if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
-        const { uniqueId, strand } = subfeatures[0]!
-        observer.next(
-          new SimpleFeature({
-            id: `${this.id}-${uniqueId}-parent`,
-            data: {
-              type: 'gene',
-              subfeatures,
-              strand,
-              name,
-              start: s,
-              end: e,
-              refName: query.refName,
+      if (allowRedispatch && parentAggregationFlat.length) {
+        let minStart = Number.POSITIVE_INFINITY
+        let maxEnd = Number.NEGATIVE_INFINITY
+        for (const feat of parentAggregationFlat) {
+          if (feat.start < minStart) {
+            minStart = feat.start
+          }
+          if (feat.end > maxEnd) {
+            maxEnd = feat.end
+          }
+        }
+
+        if (maxEnd > query.end || minStart < query.start) {
+          await this.getFeaturesHelper({
+            query: {
+              ...query,
+              // re-query with 500kb added onto start and end, in order to catch
+              // gene subfeatures that may not overlap your view
+              start: minStart - 500_000,
+              end: maxEnd + 500_000,
             },
-          }),
-        )
+            opts,
+            observer,
+            allowRedispatch: false,
+            originalQuery: query,
+          })
+          return
+        }
       }
+
+      Object.entries(parentAggregation).map(([name, subfeatures]) => {
+        const s = min(subfeatures.map(f => f.start))
+        const e = max(subfeatures.map(f => f.end))
+        if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
+          const subs = subfeatures.sort((a, b) =>
+            a.uniqueId.localeCompare(b.uniqueId),
+          )
+          // Check if any features in the subs array overlap with each other.
+          // This helps avoid aggregating features, like in bacterial GFF,
+          // where two genes have the same gene name but are distinct locations
+          // on the genome
+          //
+          // If they do, we'll create a single parent feature with all
+          // subfeatures (use the computed parent aggregation)
+          if (
+            subs.some((a, i) =>
+              subs.some(
+                (b, j) =>
+                  i !== j && doesIntersect2(a.start, a.end, b.start, b.end),
+              ),
+            )
+          ) {
+            observer.next(
+              new SimpleFeature({
+                id: `${this.id}-${subs[0]?.uniqueId}-parent`,
+                data: {
+                  type: 'gene',
+                  subfeatures: subs,
+                  strand: subs[0]?.strand || 1,
+                  name,
+                  start: s,
+                  end: e,
+                  refName: query.refName,
+                },
+              }),
+            )
+          }
+
+          // Otherwise, we'll create individual parent features for each subfeature (remove parent aggregation)
+          else {
+            for (const sub of subs) {
+              observer.next(
+                new SimpleFeature({
+                  id: `${this.id}-${sub.uniqueId}-parent`,
+                  data: {
+                    type: 'gene',
+                    subfeatures: [sub],
+                    strand: subs[0]?.strand || 1,
+                    name,
+                    start: sub.start,
+                    end: sub.end,
+                    refName: query.refName,
+                  },
+                }),
+              )
+            }
+          }
+        }
+      })
     })
+
     observer.complete()
   }
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
         await this.getFeaturesHelper({
-          query,
+          query: {
+            ...query,
+            start: query.start,
+            end: query.end,
+          },
           opts,
           observer,
           allowRedispatch: true,
@@ -256,6 +334,4 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       }
     }, opts.stopToken)
   }
-
-  public freeResources(): void {}
 }

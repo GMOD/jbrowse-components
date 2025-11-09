@@ -47,7 +47,36 @@ const DeltaAdapter = ConfigurationSchema(
       },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "DeltaAdapter",
+     *   "uri": "yourfile.delta.gz",
+     *   "queryAssembly": "hg19",
+     *   "targetAssembly": "hg38"
+     * }
+     * ```
+     */
+
+    preProcessSnapshot: snap => {
+      return snap.uri
+        ? {
+            ...snap,
+            deltaLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default DeltaAdapter

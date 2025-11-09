@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-genome-view",
-  "version": "3.0.5",
+  "version": "3.7.0",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -38,13 +38,12 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@jbrowse/core": "^3.0.5",
-    "@mui/icons-material": "^6.0.0",
-    "@mui/material": "^6.0.0",
-    "@types/file-saver": "^2.0.1",
+    "@jbrowse/core": "^3.7.0",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
+    "@types/file-saver-es": "^2.0.1",
     "copy-to-clipboard": "^3.3.1",
-    "file-saver": "^2.0.0",
-    "material-ui-popup-state": "^5.0.0",
+    "file-saver-es": "^2.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

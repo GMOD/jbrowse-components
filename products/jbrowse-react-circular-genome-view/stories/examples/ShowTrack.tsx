@@ -1,4 +1,4 @@
-// replace with from '@jbrowse/react-circular-genome-view' in your code
+// replace with from '@jbrowse/react-circular-genome-view2' in your code
 import { JBrowseCircularGenomeView, createViewState } from '../../src'
 
 export const ShowTrack = () => {

@@ -102,9 +102,15 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
             }
 
             checkStopToken(stopToken)
-            chunks.push(
-              await this.seqCache.get(JSON.stringify(r), { ...r, fasta }),
-            )
+
+            const res = await this.seqCache.get(JSON.stringify(r), {
+              ...r,
+              fasta,
+            })
+            if (!res) {
+              break
+            }
+            chunks.push(res)
           }
           const seq = chunks
             .filter(f => !!f)
@@ -135,5 +141,4 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
    * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
-  public freeResources(/* { region } */): void {}
 }

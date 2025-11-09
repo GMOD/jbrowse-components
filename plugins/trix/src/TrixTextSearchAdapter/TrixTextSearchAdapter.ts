@@ -114,6 +114,4 @@ export default class TrixTextSearchAdapter
         )
       : formatted
   }
-
-  freeResources() {}
 }

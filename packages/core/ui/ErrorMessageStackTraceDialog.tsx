@@ -4,30 +4,15 @@ import {
   Button,
   DialogActions,
   DialogContent,
-  Link,
   Typography,
   alpha,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { SourceMapConsumer } from 'source-map-js'
 import { makeStyles } from 'tss-react/mui'
 
 import Dialog from './Dialog'
+import ExternalLink from './ExternalLink'
 import LoadingEllipses from './LoadingEllipses'
-
-function Link2({
-  href,
-  children,
-}: {
-  href: string
-  children: React.ReactNode
-}) {
-  return (
-    <Link target="_blank" href={href}>
-      {children}
-    </Link>
-  )
-}
 
 async function myfetch(uri: string) {
   const res = await fetch(uri)
@@ -154,8 +139,9 @@ function Contents({ text, extra }: { text: string; extra?: unknown }) {
   return (
     <>
       <Typography>
-        Post a new issue at <Link2 href={githubLink}>GitHub</Link2> or send an
-        email to <Link2 href={emailLink}>{email}</Link2>{' '}
+        Post a new issue at{' '}
+        <ExternalLink href={githubLink}>GitHub</ExternalLink> or send an email
+        to <ExternalLink href={emailLink}>{email}</ExternalLink>{' '}
       </Typography>
       <pre className={classes.pre}>{err2}</pre>
     </>
@@ -219,7 +205,8 @@ export default function ErrorMessageStackTraceDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => {
+          onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(errorBoxText)
             setClicked(true)
             setTimeout(() => {

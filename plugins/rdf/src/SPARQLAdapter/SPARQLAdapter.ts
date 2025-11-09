@@ -134,17 +134,17 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     const rows = results.results.bindings || []
     const fields = results.head.vars
     const requiredFields = ['start', 'end', 'uniqueId']
-    requiredFields.forEach(requiredField => {
+    for (const requiredField of requiredFields) {
       if (!fields.includes(requiredField)) {
         console.error(
           `Required field ${requiredField} missing from feature data`,
         )
       }
-    })
+    }
     const seenFeatures: Record<string, SPARQLFeature> = {}
-    rows.forEach(row => {
+    for (const row of rows) {
       const rawData: Record<string, string>[] = [{}]
-      fields.forEach(field => {
+      for (let field of fields) {
         if (field in row) {
           const { value } = row[field]!
           let idx = 0
@@ -157,9 +157,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
           }
           rawData[idx]![field] = value
         }
-      })
+      }
 
-      rawData.forEach((rd, idx) => {
+      for (const [idx, rd] of rawData.entries()) {
         const { uniqueId, start, end, strand } = rd
         if (idx < rawData.length - 1) {
           rawData[idx + 1]!.parentUniqueId = uniqueId!
@@ -174,8 +174,8 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
             strand: Number.parseInt(strand!, 10) || 0,
           },
         }
-      })
-    })
+      }
+    }
 
     // resolve subfeatures, keeping only top-level features in seenFeatures
     for (const [uniqueId, f] of Object.entries(seenFeatures)) {
@@ -242,6 +242,4 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     }
     return true
   }
-
-  public freeResources(/* { region } */): void {}
 }

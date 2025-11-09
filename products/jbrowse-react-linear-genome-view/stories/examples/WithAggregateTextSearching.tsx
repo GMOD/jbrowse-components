@@ -1,5 +1,5 @@
 // in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
+// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 import { addRelativeUris, getVolvoxConfig } from './util'
 import { JBrowseLinearGenomeView, createViewState } from '../../src'
 

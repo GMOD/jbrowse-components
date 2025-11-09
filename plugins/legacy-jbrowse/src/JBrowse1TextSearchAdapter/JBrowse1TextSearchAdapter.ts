@@ -95,6 +95,4 @@ export default class JBrowse1TextSearchAdapter
       }),
     ].filter(result => result.getLabel() !== 'too many matches')
   }
-
-  freeResources() {}
 }

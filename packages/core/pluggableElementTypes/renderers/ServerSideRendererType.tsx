@@ -1,10 +1,7 @@
-import { ThemeProvider } from '@mui/material/styles'
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
-import { renderToString } from 'react-dom/server'
 
 import RendererType from './RendererType'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
-import { createJBrowseTheme } from '../../ui'
 import SerializableFilterChain from './util/serializableFilterChain'
 import { getSerializedSvg, updateStatus } from '../../util'
 import { checkStopToken } from '../../util/stopToken'
@@ -89,30 +86,23 @@ export default class ServerSideRenderer extends RendererType {
     res: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    // if we are rendering svg, we skip hydration
-    if (args.exportSVG) {
-      // only return the res if the renderer explicitly has
-      // this.supportsSVG support to avoid garbage being rendered in SVG
-      // document
-      return {
-        ...res,
-        html: this.supportsSVG
-          ? res.html
-          : '<text y="12" fill="black">SVG export not supported for this track</text>',
-      }
-    }
-
-    // get res using ServerSideRenderedContent
-    return {
-      ...res,
-      reactElement: (
-        <ServerSideRenderedContent
-          {...args}
-          {...res}
-          RenderingComponent={this.ReactComponent}
-        />
-      ),
-    }
+    return args.exportSVG
+      ? {
+          ...res,
+          html: this.supportsSVG
+            ? res.html
+            : '<text y="12" fill="black">SVG export not supported for this track</text>',
+        }
+      : {
+          ...res,
+          reactElement: (
+            <ServerSideRenderedContent
+              {...args}
+              {...res}
+              RenderingComponent={this.ReactComponent}
+            />
+          ),
+        }
   }
 
   /**
@@ -145,15 +135,13 @@ export default class ServerSideRenderer extends RendererType {
    */
   serializeResultsInWorker(
     results: RenderResults,
-    args: RenderArgsDeserialized,
+    _args: RenderArgsDeserialized,
   ): ResultsSerialized {
-    const html = renderToString(
-      <ThemeProvider theme={createJBrowseTheme(args.theme)}>
-        {results.reactElement}
-      </ThemeProvider>,
-    )
     results.reactElement = undefined
-    return { ...results, html }
+    return {
+      ...results,
+      html: '',
+    }
   }
 
   /**

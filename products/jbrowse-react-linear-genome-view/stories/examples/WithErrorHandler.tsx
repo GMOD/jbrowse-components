@@ -1,22 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
 
 // in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
+// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 import { getVolvoxConfig } from './util'
 import { JBrowseLinearGenomeView, createViewState } from '../../src'
-
-type ViewState = ReturnType<typeof createViewState>
 
 export const WithErrorHandler = () => {
   const { assembly } = getVolvoxConfig()
   const [error, setError] = useState<unknown>()
-  const [viewState, setViewState] = useState<ViewState>()
-
-  useEffect(() => {
+  const [viewState] = useState(() => {
     try {
-      const state = createViewState({
+      return createViewState({
         assembly,
         tracks: [
           {
@@ -27,11 +23,11 @@ export const WithErrorHandler = () => {
         ],
         location: 'ctgA:1105..1221',
       })
-      setViewState(state)
     } catch (e) {
       setError(e)
+      return undefined
     }
-  }, [assembly])
+  })
   return (
     <div>
       {error ? (

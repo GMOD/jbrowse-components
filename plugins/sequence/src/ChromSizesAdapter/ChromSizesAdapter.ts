@@ -48,6 +48,4 @@ export default class ChromSizesAdapter
   public getHeader() {
     return {}
   }
-
-  public freeResources(/* { region } */): void {}
 }

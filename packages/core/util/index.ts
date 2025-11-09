@@ -67,13 +67,20 @@ export function useWidthSetter(
 ) {
   const [ref, { width }] = useMeasure()
   useEffect(() => {
+    let token: ReturnType<typeof requestAnimationFrame>
     if (width && isAlive(view)) {
       // sets after a requestAnimationFrame
       // https://stackoverflow.com/a/58701523/2129219
       // avoids ResizeObserver loop error being shown during development
-      requestAnimationFrame(() => {
-        view.setWidth(width - Number.parseInt(padding, 10) * 2)
+      token = requestAnimationFrame(() => {
+        view.setWidth(width)
       })
+    }
+
+    return () => {
+      if (token) {
+        cancelAnimationFrame(token)
+      }
     }
   }, [padding, view, width])
   return ref
@@ -763,6 +770,10 @@ export function shorten(name: string, max = 70, short = 30) {
     : name
 }
 
+export function shorten2(name: string, max = 70) {
+  return name.length > max ? `${name.slice(0, max)}...` : name
+}
+
 export function stringify(
   {
     refName,
@@ -834,28 +845,27 @@ export const complementTable = {
 } as Record<string, string>
 
 export function revcom(str: string) {
-  let revcomped = ''
+  const revcomped = []
   for (let i = str.length - 1; i >= 0; i--) {
-    revcomped += complementTable[str[i]!] ?? str[i]
+    revcomped.push(complementTable[str[i]!] ?? str[i])
   }
-  return revcomped
+  return revcomped.join('')
 }
 
 export function reverse(str: string) {
-  let reversed = ''
+  const reversed = []
   for (let i = str.length - 1; i >= 0; i--) {
-    reversed += str[i]!
+    reversed.push(str[i]!)
   }
-  return reversed
+  return reversed.join('')
 }
 
 export function complement(str: string) {
-  let comp = ''
-  // eslint-disable-next-line @typescript-eslint/prefer-for-of
-  for (let i = 0; i < str.length; i++) {
-    comp += complementTable[str[i]!] ?? str[i]
+  const comp = []
+  for (let i = 0, l = str.length; i < l; i++) {
+    comp.push(complementTable[str[i]!] ?? str[i]!)
   }
-  return comp
+  return comp.join('')
 }
 
 // requires immediate execution in jest environment, because (hypothesis) it
@@ -977,7 +987,7 @@ export const defaultCodonTable = {
  */
 export function generateCodonTable(table: any) {
   const tempCodonTable: Record<string, string> = {}
-  Object.keys(table).forEach(codon => {
+  for (const codon of Object.keys(table)) {
     const aa = table[codon]
     const nucs: string[][] = []
     for (let i = 0; i < 3; i++) {
@@ -997,7 +1007,7 @@ export function generateCodonTable(table: any) {
         }
       }
     }
-  })
+  }
   return tempCodonTable
 }
 
@@ -1103,13 +1113,26 @@ export function isSupportedIndexingAdapter(type = '') {
   ].includes(type)
 }
 
-export function getBpDisplayStr(totalBp: number) {
-  if (Math.floor(totalBp / 1_000_000) > 0) {
-    return `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
-  } else if (Math.floor(totalBp / 1_000) > 0) {
-    return `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
+export function getBpDisplayStr(total: number) {
+  if (Math.floor(total / 1_000_000) > 0) {
+    return `${r(total / 1_000_000)}Mbp`
+  } else if (Math.floor(total / 1_000) > 0) {
+    return `${r(total / 1_000)}Kbp`
   } else {
-    return `${toLocale(Math.floor(totalBp))}bp`
+    return `${Math.floor(total)}bp`
+  }
+}
+
+function r(s: number) {
+  return toLocale(Number.parseFloat(s.toPrecision(3)))
+}
+export function getProgressDisplayStr(current: number, total: number) {
+  if (Math.floor(total / 1_000_000) > 0) {
+    return `${r(current / 1_000_000)}/${r(total / 1_000_000)}Mb`
+  } else if (Math.floor(total / 1_000) > 0) {
+    return `${r(current / 1_000)}/${r(total / 1_000)}Kb`
+  } else {
+    return `${r(current)}/${r(total)}}bytes`
   }
 }
 
@@ -1366,18 +1389,26 @@ export function stripAlpha(str: string) {
 }
 
 export function getStrokeProps(str: string) {
-  const c = colord(str)
-  return {
-    strokeOpacity: c.alpha(),
-    stroke: c.alpha(1).toHex(),
+  if (str) {
+    const c = colord(str)
+    return {
+      strokeOpacity: c.alpha(),
+      stroke: c.alpha(1).toHex(),
+    }
+  } else {
+    return {}
   }
 }
 
 export function getFillProps(str: string) {
-  const c = colord(str)
-  return {
-    fillOpacity: c.alpha(),
-    fill: c.alpha(1).toHex(),
+  if (str) {
+    const c = colord(str)
+    return {
+      fillOpacity: c.alpha(),
+      fill: c.alpha(1).toHex(),
+    }
+  } else {
+    return {}
   }
 }
 
@@ -1396,13 +1427,14 @@ export function isGzip(buf: Uint8Array) {
 
 export async function fetchAndMaybeUnzip(
   loc: GenericFilehandle,
-  opts?: BaseOptions,
+  opts: BaseOptions = {},
 ) {
-  const { statusCallback = () => {} } = opts || {}
-  const buf = (await updateStatus('Downloading file', statusCallback, () =>
-    // @ts-expect-error
-    loc.readFile(opts),
-  )) as unknown as Uint8Array
+  const { statusCallback = () => {} } = opts
+  const buf = await updateStatus(
+    'Downloading file',
+    statusCallback,
+    () => loc.readFile(opts) as Promise<Uint8Array>,
+  )
   return isGzip(buf)
     ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
     : buf
@@ -1437,6 +1469,27 @@ export function localStorageGetBoolean(key: string, defaultVal: boolean) {
   )
 }
 
+export function localStorageSetBoolean(key: string, value: boolean) {
+  localStorageSetItem(key, JSON.stringify(value))
+}
+
+export function forEachWithStopTokenCheck<T>(
+  iter: Iterable<T>,
+  stopToken: string | undefined,
+  arg: (arg: T, idx: number) => void,
+  durationMs = 400,
+) {
+  let start = performance.now()
+  let i = 0
+  for (const t of iter) {
+    if (performance.now() - start > durationMs) {
+      checkStopToken(stopToken)
+      start = performance.now()
+    }
+    arg(t, i++)
+  }
+}
+
 export function testAdapter(
   fileName: string,
   regex: RegExp,
@@ -1445,6 +1498,7 @@ export function testAdapter(
 ) {
   return (regex.test(fileName) && !adapterHint) || adapterHint === expected
 }
+
 export {
   type Feature,
   type SimpleFeatureSerialized,

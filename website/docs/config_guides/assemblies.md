@@ -6,10 +6,10 @@ title: Configuring assemblies
 An assembly configuration includes the "name" of your assembly, any "aliases"
 that might be associated with that assembly e.g. GRCh37 is sometimes seen as an
 alias for hg19, and then a "sequence" configuration containing a reference
-sequence track config. This is provides a special "track" that is outside the
+sequence track config. This provides a special "track" that is outside the
 normal track config.
 
-Here is a complete config.json file containing only an hg19 assembly:
+Here is a complete config.json file containing only the hg19 assembly:
 
 ```json
 {
@@ -128,17 +128,15 @@ myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
 jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
-See our
-[configure JBrowse using the cli](/docs/quickstart_web/#adding-a-genome-assembly-in-fasta-format)
-tutorial for more in-depth instructions, or more information on the
-`add-assembly` command through our
-[CLI tools guide](/docs/cli/#jbrowse-add-assembly-sequence).
+See our [configure JBrowse using the cli](/docs/quickstart_web/) tutorial for
+more in-depth instructions, or more information on the `add-assembly` command
+through our [CLI tools guide](/docs/cli/#jbrowse-add-assembly).
 
 :::note
 
 Assemblies can also be added graphically using the assembly manager when you are
 using the `admin-server`. See how to
-[configure JBrowse using the GUI](/docs/tutorials/config_gui/#adding-a-genome-assembly)
+[configure JBrowse using the admin server GUI](/docs/quickstart_adminserver/)
 for more details.
 
 :::
@@ -195,20 +193,20 @@ Here is a complete config.json that has the hg19 genome loaded:
 }
 ```
 
-The top level config is an array of assemblies; each assembly contains:
+The top level config is an array of assemblies. Each assembly contains:
 
-- `name` - a name to refer to the assembly by. each track that is related to
+- `name` - a name to refer to the assembly by. Each track that is related to
   this assembly references this name
 - `aliases` - sometimes genome assemblies have aliases like hg19, GRCh37, b37p5,
   etc. while there may be small differences between these different sequences,
   they often largely have the same coordinates, so you might want to be able to
   associate tracks from these different assemblies together. The assembly
-  aliases are most helpful when loading from a UCSC trackHub which specifies the
-  genome assembly names it uses, so you can connect to a UCSC trackHub if your
-  assembly name or aliases match.
+  aliases are most helpful when loading from a UCSC trackHub, which specifies
+  the genome assembly names it uses, so you can connect to a UCSC trackHub if
+  your assembly name or aliases match.
 - `sequence` - this is a complete "track" definition for your genome assembly.
-  we specify that it is a track of type ReferenceSequenceTrack, give it a
-  trackId, and an adapter configuration. an adapter configuration can specify
+  We specify that it is a track of type ReferenceSequenceTrack, give it a
+  trackId, and an adapter configuration. An adapter configuration can specify
   IndexedFastaAdapter (fasta.fa and fasta.fai), BgzipFastaAdapter (fasta.fa.gz,
   fasta.fa.gz.fai, fasta.gz.gzi), ChromSizesAdapter (which fetches no sequences,
   just chromosome names)
@@ -313,7 +311,8 @@ section to either the IndexedFastaAdapter or BgzipFastaAdapter configuration.
 One option for the contents of this metadata is the FFRGS (Fair Formatted
 Reference Genome Standard) header specification for FASTA files can be found
 [here](https://github.com/FFRGS/FFRGS-Specification), however, just the raw
-plaintext is displayed for this file so the format is not strict.
+plaintext is displayed for this file, so the format is not strict from JBrowse's
+perspective.
 
 ```json
   "metadataLocation": {

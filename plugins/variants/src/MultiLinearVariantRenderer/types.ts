@@ -21,4 +21,6 @@ export interface MultiRenderArgsDeserialized
   rowHeight: number
   scrollTop: number
   minorAlleleFrequencyFilter: number
+  lengthCutoffFilter: number
+  statusCallback?: (arg: string) => void
 }

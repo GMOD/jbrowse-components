@@ -2,9 +2,7 @@ import config from '../../docusaurus.config.json'
 
 export const Link = ({ extra, children }) => {
   return (
-    <a
-      href={`https://jbrowse.org/code/jb2/${config.customFields.currentVersion}/${extra}`}
-    >
+    <a target="_blank" href={`https://jbrowse.org/code/jb2/main/${extra}`}>
       {children}
     </a>
   )
@@ -13,9 +11,8 @@ export const Link = ({ extra, children }) => {
 # JBrowse 2 demos
 
 These demos contain examples of new workflows and views in JBrowse 2, with links
-to live sessions on the web in order for you to be able to experience the app
-yourself. The link above will always direct to the most recent demo that has
-been released.
+to live sessions on the web so you can try them out in the app yourself. The
+link above will always direct to the most recent demo that has been released.
 
 Note: everything demonstrated here on the web can also be done in JBrowse
 desktop.
@@ -33,7 +30,7 @@ desktop.
 - <Link extra="?config=test_data%2Fconfig_demo.json&session=share-XyL52LPDoO&password=861E4">
     {'Human instance coloring methylation/modifications on nanopore reads'}
   </Link>
-- <Link extra="?config=test_data/breakpoint/config.json">
+- <Link extra="?config=test_data%2Fbreakpoint%2Fconfig.json&session=share-xeUuLRakik&password=vh0ca">
     {'Breakpoint split view demo (showing multi-hop split read connection)'}
   </Link>
 - <Link extra="?config=test_data%2Fconfig_dotplot.json&session=share-zw51jIwuXb&password=i8WqY">
@@ -55,6 +52,9 @@ desktop.
 - <Link extra="?config=test_data%2Fconfig_demo.json&session=share-sA7riIQWhJ&password=3pkHd">
     {'Inversion example ("single row" breakpoint split view)'}
   </Link>
+- <Link extra="?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR">
+    {'Inversion example (linked reads mode)'}
+  </Link>
 - <Link extra="?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fplant_synteny_demo%2Fconfig2.json&session=share-pARmvLazem&password=ZPOwE">
     {'Multi-way synteny demo (grape vs peach vs cacao)'}
   </Link>
@@ -67,6 +67,9 @@ desktop.
 
 **Conference and other guided demos**
 
+- [2025 Biocuration workshop w/ Apollo 3](https://github.com/GMOD/2025-biocuration-tutorial)
+  and
+  [intro slides](https://docs.google.com/presentation/d/1JevD7lDPbNNnwrFfvWRQy2cDEULhZ_wP--E3F9YtfBU/edit?usp=sharing)
 - [2025 PAG Workshop](http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2025) and
   [intro slides](https://docs.google.com/presentation/d/1uL5x1Mxewxn5NdKOLaVz05Hns_-GRslJMyO8Q1dtxr0/edit?usp=sharing)
 - [2024 PAG Workshop](http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2024) and

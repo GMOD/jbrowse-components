@@ -2,7 +2,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition'
-import LegendBar from '../shared/components/LegendBar'
+import LegendBar from '../shared/components/MultiVariantLegendBar'
 
 import type { MultiLinearVariantMatrixDisplayModel } from './model'
 import type {

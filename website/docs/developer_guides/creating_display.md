@@ -1,6 +1,6 @@
 ---
 id: creating_display
-title: Creating a custom display type
+title: Creating custom display types
 ---
 
 Display types tell JBrowse how to "display" a given track in a particular view.

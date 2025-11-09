@@ -18,7 +18,6 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
 import { autorun, observable, transaction } from 'mobx'
 import {
   addDisposer,
@@ -395,6 +394,8 @@ export default function stateModelFactory(pm: PluginManager) {
         self.hview.zoomIn()
         self.vview.zoomIn()
       },
+    }))
+    .actions(self => ({
       /**
        * #action
        */
@@ -448,11 +449,13 @@ export default function stateModelFactory(pm: PluginManager) {
       hideTrack(trackId: string) {
         const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
+        const tracks = self.tracks.filter(t => t.configuration === conf)
         transaction(() => {
-          t.forEach(t => self.tracks.remove(t))
+          for (const track of tracks) {
+            self.tracks.remove(track)
+          }
         })
-        return t.length
+        return tracks.length
       },
       /**
        * #action
@@ -509,8 +512,45 @@ export default function stateModelFactory(pm: PluginManager) {
       },
       /**
        * #action
+       * Calculate borders synchronously for a given zoom level
+       */
+      calculateBorders() {
+        if (self.volatileWidth === undefined) {
+          return { borderX: self.borderX, borderY: self.borderY }
+        }
+        const { vview, hview, viewHeight, viewWidth } = self
+        const padding = 40
+        const vblocks = vview.dynamicBlocks.contentBlocks
+        const hblocks = hview.dynamicBlocks.contentBlocks
+        const hoffset = hview.offsetPx
+        const voffset = vview.offsetPx
+
+        const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
+        const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
+        const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
+        const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
+
+        return {
+          borderX: Math.max(bx + padding, 50),
+          borderY: Math.max(by + padding, 50),
+        }
+      },
+      /**
+       * #action
        */
       showAllRegions() {
+        // First zoom to max to trigger border recalculation
+        self.hview.zoomTo(self.hview.maxBpPerPx)
+        self.vview.zoomTo(self.vview.maxBpPerPx)
+
+        // Calculate what borders should be at this zoom level
+        const { borderX, borderY } = this.calculateBorders()
+
+        // Apply calculated borders
+        self.setBorderX(borderX)
+        self.setBorderY(borderY)
+
+        // Now zoom again with updated borders/dimensions and center
         self.hview.zoomTo(self.hview.maxBpPerPx)
         self.vview.zoomTo(self.vview.maxBpPerPx)
         self.vview.center()
@@ -598,8 +638,12 @@ export default function stateModelFactory(pm: PluginManager) {
       async exportSvg(opts: ExportSvgOptions = {}) {
         const { renderToSvg } = await import('./svgcomponents/SVGDotplotView')
         const html = await renderToSvg(self as DotplotViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {
@@ -635,22 +679,23 @@ export default function stateModelFactory(pm: PluginManager) {
                 return
               }
 
+              const { hview, assemblyNames, vview } = self
               // also don't operate if displayedRegions already set, this is a
               // helper autorun to load regions from assembly
               if (
-                self.hview.displayedRegions.length > 0 &&
-                self.vview.displayedRegions.length > 0
+                hview.displayedRegions.length &&
+                vview.displayedRegions.length
               ) {
                 return
               }
 
-              const views = [self.hview, self.vview]
               transaction(() => {
-                self.assemblyNames.forEach((name, index) => {
-                  const assembly = session.assemblyManager.get(name)
-                  const view = views[index]!
-                  view.setDisplayedRegions(assembly?.regions || [])
-                })
+                hview.setDisplayedRegions(
+                  session.assemblyManager.get(assemblyNames[0]!)?.regions || [],
+                )
+                vview.setDisplayedRegions(
+                  session.assemblyManager.get(assemblyNames[1]!)?.regions || [],
+                )
                 self.showAllRegions()
               })
             },
@@ -664,21 +709,11 @@ export default function stateModelFactory(pm: PluginManager) {
             if (self.volatileWidth === undefined) {
               return
             }
-            const { vview, hview, viewHeight, viewWidth } = self
-            const padding = 40
-            const vblocks = vview.dynamicBlocks.contentBlocks
-            const hblocks = hview.dynamicBlocks.contentBlocks
-            const hoffset = hview.offsetPx
-            const voffset = vview.offsetPx
 
-            const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
-            const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
-            const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
-            const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
-
-            // these are set via autorun to avoid dependency cycle
-            self.setBorderY(Math.max(by + padding, 50))
-            self.setBorderX(Math.max(bx + padding, 50))
+            // Calculate and apply borders
+            const { borderX, borderY } = self.calculateBorders()
+            self.setBorderX(borderX)
+            self.setBorderY(borderY)
           }),
         )
       },
@@ -730,7 +765,6 @@ export default function stateModelFactory(pm: PluginManager) {
               ])
             },
           },
-
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,

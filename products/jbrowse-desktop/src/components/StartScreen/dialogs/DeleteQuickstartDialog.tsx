@@ -1,13 +1,7 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  Typography,
-} from '@mui/material'
+import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
+import { DialogContentText, Typography } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
 
 const DeleteSessionDialog = ({
@@ -19,44 +13,25 @@ const DeleteSessionDialog = ({
 }) => {
   const [error, setError] = useState<unknown>()
   return (
-    <Dialog
+    <ConfirmDialog
       open
-      onClose={() => {
+      title={`Delete "${quickstartToDelete}"?`}
+      onCancel={() => {
         onClose(false)
       }}
-      title={`Delete ${quickstartToDelete} quickstart?`}
+      onSubmit={async () => {
+        try {
+          await ipcRenderer.invoke('deleteQuickstart', quickstartToDelete)
+          onClose(true)
+        } catch (e) {
+          console.error(e)
+          setError(e)
+        }
+      }}
     >
-      <DialogContent>
-        <DialogContentText>This action cannot be undone</DialogContentText>
-        {error ? <Typography color="error">{`${error}`}</Typography> : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            onClose(false)
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={async () => {
-            try {
-              await ipcRenderer.invoke('deleteQuickstart', quickstartToDelete)
-              onClose(true)
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            }
-          }}
-          color="primary"
-          variant="contained"
-          autoFocus
-        >
-          Delete
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <DialogContentText>This action cannot be undone</DialogContentText>
+      {error ? <Typography color="error">{`${error}`}</Typography> : null}
+    </ConfirmDialog>
   )
 }
 

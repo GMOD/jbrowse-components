@@ -7,7 +7,7 @@ import {
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import type { BaseLinearDisplayModel } from '../model'
 
 const FloatingLabels = observer(function ({
   model,

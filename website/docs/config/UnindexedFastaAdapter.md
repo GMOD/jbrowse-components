@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### UnindexedFastaAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "UnindexedFastaAdapter",
+  "uri": "yourfile.fa"
+}
+```
+
 ### UnindexedFastaAdapter - Slots
 
 #### slot: rewriteRefNames

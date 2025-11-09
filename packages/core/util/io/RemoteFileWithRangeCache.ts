@@ -66,7 +66,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
           s,
           len + 1,
         )) as BinaryRangeResponse
-        return new Response(buffer, {
+        return new Response(buffer as BodyInit, {
           status: 206,
           headers,
         })

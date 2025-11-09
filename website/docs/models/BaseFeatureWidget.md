@@ -49,9 +49,9 @@ type: types.literal('BaseFeatureWidget')
 
 ```js
 // type signature
-IType<any, any, any>
+IType<SimpleFeatureSerialized, SimpleFeatureSerialized, SimpleFeatureSerialized>
 // code
-featureData: types.frozen()
+featureData: types.frozen<MaybeSerializedFeat>()
 ```
 
 #### property: formattedFields
@@ -67,9 +67,9 @@ formattedFields: types.frozen()
 
 ```js
 // type signature
-IType<any, any, any>
+IType<SimpleFeatureSerialized, SimpleFeatureSerialized, SimpleFeatureSerialized>
 // code
-unformattedFeatureData: types.frozen()
+unformattedFeatureData: types.frozen<MaybeSerializedFeat>()
 ```
 
 #### property: view
@@ -125,9 +125,18 @@ maxDepth: types.maybe(types.number)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized; mode: string; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized; mode: SequenceDisplayMode; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
+```
+
+#### property: descriptions
+
+```js
+// type signature
+IType<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>
+// code
+descriptions: types.frozen<Record<string, unknown> | undefined>()
 ```
 
 ### BaseFeatureWidget - Actions
@@ -136,7 +145,7 @@ sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 
 ```js
 // type signature
-setFeatureData: (featureData: Record<string, unknown>) => void
+setFeatureData: (featureData: SimpleFeatureSerialized) => void
 ```
 
 #### action: clearFeatureData
@@ -150,7 +159,7 @@ clearFeatureData: () => void
 
 ```js
 // type signature
-setFormattedData: (feat: Record<string, unknown>) => void
+setFormattedData: (feat: SimpleFeatureSerialized) => void
 ```
 
 #### action: setExtra

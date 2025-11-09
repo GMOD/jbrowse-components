@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react'
 
 import LegendItem from './LegendItem'
+import LegendItemText from './LegendItemText'
 import RectBg from './RectBg'
 
 import type { WiggleDisplayModel } from '../model'
@@ -41,6 +42,7 @@ const ColorLegend = observer(function ({
           />
         ) : null
       }
+      {/* Render all background rectangles first */}
       {sources.map((source, idx) => (
         <LegendItem
           key={`${source.name}-${idx}`}
@@ -50,6 +52,17 @@ const ColorLegend = observer(function ({
           rowHeight={rowHeight}
           exportSVG={exportSVG}
           labelWidth={labelWidth}
+        />
+      ))}
+      {/* Then render all text elements on top */}
+      {sources.map((source, idx) => (
+        <LegendItemText
+          key={`${source.name}-text-${idx}`}
+          source={source}
+          idx={idx}
+          model={model}
+          rowHeight={rowHeight}
+          exportSVG={exportSVG}
         />
       ))}
     </>

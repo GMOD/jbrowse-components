@@ -1,4 +1,4 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   SimpleFeature,
@@ -8,6 +8,7 @@ import {
   min,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseStringSync } from 'gtf-nostream'
 
@@ -21,35 +22,32 @@ import type { Observer } from 'rxjs'
 
 type StatusCallback = (arg: string) => void
 
+type SimpleFeat = SimpleFeatureSerialized
+
 export default class GtfAdapter extends BaseFeatureDataAdapter {
-  calculatedIntervalTreeMap: Record<string, IntervalTree> = {}
+  calculatedIntervalTreeMap: Record<string, IntervalTree<SimpleFeat>> = {}
 
   gtfFeatures?: Promise<{
     header: string
-    intervalTreeMap: Record<string, (sc?: StatusCallback) => IntervalTree>
+    intervalTreeMap: Record<
+      string,
+      (sc?: StatusCallback) => IntervalTree<SimpleFeat>
+    >
   }>
 
   private async loadDataP(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
     const loc = openLocation(this.getConf('gtfLocation'), this.pluginManager)
     const buffer = await fetchAndMaybeUnzip(loc, opts)
-    const headerLines = []
+    const headerLines = [] as string[]
     const featureMap = {} as Record<string, string>
-    let blockStart = 0
 
-    let i = 0
-    const decoder = new TextDecoder('utf8')
-    while (blockStart < buffer.length) {
-      const n = buffer.indexOf(10, blockStart)
-      // could be a non-newline ended file, so slice to end of file if n===-1
-      const b =
-        n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)
-      const line = decoder.decode(b).trim()
-      if (line) {
+    parseLineByLine(
+      buffer,
+      line => {
         if (line.startsWith('#')) {
           headerLines.push(line)
         } else if (line.startsWith('>')) {
-          break
+          return false
         } else {
           const ret = line.indexOf('\t')
           const refName = line.slice(0, ret)
@@ -58,15 +56,10 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           }
           featureMap[refName] += `${line}\n`
         }
-      }
-      if (i++ % 10_000 === 0) {
-        statusCallback(
-          `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
-        )
-      }
-
-      blockStart = n + 1
-    }
+        return true
+      },
+      opts?.statusCallback,
+    )
 
     const intervalTreeMap = Object.fromEntries(
       Object.entries(featureMap).map(([refName, lines]) => [
@@ -74,16 +67,16 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
         (sc?: (arg: string) => void) => {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GTF data')
-            const intervalTree = new IntervalTree()
-            ;(parseStringSync(lines) as FeatureLoc[][])
+            const intervalTree = new IntervalTree<SimpleFeat>()
+            for (const obj of (parseStringSync(lines) as FeatureLoc[][])
               .flat()
-              .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))
-              .forEach(obj =>
-                intervalTree.insert(
-                  [obj.start as number, obj.end as number],
-                  obj,
-                ),
+              .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))) {
+              intervalTree.insert(
+                [obj.start as number, obj.end as number],
+                obj as SimpleFeatureSerialized,
               )
+            }
+
             this.calculatedIntervalTreeMap[refName] = intervalTree
           }
           return this.calculatedIntervalTreeMap[refName]
@@ -146,7 +139,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const aggregateField = this.getConf('aggregateField')
+    const aggregateField = this.getConf('aggregateField') as string
     const { start, end, refName } = query
     const { intervalTreeMap } = await this.loadData(opts)
     const feats = intervalTreeMap[refName]?.(opts.statusCallback).search([
@@ -177,8 +170,10 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           await this.getFeaturesHelper({
             query: {
               ...query,
-              start: minStart,
-              end: maxEnd,
+              // re-query with 500kb added onto start and end, in order to catch
+              // gene subfeatures that may not overlap your view
+              start: minStart - 500_000,
+              end: maxEnd + 500_000,
             },
             opts,
             observer,
@@ -190,12 +185,8 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       }
 
       const parentAggregation = {} as Record<string, SimpleFeatureSerialized[]>
-
-      if (feats.some(f => f.uniqueId === undefined)) {
-        throw new Error('found uniqueId undefined')
-      }
       for (const feat of feats) {
-        const aggr = feat[aggregateField]
+        const aggr = feat[aggregateField] as string
         if (!parentAggregation[aggr]) {
           parentAggregation[aggr] = []
         }
@@ -236,6 +227,4 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
     }
     observer.complete()
   }
-
-  public freeResources(/* { region } */) {}
 }

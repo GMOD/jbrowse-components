@@ -1,7 +1,6 @@
 {
   "assemblies": [
     {
-      "name": "sequence",
       "name": "Wuhan-Hu-1",
       "sequence": {
         "type": "ReferenceSequenceTrack",

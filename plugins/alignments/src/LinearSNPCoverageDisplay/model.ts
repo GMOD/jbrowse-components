@@ -86,6 +86,10 @@ function stateModelFactory(
       /**
        * #volatile
        */
+      simplexModifications: new Set<string>(),
+      /**
+       * #volatile
+       */
       modificationsReady: false,
     }))
     .views(self => ({
@@ -148,10 +152,22 @@ function stateModelFactory(
           }
         }
       },
+      /**
+       * #action
+       */
+      setSimplexModifications(simplex: string[]) {
+        self.simplexModifications = new Set(simplex)
+      },
     }))
     .views(self => {
       const { adapterProps: superAdapterProps } = self
       return {
+        /**
+         * #getter
+         */
+        get modificationThreshold() {
+          return self.colorBy?.modifications?.threshold ?? 10
+        },
         /**
          * #getter
          */
@@ -222,6 +238,7 @@ function stateModelFactory(
             ...superProps,
             filters,
             filterBy,
+            modificationThreshold: this.modificationThreshold,
           }
         },
       }
@@ -265,13 +282,15 @@ function stateModelFactory(
             const { staticBlocks } = view
             const { colorBy } = self
             if (colorBy?.type === 'modifications') {
-              const vals = await getUniqueModifications({
-                model: self,
-                adapterConfig: getConf(self.parentTrack, 'adapter'),
-                blocks: staticBlocks,
-              })
+              const { modifications, simplexModifications } =
+                await getUniqueModifications({
+                  model: self,
+                  adapterConfig: getConf(self.parentTrack, 'adapter'),
+                  blocks: staticBlocks,
+                })
               if (isAlive(self)) {
-                self.updateVisibleModifications(vals)
+                self.updateVisibleModifications(modifications)
+                self.setSimplexModifications(simplexModifications)
                 self.setModificationsReady(true)
               }
             } else {
@@ -292,29 +311,24 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get renderReady() {
+        renderReady() {
           const superProps = superRenderProps()
           return !superProps.notReady && self.modificationsReady
         },
 
         /**
-         * #getter
-         */
-        get ready() {
-          return this.renderReady
-        },
-        /**
          * #method
          */
         renderProps() {
-          const { colorBy, visibleModifications } = self
+          const { colorBy, visibleModifications, simplexModifications } = self
           return {
             ...superRenderProps(),
-            notReady: !this.ready,
+            notReady: !this.renderReady(),
             colorBy,
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),
             ),
+            simplexModifications: [...simplexModifications],
           }
         },
         /**

@@ -24,8 +24,7 @@ Example SyntenyTrack config:
 We can load a SyntenyTrack from PAF with the CLI e.g. with:
 
 ```bash
-jbrowse add-track myfile.paf --type SyntenyTrack --assemblyNames \
-    grape,peach --load copy --out /var/www/html/jbrowse2
+jbrowse add-track myfile.paf --assemblyNames grape,peach --load copy --out /var/www/html/jbrowse2
 ```
 
 The first assembly is the "target" and the second assembly is the "query."
@@ -52,10 +51,10 @@ minimap2. It can be used for SyntenyTracks:
 Slots
 
 - `pafLocation` - the location of the PAF file. The pafLocation can refer to a
-  gzipped or unzipped delta file. It will be read into memory entirely as it is
+  gzip'ed or plaintext delta file. It will be read into memory entirely as it is
   not an indexed file format.
 - `assemblyNames` - list of assembly names, typically two (first in list is
-  target, second is query)
+  target assembly, second is query assembly)
 - `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
   query
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
@@ -79,10 +78,10 @@ for SyntenyTracks:
 Slots
 
 - `deltaLocation` - the location of the delta file. The deltaLocation can refer
-  to a gzipped or unzipped delta file. It will be read into memory entirely as
+  to a gzip'ed or unzipped delta file. It will be read into memory entirely as
   it is not an indexed file format.
 - `assemblyNames` - list of assembly names, typically two (first in list is
-  target, second is query)
+  target assembly, second is query assembly)
 - `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
   query
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
@@ -106,10 +105,10 @@ for SyntenyTracks:
 Slots
 
 - `chainLocation` - the location of the UCSC chain file. The chainLocation can
-  refer to a gzipped or unzipped delta file. It will be read into memory
+  refer to a gzip'ed or unzipped delta file. It will be read into memory
   entirely as it is not an indexed file format.
 - `assemblyNames` - list of assembly names, typically two (first in list is
-  target, second is query)
+  target assembly, second is query assembly)
 - `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
   query
 - `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
@@ -144,10 +143,10 @@ MCScanAnchorsAdapter).
 Slots:
 
 - `mcscanAnchorsLocation` - the location of the .anchors file from the MCScan
-  workflow. The .anchors file has three columns. It can be gzipped or ungzipped,
+  workflow. The .anchors file has three columns. It can be gzip'd or plaintext,
   and is read into memory whole
 - `bed1Location` - the location of the first assemblies .bed file from the
-  MCScan workflow. It can be gzipped or ungzipped, and is read into memory
+  MCScan workflow. It can be gzip'ed or plaintext, and is read into memory
   whole. This would refer to the gene names on the "left" side of the .anchors
   file.
 - `bed2Location` - the location of the second assemblies .bed file from the

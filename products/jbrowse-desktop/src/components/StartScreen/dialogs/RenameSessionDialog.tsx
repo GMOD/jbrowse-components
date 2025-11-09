@@ -1,14 +1,8 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  Input,
-  Typography,
-} from '@mui/material'
+import { ErrorMessage } from '@jbrowse/core/ui'
+import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
+import { DialogContentText, Input } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
 
 const RenameSessionDialog = ({
@@ -22,58 +16,38 @@ const RenameSessionDialog = ({
   const [error, setError] = useState<unknown>()
 
   return (
-    <Dialog
+    <ConfirmDialog
       open
-      onClose={() => {
+      onCancel={() => {
         onClose(false)
+      }}
+      onSubmit={async () => {
+        try {
+          await ipcRenderer.invoke(
+            'renameSession',
+            sessionToRename?.path,
+            newSessionName,
+          )
+          onClose(true)
+        } catch (e) {
+          console.error(e)
+          setError(e)
+        }
       }}
       title="Rename session"
     >
-      <DialogContent>
-        <DialogContentText>
-          Please enter a new name for the session:
-        </DialogContentText>
-        <Input
-          autoFocus
-          defaultValue={sessionToRename?.name}
-          onChange={event => {
-            setNewSessionName(event.target.value)
-          }}
-        />
-        {error ? (
-          <Typography color="error" variant="h6">{`${error}`}</Typography>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            onClose(false)
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={async () => {
-            try {
-              await ipcRenderer.invoke(
-                'renameSession',
-                sessionToRename?.path,
-                newSessionName,
-              )
-              onClose(true)
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            }
-          }}
-          color="primary"
-          variant="contained"
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <DialogContentText>
+        Please enter a new name for the session:
+      </DialogContentText>
+      <Input
+        autoFocus
+        defaultValue={sessionToRename?.name}
+        onChange={event => {
+          setNewSessionName(event.target.value)
+        }}
+      />
+      {error ? <ErrorMessage error={error} /> : null}
+    </ConfirmDialog>
   )
 }
 

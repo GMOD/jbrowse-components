@@ -40,5 +40,8 @@ export async function getUniqueModifications({
       ...opts,
     },
   )
-  return values as ModificationType[]
+  return values as {
+    modifications: ModificationType[]
+    simplexModifications: string[]
+  }
 }

@@ -13,7 +13,7 @@ export const sortFeature = (
   const { pos, type } = sortedBy
 
   // only sort on features that intersect center line, append those outside post-sort
-  featureArray.forEach(innerArray => {
+  for (const innerArray of featureArray) {
     const feature = innerArray
     const start = feature.get('start')
     const end = feature.get('end')
@@ -22,7 +22,7 @@ export const sortFeature = (
     } else {
       featuresOutsideCenter.push(innerArray)
     }
-  })
+  }
 
   const isCram = featureArray.length ? featureArray[0]!.get('tags') : false
   switch (type) {

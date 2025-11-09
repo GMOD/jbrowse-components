@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react'
 
-import type { DisplayModel } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
@@ -17,7 +16,7 @@ const FeatureGlyph = observer(function (props: {
   fontHeight: number
   allowedWidthExpansion: number
   exportSVG?: unknown
-  displayModel?: DisplayModel
+  displayModel?: any
   selected?: boolean
   reversed?: boolean
   topLevel?: boolean

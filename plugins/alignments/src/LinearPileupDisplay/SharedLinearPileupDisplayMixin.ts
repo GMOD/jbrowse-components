@@ -6,7 +6,6 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   SimpleFeature,
   getContainingTrack,
@@ -18,8 +17,8 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import copy from 'copy-to-clipboard'
 import { autorun, observable } from 'mobx'
 import { addDisposer, cast, isAlive, types } from 'mobx-state-tree'
 
@@ -34,16 +33,17 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
 // lazies
 const FilterByTagDialog = lazy(
   () => import('../shared/components/FilterByTagDialog'),
 )
 const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog'))
 const SetFeatureHeightDialog = lazy(
-  () => import('./components/SetFeatureHeightDialog'),
+  () => import('../shared/components/SetFeatureHeightDialog'),
 )
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
+const SetMaxHeightDialog = lazy(
+  () => import('../shared/components/SetMaxHeightDialog'),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -211,12 +211,12 @@ export function SharedLinearPileupDisplayMixin(
           'lightsalmon',
         ]
 
-        uniqueTag.forEach(value => {
+        for (const value of uniqueTag) {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
             self.colorTagMap.set(value, colorPalette[totalKeys]!)
           }
-        })
+        }
       },
 
       /**
@@ -244,17 +244,6 @@ export function SharedLinearPileupDisplayMixin(
           session.showWidget(featureWidget)
         }
         session.setSelection(feature)
-      },
-
-      /**
-       * #action
-       * uses copy-to-clipboard and generates notification
-       */
-      copyFeatureToClipboard(feature: Feature) {
-        const { uniqueId, ...rest } = feature.toJSON()
-        const session = getSession(self)
-        copy(JSON.stringify(rest, null, 4))
-        session.notify('Copied to clipboard', 'success')
       },
 
       /**
@@ -289,6 +278,17 @@ export function SharedLinearPileupDisplayMixin(
     }))
 
     .views(self => ({
+      /**
+       * #method
+       * uses copy-to-clipboard and generates notification
+       */
+      async copyFeatureToClipboard(feature: Feature) {
+        const { uniqueId, ...rest } = feature.toJSON()
+        const session = getSession(self)
+        const { default: copy } = await import('copy-to-clipboard')
+        copy(JSON.stringify(rest, null, 4))
+        session.notify('Copied to clipboard', 'success')
+      },
       /**
        * #getter
        */
@@ -375,7 +375,7 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Open feature details',
                   icon: MenuOpenIcon,
-                  onClick: (): void => {
+                  onClick: () => {
                     self.clearFeatureSelection()
                     self.selectFeature(feat)
                   },
@@ -383,7 +383,8 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
-                  onClick: (): void => {
+                  onClick: () => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.copyFeatureToClipboard(feat)
                   },
                 },
@@ -439,7 +440,7 @@ export function SharedLinearPileupDisplayMixin(
                 }
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             },
 
@@ -473,7 +474,7 @@ export function SharedLinearPileupDisplayMixin(
                 }
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             },
           }
@@ -683,10 +684,10 @@ export function SharedLinearPileupDisplayMixin(
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
-                  // check featureIdUnderMouse is still the same as the
-                  // feature.id that was returned e.g. that the user hasn't
-                  // moused over to a new position during the async operation
-                  // above
+                  // check featureIdUnderMouse is still the same
+                  // as the feature.id that was returned e.g. that
+                  // the user hasn't moused over to a new position
+                  // during the async operation above
                   if (
                     isAlive(self) &&
                     feature &&

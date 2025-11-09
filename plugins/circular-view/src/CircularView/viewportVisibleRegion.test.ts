@@ -107,7 +107,7 @@ describe('viewportVisibleSection', () => {
 })
 
 describe('cartesian to polar', () => {
-  ;[
+  for (const testCase of [
     [
       [-1, -1],
       [1.414, 180 + 45],
@@ -140,7 +140,7 @@ describe('cartesian to polar', () => {
       [1, 0],
       [1, 0],
     ],
-  ].forEach(testCase => {
+  ]) {
     const [input, output] = testCase
     test(`${input} -> ${output}`, () => {
       // @ts-expect-error
@@ -148,23 +148,23 @@ describe('cartesian to polar', () => {
       expect(result[0]).toBeCloseTo(output![0]!)
       expect((result[1] * 180) / Math.PI).toBeCloseTo(output![1]!)
     })
-  })
+  }
 })
 
 describe('theta overlap testing', () => {
-  ;[
+  for (const testCase of [
     [[0, 2 * Math.PI, 0, 2 * Math.PI], true],
     [[6.1, Math.PI / 2, 0, Math.PI / 2], true],
     [[6.1, Math.PI / 2, 0, 0.1], true],
     [[6.1, 0.1, 6.12, 0.05], true],
     [[-12, 0.1, -12.05, 0.05], false],
     [[-12, 0.1, -12.05, 0.06], true],
-  ].forEach(testCase => {
+  ]) {
     const [input, output] = testCase
     test(`${input} -> ${output}`, () => {
       // @ts-expect-error
       const result = thetaRangesOverlap(...input)
       expect(result).toBe(output)
     })
-  })
+  }
 })

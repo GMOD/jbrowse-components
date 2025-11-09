@@ -3,10 +3,11 @@ import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { useFeatureSequence } from './hooks'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector'
+import { SimpleFeature, getSession } from '../../util'
+import { useFeatureSequence } from '../../util/useFeatureSequence'
 
 import type { SimpleFeatureSerialized } from '../../util'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory'
@@ -29,13 +30,16 @@ const SequenceFeatureDetails = observer(function ({
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
   const [openInDialog, setOpenInDialog] = useState(false)
-  const [force, setForce] = useState(false)
-  const { sequence, error } = useFeatureSequence(
-    model,
-    feature,
+  const [forceLoad, setForceLoad] = useState(false)
+  const session = getSession(model)
+  const assemblyName = model.view?.assemblyNames?.[0]
+  const { sequence, error } = useFeatureSequence({
+    assemblyName,
+    session,
+    feature: new SimpleFeature(feature),
     upDownBp,
-    force,
-  )
+    forceLoad,
+  })
   useEffect(() => {
     sequenceFeatureDetails.setFeature(feature)
   }, [sequenceFeatureDetails, feature])
@@ -51,11 +55,7 @@ const SequenceFeatureDetails = observer(function ({
             {
               label: 'Open in dialog',
               onClick: () => {
-                // this is given a setTimeout because it allows the menu to
-                // close before dialog opens
-                setTimeout(() => {
-                  setOpenInDialog(true)
-                }, 1)
+                setOpenInDialog(true)
               },
             },
           ]}
@@ -92,7 +92,7 @@ const SequenceFeatureDetails = observer(function ({
                 variant="contained"
                 color="inherit"
                 onClick={() => {
-                  setForce(true)
+                  setForceLoad(true)
                 }}
               >
                 Force load

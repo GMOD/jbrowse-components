@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
@@ -18,7 +18,6 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-// other
 import { findLastIndex } from '../util'
 
 import type {
@@ -119,6 +118,7 @@ export interface BaseMenuItem {
   subLabel?: string
   icon?: React.ComponentType<SvgIconProps>
   disabled?: boolean
+  helpText?: string
 }
 
 export interface NormalMenuItem extends BaseMenuItem {
@@ -208,7 +208,9 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
 
     useEffect(() => {
       if (!open) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSubMenuAnchorEl(undefined)
+
         setOpenSubMenuIdx(undefined)
       }
     }, [open])
@@ -230,7 +232,7 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
       }
     }, [isSubMenuOpen, open, subMenuAnchorEl])
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (anchorEl) {
         const rect = (anchorEl as HTMLElement).getBoundingClientRect()
         if (position) {
@@ -238,6 +240,7 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
             rect.top !== position.top ||
             rect.left + rect.width !== position.left
           ) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPosition({ top: rect.top, left: rect.left + rect.width })
           }
         } else {
@@ -326,6 +329,7 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
                       }
                     } else {
                       setSubMenuAnchorEl(undefined)
+
                       setOpenSubMenuIdx(undefined)
                     }
                   }}
@@ -430,6 +434,7 @@ function Menu(props: MenuProps) {
     <Popover
       open={open}
       onClose={onClose}
+      style={{ zIndex: 10000, ...other.style }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'right',

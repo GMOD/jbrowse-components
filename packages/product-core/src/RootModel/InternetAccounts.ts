@@ -113,7 +113,9 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const { jbrowse } = self as typeof self & BaseRootModel
-            jbrowse.internetAccounts.forEach(self.initializeInternetAccount)
+            for (const internetAccount of jbrowse.internetAccounts) {
+              self.initializeInternetAccount(internetAccount)
+            }
           }),
         )
       },

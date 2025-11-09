@@ -234,7 +234,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           const outLocation = path.join(
             userData,
             'nameIndices',
-            `trix-${+Date.now()}`,
+            `trix-${Date.now()}`,
           )
           fs.mkdirSync(outLocation, { recursive: true })
           await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {
@@ -251,7 +251,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             timeout: 1000 * ONE_HOUR,
           })
           if (indexType === 'perTrack') {
-            trackIds.forEach(trackId => {
+            for (const trackId of trackIds) {
               this.addTrackTextSearchConf({
                 trackId,
                 assemblies,
@@ -263,9 +263,9 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 `Successfully indexed track with trackId: ${trackId} `,
                 'success',
               )
-            })
+            }
           } else {
-            assemblies.forEach(assemblyName => {
+            for (const assemblyName of assemblies) {
               const indexedTrackIds = trackConfigs
                 .filter(track =>
                   assemblyName
@@ -283,7 +283,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 `Successfully indexed assembly: ${assemblyName} `,
                 'success',
               )
-            })
+            }
           }
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()

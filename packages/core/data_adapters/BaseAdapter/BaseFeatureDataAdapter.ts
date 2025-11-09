@@ -183,7 +183,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * is)
    */
   getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
-    let lastTime = +Date.now()
+    let lastTime = Date.now()
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
       const sampleCenter = start * 0.75 + end * 0.25
@@ -199,25 +199,32 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
         ).pipe(toArray()),
       )
 
-      return maybeRecordStats(
-        length,
-        { featureDensity: features.length / length },
-        features.length,
+      return maybeRecordStats({
+        interval: length,
+        statsSampleFeatures: features.length,
         expansionTime,
-      )
+        stats: {
+          featureDensity: features.length / length,
+        },
+      })
     }
 
-    const maybeRecordStats = async (
-      interval: number,
-      stats: FeatureDensityStats,
-      statsSampleFeatures: number,
-      expansionTime: number,
-    ): Promise<FeatureDensityStats> => {
+    const maybeRecordStats = async ({
+      interval,
+      stats,
+      statsSampleFeatures,
+      expansionTime,
+    }: {
+      interval: number
+      stats: FeatureDensityStats
+      statsSampleFeatures: number
+      expansionTime: number
+    }): Promise<FeatureDensityStats> => {
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 70 || interval * 2 > refLen) {
         return stats
       } else if (expansionTime <= 5000) {
-        const currTime = +Date.now()
+        const currTime = Date.now()
         expansionTime += currTime - lastTime
         lastTime = currTime
         return statsFromInterval(interval * 2, expansionTime)

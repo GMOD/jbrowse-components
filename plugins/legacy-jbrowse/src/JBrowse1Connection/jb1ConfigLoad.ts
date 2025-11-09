@@ -178,19 +178,19 @@ function mergeTrackConfigs(a: Track[], b: Track[]): Track[] {
 
   // index the tracks in `a` by track label
   const aTracks: Record<string, Track> = {}
-  a.forEach((t, i): void => {
+  for (const [i, t] of a.entries()) {
     t.index = i
     aTracks[t.label] = t
-  })
+  }
 
-  b.forEach((bT): void => {
+  for (const bT of b) {
     const aT = aTracks[bT.label]
     if (aT) {
       mergeConfigs(aT, bT)
     } else {
       a.push(bT)
     }
-  })
+  }
 
   return a
 }
@@ -232,9 +232,9 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
       return loadRecur(includedData, newUpstreamConf)
     })
     const includedDataObjects = await Promise.all(loads)
-    includedDataObjects.forEach((includedData): void => {
+    for (const includedData of includedDataObjects) {
       config = mergeConfigs(config, includedData) || config
-    })
+    }
     return config
   }
 

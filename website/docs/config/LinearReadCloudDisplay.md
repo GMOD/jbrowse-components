@@ -48,6 +48,15 @@ colorBy: {
       }
 ```
 
+#### slot: filterBy
+
+```js
+filterBy: {
+        type: 'frozen',
+        defaultValue: defaultFilterFlags,
+      }
+```
+
 ### LinearReadCloudDisplay - Derives from
 
 ```js

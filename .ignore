@@ -2,7 +2,7 @@
 test_data/many_contigs/large.chrom.sizes
 packages/core/ui/react-colorful.js
 plugins/legacy-jbrowse/test_data
-plugins/data-management/src/ucsc-trackhub/ucscAssemblies.ts
+plugins/data-management/src/UCSCTrackHubConnection/ucscAssemblies.ts
 products/jbrowse-web/src/tests/Loader.test.tsx
 test_data/yeast_synteny/
 test_data/hg38_aliases.txt
@@ -19,3 +19,5 @@ website/docs/models/
 plugins/spreadsheet-view/src/SpreadsheetView/test_data/1801160099-N32519_26611_S51_56704.hard-filtered.vcf
 test_data/sars-cov2/ncbi_original.gff3
 plugins/data-management/src/UCSCTrackHub/ucscAssemblies.ts
+test_data/config_demo.json
+docs/models/LinearGenomeView.md

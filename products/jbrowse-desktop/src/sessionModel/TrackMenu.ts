@@ -62,9 +62,9 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
           onClick: () => {
             const now = Date.now()
             trackSnapshot.trackId += `-${now}`
-            trackSnapshot.displays.forEach((d: { displayId: string }) => {
+            for (const d of trackSnapshot.displays) {
               d.displayId += `-${now}`
-            })
+            }
             trackSnapshot.name += ' (copy)'
             trackSnapshot.category = undefined
             session.addTrackConf(trackSnapshot)

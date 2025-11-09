@@ -5,9 +5,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from 'mobx-state-tree'
 
 export function stateModelFactory(pluginManager: PluginManager) {
-  const baseModel = baseModelFactory(pluginManager)
   return types.compose(
-    baseModel,
+    baseModelFactory(pluginManager),
     types.model('AlignmentsFeatureWidget', {
       type: types.literal('AlignmentsFeatureWidget'),
     }),

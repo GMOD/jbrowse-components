@@ -1,4 +1,5 @@
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
+import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import {
   assembleLocString,
   getSession,
@@ -68,9 +69,10 @@ const BookmarkGrid = observer(function ({
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <DataGridFlexContainer>
       <DataGrid
         density="compact"
+        disableRowSelectionOnClick
         rows={rows}
         columns={[
           {
@@ -132,16 +134,18 @@ const BookmarkGrid = observer(function ({
         onRowSelectionModelChange={newRowSelectionModel => {
           if (bookmarksWithValidAssemblies.length > 0) {
             model.setSelectedBookmarks(
-              newRowSelectionModel.map(value => ({
+              [...newRowSelectionModel.ids].map(value => ({
                 ...rows[value as number]!,
               })),
             )
           }
         }}
-        rowSelectionModel={selectedBookmarks.map(r => r.id)}
-        disableRowSelectionOnClick
+        rowSelectionModel={{
+          type: 'include',
+          ids: new Set(selectedBookmarks.map(r => r.id)),
+        }}
       />
-    </div>
+    </DataGridFlexContainer>
   )
 })
 

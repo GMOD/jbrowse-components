@@ -52,8 +52,8 @@ test('stacks up overlapping features', () => {
     testRects.push([`feature-${i}`, 100 * i - 60, 100 * i + 60, 1] as const)
   }
 
-  for (let i = 0; i < testRects.length; i += 1) {
-    const top = l.addRect(...testRects[i]!)
+  for (const [i, testRect] of testRects.entries()) {
+    const top = l.addRect(...testRect)
     expect(top).toEqual((i % 2) * 4)
   }
 })

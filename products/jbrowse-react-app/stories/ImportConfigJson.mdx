@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/blocks'
+import { Meta, Story } from '@storybook/addon-docs/blocks'
 import {
   WithImportConfigJson,
   WithFetchConfigJson,
@@ -10,7 +10,7 @@ import {
 
 The jbrowse-web app is coded in such a way that it will fetch a config.json file
 from the current directory (or wherever is specified by the URL ?config=
-parameter). The @jbrowse/react-app does not do this however, and makes no
+parameter). The @jbrowse/react-app2 does not do this however, and makes no
 assumptions about URL parameters, so a developer must hand-code this themselves.
 This is typical of low level components, the developer gains more control over
 the app but must implement some things themselves

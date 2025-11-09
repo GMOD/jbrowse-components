@@ -13,7 +13,12 @@ const useStyles = makeStyles()({
     height: '100%',
     width: 1,
     position: 'absolute',
-    zIndex: 10,
+    background: 'red',
+    zIndex: 1001,
+  },
+  tooltipTarget: {
+    position: 'sticky',
+    width: 1,
   },
 })
 
@@ -25,16 +30,27 @@ const VerticalGuide = observer(function VerticalGuide({
   coordX: number
 }) {
   const { classes } = useStyles()
+  const { stickyViewHeaders, rubberbandTop } = model
+
   return (
-    <Tooltip open placement="top" title={stringify(model.pxToBp(coordX))} arrow>
-      <div
-        className={classes.guide}
-        style={{
-          left: coordX,
-          background: 'red',
-        }}
-      />
-    </Tooltip>
+    <>
+      <Tooltip
+        open
+        placement="top"
+        title={stringify(model.pxToBp(coordX))}
+        arrow
+      >
+        <div
+          className={classes.tooltipTarget}
+          style={{
+            left: coordX + 6,
+            top: rubberbandTop,
+            position: stickyViewHeaders ? 'sticky' : undefined,
+          }}
+        />
+      </Tooltip>
+      <div className={classes.guide} style={{ left: coordX }} />
+    </>
   )
 })
 

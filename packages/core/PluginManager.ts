@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { isModelType, isType, types } from 'mobx-state-tree'
 
-// Pluggable elements
 import CorePlugin from './CorePlugin'
+import PhasedScheduler from './PhasedScheduler'
 import ReExports from './ReExports'
 import {
   ConfigurationSchema,
@@ -30,36 +30,6 @@ import type {
 import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import type { AbstractRootModel } from './util'
 import type { IAnyModelType, IAnyType } from 'mobx-state-tree'
-
-// helper class that keeps groups of callbacks that are then run in a specified
-// order by group
-class PhasedScheduler<PhaseName extends string> {
-  phaseCallbacks = new Map<PhaseName, Function[]>()
-
-  phaseOrder: PhaseName[] = []
-
-  constructor(...phaseOrder: PhaseName[]) {
-    this.phaseOrder = phaseOrder
-  }
-
-  add(phase: PhaseName, callback: Function) {
-    if (!this.phaseOrder.includes(phase)) {
-      throw new Error(`unknown phase ${phase}`)
-    }
-    let phaseCallbacks = this.phaseCallbacks.get(phase)
-    if (!phaseCallbacks) {
-      phaseCallbacks = []
-      this.phaseCallbacks.set(phase, phaseCallbacks)
-    }
-    phaseCallbacks.push(callback)
-  }
-
-  run() {
-    this.phaseOrder.forEach(phaseName => {
-      this.phaseCallbacks.get(phaseName)?.forEach(callback => callback())
-    })
-  }
-}
 
 type PluggableElementTypeGroup =
   | 'renderer'
@@ -196,18 +166,44 @@ export default class PluginManager {
     })
 
     // add all the initial plugins
-    initialPlugins.forEach(plugin => {
+    for (const plugin of initialPlugins) {
       this.addPlugin(plugin)
-    })
+    }
   }
 
-  pluginConfigurationSchemas() {
+  pluginConfigurationNamespacedSchemas() {
     const configurationSchemas: Record<string, unknown> = {}
-    this.plugins.forEach(plugin => {
+    for (const plugin of this.plugins) {
       if (plugin.configurationSchema) {
         configurationSchemas[plugin.name] = plugin.configurationSchema
       }
-    })
+    }
+    return configurationSchemas
+  }
+
+  pluginConfigurationUnnamespacedSchemas() {
+    let configurationSchemas: Record<string, unknown> = {}
+    for (const plugin of this.plugins) {
+      if (plugin.configurationSchemaUnnamespaced) {
+        configurationSchemas = {
+          ...configurationSchemas,
+          ...plugin.configurationSchemaUnnamespaced,
+        }
+      }
+    }
+    return configurationSchemas
+  }
+
+  pluginConfigurationRootSchemas() {
+    let configurationSchemas: Record<string, unknown> = {}
+    for (const plugin of this.plugins) {
+      if (plugin.rootConfigurationSchema) {
+        configurationSchemas = {
+          ...configurationSchemas,
+          ...plugin.rootConfigurationSchema(this),
+        }
+      }
+    }
     return configurationSchemas
   }
 
@@ -264,9 +260,9 @@ export default class PluginManager {
       throw new Error('already configured')
     }
 
-    this.plugins.forEach(plugin => {
+    for (const plugin of this.plugins) {
       plugin.configure(this)
-    })
+    }
 
     this.configured = true
 
@@ -439,21 +435,21 @@ export default class PluginManager {
   ): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
       if (!pack) {
         throw new TypeError(
           `No jbrequire re-export defined for package '${lib}'. If this package must be shared between plugins, add it to ReExports.js. If it does not need to be shared, just import it normally.`,
         )
       }
       return pack
-    }
-
-    if (typeof lib === 'function') {
+    } else if (typeof lib === 'function') {
       return this.load(lib)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (lib.default) {
+    // @ts-expect-error
+    else if (lib.default) {
+      console.warn('initiated jbrequire on a {default:Function}')
+      // @ts-expect-error
       return this.jbrequire(lib.default)
     }
 
@@ -528,7 +524,7 @@ export default class PluginManager {
     const callback = () => {
       const track = cb(this)
       const displays = this.getElementTypesInGroup('display') as DisplayType[]
-      displays.forEach(display => {
+      for (const display of displays) {
         // track may have already added the displayType in its cb
         if (
           display.trackType === track.name &&
@@ -536,7 +532,7 @@ export default class PluginManager {
         ) {
           track.addDisplayType(display)
         }
-      })
+      }
       return track
     }
     return this.addElementType('track', callback)
@@ -550,7 +546,7 @@ export default class PluginManager {
     const callback = () => {
       const newView = cb(this)
       const displays = this.getElementTypesInGroup('display') as DisplayType[]
-      displays.forEach(display => {
+      for (const display of displays) {
         // view may have already added the displayType in its callback
         // see ViewType for description of extendedName
         if (
@@ -560,7 +556,7 @@ export default class PluginManager {
         ) {
           newView.addDisplayType(display)
         }
-      })
+      }
       return newView
     }
     return this.addElementType('view', callback)

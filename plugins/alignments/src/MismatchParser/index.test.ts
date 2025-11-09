@@ -24,58 +24,64 @@ test('md to mismatches', () => {
   ])
 })
 
-describe('get mismatches', () => {
-  it('simple deletion', () => {
-    // simple deletion
-    expect(getMismatches('56M1D45M', '56^A45', seq)).toEqual([
-      { start: 56, type: 'deletion', base: '*', length: 1 },
-    ])
-  })
+test('simple deletion', () => {
+  // simple deletion
+  expect(getMismatches('56M1D45M', '56^A45', seq)).toEqual([
+    { start: 56, type: 'deletion', base: '*', length: 1 },
+  ])
+})
 
-  it('simple insertion', () => {
-    // simple insertion
-    expect(
-      getMismatches(
-        '89M1I11M',
-        '100',
-        'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTTA',
-      ),
-    ).toEqual([{ start: 89, type: 'insertion', base: '1', length: 0 }])
-  })
+test('simple insertion', () => {
+  // simple insertion
+  expect(
+    getMismatches(
+      '89M1I11M',
+      '100',
+      'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTTA',
+    ),
+  ).toEqual([
+    {
+      start: 89,
+      type: 'insertion',
+      insertedBases: 'T',
+      base: '1',
+      length: 0,
+    },
+  ])
+})
 
-  it('deletion and a SNP', () => {
-    // contains a deletion and a SNP
-    // read GGGGG--ATTTTTT
-    //      |||||   ||||||
-    //      GGGGGACCTTTTTT
-    expect(getMismatches('5M2D6M', '5^AC0C5', 'GGGGGATTTTTT')).toEqual([
-      { start: 5, type: 'deletion', base: '*', length: 2 },
-      { start: 7, type: 'mismatch', base: 'A', altbase: 'C', length: 1 },
-    ])
-  })
+test('deletion and a SNP', () => {
+  // contains a deletion and a SNP
+  // read GGGGG--ATTTTTT
+  //      |||||   ||||||
+  //      GGGGGACCTTTTTT
+  expect(getMismatches('5M2D6M', '5^AC0C5', 'GGGGGATTTTTT')).toEqual([
+    { start: 5, type: 'deletion', base: '*', length: 2 },
+    { start: 7, type: 'mismatch', base: 'A', altbase: 'C', length: 1 },
+  ])
+})
 
-  it('0-length MD entries', () => {
-    // 0-length MD entries, which indicates two SNPs right next to each other
-    // "They generally occur between SNPs, or between a deletion then a SNP."
-    // http://seqanswers.com/forums/showthread.php?t=8978
-    //
-    // read GGGGGCATTTTT
-    //      |||||  |||||
-    // ref  GGGGGACTTTTT
-    expect(getMismatches('12M', '5A0C5', 'GGGGGCATTTTT')).toEqual([
-      { altbase: 'A', base: 'C', length: 1, start: 5, type: 'mismatch' },
-      { altbase: 'C', base: 'A', length: 1, start: 6, type: 'mismatch' },
-    ])
-  })
+test('0-length MD entries', () => {
+  // 0-length MD entries, which indicates two SNPs right next to each other
+  // "They generally occur between SNPs, or between a deletion then a SNP."
+  // http://seqanswers.com/forums/showthread.php?t=8978
+  //
+  // read GGGGGCATTTTT
+  //      |||||  |||||
+  // ref  GGGGGACTTTTT
+  expect(getMismatches('12M', '5A0C5', 'GGGGGCATTTTT')).toEqual([
+    { altbase: 'A', base: 'C', length: 1, start: 5, type: 'mismatch' },
+    { altbase: 'C', base: 'A', length: 1, start: 6, type: 'mismatch' },
+  ])
+})
 
-  it('non-0-length-MD string', () => {
-    // same as above but with the non-0-length MD string
-    // not sure if it is entirely legal, but may appear in the wild
-    expect(getMismatches('12M', '5AC5', 'GGGGGCATTTTT')).toEqual([
-      { altbase: 'A', base: 'C', length: 1, start: 5, type: 'mismatch' },
-      { altbase: 'C', base: 'A', length: 1, start: 6, type: 'mismatch' },
-    ])
-  })
+test('non-0-length-MD string', () => {
+  // same as above but with the non-0-length MD string
+  // not sure if it is entirely legal, but may appear in the wild
+  expect(getMismatches('12M', '5AC5', 'GGGGGCATTTTT')).toEqual([
+    { altbase: 'A', base: 'C', length: 1, start: 5, type: 'mismatch' },
+    { altbase: 'C', base: 'A', length: 1, start: 6, type: 'mismatch' },
+  ])
 })
 
 test('basic skip', () => {
@@ -95,7 +101,15 @@ test('vsbuffalo', () => {
       '100',
       'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     ),
-  ).toEqual([{ base: '1', length: 0, start: 89, type: 'insertion' }])
+  ).toEqual([
+    {
+      base: '1',
+      length: 0,
+      start: 89,
+      type: 'insertion',
+      insertedBases: 'A',
+    },
+  ])
 
   // https://github.com/vsbuffalo/devnotes/wiki/The-MD-Tag-in-BAM-Files
   // example 2
@@ -106,11 +120,18 @@ test('vsbuffalo', () => {
       'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     ),
   ).toEqual([
-    { base: '1', length: 0, start: 9, type: 'insertion' },
+    {
+      base: '1',
+      length: 0,
+      start: 9,
+      type: 'insertion',
+      insertedBases: 'A',
+    },
     {
       altbase: 'T',
       base: 'A',
       length: 1,
+      qual: undefined,
       start: 48,
       type: 'mismatch',
     },
@@ -118,6 +139,7 @@ test('vsbuffalo', () => {
       altbase: 'G',
       base: 'A',
       length: 1,
+      qual: undefined,
       start: 91,
       type: 'mismatch',
     },

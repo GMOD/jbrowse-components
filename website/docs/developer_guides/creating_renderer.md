@@ -1,6 +1,6 @@
 ---
 id: creating_renderer
-title: Creating a custom renderer
+title: Creating custom renderers
 ---
 
 import Figure from '../figure'
@@ -8,7 +8,7 @@ import Figure from '../figure'
 ### What is a renderer
 
 In JBrowse 1, a track type typically would directly call the data parser and do
-it's own rendering. In JBrowse 2, the data parsing and rendering is offloaded to
+its own rendering. In JBrowse 2, the data parsing and rendering is offloaded to
 a web-worker or other RPC. This allows things to be faster in many cases. This
 is conceptually related to "server side rendering" or SSR in React terms.
 
@@ -81,7 +81,7 @@ The layout is available on BoxRendererType renderers so that it can layout
 things in pileup format, and has an addRect function to get the y-coordinate at
 which to render your data.
 
-The features argument is a map of feature ID to the feature itself. To iterate
+The `features` argument is a map of feature ID to the feature itself. To iterate
 over the features Map, we can use an iterator or convert to an array:
 
 ```js
@@ -137,7 +137,7 @@ const model = types
 
 ### Rendering SVG
 
-Our SVG renderer is an example, where it extends the existing built in renderer
+Our SVG renderer is an example, where it extends the existing built-in renderer
 type with a custom ReactComponent only:
 
 ```js
@@ -192,17 +192,17 @@ export default function SvgFeatureRendering(props) {
 
 :::info Note
 
-1.The above SVG renderer is highly simplified, but it shows that you can have a
-simple React component that leverages the existing `BoxRendererType`, so that
-you do not have to necessarily create your own renderer class
+1. The above SVG renderer is highly simplified, but it shows that you can have a
+   simple React component that leverages the existing `BoxRendererType`, so that
+   you do not have to necessarily create your own renderer class
 
-2.The renderers receive an array of regions to render, but if they are only
-equipped to handle one region at a time then they can select only rendering to
-`regions[0]`
+2. The renderers receive an array of regions to render, but if they are only
+   equipped to handle one region at a time then they can select only rendering
+   to `regions[0]`
 
 :::
 
-### Overriding the renderer's getFeatures method
+### Overriding the renderer's `getFeatures` method
 
 Normally, it is sufficient to override the `getFeatures` function in your
 dataAdapter.

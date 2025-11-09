@@ -57,7 +57,7 @@ exports[`renders with just the required model elements 1`] = `
             class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
           >
             <div
-              class="MuiAccordion-region"
+              class="MuiAccordion-region css-at4ued-MuiAccordion-region"
               role="region"
             >
               <div
@@ -135,9 +135,25 @@ exports[`renders with just the required model elements 1`] = `
                   <div
                     class="css-xb19vs-fieldValue"
                   >
-                    <span>
+                    <div>
                       A
-                    </span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-1m8nxnb-field"
+                >
+                  <div
+                    aria-label="alternate base(s): Comma-separated list of alternate non-reference alleles"
+                    class="css-167enf1-fieldDescription-fieldName"
+                    data-mui-internal-clone-element="true"
+                  >
+                    ALT
+                  </div>
+                  <div
+                    class="css-xb19vs-fieldValue"
+                  >
+                    &lt;TRA&gt;
                   </div>
                 </div>
                 <div
@@ -153,9 +169,9 @@ exports[`renders with just the required model elements 1`] = `
                   <div
                     class="css-xb19vs-fieldValue"
                   >
-                    <span>
+                    <div>
                       10.4
-                    </span>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -170,9 +186,9 @@ exports[`renders with just the required model elements 1`] = `
                   <div
                     class="css-xb19vs-fieldValue"
                   >
-                    <span>
+                    <div>
                       5
-                    </span>
+                    </div>
                   </div>
                 </div>
                 <div

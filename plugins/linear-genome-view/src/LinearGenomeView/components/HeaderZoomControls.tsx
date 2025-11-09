@@ -1,7 +1,7 @@
 import { lazy, useEffect, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getSession } from '@jbrowse/core/util'
+import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
@@ -10,6 +10,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
+import type { SliderValueLabelProps } from '@mui/material'
 
 // lazies
 const RegionWidthEditorDialog = lazy(() => import('./RegionWidthEditorDialog'))
@@ -25,14 +26,27 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.text.secondary,
   },
 }))
-
+function ValueLabelComponent(props: SliderValueLabelProps) {
+  const { children, open, value } = props
+  return (
+    <Tooltip
+      open={open}
+      enterTouchDelay={0}
+      placement="top"
+      title={value}
+      arrow
+    >
+      {children}
+    </Tooltip>
+  )
+}
 const HeaderZoomControls = observer(function ({
   model,
 }: {
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { maxBpPerPx, minBpPerPx, bpPerPx } = model
+  const { width, maxBpPerPx, minBpPerPx, bpPerPx } = model
   const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
   useEffect(() => {
     setValue(-Math.log2(bpPerPx) * 100)
@@ -62,8 +76,15 @@ const HeaderZoomControls = observer(function ({
         min={-Math.log2(maxBpPerPx) * 100}
         max={-Math.log2(minBpPerPx) * 100}
         onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
+        valueLabelDisplay="auto"
+        valueLabelFormat={newValue =>
+          `Window size: ${getBpDisplayStr(2 ** (-newValue / 100) * width)}`
+        }
+        slots={{
+          valueLabel: ValueLabelComponent,
+        }}
         onChange={(_, val) => {
-          setValue(val as number)
+          setValue(val)
         }}
       />
       <Tooltip title="Zoom in 2x">

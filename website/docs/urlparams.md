@@ -9,9 +9,11 @@ import Figure from './figure'
 JBrowse Web features the ability to automatically provide URL parameters to
 setup a session
 
-Note that the embedded components like @jbrowse/react-linear-genome-view make no
-assumptions on how URL params are used, so would have to be implemented by the
-consumer of the library
+:::info note
+
+Note: that the embedded components like @jbrowse/react-linear-genome-view make
+no assumptions on how URL parameters are used, so would have to be implemented
+by the consumer of the library :::
 
 ## Linear genome view (simple)
 
@@ -22,7 +24,7 @@ Example
 
 `http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track`
 
-Here are the query params used here
+Here is a list the allowed query parameters in jbrowse-web
 
 ### ?config=
 
@@ -43,8 +45,8 @@ Example
 `&assembly=hg19`
 
 The &assembly parameter refers to an assembly's "name" field one of the
-"assemblies" array in the from the config.json. This is only used for launching
-a single linear genome view.
+"assemblies" array in the config.json. This is only used for launching a single
+linear genome view.
 
 ### &loc=
 
@@ -359,7 +361,7 @@ view types other than the linear genome view
 ### &session=json-
 
 Similar to encoded sessions, but more readable, `&session=json-` type sessions
-let you specify the input a JSON snapshot of a session session. This is slightly
+let you specify the input a JSON snapshot of a session. This is slightly
 different from a session spec, which has extra logic that loads the session.
 JSON sessions are literal session snapshots, like those that might come from the
 "Export session..." process

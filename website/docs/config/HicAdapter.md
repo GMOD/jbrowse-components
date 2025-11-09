@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### HicAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "HicAdapter",
+  "uri": "file.hic"
+}
+```
+
 ### HicAdapter - Slots
 
 #### slot: hicLocation

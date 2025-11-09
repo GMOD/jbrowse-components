@@ -11,17 +11,17 @@ const DEPENDENCY_TYPES = [
   'optionalDependencies',
   'peerDependencies',
 ]
-const subDirs = ['cgv', 'lgv', 'lgv-vite', 'react-app']
+const subDirs = ['cgv-vite', 'lgv-vite', 'app-vite']
 const root = workspaceRoot()!
 
 function main() {
   const packages = getPackages()
   const graph = getDependencyGraph(packages)
-  getLevels(graph).forEach(level => {
+  for (const level of getLevels(graph)) {
     const scopes = [] as string[]
-    level.forEach(pkg => {
+    for (const pkg of level) {
       scopes.push('--scope', pkg)
-    })
+    }
     const { signal, status } = spawn.sync(
       'yarn',
       ['lerna', 'exec', 'yarn', 'pack', ...scopes],
@@ -30,14 +30,14 @@ function main() {
     if (signal || (status !== null && status > 0)) {
       process.exit(status || 1)
     }
-  })
-  subDirs.forEach(dir => {
+  }
+  for (const dir of subDirs) {
     fs.mkdirSync(path.join('component_tests', dir, 'packed'), {
       recursive: true,
     })
-  })
+  }
 
-  Object.values(packages).forEach(packageInfo => {
+  for (const packageInfo of Object.values(packages)) {
     let { location } = packageInfo
     if (location === 'packages/core') {
       const files = fs.readdirSync(location)
@@ -60,18 +60,18 @@ function main() {
     const tarball = files.find(fileName => fileName.endsWith('.tgz'))
     if (!tarball) {
       console.warn(`No tarball from ${location}`)
-      return
+      continue
     }
     const newTarballName = tarball.replace(/-v\d+\.\d+\.\d+/, '')
-    subDirs.forEach(dir => {
+    for (const dir of subDirs) {
       fs.copyFileSync(
         path.join(location, tarball),
         path.join('component_tests', dir, 'packed', newTarballName),
       )
-    })
+    }
 
     fs.rmSync(path.join(location, tarball))
-  })
+  }
 }
 
 function getPackages(): Record<string, { location: string }> {
@@ -86,7 +86,7 @@ function getPackages(): Record<string, { location: string }> {
 
 function getDependencyGraph(packages: Record<string, { location: string }>) {
   const graph = new DepGraph()
-  Object.entries(packages).forEach(([packageName, packageInfo]) => {
+  for (const [packageName, packageInfo] of Object.entries(packages)) {
     if (!graph.hasNode(packageName)) {
       graph.addNode(packageName)
     }
@@ -111,7 +111,7 @@ function getDependencyGraph(packages: Record<string, { location: string }>) {
       }
       graph.addDependency(packageName, dep)
     }
-  })
+  }
   return graph
 }
 

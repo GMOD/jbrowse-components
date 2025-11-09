@@ -119,7 +119,6 @@ yargs
     type: 'array',
   })
 
-  // other
   .option('out', {
     description:
       'File to output to. Default: out.svg. If a filename with extension .png is supplied the program will try to automatically execute rsvg-convert to convert it to png',

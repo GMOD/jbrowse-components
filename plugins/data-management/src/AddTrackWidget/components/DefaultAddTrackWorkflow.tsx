@@ -89,6 +89,7 @@ const DefaultAddTrackWorkflow = observer(function ({
                   onClick={() => {
                     setActiveStep(activeStep - 1)
                   }}
+                  data-testid="addTrackBackButton"
                 >
                   Back
                 </Button>

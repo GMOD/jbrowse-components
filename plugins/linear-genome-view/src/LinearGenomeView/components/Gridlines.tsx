@@ -16,15 +16,14 @@ type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
   verticalGuidesZoomContainer: {
     position: 'absolute',
+    top: 0,
     height: '100%',
     width: '100%',
-    zIndex: 1,
     pointerEvents: 'none',
   },
   verticalGuidesContainer: {
     position: 'absolute',
     height: '100%',
-    zIndex: 1,
     pointerEvents: 'none',
     display: 'flex',
   },
@@ -95,7 +94,13 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
     </>
   )
 })
-const Gridlines = observer(function ({ model }: { model: LGV }) {
+const Gridlines = observer(function ({
+  model,
+  offset = 0,
+}: {
+  model: LGV
+  offset?: number
+}) {
   const { classes } = useStyles()
   // find the block that needs pinning to the left side for context
   const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
@@ -110,7 +115,7 @@ const Gridlines = observer(function ({ model }: { model: LGV }) {
       <div
         className={classes.verticalGuidesContainer}
         style={{
-          left: offsetLeft,
+          left: offsetLeft - offset,
           width: model.staticBlocks.totalWidthPx,
         }}
       >

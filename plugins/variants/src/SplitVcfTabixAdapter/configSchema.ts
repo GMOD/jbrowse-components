@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * #config VcfTabixAdapter
+ * #config SplitVcfTabixAdapter
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -10,7 +10,7 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
   {
     /**
      * #slot
-     * object like {chr1:{uri:'url to file'}}
+     * object like `{chr1:{uri:'url to file'}}`
      */
     vcfGzLocationMap: {
       type: 'frozen',
@@ -18,7 +18,7 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
     },
     /**
      * #slot
-     * object like {chr1:{uri:'url to index'}}
+     * object like `{chr1:{uri:'url to index'}}`
      */
     indexLocationMap: {
       type: 'frozen',
@@ -41,12 +41,14 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
       defaultValue: {
         uri: '/path/to/samples.tsv',
         description:
-          'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
+          'tsv with header like "name\tpopulation\tetc" where the first column is required, and corresponds to the sample names in the VCF files',
         locationType: 'UriLocation',
       },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+  },
 )
 
 export default SplitVcfTabixAdapter

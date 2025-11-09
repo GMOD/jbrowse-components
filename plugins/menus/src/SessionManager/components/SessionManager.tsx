@@ -1,5 +1,4 @@
-import React from 'react'
-
+import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
@@ -57,23 +56,25 @@ const SessionManager = observer(function ({
               }}
             />
           }
-          label="Show only favorites?"
+          label="Show favorites only?"
         />
 
         <Button
           variant="contained"
           onClick={() => {
             let i = 0
-            session.savedSessionMetadata?.forEach(elt => {
-              if (
-                differenceInDays(+Date.now(), elt.createdAt) > 1 &&
-                !elt.favorite
-              ) {
-                // @ts-expect-error
-                session.deleteSavedSession(elt.id)
-                i++
+            if (session.savedSessionMetadata) {
+              for (const elt of session.savedSessionMetadata) {
+                if (
+                  differenceInDays(Date.now(), elt.createdAt) > 1 &&
+                  !elt.favorite
+                ) {
+                  // @ts-expect-error
+                  session.deleteSavedSession(elt.id)
+                  i++
+                }
               }
-            })
+            }
             session.notify(`${i} sessions deleted`, 'info')
           }}
         >
@@ -81,7 +82,7 @@ const SessionManager = observer(function ({
         </Button>
       </div>
       {rows ? (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <DataGridFlexContainer>
           <DataGrid
             disableRowSelectionOnClick
             columnHeaderHeight={35}
@@ -98,90 +99,81 @@ const SessionManager = observer(function ({
                 field: 'fav',
                 headerName: 'Fav',
                 width: 20,
-                renderCell: ({ row }) => {
-                  return (
-                    <IconButton
-                      onClick={() => {
-                        if (row.fav) {
-                          // @ts-expect-error
-                          session.unfavoriteSavedSession(row.id)
-                        } else {
-                          // @ts-expect-error
-                          session.favoriteSavedSession(row.id)
-                        }
-                      }}
-                    >
-                      {row.fav ? <StarIcon /> : <StarBorderIcon />}
-                    </IconButton>
-                  )
-                },
+                renderCell: ({ row }) => (
+                  <IconButton
+                    onClick={() => {
+                      if (row.fav) {
+                        // @ts-expect-error
+                        session.unfavoriteSavedSession(row.id)
+                      } else {
+                        // @ts-expect-error
+                        session.favoriteSavedSession(row.id)
+                      }
+                    }}
+                  >
+                    {row.fav ? <StarIcon /> : <StarBorderIcon />}
+                  </IconButton>
+                ),
               },
-
               {
                 field: 'name',
                 headerName: 'Name',
                 editable: true,
                 width: measureGridWidth(rows.map(r => r.name)),
-                renderCell: ({ row }) => {
-                  return (
-                    <>
-                      <Link
-                        href="#"
-                        onClick={event => {
-                          event.preventDefault()
-                          session.activateSession(row.id)
-                        }}
-                      >
-                        {row.name}
-                      </Link>
-                      {session.id === row.id ? ' (current)' : ''}
-                    </>
-                  )
-                },
+                renderCell: ({ row }) => (
+                  <>
+                    <Link
+                      href="#"
+                      onClick={event => {
+                        event.preventDefault()
+                        session.activateSession(row.id)
+                      }}
+                    >
+                      {row.name}
+                    </Link>
+                    {session.id === row.id ? ' (current)' : ''}
+                  </>
+                ),
               },
               {
                 headerName: 'Created at',
                 field: 'createdAt',
-                renderCell: ({ row }) => {
-                  return (
-                    <Tooltip
-                      disableInteractive
-                      slotProps={{
-                        transition: {
-                          timeout: 0,
-                        },
-                      }}
-                      title={row.createdAt.toLocaleString()}
-                    >
-                      <div>
-                        {formatDistanceToNow(row.createdAt, {
-                          addSuffix: true,
-                        })}
-                      </div>
-                    </Tooltip>
-                  )
-                },
+                renderCell: ({ row }) => (
+                  <Tooltip
+                    disableInteractive
+                    slotProps={{
+                      transition: {
+                        timeout: 0,
+                      },
+                    }}
+                    title={row.createdAt.toLocaleString()}
+                  >
+                    <div>
+                      {formatDistanceToNow(row.createdAt, {
+                        addSuffix: true,
+                      })}
+                    </div>
+                  </Tooltip>
+                ),
               },
               {
                 field: 'delete',
                 width: 10,
                 headerName: 'Delete',
-                renderCell: ({ row }) => {
-                  return (
-                    <IconButton
-                      onClick={() => {
-                        // @ts-expect-error
-                        session.deleteSavedSession(row.id)
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  )
-                },
+                renderCell: ({ row }) => (
+                  <IconButton
+                    onClick={() => {
+                      // @ts-expect-error
+                      session.deleteSavedSession(row.id)
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                ),
               },
             ]}
           />
-        </div>
+        </DataGridFlexContainer>
       ) : (
         <div>No sessions loaded</div>
       )}

@@ -34,40 +34,6 @@ export function zip(a: number[], b: number[]) {
   return a.map((e, i) => [e, b[i]] as [number, number])
 }
 
-export function parseLineByLine<T>(
-  buffer: Uint8Array,
-  cb: (line: string) => T | undefined,
-  opts?: BaseOptions,
-): T[] {
-  const { statusCallback = () => {} } = opts || {}
-  let blockStart = 0
-  const entries: T[] = []
-  const decoder = new TextDecoder('utf8')
-
-  let i = 0
-  while (blockStart < buffer.length) {
-    const n = buffer.indexOf(10, blockStart)
-    if (n === -1) {
-      break
-    }
-    const b = buffer.subarray(blockStart, n)
-    const line = decoder.decode(b).trim()
-    if (line) {
-      const entry = cb(line)
-      if (entry) {
-        entries.push(entry)
-      }
-    }
-    if (i++ % 10_000 === 0) {
-      statusCallback(
-        `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
-      )
-    }
-    blockStart = n + 1
-  }
-  return entries
-}
-
 export function parsePAFLine(line: string) {
   const parts = line.split('\t')
   const extraFields = parts.slice(12)

@@ -5,13 +5,17 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { LinearAlignmentsDisplayModel } from '../model'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   resizeHandle: {
     height: 5,
     position: 'absolute',
     zIndex: 2,
+    background: 'transparent',
+    '&:hover': {
+      background: theme.palette.divider,
+    },
   },
-})
+}))
 
 const AlignmentsDisplay = observer(function AlignmentsDisplay({
   model,

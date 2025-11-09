@@ -9,6 +9,7 @@ import MultiVariantRendererF from './MultiLinearVariantRenderer'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer'
 import VariantFeatureWidgetF from './VariantFeatureWidget'
+import { MultiVariantClusterGenotypeMatrix } from './VariantRPC/MultiVariantClusterGenotypeMatrix'
 import { MultiVariantGetGenotypeMatrix } from './VariantRPC/MultiVariantGetGenotypeMatrix'
 import { MultiVariantGetSimplifiedFeatures } from './VariantRPC/MultiVariantGetSimplifiedFeatures'
 import { MultiVariantGetSources } from './VariantRPC/MultiVariantGetSources'
@@ -40,6 +41,9 @@ export default class VariantsPlugin extends Plugin {
     pluginManager.addRpcMethod(() => new MultiVariantGetSources(pluginManager))
     pluginManager.addRpcMethod(
       () => new MultiVariantGetGenotypeMatrix(pluginManager),
+    )
+    pluginManager.addRpcMethod(
+      () => new MultiVariantClusterGenotypeMatrix(pluginManager),
     )
     pluginManager.addRpcMethod(
       () => new MultiVariantGetSimplifiedFeatures(pluginManager),

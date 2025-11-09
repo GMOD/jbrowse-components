@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import BaseResult, {
   RefSequenceResult,
@@ -44,11 +44,13 @@ const RefNameAutocomplete = observer(function ({
   const [currentSearch, setCurrentSearch] = useState('')
   const [inputValue, setInputValue] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>()
-  const debouncedSearch = useDebounce(currentSearch, 300)
+  const debouncedSearch = useDebounce(currentSearch, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
+  // this callback runs an async search. the typescript code claims that
   useEffect(() => {
+    const isCurrent = { cancelled: false }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -58,32 +60,41 @@ const RefNameAutocomplete = observer(function ({
 
         setLoaded(false)
         const results = await fetchResults(debouncedSearch)
-        setLoaded(true)
-        setSearchOptions(getDeduplicatedResult(results))
+
+        if (!isCurrent.cancelled) {
+          setSearchOptions(getDeduplicatedResult(results))
+        }
       } catch (e) {
         console.error(e)
-        session.notifyError(`${e}`, e)
+        if (!isCurrent.cancelled) {
+          session.notifyError(`${e}`, e)
+        }
+      } finally {
+        if (!isCurrent.cancelled) {
+          setLoaded(true)
+        }
       }
     })()
-  }, [assemblyName, fetchResults, debouncedSearch, session])
 
+    return () => {
+      isCurrent.cancelled = true
+    }
+  }, [assemblyName, fetchResults, debouncedSearch, session])
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
-  // heuristic, text width + 60 accommodates help icon and search icon
-  const width = Math.min(
-    Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
-    maxWidth,
+  const regions = assembly?.regions
+  const regionOptions = useMemo(
+    () =>
+      regions?.map(region => ({
+        result: new RefSequenceResult({
+          refName: region.refName,
+          label: region.refName,
+          displayString: region.refName,
+          matchedAttribute: 'refName',
+        }),
+      })) || [],
+    [regions],
   )
-
-  const refNames = assembly?.refNames
-  const regionOptions =
-    refNames?.map(refName => ({
-      result: new RefSequenceResult({
-        refName,
-        label: refName,
-        matchedAttribute: 'refName',
-      }),
-    })) || []
 
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
@@ -96,7 +107,13 @@ const RefNameAutocomplete = observer(function ({
       freeSolo
       includeInputInList
       selectOnFocus
-      style={{ ...style, width }}
+      style={{
+        ...style,
+        width: Math.min(
+          Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
+          maxWidth,
+        ),
+      }}
       value={inputBoxVal}
       loading={!loaded}
       inputValue={inputValue}
@@ -124,7 +141,11 @@ const RefNameAutocomplete = observer(function ({
 
         if (typeof selectedOption === 'string') {
           // handles string inputs on keyPress enter
-          onSelect?.(new BaseResult({ label: selectedOption }))
+          onSelect?.(
+            new BaseResult({
+              label: selectedOption,
+            }),
+          )
         } else {
           onSelect?.(selectedOption.result)
         }

@@ -57,7 +57,7 @@ test('test using the sequence feature panel', () => {
   // with stop codon on the end
   expect(
     element.textContent
-      ?.split('\n')
+      .split('\n')
       .slice(1)
       .map(s => s.trim())
       .join(''),
@@ -90,7 +90,7 @@ test('test using the sequence feature panel with show coords', () => {
   // make sure show coords shows the expected sequence as well
   expect(
     element.textContent
-      ?.split('\n')
+      .split('\n')
       .slice(1)
       .map(s => s.trim().split(/\s+/).slice(1).join(''))
       .join(''),
@@ -155,7 +155,7 @@ test('single exon cDNA should not have duplicate sequences', () => {
 
   expect(
     element.textContent
-      ?.split('\n')
+      .split('\n')
       .slice(1)
       .map(s => s.trim())
       .join(''),

@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import AddIcon from '@mui/icons-material/Add'
 import CreateIcon from '@mui/icons-material/Create'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -23,7 +24,7 @@ const AssemblyTable = observer(function ({
   return (
     <>
       <DialogContent>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <DataGridFlexContainer>
           <DataGrid
             rowHeight={25}
             columnHeaderHeight={35}
@@ -80,7 +81,7 @@ const AssemblyTable = observer(function ({
               },
             ]}
           />
-        </div>
+        </DataGridFlexContainer>
       </DialogContent>
       <DialogActions>
         <Button

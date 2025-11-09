@@ -16,6 +16,8 @@ import type BED from '@gmod/bed'
 function defaultParser(fields: string[], splitLine: string[]) {
   let hasBlockCount = false
   const r = [] as [string, string][]
+
+  // eslint-disable-next-line unicorn/no-for-loop
   for (let i = 0; i < splitLine.length; i++) {
     if (fields[i] === 'blockCount') {
       hasBlockCount = true

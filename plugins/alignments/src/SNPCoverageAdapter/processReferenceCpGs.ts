@@ -1,8 +1,8 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
 import { parseCigar } from '../MismatchParser'
-import { getMethBins } from '../ModificationParser'
 import { incWithProbabilities } from './util'
+import { getMethBins } from '../ModificationParser/getMethBins'
 
 import type { Mismatch, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'

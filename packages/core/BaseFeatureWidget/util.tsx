@@ -1,3 +1,6 @@
+import type { SimpleFeatureSerialized } from '../util'
+import type { SerializedFeat } from './types'
+
 export interface Feat {
   start: number
   end: number
@@ -22,7 +25,10 @@ export interface ErrorState {
   error: string
 }
 
-export function stitch(subfeats: Feat[], sequence: string) {
+export function stitch(
+  subfeats: { start: number; end: number }[],
+  sequence: string,
+) {
   return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
 }
 
@@ -32,7 +38,7 @@ function getItemId(feat: Feat) {
 }
 
 // filters if successive elements share same start/end
-export function dedupe(list: Feat[]) {
+export function filterSuccessiveElementsWithSameStartAndEndCoord(list: Feat[]) {
   return list.filter(
     (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]!),
   )
@@ -53,6 +59,13 @@ export function calculateUTRs(cds: Feat[], exons: Feat[]) {
   if (!cds.length) {
     return []
   }
+  if (exons.length < cds.length) {
+    console.warn(
+      'exons.length less than cds.length, cant calculate UTR properly',
+      { exons, cds },
+    )
+    return []
+  }
 
   const firstCds = cds.at(0)!
 
@@ -66,17 +79,29 @@ export function calculateUTRs(cds: Feat[], exons: Feat[]) {
   const lastCdsExon = exons[lastCdsIdx]!
   const firstCdsExon = exons[firstCdsIdx]!
 
-  const fiveUTRs = [
+  const fivePrimeUTRs = [
     ...exons.slice(0, firstCdsIdx),
-    { start: firstCdsExon.start, end: firstCds.start },
-  ].map(elt => ({ ...elt, type: 'five_prime_UTR' }))
+    {
+      start: firstCdsExon.start,
+      end: firstCds.start,
+    },
+  ].map(elt => ({
+    ...elt,
+    type: 'five_prime_UTR',
+  }))
 
-  const threeUTRs = [
-    { start: lastCds.end, end: lastCdsExon.end },
+  const threePrimeUTRs = [
+    {
+      start: lastCds.end,
+      end: lastCdsExon.end,
+    },
     ...exons.slice(lastCdsIdx + 1),
-  ].map(elt => ({ ...elt, type: 'three_prime_UTR' }))
+  ].map(elt => ({
+    ...elt,
+    type: 'three_prime_UTR',
+  }))
 
-  return [...fiveUTRs, ...threeUTRs]
+  return [...fivePrimeUTRs, ...threePrimeUTRs]
 }
 
 // calculates UTRs using impliedUTRs logic, but there are no exon subfeatures
@@ -87,22 +112,49 @@ export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
 
   const firstCds = cds.at(0)!
   const lastCds = cds.at(-1)!
-  const fiveUTRs = [{ start: parentFeat.start, end: firstCds.start }].map(
-    elt => ({ ...elt, type: 'five_prime_UTR' }),
-  )
+  const fivePrimeUTRs = [
+    {
+      start: parentFeat.start,
+      end: firstCds.start,
+    },
+  ].map(elt => ({
+    ...elt,
+    type: 'five_prime_UTR',
+  }))
 
-  const threeUTRs = [{ start: lastCds.end, end: parentFeat.end }].map(elt => ({
+  const threePrimeUTRs = [
+    {
+      start: lastCds.end,
+      end: parentFeat.end,
+    },
+  ].map(elt => ({
     ...elt,
     type: 'three_prime_UTR',
   }))
 
-  return [...fiveUTRs, ...threeUTRs]
+  return [...fivePrimeUTRs, ...threePrimeUTRs]
 }
 
 export function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
 }
 
-export function replaceUndefinedWithNull(obj: Record<string, unknown>) {
+export function replaceUndefinedWithNull(obj: SimpleFeatureSerialized) {
   return JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)))
+}
+
+export function formatSubfeatures(
+  obj: SerializedFeat,
+  depth: number,
+  parse: (obj: Record<string, unknown>) => void,
+  currentDepth = 0,
+  returnObj = {} as Record<string, unknown>,
+) {
+  if (depth <= currentDepth) {
+    return
+  }
+  obj.subfeatures?.map(sub => {
+    formatSubfeatures(sub, depth, parse, currentDepth + 1, returnObj)
+    parse(sub)
+  })
 }

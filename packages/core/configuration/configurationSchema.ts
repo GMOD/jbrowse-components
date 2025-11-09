@@ -83,8 +83,8 @@ function preprocessConfigurationSchemaArguments(
     options = {
       ...inputOptions.baseConfiguration.jbrowseSchemaOptions,
       ...inputOptions,
+      baseConfiguration: undefined,
     }
-    options.baseConfiguration = undefined
   }
   return { schemaDefinition, options }
 }
@@ -132,7 +132,7 @@ function makeConfigurationSchemaModel<
       options,
     },
   }
-  Object.entries(schemaDefinition).forEach(([slotName, slotDefinition]) => {
+  for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (
       (isType(slotDefinition) && isLateType(slotDefinition)) ||
       isConfigurationSchemaType(slotDefinition)
@@ -165,7 +165,7 @@ function makeConfigurationSchemaModel<
         `invalid configuration schema definition, "${slotName}" must be either a valid configuration slot definition, a constant, or a nested configuration schema`,
       )
     }
-  })
+  }
 
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)

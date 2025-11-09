@@ -37,6 +37,7 @@ interface Config {
   slots: Slot[]
   config?: Conf
   filename: string
+  preProcessSnapshot: any
 }
 
 function generateConfigDocs(files: string[]) {
@@ -52,6 +53,7 @@ function generateConfigDocs(files: string[]) {
         slots: [],
         config: undefined,
         filename: fn2,
+        preProcessSnapshot: undefined,
       }
     }
     const current = contents[fn]
@@ -93,6 +95,8 @@ function generateConfigDocs(files: string[]) {
       current.slots.push({ ...obj, name, docs, code })
     } else if (obj.type === 'config') {
       current.config = { ...obj, name, docs, id, category }
+    } else if (obj.type === 'preProcessSnapshot') {
+      current.preProcessSnapshot = { ...obj, name, docs, id, category }
     }
   })
   return contents
@@ -103,8 +107,14 @@ function generateConfigDocs(files: string[]) {
   const contents = generateConfigDocs(await getAllFiles())
 
   Object.values(contents).forEach(
-    ({ config, slots, id, derives, filename }) => {
+    ({ config, slots, id, derives, filename, preProcessSnapshot }) => {
       if (config) {
+        const preprocessStr = preProcessSnapshot
+          ? `### ${config.name} - Pre-processor / simplified config
+
+${preProcessSnapshot.docs}
+`
+          : ''
         const idstr = id
           ? `### ${config.name} - Identifier
 
@@ -166,11 +176,14 @@ reference the markdown files in our repo of the checked out git tag
 
 ${config.docs}
 
+${preprocessStr}
+
 ${idstr}
 
 ${slotstr}
 
 ${derivesstr}
+
 `,
         )
       }

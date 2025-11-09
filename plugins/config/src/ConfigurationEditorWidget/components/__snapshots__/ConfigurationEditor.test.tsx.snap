@@ -52,7 +52,7 @@ exports[`renders all the different types of built-in slots 1`] = `
           class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
         >
           <div
-            class="MuiAccordion-region"
+            class="MuiAccordion-region css-at4ued-MuiAccordion-region"
             role="region"
           >
             <div
@@ -72,8 +72,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for=":r1:"
-                      id=":r1:-label"
+                      for="_r_5_"
+                      id="_r_5_-label"
                     >
                       stringTest
                     </label>
@@ -81,17 +81,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby=":r1:-helper-text"
+                        aria-describedby="_r_5_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id=":r1:"
+                        id="_r_5_"
                         type="text"
                         value="string1"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id=":r1:-helper-text"
+                      id="_r_5_-helper-text"
                     >
                       <span>
                         stringTest
@@ -163,8 +163,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                       <label
                         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined css-cdyptd-MuiFormLabel-root-MuiInputLabel-root"
                         data-shrink="true"
-                        for=":r2:"
-                        id=":r2:-label"
+                        for="_r_6_"
+                        id="_r_6_-label"
                       >
                         Enter URL
                       </label>
@@ -175,16 +175,16 @@ exports[`renders all the different types of built-in slots 1`] = `
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
                           data-testid="urlInput"
-                          id=":r2:"
+                          id="_r_6_"
                           type="text"
                           value="/path/to/my.file"
                         />
                         <fieldset
                           aria-hidden="true"
-                          class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
+                          class="MuiOutlinedInput-notchedOutline css-18p5xg2-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
                         >
                           <legend
-                            class="css-w1u3ce"
+                            class="css-ex8a5f-MuiNotchedOutlined-root"
                           >
                             <span>
                               Enter URL
@@ -231,7 +231,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                            id=":r3:"
+                            id="_r_7_"
                             type="text"
                             value="string1"
                           />
@@ -271,7 +271,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                            id=":r5:"
+                            id="_r_9_"
                             type="text"
                             value="string2"
                           />
@@ -391,7 +391,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               <input
                                 aria-invalid="false"
                                 class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                id=":r9:"
+                                id="_r_d_"
                                 type="text"
                                 value="string1"
                               />
@@ -431,7 +431,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               <input
                                 aria-invalid="false"
                                 class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                id=":rb:"
+                                id="_r_f_"
                                 type="text"
                                 value="string2"
                               />
@@ -494,7 +494,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                             <input
                               aria-invalid="false"
                               class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                              id=":re:"
+                              id="_r_i_"
                               placeholder="add new"
                               type="text"
                               value=""
@@ -549,8 +549,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for=":rg:"
-                      id=":rg:-label"
+                      for="_r_k_"
+                      id="_r_k_-label"
                     >
                       numberTest
                     </label>
@@ -558,17 +558,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby=":rg:-helper-text"
+                        aria-describedby="_r_k_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id=":rg:"
+                        id="_r_k_"
                         type="number"
                         value="88.5"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id=":rg:-helper-text"
+                      id="_r_k_-helper-text"
                     >
                       <span>
                         numberTest
@@ -593,8 +593,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for=":rh:"
-                      id=":rh:-label"
+                      for="_r_l_"
+                      id="_r_l_-label"
                     >
                       integerTest
                     </label>
@@ -602,17 +602,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby=":rh:-helper-text"
+                        aria-describedby="_r_l_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id=":rh:"
+                        id="_r_l_"
                         type="number"
                         value="42"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id=":rh:-helper-text"
+                      id="_r_l_-helper-text"
                     >
                       <span>
                         integerTest
@@ -640,8 +640,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                       <label
                         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                         data-shrink="true"
-                        for=":ri:"
-                        id=":ri:-label"
+                        for="_r_m_"
+                        id="_r_m_-label"
                       >
                         colorTest
                       </label>
@@ -649,17 +649,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                         class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                       >
                         <input
-                          aria-describedby=":ri:-helper-text"
+                          aria-describedby="_r_m_-helper-text"
                           aria-invalid="false"
                           class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                          id=":ri:"
+                          id="_r_m_"
                           type="text"
                           value="#396494"
                         />
                       </div>
                       <p
                         class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                        id=":ri:-helper-text"
+                        id="_r_m_-helper-text"
                       >
                         colorTest
                       </p>
@@ -696,11 +696,11 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-19opgx6-MuiFormControlLabel-root"
                     >
                       <span
-                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-cr4rkl-MuiButtonBase-root-MuiCheckbox-root"
+                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-q520xd-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
                       >
                         <input
                           checked=""
-                          class="PrivateSwitchBase-input css-j8yymo"
+                          class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"
                           data-indeterminate="false"
                           type="checkbox"
                         />
@@ -795,7 +795,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
           class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
         >
           <div
-            class="MuiAccordion-region"
+            class="MuiAccordion-region css-at4ued-MuiAccordion-region"
             role="region"
           >
             <div
@@ -815,8 +815,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for=":rj:"
-                      id=":rj:-label"
+                      for="_r_p_"
+                      id="_r_p_-label"
                     >
                       maxFeatureScreenDensity
                     </label>
@@ -824,17 +824,17 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby=":rj:-helper-text"
+                        aria-describedby="_r_p_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id=":rj:"
+                        id="_r_p_"
                         type="number"
                         value="0.3"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id=":rj:-helper-text"
+                      id="_r_p_-helper-text"
                     >
                       <span>
                         maximum features per pixel that is displayed in the view, used if byte size estimates not available
@@ -859,8 +859,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for=":rk:"
-                      id=":rk:-label"
+                      for="_r_q_"
+                      id="_r_q_-label"
                     >
                       fetchSizeLimit
                     </label>
@@ -868,17 +868,17 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby=":rk:-helper-text"
+                        aria-describedby="_r_q_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id=":rk:"
+                        id="_r_q_"
                         type="number"
                         value="1000000"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id=":rk:-helper-text"
+                      id="_r_q_-helper-text"
                     >
                       <span>
                         maximum data to attempt to download for a given track, used if adapter doesn't specify one
@@ -903,8 +903,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for=":rl:"
-                      id=":rl:-label"
+                      for="_r_r_"
+                      id="_r_r_-label"
                     >
                       height
                     </label>
@@ -912,17 +912,17 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby=":rl:-helper-text"
+                        aria-describedby="_r_r_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id=":rl:"
+                        id="_r_r_"
                         type="number"
                         value="100"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id=":rl:-helper-text"
+                      id="_r_r_-helper-text"
                     >
                       <span>
                         default height for the track
@@ -953,10 +953,10 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                         <textarea
                           aria-invalid="false"
                           class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline MuiInputBase-inputSizeSmall css-4q7i7w-MuiInputBase-input-MuiInput-input-textAreaFont"
-                          id=":rm:"
+                          id="_r_s_"
                           style="height: 0px; overflow: hidden;"
                         >
-                          get(feature,'name')
+                          join('&lt;br/&gt;',get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id'),mouseoverExtraInformation||'')
                         </textarea>
                         <textarea
                           aria-hidden="true"
@@ -1096,7 +1096,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                       class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
                     >
                       <div
-                        class="MuiAccordion-region"
+                        class="MuiAccordion-region css-at4ued-MuiAccordion-region"
                         role="region"
                       >
                         <div
@@ -1115,8 +1115,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 <label
                                   class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                                   data-shrink="true"
-                                  for=":rr:"
-                                  id=":rr:-label"
+                                  for="_r_11_"
+                                  id="_r_11_-label"
                                 >
                                   Type
                                 </label>
@@ -1124,12 +1124,12 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root css-1eo3eah-MuiInputBase-root-MuiInput-root"
                                 >
                                   <div
-                                    aria-describedby=":rr:-helper-text"
+                                    aria-describedby="_r_11_-helper-text"
                                     aria-expanded="false"
                                     aria-haspopup="listbox"
-                                    aria-labelledby=":rr:-label :rr:"
-                                    class="MuiSelect-select MuiSelect-standard MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-w4dpiq-MuiSelect-select-MuiInputBase-input-MuiInput-input"
-                                    id=":rr:"
+                                    aria-labelledby="_r_11_-label _r_11_"
+                                    class="MuiSelect-select MuiSelect-standard MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-4j3uur-MuiNativeSelect-root-MuiSelect-select-MuiInputBase-input-MuiInput-input"
+                                    id="_r_11_"
                                     role="combobox"
                                     tabindex="0"
                                   >
@@ -1144,7 +1144,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   />
                                   <svg
                                     aria-hidden="true"
-                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconStandard css-muwtbd-MuiSvgIcon-root-MuiSelect-icon"
+                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconStandard css-yit0tl-MuiSvgIcon-root-MuiNativeSelect-root-MuiSelect-icon"
                                     data-testid="ArrowDropDownIcon"
                                     focusable="false"
                                     viewBox="0 0 24 24"
@@ -1156,7 +1156,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                                 <p
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                  id=":rr:-helper-text"
+                                  id="_r_11_-helper-text"
                                 >
                                   Type of renderer to use
                                 </p>
@@ -1182,8 +1182,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     <label
                                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                                       data-shrink="true"
-                                      for=":rt:"
-                                      id=":rt:-label"
+                                      for="_r_13_"
+                                      id="_r_13_-label"
                                     >
                                       color
                                     </label>
@@ -1191,17 +1191,17 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                                     >
                                       <input
-                                        aria-describedby=":rt:-helper-text"
+                                        aria-describedby="_r_13_-helper-text"
                                         aria-invalid="false"
                                         class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                        id=":rt:"
+                                        id="_r_13_"
                                         type="text"
                                         value="#f0f"
                                       />
                                     </div>
                                     <p
                                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                      id=":rt:-helper-text"
+                                      id="_r_13_-helper-text"
                                     >
                                       the color of each feature in a pileup alignment
                                     </p>
@@ -1256,8 +1256,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   <label
                                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                                     data-shrink="true"
-                                    for=":rv:"
-                                    id=":rv:-label"
+                                    for="_r_15_"
+                                    id="_r_15_-label"
                                   >
                                     orientationType
                                   </label>
@@ -1265,12 +1265,12 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root css-1eo3eah-MuiInputBase-root-MuiInput-root"
                                   >
                                     <div
-                                      aria-describedby=":rv:-helper-text"
+                                      aria-describedby="_r_15_-helper-text"
                                       aria-expanded="false"
                                       aria-haspopup="listbox"
-                                      aria-labelledby=":rv:-label :rv:"
-                                      class="MuiSelect-select MuiSelect-standard MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-w4dpiq-MuiSelect-select-MuiInputBase-input-MuiInput-input"
-                                      id=":rv:"
+                                      aria-labelledby="_r_15_-label _r_15_"
+                                      class="MuiSelect-select MuiSelect-standard MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-4j3uur-MuiNativeSelect-root-MuiSelect-select-MuiInputBase-input-MuiInput-input"
+                                      id="_r_15_"
                                       role="combobox"
                                       tabindex="0"
                                     >
@@ -1285,7 +1285,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     />
                                     <svg
                                       aria-hidden="true"
-                                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconStandard css-muwtbd-MuiSvgIcon-root-MuiSelect-icon"
+                                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconStandard css-yit0tl-MuiSvgIcon-root-MuiNativeSelect-root-MuiSelect-icon"
                                       data-testid="ArrowDropDownIcon"
                                       focusable="false"
                                       viewBox="0 0 24 24"
@@ -1297,7 +1297,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   </div>
                                   <div
                                     class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                    id=":rv:-helper-text"
+                                    id="_r_15_-helper-text"
                                   >
                                     <span>
                                       read sequencer orientation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
@@ -1322,8 +1322,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   <label
                                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                                     data-shrink="true"
-                                    for=":r11:"
-                                    id=":r11:-label"
+                                    for="_r_17_"
+                                    id="_r_17_-label"
                                   >
                                     displayMode
                                   </label>
@@ -1331,12 +1331,12 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root css-1eo3eah-MuiInputBase-root-MuiInput-root"
                                   >
                                     <div
-                                      aria-describedby=":r11:-helper-text"
+                                      aria-describedby="_r_17_-helper-text"
                                       aria-expanded="false"
                                       aria-haspopup="listbox"
-                                      aria-labelledby=":r11:-label :r11:"
-                                      class="MuiSelect-select MuiSelect-standard MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-w4dpiq-MuiSelect-select-MuiInputBase-input-MuiInput-input"
-                                      id=":r11:"
+                                      aria-labelledby="_r_17_-label _r_17_"
+                                      class="MuiSelect-select MuiSelect-standard MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-4j3uur-MuiNativeSelect-root-MuiSelect-select-MuiInputBase-input-MuiInput-input"
+                                      id="_r_17_"
                                       role="combobox"
                                       tabindex="0"
                                     >
@@ -1351,7 +1351,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     />
                                     <svg
                                       aria-hidden="true"
-                                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconStandard css-muwtbd-MuiSvgIcon-root-MuiSelect-icon"
+                                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconStandard css-yit0tl-MuiSvgIcon-root-MuiNativeSelect-root-MuiSelect-icon"
                                       data-testid="ArrowDropDownIcon"
                                       focusable="false"
                                       viewBox="0 0 24 24"
@@ -1363,7 +1363,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   </div>
                                   <div
                                     class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                    id=":r11:-helper-text"
+                                    id="_r_17_-helper-text"
                                   >
                                     <span>
                                       Alternative display modes
@@ -1388,8 +1388,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   <label
                                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                                     data-shrink="true"
-                                    for=":r13:"
-                                    id=":r13:-label"
+                                    for="_r_19_"
+                                    id="_r_19_-label"
                                   >
                                     minSubfeatureWidth
                                   </label>
@@ -1397,17 +1397,17 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                                   >
                                     <input
-                                      aria-describedby=":r13:-helper-text"
+                                      aria-describedby="_r_19_-helper-text"
                                       aria-invalid="false"
                                       class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                      id=":r13:"
+                                      id="_r_19_"
                                       type="number"
                                       value="1"
                                     />
                                   </div>
                                   <div
                                     class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                    id=":r13:-helper-text"
+                                    id="_r_19_-helper-text"
                                   >
                                     <span>
                                       the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1
@@ -1433,10 +1433,10 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-19opgx6-MuiFormControlLabel-root"
                                   >
                                     <span
-                                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-cr4rkl-MuiButtonBase-root-MuiCheckbox-root"
+                                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-q520xd-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
                                     >
                                       <input
-                                        class="PrivateSwitchBase-input css-j8yymo"
+                                        class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"
                                         data-indeterminate="false"
                                         type="checkbox"
                                       />
@@ -1482,8 +1482,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   <label
                                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                                     data-shrink="true"
-                                    for=":r14:"
-                                    id=":r14:-label"
+                                    for="_r_1a_"
+                                    id="_r_1a_-label"
                                   >
                                     maxHeight
                                   </label>
@@ -1491,17 +1491,17 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                                   >
                                     <input
-                                      aria-describedby=":r14:-helper-text"
+                                      aria-describedby="_r_1a_-helper-text"
                                       aria-invalid="false"
                                       class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                      id=":r14:"
+                                      id="_r_1a_"
                                       type="number"
                                       value="1200"
                                     />
                                   </div>
                                   <div
                                     class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                    id=":r14:-helper-text"
+                                    id="_r_1a_-helper-text"
                                   >
                                     <span>
                                       the maximum height to be used in a pileup rendering
@@ -1526,8 +1526,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   <label
                                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                                     data-shrink="true"
-                                    for=":r15:"
-                                    id=":r15:-label"
+                                    for="_r_1b_"
+                                    id="_r_1b_-label"
                                   >
                                     maxClippingSize
                                   </label>
@@ -1535,17 +1535,17 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                                   >
                                     <input
-                                      aria-describedby=":r15:-helper-text"
+                                      aria-describedby="_r_1b_-helper-text"
                                       aria-invalid="false"
                                       class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                      id=":r15:"
+                                      id="_r_1b_"
                                       type="number"
                                       value="10000"
                                     />
                                   </div>
                                   <div
                                     class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                    id=":r15:-helper-text"
+                                    id="_r_1b_-helper-text"
                                   >
                                     <span>
                                       the max clip size to be used in a pileup rendering
@@ -1570,8 +1570,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   <label
                                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                                     data-shrink="true"
-                                    for=":r16:"
-                                    id=":r16:-label"
+                                    for="_r_1c_"
+                                    id="_r_1c_-label"
                                   >
                                     height
                                   </label>
@@ -1579,17 +1579,17 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                                   >
                                     <input
-                                      aria-describedby=":r16:-helper-text"
+                                      aria-describedby="_r_1c_-helper-text"
                                       aria-invalid="false"
                                       class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                      id=":r16:"
+                                      id="_r_1c_"
                                       type="number"
                                       value="7"
                                     />
                                   </div>
                                   <div
                                     class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                    id=":r16:-helper-text"
+                                    id="_r_1c_-helper-text"
                                   >
                                     <span>
                                       the height of each feature in a pileup alignment
@@ -1634,10 +1634,10 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-19opgx6-MuiFormControlLabel-root"
                                   >
                                     <span
-                                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-cr4rkl-MuiButtonBase-root-MuiCheckbox-root"
+                                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-q520xd-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
                                     >
                                       <input
-                                        class="PrivateSwitchBase-input css-j8yymo"
+                                        class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"
                                         data-indeterminate="false"
                                         type="checkbox"
                                       />
@@ -1683,8 +1683,8 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                   <label
                                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                                     data-shrink="true"
-                                    for=":r18:"
-                                    id=":r18:-label"
+                                    for="_r_1e_"
+                                    id="_r_1e_-label"
                                   >
                                     largeInsertionIndicatorScale
                                   </label>
@@ -1692,17 +1692,17 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                                   >
                                     <input
-                                      aria-describedby=":r18:-helper-text"
+                                      aria-describedby="_r_1e_-helper-text"
                                       aria-invalid="false"
                                       class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                      id=":r18:"
+                                      id="_r_1e_"
                                       type="number"
                                       value="10"
                                     />
                                   </div>
                                   <div
                                     class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                    id=":r18:-helper-text"
+                                    id="_r_1e_-helper-text"
                                   >
                                     <span>
                                       scale at which to draw the large insertion indicators (bp/pixel)
@@ -1728,10 +1728,10 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-19opgx6-MuiFormControlLabel-root"
                                   >
                                     <span
-                                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-cr4rkl-MuiButtonBase-root-MuiCheckbox-root"
+                                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-q520xd-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
                                     >
                                       <input
-                                        class="PrivateSwitchBase-input css-j8yymo"
+                                        class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"
                                         data-indeterminate="false"
                                         type="checkbox"
                                       />
@@ -1833,7 +1833,7 @@ exports[`renders with just the required model elements 1`] = `
           class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
         >
           <div
-            class="MuiAccordion-region"
+            class="MuiAccordion-region css-at4ued-MuiAccordion-region"
             role="region"
           >
             <div
@@ -1853,8 +1853,8 @@ exports[`renders with just the required model elements 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for=":r0:"
-                      id=":r0:-label"
+                      for="_r_2_"
+                      id="_r_2_-label"
                     >
                       foo
                     </label>
@@ -1862,17 +1862,17 @@ exports[`renders with just the required model elements 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby=":r0:-helper-text"
+                        aria-describedby="_r_2_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id=":r0:"
+                        id="_r_2_"
                         type="text"
                         value="bar"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id=":r0:-helper-text"
+                      id="_r_2_-helper-text"
                     >
                       <span />
                     </div>

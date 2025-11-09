@@ -44,7 +44,36 @@ const ChainAdapter = ConfigurationSchema(
       defaultValue: { uri: '/path/to/file.chain', locationType: 'UriLocation' },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "ChainAdapter",
+     *   "uri": "yourfile.chain.gz",
+     *   "queryAssembly": "hg19",
+     *   "targetAssembly": "hg38"
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            chainLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default ChainAdapter

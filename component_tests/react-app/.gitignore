@@ -1,7 +1,0 @@
-packed/
-/node_modules
-/coverage
-/build
-yarn.lock
-cypress/screenshots/
-cypress/videos/

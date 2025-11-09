@@ -48,11 +48,11 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
         walk(getParent(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
-            Object.entries(members.properties).forEach(([key, value]) => {
+            for (const [key, value] of Object.entries(members.properties)) {
               if (isReferenceType(value) && node[key] === object) {
                 refs.push({ node, key })
               }
-            })
+            }
           }
         })
         return refs
@@ -68,7 +68,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
         callbacks: ((arg: string) => void)[],
         dereferenceTypeCount: Record<string, number>,
       ) {
-        referring.forEach(({ node }) => {
+        for (const { node } of referring) {
           let dereferenced = false
           try {
             // If a view is referring to the track config, remove the track
@@ -109,7 +109,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
               )}`,
             )
           }
-        })
+        }
       },
     }))
 }

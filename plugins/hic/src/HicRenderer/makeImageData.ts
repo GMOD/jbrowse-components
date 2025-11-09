@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
@@ -107,8 +108,7 @@ export async function makeImageData(
       ctx.translate(-width, 0)
     }
     ctx.rotate(-Math.PI / 4)
-    let start = performance.now()
-    for (const { bin1, bin2, counts } of features) {
+    forEachWithStopTokenCheck(features, stopToken, ({ bin1, bin2, counts }) => {
       ctx.fillStyle = readConfObject(config, 'color', {
         count: counts,
         maxScore,
@@ -117,11 +117,7 @@ export async function makeImageData(
         useLogScale,
       })
       ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-    }
+    })
     ctx.restore()
   }
   return undefined

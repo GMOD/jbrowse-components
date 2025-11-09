@@ -7,7 +7,7 @@ import '@fontsource/roboto'
 import {
   createViewState,
   JBrowseLinearGenomeView,
-} from '@jbrowse/react-linear-genome-view'
+} from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'GRCh38',
@@ -16,28 +16,14 @@ const assembly = {
     trackId: 'GRCh38-ReferenceSequenceTrack',
     adapter: {
       type: 'BgzipFastaAdapter',
-      fastaLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-        locationType: 'UriLocation',
-      },
-      faiLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
-        locationType: 'UriLocation',
-      },
-      gziLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
-        locationType: 'UriLocation',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
     },
   },
   aliases: ['hg38'],
   refNameAliases: {
     adapter: {
       type: 'RefNameAliasAdapter',
-      location: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-        locationType: 'UriLocation',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
     },
   },
 }
@@ -51,16 +37,7 @@ const tracks = [
     category: ['Annotation'],
     adapter: {
       type: 'Gff3TabixAdapter',
-      gffGzLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-        locationType: 'UriLocation',
-      },
-      index: {
-        location: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
     },
   },
 ]

@@ -5,6 +5,8 @@ import UriAttribute from './UriField'
 import { accessNested, generateMaxWidth } from './util'
 import { isObject, isUriLocation } from '../../util'
 
+import type { Descriptors } from '../types'
+
 const MAX_FIELD_NAME_WIDTH = 170
 
 // these are always omitted as too detailed
@@ -28,7 +30,7 @@ export default function Attributes(props: {
   omit?: string[]
   omitSingleLevel?: string[]
   formatter?: (val: unknown, key: string) => React.ReactNode
-  descriptions?: Record<string, React.ReactNode>
+  descriptions?: Descriptors
   prefix?: string[]
   hideUris?: boolean
 }) {
@@ -37,80 +39,78 @@ export default function Attributes(props: {
     omit = [],
     omitSingleLevel = [],
     descriptions,
-    formatter = val => val,
+    formatter,
     hideUris,
     prefix = [],
   } = props
 
   const omits = new Set([...omit, ...globalOmit, ...omitSingleLevel])
   const { __jbrowsefmt, ...rest } = attributes
-  const formattedAttributes = { ...rest, ...__jbrowsefmt }
-
-  const maxLabelWidth = generateMaxWidth(
-    Object.entries(formattedAttributes).filter(
-      ([k, v]) => v !== undefined && !omits.has(k),
-    ),
-    prefix,
-  )
+  const filteredFormattedAttributes = Object.entries({
+    ...rest,
+    ...__jbrowsefmt,
+  }).filter(([k, v]) => v != null && !omits.has(k))
+  const maxLabelWidth = generateMaxWidth(filteredFormattedAttributes, prefix)
 
   return (
     <>
-      {Object.entries(formattedAttributes)
-        .filter(([k, v]) => v !== undefined && !omits.has(k))
-        .map(([key, value]) => {
-          const description = accessNested([...prefix, key], descriptions)
-          if (Array.isArray(value)) {
-            // check if it looks like an array of objects, which could be used
-            // in data grid
-            return value.length > 1 && value.every(val => isObject(val)) ? (
-              <DataGridDetails
+      {filteredFormattedAttributes.map(([key, value]) => {
+        const description = accessNested([...prefix, key], descriptions)
+        if (Array.isArray(value)) {
+          // check if it looks like an array of objects, which could be used
+          // in data grid
+          return value.length > 1 && value.every(val => isObject(val)) ? (
+            <DataGridDetails
+              key={key}
+              name={key}
+              prefix={prefix}
+              value={value}
+            />
+          ) : (
+            <ArrayValue
+              key={key}
+              name={key}
+              value={value}
+              formatter={formatter}
+              description={description}
+              prefix={prefix}
+            />
+          )
+        } else if (isObject(value)) {
+          const { omitSingleLevel, ...rest } = props
+          return isUriLocation(value) ? (
+            hideUris ? null : (
+              <UriAttribute
                 key={key}
                 name={key}
                 prefix={prefix}
                 value={value}
               />
-            ) : (
-              <ArrayValue
-                key={key}
-                name={key}
-                value={value}
-                description={description}
-                prefix={prefix}
-              />
             )
-          } else if (isObject(value)) {
-            const { omitSingleLevel, ...rest } = props
-            return isUriLocation(value) ? (
-              hideUris ? null : (
-                <UriAttribute
-                  key={key}
-                  name={key}
-                  prefix={prefix}
-                  value={value}
-                />
-              )
-            ) : (
-              <Attributes
-                key={key}
-                {...rest}
-                attributes={value}
-                descriptions={descriptions}
-                prefix={[...prefix, key]}
-              />
-            )
-          } else {
-            return (
-              <SimpleField
-                key={key}
-                name={key}
-                value={formatter(value, key)}
-                description={description}
-                prefix={prefix}
-                width={Math.min(maxLabelWidth, MAX_FIELD_NAME_WIDTH)}
-              />
-            )
-          }
-        })}
+          ) : (
+            <Attributes
+              key={key}
+              {...rest}
+              formatter={formatter}
+              attributes={value}
+              descriptions={descriptions}
+              prefix={[...prefix, key]}
+            />
+          )
+        } else {
+          return (
+            <SimpleField
+              key={key}
+              name={key}
+              formatter={formatter}
+              value={value}
+              description={description}
+              prefix={prefix}
+              width={Math.min(maxLabelWidth, MAX_FIELD_NAME_WIDTH)}
+            />
+          )
+        }
+      })}
     </>
   )
 }

@@ -8,6 +8,7 @@ import { makeStyles } from 'tss-react/mui'
 import Menu from './Menu'
 
 import type { MenuItem } from './Menu'
+import type { AbstractSessionModel } from '../util'
 
 const useStyles = makeStyles()(theme => ({
   buttonRoot: {
@@ -29,9 +30,8 @@ const DropDownMenu = observer(function ({
   menuItems,
 }: {
   menuTitle: string
-
-  session: any
-  menuItems: MenuItem[]
+  session: AbstractSessionModel
+  menuItems: MenuItem[] | (() => MenuItem[])
 }) {
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
@@ -45,27 +45,29 @@ const DropDownMenu = observer(function ({
     <>
       <Button
         ref={anchorEl}
-        onClick={() => {
-          setOpen(!open)
-        }}
         color="inherit"
         data-testid="dropDownMenuButton"
         classes={{ root: classes.buttonRoot }}
+        onClick={() => {
+          setOpen(!open)
+        }}
       >
         {menuTitle}
         <ArrowDropDown />
       </Button>
-      <Menu
-        anchorEl={anchorEl.current}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        onMenuItemClick={(_event, callback) => {
-          callback(session)
-          handleClose()
-        }}
-        open={open}
-        onClose={handleClose}
-        menuItems={menuItems}
-      />
+      {open ? (
+        <Menu
+          open
+          anchorEl={anchorEl.current}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          onClose={handleClose}
+          menuItems={typeof menuItems === 'function' ? menuItems() : menuItems}
+          onMenuItemClick={(_event, callback) => {
+            callback(session)
+            handleClose()
+          }}
+        />
+      ) : null}
     </>
   )
 })

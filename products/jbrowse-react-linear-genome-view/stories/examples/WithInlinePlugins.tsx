@@ -9,7 +9,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 // in your code
-// import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
+// import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 // I call this small class a 'locally defined' plugin
 class HighlightRegionPlugin extends Plugin {

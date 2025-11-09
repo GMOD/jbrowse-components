@@ -41,14 +41,7 @@ type: types.literal('BreakpointSplitView')
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(
-          types.refinement(
-            'viewHeight',
-            types.number,
-            (n: number) => n >= minHeight,
-          ),
-          defaultHeight,
-        )
+height: types.optional(types.number, defaultHeight)
 ```
 
 #### property: trackSelectorType
@@ -87,11 +80,20 @@ true
 interactiveOverlay: true
 ```
 
+#### property: showHeader
+
+```js
+// type signature
+true
+// code
+showHeader: true
+```
+
 #### property: views
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -201,6 +203,13 @@ setShowIntraviewLinks: (arg: boolean) => void
 ```js
 // type signature
 setLinkViews: (arg: boolean) => void
+```
+
+#### action: setShowHeader
+
+```js
+// type signature
+setShowHeader: (arg: boolean) => void
 ```
 
 #### action: setMatchedTrackFeatures

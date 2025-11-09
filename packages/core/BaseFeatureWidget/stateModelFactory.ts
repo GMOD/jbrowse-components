@@ -4,31 +4,13 @@ import { addDisposer, types } from 'mobx-state-tree'
 import { getConf } from '../configuration'
 import { getSession } from '../util'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model'
-import { replaceUndefinedWithNull } from './util'
+import { formatSubfeatures } from './util'
 import { ElementId } from '../util/types/mst'
 
 import type PluginManager from '../PluginManager'
+import type { SimpleFeatureSerialized } from '../util'
+import type { MaybeSerializedFeat } from './types'
 import type { Instance } from 'mobx-state-tree'
-
-interface Feat {
-  subfeatures?: Record<string, unknown>[]
-}
-
-function formatSubfeatures(
-  obj: Feat,
-  depth: number,
-  parse: (obj: Record<string, unknown>) => void,
-  currentDepth = 0,
-  returnObj = {} as Record<string, unknown>,
-) {
-  if (depth <= currentDepth) {
-    return
-  }
-  obj.subfeatures?.map(sub => {
-    formatSubfeatures(sub, depth, parse, currentDepth + 1, returnObj)
-    parse(sub)
-  })
-}
 
 /**
  * #stateModel BaseFeatureWidget
@@ -44,42 +26,51 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #property
        */
       id: ElementId,
+
       /**
        * #property
        */
       type: types.literal('BaseFeatureWidget'),
+
       /**
        * #property
        */
-      featureData: types.frozen(),
+      featureData: types.frozen<MaybeSerializedFeat>(),
+
       /**
        * #property
        */
       formattedFields: types.frozen(),
+
       /**
        * #property
        */
-      unformattedFeatureData: types.frozen(),
+      unformattedFeatureData: types.frozen<MaybeSerializedFeat>(),
+
       /**
        * #property
        */
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+
       /**
        * #property
        */
       track: types.safeReference(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
+
       /**
        * #property
        */
       trackId: types.maybe(types.string),
+
       /**
        * #property
        */
       trackType: types.maybe(types.string),
+
       /**
        * #property
        */
@@ -89,6 +80,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #property
        */
       sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {}),
+
+      /**
+       * #property
+       */
+      descriptions: types.frozen<Record<string, unknown> | undefined>(),
     })
     .volatile(() => ({
       /**
@@ -101,7 +97,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setFeatureData(featureData: Record<string, unknown>) {
+      setFeatureData(featureData: SimpleFeatureSerialized) {
         self.unformattedFeatureData = featureData
       },
       /**
@@ -113,7 +109,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setFormattedData(feat: Record<string, unknown>) {
+      setFormattedData(feat: SimpleFeatureSerialized) {
         self.featureData = feat
       },
       /**
@@ -194,14 +190,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
         typeof snap,
         symbol
       >
-      // finalizedFeatureData avoids running formatter twice if loading from
-      // snapshot
+
+      const s2 = JSON.stringify(featureData, (_, v) =>
+        v === undefined ? null : v,
+      )
+
+      // JSON.stringify can return empty if too large
+
+      const featureTooLargeToBeSerialized = !s2 || s2.length > 2_000_000
+
+      // The concept of using `finalizedFeatureData` is to avoid running
+      // formatter twice if loading from snapshot
       return {
-        // replacing undefined with null helps with allowing fields to be
+        // We replace undefined with null to help with allowing fields to be
         // hidden, setting null is not allowed by jexl so we set it to
-        // undefined to hide. see config guide. this replacement happens both
-        // here and when displaying the featureData in base feature widget
-        finalizedFeatureData: replaceUndefinedWithNull(featureData),
+        // undefined to hide, but JSON only allows serializing null
+        finalizedFeatureData: featureTooLargeToBeSerialized
+          ? undefined
+          : JSON.parse(s2),
         ...rest,
       }
     })

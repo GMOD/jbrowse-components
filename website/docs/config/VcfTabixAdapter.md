@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### VcfTabixAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
+
+```json
+{
+  "type": "VcfTabixAdapter",
+  "uri": "yourfile.vcf.gz"
+}
+```
+
 ### VcfTabixAdapter - Slots
 
 #### slot: vcfGzLocation
@@ -25,7 +36,10 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 vcfGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.vcf.gz',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

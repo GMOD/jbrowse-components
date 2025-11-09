@@ -12,7 +12,9 @@ export default function register(pluginManager: PluginManager) {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
       name: 'LinearReadCloudDisplay',
-      displayName: 'Read cloud display',
+      displayName: 'Linked reads display',
+      helpText:
+        'Display paired-end and split read (supplementary read) alignments as linked entities',
       configSchema,
       stateModel: stateModelF(configSchema),
       trackType: 'AlignmentsTrack',

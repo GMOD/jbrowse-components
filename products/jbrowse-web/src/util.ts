@@ -54,9 +54,9 @@ export async function fromUrlSafeB64(b64: string) {
     b64.replaceAll('-', '+').replaceAll('_', '/'),
   )
   const { toByteArray } = await import('base64-js')
-  const { inflate } = await import('pako')
+  const { inflate } = await import('pako-esm2')
   const bytes = toByteArray(originalB64)
-  const inflated = inflate(bytes)
+  const inflated = inflate(bytes, undefined)
   const decoder = new TextDecoder('utf8')
   return decoder.decode(inflated)
 }
@@ -68,9 +68,9 @@ export async function fromUrlSafeB64(b64: string) {
  */
 export async function toUrlSafeB64(str: string) {
   const bytes = new TextEncoder().encode(str)
-  const { deflate } = await import('pako')
+  const { deflate } = await import('pako-esm2')
   const { fromByteArray } = await import('base64-js')
-  const deflated = deflate(bytes)
+  const deflated = deflate(bytes, undefined)
   const encoded = fromByteArray(deflated)
   const pos = encoded.indexOf('=')
   return pos > 0
@@ -105,6 +105,7 @@ export function filterSessionInPlace(
         }
       }
     }
+    // eslint-disable-next-line unicorn/no-array-for-each
     array.forEach(el => {
       filterSessionInPlace(el, childType)
     })
@@ -119,6 +120,7 @@ export function filterSessionInPlace(
         }
       }
     }
+    // eslint-disable-next-line unicorn/no-array-for-each
     map.forEach(child => {
       filterSessionInPlace(child, childType)
     })
@@ -126,6 +128,7 @@ export function filterSessionInPlace(
     // iterate over children
     const { properties } = getPropertyMembers(node)
 
+    // eslint-disable-next-line unicorn/no-array-for-each
     Object.entries(properties).forEach(([pname, ptype]) => {
       // @ts-ignore
       filterSessionInPlace(node[pname], ptype)

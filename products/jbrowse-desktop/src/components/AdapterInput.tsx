@@ -1,5 +1,5 @@
 import { FileSelector } from '@jbrowse/core/ui'
-import { Grid2 } from '@mui/material'
+import { Grid } from '@mui/material'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
@@ -30,7 +30,7 @@ export default function AdapterInput({
 }) {
   if (adapterSelection === 'IndexedFastaAdapter') {
     return (
-      <Grid2 container direction="column" spacing={2}>
+      <Grid container direction="column" spacing={2}>
         <FileSelector
           name="fastaLocation"
           location={fastaLocation}
@@ -45,12 +45,12 @@ export default function AdapterInput({
             setFaiLocation(loc)
           }}
         />
-      </Grid2>
+      </Grid>
     )
   }
   if (adapterSelection === 'BgzipFastaAdapter') {
     return (
-      <Grid2 container direction="column" spacing={2}>
+      <Grid container direction="column" spacing={2}>
         <FileSelector
           name="fastaLocation"
           location={fastaLocation}
@@ -72,13 +72,13 @@ export default function AdapterInput({
             setGziLocation(loc)
           }}
         />
-      </Grid2>
+      </Grid>
     )
   }
 
   if (adapterSelection === 'TwoBitAdapter') {
     return (
-      <Grid2 container direction="column" spacing={2}>
+      <Grid container direction="column" spacing={2}>
         <FileSelector
           name="twoBitLocation"
           location={twoBitLocation}
@@ -93,13 +93,13 @@ export default function AdapterInput({
             setChromSizesLocation(loc)
           }}
         />
-      </Grid2>
+      </Grid>
     )
   }
 
   if (adapterSelection === 'FastaAdapter') {
     return (
-      <Grid2 container direction="column" spacing={2}>
+      <Grid container direction="column" spacing={2}>
         <FileSelector
           name="fastaLocation"
           location={fastaLocation}
@@ -107,7 +107,7 @@ export default function AdapterInput({
             setFastaLocation(loc)
           }}
         />
-      </Grid2>
+      </Grid>
     )
   }
 

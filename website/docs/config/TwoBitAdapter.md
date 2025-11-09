@@ -18,6 +18,21 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### TwoBitAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config (note that adding chromSizes improves
+speed, otherwise has to read a lot of the twobit file to calculate chromosome
+names and sizes):
+
+```json
+{
+  "type": "TwoBitAdapter",
+  "uri": "yourfile.2bit"
+  "chromSizes":"yourfile.chrom.sizes"
+}
+
+```
+
 ### TwoBitAdapter - Slots
 
 #### slot: twoBitLocation
@@ -25,7 +40,10 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 twoBitLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.2bit',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

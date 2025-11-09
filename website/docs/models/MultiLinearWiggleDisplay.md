@@ -44,6 +44,15 @@ IOptionalIType<IType<Source[], Source[], Source[]>, [undefined]>
 layout: types.optional(types.frozen<Source[]>(), [])
 ```
 
+#### property: showSidebar
+
+```js
+// type signature
+true
+// code
+showSidebar: true
+```
+
 ### MultiLinearWiggleDisplay - Getters
 
 #### getter: featureUnderMouse
@@ -123,6 +132,13 @@ everything else
 ```js
 // type
 any
+```
+
+#### getter: sourcesWithoutLayout
+
+```js
+// type
+{ color: string; baseUri?: string; name: string; group?: string; }[]
 ```
 
 #### getter: sources
@@ -228,6 +244,20 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```
 
 ### MultiLinearWiggleDisplay - Actions
+
+#### action: setShowSidebar
+
+```js
+// type signature
+setShowSidebar: (arg: boolean) => void
+```
+
+#### action: setSourcesLoading
+
+```js
+// type signature
+setSourcesLoading: (str: string) => void
+```
 
 #### action: setLayout
 

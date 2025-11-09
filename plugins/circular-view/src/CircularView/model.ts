@@ -11,7 +11,6 @@ import {
 } from '@jbrowse/core/util'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
 import { transaction } from 'mobx'
 import { cast, getRoot, resolveIdentifier, types } from 'mobx-state-tree'
 
@@ -282,7 +281,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get elidedRegions() {
         const visible: SliceRegion[] = []
-        self.displayedRegions.forEach(region => {
+        for (const region of self.displayedRegions) {
           const widthBp = region.end - region.start
           const widthPx = widthBp / self.bpPerPx
           if (widthPx < self.minVisibleWidth) {
@@ -302,7 +301,7 @@ function stateModelFactory(pluginManager: PluginManager) {
             // big enough to see, display it
             visible.push({ ...region, widthBp, elided: false })
           }
-        })
+        }
 
         // remove any single-region elisions
         for (let i = 0; i < visible.length; i += 1) {
@@ -318,11 +317,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyNames() {
         const assemblyNames: string[] = []
-        self.displayedRegions.forEach(displayedRegion => {
+        for (const displayedRegion of self.displayedRegions) {
           if (!assemblyNames.includes(displayedRegion.assemblyName)) {
             assemblyNames.push(displayedRegion.assemblyName)
           }
-        })
+        }
         return assemblyNames
       },
       /**
@@ -556,11 +555,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       hideTrack(trackId: string) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
+        const tracks = self.tracks.filter(t => t.configuration === conf)
         transaction(() => {
-          t.forEach(t => self.tracks.remove(t))
+          for (const track of tracks) {
+            self.tracks.remove(track)
+          }
         })
-        return t.length
+        return tracks.length
       },
 
       /**
@@ -580,8 +581,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       async exportSvg(opts: ExportSvgOptions = {}) {
         const { renderToSvg } = await import('./svgcomponents/SVGCircularView')
         const html = await renderToSvg(self as CircularViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
     }))
     .views(self => ({

@@ -11,7 +11,7 @@ const useStyles = makeStyles()(theme => ({
   centerLineContainer: {
     background: 'transparent',
     height: '100%',
-    zIndex: 5, // above the track but under menu
+    zIndex: 4, // above the track but under menu
     position: 'absolute',
     border: `1px ${theme.palette.action.active} dashed`,
     borderTop: 'none',

@@ -41,19 +41,21 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       chunkCacheSize: 50 * 2 ** 20,
     })
   }
-  async getHeader() {
-    return this.pif.getHeader()
+  async getHeader(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    return updateStatus('Downloading header', statusCallback, () =>
+      this.pif.getHeader(),
+    )
   }
 
   getAssemblyNames(): string[] {
     const assemblyNames = this.getConf('assemblyNames') as string[]
-    if (assemblyNames.length === 0) {
-      return [
-        this.getConf('queryAssembly') as string,
-        this.getConf('targetAssembly') as string,
-      ]
-    }
-    return assemblyNames
+    return assemblyNames.length === 0
+      ? [
+          this.getConf('queryAssembly') as string,
+          this.getConf('targetAssembly') as string,
+        ]
+      : assemblyNames
   }
 
   public async hasDataForRefName() {
@@ -132,6 +134,4 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  freeResources(/* { query } */): void {}
 }

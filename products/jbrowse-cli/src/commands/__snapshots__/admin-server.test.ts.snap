@@ -39,6 +39,10 @@ exports[`does not overwrite an existing config 1`] = `
 }
 `;
 
-exports[`throws an error with a negative port 1`] = `"-10 is not a valid port"`;
+exports[`throws an error with a negative port 1`] = `
+"Error: TypeError [ERR_PARSE_ARGS_INVALID_OPTION_VALUE]: Option '--port' argument is ambiguous.
+Did you forget to specify the option argument for '--port'?
+To specify an option argument starting with a dash use '--port=-XYZ'."
+`;
 
-exports[`throws an error with a port greater than 65535 1`] = `"66666 is not a valid port"`;
+exports[`throws an error with a port greater than 65535 1`] = `"Error: 66666 is not a valid port"`;

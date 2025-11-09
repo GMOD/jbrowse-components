@@ -20,14 +20,12 @@ export default function SuppAlignments(props: {
   } catch (e) {
     // ignore
   }
-  return (
+  return hasBreakendSplitView ? (
     <BaseCard {...props} title="Paired alignments">
-      {hasBreakendSplitView ? (
-        <LaunchPairedEndBreakpointSplitViewPanel
-          model={model}
-          feature={feature}
-        />
-      ) : null}
+      <LaunchPairedEndBreakpointSplitViewPanel
+        model={model}
+        feature={feature}
+      />
     </BaseCard>
-  )
+  ) : null
 }

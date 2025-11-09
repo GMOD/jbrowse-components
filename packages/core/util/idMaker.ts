@@ -26,5 +26,5 @@ export default function idMaker(
     }
   }
 
-  return hashCode(id)
+  return `adp-${hashCode(id)}`
 }

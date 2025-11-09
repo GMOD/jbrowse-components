@@ -1,4 +1,4 @@
-# @jbrowse/react-linear-genome-view
+# @jbrowse/react-linear-genome-view2
 
 > JBrowse 2 linear genome view React component
 
@@ -13,7 +13,7 @@ import '@fontsource/roboto'
 import {
   createViewState,
   JBrowseLinearGenomeView,
-} from '@jbrowse/react-linear-genome-view'
+} from '@jbrowse/react-linear-genome-view2'
 
 function View() {
   const state = createViewState({
@@ -35,13 +35,13 @@ For working examples, see https://jbrowse.org/jb2/docs/embedded_components/
 With [yarn](https://yarnpkg.com/):
 
 ```
-$ yarn add @jbrowse/react-linear-genome-view
+$ yarn add @jbrowse/react-linear-genome-view2
 ```
 
 Or with [npm](https://npmjs.org/):
 
 ```
-$ npm install @jbrowse/react-linear-genome-view --legacy-peer-deps
+$ npm install @jbrowse/react-linear-genome-view2 --legacy-peer-deps
 ```
 
 The --legacy-peer-deps helps with installing via NPM to avoid warnings about the

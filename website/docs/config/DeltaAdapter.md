@@ -18,6 +18,19 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### DeltaAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "DeltaAdapter",
+  "uri": "yourfile.delta.gz",
+  "queryAssembly": "hg19",
+  "targetAssembly": "hg38"
+}
+```
+
 ### DeltaAdapter - Slots
 
 #### slot: assemblyNames

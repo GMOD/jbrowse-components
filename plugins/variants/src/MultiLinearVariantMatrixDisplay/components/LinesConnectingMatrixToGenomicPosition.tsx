@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { forwardRef, isValidElement, useState } from 'react'
 
-import { ResizeHandle } from '@jbrowse/core/ui'
+import { ResizeHandle, SanitizedHTML } from '@jbrowse/core/ui'
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -47,6 +48,12 @@ const Wrapper = observer(function ({
   )
 })
 
+interface MouseOverLine {
+  f: Feature
+  idx: number
+  c: number
+}
+
 const LinesConnectingMatrixToGenomicPosition = observer(function ({
   model,
   exportSVG,
@@ -57,11 +64,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
   const { classes } = useStyles()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const [mouseOverLine, setMouseOverLine] = useState<{
-    f: Feature
-    idx: number
-    c: number
-  }>()
+  const [mouseOverLine, setMouseOverLine] = useState<MouseOverLine>()
   const { lineZoneHeight, featuresVolatile } = model
   const { assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
@@ -72,20 +75,23 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
       <Wrapper exportSVG={exportSVG} model={model}>
         <AllLines model={model} setMouseOverLine={setMouseOverLine} />
         {mouseOverLine ? (
-          <line
-            stroke="#f00c"
-            strokeWidth={2}
-            style={{
-              pointerEvents: 'none',
-            }}
-            x1={mouseOverLine.idx * w + w / 2}
-            x2={mouseOverLine.c}
-            y1={lineZoneHeight}
-            y2={0}
-            onMouseLeave={() => {
-              setMouseOverLine(undefined)
-            }}
-          />
+          <>
+            <line
+              stroke="#f00c"
+              strokeWidth={2}
+              style={{
+                pointerEvents: 'none',
+              }}
+              x1={mouseOverLine.idx * w + w / 2}
+              x2={mouseOverLine.c}
+              y1={lineZoneHeight}
+              y2={0}
+              onMouseLeave={() => {
+                setMouseOverLine(undefined)
+              }}
+            />
+            <LineTooltip contents={mouseOverLine.f.get('name')} />
+          </>
         ) : null}
       </Wrapper>
       {!exportSVG ? (
@@ -99,6 +105,29 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
         />
       ) : null}
     </>
+  ) : null
+})
+interface Props {
+  message: React.ReactNode | string
+}
+const TooltipContents = forwardRef<HTMLDivElement, Props>(
+  function TooltipContents2({ message }, ref) {
+    return (
+      <div ref={ref}>
+        {isValidElement(message) ? (
+          message
+        ) : message ? (
+          <SanitizedHTML html={String(message)} />
+        ) : null}
+      </div>
+    )
+  },
+)
+const LineTooltip = observer(function ({ contents }: { contents?: string }) {
+  return contents ? (
+    <BaseTooltip>
+      <TooltipContents message={contents} />
+    </BaseTooltip>
   ) : null
 })
 

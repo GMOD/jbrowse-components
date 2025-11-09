@@ -1,0 +1,158 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "metadata": {
+          "date": "2020-08-20"
+        },
+        "formatAbout": {
+          "config": "jexl:{extraField:'important data'}"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        },
+        "displays": [
+          {
+            "type": "LinearReferenceSequenceDisplay",
+            "displayId": "volvox_refseq-LinearReferenceSequenceDisplay"
+          },
+          {
+            "type": "LinearGCContentDisplay",
+            "displayId": "volvox_refseq-LinearGCContentDisplay",
+            "windowSize": 10,
+            "windowDelta": 10
+          }
+        ]
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "adapterId": "W6DyPGJ0UU",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "alias1",
+              "aliases": ["A", "contigA"]
+            },
+            {
+              "refName": "ctgB",
+              "uniqueId": "alias2",
+              "aliases": ["B", "contigB"]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Integration test example",
+    "views": [
+      {
+        "id": "integration_test",
+        "type": "LinearGenomeView",
+        "init": {
+          "loc": "ctgA:5,000-6,000",
+          "assembly": "volvox",
+          "tracks": ["volvox_cram_alignments_ctga"]
+        }
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "filterText": "",
+        "view": "integration_test"
+      }
+    },
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    }
+  },
+  "tracks": [
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_test_vcf",
+      "name": "volvox 1000genomes vcf",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "volvox.test.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearVariantMatrixDisplay"
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_alignments_ctga",
+      "name": "volvox-sorted.cram (ctgA, default display)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "volvox-index",
+      "ixFilePath": {
+        "uri": "trix/volvox.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "trix/volvox.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "trix/volvox_meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "volvox-rev-del-index",
+      "ixFilePath": {
+        "uri": "trix/volvox-rev-del.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "trix/volvox-rev-del.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "trix/volvox-rev-del_meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["volvox-rev-del"]
+    }
+  ]
+}

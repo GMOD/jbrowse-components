@@ -1,11 +1,6 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import {
-  FormatAboutConfigSchemaFactory,
-  FormatDetailsConfigSchemaFactory,
-  HierarchicalConfigSchemaFactory,
-} from '@jbrowse/product-core'
 import { types } from 'mobx-state-tree'
+
+import RootConfiguration from './RootConfiguration'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -19,14 +14,6 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
  * somefile.jbrowse (for jbrowse-desktop, where configs have the .jbrowse
  * extension)
  *
- * includes
- * - [FormatDetails](../formatdetails) for global (instead of per-track)
- *   feature detail formatters
- * - [FormatAbout](../formatabout) for global (instead of per-track) about
- *   track formatters
- * - [HierarchicalConfigSchema](../hierarchicalconfigschema) for track selector
- *   configs
- *
  * also includes any pluginManager.pluginConfigurationSchemas(), so plugins
  * that have a configurationSchema field on their class are mixed into this
  * object
@@ -39,62 +26,10 @@ export function JBrowseConfigF({
   assemblyConfigSchema: AnyConfigurationSchemaType
 }) {
   return types.model('JBrowseConfig', {
-    configuration: ConfigurationSchema('Root', {
-      /**
-       * #slot configuration.rpc
-       */
-      rpc: RpcManager.configSchema,
-
-      /**
-       * #slot configuration.highResolutionScaling
-       */
-      highResolutionScaling: {
-        type: 'number',
-        defaultValue: 2,
-      },
-
-      formatDetails: FormatDetailsConfigSchemaFactory(),
-      formatAbout: FormatAboutConfigSchemaFactory(),
-
-      /*
-       * #slot configuration.shareURL
-       */
-      shareURL: {
-        type: 'string',
-        defaultValue: 'https://share.jbrowse.org/api/v1/',
-      },
-      /**
-       * #slot configuration.disableAnalytics
-       */
-      disableAnalytics: {
-        type: 'boolean',
-        defaultValue: false,
-      },
-
-      hierarchical: HierarchicalConfigSchemaFactory(),
-      /**
-       * #slot configuration.theme
-       */
-      theme: {
-        type: 'frozen',
-        defaultValue: {},
-      },
-      /**
-       * #slot configuration.extraThemes
-       */
-      extraThemes: {
-        type: 'frozen',
-        defaultValue: {},
-      },
-      /**
-       * #slot configuration.logoPath
-       */
-      logoPath: {
-        type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
-      },
-      ...pluginManager.pluginConfigurationSchemas(),
+    configuration: RootConfiguration({
+      pluginManager,
     }),
+
     /**
      * #slot
      * defines plugins of the format
@@ -109,17 +44,20 @@ export function JBrowseConfigF({
      * ```
      */
     plugins: types.array(types.frozen<PluginDefinition>()),
+
     /**
      * #slot
      * configuration of the assemblies in the instance, see BaseAssembly
      */
     assemblies: types.array(assemblyConfigSchema),
+
     /**
      * #slot
      * track configuration is an array of track config schemas. multiple
      * instances of a track can exist that use the same configuration
      */
     tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+
     /**
      * #slot
      * configuration for internet accounts, see InternetAccounts
@@ -155,5 +93,7 @@ export function JBrowseConfigF({
      * #slot
      */
     preConfiguredSessions: types.array(types.frozen()),
+
+    ...pluginManager.pluginConfigurationRootSchemas(),
   })
 }

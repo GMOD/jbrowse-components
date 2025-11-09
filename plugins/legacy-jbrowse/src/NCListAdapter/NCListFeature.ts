@@ -80,7 +80,7 @@ export default class NCListFeature implements Feature {
     // @ts-expect-error
     const data: SimpleFeatureSerialized = { uniqueId: this.id() }
 
-    this.ncFeature.tags().forEach((tag: string) => {
+    for (const tag of this.ncFeature.tags()) {
       const mappedTag = this.jb1TagToJb2Tag(tag)
       const value = this.ncFeature.get(tag)
       if (mappedTag === 'subfeatures') {
@@ -91,7 +91,7 @@ export default class NCListFeature implements Feature {
       } else {
         data[mappedTag] = value
       }
-    })
+    }
     return data
   }
 }

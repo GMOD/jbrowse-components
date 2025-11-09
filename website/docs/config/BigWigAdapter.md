@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### BigWigAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "BigWigAdapter",
+  "uri": "yourfile.bw"
+}
+```
+
 ### BigWigAdapter - Slots
 
 #### slot: bigWigLocation

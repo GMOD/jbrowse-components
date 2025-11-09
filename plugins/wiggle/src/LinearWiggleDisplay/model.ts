@@ -105,7 +105,7 @@ function stateModelFactory(
        * #getter
        */
       get inverted() {
-        return self.invertedSetting ?? getConf(self, 'inverted')
+        return self.invertedSetting ?? (getConf(self, 'inverted') as boolean)
       },
     }))
 

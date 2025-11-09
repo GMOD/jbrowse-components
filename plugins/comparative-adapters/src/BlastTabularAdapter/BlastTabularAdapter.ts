@@ -2,10 +2,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { doesIntersect2, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature'
-import { parseLineByLine } from '../util'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -210,13 +210,30 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
   }
 
   async setup(opts?: BaseOptions): Promise<BlastRecord[]> {
-    const pm = this.pluginManager
-    const buf = await fetchAndMaybeUnzip(
-      openLocation(readConfObject(this.config, 'blastTableLocation'), pm),
-      opts,
-    )
     const columns: string = readConfObject(this.config, 'columns')
-    return parseLineByLine(buf, createBlastLineParser(columns), opts)
+    const lines = [] as NonNullable<
+      ReturnType<ReturnType<typeof createBlastLineParser>>
+    >[]
+
+    const cb = createBlastLineParser(columns)
+    parseLineByLine(
+      await fetchAndMaybeUnzip(
+        openLocation(
+          readConfObject(this.config, 'blastTableLocation'),
+          this.pluginManager,
+        ),
+        opts,
+      ),
+      line => {
+        const res = cb(line)
+        if (res) {
+          lines.push(res)
+        }
+        return true
+      },
+      opts?.statusCallback,
+    )
+    return lines
   }
 
   async hasDataForRefName() {
@@ -275,6 +292,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
         return
       }
 
+      // eslint-disable-next-line unicorn/no-for-loop
       for (let i = 0; i < blastRecords.length; i++) {
         const r = blastRecords[i]!
         let start: number
@@ -345,6 +363,4 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  freeResources(/* { query } */): void {}
 }

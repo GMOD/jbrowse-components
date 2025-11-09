@@ -63,10 +63,10 @@ exports[`deletes a default session 1`] = `
 }
 `;
 
-exports[`fails when default session is not readable 1`] = `"Could not read the provided file"`;
+exports[`fails when default session is not readable 1`] = `"Error: Could not read the provided file"`;
 
-exports[`fails when file does not exist 1`] = `"Could not read the provided file"`;
+exports[`fails when file does not exist 1`] = `"Error: Could not read the provided file"`;
 
-exports[`fails when file is does not have a default session to read 1`] = `"Could not parse the given default session file"`;
+exports[`fails when file is does not have a default session to read 1`] = `"Error: Could not parse the given default session file"`;
 
-exports[`fails when no necessary default session information is provided 1`] = `"Please provide a --session file"`;
+exports[`fails when no necessary default session information is provided 1`] = `"Error: Please provide a --session file"`;

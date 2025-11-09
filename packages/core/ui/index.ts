@@ -12,5 +12,8 @@ export { default as LoadingEllipses } from './LoadingEllipses'
 export { default as Menu } from './Menu'
 export { default as PrerenderedCanvas } from './PrerenderedCanvas'
 export { default as ResizeHandle } from './ResizeHandle'
+export { default as ExternalLink } from './ExternalLink'
 export { default as SanitizedHTML } from './SanitizedHTML'
+export { default as BaseTooltip } from './BaseTooltip'
 export * from './Menu'
+export const VIEW_HEADER_HEIGHT = 28

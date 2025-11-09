@@ -30,7 +30,7 @@ function leftRoundedRect(
   return `M${x + radius},${y}h${width - radius}v${height}h${radius - width}a${radius},${radius} 0 0 1 ${-radius},${-radius}v${2 * radius - height}a${radius},${radius} 0 0 1 ${radius},${-radius}z`
 }
 
-function leftTriangle(x: number, y: number, width: number, height: number) {
+function leftTriangle(x: number, _y: number, width: number, height: number) {
   return [
     [x, 0],
     [x + width, height / 2],
@@ -38,7 +38,7 @@ function leftTriangle(x: number, y: number, width: number, height: number) {
   ].toString()
 }
 
-function rightTriangle(x: number, y: number, width: number, height: number) {
+function rightTriangle(x: number, _y: number, width: number, height: number) {
   return [
     [x, height / 2],
     [x + width, 0],
@@ -49,7 +49,9 @@ function rightTriangle(x: number, y: number, width: number, height: number) {
 const colorMap: Record<string, string> = {
   gneg: 'rgb(227,227,227)',
   gpos25: 'rgb(142,142,142)',
+  gpos33: 'rgb(142,142,142)',
   gpos50: 'rgb(85,85,85)',
+  gpos66: 'rgb(85,85,85)',
   gpos100: 'rgb(0,0,0)',
   gpos75: 'rgb(57,57,57)',
   gvar: 'rgb(0,0,0)',
@@ -73,16 +75,32 @@ const Cytobands = observer(function ({
 
   const h = HEADER_OVERVIEW_HEIGHT
   let centromereSeen = false
+  let curr = ''
+  let idx = 0
   return (
     <g transform={`translate(-${offsetPx})`}>
       {cytobands.map((args, index) => {
         const k = JSON.stringify(args)
-        const { refName, type, start, end } = args
+        const { refName, name, type, start, end } = args
         const s = overview.bpToPx({ refName, coord: start }) || 0
         const e = overview.bpToPx({ refName, coord: end }) || 0
         const l = Math.min(s, e)
         const w = Math.abs(e - s)
-        const c = colorMap[type] || 'black'
+        if (type === 'n/a') {
+          const match = name?.match(/^(\d+)([A-Za-z])/)
+          const ret = match[1] + match[2]
+          if (ret && ret !== curr) {
+            curr = ret
+            idx++
+          }
+        }
+        const c =
+          type === 'n/a'
+            ? idx % 2
+              ? 'black'
+              : '#a77'
+            : colorMap[type] || 'black'
+
         if (type === 'acen' && !centromereSeen) {
           centromereSeen = true // the next acen entry is drawn with different right triangle
           return (

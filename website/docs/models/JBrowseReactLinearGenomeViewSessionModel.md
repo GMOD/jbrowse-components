@@ -37,7 +37,7 @@ composed of
 
 ```js
 // type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>
+IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, { ...; }>
 // code
 view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel
@@ -102,7 +102,7 @@ any
 
 ```js
 // type
-({ id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>)[]
+({ id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 12 more ...; init: InitState & IStateTreeNode<...>; } & ... 18 more ... & IStateTreeNode<...>)[]
 ```
 
 ### JBrowseReactLinearGenomeViewSessionModel - Methods
@@ -130,5 +130,5 @@ getTrackActionMenuItems: (config: any) => { label: string; onClick: () => void; 
 
 ```js
 // type signature
-addView: (typeName: string, initialState?: {}) => { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<...>, [...]>>; ... 11 more ...; showTrackOutlines: boolean; } & ... 18 more ... & IStateTreeNode<...>
+addView: (typeName: string, initialState?: {}) => { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<...>, [...]>>; ... 12 more ...; init: InitState & IStateTreeNode<...>; } & ... 18 more ... & IStateTreeNode...
 ```

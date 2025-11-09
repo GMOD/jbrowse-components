@@ -35,6 +35,11 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * #property
            */
           configuration: ConfigurationReference(configSchema),
+          /**
+           * #property
+           * color by setting that overrides the config setting
+           */
+          colorBy: types.optional(types.string, 'default'),
         })
         .volatile(() => ({
           /**
@@ -70,6 +75,16 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            */
           ReactComponent2:
             ServerSideRenderedBlockContent as unknown as React.FC<any>,
+          /**
+           * #volatile
+           * alpha transparency value for synteny drawing (0-1)
+           */
+          alpha: 1,
+          /**
+           * #volatile
+           * minimum alignment length to display (in bp)
+           */
+          minAlignmentLength: 0,
         })),
     )
     .views(self => ({
@@ -95,6 +110,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
           config: self.configuration.renderer,
+          statusCallback: (message: string) => {
+            self.setMessage(message)
+          },
         }
       },
     }))
@@ -198,6 +216,24 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.error = error
         self.renderingComponent = undefined
         self.stopToken = undefined
+      },
+      /**
+       * #action
+       */
+      setAlpha(value: number) {
+        self.alpha = value
+      },
+      /**
+       * #action
+       */
+      setMinAlignmentLength(value: number) {
+        self.minAlignmentLength = value
+      },
+      /**
+       * #action
+       */
+      setColorBy(value: string) {
+        self.colorBy = value
       },
     }))
 }

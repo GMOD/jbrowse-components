@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { fireEvent, waitFor } from '@testing-library/react'
-import FileSaver from 'file-saver'
+import { saveAs } from 'file-saver-es'
 
 import { createView, doBeforeEach, setup } from './util'
 import breakpointConfig from '../../test_data/breakpoint/config.json'
@@ -11,7 +11,7 @@ import breakpointConfig from '../../test_data/breakpoint/config.json'
 global.Blob = (content, options) => ({ content, options })
 
 // mock from https://stackoverflow.com/questions/44686077
-jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
+jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
 
 setup()
 
@@ -33,12 +33,12 @@ test('export svg of breakpoint split view', async () => {
 
   await waitFor(() => {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(FileSaver.saveAs).toHaveBeenCalled()
+    expect(saveAs).toHaveBeenCalled()
   }, delay)
 
   // @ts-expect-error
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
+  const svg = saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(
     `${dir}/__image_snapshots__/breakpoint_split_view_snapshot.svg`,

@@ -229,7 +229,41 @@ showTrackOutlines: types.optional(types.boolean, () =>
         )
 ```
 
+#### property: init
+
+this is a non-serialized property that can be used for loading the linear genome
+view via session snapshots example:
+
+```json
+{
+  loc: "chr1:1,000,000-2,000,000"
+  assembly: "hg19"
+  tracks: ["genes", "variants"]
+}
+```
+
+```js
+// type signature
+IType<InitState, InitState, InitState>
+// code
+init: types.frozen<InitState | undefined>()
+```
+
 ### LinearGenomeView - Getters
+
+#### getter: pinnedTracks
+
+```js
+// type
+any[]
+```
+
+#### getter: unpinnedTracks
+
+```js
+// type
+any[]
+```
 
 #### getter: trackLabelsSetting
 
@@ -260,6 +294,40 @@ number
 ```js
 // type
 any[]
+```
+
+#### getter: assemblyDisplayNames
+
+```js
+// type
+any
+```
+
+#### getter: isTopLevelView
+
+checking if lgv is a 'top-level' view is used for toggling pin track capability,
+sticky positioning
+
+```js
+// type
+boolean
+```
+
+#### getter: stickyViewHeaders
+
+only uses sticky view headers when it is a 'top-level' view and session allows
+it
+
+```js
+// type
+boolean
+```
+
+#### getter: rubberbandTop
+
+```js
+// type
+number
 ```
 
 #### getter: assembliesNotFound
@@ -522,6 +590,8 @@ getTrack: (id: string) => any
 ```
 
 #### method: rankSearchResults
+
+does nothing currently
 
 ```js
 // type signature
@@ -872,6 +942,13 @@ this "clears the view" and makes the view return to the import form
 clearView: () => void
 ```
 
+#### action: setInit
+
+```js
+// type signature
+setInit: (arg?: InitState) => void
+```
+
 #### action: slide
 
 perform animated slide
@@ -914,7 +991,7 @@ wait for assemblies to be initialized
 
 ```js
 // type signature
-navToLocString: (input: string, optAssemblyName?: string) => Promise<any>
+navToLocString: (input: string, optAssemblyName?: string, grow?: number) => Promise<any>
 ```
 
 #### action: navToSearchString
@@ -924,17 +1001,28 @@ is returned. Will pop up a search dialog if multiple results are returned
 
 ```js
 // type signature
-navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promis...
+navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promise<...>
+```
+
+#### action: navToLocation
+
+Similar to `navToLocString`, but accepts a parsed location object instead of a
+locstring. Will try to perform `setDisplayedRegions` if changing regions
+
+```js
+// type signature
+navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string, grow?: number) => Promise<any>
 ```
 
 #### action: navToLocations
 
-Similar to `navToLocString`, but accepts parsed location objects instead of
-strings. Will try to perform `setDisplayedRegions` if changing regions
+Similar to `navToLocString`, but accepts a list of parsed location objects
+instead of a locstring. Will try to perform `setDisplayedRegions` if changing
+regions
 
 ```js
 // type signature
-navToLocations: (parsedLocStrings: ParsedLocString[], assemblyName?: string) => Promise<void>
+navToLocations: (regions: ParsedLocString[], assemblyName?: string, grow?: number) => Promise<void>
 ```
 
 #### action: navTo

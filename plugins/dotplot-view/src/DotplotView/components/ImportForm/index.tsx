@@ -6,7 +6,7 @@ import {
   Button,
   Container,
   FormControl,
-  Grid2,
+  Grid,
   Paper,
   Typography,
 } from '@mui/material'
@@ -54,8 +54,18 @@ function doSubmit({
       })
     }
 
-    model.showAllRegions()
     model.setAssemblyNames(assembly2, assembly1)
+
+    // Only show all regions if views are properly initialized
+    // Otherwise the autorun will handle it once initialization is complete
+    // if (
+    //   model.volatileWidth !== undefined &&
+    //   model.assembliesInitialized &&
+    //   model.hview.displayedRegions.length > 0 &&
+    //   model.vview.displayedRegions.length > 0
+    // ) {
+    //   model.showAllRegions()
+    // }
   })
 }
 
@@ -81,12 +91,7 @@ const DotplotImportForm = observer(function ({
         <Typography style={{ textAlign: 'center' }}>
           Select assemblies for dotplot view
         </Typography>
-        <Grid2
-          container
-          spacing={1}
-          justifyContent="center"
-          alignItems="center"
-        >
+        <Grid container spacing={1} justifyContent="center" alignItems="center">
           <AssemblySelector
             helperText="x-axis assembly"
             selected={assembly2}
@@ -127,7 +132,7 @@ const DotplotImportForm = observer(function ({
               Launch
             </Button>
           </FormControl>
-        </Grid2>
+        </Grid>
         <TrackSelector
           assembly2={assembly2}
           assembly1={assembly1}

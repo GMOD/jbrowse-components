@@ -20,18 +20,23 @@ export class FloatingLayout {
 
   totalHeight = 0
 
+  rectangles = new Map()
   constructor({ width }: { width: number }) {
     if (!width) {
       throw new Error('width required to make a new FloatingLayout')
     }
     this.width = width
   }
+  discardRange() {
+    /* do nothing */
+    this.items = []
+    this.layout = new Map()
+    this.totalHeight = 0
+  }
 
   items: LayoutItem[] = []
 
   layout: LayoutMap = new Map()
-
-  layoutDirty = false
 
   add(
     uniqueId: string,
@@ -40,20 +45,26 @@ export class FloatingLayout {
     height: number,
     data: { score: number },
   ) {
-    this.items.push({ uniqueId, anchorLocation, width, height, data })
-    this.layoutDirty = true
+    this.items.push({
+      uniqueId,
+      anchorLocation,
+      width,
+      height,
+      data,
+    })
   }
 
   /**
    * @returns Map of `uniqueId => {x,y,anchorLocation,width,height,data}`
    */
   getLayout(configuration?: AnyConfigurationModel) {
-    if (!this.layoutDirty) {
-      return this.layout
-    }
     if (!configuration) {
-      throw new Error('configuration object required')
+      return this.layout
+      // throw new Error('configuration object required')
     }
+    // this.layout = new Map()
+    // this.totalHeight = 0
+    // console.log(this.items)
 
     const minY = readConfObject(configuration, 'minStickLength')
 
@@ -64,8 +75,8 @@ export class FloatingLayout {
     // bump them
     let maxBottom = 0
     const layoutEntries: [string, LayoutEntry][] = new Array(sorted.length)
-    for (let i = 0; i < sorted.length; i += 1) {
-      const currentItem = sorted[i]!
+    for (const [i, element] of sorted.entries()) {
+      const currentItem = element
       const { anchorLocation, width, height } = currentItem
       const start = anchorLocation - width / 2
       const end = start + width
@@ -97,7 +108,11 @@ export class FloatingLayout {
       // record the entry and update the maxBottom
       layoutEntries[i] = [
         currentItem.uniqueId,
-        { ...currentItem, x: start, y: top },
+        {
+          ...currentItem,
+          x: start,
+          y: top,
+        },
       ]
       if (bottom > maxBottom) {
         maxBottom = bottom
@@ -108,14 +123,10 @@ export class FloatingLayout {
     // if they don't fit, try to alternate them on 2 levels, then 3
     this.totalHeight = maxBottom
     this.layout = new Map(layoutEntries)
-    this.layoutDirty = false
     return this.layout
   }
 
   getTotalHeight() {
-    if (this.layoutDirty) {
-      throw new Error('getTotalHeight does not work when the layout is dirty.')
-    }
     return this.totalHeight
   }
 
@@ -124,10 +135,10 @@ export class FloatingLayout {
   }
 
   toJSON() {
-    if (this.layoutDirty) {
-      throw new Error('toJSON does not work when the layout is dirty.')
+    return {
+      pairs: [...this.getLayout()],
+      totalHeight: this.getTotalHeight(),
     }
-    return { pairs: [...this.getLayout()], totalHeight: this.getTotalHeight() }
   }
 
   static fromJSON() {
@@ -164,7 +175,9 @@ export class PrecomputedFloatingLayout {
   getTotalHeight() {
     return this.totalHeight
   }
-
+  discardRange() {
+    /* do nothing */
+  }
   static fromJSON(
     json: ConstructorParameters<typeof PrecomputedFloatingLayout>[0],
   ) {

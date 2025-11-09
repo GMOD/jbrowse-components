@@ -4,13 +4,16 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import { Badge } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { HierarchicalTrackSelectorModel } from '../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 const ShoppingCart = observer(function ({
   model,
 }: {
-  model: HierarchicalTrackSelectorModel
+  model: {
+    clearSelection: () => void
+    selection: AnyConfigurationModel[]
+  }
 }) {
   const session = getSession(model)
   const { selection } = model
@@ -38,8 +41,10 @@ const ShoppingCart = observer(function ({
               {
                 label: 'Delete tracks',
                 onClick: () => {
-                  // @ts-expect-error
-                  selection.forEach(s => session.deleteTrackConf?.(s))
+                  for (const s of selection) {
+                    // @ts-expect-error
+                    session.deleteTrackConf?.(s)
+                  }
                 },
               },
             ]

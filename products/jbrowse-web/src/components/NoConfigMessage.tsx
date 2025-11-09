@@ -4,7 +4,6 @@ export default function NoConfigMessage() {
     ['test_data/config.json', 'Human basic'],
     ['test_data/config_demo.json', 'Human sample data'],
     ['test_data/sars-cov2/config.json', 'SARS-CoV2'],
-    ['test_data/tomato/config.json', 'Tomato SVs'],
     ['test_data/cfam2/config.json', 'Dog (NCBI sequence aliases adapter)'],
     ['test_data/breakpoint/config.json', 'Breakpoint'],
     ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
@@ -22,6 +21,7 @@ export default function NoConfigMessage() {
     ['test_data/volvox/config_main_thread.json', 'Volvox (mainthreadrpc)'],
     ['test_data/volvox/config_auth_main.json', 'Volvox (auth, mainthreadrpc)'],
     ['test_data/volvox/config_auth.json', 'Volvox (auth)'],
+    ['test_data/volvox/config_spec.json', 'Volvox (w/ spec session)'],
     ['test_data/volvoxhub/config.json', 'Volvox (with ucsc-hub)'],
   ] as const
   const { href, search } = window.location
