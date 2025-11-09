@@ -19,7 +19,6 @@ import {
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import copy from 'copy-to-clipboard'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
@@ -166,9 +165,10 @@ function stateModelFactory() {
       /**
        * #method
        */
-      copyInfoToClipboard(feature: Feature) {
+      async copyInfoToClipboard(feature: Feature) {
         const { uniqueId, ...rest } = feature.toJSON()
         const session = getSession(self)
+        const { default: copy } = await import('copy-to-clipboard')
         copy(JSON.stringify(rest, null, 4))
         session.notify('Copied to clipboard', 'success')
       },
@@ -395,6 +395,7 @@ function stateModelFactory() {
                 label: 'Copy info to clipboard',
                 icon: ContentCopyIcon,
                 onClick: () => {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   self.copyInfoToClipboard(feat)
                 },
               },

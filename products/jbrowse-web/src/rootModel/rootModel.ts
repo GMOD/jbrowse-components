@@ -27,7 +27,6 @@ import StarIcon from '@mui/icons-material/Star'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { formatDistanceToNow } from 'date-fns'
-import { saveAs } from 'file-saver'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
 import {
@@ -478,7 +477,10 @@ export default function RootModel({
                 {
                   label: 'Export session',
                   icon: GetAppIcon,
-                  onClick: (session: IAnyStateTreeNode) => {
+                  onClick: async (session: IAnyStateTreeNode) => {
+                    // eslint-disable-next-line @typescript-eslint/no-deprecated
+                    const { saveAs } = await import('file-saver-es')
+
                     saveAs(
                       new Blob(
                         [
@@ -491,6 +493,7 @@ export default function RootModel({
                         { type: 'text/plain;charset=utf-8' },
                       ),
                       'session.json',
+                      { autoBom: false },
                     )
                   },
                 },

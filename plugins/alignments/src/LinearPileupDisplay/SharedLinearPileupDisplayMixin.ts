@@ -19,7 +19,6 @@ import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import copy from 'copy-to-clipboard'
 import { autorun, observable } from 'mobx'
 import { addDisposer, cast, isAlive, types } from 'mobx-state-tree'
 
@@ -283,9 +282,10 @@ export function SharedLinearPileupDisplayMixin(
        * #method
        * uses copy-to-clipboard and generates notification
        */
-      copyFeatureToClipboard(feature: Feature) {
+      async copyFeatureToClipboard(feature: Feature) {
         const { uniqueId, ...rest } = feature.toJSON()
         const session = getSession(self)
+        const { default: copy } = await import('copy-to-clipboard')
         copy(JSON.stringify(rest, null, 4))
         session.notify('Copied to clipboard', 'success')
       },
@@ -384,6 +384,7 @@ export function SharedLinearPileupDisplayMixin(
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: () => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.copyFeatureToClipboard(feat)
                   },
                 },

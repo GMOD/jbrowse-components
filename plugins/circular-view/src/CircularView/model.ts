@@ -11,7 +11,6 @@ import {
 } from '@jbrowse/core/util'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
 import { transaction } from 'mobx'
 import { cast, getRoot, resolveIdentifier, types } from 'mobx-state-tree'
 
@@ -582,8 +581,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       async exportSvg(opts: ExportSvgOptions = {}) {
         const { renderToSvg } = await import('./svgcomponents/SVGCircularView')
         const html = await renderToSvg(self as CircularViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
     }))
     .views(self => ({

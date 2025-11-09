@@ -42,7 +42,7 @@
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "copy-to-clipboard": "^3.3.1",
-    "file-saver": "^2.0.0",
+    "file-saver-es": "^2.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

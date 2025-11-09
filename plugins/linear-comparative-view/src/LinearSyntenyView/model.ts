@@ -6,7 +6,6 @@ import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { saveAs } from 'file-saver'
 import { observable, transaction } from 'mobx'
 import { types } from 'mobx-state-tree'
 
@@ -126,8 +125,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           './svgcomponents/SVGLinearSyntenyView'
         )
         const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
+
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
     }))
     .views(self => {
