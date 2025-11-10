@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -99,16 +99,6 @@ function RenderedBlockLines({
 const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
   const { staticBlocks, bpPerPx } = model
   const theme = useTheme()
-
-  // Memoize colors to prevent unnecessary recalculations
-  const { majorColor, minorColor } = useMemo(
-    () => ({
-      majorColor: theme.palette.action.disabled,
-      minorColor: theme.palette.divider,
-    }),
-    [theme.palette.action.disabled, theme.palette.divider],
-  )
-
   return (
     <>
       {staticBlocks.map((block, index) => {
@@ -119,8 +109,8 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
               key={k}
               block={block}
               bpPerPx={bpPerPx}
-              majorColor={majorColor}
-              minorColor={minorColor}
+              majorColor={theme.palette.action.disabled}
+              minorColor={theme.palette.divider}
             />
           )
         } else if (block.type === 'ElidedBlock') {
