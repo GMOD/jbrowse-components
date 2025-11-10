@@ -21,10 +21,6 @@ const useStyles = makeStyles()({
   dialogContent: {
     width: '80em',
   },
-  formControl: {
-    margin: 0,
-    marginLeft: 4,
-  },
 })
 
 const SequenceDialog = observer(function ({

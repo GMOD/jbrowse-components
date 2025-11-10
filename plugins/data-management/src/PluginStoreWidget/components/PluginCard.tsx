@@ -23,10 +23,6 @@ const useStyles = makeStyles()({
   card: {
     margin: '0.5em',
   },
-  icon: {
-    marginLeft: '0.5em',
-    marginRight: '0.5em',
-  },
   bold: {
     fontWeight: 600,
   },

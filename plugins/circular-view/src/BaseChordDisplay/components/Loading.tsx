@@ -3,11 +3,9 @@ import { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()(theme => {
-  const offset = 2
+const useStyles = makeStyles()(() => {
   const duration = 1.4
 
-  const { primary, secondary, tertiary, quaternary } = theme.palette
   return {
     path: {
       strokeDasharray: 187,
@@ -15,37 +13,6 @@ const useStyles = makeStyles()(theme => {
       animation: `$dash ${duration}s ease-in-out infinite, $colors ${
         duration * 4
       }s ease-in-out infinite`,
-    },
-    '@keyframes colors': {
-      '0%': {
-        stroke: primary.light,
-      },
-      '25%': {
-        stroke: secondary.light,
-      },
-      '50%': {
-        stroke: tertiary.light,
-      },
-      '75%': {
-        stroke: quaternary.light,
-      },
-      '100%': {
-        stroke: primary.light,
-      },
-    },
-
-    '@keyframes dash': {
-      '0%': {
-        strokeDashoffset: offset,
-      },
-      '50%': {
-        strokeDashoffset: offset / 4,
-        transform: 'rotate(135deg)',
-      },
-      '100%': {
-        strokeDashoffset: offset,
-        transform: 'rotate(720deg)',
-      },
     },
   }
 })

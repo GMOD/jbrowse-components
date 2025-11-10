@@ -13,11 +13,6 @@ const useStyles = makeStyles()(theme => {
       backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
       textAlign: 'center',
     },
-
-    blockMessage: {
-      backgroundColor: bg,
-      padding: '10px',
-    },
   }
 })
 

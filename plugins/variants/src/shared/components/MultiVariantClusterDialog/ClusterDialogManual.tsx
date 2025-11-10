@@ -26,16 +26,11 @@ import { makeStyles } from 'tss-react/mui'
 import type { ReducedModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-  mgap: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(4),
-  },
-}))
+})
 
 const ClusterDialogManuals = observer(function ({
   model,
