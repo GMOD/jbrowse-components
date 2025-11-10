@@ -63,9 +63,18 @@ export function useWheelScroll(
           samples = []
         }, 300)
       } else {
-        // prevent browser default behavior like back/forward navigation
-        // since this component handles horizontal scrolling internally
-        event.preventDefault()
+        // Don't do horizontal scrolling if a virtual scrollbar is being dragged
+        if (document.body.getAttribute('data-virtual-scrollbar-dragging')) {
+          return
+        }
+
+        // Use original heuristic but be more conservative to allow page scrolling
+        // Only prevent default when horizontal wheel is significantly greater than vertical
+        if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+          event.preventDefault()
+        }
+
+        // Handle horizontal scrolling
         delta.current += event.deltaX
         if (!scheduled.current) {
           // use rAF to make it so multiple event handlers aren't fired per-frame

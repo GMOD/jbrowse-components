@@ -31,6 +31,8 @@ const PreferencesDialog = observer(function ({
     setThemeName: (arg: string) => void
     stickyViewHeaders: boolean
     setStickyViewHeaders(sticky: boolean): void
+    useVirtualScrollbars: boolean
+    setUseVirtualScrollbars(use: boolean): void
   }
 }) {
   const { classes } = useStyles()
@@ -57,6 +59,13 @@ const PreferencesDialog = observer(function ({
             label="Keep view header visible"
             onChange={(_, checked) => {
               session.setStickyViewHeaders(checked)
+            }}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={session.useVirtualScrollbars} />}
+            label="Use virtual scrollbars for tracks"
+            onChange={(_, checked) => {
+              session.setUseVirtualScrollbars(checked)
             }}
           />
         </FormGroup>

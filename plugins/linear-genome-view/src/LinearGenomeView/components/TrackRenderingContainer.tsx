@@ -2,6 +2,7 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -22,10 +23,18 @@ const useStyles = makeStyles()({
   },
 
   trackRenderingContainer: {
-    overflowX: 'hidden',
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
+  },
+  // When virtual scrollbars are enabled, hide overflow completely
+  virtualScrollMode: {
+    overflow: 'hidden',
+  },
+  // When virtual scrollbars are disabled, allow native scrolling
+  nativeScrollMode: {
+    overflowY: 'auto',
+    overflowX: 'hidden',
   },
 })
 
@@ -42,11 +51,17 @@ const TrackRenderingContainer = observer(function ({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { height, RenderingComponent, DisplayBlurb, scrollTop, blockState } = display
+  const { height, RenderingComponent, DisplayBlurb, scrollTop, blockState } =
+    display
   const { trackRefs, id, scaleFactor } = model
+  const session = getSession(model)
   const trackId = getConf(track, 'trackId')
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
+
+  // Check if virtual scrollbars are enabled in user preferences
+  const useVirtualScrollbars =
+    'useVirtualScrollbars' in session ? session.useVirtualScrollbars : false
 
   // Calculate content height based on actual layout
   const containerHeight = minimized ? 20 : height
@@ -57,7 +72,10 @@ const TrackRenderingContainer = observer(function ({
     let maxLayoutHeight = 0
     for (const block of blockState.values()) {
       if (block?.layout?.getTotalHeight) {
-        maxLayoutHeight = Math.max(maxLayoutHeight, block.layout.getTotalHeight())
+        maxLayoutHeight = Math.max(
+          maxLayoutHeight,
+          block.layout.getTotalHeight(),
+        )
       }
     }
     // Use the larger of container height or actual content height
@@ -73,92 +91,78 @@ const TrackRenderingContainer = observer(function ({
     }
   }, [trackRefs, trackId])
 
-  return (
-    <VirtualScrollbar
-      contentHeight={contentHeight}
-      containerHeight={containerHeight}
-      scrollTop={scrollTop}
-      onScroll={(newScrollTop) => display.setScrollTop(newScrollTop)}
-      className={classes.trackRenderingContainer}
+  const trackContent = (
+    <div
+      onDragEnter={onDragEnter}
+      data-testid={`trackRenderingContainer-${id}-${trackId}`}
+      style={{
+        height: useVirtualScrollbars ? contentHeight : containerHeight,
+        position: 'relative',
+      }}
     >
-      <div
-        onDragEnter={onDragEnter}
-        data-testid={`trackRenderingContainer-${id}-${trackId}`}
-        style={{
-          height: contentHeight, // Make content div use full content height
-          position: 'relative'
-        }}
-      >
-        {!minimized ? (
-          <>
+      {!minimized ? (
+        <>
+          <div
+            ref={ref}
+            className={classes.renderingComponentContainer}
+            style={{
+              transform:
+                scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
+            }}
+          >
+            <Suspense fallback={<LoadingEllipses />}>
+              <RenderingComponent
+                model={display}
+                onHorizontalScroll={model.horizontalScroll}
+              />
+            </Suspense>
+          </div>
+
+          {DisplayBlurb ? (
             <div
-              ref={ref}
-              className={classes.renderingComponentContainer}
               style={{
-                transform:
-                  scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
+                position: 'absolute',
+                left: 0,
+                top: display.height - 20,
               }}
             >
-              <Suspense fallback={<LoadingEllipses />}>
-                <RenderingComponent
-                  model={display}
-                  onHorizontalScroll={model.horizontalScroll}
-                />
-              </Suspense>
+              <DisplayBlurb model={display} />
             </div>
-
-            {/* Show test area only if content is larger than container */}
-            {contentHeight > containerHeight && (
-              <div style={{
-                position: 'absolute',
-                top: containerHeight,
-                left: 0,
-                height: contentHeight - containerHeight,
-                width: '100%',
-                backgroundColor: 'rgba(255, 0, 0, 0.05)',
-                border: '1px dashed rgba(255, 0, 0, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                color: 'rgba(255, 0, 0, 0.6)'
-              }}>
-                Extended content area (layout height: {contentHeight}px)
-              </div>
-            )}
-
-            {/* Scroll position indicator */}
-            <div style={{
-              position: 'absolute',
-              top: 10,
-              right: 20,
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              color: 'white',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              fontSize: '10px',
-              fontFamily: 'monospace',
-              zIndex: 1001
-            }}>
-              Scroll: {scrollTop}/{contentHeight - containerHeight}
-            </div>
-
-            {DisplayBlurb ? (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: display.height - 20,
-                }}
-              >
-                <DisplayBlurb model={display} />
-              </div>
-            ) : null}
-          </>
-        ) : null}
-      </div>
-    </VirtualScrollbar>
+          ) : null}
+        </>
+      ) : null}
+    </div>
   )
+
+  if (useVirtualScrollbars) {
+    // Use virtual scrollbar mode
+    return (
+      <VirtualScrollbar
+        contentHeight={contentHeight}
+        containerHeight={containerHeight}
+        scrollTop={scrollTop}
+        onScroll={newScrollTop => display.setScrollTop(newScrollTop)}
+        className={`${classes.trackRenderingContainer} ${classes.virtualScrollMode}`}
+      >
+        {trackContent}
+      </VirtualScrollbar>
+    )
+  } else {
+    // Use native scrolling mode
+    return (
+      <div
+        className={`${classes.trackRenderingContainer} ${classes.nativeScrollMode}`}
+        style={{
+          height: containerHeight,
+        }}
+        onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
+        onDragEnter={onDragEnter}
+        data-testid={`trackRenderingContainer-${id}-${trackId}`}
+      >
+        {trackContent}
+      </div>
+    )
+  }
 })
 
 export default TrackRenderingContainer

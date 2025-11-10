@@ -35,6 +35,12 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       stickyViewHeaders: types.optional(types.boolean, () =>
         localStorageGetBoolean('stickyViewHeaders', true),
       ),
+      /**
+       * #property
+       */
+      useVirtualScrollbars: types.optional(types.boolean, () =>
+        localStorageGetBoolean('useVirtualScrollbars', false),
+      ),
     })
     .actions(self => ({
       /**
@@ -112,11 +118,27 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         self.stickyViewHeaders = sticky
       },
 
+      /**
+       * #action
+       */
+      setUseVirtualScrollbars(use: boolean) {
+        self.useVirtualScrollbars = use
+      },
+
       afterAttach() {
         addDisposer(
           self,
           autorun(() => {
             localStorageSetBoolean('stickyViewHeaders', self.stickyViewHeaders)
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetBoolean(
+              'useVirtualScrollbars',
+              self.useVirtualScrollbars,
+            )
           }),
         )
       },

@@ -15,7 +15,8 @@ const useStyles = makeStyles()(theme => ({
     // Ensure no native scrollbars appear
     scrollbarWidth: 'none', // Firefox
     msOverflowStyle: 'none', // IE and Edge
-    '&::-webkit-scrollbar': { // Chrome, Safari
+    '&::-webkit-scrollbar': {
+      // Chrome, Safari
       display: 'none',
     },
   },
@@ -26,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
     width: 8,
     height: '100%',
     backgroundColor: theme.palette.action.hover,
-    opacity: 0.7, // Make visible by default for debugging
+    opacity: 0.7,
     transition: 'opacity 0.2s ease',
     zIndex: 1000,
     '&:hover': {
@@ -77,62 +78,87 @@ const VirtualScrollbar: React.FC<VirtualScrollbarProps> = ({
   const scrollRatio = containerHeight / contentHeight
   const thumbHeight = Math.max(20, containerHeight * scrollRatio)
   const maxScrollTop = Math.max(0, contentHeight - containerHeight)
-  const thumbTop = maxScrollTop > 0 ? (scrollTop / maxScrollTop) * (containerHeight - thumbHeight) : 0
+  const thumbTop =
+    maxScrollTop > 0
+      ? (scrollTop / maxScrollTop) * (containerHeight - thumbHeight)
+      : 0
 
-  // Use native event listener to avoid passive listener issues
+  // Handle shift+wheel for vertical track scrolling
   useEffect(() => {
     const element = containerRef.current
     if (!element) return
 
     const handleWheel = (event: WheelEvent) => {
-      // Don't scroll, but prevent the event from bubbling to browser
-      event.preventDefault()
-      event.stopPropagation()
+      // Only handle shift+wheel vertical scrolling if we have a scrollbar
+      if (event.shiftKey && needsScrollbar && Math.abs(event.deltaY) > 0) {
+        event.preventDefault()
+        event.stopPropagation()
+
+        const delta = event.deltaY
+        const maxScrollTop = Math.max(0, contentHeight - containerHeight)
+        const newScrollTop = Math.max(
+          0,
+          Math.min(maxScrollTop, scrollTop + delta),
+        )
+
+        onScroll(newScrollTop)
+      }
+      // Let all other wheel events bubble up naturally
     }
 
     element.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
       element.removeEventListener('wheel', handleWheel)
     }
-  }, [])
+  }, [needsScrollbar, contentHeight, containerHeight, scrollTop, onScroll])
 
-  const handleThumbMouseDown = useCallback((event: React.MouseEvent) => {
-    event.preventDefault()
-    setIsDragging(true)
-    dragStartRef.current = {
-      y: event.clientY,
-      scrollTop,
-    }
-  }, [scrollTop])
+  const handleThumbMouseDown = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault()
+      event.stopPropagation() // Prevent this from triggering parent mousedown handlers
+      setIsDragging(true)
+      dragStartRef.current = {
+        y: event.clientY,
+        scrollTop,
+      }
 
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    if (!isDragging || !needsScrollbar) return
+      // Set global flag to prevent horizontal scrolling
+      document.body.setAttribute('data-virtual-scrollbar-dragging', 'true')
+    },
+    [scrollTop],
+  )
 
-    event.preventDefault()
-    const deltaY = event.clientY - dragStartRef.current.y
-    const scrollDelta = (deltaY / (containerHeight - thumbHeight)) * (contentHeight - containerHeight)
-    const maxScrollTop = contentHeight - containerHeight
-    const newScrollTop = Math.max(0, Math.min(
-      maxScrollTop,
-      dragStartRef.current.scrollTop + scrollDelta
-    ))
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
+      if (!isDragging || !needsScrollbar) return
 
-    console.log('Drag scroll:', {
-      contentHeight,
+      event.preventDefault()
+      const deltaY = event.clientY - dragStartRef.current.y
+      const scrollDelta =
+        (deltaY / (containerHeight - thumbHeight)) *
+        (contentHeight - containerHeight)
+      const maxScrollTop = contentHeight - containerHeight
+      const newScrollTop = Math.max(
+        0,
+        Math.min(maxScrollTop, dragStartRef.current.scrollTop + scrollDelta),
+      )
+
+      onScroll(newScrollTop)
+    },
+    [
+      isDragging,
+      needsScrollbar,
       containerHeight,
-      maxScrollTop,
       thumbHeight,
-      deltaY,
-      scrollDelta,
-      oldScrollTop: dragStartRef.current.scrollTop,
-      newScrollTop
-    })
-
-    onScroll(newScrollTop)
-  }, [isDragging, needsScrollbar, containerHeight, thumbHeight, contentHeight, onScroll])
+      contentHeight,
+      onScroll,
+    ],
+  )
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false)
+    // Clear global flag to re-enable horizontal scrolling
+    document.body.removeAttribute('data-virtual-scrollbar-dragging')
   }, [])
 
   useEffect(() => {
@@ -142,8 +168,11 @@ const VirtualScrollbar: React.FC<VirtualScrollbarProps> = ({
       return () => {
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('mouseup', handleMouseUp)
+        // Cleanup in case mouseup doesn't fire
+        document.body.removeAttribute('data-virtual-scrollbar-dragging')
       }
     }
+    return () => {}
   }, [isDragging, handleMouseMove, handleMouseUp])
 
   return (
@@ -158,7 +187,6 @@ const VirtualScrollbar: React.FC<VirtualScrollbarProps> = ({
           transform: `translateY(-${scrollTop}px)`,
           height: contentHeight,
         }}
-        title={`ScrollTop: ${scrollTop}/${contentHeight - containerHeight}`}
       >
         {children}
       </div>
@@ -166,6 +194,10 @@ const VirtualScrollbar: React.FC<VirtualScrollbarProps> = ({
       {needsScrollbar && (
         <div
           className={`${classes.scrollbar} ${scrollbarVisible || isDragging ? classes.scrollbarVisible : ''}`}
+          onMouseDown={event => {
+            // Prevent scrollbar area clicks from triggering side scroll
+            event.stopPropagation()
+          }}
         >
           <div
             className={classes.thumb}
