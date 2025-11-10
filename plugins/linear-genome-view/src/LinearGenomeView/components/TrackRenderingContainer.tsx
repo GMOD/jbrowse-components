@@ -1,9 +1,11 @@
-import { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
+import VirtualScrollbar from './VirtualScrollbar'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -20,7 +22,6 @@ const useStyles = makeStyles()({
   },
 
   trackRenderingContainer: {
-    overflowY: 'auto',
     overflowX: 'hidden',
     whiteSpace: 'nowrap',
     position: 'relative',
@@ -41,11 +42,27 @@ const TrackRenderingContainer = observer(function ({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { height, RenderingComponent, DisplayBlurb } = display
+  const { height, RenderingComponent, DisplayBlurb, scrollTop, blockState } = display
   const { trackRefs, id, scaleFactor } = model
   const trackId = getConf(track, 'trackId')
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
+
+  // Calculate content height based on actual layout
+  const containerHeight = minimized ? 20 : height
+  let contentHeight = containerHeight
+
+  // Get the maximum height from all block layouts
+  if (blockState && !minimized) {
+    let maxLayoutHeight = 0
+    for (const block of blockState.values()) {
+      if (block?.layout?.getTotalHeight) {
+        maxLayoutHeight = Math.max(maxLayoutHeight, block.layout.getTotalHeight())
+      }
+    }
+    // Use the larger of container height or actual content height
+    contentHeight = Math.max(containerHeight, maxLayoutHeight)
+  }
 
   useEffect(() => {
     if (ref.current) {
@@ -57,47 +74,90 @@ const TrackRenderingContainer = observer(function ({
   }, [trackRefs, trackId])
 
   return (
-    <div
+    <VirtualScrollbar
+      contentHeight={contentHeight}
+      containerHeight={containerHeight}
+      scrollTop={scrollTop}
+      onScroll={(newScrollTop) => display.setScrollTop(newScrollTop)}
       className={classes.trackRenderingContainer}
-      style={{
-        height: minimized ? 20 : height,
-      }}
-      onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
-      onDragEnter={onDragEnter}
-      data-testid={`trackRenderingContainer-${id}-${trackId}`}
     >
-      {!minimized ? (
-        <>
-          <div
-            ref={ref}
-            className={classes.renderingComponentContainer}
-            style={{
-              transform:
-                scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
-            }}
-          >
-            <Suspense fallback={<LoadingEllipses />}>
-              <RenderingComponent
-                model={display}
-                onHorizontalScroll={model.horizontalScroll}
-              />
-            </Suspense>
-          </div>
-
-          {DisplayBlurb ? (
+      <div
+        onDragEnter={onDragEnter}
+        data-testid={`trackRenderingContainer-${id}-${trackId}`}
+        style={{
+          height: contentHeight, // Make content div use full content height
+          position: 'relative'
+        }}
+      >
+        {!minimized ? (
+          <>
             <div
+              ref={ref}
+              className={classes.renderingComponentContainer}
               style={{
-                position: 'absolute',
-                left: 0,
-                top: display.height - 20,
+                transform:
+                  scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
               }}
             >
-              <DisplayBlurb model={display} />
+              <Suspense fallback={<LoadingEllipses />}>
+                <RenderingComponent
+                  model={display}
+                  onHorizontalScroll={model.horizontalScroll}
+                />
+              </Suspense>
             </div>
-          ) : null}
-        </>
-      ) : null}
-    </div>
+
+            {/* Show test area only if content is larger than container */}
+            {contentHeight > containerHeight && (
+              <div style={{
+                position: 'absolute',
+                top: containerHeight,
+                left: 0,
+                height: contentHeight - containerHeight,
+                width: '100%',
+                backgroundColor: 'rgba(255, 0, 0, 0.05)',
+                border: '1px dashed rgba(255, 0, 0, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '10px',
+                color: 'rgba(255, 0, 0, 0.6)'
+              }}>
+                Extended content area (layout height: {contentHeight}px)
+              </div>
+            )}
+
+            {/* Scroll position indicator */}
+            <div style={{
+              position: 'absolute',
+              top: 10,
+              right: 20,
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '10px',
+              fontFamily: 'monospace',
+              zIndex: 1001
+            }}>
+              Scroll: {scrollTop}/{contentHeight - containerHeight}
+            </div>
+
+            {DisplayBlurb ? (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: display.height - 20,
+                }}
+              >
+                <DisplayBlurb model={display} />
+              </div>
+            ) : null}
+          </>
+        ) : null}
+      </div>
+    </VirtualScrollbar>
   )
 })
 
