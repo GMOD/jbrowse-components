@@ -37,6 +37,8 @@ const useStyles = makeStyles()({
     width: '100%',
     height: '100%',
     pointerEvents: 'none',
+    // Reduce layout shift by containing layout/paint changes
+    contain: 'layout style paint',
   },
 })
 
@@ -64,9 +66,6 @@ function RenderedBlockLines({
 
     const ticks = makeTicks(block.start, block.end, bpPerPx)
 
-    // Clear existing lines
-    svg.innerHTML = ''
-
     // Create lines directly in SVG using appendChild
     const fragment = document.createDocumentFragment()
     for (const { type, base } of ticks) {
@@ -87,7 +86,8 @@ function RenderedBlockLines({
       line.setAttribute('stroke-width', '1')
       fragment.append(line)
     }
-    svg.append(fragment)
+    // Use replaceChildren for atomic update - reduces layout shift vs innerHTML='' + append
+    svg.replaceChildren(fragment)
   }, [block.start, block.end, block.reversed, bpPerPx, majorColor, minorColor])
 
   return (

@@ -1,6 +1,5 @@
-import { Link, Typography } from '@mui/material'
-
 import { toLocale } from '@jbrowse/core/util'
+import { Link, Typography } from '@mui/material'
 
 import { getLengthOnRef } from '../MismatchParser'
 import { navToLoc } from './util'

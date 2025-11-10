@@ -103,7 +103,8 @@ export default function calculateDynamicBlocks(
         )
         isLeftEndOfDisplayedRegion = start === regionStart
         isRightEndOfDisplayedRegion = end === regionEnd
-        blockOffsetPx = displayedRegionLeftPx + (start - regionStart) * invBpPerPx
+        blockOffsetPx =
+          displayedRegionLeftPx + (start - regionStart) * invBpPerPx
       }
       const widthPx = (end - start) * invBpPerPx
       const blockData = {

@@ -448,7 +448,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     style="width: 800px;"
                   >
                     <svg
-                      class="css-1arr9cp-svgOverlay"
+                      class="css-6m1lch-svgOverlay"
                     >
                       <line
                         stroke="rgba(0, 0, 0, 0.26)"
@@ -801,7 +801,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     style="width: 800px;"
                   >
                     <svg
-                      class="css-1arr9cp-svgOverlay"
+                      class="css-6m1lch-svgOverlay"
                     >
                       <line
                         stroke="rgba(0, 0, 0, 0.26)"
@@ -1177,7 +1177,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         style="width: 800px;"
                       >
                         <svg
-                          class="css-1arr9cp-svgOverlay"
+                          class="css-6m1lch-svgOverlay"
                         >
                           <line
                             stroke="rgba(0, 0, 0, 0.26)"
@@ -1530,7 +1530,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         style="width: 800px;"
                       >
                         <svg
-                          class="css-1arr9cp-svgOverlay"
+                          class="css-6m1lch-svgOverlay"
                         >
                           <line
                             stroke="rgba(0, 0, 0, 0.26)"
@@ -1892,107 +1892,92 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         style="background: none; width: 800px;"
                       />
                       <div
-                        class="css-1dmfa10-contentBlock"
-                        style="width: 800px;"
+                        style="width: 800px; position: relative; min-height: 100%; contain: layout style paint;"
                       >
                         <div
-                          class="css-1f3h2yl-tick"
-                          style="left: -20px;"
-                        />
-                        <div
-                          class="css-1f3h2yl-tick"
-                          style="left: 180px;"
+                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                          <div
+                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                           >
                             10
-                          </p>
+                          </div>
                         </div>
                         <div
-                          class="css-1f3h2yl-tick"
-                          style="left: 380px;"
+                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                          <div
+                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                           >
                             20
-                          </p>
+                          </div>
                         </div>
                         <div
-                          class="css-1f3h2yl-tick"
-                          style="left: 580px;"
+                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                          <div
+                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                           >
                             30
-                          </p>
+                          </div>
                         </div>
                         <div
-                          class="css-1f3h2yl-tick"
-                          style="left: 780px;"
+                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                          <div
+                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                           >
                             40
-                          </p>
+                          </div>
                         </div>
                       </div>
                       <div
-                        class="css-1dmfa10-contentBlock"
-                        style="width: 800px;"
+                        style="width: 800px; position: relative; min-height: 100%; contain: layout style paint;"
                       >
                         <div
-                          class="css-1f3h2yl-tick"
-                          style="left: -20px;"
+                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: -20px;"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                          <div
+                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                           >
                             40
-                          </p>
+                          </div>
                         </div>
                         <div
-                          class="css-1f3h2yl-tick"
-                          style="left: 180px;"
+                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                          <div
+                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                           >
                             50
-                          </p>
+                          </div>
                         </div>
                         <div
-                          class="css-1f3h2yl-tick"
-                          style="left: 380px;"
+                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                          <div
+                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                           >
                             60
-                          </p>
+                          </div>
                         </div>
                         <div
-                          class="css-1f3h2yl-tick"
-                          style="left: 580px;"
+                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                          <div
+                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                           >
                             70
-                          </p>
+                          </div>
                         </div>
                         <div
-                          class="css-1f3h2yl-tick"
-                          style="left: 780px;"
+                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                          <div
+                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                           >
                             80
-                          </p>
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -368,7 +368,7 @@ exports[`renders one track, one region 1`] = `
             style="width: 100px;"
           >
             <svg
-              class="css-1arr9cp-svgOverlay"
+              class="css-6m1lch-svgOverlay"
             >
               <line
                 stroke="rgba(0, 0, 0, 0.12)"
@@ -476,7 +476,7 @@ exports[`renders one track, one region 1`] = `
                 style="width: 100px;"
               >
                 <svg
-                  class="css-1arr9cp-svgOverlay"
+                  class="css-6m1lch-svgOverlay"
                 >
                   <line
                     stroke="rgba(0, 0, 0, 0.12)"
@@ -570,14 +570,8 @@ exports[`renders one track, one region 1`] = `
                 style="background: none; width: 800px;"
               />
               <div
-                class="css-1dmfa10-contentBlock"
-                style="width: 100px;"
-              >
-                <div
-                  class="css-1f3h2yl-tick"
-                  style="left: -1px;"
-                />
-              </div>
+                style="width: 100px; position: relative; min-height: 100%; contain: layout style paint;"
+              />
               <div
                 class="css-a9ifge-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
@@ -1093,7 +1087,7 @@ exports[`renders two tracks, two regions 1`] = `
             style="width: 100px;"
           >
             <svg
-              class="css-1arr9cp-svgOverlay"
+              class="css-6m1lch-svgOverlay"
             >
               <line
                 stroke="rgba(0, 0, 0, 0.12)"
@@ -1178,7 +1172,7 @@ exports[`renders two tracks, two regions 1`] = `
             style="width: 800px;"
           >
             <svg
-              class="css-1arr9cp-svgOverlay"
+              class="css-6m1lch-svgOverlay"
             >
               <line
                 stroke="rgba(0, 0, 0, 0.12)"
@@ -1562,7 +1556,7 @@ exports[`renders two tracks, two regions 1`] = `
                 style="width: 100px;"
               >
                 <svg
-                  class="css-1arr9cp-svgOverlay"
+                  class="css-6m1lch-svgOverlay"
                 >
                   <line
                     stroke="rgba(0, 0, 0, 0.12)"
@@ -1647,7 +1641,7 @@ exports[`renders two tracks, two regions 1`] = `
                 style="width: 800px;"
               >
                 <svg
-                  class="css-1arr9cp-svgOverlay"
+                  class="css-6m1lch-svgOverlay"
                 >
                   <line
                     stroke="rgba(0, 0, 0, 0.12)"
@@ -2017,71 +2011,59 @@ exports[`renders two tracks, two regions 1`] = `
                 style="background: none; width: 800px;"
               />
               <div
-                class="css-1dmfa10-contentBlock"
-                style="width: 100px;"
-              >
-                <div
-                  class="css-1f3h2yl-tick"
-                  style="left: -1px;"
-                />
-              </div>
+                style="width: 100px; position: relative; min-height: 100%; contain: layout style paint;"
+              />
               <div
                 class="css-1b6zgog-interRegionPaddingBlock"
                 style="background: none; width: 2px;"
               />
               <div
-                class="css-1dmfa10-contentBlock"
-                style="width: 800px;"
+                style="width: 800px; position: relative; min-height: 100%; contain: layout style paint;"
               >
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: -1px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: -1px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,000
-                  </p>
+                  </div>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: 199px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 199px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,200
-                  </p>
+                  </div>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: 399px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 399px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,400
-                  </p>
+                  </div>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: 599px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 599px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,600
-                  </p>
+                  </div>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: 799px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 799px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-xckpuf-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,800
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,5 +1,3 @@
-import { sum } from '.'
-
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 export class BlockSet {

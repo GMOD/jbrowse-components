@@ -62,7 +62,9 @@ export default function calculateStaticBlocks(
       reversed,
     } = region
 
-    const regionBlockCount = Math.ceil((regionEnd - regionStart) * invBlockSizeBp)
+    const regionBlockCount = Math.ceil(
+      (regionEnd - regionStart) * invBlockSizeBp,
+    )
     const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     let windowRightBlockNum =

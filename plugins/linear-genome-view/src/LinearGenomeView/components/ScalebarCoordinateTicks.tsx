@@ -27,9 +27,6 @@ const ScalebarCoordinateTicks = function ({
 
     const ticks = makeTicks(start, end, bpPerPx, true, false)
 
-    // Clear existing tick labels
-    container.innerHTML = ''
-
     // Create tick labels directly in DOM using appendChild
     const fragment = document.createDocumentFragment()
     for (const { type, base } of ticks) {
@@ -55,18 +52,25 @@ const ScalebarCoordinateTicks = function ({
           labelDiv.style.pointerEvents = 'none'
           labelDiv.textContent = getTickDisplayStr(baseNumber, bpPerPx)
 
-          tickDiv.appendChild(labelDiv)
-          fragment.appendChild(tickDiv)
+          tickDiv.append(labelDiv)
+          fragment.append(tickDiv)
         }
       }
     }
-    container.appendChild(fragment)
+    // Use replaceChildren for atomic update - reduces layout shift vs innerHTML='' + appendChild
+    container.replaceChildren(fragment)
   }, [start, end, reversed, bpPerPx, theme.palette.background.paper])
 
   return (
     <div
       ref={containerRef}
-      style={{ width: widthPx, position: 'relative', minHeight: '100%' }}
+      style={{
+        width: widthPx,
+        position: 'relative',
+        minHeight: '100%',
+        // Reduce layout shift by containing layout/paint changes
+        contain: 'layout style paint',
+      }}
     />
   )
 }
