@@ -23,10 +23,6 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(4),
     margin: '0 auto',
   },
-  assemblySelector: {
-    width: '75%',
-    margin: '0 auto',
-  },
 }))
 
 function doSubmit({

@@ -35,14 +35,6 @@ const useStyles = makeStyles()({
       animation: '$shimmer 1.5s infinite',
     },
   },
-  '@keyframes shimmer': {
-    '0%': {
-      left: '-100%',
-    },
-    '100%': {
-      left: '100%',
-    },
-  },
 })
 
 export default function SkeletonLoader() {

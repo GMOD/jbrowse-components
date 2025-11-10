@@ -26,16 +26,11 @@ import type { ReducedModel } from './types'
 import type { Source } from '../../../util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-  mgap: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(4),
-  },
-}))
+})
 
 const WiggleClusterDialogManuals = observer(function ({
   model,

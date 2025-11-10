@@ -7281,6 +7281,11 @@ eslint-plugin-react@^7.33.2:
     string.prototype.matchall "^4.0.12"
     string.prototype.repeat "^1.0.0"
 
+eslint-plugin-tss-unused-classes@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-tss-unused-classes/-/eslint-plugin-tss-unused-classes-1.0.3.tgz#2f427c157182f77afeed45fbcd4aca7086402261"
+  integrity sha512-FtfNwEsUfEN7y+6+C9j4INh3LTL1lyujmtj8MiorPVbEDYwt9NcjuOpsjvEkSzsD0oyLZB1kBFrW59JTtepRnA==
+
 eslint-plugin-unicorn@^62.0.0:
   version "62.0.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-unicorn/-/eslint-plugin-unicorn-62.0.0.tgz#7027feb2ffde9c25df3d2067e0f4e579a9ec5019"
