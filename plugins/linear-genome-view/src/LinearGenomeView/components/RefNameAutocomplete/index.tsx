@@ -4,10 +4,11 @@ import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
-import { Autocomplete } from '@mui/material'
+import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AutocompleteTextField from './AutocompleteTextField'
+import EndAdornment from './EndAdornment'
 import { getDeduplicatedResult, getFiltered } from './util'
 
 import type { Option } from './util'
@@ -44,6 +45,7 @@ const RefNameAutocomplete = observer(function ({
   const [currentSearch, setCurrentSearch] = useState('')
   const [inputValue, setInputValue] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>()
+  const [isActive, setIsActive] = useState(false)
   const debouncedSearch = useDebounce(currentSearch, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
@@ -80,6 +82,14 @@ const RefNameAutocomplete = observer(function ({
       isCurrent.cancelled = true
     }
   }, [assemblyName, fetchResults, debouncedSearch, session])
+
+  // Auto-open dropdown when switching from TextField to Autocomplete
+  useEffect(() => {
+    if (isActive && !open) {
+      setOpen(true)
+    }
+  }, [isActive, open])
+
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
   const regions = assembly?.regions
@@ -96,6 +106,42 @@ const RefNameAutocomplete = observer(function ({
     [regions],
   )
 
+  const calculatedWidth = Math.min(
+    Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
+    maxWidth,
+  )
+
+  // When not active, render a lightweight TextField instead of heavy Autocomplete
+  if (!isActive) {
+    // Extract endAdornment from TextFieldProps if provided via slotProps
+    const textFieldEndAdornment =
+      TextFieldProps.slotProps?.input?.endAdornment || <EndAdornment />
+
+    return (
+      <TextField
+        data-testid="location-textfield"
+        disabled={!assemblyName}
+        value={inputBoxVal}
+        onClick={() => setIsActive(true)}
+        onFocus={() => setIsActive(true)}
+        style={{
+          ...style,
+          width: calculatedWidth,
+        }}
+        {...TextFieldProps}
+        slotProps={{
+          ...TextFieldProps.slotProps,
+          input: {
+            ...TextFieldProps.slotProps?.input,
+            readOnly: true,
+            endAdornment: textFieldEndAdornment,
+          },
+        }}
+        size="small"
+      />
+    )
+  }
+
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
   return (
@@ -109,10 +155,7 @@ const RefNameAutocomplete = observer(function ({
       selectOnFocus
       style={{
         ...style,
-        width: Math.min(
-          Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
-          maxWidth,
-        ),
+        width: calculatedWidth,
       }}
       value={inputBoxVal}
       loading={!loaded}
@@ -161,6 +204,10 @@ const RefNameAutocomplete = observer(function ({
           TextFieldProps={TextFieldProps}
           setCurrentSearch={setCurrentSearch}
           setInputValue={setInputValue}
+          onBlurCallback={() => {
+            // Switch back to TextField when user blurs the input
+            setIsActive(false)
+          }}
         />
       )}
       getOptionLabel={opt =>

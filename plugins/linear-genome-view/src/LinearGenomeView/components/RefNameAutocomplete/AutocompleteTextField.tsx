@@ -11,12 +11,14 @@ export default function AutocompleteTextField({
   params,
   setInputValue,
   setCurrentSearch,
+  onBlurCallback,
 }: {
   TextFieldProps: TFP
   inputBoxVal: string
   params: AutocompleteRenderInputParams
   setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
+  onBlurCallback?: () => void
 }) {
   const { helperText, slotProps = {} } = TextFieldProps
   return (
@@ -25,6 +27,7 @@ export default function AutocompleteTextField({
         // this is used to restore a refName or the non-user-typed input to the
         // box on blurring
         setInputValue(inputBoxVal)
+        onBlurCallback?.()
       }}
       {...params}
       {...TextFieldProps}
