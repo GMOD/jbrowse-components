@@ -1,3 +1,5 @@
+import { toLocale } from '@jbrowse/core/util'
+
 import type { Dotplot1DViewModel } from '../model'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
@@ -10,9 +12,7 @@ export function locstr(
   const coord = Math.floor(start + offset)
   return oob
     ? 'out of bounds'
-    : `${
-        includeAsm ? `{${assemblyName}}` : ''
-      }${refName}:${coord.toLocaleString('en-US')}`
+    : `${includeAsm ? `{${assemblyName}}` : ''}${refName}:${toLocale(coord)}`
 }
 
 export function getBlockLabelKeysToHide(

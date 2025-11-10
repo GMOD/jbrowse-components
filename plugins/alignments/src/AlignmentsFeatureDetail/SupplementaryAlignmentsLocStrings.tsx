@@ -1,5 +1,7 @@
 import { Link, Typography } from '@mui/material'
 
+import { toLocale } from '@jbrowse/core/util'
+
 import { getLengthOnRef } from '../MismatchParser'
 import { navToLoc } from './util'
 
@@ -28,8 +30,8 @@ export default function SupplementaryAlignmentsLocStrings({
             const sp = start - extra
             const ep = end + extra
             const locString = `${saRef}:${Math.max(1, sp)}-${ep}`
-            const displayStart = start.toLocaleString('en-US')
-            const displayEnd = end.toLocaleString('en-US')
+            const displayStart = toLocale(start)
+            const displayEnd = toLocale(end)
             const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand}) [${saLength}bp]`
             return (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
