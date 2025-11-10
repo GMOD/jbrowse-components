@@ -16,7 +16,7 @@ import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   verticalGuidesZoomContainer: {
     position: 'absolute',
     top: 0,
@@ -38,7 +38,7 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     pointerEvents: 'none',
   },
-}))
+})
 
 function RenderedBlockLines({
   block,
