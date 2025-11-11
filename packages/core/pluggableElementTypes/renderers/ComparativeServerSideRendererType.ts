@@ -17,6 +17,7 @@ import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import type RpcManager from '../../rpc/RpcManager'
 import type { Feature } from '../../util/simpleFeature'
 import type { Region } from '../../util/types'
+import type SerializableFilterChain from './util/serializableFilterChain'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   blockKey: string
@@ -44,7 +45,9 @@ export interface ResultsSerializedSvgExport extends ResultsSerialized {
   reactElement: unknown
 }
 
-function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
+function isCanvasRecordedSvgExport(
+  e: ResultsSerialized,
+): e is ResultsSerializedSvgExport {
   return 'canvasRecordedData' in e
 }
 
@@ -62,12 +65,8 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   }
 
   serializeArgsInClient(args: RenderArgs) {
-    const deserializedArgs = {
-      ...args,
-      displayModel: undefined,
-    }
-
-    return super.serializeArgsInClient(deserializedArgs)
+    const { displayModel, ...serializable } = args
+    return super.serializeArgsInClient(serializable)
   }
 
   // deserialize some of the results that came back from the worker
@@ -93,7 +92,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
       args,
     )) as ResultsSerialized
 
-    if (isSvgExport(results)) {
+    if (isCanvasRecordedSvgExport(results)) {
       results.html = await getSerializedSvg(results)
       results.reactElement = undefined
     }
@@ -105,7 +104,12 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
    * @param feature -
    * @returns true if this feature passes all configured filters
    */
-  featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
+  featurePassesFilters(
+    renderArgs: {
+      filters?: SerializableFilterChain
+    },
+    feature: Feature,
+  ) {
     return renderArgs.filters
       ? renderArgs.filters.passes(feature, renderArgs)
       : true
@@ -115,6 +119,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     regions: Region[]
     sessionId: string
     adapterConfig: AnyConfigurationModel
+    filters?: SerializableFilterChain
   }) {
     const pm = this.pluginManager
     const { regions, sessionId, adapterConfig } = renderArgs
@@ -137,7 +142,6 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
       (dataAdapter as BaseFeatureDataAdapter)
         .getFeaturesInMultipleRegions(requestRegions, renderArgs)
         .pipe(
-          // @ts-expect-error
           filter(f => this.featurePassesFilters(renderArgs, f)),
           toArray(),
         ),
