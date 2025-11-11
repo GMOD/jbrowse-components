@@ -27,9 +27,17 @@ export default class CircularChordRendererType extends FeatureRenderer {
           ...res,
           features: deserializedFeatures,
           blockKey: 'circularChord',
-          html: this.supportsSVG
-            ? res.html
-            : '<text y="12" fill="black">SVG export not supported for this track</text>',
+          reactElement: res.html ? undefined : this.supportsSVG ? (
+            <this.ReactComponent
+              {...args}
+              {...res}
+              features={deserializedFeatures}
+            />
+          ) : (
+            <text y="12" fill="black">
+              SVG export not supported for this track
+            </text>
+          ),
         }
       : {
           ...res,
