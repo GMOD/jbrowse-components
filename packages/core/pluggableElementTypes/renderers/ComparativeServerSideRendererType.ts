@@ -2,6 +2,7 @@ import { firstValueFrom } from 'rxjs'
 import { filter, toArray } from 'rxjs/operators'
 
 import ServerSideRenderer from './ServerSideRendererType'
+import { normalizeRegion } from './util'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { dedupe, getSerializedSvg } from '../../util'
 
@@ -13,11 +14,11 @@ import type {
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
 import type { AnyConfigurationModel } from '../../configuration'
+import type SerializableFilterChain from './util/serializableFilterChain'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import type RpcManager from '../../rpc/RpcManager'
 import type { Feature } from '../../util/simpleFeature'
 import type { Region } from '../../util/types'
-import type SerializableFilterChain from './util/serializableFilterChain'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   blockKey: string
@@ -52,14 +53,6 @@ function isCanvasRecordedSvgExport(
 }
 
 export default class ComparativeServerSideRenderer extends ServerSideRenderer {
-  /**
-   * directly modifies the render arguments to prepare them to be serialized
-   * and sent to the worker.
-   *
-   * @param args - the arguments passed to render
-   * @returns the same object
-   */
-
   async renameRegionsIfNeeded(args: RenderArgs) {
     return args
   }
@@ -69,7 +62,6 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     return super.serializeArgsInClient(serializable)
   }
 
-  // deserialize some of the results that came back from the worker
   deserializeResultsInClient(
     result: ResultsSerialized,
     args: RenderArgs,
@@ -80,11 +72,6 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
       blockKey: args.blockKey,
     }
   }
-
-  /**
-   * Render method called on the client. Serializes args, then
-   * calls `render` with the RPC manager.
-   */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
     const results = (await rpcManager.call(
       args.sessionId,
@@ -93,17 +80,16 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     )) as ResultsSerialized
 
     if (isCanvasRecordedSvgExport(results)) {
-      results.html = await getSerializedSvg(results)
-      results.reactElement = undefined
+      const { reactElement, ...rest } = results
+      return {
+        ...rest,
+        html: await getSerializedSvg(results),
+      }
+    } else {
+      return results
     }
-    return results
   }
 
-  /**
-   * @param renderArgs -
-   * @param feature -
-   * @returns true if this feature passes all configured filters
-   */
   featurePassesFilters(
     renderArgs: {
       filters?: SerializableFilterChain
@@ -121,26 +107,18 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     adapterConfig: AnyConfigurationModel
     filters?: SerializableFilterChain
   }) {
-    const pm = this.pluginManager
     const { regions, sessionId, adapterConfig } = renderArgs
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const requestRegions = regions.map(r => {
-      // make sure the requested region's start and end are integers, if
-      // there is a region specification.
-      const requestRegion = { ...r }
-      if (requestRegion.start) {
-        requestRegion.start = Math.floor(requestRegion.start)
-      }
-      if (requestRegion.end) {
-        requestRegion.end = Math.floor(requestRegion.end)
-      }
-      return requestRegion
-    })
-
-    // note that getFeaturesInMultipleRegions does not do glyph expansion
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
     const res = await firstValueFrom(
       (dataAdapter as BaseFeatureDataAdapter)
-        .getFeaturesInMultipleRegions(requestRegions, renderArgs)
+        .getFeaturesInMultipleRegions(
+          regions.map(r => normalizeRegion(r)),
+          renderArgs,
+        )
         .pipe(
           filter(f => this.featurePassesFilters(renderArgs, f)),
           toArray(),
