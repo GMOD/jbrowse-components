@@ -174,13 +174,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setMessage(messageText: string) {
-        self.filled = false
         self.message = messageText
-        self.reactElement = undefined
-        self.data = undefined
-        self.error = undefined
-        self.renderingComponent = undefined
-        self.stopToken = undefined
       },
       /**
        * #action
