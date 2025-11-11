@@ -3,7 +3,8 @@ import { filter, toArray } from 'rxjs/operators'
 
 import ServerSideRenderer from './ServerSideRendererType'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import { dedupe, getSerializedSvg } from '../../util'
+import { dedupe } from '../../util'
+import { convertSvgExportToHtml } from './util/svgExportUtils'
 
 import type {
   RenderArgs as ServerSideRenderArgs,
@@ -69,23 +70,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
       args,
     )) as ResultsSerialized
 
-    if (
-      'canvasRecordedData' in results &&
-      results.canvasRecordedData &&
-      'width' in results &&
-      'height' in results
-    ) {
-      return {
-        ...results,
-        html: await getSerializedSvg({
-          width: results.width as number,
-          height: results.height as number,
-          canvasRecordedData: results.canvasRecordedData,
-        }),
-      }
-    }
-
-    return results
+    return convertSvgExportToHtml(results)
   }
 
   featurePassesFilters(
