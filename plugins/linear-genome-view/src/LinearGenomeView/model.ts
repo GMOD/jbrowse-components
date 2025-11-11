@@ -1903,7 +1903,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
               }
             },
-            { delay: 150 },
+            { delay: 500 },
           ),
         )
 

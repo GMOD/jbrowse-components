@@ -30,9 +30,6 @@ const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-  ml: {
-    marginLeft: 10,
-  },
 })
 
 const GetSequenceDialog = observer(function ({
@@ -112,11 +109,11 @@ const GetSequenceDialog = observer(function ({
     <Dialog
       maxWidth="xl"
       open
+      title="Reference sequence"
       onClose={() => {
         handleClose()
         model.setOffsets()
       }}
-      title="Reference sequence"
     >
       <DialogContent>
         {error ? (

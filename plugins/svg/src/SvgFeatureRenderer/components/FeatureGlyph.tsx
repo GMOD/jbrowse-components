@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
+import type { DisplayModel } from './types'
 
 const FeatureGlyph = observer(function (props: {
   feature: Feature
@@ -16,7 +17,7 @@ const FeatureGlyph = observer(function (props: {
   fontHeight: number
   allowedWidthExpansion: number
   exportSVG?: unknown
-  displayModel?: any
+  displayModel?: DisplayModel
   selected?: boolean
   reversed?: boolean
   topLevel?: boolean
@@ -28,10 +29,10 @@ const FeatureGlyph = observer(function (props: {
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
   if (!featureLayout) {
     return null
+  } else {
+    const { GlyphComponent } = featureLayout.data || {}
+    return <GlyphComponent featureLayout={featureLayout} {...props} />
   }
-  const { GlyphComponent } = featureLayout.data || {}
-
-  return <GlyphComponent featureLayout={featureLayout} {...props} />
 })
 
 export default FeatureGlyph

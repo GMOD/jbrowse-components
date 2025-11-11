@@ -1,3 +1,6 @@
+import { useEffect, useRef } from 'react'
+
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -13,7 +16,7 @@ import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   verticalGuidesZoomContainer: {
     position: 'absolute',
     top: 0,
@@ -27,57 +30,89 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     display: 'flex',
   },
-  tick: {
+  svgOverlay: {
     position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
     height: '100%',
-    width: 1,
+    pointerEvents: 'none',
+    // Reduce layout shift by containing layout/paint changes
+    contain: 'layout style paint',
   },
-  majorTick: {
-    background: theme.palette.action.disabled,
-  },
-  minorTick: {
-    background: theme.palette.divider,
-  },
-}))
+})
 
 function RenderedBlockLines({
   block,
   bpPerPx,
+  majorColor,
+  minorColor,
 }: {
   block: ContentBlock
   bpPerPx: number
+  majorColor: string
+  minorColor: string
 }) {
-  const { classes, cx } = useStyles()
-  const ticks = makeTicks(block.start, block.end, bpPerPx)
+  const { classes } = useStyles()
+  const svgRef = useRef<SVGSVGElement>(null)
+
+  // Update SVG lines directly using appendChild when dependencies change
+  // Proper useEffect dependency array ensures MobX synchronization
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) {
+      return
+    }
+
+    const ticks = makeTicks(block.start, block.end, bpPerPx)
+
+    // Create lines directly in SVG using appendChild
+    const fragment = document.createDocumentFragment()
+    for (const { type, base } of ticks) {
+      const x =
+        (block.reversed ? block.end - base : base - block.start) / bpPerPx
+      const line = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'line',
+      )
+      line.setAttribute('x1', String(x))
+      line.setAttribute('y1', '0')
+      line.setAttribute('x2', String(x))
+      line.setAttribute('y2', '100%')
+      line.setAttribute(
+        'stroke',
+        type === 'major' || type === 'labeledMajor' ? majorColor : minorColor,
+      )
+      line.setAttribute('stroke-width', '1')
+      fragment.append(line)
+    }
+    // Use replaceChildren for atomic update - reduces layout shift vs innerHTML='' + append
+    svg.replaceChildren(fragment)
+  }, [block.start, block.end, block.reversed, bpPerPx, majorColor, minorColor])
+
   return (
     <ContentBlockComponent block={block}>
-      {ticks.map(({ type, base }) => {
-        const x =
-          (block.reversed ? block.end - base : base - block.start) / bpPerPx
-        return (
-          <div
-            key={base}
-            className={cx(
-              classes.tick,
-              type === 'major' || type === 'labeledMajor'
-                ? classes.majorTick
-                : classes.minorTick,
-            )}
-            style={{ left: x }}
-          />
-        )
-      })}
+      <svg ref={svgRef} className={classes.svgOverlay} />
     </ContentBlockComponent>
   )
 }
 const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
   const { staticBlocks, bpPerPx } = model
+  const theme = useTheme()
   return (
     <>
       {staticBlocks.map((block, index) => {
         const k = `${block.key}-${index}`
         if (block.type === 'ContentBlock') {
-          return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
+          return (
+            <RenderedBlockLines
+              key={k}
+              block={block}
+              bpPerPx={bpPerPx}
+              majorColor={theme.palette.action.disabled}
+              minorColor={theme.palette.divider}
+            />
+          )
         } else if (block.type === 'ElidedBlock') {
           return <ElidedBlockComponent key={k} width={block.widthPx} />
         } else if (block.type === 'InterRegionPaddingBlock') {

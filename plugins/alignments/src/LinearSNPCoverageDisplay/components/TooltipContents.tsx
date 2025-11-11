@@ -12,10 +12,6 @@ const useStyles = makeStyles()(() => ({
   td: {
     whiteSpace: 'nowrap',
   },
-  table: {
-    width: '100%',
-    tableLayout: 'auto',
-  },
 }))
 
 const toP = (s = 0) => +s.toFixed(1)

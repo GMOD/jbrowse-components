@@ -5,6 +5,7 @@ import eslintPluginReact from 'eslint-plugin-react'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
+import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
@@ -56,6 +57,7 @@ export default defineConfig(
   {
     plugins: {
       'react-compiler': reactCompiler,
+      'tss-unused-classes': tssUnusedClasses,
     },
     rules: {
       'react-compiler/react-compiler': 'error',
@@ -91,6 +93,7 @@ export default defineConfig(
           allow: ['error', 'warn'],
         },
       ],
+      'tss-unused-classes/unused-classes': 'warn',
       'no-underscore-dangle': 'off',
       curly: 'error',
       semi: ['error', 'never'],
