@@ -53,6 +53,50 @@ function isCanvasRecordedSvgExport(
   return 'canvasRecordedData' in e
 }
 
+/**
+ * Determines if results already contain pre-rendered HTML content.
+ * When HTML is present, no React element needs to be created.
+ */
+function hasPreRenderedContent(res: ResultsSerialized) {
+  return !!res.html
+}
+
+/**
+ * Creates a React element for SVG export mode.
+ * Returns undefined if content is already pre-rendered.
+ */
+function createSvgExportElement(
+  res: ResultsSerialized,
+  args: RenderArgs,
+  ReactComponent: ServerSideRenderer['ReactComponent'],
+  supportsSVG: boolean,
+) {
+  if (hasPreRenderedContent(res)) {
+    return undefined
+  }
+
+  if (supportsSVG) {
+    return <ReactComponent {...args} {...res} />
+  }
+
+  return (
+    <text y="12" fill="black">
+      SVG export not supported for this track
+    </text>
+  )
+}
+
+/**
+ * Creates a React element for normal (non-export) rendering mode.
+ */
+function createNormalElement(
+  res: ResultsSerialized,
+  args: RenderArgs,
+  ReactComponent: ServerSideRenderer['ReactComponent'],
+) {
+  return <ReactComponent {...args} {...res} />
+}
+
 export default class ServerSideRenderer extends RendererType {
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
     return {
@@ -68,21 +112,17 @@ export default class ServerSideRenderer extends RendererType {
     res: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    return args.exportSVG
-      ? {
-          ...res,
-          reactElement: res.html ? undefined : this.supportsSVG ? (
-            <this.ReactComponent {...args} {...res} />
-          ) : (
-            <text y="12" fill="black">
-              SVG export not supported for this track
-            </text>
-          ),
-        }
-      : {
-          ...res,
-          reactElement: <this.ReactComponent {...args} {...res} />,
-        }
+    return {
+      ...res,
+      reactElement: args.exportSVG
+        ? createSvgExportElement(
+            res,
+            args,
+            this.ReactComponent,
+            this.supportsSVG,
+          )
+        : createNormalElement(res, args, this.ReactComponent),
+    }
   }
 
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
@@ -125,17 +165,14 @@ export default class ServerSideRenderer extends RendererType {
 
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
     const { stopToken, statusCallback = () => {} } = args
-
+    const args2 = this.deserializeArgsInWorker(args)
     const results = await updateStatus('Rendering plot', statusCallback, () =>
-      this.render(this.deserializeArgsInWorker(args)),
+      this.render(args2),
     )
     checkStopToken(stopToken)
 
     return updateStatus('Serializing results', statusCallback, () =>
-      this.serializeResultsInWorker(
-        results,
-        this.deserializeArgsInWorker(args),
-      ),
+      this.serializeResultsInWorker(results, args2),
     )
   }
 
