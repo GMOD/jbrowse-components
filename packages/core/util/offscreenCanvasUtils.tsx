@@ -22,6 +22,7 @@ type R<T extends Record<string, unknown> | undefined> = Omit<T, never> &
     | { canvasRecordedData: Record<string, unknown> }
     | { imageData: any }
     | { reactElement: React.ReactElement }
+    | { rasterizedImageData: { width: number; height: number; dataURL: string } }
   )
 
 export async function renderToAbstractCanvas<
@@ -52,25 +53,27 @@ export async function renderToAbstractCanvas<
       ctx.scale(s, s)
       const callbackResult = await cb(ctx)
 
-      // two methods needed for converting canvas to PNG, one for webworker
+      // Convert canvas to data URL
+      // Two methods needed for converting canvas to PNG, one for webworker
       // offscreen canvas, one for main thread
+      const imageData =
+        'convertToBlob' in canvas
+          ? await blobToDataURL(
+              await canvas.convertToBlob({
+                type: 'image/png',
+              }),
+            )
+          : canvas.toDataURL('image/png')
+
+      // Return serializable image data instead of React element
+      // The React element will be constructed on the client side
       return {
         ...callbackResult,
-        reactElement: (
-          <image
-            width={width}
-            height={height}
-            xlinkHref={
-              'convertToBlob' in canvas
-                ? await blobToDataURL(
-                    await canvas.convertToBlob({
-                      type: 'image/png',
-                    }),
-                  )
-                : canvas.toDataURL('image/png')
-            }
-          />
-        ),
+        rasterizedImageData: {
+          width,
+          height,
+          dataURL: imageData,
+        },
       }
     }
   } else {

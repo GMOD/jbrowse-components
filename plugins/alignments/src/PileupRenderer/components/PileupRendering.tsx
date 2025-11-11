@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { bpSpanPx } from '@jbrowse/core/util'
@@ -12,7 +12,7 @@ import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 const PileupRendering = observer(function (props: {
   blockKey: string
-  displayModel?: BaseLinearDisplayModel
+  displayModel: BaseLinearDisplayModel
   width: number
   height: number
   regions: Region[]
@@ -44,11 +44,7 @@ const PileupRendering = observer(function (props: {
   } = props
   const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
-    displayModel || {}
-  const [firstRender, setFirstRender] = useState(false)
-  useEffect(() => {
-    setFirstRender(true)
-  }, [])
+    displayModel
 
   const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
@@ -56,12 +52,12 @@ const PileupRendering = observer(function (props: {
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const selectedRect = selectedFeatureId
-    ? displayModel?.getFeatureByID(blockKey, selectedFeatureId)
+    ? displayModel.getFeatureByID(blockKey, selectedFeatureId)
     : undefined
 
   const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
   const highlightedRect = highlightedFeature
-    ? displayModel?.getFeatureByID(blockKey, highlightedFeature)
+    ? displayModel.getFeatureByID(blockKey, highlightedFeature)
     : undefined
 
   function makeRect(r: [number, number, number, number], offset = 2) {
@@ -145,7 +141,7 @@ const PileupRendering = observer(function (props: {
       : undefined
     onMouseMove?.(
       event,
-      displayModel?.getFeatureOverlapping(blockKey, clientBp, offsetY),
+      displayModel.getFeatureOverlapping(blockKey, clientBp, offsetY),
       label,
     )
   }
@@ -163,6 +159,7 @@ const PileupRendering = observer(function (props: {
   }
 
   const canvasWidth = Math.ceil(width)
+  console.log('wtf1', { props, height, canvasWidth })
   // need to call this in render so we get the right observer behavior
   return (
     <div
@@ -209,9 +206,13 @@ const PileupRendering = observer(function (props: {
     >
       <PrerenderedCanvas
         {...props}
-        style={{ position: 'absolute', left: 0, top: 0 }}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+        }}
       />
-      {firstRender && highlight ? (
+      {highlight ? (
         <div
           style={{
             position: 'absolute',
@@ -221,7 +222,7 @@ const PileupRendering = observer(function (props: {
           }}
         />
       ) : null}
-      {firstRender && selected ? (
+      {selected ? (
         <div
           style={{
             position: 'absolute',

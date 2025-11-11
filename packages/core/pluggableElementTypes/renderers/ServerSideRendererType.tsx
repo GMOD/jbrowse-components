@@ -62,10 +62,26 @@ export interface ResultsSerializedSvgExport extends ResultsSerialized {
   reactElement: unknown
 }
 
+export interface ResultsSerializedRasterizedImage extends ResultsSerialized {
+  rasterizedImageData: {
+    width: number
+    height: number
+    dataURL: string
+  }
+  width: number
+  height: number
+}
+
 export type ResultsDeserialized = RenderResults
 
 function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
   return 'canvasRecordedData' in e
+}
+
+function isRasterizedImageExport(
+  e: ResultsSerialized,
+): e is ResultsSerializedRasterizedImage {
+  return 'rasterizedImageData' in e
 }
 
 export default class ServerSideRenderer extends RendererType {
@@ -111,16 +127,15 @@ export default class ServerSideRenderer extends RendererType {
       }
     }
 
-    // Create React element from server-side rendered content
+    // For SVG export, return results with HTML (already processed in renderInClient)
+    if (isSvgExport(res) || isRasterizedImageExport(res)) {
+      return res
+    }
+
+    // Create React element from server-side rendered content for normal rendering
     return {
       ...res,
-      reactElement: (
-        <ServerSideRenderedContent
-          {...args}
-          {...res}
-          RenderingComponent={this.ReactComponent}
-        />
-      ),
+      reactElement: <this.ReactComponent {...args} {...res} />,
     }
   }
 
@@ -192,6 +207,15 @@ export default class ServerSideRenderer extends RendererType {
       return {
         ...results,
         html: await getSerializedSvg(results),
+      }
+    }
+
+    // Handle rasterized SVG export by converting image data to HTML
+    if (isRasterizedImageExport(results)) {
+      const { width, height, dataURL } = results.rasterizedImageData
+      return {
+        ...results,
+        html: `<image width="${width}" height="${height}" href="${dataURL}" />`,
       }
     }
 
