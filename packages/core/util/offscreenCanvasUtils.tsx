@@ -17,12 +17,18 @@ interface RenderToAbstractCanvasOptions {
   highResolutionScaling?: number
 }
 
+export interface RasterizedImageData {
+  width: number
+  height: number
+  dataURL: string
+}
+
 type R<T extends Record<string, unknown> | undefined> = Omit<T, never> &
   (
     | { canvasRecordedData: Record<string, unknown> }
     | { imageData: any }
     | { reactElement: React.ReactElement }
-    | { rasterizedImageData: { width: number; height: number; dataURL: string } }
+    | { rasterizedImageData: RasterizedImageData }
   )
 
 export async function renderToAbstractCanvas<
@@ -110,29 +116,41 @@ export async function getSerializedSvg(results: {
   return ctx.getSvg().innerHTML as string
 }
 
+/**
+ * Converts rasterized image data to a React SVG image element
+ */
+function createRasterizedImageElement(
+  imageData: RasterizedImageData,
+): React.ReactElement {
+  const { width, height, dataURL } = imageData
+  return <image width={width} height={height} href={dataURL} />
+}
+
+/**
+ * Renders different types of rendering output:
+ * - React elements directly
+ * - HTML strings via dangerouslySetInnerHTML
+ * - Rasterized image data as SVG image elements
+ */
 export function ReactRendering({
   rendering,
 }: {
   rendering: {
     reactElement?: React.ReactNode
     html?: string
-    rasterizedImageData?: {
-      width: number
-      height: number
-      dataURL: string
-    }
+    rasterizedImageData?: RasterizedImageData
   }
 }) {
-  // Handle rasterized image data (convert to React element on the fly)
+  // Handle rasterized image data
   if (rendering.rasterizedImageData) {
-    const { width, height, dataURL } = rendering.rasterizedImageData
-    return <image width={width} height={height} href={dataURL} />
+    return createRasterizedImageElement(rendering.rasterizedImageData)
   }
 
-  // Handle React element or HTML string
-  return isValidElement(rendering.reactElement) ? (
-    rendering.reactElement
-  ) : (
-    <g dangerouslySetInnerHTML={{ __html: rendering.html || '' }} />
-  )
+  // Handle React element
+  if (isValidElement(rendering.reactElement)) {
+    return rendering.reactElement
+  }
+
+  // Handle HTML string
+  return <g dangerouslySetInnerHTML={{ __html: rendering.html || '' }} />
 }

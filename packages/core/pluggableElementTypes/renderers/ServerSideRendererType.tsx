@@ -3,7 +3,11 @@ import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 import RendererType from './RendererType'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
 import SerializableFilterChain from './util/serializableFilterChain'
-import { getSerializedSvg, updateStatus } from '../../util'
+import {
+  getSerializedSvg,
+  updateStatus,
+  type RasterizedImageData,
+} from '../../util'
 import { checkStopToken } from '../../util/stopToken'
 
 import type { RenderProps, RenderResults } from './RendererType'
@@ -62,11 +66,7 @@ export interface ResultsSerializedSvgExport extends ResultsSerialized {
 }
 
 export interface ResultsSerializedRasterizedImage extends ResultsSerialized {
-  rasterizedImageData: {
-    width: number
-    height: number
-    dataURL: string
-  }
+  rasterizedImageData: RasterizedImageData
   width: number
   height: number
 }
@@ -83,6 +83,40 @@ function isRasterizedSvgExport(
   e: ResultsSerialized,
 ): e is ResultsSerializedRasterizedImage {
   return 'rasterizedImageData' in e
+}
+
+/**
+ * Checks if results contain any type of SVG export data
+ */
+function isSvgExport(
+  e: ResultsSerialized,
+): e is ResultsSerializedSvgExport | ResultsSerializedRasterizedImage {
+  return isNonRasterizedSvgExport(e) || isRasterizedSvgExport(e)
+}
+
+/**
+ * Converts SVG export data (rasterized or non-rasterized) to HTML.
+ * This centralizes the conversion logic for both export types.
+ */
+async function convertSvgExportToHtml(
+  results: ResultsSerialized,
+): Promise<ResultsSerialized> {
+  if (isNonRasterizedSvgExport(results)) {
+    return {
+      ...results,
+      html: await getSerializedSvg(results),
+    }
+  }
+
+  if (isRasterizedSvgExport(results)) {
+    const { width, height, dataURL } = results.rasterizedImageData
+    return {
+      ...results,
+      html: `<image width="${width}" height="${height}" href="${dataURL}" />`,
+    }
+  }
+
+  return results
 }
 
 export default class ServerSideRenderer extends RendererType {
@@ -128,9 +162,8 @@ export default class ServerSideRenderer extends RendererType {
       }
     }
 
-    // For SVG export (both rasterized and non-rasterized), return results with HTML
-    // The HTML has already been generated in renderInClient
-    if (isNonRasterizedSvgExport(res) || isRasterizedSvgExport(res)) {
+    // For SVG export, return results as-is (HTML already generated in renderInClient)
+    if (isSvgExport(res)) {
       return res
     }
 
@@ -188,7 +221,7 @@ export default class ServerSideRenderer extends RendererType {
 
   /**
    * Renders content on the client by making an RPC call to the worker.
-   * If the result is an SVG export, it serializes the SVG content.
+   * If the result is an SVG export, it converts the export data to HTML.
    *
    * @param rpcManager - RPC manager for worker communication
    * @param args - render arguments
@@ -204,24 +237,8 @@ export default class ServerSideRenderer extends RendererType {
       args,
     )) as ResultsSerialized
 
-    // Handle non-rasterized SVG export by serializing canvas data
-    if (isNonRasterizedSvgExport(results)) {
-      return {
-        ...results,
-        html: await getSerializedSvg(results),
-      }
-    }
-
-    // Handle rasterized SVG export by converting image data to HTML
-    if (isRasterizedSvgExport(results)) {
-      const { width, height, dataURL } = results.rasterizedImageData
-      return {
-        ...results,
-        html: `<image width="${width}" height="${height}" href="${dataURL}" />`,
-      }
-    }
-
-    return results
+    // Convert SVG export data (if present) to HTML
+    return convertSvgExportToHtml(results)
   }
 
   /**
