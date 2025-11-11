@@ -86,12 +86,10 @@ export default class ServerSideRenderer extends RendererType {
     res: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    return args.exportSVG
+    return !this.supportsSVG
       ? {
           ...res,
-          html: this.supportsSVG
-            ? res.html
-            : '<text y="12" fill="black">SVG export not supported for this track</text>',
+          html: '<text y="12" fill="black">SVG export not supported for this track</text>',
         }
       : {
           ...res,

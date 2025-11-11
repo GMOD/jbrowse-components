@@ -54,6 +54,7 @@ function RenderedFeatureGlyph(props: {
 
   // used for unit testing, difficult to mock out so it is in actual source code
   detectRerender?.()
+  console.log('wtf')
 
   const { reversed } = region
   const start = feature.get(reversed ? 'end' : 'start')
@@ -214,6 +215,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   const { regions = [], config, exportSVG, featureDisplayHandler } = props
   const region = regions[0]!
   const displayMode = readConfObject(config, 'displayMode') as string
+  console.log({ exportSVG })
 
   return exportSVG ? (
     <RenderedFeatures
@@ -261,7 +263,6 @@ function Wrapper(props: {
     blockKey,
     regions = [],
     bpPerPx,
-    config,
     displayModel = {},
     onMouseOut,
     onMouseDown,
@@ -276,18 +277,14 @@ function Wrapper(props: {
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const maxConfHeight = readConfObject(config, 'maxHeight') as number
-
   const ref = useRef<SVGSVGElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [height, setHeight] = useState(maxConfHeight)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const [initialMousePos, setInitialMousePos] = useState<Coord>()
 
-  useEffect(() => {
-    setHeight(layout.getTotalHeight())
-  }, [layout])
+  const height = layout.getTotalHeight()
+  console.log({ height })
 
   return (
     <svg
