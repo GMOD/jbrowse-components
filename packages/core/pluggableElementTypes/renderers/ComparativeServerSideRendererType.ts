@@ -12,6 +12,7 @@ import type {
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerializedBase,
 } from './ServerSideRendererType'
+import type SerializableFilterChain from './util/serializableFilterChain'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import type RpcManager from '../../rpc/RpcManager'
@@ -37,41 +38,16 @@ export interface ResultsDeserialized extends ServerSideResultsDeserialized {
   blockKey: string
 }
 
-export interface ResultsSerializedSvgExport extends ResultsSerializedBase {
-  canvasRecordedData: unknown
-  width: number
-  height: number
-}
-
-function isSvgExport(
-  e: ResultsSerializedBase,
-): e is ResultsSerializedSvgExport {
-  return 'canvasRecordedData' in e
-}
-
 export default class ComparativeServerSideRenderer extends ServerSideRenderer {
-  /**
-   * directly modifies the render arguments to prepare them to be serialized
-   * and sent to the worker.
-   *
-   * @param args - the arguments passed to render
-   * @returns the same object
-   */
-
-  async renameRegionsIfNeeded(args: RenderArgs) {
+  async renameRegionsIfNeeded(args: RenderArgs): Promise<RenderArgs> {
     return args
   }
 
   serializeArgsInClient(args: RenderArgs) {
-    const deserializedArgs = {
-      ...args,
-      displayModel: undefined,
-    }
-
-    return super.serializeArgsInClient(deserializedArgs)
+    const { displayModel, ...serializable } = args
+    return super.serializeArgsInClient(serializable)
   }
 
-  // deserialize some of the results that came back from the worker
   deserializeResultsInClient(
     result: ResultsSerialized,
     args: RenderArgs,
@@ -83,68 +59,78 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     }
   }
 
-  /**
-   * Render method called on the client. Serializes args, then
-   * calls `render` with the RPC manager.
-   */
-  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
+  async renderInClient(
+    rpcManager: RpcManager,
+    args: RenderArgs,
+  ): Promise<ResultsSerialized> {
     const results = (await rpcManager.call(
       args.sessionId,
       'ComparativeRender',
       args,
     )) as ResultsSerialized
 
-    if (isSvgExport(results)) {
-      results.html = await getSerializedSvg(results)
+    if (
+      'canvasRecordedData' in results &&
+      results.canvasRecordedData &&
+      'width' in results &&
+      'height' in results
+    ) {
+      return {
+        ...results,
+        html: await getSerializedSvg({
+          width: results.width as number,
+          height: results.height as number,
+          canvasRecordedData: results.canvasRecordedData,
+        }),
+      }
     }
+
     return results
   }
 
-  /**
-   * @param renderArgs -
-   * @param feature -
-   * @returns true if this feature passes all configured filters
-   */
-  featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
-    return renderArgs.filters
-      ? renderArgs.filters.passes(feature, renderArgs)
-      : true
+  featurePassesFilters(
+    renderArgs: { filters?: { passes: (f: Feature, args: any) => boolean } },
+    feature: Feature,
+  ): boolean {
+    return renderArgs.filters?.passes(feature, renderArgs) ?? true
+  }
+
+  private normalizeRegionCoordinates(region: Region): Region {
+    return {
+      ...region,
+      start: region.start ? Math.floor(region.start) : region.start,
+      end: region.end ? Math.floor(region.end) : region.end,
+    }
   }
 
   async getFeatures(renderArgs: {
     regions: Region[]
     sessionId: string
     adapterConfig: AnyConfigurationModel
-  }) {
-    const pm = this.pluginManager
+    filters?: SerializableFilterChain
+  }): Promise<Feature[]> {
     const { regions, sessionId, adapterConfig } = renderArgs
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const requestRegions = regions.map(r => {
-      // make sure the requested region's start and end are integers, if
-      // there is a region specification.
-      const requestRegion = { ...r }
-      if (requestRegion.start) {
-        requestRegion.start = Math.floor(requestRegion.start)
-      }
-      if (requestRegion.end) {
-        requestRegion.end = Math.floor(requestRegion.end)
-      }
-      return requestRegion
-    })
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
 
-    // note that getFeaturesInMultipleRegions does not do glyph expansion
-    const res = await firstValueFrom(
+    const normalizedRegions = regions.map(r =>
+      this.normalizeRegionCoordinates(r),
+    )
+
+    const features = await firstValueFrom(
       (dataAdapter as BaseFeatureDataAdapter)
-        .getFeaturesInMultipleRegions(requestRegions, renderArgs)
+        .getFeaturesInMultipleRegions(normalizedRegions, renderArgs)
         .pipe(
-          // @ts-expect-error
-          filter(f => this.featurePassesFilters(renderArgs, f)),
+          filter((f: Feature) => this.featurePassesFilters(renderArgs, f)),
           toArray(),
         ),
     )
 
-    // dedupe needed xref https://github.com/GMOD/jbrowse-components/pull/3404/
-    return dedupe(res, f => f.id())
+    // See: https://github.com/GMOD/jbrowse-components/pull/3404/
+    return dedupe(features, f => f.id())
   }
 }
 
