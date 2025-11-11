@@ -116,8 +116,20 @@ export function ReactRendering({
   rendering: {
     reactElement?: React.ReactNode
     html?: string
+    rasterizedImageData?: {
+      width: number
+      height: number
+      dataURL: string
+    }
   }
 }) {
+  // Handle rasterized image data (convert to React element on the fly)
+  if (rendering.rasterizedImageData) {
+    const { width, height, dataURL } = rendering.rasterizedImageData
+    return <image width={width} height={height} href={dataURL} />
+  }
+
+  // Handle React element or HTML string
   return isValidElement(rendering.reactElement) ? (
     rendering.reactElement
   ) : (

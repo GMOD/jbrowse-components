@@ -59,7 +59,6 @@ export interface ResultsSerializedSvgExport extends ResultsSerialized {
   canvasRecordedData: unknown
   width: number
   height: number
-  reactElement: unknown
 }
 
 export interface ResultsSerializedRasterizedImage extends ResultsSerialized {
@@ -74,11 +73,13 @@ export interface ResultsSerializedRasterizedImage extends ResultsSerialized {
 
 export type ResultsDeserialized = RenderResults
 
-function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
+function isNonRasterizedSvgExport(
+  e: ResultsSerialized,
+): e is ResultsSerializedSvgExport {
   return 'canvasRecordedData' in e
 }
 
-function isRasterizedImageExport(
+function isRasterizedSvgExport(
   e: ResultsSerialized,
 ): e is ResultsSerializedRasterizedImage {
   return 'rasterizedImageData' in e
@@ -127,8 +128,9 @@ export default class ServerSideRenderer extends RendererType {
       }
     }
 
-    // For SVG export, return results with HTML (already processed in renderInClient)
-    if (isSvgExport(res) || isRasterizedImageExport(res)) {
+    // For SVG export (both rasterized and non-rasterized), return results with HTML
+    // The HTML has already been generated in renderInClient
+    if (isNonRasterizedSvgExport(res) || isRasterizedSvgExport(res)) {
       return res
     }
 
@@ -202,8 +204,8 @@ export default class ServerSideRenderer extends RendererType {
       args,
     )) as ResultsSerialized
 
-    // Handle SVG export by serializing canvas data
-    if (isSvgExport(results)) {
+    // Handle non-rasterized SVG export by serializing canvas data
+    if (isNonRasterizedSvgExport(results)) {
       return {
         ...results,
         html: await getSerializedSvg(results),
@@ -211,7 +213,7 @@ export default class ServerSideRenderer extends RendererType {
     }
 
     // Handle rasterized SVG export by converting image data to HTML
-    if (isRasterizedImageExport(results)) {
+    if (isRasterizedSvgExport(results)) {
       const { width, height, dataURL } = results.rasterizedImageData
       return {
         ...results,
