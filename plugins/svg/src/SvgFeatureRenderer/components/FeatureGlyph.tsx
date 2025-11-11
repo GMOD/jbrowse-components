@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react'
 
+import type { DisplayModel } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
-import type { DisplayModel } from './types'
 
 const FeatureGlyph = observer(function (props: {
   feature: Feature

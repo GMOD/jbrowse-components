@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import {
   clamp,
@@ -21,7 +21,7 @@ function getCachedMeasureText(text: string, fontSize: number): number {
     width = measureText(text, fontSize)
     // Keep cache size reasonable (max 500 entries)
     if (textMeasureCache.size > 500) {
-      const firstKey = textMeasureCache.keys().next().value as string | undefined
+      const firstKey = textMeasureCache.keys().next().value
       if (firstKey) {
         textMeasureCache.delete(firstKey)
       }
@@ -38,23 +38,6 @@ interface LabelItemProps {
   topPos: number
 }
 
-// Memoized label item component
-const LabelItem = ({ label, description, leftPos, topPos }: LabelItemProps) => (
-  <div
-    style={{
-      position: 'absolute',
-      fontSize: 11,
-      pointerEvents: 'none',
-      // Use transform for better performance (GPU accelerated)
-      transform: `translate(${leftPos}px, ${topPos}px)`,
-      willChange: 'transform',
-    }}
-  >
-    <div>{label}</div>
-    <div style={{ color: 'blue' }}>{description}</div>
-  </div>
-)
-
 const FloatingLabels = observer(function FloatingLabels({
   model,
 }: {
@@ -65,6 +48,9 @@ const FloatingLabels = observer(function FloatingLabels({
   const { offsetPx } = view
   const assemblyName = view.assemblyNames[0]
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const domElementsRef = useRef<Map<string, HTMLDivElement>>(new Map())
 
   // Memoize the processed label data to avoid recalculating positions
   const labelData = useMemo(() => {
@@ -81,7 +67,7 @@ const FloatingLabels = observer(function FloatingLabels({
       }
 
       const [left, , right, bottom, feature] = val
-      const { refName = '', description, label } = feature || {}
+      const { refName = '', description, label } = feature
 
       if (!label) {
         continue
@@ -127,12 +113,79 @@ const FloatingLabels = observer(function FloatingLabels({
     return result
   }, [model.layoutFeatures, view, assembly, offsetPx])
 
+  // Manually manipulate DOM for better performance
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) {
+      return
+    }
+
+    const domElements = domElementsRef.current
+    const newKeys = new Set<string>()
+
+    // Create or update elements
+    for (const { key, label, description, leftPos, topPos } of labelData) {
+      newKeys.add(key)
+
+      let element = domElements.get(key)
+
+      if (!element) {
+        // Create new element
+        element = document.createElement('div')
+        element.style.position = 'absolute'
+        element.style.fontSize = '11px'
+        element.style.pointerEvents = 'none'
+        element.style.willChange = 'transform'
+
+        const labelDiv = document.createElement('div')
+        const descDiv = document.createElement('div')
+        descDiv.style.color = 'blue'
+
+        element.appendChild(labelDiv)
+        element.appendChild(descDiv)
+
+        container.appendChild(element)
+        domElements.set(key, element)
+      }
+
+      // Update element content and position
+      const labelDiv = element.children[0] as HTMLDivElement
+      const descDiv = element.children[1] as HTMLDivElement
+
+      if (labelDiv.textContent !== label) {
+        labelDiv.textContent = label
+      }
+      if (descDiv.textContent !== description) {
+        descDiv.textContent = description
+      }
+
+      element.style.transform = `translate(${leftPos}px, ${topPos}px)`
+    }
+
+    // Remove elements that are no longer needed
+    for (const [key, element] of domElements.entries()) {
+      if (!newKeys.has(key)) {
+        // Check if element is actually a child before removing
+        if (element.parentNode === container) {
+          container.removeChild(element)
+        }
+        domElements.delete(key)
+      }
+    }
+
+    // Cleanup function to remove all elements on unmount
+    return () => {
+      for (const [key, element] of domElements.entries()) {
+        if (element.parentNode === container) {
+          container.removeChild(element)
+        }
+        domElements.delete(key)
+      }
+    }
+  }, [labelData])
+
   return labelData.length > 0 ? (
-    <div style={{ position: 'relative' }}>
-      {labelData.map(({ key, ...itemProps }) => (
-        <LabelItem key={key} {...itemProps} />
-      ))}
-    </div>
+    <div ref={containerRef} style={{ position: 'relative' }} />
   ) : null
 })
 
