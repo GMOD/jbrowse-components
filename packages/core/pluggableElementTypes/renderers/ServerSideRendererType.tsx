@@ -36,7 +36,7 @@ export interface RenderArgsDeserialized extends BaseRenderArgs {
   filters?: SerializableFilterChain
 }
 
-type ResultsSerialized = Omit<RenderResults, 'reactElement'>
+export type ResultsSerialized = Omit<RenderResults, 'reactElement'>
 
 export interface ResultsSerializedSvgExport extends ResultsSerialized {
   canvasRecordedData: unknown

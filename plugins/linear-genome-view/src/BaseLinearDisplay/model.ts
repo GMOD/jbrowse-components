@@ -448,7 +448,7 @@ function stateModelFactory() {
             self.setMouseoverExtraInformation(undefined)
           },
 
-          onContextMenu() {
+          onContextMenu(_: unknown) {
             self.setContextMenuFeature(undefined)
             self.clearFeatureSelection()
           },
