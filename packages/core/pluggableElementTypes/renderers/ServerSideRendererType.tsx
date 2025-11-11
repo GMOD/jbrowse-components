@@ -1,7 +1,6 @@
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 
 import RendererType from './RendererType'
-import ServerSideRenderedContent from './ServerSideRenderedContent'
 import SerializableFilterChain from './util/serializableFilterChain'
 import { getSerializedSvg, updateStatus } from '../../util'
 import { checkStopToken } from '../../util/stopToken'
@@ -15,8 +14,6 @@ import type { SnapshotIn, SnapshotOrInstance } from 'mobx-state-tree'
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
-  // Note that stopToken serialization happens after serializeArgsInClient and
-  // deserialization happens before deserializeArgsInWorker
   stopToken?: string
   theme: ThemeOptions
   exportSVG?: {
@@ -39,9 +36,7 @@ export interface RenderArgsDeserialized extends BaseRenderArgs {
   filters?: SerializableFilterChain
 }
 
-export interface ResultsSerialized extends Omit<RenderResults, 'reactElement'> {
-  html: string
-}
+export type ResultsSerialized = Omit<RenderResults, 'reactElement'>
 
 export interface ResultsSerializedSvgExport extends ResultsSerialized {
   canvasRecordedData: unknown
@@ -52,18 +47,57 @@ export interface ResultsSerializedSvgExport extends ResultsSerialized {
 
 export type ResultsDeserialized = RenderResults
 
-function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
+function isCanvasRecordedSvgExport(
+  e: ResultsSerialized,
+): e is ResultsSerializedSvgExport {
   return 'canvasRecordedData' in e
 }
 
+/**
+ * Determines if results already contain pre-rendered HTML content.
+ * When HTML is present, no React element needs to be created.
+ */
+function hasPreRenderedContent(res: ResultsSerialized) {
+  return !!res.html
+}
+
+/**
+ * Creates a React element for SVG export mode.
+ * Returns undefined if content is already pre-rendered.
+ */
+function createSvgExportElement(
+  res: ResultsSerialized,
+  args: RenderArgs,
+  ReactComponent: ServerSideRenderer['ReactComponent'],
+  supportsSVG: boolean,
+) {
+  if (hasPreRenderedContent(res)) {
+    return undefined
+  }
+
+  if (supportsSVG) {
+    return <ReactComponent {...args} {...res} />
+  }
+
+  return (
+    <text y="12" fill="black">
+      SVG export not supported for this track
+    </text>
+  )
+}
+
+/**
+ * Creates a React element for normal (non-export) rendering mode.
+ */
+function createNormalElement(
+  res: ResultsSerialized,
+  args: RenderArgs,
+  ReactComponent: ServerSideRenderer['ReactComponent'],
+) {
+  return <ReactComponent {...args} {...res} />
+}
+
 export default class ServerSideRenderer extends RendererType {
-  /**
-   * directly modifies the render arguments to prepare them to be serialized and
-   * sent to the worker.
-   *
-   * @param args - the arguments passed to render
-   * @returns the same object
-   */
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
     return {
       ...args,
@@ -74,83 +108,43 @@ export default class ServerSideRenderer extends RendererType {
     }
   }
 
-  /**
-   * Deserialize the render results from the worker in the client. Includes
-   * hydrating of the React HTML string, and not hydrating the result if SVG is
-   * being rendered
-   *
-   * @param results - the results of the render
-   * @param args - the arguments passed to render
-   */
   deserializeResultsInClient(
     res: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    return args.exportSVG
-      ? {
-          ...res,
-          html: this.supportsSVG
-            ? res.html
-            : '<text y="12" fill="black">SVG export not supported for this track</text>',
-        }
-      : {
-          ...res,
-          reactElement: (
-            <ServerSideRenderedContent
-              {...args}
-              {...res}
-              RenderingComponent={this.ReactComponent}
-            />
-          ),
-        }
+    return {
+      ...res,
+      reactElement: args.exportSVG
+        ? createSvgExportElement(
+            res,
+            args,
+            this.ReactComponent,
+            this.supportsSVG,
+          )
+        : createNormalElement(res, args, this.ReactComponent),
+    }
   }
 
-  /**
-   * modifies the passed arguments object to inflate arguments as necessary.
-   * called in the worker process.
-   *
-   * @param args - the converted arguments to modify
-   */
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
-    const deserialized = { ...args } as unknown as RenderArgsDeserialized
-    deserialized.config = this.configSchema.create(args.config || {}, {
-      pluginManager: this.pluginManager,
-    })
-    deserialized.filters = args.filters
-      ? new SerializableFilterChain({
-          filters: args.filters,
-        })
-      : undefined
-
-    return deserialized
+    return {
+      ...args,
+      config: this.configSchema.create(args.config || {}, {
+        pluginManager: this.pluginManager,
+      }),
+      filters: args.filters
+        ? new SerializableFilterChain({ filters: args.filters })
+        : undefined,
+    }
   }
 
-  /**
-   * Serialize results of the render to send them to the client. Includes
-   * rendering React to an HTML string.
-   *
-   * @param results - object containing the results of calling the `render`
-   * method
-   * @param args - deserialized render args
-   */
   serializeResultsInWorker(
     results: RenderResults,
     _args: RenderArgsDeserialized,
   ): ResultsSerialized {
-    results.reactElement = undefined
-    return {
-      ...results,
-      html: '',
-    }
+    const { reactElement, ...rest } = results
+    return rest
   }
 
-  /**
-   * Render method called on the client. Serializes args, then calls
-   * "CoreRender" with the RPC manager.
-   *
-   * @param rpcManager - RPC manager
-   * @param args - render args
-   */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
     const results = (await rpcManager.call(
       args.sessionId,
@@ -158,33 +152,27 @@ export default class ServerSideRenderer extends RendererType {
       args,
     )) as ResultsSerialized
 
-    if (isSvgExport(results)) {
-      results.html = await getSerializedSvg(results)
-      results.reactElement = undefined
+    if (isCanvasRecordedSvgExport(results)) {
+      const { reactElement, ...rest } = results
+      return {
+        ...rest,
+        html: await getSerializedSvg(results),
+      }
+    } else {
+      return results
     }
-    return results
   }
 
-  /**
-   * Render method called on the worker. `render` is called here in server-side
-   * rendering
-   *
-   * @param args - serialized render args
-   */
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
     const { stopToken, statusCallback = () => {} } = args
-    const deserializedArgs = this.deserializeArgsInWorker(args)
-
+    const args2 = this.deserializeArgsInWorker(args)
     const results = await updateStatus('Rendering plot', statusCallback, () =>
-      this.render(deserializedArgs),
+      this.render(args2),
     )
     checkStopToken(stopToken)
 
-    // serialize the results for passing back to the main thread.
-    // these will be transmitted to the main process, and will come out
-    // as the result of renderRegionWithWorker.
     return updateStatus('Serializing results', statusCallback, () =>
-      this.serializeResultsInWorker(results, deserializedArgs),
+      this.serializeResultsInWorker(results, args2),
     )
   }
 

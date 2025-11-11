@@ -2,6 +2,7 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import ServerSideRendererType from './ServerSideRendererType'
+import { normalizeRegion } from './util'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { iterMap } from '../../util'
@@ -60,14 +61,6 @@ export interface ResultsDeserialized extends ServerSideResultsDeserialized {
 }
 
 export default class FeatureRendererType extends ServerSideRendererType {
-  /**
-   * replaces the `displayModel` param (which on the client is a MST model)
-   * with a stub that only contains the `selectedFeature`, since this is the
-   * only part of the track model that most renderers read. also serializes the
-   * config and regions to JSON from MST objects.
-   *
-   * @param args - the arguments passed to render
-   */
   serializeArgsInClient(args: RenderArgs) {
     return super.serializeArgsInClient({
       ...args,
@@ -76,12 +69,6 @@ export default class FeatureRendererType extends ServerSideRendererType {
     })
   }
 
-  /**
-   * Adds feature deserialization to base server-side result deserialization
-   *
-   * @param results - the results of the render
-   * @param args - the arguments passed to render
-   */
   deserializeResultsInClient(
     result: ResultsSerialized,
     args: RenderArgs,
@@ -104,13 +91,6 @@ export default class FeatureRendererType extends ServerSideRendererType {
     }
   }
 
-  /**
-   * Adds feature serialization to base server-side result serialization
-   *
-   * @param result - object containing the results of calling the `render`
-   * method
-   * @param args - deserialized render args
-   */
   serializeResultsInWorker(
     result: RenderResults,
     args: RenderArgsDeserialized,
@@ -123,22 +103,10 @@ export default class FeatureRendererType extends ServerSideRendererType {
     }
   }
 
-  /**
-   * will expand if soft clipping or feature glyphs are shown
-   *
-   * @param region - rendering region
-   * @param _renderArgs - render args, unused, may be used in deriving classes
-   */
   getExpandedRegion(region: Region, _renderArgs: RenderArgsDeserialized) {
     return region
   }
 
-  /**
-   * use the dataAdapter to fetch the features to be rendered
-   *
-   * @param renderArgs -
-   * @returns Map of features as `{ id => feature, ... }`
-   */
   async getFeatures(
     renderArgs: RenderArgsDeserialized,
   ): Promise<Map<string, Feature>> {
@@ -151,20 +119,11 @@ export default class FeatureRendererType extends ServerSideRendererType {
     }
     checkStopToken(stopToken)
 
-    // make sure the requested region's start and end are integers, if there is
-    // a region specification.
-    const requestRegions = regions.map(r => ({
-      ...r,
-      start: Math.floor(r.start),
-      end: Math.ceil(r.end),
-    }))
-
-    const region = requestRegions[0]!
-
+    const requestRegions = regions.map(r => normalizeRegion(r))
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeatures(
-            this.getExpandedRegion(region, renderArgs),
+            this.getExpandedRegion(requestRegions[0]!, renderArgs),
             renderArgs,
           )
         : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
@@ -178,22 +137,12 @@ export default class FeatureRendererType extends ServerSideRendererType {
     )
   }
 
-  /**
-   * @param renderArgs -
-   * @param feature -
-   * @returns true if this feature passes all configured filters
-   */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
     return renderArgs.filters
       ? renderArgs.filters.passes(feature, renderArgs)
       : true
   }
 
-  /**
-   * gets features and renders
-   *
-   * @param props - render args
-   */
   async render(
     props: RenderArgsDeserialized & { features?: Map<string, Feature> },
   ): Promise<RenderResults> {
