@@ -13,6 +13,18 @@ import type RpcManager from '../../rpc/RpcManager'
 import type { ThemeOptions } from '@mui/material'
 import type { SnapshotIn, SnapshotOrInstance } from 'mobx-state-tree'
 
+// RPC method names
+const RPC_METHOD_RENDER = 'CoreRender'
+const RPC_METHOD_FREE_RESOURCES = 'CoreFreeResources'
+
+// Status messages
+const STATUS_RENDERING = 'Rendering plot'
+const STATUS_SERIALIZING = 'Serializing results'
+
+// SVG export not supported message
+const SVG_NOT_SUPPORTED_MESSAGE =
+  '<text y="12" fill="black">SVG export not supported for this track</text>'
+
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
   // Note that stopToken serialization happens after serializeArgsInClient and
@@ -58,139 +70,177 @@ function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
 
 export default class ServerSideRenderer extends RendererType {
   /**
-   * directly modifies the render arguments to prepare them to be serialized and
-   * sent to the worker.
+   * Serializes the render arguments to prepare them for transmission to the worker.
+   * Converts config to snapshot if it's a state tree node, and serializes filters.
    *
    * @param args - the arguments passed to render
-   * @returns the same object
+   * @returns serialized arguments ready for worker transmission
    */
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
+    const config = isStateTreeNode(args.config)
+      ? getSnapshot(args.config)
+      : args.config
+
+    const filters = args.filters?.toJSON().filters
+
     return {
       ...args,
-      config: isStateTreeNode(args.config)
-        ? getSnapshot(args.config)
-        : args.config,
-      filters: args.filters?.toJSON().filters,
+      config,
+      filters,
     }
   }
 
   /**
-   * Deserialize the render results from the worker in the client. Includes
-   * hydrating of the React HTML string, and not hydrating the result if SVG is
-   * being rendered
+   * Deserializes the render results from the worker in the client.
+   * Creates a React element from the server-side rendered content, or returns
+   * an error message if SVG export is not supported.
    *
    * @param results - the results of the render
    * @param args - the arguments passed to render
+   * @returns deserialized results with React element or error message
    */
   deserializeResultsInClient(
     res: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    return !this.supportsSVG
-      ? {
-          ...res,
-          html: '<text y="12" fill="black">SVG export not supported for this track</text>',
-        }
-      : {
-          ...res,
-          reactElement: (
-            <ServerSideRenderedContent
-              {...args}
-              {...res}
-              RenderingComponent={this.ReactComponent}
-            />
-          ),
-        }
+    // Handle unsupported SVG export
+    if (!this.supportsSVG) {
+      return {
+        ...res,
+        html: SVG_NOT_SUPPORTED_MESSAGE,
+      }
+    }
+
+    // Create React element from server-side rendered content
+    return {
+      ...res,
+      reactElement: (
+        <ServerSideRenderedContent
+          {...args}
+          {...res}
+          RenderingComponent={this.ReactComponent}
+        />
+      ),
+    }
   }
 
   /**
-   * modifies the passed arguments object to inflate arguments as necessary.
-   * called in the worker process.
+   * Deserializes the arguments in the worker process, creating proper instances
+   * from the serialized data. Converts config snapshot to model instance and
+   * recreates filter chain if present.
    *
-   * @param args - the converted arguments to modify
+   * @param args - the serialized arguments to deserialize
+   * @returns deserialized arguments with proper instances
    */
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
-    const deserialized = { ...args } as unknown as RenderArgsDeserialized
-    deserialized.config = this.configSchema.create(args.config || {}, {
+    const config = this.configSchema.create(args.config || {}, {
       pluginManager: this.pluginManager,
     })
-    deserialized.filters = args.filters
-      ? new SerializableFilterChain({
-          filters: args.filters,
-        })
+
+    const filters = args.filters
+      ? new SerializableFilterChain({ filters: args.filters })
       : undefined
 
-    return deserialized
+    return {
+      ...args,
+      config,
+      filters,
+    }
   }
 
   /**
-   * Serialize results of the render to send them to the client. Includes
-   * rendering React to an HTML string.
+   * Serializes the render results in the worker for transmission to the client.
+   * Removes the React element (which can't be serialized) and prepares the
+   * results for transfer.
    *
-   * @param results - object containing the results of calling the `render`
-   * method
-   * @param args - deserialized render args
+   * @param results - object containing the results of calling the `render` method
+   * @param _args - deserialized render args (unused but kept for interface consistency)
+   * @returns serialized results ready for transmission
    */
   serializeResultsInWorker(
     results: RenderResults,
     _args: RenderArgsDeserialized,
   ): ResultsSerialized {
-    results.reactElement = undefined
+    // Destructure to omit reactElement from the results
+    const { reactElement, ...serializedResults } = results
     return {
-      ...results,
+      ...serializedResults,
       html: '',
     }
   }
 
   /**
-   * Render method called on the client. Serializes args, then calls
-   * "CoreRender" with the RPC manager.
+   * Renders content on the client by making an RPC call to the worker.
+   * If the result is an SVG export, it serializes the SVG content.
    *
-   * @param rpcManager - RPC manager
-   * @param args - render args
+   * @param rpcManager - RPC manager for worker communication
+   * @param args - render arguments
+   * @returns serialized render results
    */
-  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
+  async renderInClient(
+    rpcManager: RpcManager,
+    args: RenderArgs,
+  ): Promise<ResultsSerialized> {
     const results = (await rpcManager.call(
       args.sessionId,
-      'CoreRender',
+      RPC_METHOD_RENDER,
       args,
     )) as ResultsSerialized
 
+    // Handle SVG export by serializing canvas data
     if (isSvgExport(results)) {
-      results.html = await getSerializedSvg(results)
-      results.reactElement = undefined
+      return {
+        ...results,
+        html: await getSerializedSvg(results),
+      }
     }
+
     return results
   }
 
   /**
-   * Render method called on the worker. `render` is called here in server-side
-   * rendering
+   * Renders content on the worker. This is where the actual rendering happens
+   * in server-side rendering. Updates status during rendering and serialization.
    *
-   * @param args - serialized render args
+   * @param args - serialized render arguments
+   * @returns serialized render results for transmission to client
    */
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
     const { stopToken, statusCallback = () => {} } = args
     const deserializedArgs = this.deserializeArgsInWorker(args)
 
-    const results = await updateStatus('Rendering plot', statusCallback, () =>
+    // Perform the actual rendering
+    const results = await updateStatus(STATUS_RENDERING, statusCallback, () =>
       this.render(deserializedArgs),
     )
+
+    // Check if rendering was cancelled
     checkStopToken(stopToken)
 
-    // serialize the results for passing back to the main thread.
-    // these will be transmitted to the main process, and will come out
-    // as the result of renderRegionWithWorker.
-    return updateStatus('Serializing results', statusCallback, () =>
+    // Serialize results for transmission to main thread
+    return updateStatus(STATUS_SERIALIZING, statusCallback, () =>
       this.serializeResultsInWorker(results, deserializedArgs),
     )
   }
 
-  async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
+  /**
+   * Frees resources associated with a render on the worker.
+   * Called from the client to clean up worker-side resources.
+   *
+   * @param rpcManager - RPC manager for worker communication
+   * @param args - render arguments identifying resources to free
+   */
+  async freeResourcesInClient(
+    rpcManager: RpcManager,
+    args: RenderArgs,
+  ): Promise<void> {
     const serializedArgs = this.serializeArgsInClient(args)
-    const { sessionId } = args
 
-    await rpcManager.call(sessionId, 'CoreFreeResources', serializedArgs)
+    await rpcManager.call(
+      args.sessionId,
+      RPC_METHOD_FREE_RESOURCES,
+      serializedArgs,
+    )
   }
 }
 
