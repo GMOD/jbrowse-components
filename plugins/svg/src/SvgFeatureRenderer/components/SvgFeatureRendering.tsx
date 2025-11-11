@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx, measureText } from '@jbrowse/core/util'
@@ -54,7 +54,6 @@ function RenderedFeatureGlyph(props: {
 
   // used for unit testing, difficult to mock out so it is in actual source code
   detectRerender?.()
-  console.log('wtf')
 
   const { reversed } = region
   const start = feature.get(reversed ? 'end' : 'start')
@@ -215,7 +214,6 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   const { regions = [], config, exportSVG, featureDisplayHandler } = props
   const region = regions[0]!
   const displayMode = readConfObject(config, 'displayMode') as string
-  console.log({ exportSVG })
 
   return exportSVG ? (
     <RenderedFeatures
@@ -284,7 +282,6 @@ function Wrapper(props: {
   const [initialMousePos, setInitialMousePos] = useState<Coord>()
 
   const height = layout.getTotalHeight()
-  console.log({ height })
 
   return (
     <svg
