@@ -10,7 +10,7 @@ import type {
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
   ResultsDeserialized as ServerSideResultsDeserialized,
-  ResultsSerialized as ServerSideResultsSerialized,
+  ResultsSerializedBase,
 } from './ServerSideRendererType'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
@@ -31,20 +31,21 @@ export interface RenderArgsDeserialized
   blockKey: string
 }
 
-export type ResultsSerialized = ServerSideResultsSerialized
+export type ResultsSerialized = ResultsSerializedBase
 
 export interface ResultsDeserialized extends ServerSideResultsDeserialized {
   blockKey: string
 }
 
-export interface ResultsSerializedSvgExport extends ResultsSerialized {
+export interface ResultsSerializedSvgExport extends ResultsSerializedBase {
   canvasRecordedData: unknown
   width: number
   height: number
-  reactElement: unknown
 }
 
-function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
+function isSvgExport(
+  e: ResultsSerializedBase,
+): e is ResultsSerializedSvgExport {
   return 'canvasRecordedData' in e
 }
 
@@ -95,7 +96,6 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
 
     if (isSvgExport(results)) {
       results.html = await getSerializedSvg(results)
-      results.reactElement = undefined
     }
     return results
   }

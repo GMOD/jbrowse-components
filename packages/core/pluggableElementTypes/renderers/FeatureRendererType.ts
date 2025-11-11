@@ -14,7 +14,7 @@ import type {
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderResults as ServerSideRenderResults,
   ResultsDeserialized as ServerSideResultsDeserialized,
-  ResultsSerialized as ServerSideResultsSerialized,
+  ResultsSerializedBase,
 } from './ServerSideRendererType'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { Feature, SimpleFeatureSerialized } from '../../util/simpleFeature'
@@ -50,7 +50,7 @@ export interface RenderResults extends ServerSideRenderResults {
   features: Map<string, Feature>
 }
 
-export interface ResultsSerialized extends ServerSideResultsSerialized {
+export interface ResultsSerialized extends ResultsSerializedBase {
   features: SimpleFeatureSerialized[]
 }
 
@@ -94,7 +94,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
       {
         ...result,
         features: deserializedFeatures,
-      } as ServerSideResultsSerialized,
+      } as ResultsSerializedBase,
       args,
     )
     return {

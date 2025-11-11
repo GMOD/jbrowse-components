@@ -1,12 +1,11 @@
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 
 import RendererType from './RendererType'
-import ServerSideRenderedContent from './ServerSideRenderedContent'
 import SerializableFilterChain from './util/serializableFilterChain'
 import {
+  type RasterizedImageData,
   getSerializedSvg,
   updateStatus,
-  type RasterizedImageData,
 } from '../../util'
 import { checkStopToken } from '../../util/stopToken'
 
@@ -55,60 +54,109 @@ export interface RenderArgsDeserialized extends BaseRenderArgs {
   filters?: SerializableFilterChain
 }
 
-export interface ResultsSerialized extends Omit<RenderResults, 'reactElement'> {
+/**
+ * Discriminated Union for Serialized Render Results
+ *
+ * These types use a discriminated union pattern with a 'type' field to distinguish
+ * between different rendering modes. This provides:
+ *
+ * 1. Type Safety: TypeScript can narrow types based on the 'type' field
+ * 2. Exhaustiveness Checking: Switch statements can verify all cases are handled
+ * 3. Clear Intent: The type field makes it explicit what kind of result we have
+ *
+ * Flow:
+ * - Worker: renderToAbstractCanvas sets 'svg-vector' or 'svg-raster' for SVG exports
+ * - Worker: serializeResultsInWorker preserves the type or defaults to 'normal'
+ * - Client: renderInClient converts SVG data to HTML based on type
+ * - Client: deserializeResultsInClient uses type to decide whether to create React element
+ */
+
+// Base interface for all serialized results - exported so subclasses can extend it
+export interface ResultsSerializedBase
+  extends Omit<RenderResults, 'reactElement'> {
+  type?: string
   html: string
 }
 
-export interface ResultsSerializedSvgExport extends ResultsSerialized {
+// Normal rendering (not SVG export)
+export interface ResultsSerializedNormal extends ResultsSerializedBase {
+  type: 'normal'
+}
+
+// Vector SVG export (canvas commands recorded and replayed to generate SVG)
+export interface ResultsSerializedSvgVector extends ResultsSerializedBase {
+  type: 'svg-vector'
   canvasRecordedData: unknown
   width: number
   height: number
 }
 
-export interface ResultsSerializedRasterizedImage extends ResultsSerialized {
+// Rasterized SVG export (canvas rendered to PNG, embedded as <image> in SVG)
+export interface ResultsSerializedSvgRaster extends ResultsSerializedBase {
+  type: 'svg-raster'
   rasterizedImageData: RasterizedImageData
   width: number
   height: number
 }
 
+// Discriminated union of all result types
+// Use the 'type' field to determine which variant you have
+export type ResultsSerialized =
+  | ResultsSerializedNormal
+  | ResultsSerializedSvgVector
+  | ResultsSerializedSvgRaster
+
 export type ResultsDeserialized = RenderResults
 
-function isNonRasterizedSvgExport(
-  e: ResultsSerialized,
-): e is ResultsSerializedSvgExport {
-  return 'canvasRecordedData' in e
-}
-
-function isRasterizedSvgExport(
-  e: ResultsSerialized,
-): e is ResultsSerializedRasterizedImage {
-  return 'rasterizedImageData' in e
+/**
+ * Type guard for vector SVG export results
+ */
+function isSvgVectorExport(
+  e: ResultsSerializedBase,
+): e is ResultsSerializedSvgVector {
+  return e.type === 'svg-vector'
 }
 
 /**
- * Checks if results contain any type of SVG export data
+ * Type guard for rasterized SVG export results
+ */
+function isSvgRasterExport(
+  e: ResultsSerializedBase,
+): e is ResultsSerializedSvgRaster {
+  return e.type === 'svg-raster'
+}
+
+/**
+ * Type guard for any SVG export (vector or raster)
  */
 function isSvgExport(
-  e: ResultsSerialized,
-): e is ResultsSerializedSvgExport | ResultsSerializedRasterizedImage {
-  return isNonRasterizedSvgExport(e) || isRasterizedSvgExport(e)
+  e: ResultsSerializedBase,
+): e is ResultsSerializedSvgVector | ResultsSerializedSvgRaster {
+  return e.type === 'svg-vector' || e.type === 'svg-raster'
 }
 
 /**
- * Converts SVG export data (rasterized or non-rasterized) to HTML.
+ * Converts SVG export data (vector or raster) to HTML.
  * This centralizes the conversion logic for both export types.
+ *
+ * Uses type guards to narrow the base type and handle each case appropriately.
+ *
+ * Note: This is only needed when exporting to static SVG files.
+ * For React rendering, the structured data is used directly via ReactRendering.
  */
 async function convertSvgExportToHtml(
-  results: ResultsSerialized,
-): Promise<ResultsSerialized> {
-  if (isNonRasterizedSvgExport(results)) {
+  results: ResultsSerializedBase,
+): Promise<ResultsSerializedBase> {
+  // Handle vector SVG export
+  if (isSvgVectorExport(results)) {
     return {
       ...results,
       html: await getSerializedSvg(results),
     }
   }
 
-  if (isRasterizedSvgExport(results)) {
+  // Handle rasterized SVG export
+  if (isSvgRasterExport(results)) {
     const { width, height, dataURL } = results.rasterizedImageData
     return {
       ...results,
@@ -116,6 +164,7 @@ async function convertSvgExportToHtml(
     }
   }
 
+  // No conversion needed for normal rendering or other types
   return results
 }
 
@@ -151,7 +200,7 @@ export default class ServerSideRenderer extends RendererType {
    * @returns deserialized results with React element or error message
    */
   deserializeResultsInClient(
-    res: ResultsSerialized,
+    res: ResultsSerializedBase,
     args: RenderArgs,
   ): ResultsDeserialized {
     // Handle unsupported SVG export
@@ -203,6 +252,9 @@ export default class ServerSideRenderer extends RendererType {
    * Removes the React element (which can't be serialized) and prepares the
    * results for transfer.
    *
+   * If renderToAbstractCanvas was used with SVG export, the results will already
+   * have a 'type' field ('svg-vector' or 'svg-raster'). Otherwise, we default to 'normal'.
+   *
    * @param results - object containing the results of calling the `render` method
    * @param _args - deserialized render args (unused but kept for interface consistency)
    * @returns serialized results ready for transmission
@@ -210,13 +262,19 @@ export default class ServerSideRenderer extends RendererType {
   serializeResultsInWorker(
     results: RenderResults,
     _args: RenderArgsDeserialized,
-  ): ResultsSerialized {
+  ): ResultsSerializedBase {
     // Destructure to omit reactElement from the results
     const { reactElement, ...serializedResults } = results
+
+    // Check if type was already set by renderToAbstractCanvas
+    const resultsWithType = serializedResults as Partial<ResultsSerializedBase>
+    const type = resultsWithType.type || 'normal'
+
     return {
       ...serializedResults,
-      html: '',
-    }
+      type,
+      html: resultsWithType.html || '',
+    } as ResultsSerializedBase
   }
 
   /**
@@ -230,12 +288,12 @@ export default class ServerSideRenderer extends RendererType {
   async renderInClient(
     rpcManager: RpcManager,
     args: RenderArgs,
-  ): Promise<ResultsSerialized> {
+  ): Promise<ResultsSerializedBase> {
     const results = (await rpcManager.call(
       args.sessionId,
       RPC_METHOD_RENDER,
       args,
-    )) as ResultsSerialized
+    )) as ResultsSerializedBase
 
     // Convert SVG export data (if present) to HTML
     return convertSvgExportToHtml(results)
@@ -248,7 +306,9 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - serialized render arguments
    * @returns serialized render results for transmission to client
    */
-  async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
+  async renderInWorker(
+    args: RenderArgsSerialized,
+  ): Promise<ResultsSerializedBase> {
     const { stopToken, statusCallback = () => {} } = args
     const deserializedArgs = this.deserializeArgsInWorker(args)
 

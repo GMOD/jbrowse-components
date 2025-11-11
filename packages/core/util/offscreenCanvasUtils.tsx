@@ -23,12 +23,13 @@ export interface RasterizedImageData {
   dataURL: string
 }
 
+
 type R<T extends Record<string, unknown> | undefined> = Omit<T, never> &
   (
-    | { canvasRecordedData: Record<string, unknown> }
+    | { type: 'svg-vector'; canvasRecordedData: Record<string, unknown> }
     | { imageData: any }
     | { reactElement: React.ReactElement }
-    | { rasterizedImageData: RasterizedImageData }
+    | { type: 'svg-raster'; rasterizedImageData: RasterizedImageData }
   )
 
 export async function renderToAbstractCanvas<
@@ -47,6 +48,7 @@ export async function renderToAbstractCanvas<
       const callbackResult = await cb(fakeCtx)
       return {
         ...callbackResult,
+        type: 'svg-vector' as const,
         canvasRecordedData: fakeCtx.toJSON() as Record<string, unknown>,
       }
     } else {
@@ -75,6 +77,7 @@ export async function renderToAbstractCanvas<
       // The React element will be constructed on the client side
       return {
         ...callbackResult,
+        type: 'svg-raster' as const,
         rasterizedImageData: {
           width,
           height,
@@ -131,17 +134,26 @@ function createRasterizedImageElement(
  * - React elements directly
  * - HTML strings via dangerouslySetInnerHTML
  * - Rasterized image data as SVG image elements
+ *
+ * This component handles both discriminated union types (with 'type' field)
+ * and plain rendering objects (for backward compatibility).
  */
 export function ReactRendering({
   rendering,
 }: {
   rendering: {
+    type?: 'svg-vector' | 'svg-raster' | 'normal'
     reactElement?: React.ReactNode
     html?: string
     rasterizedImageData?: RasterizedImageData
   }
 }) {
-  // Handle rasterized image data
+  // Handle discriminated union types
+  if (rendering.type === 'svg-raster' && rendering.rasterizedImageData) {
+    return createRasterizedImageElement(rendering.rasterizedImageData)
+  }
+
+  // Handle rasterized image data (backward compatibility)
   if (rendering.rasterizedImageData) {
     return createRasterizedImageElement(rendering.rasterizedImageData)
   }
@@ -151,6 +163,6 @@ export function ReactRendering({
     return rendering.reactElement
   }
 
-  // Handle HTML string
+  // Handle HTML string (including svg-vector type)
   return <g dangerouslySetInnerHTML={{ __html: rendering.html || '' }} />
 }

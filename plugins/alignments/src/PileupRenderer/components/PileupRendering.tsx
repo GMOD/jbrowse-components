@@ -159,7 +159,6 @@ const PileupRendering = observer(function (props: {
   }
 
   const canvasWidth = Math.ceil(width)
-  console.log('wtf1', { props, height, canvasWidth })
   // need to call this in render so we get the right observer behavior
   return (
     <div

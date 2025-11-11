@@ -1,8 +1,11 @@
 import { observer } from 'mobx-react'
 
-import type { RenderArgs, ResultsSerialized } from './ServerSideRendererType'
+import type {
+  RenderArgs,
+  ResultsSerializedBase,
+} from './ServerSideRendererType'
 
-interface Props extends ResultsSerialized, RenderArgs {
+interface Props extends ResultsSerializedBase, RenderArgs {
   RenderingComponent: React.ComponentType<any>
 }
 
