@@ -3,7 +3,7 @@ import { stripAlpha } from '@jbrowse/core/util'
 
 import { drawArrow } from './drawArrow'
 
-import type { DrawFeatureArgs, DrawingResult } from './types'
+import type { DrawFeatureArgs, DrawingResult, FlatbushItem } from './types'
 
 /**
  * Draw a feature as segments with a connecting line
@@ -21,7 +21,7 @@ export function drawSegments(args: DrawFeatureArgs): DrawingResult {
   const y = top + height / 2
 
   const coords: number[] = []
-  const items: { featureId: string; type: string }[] = []
+  const items: FlatbushItem[] = []
 
   // Draw the connecting line
   ctx.strokeStyle = color2

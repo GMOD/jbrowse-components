@@ -5,7 +5,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { drawFeature } from './drawFeature'
 import { getLayoutWidth, layoutFeature } from './simpleLayout'
 
-import type { LayoutRecord, RenderArgs } from './types'
+import type { FlatbushItem, LayoutRecord, RenderArgs, SubfeatureInfo } from './types'
 import type { Feature } from '@jbrowse/core/util'
 
 const xPadding = 3
@@ -29,14 +29,18 @@ export function makeImageData({
   const canvasWidth = (region.end - region.start) / bpPerPx
 
   const coords: number[] = []
-  const items: { featureId: string; type: string }[] = []
+  const items: FlatbushItem[] = []
+
+  // Secondary flatbush for subfeature info
+  const subfeatureCoords: number[] = []
+  const subfeatureInfos: SubfeatureInfo[] = []
 
   // Set default canvas styles
   ctx.textBaseline = 'top'
   ctx.textAlign = 'left'
 
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
-    const { feature, layout: featureLayout, topPx } = record
+    const { feature, layout: featureLayout, topPx: recordTopPx } = record
 
     // Adjust layout position to absolute coordinates
     const start = feature.get(region.reversed ? 'end' : 'start')
@@ -46,11 +50,11 @@ export function makeImageData({
     const adjustedLayout = {
       ...featureLayout,
       x: startPx + featureLayout.x,
-      y: topPx + featureLayout.y,
+      y: recordTopPx + featureLayout.y,
       height: featureLayout.height, // Visual height (what gets drawn)
       totalHeight: featureLayout.totalHeight, // Total with label space
       totalWidth: featureLayout.totalWidth, // Total with label width
-      children: adjustChildPositions(featureLayout.children, startPx, topPx),
+      children: adjustChildPositions(featureLayout.children, startPx, recordTopPx),
     }
 
     const result = drawFeature({
@@ -66,31 +70,46 @@ export function makeImageData({
       canvasWidth,
     })
 
-    // For features with subfeatures (like genes with transcripts),
-    // skip the parent bounding box and only use subfeature rectangles
-    // for mouseover detection
-    const hasSubfeatures = adjustedLayout.children.length > 0
-    if (!hasSubfeatures) {
-      // For features without subfeatures, add their complete bounding box
-      // including label area (totalWidth/totalHeight) instead of just
-      // the drawn visual elements
-      const leftPx = adjustedLayout.x
-      const rightPx = adjustedLayout.x + adjustedLayout.totalWidth
-      const topPx = adjustedLayout.y
-      const bottomPx = adjustedLayout.y + adjustedLayout.totalHeight
-      coords.push(leftPx, topPx, rightPx, bottomPx)
-      items.push({ featureId: feature.id(), type: 'box' })
-    }
+    // Determine if this feature is a gene with transcript children
+    const featureType = feature.get('type')
+    const isGene = featureType === 'gene'
+    const hasTranscriptChildren = adjustedLayout.children.length > 0 &&
+      adjustedLayout.children.some(child => {
+        const childType = child.feature?.get('type')
+        return childType === 'mRNA' || childType === 'transcript' ||
+               childType === 'protein_coding_primary_transcript'
+      })
 
-    // Add subfeatures to both layout and flatbush for per-transcript mouseover
-    addSubfeaturesToLayoutAndFlatbush(
-      layout,
-      adjustedLayout,
-      region,
-      bpPerPx,
-      coords,
-      items,
-    )
+    // Always add the feature's bounding box to the primary flatbush
+    const leftPx = adjustedLayout.x
+    const rightPx = adjustedLayout.x + adjustedLayout.totalWidth
+    const topPx = adjustedLayout.y
+    const bottomPx = adjustedLayout.y + adjustedLayout.totalHeight
+    coords.push(leftPx, topPx, rightPx, bottomPx)
+    items.push({
+      featureId: feature.id(),
+      type: 'box',
+      startBp: feature.get('start'),
+      endBp: feature.get('end'),
+      topPx,
+      bottomPx,
+    })
+
+    // If it's a gene with transcript children, also add subfeature info to secondary flatbush
+    if (isGene && hasTranscriptChildren) {
+      addSubfeaturesToLayoutAndFlatbush(
+        layout,
+        adjustedLayout,
+        feature.id(),
+        region,
+        bpPerPx,
+        subfeatureCoords,
+        subfeatureInfos,
+      )
+    } else if (adjustedLayout.children.length > 0) {
+      // Still need to add children to layout for data storage (not flatbush)
+      addNestedSubfeaturesToLayout(layout, adjustedLayout, region, bpPerPx)
+    }
   })
 
   function adjustChildPositions(
@@ -112,20 +131,99 @@ export function makeImageData({
   function addSubfeaturesToLayoutAndFlatbush(
     layout: any,
     featureLayout: any,
+    parentFeatureId: string,
     region: any,
     bpPerPx: number,
-    coords: number[],
-    items: { featureId: string; type: string }[],
+    subfeatureCoords: number[],
+    subfeatureInfos: SubfeatureInfo[],
   ) {
-    // Recursively add all subfeatures to both layout and flatbush
+    // Add transcript children (e.g., mRNA, transcript) of a gene to secondary flatbush
+    // This provides extra info (transcript ID) when hovering over transcripts
+    // The parent gene's bounding box is already in the primary flatbush for highlighting
+    for (const child of featureLayout.children) {
+      const childFeature = child.feature
+      if (!childFeature) continue
+
+      const childType = childFeature.get('type')
+      const isTranscript = childType === 'mRNA' || childType === 'transcript' ||
+                          childType === 'protein_coding_primary_transcript'
+
+      // Only add transcript-type children to secondary flatbush
+      if (!isTranscript) {
+        // Non-transcript children just get stored in layout
+        addNestedSubfeaturesToLayout(layout, child, region, bpPerPx)
+        continue
+      }
+
+      const childStart = childFeature.get('start')
+      const childEnd = childFeature.get('end')
+
+      // Add the transcript's bounding box to secondary flatbush
+      // This allows us to detect when hovering over a specific transcript and provide extra info
+      const leftPx = child.x
+      const rightPx = child.x + child.totalWidth
+      const topPx = child.y
+      const bottomPx = child.y + child.totalHeight
+      subfeatureCoords.push(leftPx, topPx, rightPx, bottomPx)
+      subfeatureInfos.push({
+        subfeatureId: childFeature.id(),
+        parentFeatureId,
+        type: childType,
+      })
+
+      // Store the rectangle data for the transcript for selection/clicking
+      // Note: This is stored but not used for primary mouseover highlighting
+      layout.rectangles.set(childFeature.id(), [
+        childStart,
+        topPx,
+        childEnd,
+        bottomPx,
+        {
+          label: childFeature.get('name') || childFeature.get('id'),
+          description: childFeature.get('description') || childFeature.get('note'),
+          refName: childFeature.get('refName'),
+        },
+      ])
+
+      console.log('Stored transcript in layout.rectangles:', childFeature.id(), [childStart, topPx, childEnd, bottomPx])
+
+      // Store the feature data for CoreGetFeatureDetails
+      if (layout.rectangleData) {
+        layout.rectangleData.set(childFeature.id(), childFeature)
+      }
+
+      // Debug: Draw blue bounding box for transcript subfeatures only
+      ctx.save()
+      ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)' // Blue for transcripts
+      ctx.lineWidth = 1
+      ctx.setLineDash([2, 2])
+      ctx.strokeRect(leftPx, topPx, child.totalWidth, child.totalHeight)
+      ctx.restore()
+
+      console.log('Added TRANSCRIPT to secondary flatbush:', childFeature.id(), 'type:', childType, 'parent:', parentFeatureId, 'bbox:', leftPx, topPx, rightPx, bottomPx)
+
+      // Store layout/feature data for nested children (CDS, UTR, exons) but don't add them to flatbush
+      // This allows clicking on them to get details, but mouseover targets the parent transcript
+      if (child.children.length > 0) {
+        addNestedSubfeaturesToLayout(layout, child, region, bpPerPx)
+      }
+    }
+  }
+
+  function addNestedSubfeaturesToLayout(
+    layout: any,
+    featureLayout: any,
+    region: any,
+    bpPerPx: number,
+  ) {
+    // Recursively add deeply nested children (CDS, UTR, exons) to layout only
+    // They won't be separate mouseover targets, but their data is available
     for (const child of featureLayout.children) {
       const childFeature = child.feature
       if (childFeature) {
         const childStart = childFeature.get('start')
         const childEnd = childFeature.get('end')
 
-        // Store the rectangle data without doing collision detection
-        // We use the child's actual pixel coordinates
         layout.rectangles.set(childFeature.id(), [
           childStart,
           child.y,
@@ -138,30 +236,18 @@ export function makeImageData({
           },
         ])
 
-        // Store the feature data for CoreGetFeatureDetails
         if (layout.rectangleData) {
           layout.rectangleData.set(childFeature.id(), childFeature)
         }
 
-        // Add to flatbush spatial index for mouseover detection
-        // Use the complete bounding box including label area
-        // totalWidth/totalHeight includes the label space for mouseover detection
-        const leftPx = child.x
-        const rightPx = child.x + child.totalWidth
-        const topPx = child.y
-        const bottomPx = child.y + child.totalHeight
-        coords.push(leftPx, topPx, rightPx, bottomPx)
-        items.push({ featureId: childFeature.id(), type: 'subfeature' })
-
-        // Recursively add children's children
         if (child.children.length > 0) {
-          addSubfeaturesToLayoutAndFlatbush(layout, child, region, bpPerPx, coords, items)
+          addNestedSubfeaturesToLayout(layout, child, region, bpPerPx)
         }
       }
     }
   }
 
-  // Create spatial index
+  // Create primary spatial index (for highlighting)
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (coords.length) {
     for (let i = 0; i < coords.length; i += 4) {
@@ -172,9 +258,30 @@ export function makeImageData({
   }
   flatbush.finish()
 
+  // Create secondary spatial index (for subfeature info)
+  const subfeatureFlatbush = new Flatbush(Math.max(subfeatureInfos.length, 1))
+  if (subfeatureCoords.length) {
+    for (let i = 0; i < subfeatureCoords.length; i += 4) {
+      subfeatureFlatbush.add(
+        subfeatureCoords[i]!,
+        subfeatureCoords[i + 1]!,
+        subfeatureCoords[i + 2]!,
+        subfeatureCoords[i + 3]!,
+      )
+    }
+  } else {
+    subfeatureFlatbush.add(0, 0, 0, 0)
+  }
+  subfeatureFlatbush.finish()
+
+  console.log('Primary flatbush created with', items.length, 'items')
+  console.log('Secondary flatbush created with', subfeatureInfos.length, 'subfeatures')
+
   return {
     flatbush: flatbush.data,
     items,
+    subfeatureFlatbush: subfeatureFlatbush.data,
+    subfeatureInfos,
   }
 }
 

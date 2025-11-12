@@ -93,20 +93,20 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
   }
 
   // Draw bounding box for debugging
-  // if (topLevel) {
-  //   const { ctx, featureLayout } = args
-  //   ctx.save()
-  //   ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)' // Semi-transparent red
-  //   ctx.lineWidth = 1
-  //   ctx.setLineDash([2, 2]) // Dashed line
-  //   ctx.strokeRect(
-  //     featureLayout.x,
-  //     featureLayout.y,
-  //     featureLayout.totalWidth,
-  //     featureLayout.totalHeight,
-  //   )
-  //   ctx.restore()
-  // }
+  if (topLevel) {
+    const { ctx, featureLayout } = args
+    ctx.save()
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)' // Semi-transparent red
+    ctx.lineWidth = 1
+    ctx.setLineDash([2, 2]) // Dashed line
+    ctx.strokeRect(
+      featureLayout.x,
+      featureLayout.y,
+      featureLayout.totalWidth,
+      featureLayout.totalHeight,
+    )
+    ctx.restore()
+  }
 
   return result
 }

@@ -5,7 +5,7 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import type { FlatbushItem } from './types'
+import type { FlatbushItem, SubfeatureInfo } from './types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -18,15 +18,13 @@ const CanvasFeatureRendering = observer(function (props: {
   bpPerPx: number
   items: FlatbushItem[]
   flatbush: any
-  onMouseMove?: (
-    event: React.MouseEvent,
-    featureId?: string,
-    extra?: string,
-  ) => void
-  onMouseLeave?: (event: React.MouseEvent) => void
-  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
-  onFeatureContextMenu?: (event: React.MouseEvent, featureId: string) => void
-  onContextMenu?: (event: React.MouseEvent) => void
+  subfeatureInfos?: SubfeatureInfo[]
+  subfeatureFlatbush?: any
+  onMouseMove?: (e: React.MouseEvent, featId?: string, extra?: string) => void
+  onMouseLeave?: (e: React.MouseEvent) => void
+  onFeatureClick?: (e: React.MouseEvent, featId: string) => void
+  onFeatureContextMenu?: (e: React.MouseEvent, featId: string) => void
+  onContextMenu?: (e: React.MouseEvent) => void
 }) {
   const {
     onMouseMove,
@@ -39,11 +37,27 @@ const CanvasFeatureRendering = observer(function (props: {
     bpPerPx,
     flatbush,
     items,
+    subfeatureFlatbush,
+    subfeatureInfos = [],
     onFeatureClick,
     onFeatureContextMenu,
     onContextMenu,
   } = props
   const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
+  const subfeatureFlatbush2 = useMemo(
+    () => (subfeatureFlatbush ? Flatbush.from(subfeatureFlatbush) : null),
+    [subfeatureFlatbush],
+  )
+
+  // Create efficient lookup map for items by feature ID
+  const itemsById = useMemo(() => {
+    const map = new Map<string, FlatbushItem>()
+    for (const item of items) {
+      map.set(item.featureId, item)
+    }
+    return map
+  }, [items])
+
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel
 
@@ -52,23 +66,30 @@ const CanvasFeatureRendering = observer(function (props: {
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
-  const selectedRect = selectedFeatureId
-    ? displayModel.getFeatureByID(blockKey, selectedFeatureId)
+  // For selected features, look up in items map (O(1) instead of O(n))
+  const selectedItem = selectedFeatureId
+    ? itemsById.get(selectedFeatureId)
     : undefined
 
+  // For highlighted features, use the items map for O(1) lookup
   const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
-  const highlightedRect = highlightedFeature
-    ? displayModel.getFeatureByID(blockKey, highlightedFeature)
+  const highlightedItem = highlightedFeature
+    ? itemsById.get(highlightedFeature)
     : undefined
 
-  function makeRect(
-    r: [number, number, number, number] | [number, number, number, number, any],
-    offset = 2,
-  ) {
-    const [leftBp, topPx, rightBp, bottomPx] = r
-    const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
-    const rectTop = Math.round(topPx)
-    const rectHeight = Math.round(bottomPx - topPx)
+  // Debug logging
+  if (highlightedFeature && !highlightedItem) {
+    console.log('HIGHLIGHT ISSUE: feature ID found but no item:', highlightedFeature)
+  }
+  if (highlightedItem) {
+    console.log('HIGHLIGHTING item:', highlightedItem)
+  }
+
+  // Convert FlatbushItem to display rectangle
+  function itemToRect(item: FlatbushItem, offset = 2) {
+    const [leftPx, rightPx] = bpSpanPx(item.startBp, item.endBp, region, bpPerPx)
+    const rectTop = Math.round(item.topPx)
+    const rectHeight = Math.round(item.bottomPx - item.topPx)
     return {
       left: leftPx - offset,
       top: rectTop - offset,
@@ -76,8 +97,9 @@ const CanvasFeatureRendering = observer(function (props: {
       height: rectHeight,
     }
   }
-  const selected = selectedRect ? makeRect(selectedRect) : undefined
-  const highlight = highlightedRect ? makeRect(highlightedRect, 0) : undefined
+
+  const selected = selectedItem ? itemToRect(selectedItem) : undefined
+  const highlight = highlightedItem ? itemToRect(highlightedItem, 0) : undefined
 
   const canvasWidth = Math.ceil(width)
   return (
@@ -101,10 +123,11 @@ const CanvasFeatureRendering = observer(function (props: {
           setMovedDuringLastMouseDown(true)
         }
         const rect = ref.current.getBoundingClientRect()
+        const scrollT = ref.current.scrollTop
         const offsetX = event.clientX - rect.left
-        // Account for vertical scrolling in the track
-        const scrollTop = ref.current.parentElement?.scrollTop || 0
-        const offsetY = event.clientY - rect.top + scrollTop
+        const offsetY = event.clientY - rect.top + scrollT
+
+        // Search primary flatbush for feature to highlight
         const search = flatbush2.search(
           offsetX,
           offsetY,
@@ -113,7 +136,35 @@ const CanvasFeatureRendering = observer(function (props: {
         )
         const item = search.length ? items[search[0]!] : undefined
         const featureId = item?.featureId
-        onMouseMove?.(event, featureId)
+
+        // Search secondary flatbush for subfeature info
+        let extra: string | undefined
+        if (subfeatureFlatbush2 && subfeatureInfos.length) {
+          const subfeatureSearch = subfeatureFlatbush2.search(
+            offsetX,
+            offsetY,
+            offsetX + 1,
+            offsetY + 1,
+          )
+          if (subfeatureSearch.length) {
+            const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
+            if (subfeatureInfo) {
+              extra = subfeatureInfo.subfeatureId
+              console.log('SUBFEATURE DETECTED:', subfeatureInfo.subfeatureId, 'parent:', subfeatureInfo.parentFeatureId)
+            }
+          }
+        }
+
+        // Debug logging - log whenever we find something
+        if (search.length > 0) {
+          console.log('FOUND:', search.length, 'results at', offsetX, offsetY)
+          console.log('  First match:', item?.type, 'ID:', featureId)
+          if (extra) {
+            console.log('  Extra info:', extra)
+          }
+        }
+
+        onMouseMove?.(event, featureId, extra)
       }}
       onClick={event => {
         if (

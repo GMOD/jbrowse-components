@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { getBoxColor, isUTR } from './util'
 
-import type { DrawFeatureArgs, DrawingResult } from './types'
+import type { DrawFeatureArgs, DrawingResult, FlatbushItem } from './types'
 
 const utrHeightFraction = 0.65
 
@@ -20,7 +20,7 @@ export function drawBox(args: DrawFeatureArgs): DrawingResult {
   let height = featureLayout.height
 
   const coords: number[] = []
-  const items: { featureId: string; type: string }[] = []
+  const items: FlatbushItem[] = []
 
   if (left + width < 0) {
     return { coords, items }
@@ -68,7 +68,14 @@ export function drawBox(args: DrawFeatureArgs): DrawingResult {
     leftWithinBlock + widthWithinBlock,
     top + height,
   )
-  items.push({ featureId: feature.id(), type: 'box' })
+  items.push({
+    featureId: feature.id(),
+    type: 'box',
+    startBp: feature.get('start'),
+    endBp: feature.get('end'),
+    topPx: top,
+    bottomPx: top + height,
+  })
 
   return { coords, items }
 }

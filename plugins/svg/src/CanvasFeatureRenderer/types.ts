@@ -41,6 +41,17 @@ export interface DrawingResult {
 export interface FlatbushItem {
   featureId: string
   type: string
+  // Store rectangle in BP and pixel coordinates for highlighting
+  startBp: number
+  endBp: number
+  topPx: number
+  bottomPx: number
+}
+
+export interface SubfeatureInfo {
+  subfeatureId: string
+  parentFeatureId: string
+  type: string
 }
 
 export interface RenderArgs {
