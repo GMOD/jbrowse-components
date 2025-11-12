@@ -73,53 +73,6 @@ export function makeImageData({
 
     coords.push(...result.coords)
     items.push(...result.items)
-
-    // Draw labels if allowed
-    const labelAllowed = displayMode !== 'collapsed'
-    if (labelAllowed) {
-      const showLabels = readConfObject(config, 'showLabels')
-      const showDescriptions = readConfObject(config, 'showDescriptions')
-      const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
-        feature,
-      })
-
-      const name = String(
-        readConfObject(config, ['labels', 'name'], { feature }) || '',
-      )
-      const shouldShowName = /\S/.test(name) && showLabels
-
-      const description = String(
-        readConfObject(config, ['labels', 'description'], { feature }) || '',
-      )
-      const shouldShowDescription = /\S/.test(description) && showDescriptions
-
-      const nameLabel = rootLayout.getSubRecord('nameLabel')
-      const descriptionLabel = rootLayout.getSubRecord('descriptionLabel')
-
-      if (shouldShowName && nameLabel) {
-        const nameColor = readConfObject(config, ['labels', 'nameColor'], {
-          feature,
-        })
-        ctx.fillStyle = nameColor
-        ctx.font = `${fontHeight}px sans-serif`
-        const { left = 0, top = 0, width = 0 } = nameLabel.absolute
-        const text = measureText(name, fontHeight) > width ? name.slice(0, Math.floor(width / (fontHeight * 0.6))) + '...' : name
-        ctx.fillText(text, left, top)
-      }
-
-      if (shouldShowDescription && descriptionLabel) {
-        const descColor = readConfObject(
-          config,
-          ['labels', 'descriptionColor'],
-          { feature },
-        )
-        ctx.fillStyle = descColor
-        ctx.font = `${fontHeight}px sans-serif`
-        const { left = 0, top = 0, width = 0 } = descriptionLabel.absolute
-        const text = measureText(description, fontHeight) > width ? description.slice(0, Math.floor(width / (fontHeight * 0.6))) + '...' : description
-        ctx.fillText(text, left, top)
-      }
-    }
   })
 
   // Create spatial index
