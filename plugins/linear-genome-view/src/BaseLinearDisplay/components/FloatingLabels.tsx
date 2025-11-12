@@ -99,7 +99,7 @@ const FloatingLabels = observer(function FloatingLabels({
           : Number.POSITIVE_INFINITY,
       )
 
-      const topPos = bottom - 14 * (+!!label + +!!description)
+      const topPos = bottom - 14 * (+!!description + +!!label)
 
       result.push({
         key,

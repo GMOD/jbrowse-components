@@ -55,6 +55,7 @@ export function makeImageData({
       y: topPx + layout.y,
       height: layout.height, // Visual height (what gets drawn)
       totalHeight: layout.totalHeight, // Total with label space
+      totalWidth: layout.totalWidth, // Total with label width
       children: adjustChildPositions(layout.children, startPx, topPx),
     }
 
@@ -86,6 +87,7 @@ export function makeImageData({
       y: child.y + yOffset,
       height: child.height, // Keep original visual height
       totalHeight: child.totalHeight, // Keep total height with labels
+      totalWidth: child.totalWidth, // Keep total width with labels
       children: adjustChildPositions(child.children, xOffset, yOffset),
     }))
   }
@@ -138,7 +140,8 @@ export function computeLayouts({
 
     // Calculate total width and height including subfeatures
     const totalWidth = getLayoutWidth(featureLayout)
-    const totalHeight = getLayoutHeight(featureLayout)
+    // Use total height (including label space) for collision detection
+    const totalHeight = featureLayout.totalHeight
 
     // Add to collision detection layout
     const topPx = layout.addRect(

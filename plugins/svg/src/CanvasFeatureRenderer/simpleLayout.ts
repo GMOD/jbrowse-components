@@ -8,6 +8,9 @@ import type { FeatureLayout } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
+// Padding between transcripts in pixels
+const TRANSCRIPT_PADDING = 2
+
 /**
  * Create layout for a feature and its subfeatures using simple coordinate tracking
  */
@@ -18,8 +21,17 @@ export function layoutFeature(args: {
   config: AnyConfigurationModel
   parentX?: number
   parentY?: number
+  isNested?: boolean
 }): FeatureLayout {
-  const { feature, bpPerPx, reversed, config, parentX = 0, parentY = 0 } = args
+  const {
+    feature,
+    bpPerPx,
+    reversed,
+    config,
+    parentX = 0,
+    parentY = 0,
+    isNested = false,
+  } = args
   const displayMode = readConfObject(config, 'displayMode') as string
   const glyphType = chooseGlyphType({ feature, config })
 
@@ -48,6 +60,7 @@ export function layoutFeature(args: {
     width,
     height: actualHeight,
     totalHeight: actualHeight, // Will be updated below
+    totalWidth: width, // Will be updated below
     children: [],
   }
 
@@ -57,7 +70,8 @@ export function layoutFeature(args: {
     if (glyphType === 'Subfeatures') {
       // Stack subfeatures vertically (for genes with multiple transcripts)
       let currentY = parentY
-      for (const subfeature of subfeatures) {
+      for (let i = 0; i < subfeatures.length; i++) {
+        const subfeature = subfeatures[i]!
         const childLayout = layoutFeature({
           feature: subfeature,
           bpPerPx,
@@ -65,10 +79,15 @@ export function layoutFeature(args: {
           config,
           parentX: x,
           parentY: currentY,
+          isNested: true,
         })
         layout.children.push(childLayout)
-        // Use totalHeight for stacking to include label space
-        currentY += childLayout.totalHeight
+        // Use visual height for stacking (not totalHeight with label space)
+        currentY += childLayout.height
+        // Add padding between transcripts (but not after the last one)
+        if (i < subfeatures.length - 1) {
+          currentY += TRANSCRIPT_PADDING
+        }
       }
       // Update heights to include all stacked children
       const totalStackedHeight = currentY - parentY
@@ -85,6 +104,7 @@ export function layoutFeature(args: {
           config,
           parentX: x,
           parentY,
+          isNested: true,
         })
         layout.children.push(childLayout)
       }
@@ -98,16 +118,17 @@ export function layoutFeature(args: {
           config,
           parentX: x,
           parentY,
+          isNested: true,
         })
         layout.children.push(childLayout)
       }
     }
   }
 
-  // Add extra height for labels (name and description)
+  // Add extra height and width for labels (name and description)
   // Labels are drawn by floating label system, but we need to reserve space
   const labelAllowed = displayMode !== 'collapsed'
-  if (labelAllowed && !parentFeature) {
+  if (labelAllowed && !isNested) {
     // Only add label space for top-level features (not nested subfeatures)
     const showLabels = readConfObject(config, 'showLabels')
     const showDescriptions = readConfObject(config, 'showDescriptions')
@@ -126,15 +147,25 @@ export function layoutFeature(args: {
     const shouldShowDescription = /\S/.test(description) && showDescriptions
 
     let extraHeight = 0
+    let maxLabelWidth = 0
     if (shouldShowName) {
       extraHeight += fontHeight
+      maxLabelWidth = Math.max(maxLabelWidth, measureText(name, fontHeight))
     }
     if (shouldShowDescription) {
       extraHeight += fontHeight
+      maxLabelWidth = Math.max(
+        maxLabelWidth,
+        measureText(description, fontHeight),
+      )
     }
 
     // Add the label height to totalHeight only (not to visual height)
     layout.totalHeight = layout.height + extraHeight
+    // Add the label width (converted to bp) to totalWidth
+    if (maxLabelWidth > 0) {
+      layout.totalWidth = layout.width + maxLabelWidth
+    }
   }
 
   return layout
@@ -160,16 +191,16 @@ export function findFeatureLayout(
 }
 
 /**
- * Calculate total width of layout
- * For top-level features, this should return just the width since x starts at 0
+ * Calculate total width of layout including label width
+ * For top-level features, this should return totalWidth
  */
 export function getLayoutWidth(layout: FeatureLayout): number {
   if (layout.children.length === 0) {
-    return layout.width
+    return layout.totalWidth
   }
 
-  // For features with children, find the max x+width among all children
-  let maxRight = layout.width
+  // For features with children, find the max x+totalWidth among all children
+  let maxRight = layout.totalWidth
   for (const child of layout.children) {
     const childRight = child.x + getLayoutWidth(child)
     maxRight = Math.max(maxRight, childRight)
@@ -178,16 +209,16 @@ export function getLayoutWidth(layout: FeatureLayout): number {
 }
 
 /**
- * Calculate total height of layout including label space
- * For top-level features, this should return totalHeight
+ * Calculate visual height of layout for label positioning
+ * Always returns visual height (without label space)
  */
 export function getLayoutHeight(layout: FeatureLayout): number {
   if (layout.children.length === 0) {
-    return layout.totalHeight
+    return layout.height
   }
 
-  // For features with children, find the max y+totalHeight among all children
-  let maxBottom = layout.totalHeight
+  // For features with children, find the max y+height among all children
+  let maxBottom = layout.height
   for (const child of layout.children) {
     const childBottom = child.y + getLayoutHeight(child)
     maxBottom = Math.max(maxBottom, childBottom)
