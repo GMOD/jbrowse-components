@@ -66,16 +66,30 @@ export function makeImageData({
       canvasWidth,
     })
 
-    coords.push(...result.coords)
-    items.push(...result.items)
+    // For features with subfeatures (like genes with transcripts),
+    // skip the parent bounding box and only use subfeature rectangles
+    // for mouseover detection
+    const hasSubfeatures = adjustedLayout.children.length > 0
+    if (!hasSubfeatures) {
+      // For features without subfeatures, add their complete bounding box
+      // including label area (totalWidth/totalHeight) instead of just
+      // the drawn visual elements
+      const leftPx = adjustedLayout.x
+      const rightPx = adjustedLayout.x + adjustedLayout.totalWidth
+      const topPx = adjustedLayout.y
+      const bottomPx = adjustedLayout.y + adjustedLayout.totalHeight
+      coords.push(leftPx, topPx, rightPx, bottomPx)
+      items.push({ featureId: feature.id(), type: 'box' })
+    }
 
-    // Add subfeatures to layout for highlighting (but not collision detection)
-    // This allows per-transcript mouseover
-    addSubfeaturesToLayout(
+    // Add subfeatures to both layout and flatbush for per-transcript mouseover
+    addSubfeaturesToLayoutAndFlatbush(
       layout,
       adjustedLayout,
       region,
       bpPerPx,
+      coords,
+      items,
     )
   })
 
@@ -95,13 +109,15 @@ export function makeImageData({
     }))
   }
 
-  function addSubfeaturesToLayout(
+  function addSubfeaturesToLayoutAndFlatbush(
     layout: any,
     featureLayout: any,
     region: any,
     bpPerPx: number,
+    coords: number[],
+    items: { featureId: string; type: string }[],
   ) {
-    // Recursively add all subfeatures to layout for highlighting
+    // Recursively add all subfeatures to both layout and flatbush
     for (const child of featureLayout.children) {
       const childFeature = child.feature
       if (childFeature) {
@@ -127,9 +143,19 @@ export function makeImageData({
           layout.rectangleData.set(childFeature.id(), childFeature)
         }
 
+        // Add to flatbush spatial index for mouseover detection
+        // Use the complete bounding box including label area
+        // totalWidth/totalHeight includes the label space for mouseover detection
+        const leftPx = child.x
+        const rightPx = child.x + child.totalWidth
+        const topPx = child.y
+        const bottomPx = child.y + child.totalHeight
+        coords.push(leftPx, topPx, rightPx, bottomPx)
+        items.push({ featureId: childFeature.id(), type: 'subfeature' })
+
         // Recursively add children's children
         if (child.children.length > 0) {
-          addSubfeaturesToLayout(layout, child, region, bpPerPx)
+          addSubfeaturesToLayoutAndFlatbush(layout, child, region, bpPerPx, coords, items)
         }
       }
     }

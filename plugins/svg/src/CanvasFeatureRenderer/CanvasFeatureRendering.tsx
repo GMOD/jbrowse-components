@@ -102,9 +102,9 @@ const CanvasFeatureRendering = observer(function (props: {
         }
         const rect = ref.current.getBoundingClientRect()
         const offsetX = event.clientX - rect.left
-        const offsetY = event.clientY - rect.top
-        const px = region.reversed ? width - offsetX : offsetX
-        const clientBp = region.start + bpPerPx * px
+        // Account for vertical scrolling in the track
+        const scrollTop = ref.current.parentElement?.scrollTop || 0
+        const offsetY = event.clientY - rect.top + scrollTop
         const search = flatbush2.search(
           offsetX,
           offsetY,
@@ -113,10 +113,7 @@ const CanvasFeatureRendering = observer(function (props: {
         )
         const item = search.length ? items[search[0]!] : undefined
         const featureId = item?.featureId
-        onMouseMove?.(
-          event,
-          featureId || displayModel.getFeatureOverlapping(blockKey, clientBp, offsetY),
-        )
+        onMouseMove?.(event, featureId)
       }}
       onClick={event => {
         if (
