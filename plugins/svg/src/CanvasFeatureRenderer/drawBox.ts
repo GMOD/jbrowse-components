@@ -74,7 +74,12 @@ export function drawBox(args: DrawFeatureArgs): DrawingResult {
   }
 
   // Add to spatial index
-  coords.push(leftWithinBlock, top, leftWithinBlock + widthWithinBlock, top + height)
+  coords.push(
+    leftWithinBlock,
+    top,
+    leftWithinBlock + widthWithinBlock,
+    top + height,
+  )
   items.push({ feature, type: 'box' })
 
   return { coords, items }

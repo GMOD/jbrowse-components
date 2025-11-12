@@ -8,7 +8,8 @@ export interface FeatureLayout {
   x: number
   y: number
   width: number
-  height: number
+  height: number // Visual height of the feature (what gets drawn)
+  totalHeight: number // Total height including label space (for collision detection)
   children: FeatureLayout[]
 }
 

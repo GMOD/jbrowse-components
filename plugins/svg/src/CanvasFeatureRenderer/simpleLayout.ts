@@ -1,7 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { measureText } from '@jbrowse/core/util'
 
-import { chooseGlyphType } from './util'
 import { getSubparts } from './filterSubparts'
+import { chooseGlyphType } from './util'
 
 import type { FeatureLayout } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -38,7 +39,7 @@ export function layoutFeature(args: {
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
 
   // Start with feature at parent's y position
-  let y = parentY
+  const y = parentY
 
   const layout: FeatureLayout = {
     feature,
@@ -46,6 +47,7 @@ export function layoutFeature(args: {
     y,
     width,
     height: actualHeight,
+    totalHeight: actualHeight, // Will be updated below
     children: [],
   }
 
@@ -65,10 +67,13 @@ export function layoutFeature(args: {
           parentY: currentY,
         })
         layout.children.push(childLayout)
-        currentY += childLayout.height
+        // Use totalHeight for stacking to include label space
+        currentY += childLayout.totalHeight
       }
-      // Update total height to include all stacked children
-      layout.height = currentY - parentY
+      // Update heights to include all stacked children
+      const totalStackedHeight = currentY - parentY
+      layout.height = totalStackedHeight
+      layout.totalHeight = totalStackedHeight
     } else if (glyphType === 'ProcessedTranscript') {
       // Overlay subfeatures (CDS, UTR on transcript)
       const subparts = getSubparts(feature, config)
@@ -97,6 +102,39 @@ export function layoutFeature(args: {
         layout.children.push(childLayout)
       }
     }
+  }
+
+  // Add extra height for labels (name and description)
+  // Labels are drawn by floating label system, but we need to reserve space
+  const labelAllowed = displayMode !== 'collapsed'
+  if (labelAllowed && !parentFeature) {
+    // Only add label space for top-level features (not nested subfeatures)
+    const showLabels = readConfObject(config, 'showLabels')
+    const showDescriptions = readConfObject(config, 'showDescriptions')
+    const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
+      feature,
+    })
+
+    const name = String(
+      readConfObject(config, ['labels', 'name'], { feature }) || '',
+    )
+    const shouldShowName = /\S/.test(name) && showLabels
+
+    const description = String(
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    )
+    const shouldShowDescription = /\S/.test(description) && showDescriptions
+
+    let extraHeight = 0
+    if (shouldShowName) {
+      extraHeight += fontHeight
+    }
+    if (shouldShowDescription) {
+      extraHeight += fontHeight
+    }
+
+    // Add the label height to totalHeight only (not to visual height)
+    layout.totalHeight = layout.height + extraHeight
   }
 
   return layout
@@ -140,16 +178,16 @@ export function getLayoutWidth(layout: FeatureLayout): number {
 }
 
 /**
- * Calculate total height of layout
- * For top-level features, this should return just the height since y starts at 0
+ * Calculate total height of layout including label space
+ * For top-level features, this should return totalHeight
  */
 export function getLayoutHeight(layout: FeatureLayout): number {
   if (layout.children.length === 0) {
-    return layout.height
+    return layout.totalHeight
   }
 
-  // For features with children, find the max y+height among all children
-  let maxBottom = layout.height
+  // For features with children, find the max y+totalHeight among all children
+  let maxBottom = layout.totalHeight
   for (const child of layout.children) {
     const childBottom = child.y + getLayoutHeight(child)
     maxBottom = Math.max(maxBottom, childBottom)

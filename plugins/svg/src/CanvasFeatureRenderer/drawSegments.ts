@@ -10,9 +10,7 @@ import type { Feature } from '@jbrowse/core/util'
  * Draw a feature as segments with a connecting line
  * Subfeatures must be drawn separately by the caller
  */
-export function drawSegments(
-  args: DrawFeatureArgs,
-): DrawingResult {
+export function drawSegments(args: DrawFeatureArgs): DrawingResult {
   const { ctx, feature, featureLayout, config, theme } = args
 
   const c = readConfObject(config, 'color2', { feature })

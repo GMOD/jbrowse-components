@@ -1,10 +1,14 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { bpToPx, forEachWithStopTokenCheck, measureText } from '@jbrowse/core/util'
+import {
+  bpToPx,
+  forEachWithStopTokenCheck,
+  measureText,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { drawFeature } from './drawFeature'
-import { layoutFeature, getLayoutHeight, getLayoutWidth } from './simpleLayout'
+import { getLayoutHeight, getLayoutWidth, layoutFeature } from './simpleLayout'
 
 import type { LayoutRecord, RenderArgs } from './types'
 import type { Feature } from '@jbrowse/core/util'
@@ -49,6 +53,8 @@ export function makeImageData({
       ...layout,
       x: startPx + layout.x,
       y: topPx + layout.y,
+      height: layout.height, // Visual height (what gets drawn)
+      totalHeight: layout.totalHeight, // Total with label space
       children: adjustChildPositions(layout.children, startPx, topPx),
     }
 
@@ -78,6 +84,8 @@ export function makeImageData({
       ...child,
       x: child.x + xOffset,
       y: child.y + yOffset,
+      height: child.height, // Keep original visual height
+      totalHeight: child.totalHeight, // Keep total height with labels
       children: adjustChildPositions(child.children, xOffset, yOffset),
     }))
   }
@@ -86,7 +94,7 @@ export function makeImageData({
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (coords.length) {
     for (let i = 0; i < coords.length; i += 4) {
-      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2]!, coords[i + 3]!)
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
     }
   } else {
     flatbush.add(0, 0, 0, 0)
