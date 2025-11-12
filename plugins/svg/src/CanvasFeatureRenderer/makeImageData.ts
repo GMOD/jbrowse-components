@@ -81,16 +81,21 @@ export function makeImageData({
       })
 
     // Always add the feature's bounding box to the primary flatbush
-    const leftPx = adjustedLayout.x
-    const rightPx = adjustedLayout.x + adjustedLayout.totalWidth
+    // Use the actual feature bounds (not totalWidth/totalHeight which includes labels)
+    const featureStartBp = feature.get('start')
+    const featureEndBp = feature.get('end')
+    const [leftPx, rightPx] = [
+      bpToPx(featureStartBp, region, bpPerPx),
+      bpToPx(featureEndBp, region, bpPerPx),
+    ]
     const topPx = adjustedLayout.y
-    const bottomPx = adjustedLayout.y + adjustedLayout.totalHeight
+    const bottomPx = adjustedLayout.y + adjustedLayout.height // Use height, not totalHeight
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({
       featureId: feature.id(),
       type: 'box',
-      startBp: feature.get('start'),
-      endBp: feature.get('end'),
+      startBp: featureStartBp,
+      endBp: featureEndBp,
       topPx,
       bottomPx,
     })
@@ -160,11 +165,14 @@ export function makeImageData({
 
       // Add the transcript's bounding box to secondary flatbush
       // This allows us to detect when hovering over a specific transcript and provide extra info
-      const leftPx = child.x
-      const rightPx = child.x + child.totalWidth
+      // Use actual feature bounds (not totalWidth/totalHeight which includes labels)
+      const [childLeftPx, childRightPx] = [
+        bpToPx(childStart, region, bpPerPx),
+        bpToPx(childEnd, region, bpPerPx),
+      ]
       const topPx = child.y
-      const bottomPx = child.y + child.totalHeight
-      subfeatureCoords.push(leftPx, topPx, rightPx, bottomPx)
+      const bottomPx = child.y + child.height // Use height, not totalHeight
+      subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
       // Compute user-friendly name for the transcript
       const transcriptName = childFeature.get('name') || childFeature.get('id')
@@ -202,10 +210,10 @@ export function makeImageData({
       ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)' // Blue for transcripts
       ctx.lineWidth = 1
       ctx.setLineDash([2, 2])
-      ctx.strokeRect(leftPx, topPx, child.totalWidth, child.totalHeight)
+      ctx.strokeRect(childLeftPx, topPx, childRightPx - childLeftPx, bottomPx - topPx)
       ctx.restore()
 
-      console.log('Added TRANSCRIPT to secondary flatbush:', childFeature.id(), 'type:', childType, 'parent:', parentFeatureId, 'bbox:', leftPx, topPx, rightPx, bottomPx)
+      console.log('Added TRANSCRIPT to secondary flatbush:', childFeature.id(), 'type:', childType, 'parent:', parentFeatureId, 'bbox:', childLeftPx, topPx, childRightPx, bottomPx)
 
       // Store layout/feature data for nested children (CDS, UTR, exons) but don't add them to flatbush
       // This allows clicking on them to get details, but mouseover targets the parent transcript
