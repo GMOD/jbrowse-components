@@ -12,6 +12,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { For } from 'million/react'
 import { makeStyles } from 'tss-react/mui'
 
 import CategorySelector from './CategorySelector'
@@ -60,6 +61,28 @@ const useStyles = makeStyles()({
     },
   },
 })
+
+// Row rendering function for use with million.js For component
+function renderRow(row: any, multipleSelection: boolean) {
+  return (
+    <tr key={row.id}>
+      {multipleSelection && (
+        <td>
+          <input
+            type="checkbox"
+            checked={row.getIsSelected()}
+            onChange={row.getToggleSelectedHandler()}
+          />
+        </td>
+      )}
+      {row.getVisibleCells().map((cell: any) => (
+        <td key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </td>
+      ))}
+    </tr>
+  )
+}
 
 export default function GenomesDataTable({
   favorites,
@@ -355,27 +378,9 @@ export default function GenomesDataTable({
               ))}
             </thead>
             <tbody>
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id}>
-                  {multipleSelection && (
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={row.getIsSelected()}
-                        onChange={row.getToggleSelectedHandler()}
-                      />
-                    </td>
-                  )}
-                  {row.getVisibleCells().map(cell => (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              <For each={table.getRowModel().rows}>
+                {(row: any) => renderRow(row, multipleSelection)}
+              </For>
             </tbody>
           </table>
 

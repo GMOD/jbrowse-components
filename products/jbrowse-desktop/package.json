@@ -88,6 +88,7 @@
     "electron-updater": "^6.1.1",
     "electron-window-state": "^5.0.3",
     "json-parse-even-better-errors": "^4.0.0",
+    "million": "^3.1.11",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",

@@ -16,6 +16,7 @@ export default function AllGenomesDialog({
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
 }) {
+  console.log('wtf')
   return (
     <Dialog maxWidth="xl" open title="Available genomes" onClose={onClose}>
       <DialogContent>
