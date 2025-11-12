@@ -11,20 +11,9 @@ const utrHeightFraction = 0.65
  * Draw a box (rectangle) feature on the canvas
  */
 export function drawBox(args: DrawFeatureArgs): DrawingResult {
-  const {
-    ctx,
-    feature,
-    featureLayout,
-    region,
-    bpPerPx,
-    config,
-    theme,
-    canvasWidth,
-  } = args
+  const { ctx, feature, featureLayout, region, bpPerPx, config, theme } = args
   const { start, end } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
-  const featureStart = feature.get('start')
-  const featureEnd = feature.get('end')
   const featureType: string | undefined = feature.get('type')
   const width = featureLayout.width
   const left = featureLayout.x

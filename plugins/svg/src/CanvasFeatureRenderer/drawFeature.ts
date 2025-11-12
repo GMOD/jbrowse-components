@@ -80,7 +80,6 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
       result = { coords, items }
       break
     }
-    case 'Box':
     default:
       result = drawBox(args)
       break

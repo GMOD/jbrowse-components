@@ -1,14 +1,9 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  bpToPx,
-  forEachWithStopTokenCheck,
-  measureText,
-} from '@jbrowse/core/util'
+import { bpToPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { drawFeature } from './drawFeature'
-import { getLayoutHeight, getLayoutWidth, layoutFeature } from './simpleLayout'
+import { getLayoutWidth, layoutFeature } from './simpleLayout'
 
 import type { LayoutRecord, RenderArgs } from './types'
 import type { Feature } from '@jbrowse/core/util'
@@ -31,7 +26,6 @@ export function makeImageData({
   const { config, bpPerPx, regions, theme: configTheme, stopToken } = renderArgs
   const region = regions[0]!
   const theme = createJBrowseTheme(configTheme)
-  const displayMode = readConfObject(config, 'displayMode') as string
   const canvasWidth = (region.end - region.start) / bpPerPx
 
   const coords: number[] = []
