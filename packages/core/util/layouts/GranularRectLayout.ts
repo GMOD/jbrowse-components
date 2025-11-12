@@ -341,6 +341,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     right: number,
     height: number,
     data?: T,
+    serializableData?: T,
   ): number | null {
     // if we have already laid it out, return its layout
     const storedRec = this.rectangles.get(id)
@@ -367,6 +368,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       h: pHeight,
       originalHeight: height,
       data,
+      serializableData,
     }
 
     const maxTop = this.maxHeight - pHeight
@@ -508,10 +510,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     // @ts-expect-error
     return new Map(
       [...this.rectangles.entries()].map(([id, rect]) => {
-        const { l, r, originalHeight, top, data } = rect
+        const { l, r, originalHeight, top, serializableData } = rect
         const t = (top || 0) * this.pitchY
         const b = t + originalHeight
-        return [id, [l * this.pitchX, t, r * this.pitchX, b, data]] // left, top, right, bottom
+        return [id, [l * this.pitchX, t, r * this.pitchX, b, serializableData]] // left, top, right, bottom
       }),
     )
   }
@@ -533,7 +535,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         // add +/- pitchX to avoid resolution causing errors
         if (segmentsIntersect(x1, x2, y1 - this.pitchX, y2 + this.pitchX)) {
           // @ts-expect-error
-          regionRectangles[id] = [y1, t, y2, b, rect.data]
+          regionRectangles[id] = [y1, t, y2, b, rect.serializableData]
         }
       }
     }

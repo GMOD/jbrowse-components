@@ -141,10 +141,10 @@ const FloatingLabels = observer(function FloatingLabels({
         const descDiv = document.createElement('div')
         descDiv.style.color = 'blue'
 
-        element.appendChild(labelDiv)
-        element.appendChild(descDiv)
+        element.append(labelDiv)
+        element.append(descDiv)
 
-        container.appendChild(element)
+        container.append(element)
         domElements.set(key, element)
       }
 
@@ -167,7 +167,7 @@ const FloatingLabels = observer(function FloatingLabels({
       if (!newKeys.has(key)) {
         // Check if element is actually a child before removing
         if (element.parentNode === container) {
-          container.removeChild(element)
+          element.remove()
         }
         domElements.delete(key)
       }
@@ -177,7 +177,7 @@ const FloatingLabels = observer(function FloatingLabels({
     return () => {
       for (const [key, element] of domElements.entries()) {
         if (element.parentNode === container) {
-          container.removeChild(element)
+          element.remove()
         }
         domElements.delete(key)
       }
