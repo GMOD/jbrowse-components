@@ -94,7 +94,7 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
     result.items.push(...arrowResult.items)
   }
 
-  // Draw bounding box for debugging (shows actual feature bounds, not including labels)
+  // Draw bounding box for debugging (shows BP-based left/right, totalHeight for top/bottom)
   if (topLevel) {
     const { ctx, featureLayout, feature, region, bpPerPx } = args
     ctx.save()
@@ -111,7 +111,7 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
       leftPx,
       featureLayout.y,
       rightPx - leftPx,
-      featureLayout.height,
+      featureLayout.totalHeight,
     )
     ctx.restore()
   }

@@ -81,7 +81,7 @@ export function makeImageData({
       })
 
     // Always add the feature's bounding box to the primary flatbush
-    // Use the actual feature bounds (not totalWidth/totalHeight which includes labels)
+    // Use BP coordinates for left/right (no label padding), but totalHeight for top/bottom (includes labels)
     const featureStartBp = feature.get('start')
     const featureEndBp = feature.get('end')
     const [leftPx, rightPx] = [
@@ -89,7 +89,7 @@ export function makeImageData({
       bpToPx(featureEndBp, region, bpPerPx),
     ]
     const topPx = adjustedLayout.y
-    const bottomPx = adjustedLayout.y + adjustedLayout.height // Use height, not totalHeight
+    const bottomPx = adjustedLayout.y + adjustedLayout.totalHeight // Use totalHeight to include labels
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({
       featureId: feature.id(),
@@ -165,13 +165,13 @@ export function makeImageData({
 
       // Add the transcript's bounding box to secondary flatbush
       // This allows us to detect when hovering over a specific transcript and provide extra info
-      // Use actual feature bounds (not totalWidth/totalHeight which includes labels)
+      // Use BP coordinates for left/right (no label padding), but totalHeight for top/bottom (includes labels)
       const [childLeftPx, childRightPx] = [
         bpToPx(childStart, region, bpPerPx),
         bpToPx(childEnd, region, bpPerPx),
       ]
       const topPx = child.y
-      const bottomPx = child.y + child.height // Use height, not totalHeight
+      const bottomPx = child.y + child.totalHeight // Use totalHeight to include labels
       subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
       // Compute user-friendly name for the transcript
@@ -206,11 +206,12 @@ export function makeImageData({
       }
 
       // Debug: Draw blue bounding box for transcript subfeatures only
+      // (BP-based left/right, totalHeight for top/bottom)
       ctx.save()
       ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)' // Blue for transcripts
       ctx.lineWidth = 1
       ctx.setLineDash([2, 2])
-      ctx.strokeRect(childLeftPx, topPx, childRightPx - childLeftPx, bottomPx - topPx)
+      ctx.strokeRect(childLeftPx, topPx, childRightPx - childLeftPx, child.totalHeight)
       ctx.restore()
 
       console.log('Added TRANSCRIPT to secondary flatbush:', childFeature.id(), 'type:', childType, 'parent:', parentFeatureId, 'bbox:', childLeftPx, topPx, childRightPx, bottomPx)
