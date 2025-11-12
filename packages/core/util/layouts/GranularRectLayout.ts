@@ -44,7 +44,6 @@ import type {
  */
 
 // minimum excess size of the array at which we garbage collect
-const minSizeToBotherWith = 10000
 const maxFeaturePitchWidth = 20000
 
 function segmentsIntersect(
@@ -56,20 +55,18 @@ function segmentsIntersect(
   return x2 >= y1 && y2 >= x1
 }
 
-type Bit<T> = Record<string, T> | string | undefined
-
 // Optimized row class using flat interval array
 class LayoutRow<T> {
   private padding = 1
 
-  private allFilled?: Record<string, T> | string
+  public allFilled?: Record<string, T> | string
 
   // Flat array: [start1, end1, start2, end2, ...]
   // Kept sorted by start position for binary search
   private intervals: number[] = []
 
   // Parallel array storing data for each interval
-  private data: Array<Record<string, T> | string> = []
+  private data: (Record<string, T> | string)[] = []
 
   setAllFilled(data: Record<string, T> | string): void {
     this.allFilled = data
@@ -82,7 +79,7 @@ class LayoutRow<T> {
 
     const len = this.intervals.length
     for (let i = 0; i < len; i += 2) {
-      if (x >= this.intervals[i] && x < this.intervals[i + 1]) {
+      if (x >= this.intervals[i]! && x < this.intervals[i + 1]!) {
         return this.data[i >> 1]
       }
     }
@@ -99,8 +96,8 @@ class LayoutRow<T> {
     // Linear scan for small arrays (better cache locality)
     if (len < 40) {
       for (let i = 0; i < len; i += 2) {
-        const start = this.intervals[i]
-        const end = this.intervals[i + 1]
+        const start = this.intervals[i]!
+        const end = this.intervals[i + 1]!
         // Intersection check: end > left && start < right
         if (end > left && start < right) {
           return false
@@ -117,7 +114,7 @@ class LayoutRow<T> {
     while (low < high) {
       const mid = (low + high) >>> 1
       const midIdx = mid << 1 // Multiply by 2
-      if (this.intervals[midIdx + 1] <= left) {
+      if (this.intervals[midIdx + 1]! <= left) {
         low = mid + 1
       } else {
         high = mid
@@ -126,11 +123,11 @@ class LayoutRow<T> {
 
     // Check overlaps from that point
     for (let i = low << 1; i < len; i += 2) {
-      const start = this.intervals[i]
+      const start = this.intervals[i]!
       if (start >= right) {
         break // No more possible overlaps
       }
-      const end = this.intervals[i + 1]
+      const end = this.intervals[i + 1]!
       if (end > left) {
         return false
       }
@@ -150,7 +147,7 @@ class LayoutRow<T> {
       // Linear insertion for small arrays
       let idx = len
       for (let i = 0; i < len; i += 2) {
-        if (left < this.intervals[i]) {
+        if (left < this.intervals[i]!) {
           idx = i
           break
         }
@@ -165,7 +162,7 @@ class LayoutRow<T> {
       while (low < high) {
         const mid = (low + high) >>> 1
         const midIdx = mid << 1
-        if (this.intervals[midIdx] < left) {
+        if (this.intervals[midIdx]! < left) {
           low = mid + 1
         } else {
           high = mid
@@ -184,12 +181,12 @@ class LayoutRow<T> {
 
     const oldLen = this.intervals.length
     const newIntervals: number[] = []
-    const newData: Array<Record<string, T> | string> = []
+    const newData: (Record<string, T> | string)[] = []
 
     for (let i = 0; i < oldLen; i += 2) {
-      const start = this.intervals[i]
-      const end = this.intervals[i + 1]
-      const intervalData = this.data[i >> 1]
+      const start = this.intervals[i]!
+      const end = this.intervals[i + 1]!
+      const intervalData = this.data[i >> 1]!
 
       // If interval is completely within discard range, skip it
       if (start >= left && end <= right) {
@@ -304,8 +301,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
 
     // Use bitwise OR for fast floor operation
-    const pLeft = left / this.pitchX | 0
-    const pRight = right / this.pitchX | 0
+    const pLeft = (left / this.pitchX) | 0
+    const pRight = (right / this.pitchX) | 0
     const pHeight = Math.ceil(height / this.pitchY)
 
     const rectangle: Rectangle<T> = {
@@ -338,7 +335,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
           }
 
           // Fast path: row is all filled
-          if (row['allFilled']) {
+          if (row.allFilled) {
             continue outer
           }
 
