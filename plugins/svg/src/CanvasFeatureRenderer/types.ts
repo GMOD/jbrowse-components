@@ -1,20 +1,27 @@
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
-import type { SceneGraph } from '@jbrowse/core/util/layouts'
 import type { Theme } from '@mui/material'
+
+export interface FeatureLayout {
+  feature: Feature
+  x: number
+  y: number
+  width: number
+  height: number
+  children: FeatureLayout[]
+}
 
 export interface LayoutRecord {
   feature: Feature
-  rootLayout: SceneGraph
-  startPx: number
+  layout: FeatureLayout
   topPx: number
 }
 
 export interface DrawFeatureArgs {
   ctx: CanvasRenderingContext2D
   feature: Feature
-  featureLayout: SceneGraph
+  featureLayout: FeatureLayout
   region: Region
   bpPerPx: number
   config: AnyConfigurationModel

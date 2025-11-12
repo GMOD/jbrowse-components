@@ -26,9 +26,10 @@ export function drawBox(args: DrawFeatureArgs): DrawingResult {
   const featureStart = feature.get('start')
   const featureEnd = feature.get('end')
   const featureType: string | undefined = feature.get('type')
-  const width = (featureEnd - featureStart) / bpPerPx
-  const { left = 0 } = featureLayout.absolute
-  let { top = 0, height = 0 } = featureLayout.absolute
+  const width = featureLayout.width
+  const left = featureLayout.x
+  let top = featureLayout.y
+  let height = featureLayout.height
 
   const coords: number[] = []
   const items: { feature: Feature; type: string }[] = []

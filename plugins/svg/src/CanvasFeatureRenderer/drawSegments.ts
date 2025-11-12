@@ -17,7 +17,10 @@ export function drawSegments(
 
   const c = readConfObject(config, 'color2', { feature })
   const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
-  const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
+  const left = featureLayout.x
+  const top = featureLayout.y
+  const width = featureLayout.width
+  const height = featureLayout.height
   const y = top + height / 2
 
   const coords: number[] = []

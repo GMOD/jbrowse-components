@@ -1,7 +1,7 @@
 import { drawArrow } from './drawArrow'
 import { drawBox } from './drawBox'
 import { drawSegments } from './drawSegments'
-import { getSubparts } from './filterSubparts'
+import { findFeatureLayout } from './simpleLayout'
 import { chooseGlyphType } from './util'
 
 import type { DrawFeatureArgs, DrawingResult } from './types'
@@ -10,26 +10,21 @@ import type { DrawFeatureArgs, DrawingResult } from './types'
  * Draw a processed transcript feature (special handling for CDS/UTR subfeatures)
  */
 export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
-  const { feature, config, featureLayout } = args
-  const subparts = getSubparts(feature, config)
+  const { featureLayout } = args
 
   // Draw the connecting line
   const result = drawSegments(args)
 
   // Draw subfeatures
-  for (const subfeature of subparts) {
-    const subfeatureId = String(subfeature.id())
-    const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
-    if (subfeatureLayout) {
-      const subResult = drawFeature({
-        ...args,
-        feature: subfeature,
-        featureLayout: subfeatureLayout,
-        topLevel: false,
-      })
-      result.coords.push(...subResult.coords)
-      result.items.push(...subResult.items)
-    }
+  for (const childLayout of featureLayout.children) {
+    const subResult = drawFeature({
+      ...args,
+      feature: childLayout.feature,
+      featureLayout: childLayout,
+      topLevel: false,
+    })
+    result.coords.push(...subResult.coords)
+    result.items.push(...subResult.items)
   }
 
   return result
@@ -40,7 +35,7 @@ export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
  * drawing function
  */
 export function drawFeature(args: DrawFeatureArgs): DrawingResult {
-  const { feature, config, topLevel } = args
+  const { feature, config, topLevel, featureLayout } = args
   const glyphType = chooseGlyphType({ feature, config })
 
   let result: DrawingResult
@@ -53,20 +48,15 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
       // Draw the connecting line
       result = drawSegments(args)
       // Draw subfeatures
-      const subfeatures = feature.get('subfeatures') || []
-      for (const subfeature of subfeatures) {
-        const subfeatureId = String(subfeature.id())
-        const subfeatureLayout = args.featureLayout.getSubRecord(subfeatureId)
-        if (subfeatureLayout) {
-          const subResult = drawFeature({
-            ...args,
-            feature: subfeature,
-            featureLayout: subfeatureLayout,
-            topLevel: false,
-          })
-          result.coords.push(...subResult.coords)
-          result.items.push(...subResult.items)
-        }
+      for (const childLayout of featureLayout.children) {
+        const subResult = drawFeature({
+          ...args,
+          feature: childLayout.feature,
+          featureLayout: childLayout,
+          topLevel: false,
+        })
+        result.coords.push(...subResult.coords)
+        result.items.push(...subResult.items)
       }
       break
     }
@@ -78,20 +68,15 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
       // Draw subfeatures vertically offset
       const coords: number[] = []
       const items = []
-      const subfeatures = feature.get('subfeatures') || []
-      for (const subfeature of subfeatures) {
-        const subfeatureId = String(subfeature.id())
-        const subfeatureLayout = args.featureLayout.getSubRecord(subfeatureId)
-        if (subfeatureLayout) {
-          const subResult = drawFeature({
-            ...args,
-            feature: subfeature,
-            featureLayout: subfeatureLayout,
-            topLevel: false,
-          })
-          coords.push(...subResult.coords)
-          items.push(...subResult.items)
-        }
+      for (const childLayout of featureLayout.children) {
+        const subResult = drawFeature({
+          ...args,
+          feature: childLayout.feature,
+          featureLayout: childLayout,
+          topLevel: false,
+        })
+        coords.push(...subResult.coords)
+        items.push(...subResult.items)
       }
       result = { coords, items }
       break

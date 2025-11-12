@@ -25,11 +25,12 @@ The Canvas Feature Renderer follows a two-phase approach:
 - **drawProcessedTranscript**: Special handling for transcript features with CDS/UTRs
 
 ### Layout Functions
-- **layoutUtils.ts**: Scene graph layout computation
-  - `layOut`: Default layout for features and subfeatures
-  - `layOutProcessedTranscript`: Custom layout for transcript glyphs
-  - `layOutFeature`: Positions individual features
-  - `layOutSubfeatures`: Recursively lays out child features
+- **simpleLayout.ts**: Simple coordinate-based layout (no SceneGraph complexity)
+  - `layoutFeature`: Creates layout tree with manual coordinate tracking
+  - `findFeatureLayout`: Finds a specific feature in the layout tree
+  - `getLayoutWidth`/`getLayoutHeight`: Calculate dimensions
+  - Stacks transcripts vertically within genes
+  - Overlays CDS/UTR within transcripts
 
 ### Core Logic
 - **makeImageData.ts**: Main rendering coordinator
