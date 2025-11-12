@@ -2,7 +2,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { stripAlpha } from '@jbrowse/core/util'
 
 import type { DrawFeatureArgs, DrawingResult } from './types'
-import type { Feature } from '@jbrowse/core/util'
 
 /**
  * Draw a directional arrow indicator for stranded features
@@ -30,7 +29,7 @@ export function drawArrow(args: DrawFeatureArgs): DrawingResult {
   const y = top + height / 2
 
   const coords: number[] = []
-  const items: { feature: Feature; type: string }[] = []
+  const items: { featureId: string; type: string }[] = []
 
   if (p !== null) {
     // Draw line

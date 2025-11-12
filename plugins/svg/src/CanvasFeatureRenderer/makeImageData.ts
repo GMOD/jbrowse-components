@@ -23,20 +23,20 @@ export function makeImageData({
   layoutRecords: LayoutRecord[]
   renderArgs: RenderArgs
 }) {
-  const { config, bpPerPx, regions, theme: configTheme, stopToken } = renderArgs
+  const { config, bpPerPx, regions, theme: configTheme, stopToken, layout } = renderArgs
   const region = regions[0]!
   const theme = createJBrowseTheme(configTheme)
   const canvasWidth = (region.end - region.start) / bpPerPx
 
   const coords: number[] = []
-  const items: { feature: Feature; type: string }[] = []
+  const items: { featureId: string; type: string }[] = []
 
   // Set default canvas styles
   ctx.textBaseline = 'top'
   ctx.textAlign = 'left'
 
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
-    const { feature, layout, topPx } = record
+    const { feature, layout: featureLayout, topPx } = record
 
     // Adjust layout position to absolute coordinates
     const start = feature.get(region.reversed ? 'end' : 'start')
@@ -44,13 +44,13 @@ export function makeImageData({
 
     // Create adjusted layout with absolute positions
     const adjustedLayout = {
-      ...layout,
-      x: startPx + layout.x,
-      y: topPx + layout.y,
-      height: layout.height, // Visual height (what gets drawn)
-      totalHeight: layout.totalHeight, // Total with label space
-      totalWidth: layout.totalWidth, // Total with label width
-      children: adjustChildPositions(layout.children, startPx, topPx),
+      ...featureLayout,
+      x: startPx + featureLayout.x,
+      y: topPx + featureLayout.y,
+      height: featureLayout.height, // Visual height (what gets drawn)
+      totalHeight: featureLayout.totalHeight, // Total with label space
+      totalWidth: featureLayout.totalWidth, // Total with label width
+      children: adjustChildPositions(featureLayout.children, startPx, topPx),
     }
 
     const result = drawFeature({
@@ -68,6 +68,15 @@ export function makeImageData({
 
     coords.push(...result.coords)
     items.push(...result.items)
+
+    // Add subfeatures to layout for highlighting (but not collision detection)
+    // This allows per-transcript mouseover
+    addSubfeaturesToLayout(
+      layout,
+      adjustedLayout,
+      region,
+      bpPerPx,
+    )
   })
 
   function adjustChildPositions(
@@ -84,6 +93,46 @@ export function makeImageData({
       totalWidth: child.totalWidth, // Keep total width with labels
       children: adjustChildPositions(child.children, xOffset, yOffset),
     }))
+  }
+
+  function addSubfeaturesToLayout(
+    layout: any,
+    featureLayout: any,
+    region: any,
+    bpPerPx: number,
+  ) {
+    // Recursively add all subfeatures to layout for highlighting
+    for (const child of featureLayout.children) {
+      const childFeature = child.feature
+      if (childFeature) {
+        const childStart = childFeature.get('start')
+        const childEnd = childFeature.get('end')
+
+        // Store the rectangle data without doing collision detection
+        // We use the child's actual pixel coordinates
+        layout.rectangles.set(childFeature.id(), [
+          childStart,
+          child.y,
+          childEnd,
+          child.y + child.height,
+          {
+            label: childFeature.get('name') || childFeature.get('id'),
+            description: childFeature.get('description') || childFeature.get('note'),
+            refName: childFeature.get('refName'),
+          },
+        ])
+
+        // Store the feature data for CoreGetFeatureDetails
+        if (layout.rectangleData) {
+          layout.rectangleData.set(childFeature.id(), childFeature)
+        }
+
+        // Recursively add children's children
+        if (child.children.length > 0) {
+          addSubfeaturesToLayout(layout, child, region, bpPerPx)
+        }
+      }
+    }
   }
 
   // Create spatial index

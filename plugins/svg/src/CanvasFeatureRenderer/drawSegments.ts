@@ -4,7 +4,6 @@ import { stripAlpha } from '@jbrowse/core/util'
 import { drawArrow } from './drawArrow'
 
 import type { DrawFeatureArgs, DrawingResult } from './types'
-import type { Feature } from '@jbrowse/core/util'
 
 /**
  * Draw a feature as segments with a connecting line
@@ -22,7 +21,7 @@ export function drawSegments(args: DrawFeatureArgs): DrawingResult {
   const y = top + height / 2
 
   const coords: number[] = []
-  const items: { feature: Feature; type: string }[] = []
+  const items: { featureId: string; type: string }[] = []
 
   // Draw the connecting line
   ctx.strokeStyle = color2

@@ -39,7 +39,7 @@ export interface DrawingResult {
 }
 
 export interface FlatbushItem {
-  feature: Feature
+  featureId: string
   type: string
 }
 
