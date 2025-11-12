@@ -165,10 +165,15 @@ export function makeImageData({
       const topPx = child.y
       const bottomPx = child.y + child.totalHeight
       subfeatureCoords.push(leftPx, topPx, rightPx, bottomPx)
+
+      // Compute user-friendly name for the transcript
+      const transcriptName = childFeature.get('name') || childFeature.get('id')
+
       subfeatureInfos.push({
         subfeatureId: childFeature.id(),
         parentFeatureId,
         type: childType,
+        name: transcriptName,
       })
 
       // Store the rectangle data for the transcript for selection/clicking

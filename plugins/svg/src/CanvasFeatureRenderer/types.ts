@@ -52,6 +52,7 @@ export interface SubfeatureInfo {
   subfeatureId: string
   parentFeatureId: string
   type: string
+  name: string // User-friendly name for display (from feature.get('name') || feature.get('id'))
 }
 
 export interface RenderArgs {

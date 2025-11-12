@@ -149,8 +149,8 @@ const CanvasFeatureRendering = observer(function (props: {
           if (subfeatureSearch.length) {
             const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
             if (subfeatureInfo) {
-              extra = subfeatureInfo.subfeatureId
-              console.log('SUBFEATURE DETECTED:', subfeatureInfo.subfeatureId, 'parent:', subfeatureInfo.parentFeatureId)
+              extra = subfeatureInfo.name
+              console.log('SUBFEATURE DETECTED:', subfeatureInfo.name, '(ID:', subfeatureInfo.subfeatureId, ') parent:', subfeatureInfo.parentFeatureId)
             }
           }
         }
