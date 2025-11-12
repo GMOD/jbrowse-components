@@ -99,7 +99,7 @@ const Renderer = observer(function ({
   loader: SessionLoaderModel
 }) {
   const [loader, setLoader] = useState(firstLoader)
-  const pluginManager = useRef<PluginManager | undefined>(undefined)
+  const pluginManager = useRef<PluginManager>()
   const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
   const reloadPluginManager = useCallback(
     (

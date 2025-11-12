@@ -14,7 +14,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     const layout = this.createLayoutInWorker(renderProps)
     const { statusCallback = () => {}, regions, bpPerPx, config } = renderProps
     const region = regions[0]!
-    const width = (region.end - region.start) / bpPerPx
+    const width = Math.max(1, (region.end - region.start) / bpPerPx)
 
     // Compute layouts for all features
     const layoutRecords = await updateStatus(
@@ -31,7 +31,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       },
     )
 
-    const height = layout.getTotalHeight()
+    const height = Math.max(1, layout.getTotalHeight())
 
     // Render to canvas
     const res = await updateStatus(

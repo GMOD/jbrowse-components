@@ -1,5 +1,3 @@
-import { bpToPx } from '@jbrowse/core/util'
-
 import { drawArrow } from './drawArrow'
 import { drawBox } from './drawBox'
 import { drawSegments } from './drawSegments'
@@ -95,26 +93,26 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
   }
 
   // Draw bounding box for debugging (shows BP-based left/right, totalHeight for top/bottom)
-  if (topLevel) {
-    const { ctx, featureLayout, feature, region, bpPerPx } = args
-    ctx.save()
-    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)' // Semi-transparent red
-    ctx.lineWidth = 1
-    ctx.setLineDash([2, 2]) // Dashed line
-    const featureStartBp = feature.get('start')
-    const featureEndBp = feature.get('end')
-    const [leftPx, rightPx] = [
-      bpToPx(featureStartBp, region, bpPerPx),
-      bpToPx(featureEndBp, region, bpPerPx),
-    ]
-    ctx.strokeRect(
-      leftPx,
-      featureLayout.y,
-      rightPx - leftPx,
-      featureLayout.totalHeight,
-    )
-    ctx.restore()
-  }
+  // if (topLevel) {
+  //   const { ctx, featureLayout, feature, region, bpPerPx } = args
+  //   ctx.save()
+  //   ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)' // Semi-transparent red
+  //   ctx.lineWidth = 1
+  //   ctx.setLineDash([2, 2]) // Dashed line
+  //   const featureStartBp = feature.get('start')
+  //   const featureEndBp = feature.get('end')
+  //   const [leftPx, rightPx] = [
+  //     bpToPx(featureStartBp, region, bpPerPx),
+  //     bpToPx(featureEndBp, region, bpPerPx),
+  //   ]
+  //   ctx.strokeRect(
+  //     leftPx,
+  //     featureLayout.y,
+  //     rightPx - leftPx,
+  //     featureLayout.totalHeight,
+  //   )
+  //   ctx.restore()
+  // }
 
   return result
 }

@@ -29,7 +29,6 @@ const CanvasFeatureRendering = observer(function (props: {
   const {
     onMouseMove,
     onMouseLeave,
-    blockKey,
     displayModel,
     width,
     height,
@@ -77,17 +76,14 @@ const CanvasFeatureRendering = observer(function (props: {
     ? itemsById.get(highlightedFeature)
     : undefined
 
-  // Debug logging
-  if (highlightedFeature && !highlightedItem) {
-    console.log('HIGHLIGHT ISSUE: feature ID found but no item:', highlightedFeature)
-  }
-  if (highlightedItem) {
-    console.log('HIGHLIGHTING item:', highlightedItem)
-  }
-
   // Convert FlatbushItem to display rectangle
   function itemToRect(item: FlatbushItem, offset = 2) {
-    const [leftPx, rightPx] = bpSpanPx(item.startBp, item.endBp, region, bpPerPx)
+    const [leftPx, rightPx] = bpSpanPx(
+      item.startBp,
+      item.endBp,
+      region,
+      bpPerPx,
+    )
     const rectTop = Math.round(item.topPx)
     const rectHeight = Math.round(item.bottomPx - item.topPx)
     return {
@@ -150,17 +146,7 @@ const CanvasFeatureRendering = observer(function (props: {
             const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
             if (subfeatureInfo) {
               extra = subfeatureInfo.name
-              console.log('SUBFEATURE DETECTED:', subfeatureInfo.name, '(ID:', subfeatureInfo.subfeatureId, ') parent:', subfeatureInfo.parentFeatureId)
             }
-          }
-        }
-
-        // Debug logging - log whenever we find something
-        if (search.length > 0) {
-          console.log('FOUND:', search.length, 'results at', offsetX, offsetY)
-          console.log('  First match:', item?.type, 'ID:', featureId)
-          if (extra) {
-            console.log('  Extra info:', extra)
           }
         }
 

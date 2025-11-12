@@ -5,7 +5,12 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { drawFeature } from './drawFeature'
 import { getLayoutWidth, layoutFeature } from './simpleLayout'
 
-import type { FlatbushItem, LayoutRecord, RenderArgs, SubfeatureInfo } from './types'
+import type {
+  FlatbushItem,
+  LayoutRecord,
+  RenderArgs,
+  SubfeatureInfo,
+} from './types'
 import type { Feature } from '@jbrowse/core/util'
 
 const xPadding = 3
@@ -23,7 +28,14 @@ export function makeImageData({
   layoutRecords: LayoutRecord[]
   renderArgs: RenderArgs
 }) {
-  const { config, bpPerPx, regions, theme: configTheme, stopToken, layout } = renderArgs
+  const {
+    config,
+    bpPerPx,
+    regions,
+    theme: configTheme,
+    stopToken,
+    layout,
+  } = renderArgs
   const region = regions[0]!
   const theme = createJBrowseTheme(configTheme)
   const canvasWidth = (region.end - region.start) / bpPerPx
@@ -54,10 +66,14 @@ export function makeImageData({
       height: featureLayout.height, // Visual height (what gets drawn)
       totalHeight: featureLayout.totalHeight, // Total with label space
       totalWidth: featureLayout.totalWidth, // Total with label width
-      children: adjustChildPositions(featureLayout.children, startPx, recordTopPx),
+      children: adjustChildPositions(
+        featureLayout.children,
+        startPx,
+        recordTopPx,
+      ),
     }
 
-    const result = drawFeature({
+    drawFeature({
       ctx,
       feature,
       featureLayout: adjustedLayout,
@@ -73,12 +89,14 @@ export function makeImageData({
     // Determine if this feature is a gene with transcript children
     const featureType = feature.get('type')
     const isGene = featureType === 'gene'
-    const hasTranscriptChildren = adjustedLayout.children.length > 0 &&
-      adjustedLayout.children.some(child => {
-        const childType = child.feature?.get('type')
-        return childType === 'mRNA' || childType === 'transcript' ||
-               childType === 'protein_coding_primary_transcript'
-      })
+    const hasTranscriptChildren = adjustedLayout.children.some(child => {
+      const childType = child.feature?.get('type')
+      return (
+        childType === 'mRNA' ||
+        childType === 'transcript' ||
+        childType === 'protein_coding_primary_transcript'
+      )
+    })
 
     // Always add the feature's bounding box to the primary flatbush
     // Use BP coordinates for left/right (no label padding), but totalHeight for top/bottom (includes labels)
@@ -147,11 +165,15 @@ export function makeImageData({
     // The parent gene's bounding box is already in the primary flatbush for highlighting
     for (const child of featureLayout.children) {
       const childFeature = child.feature
-      if (!childFeature) continue
+      if (!childFeature) {
+        continue
+      }
 
       const childType = childFeature.get('type')
-      const isTranscript = childType === 'mRNA' || childType === 'transcript' ||
-                          childType === 'protein_coding_primary_transcript'
+      const isTranscript =
+        childType === 'mRNA' ||
+        childType === 'transcript' ||
+        childType === 'protein_coding_primary_transcript'
 
       // Only add transcript-type children to secondary flatbush
       if (!isTranscript) {
@@ -193,12 +215,11 @@ export function makeImageData({
         bottomPx,
         {
           label: childFeature.get('name') || childFeature.get('id'),
-          description: childFeature.get('description') || childFeature.get('note'),
+          description:
+            childFeature.get('description') || childFeature.get('note'),
           refName: childFeature.get('refName'),
         },
       ])
-
-      console.log('Stored transcript in layout.rectangles:', childFeature.id(), [childStart, topPx, childEnd, bottomPx])
 
       // Store the feature data for CoreGetFeatureDetails
       if (layout.rectangleData) {
@@ -207,14 +228,12 @@ export function makeImageData({
 
       // Debug: Draw blue bounding box for transcript subfeatures only
       // (BP-based left/right, totalHeight for top/bottom)
-      ctx.save()
-      ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)' // Blue for transcripts
-      ctx.lineWidth = 1
-      ctx.setLineDash([2, 2])
-      ctx.strokeRect(childLeftPx, topPx, childRightPx - childLeftPx, child.totalHeight)
-      ctx.restore()
-
-      console.log('Added TRANSCRIPT to secondary flatbush:', childFeature.id(), 'type:', childType, 'parent:', parentFeatureId, 'bbox:', childLeftPx, topPx, childRightPx, bottomPx)
+      // ctx.save()
+      // ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)' // Blue for transcripts
+      // ctx.lineWidth = 1
+      // ctx.setLineDash([2, 2])
+      // ctx.strokeRect(childLeftPx, topPx, childRightPx - childLeftPx, child.totalHeight)
+      // ctx.restore()
 
       // Store layout/feature data for nested children (CDS, UTR, exons) but don't add them to flatbush
       // This allows clicking on them to get details, but mouseover targets the parent transcript
@@ -245,7 +264,8 @@ export function makeImageData({
           child.y + child.height,
           {
             label: childFeature.get('name') || childFeature.get('id'),
-            description: childFeature.get('description') || childFeature.get('note'),
+            description:
+              childFeature.get('description') || childFeature.get('note'),
             refName: childFeature.get('refName'),
           },
         ])
@@ -279,17 +299,14 @@ export function makeImageData({
       subfeatureFlatbush.add(
         subfeatureCoords[i]!,
         subfeatureCoords[i + 1]!,
-        subfeatureCoords[i + 2]!,
-        subfeatureCoords[i + 3]!,
+        subfeatureCoords[i + 2],
+        subfeatureCoords[i + 3],
       )
     }
   } else {
     subfeatureFlatbush.add(0, 0, 0, 0)
   }
   subfeatureFlatbush.finish()
-
-  console.log('Primary flatbush created with', items.length, 'items')
-  console.log('Secondary flatbush created with', subfeatureInfos.length, 'subfeatures')
 
   return {
     flatbush: flatbush.data,
