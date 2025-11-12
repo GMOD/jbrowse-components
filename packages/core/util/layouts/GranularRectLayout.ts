@@ -6,7 +6,7 @@ import type {
 } from './BaseLayout'
 
 /**
- * OPTIMIZED Rectangle-layout manager (1.86x faster at 100k features)
+ * Optimizations performed by Claude Code (Sonnet 4.5) in 2025
  *
  * This implementation uses several micro-optimizations for maximum performance:
  *
