@@ -10,9 +10,29 @@ import type { DrawFeatureArgs, DrawingResult } from './types'
  * Draw a processed transcript feature (special handling for CDS/UTR subfeatures)
  */
 export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
-  const { feature, config } = args
+  const { feature, config, featureLayout } = args
   const subparts = getSubparts(feature, config)
-  return drawSegments(args, subparts)
+
+  // Draw the connecting line
+  const result = drawSegments(args)
+
+  // Draw subfeatures
+  for (const subfeature of subparts) {
+    const subfeatureId = String(subfeature.id())
+    const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
+    if (subfeatureLayout) {
+      const subResult = drawFeature({
+        ...args,
+        feature: subfeature,
+        featureLayout: subfeatureLayout,
+        topLevel: false,
+      })
+      result.coords.push(...subResult.coords)
+      result.items.push(...subResult.items)
+    }
+  }
+
+  return result
 }
 
 /**
@@ -29,9 +49,27 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
     case 'ProcessedTranscript':
       result = drawProcessedTranscript(args)
       break
-    case 'Segments':
+    case 'Segments': {
+      // Draw the connecting line
       result = drawSegments(args)
+      // Draw subfeatures
+      const subfeatures = feature.get('subfeatures') || []
+      for (const subfeature of subfeatures) {
+        const subfeatureId = String(subfeature.id())
+        const subfeatureLayout = args.featureLayout.getSubRecord(subfeatureId)
+        if (subfeatureLayout) {
+          const subResult = drawFeature({
+            ...args,
+            feature: subfeature,
+            featureLayout: subfeatureLayout,
+            topLevel: false,
+          })
+          result.coords.push(...subResult.coords)
+          result.items.push(...subResult.items)
+        }
+      }
       break
+    }
     case 'CDS':
       // For now, CDS is just drawn as a box (amino acids skipped)
       result = drawBox(args)

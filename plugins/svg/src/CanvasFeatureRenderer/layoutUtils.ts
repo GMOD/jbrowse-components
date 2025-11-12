@@ -45,9 +45,13 @@ export function layOutFeature(args: LayOutArgs) {
 /**
  * Lays out multiple subfeatures within a parent feature
  */
-export function layOutSubfeatures(
-  args: LayOutArgs & { subfeatures: Feature[] },
-) {
+export function layOutSubfeatures(args: {
+  layout: SceneGraph
+  subfeatures: Feature[]
+  bpPerPx: number
+  reversed: boolean
+  config: AnyConfigurationModel
+}) {
   const { layout, subfeatures, bpPerPx, reversed, config } = args
   for (const feature of subfeatures) {
     layOut({

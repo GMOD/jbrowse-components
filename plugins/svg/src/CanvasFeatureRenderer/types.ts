@@ -43,7 +43,7 @@ export interface RenderArgs {
   displayMode: string
   theme: Record<string, any>
   highResolutionScaling?: number
-  stopToken?: { flag: boolean }
+  stopToken?: string
 }
 
 export type GlyphType =
