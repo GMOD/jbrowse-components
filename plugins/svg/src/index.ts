@@ -9,7 +9,7 @@ export default class SVGPlugin extends Plugin {
   name = 'SVGPlugin'
 
   install(pluginManager: PluginManager) {
-    SvgFeatureRendererF(pluginManager)
+    // SvgFeatureRendererF(pluginManager)
     CanvasFeatureRendererF(pluginManager)
   }
 }

@@ -1616,15 +1616,6 @@
           "renderer": {
             "type": "StructuralVariantChordRenderer"
           }
-        },
-        {
-          "type": "LinearVariantDisplay",
-          "maxFeatureScreenDensity": 0.0006,
-          "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
-          }
         }
       ]
     },
