@@ -3,6 +3,8 @@ import { defaultCodonTable, generateCodonTable } from '@jbrowse/core/util'
 import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import { firstValueFrom, toArray } from 'rxjs'
 
+import { shouldRenderPeptideBackground } from './zoomThresholds'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
@@ -190,8 +192,7 @@ export async function fetchPeptideData(
   const peptideDataMap = new Map<string, PeptideData>()
 
   // Only fetch if colorByCDS is enabled and zoomed in enough
-  const zoomedInEnough = 1 / bpPerPx >= 1
-  if (!colorByCDS || !zoomedInEnough) {
+  if (!colorByCDS || !shouldRenderPeptideBackground(bpPerPx)) {
     return peptideDataMap
   }
 

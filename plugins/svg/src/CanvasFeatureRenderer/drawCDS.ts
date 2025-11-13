@@ -3,6 +3,10 @@ import { drawCDSBackground } from './drawCDSBackground'
 import { drawPeptidesOnCDS } from './drawPeptidesOnCDS'
 import { prepareAminoAcidData } from './prepareAminoAcidData'
 import { getBoxColor } from './util'
+import {
+  shouldRenderPeptideBackground,
+  shouldRenderPeptideText,
+} from './zoomThresholds'
 
 import type { DrawFeatureArgs, DrawingResult } from './types'
 
@@ -39,15 +43,12 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
     return { coords, items }
   }
 
-  const zoomedInEnoughForBackground = 1 / bpPerPx >= 1
-  const zoomedInEnoughForText = 1 / bpPerPx >= 8
-
   // Get peptide data for the parent feature (transcript)
   const parent = feature.parent() ?? feature
   const peptideData = peptideDataMap?.get(parent.id())
   const protein = peptideData?.protein
   const doRenderBackground =
-    zoomedInEnoughForBackground && colorByCDS && !!protein
+    shouldRenderPeptideBackground(bpPerPx) && colorByCDS && !!protein
 
   // Get the base CDS color (frame-based coloring if colorByCDS is on)
   const baseColor = getBoxColor({
@@ -82,7 +83,7 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
     })
 
     // Draw the amino acid text labels on top (only if zoomed in enough)
-    if (zoomedInEnoughForText) {
+    if (shouldRenderPeptideText(bpPerPx)) {
       drawPeptidesOnCDS({
         ctx,
         aggregatedAminoAcids,
