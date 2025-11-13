@@ -1,7 +1,7 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
-import { BaseLinearDisplayComponent } from '../BaseLinearDisplay'
 import configSchema from './configSchema'
+import LinearBasicDisplayComponent from './components/LinearBasicDisplayComponent'
 import modelFactory from './model'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -16,7 +16,7 @@ export default function LinearBasicDisplay(pluginManager: PluginManager) {
       stateModel: modelFactory(config),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: LinearBasicDisplayComponent,
     })
   })
 }

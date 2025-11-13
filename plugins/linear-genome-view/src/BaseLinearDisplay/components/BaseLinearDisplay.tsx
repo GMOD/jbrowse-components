@@ -4,7 +4,6 @@ import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import FloatingLabels from './FloatingLabels'
 import LinearBlocks from './LinearBlocks'
 import MenuPage from './MenuPage'
 
@@ -64,7 +63,6 @@ const BaseLinearDisplay = observer(function (props: {
         <LinearBlocks {...props} />
       )}
       {children}
-      <FloatingLabels model={model} />
 
       <Suspense fallback={null}>
         <TooltipComponent
