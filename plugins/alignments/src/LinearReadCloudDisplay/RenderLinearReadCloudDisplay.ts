@@ -136,11 +136,17 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       staticBlocks: staticBlocks, // bpToPx expects staticBlocks property
       width,
       bpToPx: (arg: { refName: string; coord: number }) => {
-        return bpToPx({
+        const res = bpToPx({
           self: viewSnap,
           refName: arg.refName,
           coord: arg.coord,
         })
+        return res !== undefined
+          ? {
+              offsetPx: res.offsetPx + Math.max(0, viewSnap.offsetPx),
+              index: res.index,
+            }
+          : undefined
       },
     }
 
