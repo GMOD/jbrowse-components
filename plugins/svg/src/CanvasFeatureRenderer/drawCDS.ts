@@ -112,6 +112,10 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
   const peptideData = peptideDataMap?.get(parent.id())
   const doRender = zoomedInEnough && colorByCDS && !!peptideData?.protein
 
+  if (colorByCDS && zoomedInEnough) {
+    console.log('[drawCDS] feature:', feature.id(), 'parent:', parent.id(), 'has peptideData:', !!peptideData, 'has protein:', !!peptideData?.protein, 'doRender:', doRender)
+  }
+
   // Draw the base rectangle
   const baseColor = getBoxColor({
     feature,
@@ -171,7 +175,7 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
                   isNonTriplet || aa.aminoAcid === '*' || aa.aminoAcid === '&'
                     ? aa.aminoAcid
                     : `${aa.aminoAcid}${aa.proteinIndex + 1}`
-                ctx.fillText(text, x, top + height - 1)
+                ctx.fillText(text, x, top)
               }
             } else {
               const x = left + (1 / bpPerPx) * centerIndex + 1 / bpPerPx / 2
@@ -192,7 +196,7 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
                   isNonTriplet || aa.aminoAcid === '*' || aa.aminoAcid === '&'
                     ? aa.aminoAcid
                     : `${aa.aminoAcid}${aa.proteinIndex + 1}`
-                ctx.fillText(text, x, top + height - 1)
+                ctx.fillText(text, x, top)
               }
             }
           }

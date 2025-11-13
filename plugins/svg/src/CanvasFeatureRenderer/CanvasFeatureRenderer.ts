@@ -34,7 +34,9 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     region: Region,
   ): Promise<string | undefined> {
     const { sessionId, sequenceAdapter } = renderProps
+    console.log('[CanvasFeatureRenderer.fetchSequence] sequenceAdapter:', sequenceAdapter, 'region:', region)
     if (!sequenceAdapter) {
+      console.warn('[CanvasFeatureRenderer.fetchSequence] No sequenceAdapter provided')
       return undefined
     }
     try {
@@ -43,6 +45,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
         sessionId,
         sequenceAdapter,
       )
+      console.log('[CanvasFeatureRenderer.fetchSequence] Got dataAdapter:', dataAdapter)
 
       const feats = await firstValueFrom(
         (dataAdapter as BaseFeatureDataAdapter)
@@ -53,9 +56,11 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
           })
           .pipe(toArray()),
       )
-      return feats[0]?.get('seq') as string | undefined
+      const seq = feats[0]?.get('seq') as string | undefined
+      console.log('[CanvasFeatureRenderer.fetchSequence] Fetched sequence length:', seq?.length)
+      return seq
     } catch (error) {
-      console.warn('Failed to fetch sequence:', error)
+      console.warn('[CanvasFeatureRenderer.fetchSequence] Failed to fetch sequence:', error)
       return undefined
     }
   }
@@ -85,12 +90,14 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     renderProps: RenderArgsDeserialized,
     features: Map<string, Feature>,
   ): Promise<Map<string, PeptideData>> {
-    const { colorByCDS, bpPerPx } = renderProps as any
+    const { colorByCDS, bpPerPx, exportSVG } = renderProps as any
     const peptideDataMap = new Map<string, PeptideData>()
 
     // Only fetch if colorByCDS is enabled and zoomed in enough
     const zoomedInEnough = 1 / bpPerPx >= 10
+    console.log('[CanvasFeatureRenderer.fetchPeptideData] colorByCDS:', colorByCDS, 'zoomedInEnough:', zoomedInEnough, 'exportSVG:', exportSVG, 'features:', features.size)
     if (!colorByCDS || !zoomedInEnough) {
+      console.log('[CanvasFeatureRenderer.fetchPeptideData] Skipping: colorByCDS or zoom level not met')
       return peptideDataMap
     }
 
@@ -116,6 +123,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
         }
       }
     }
+    console.log('[CanvasFeatureRenderer.fetchPeptideData] Found', transcriptsToFetch.length, 'transcripts to fetch')
 
     // Fetch sequences for all transcripts
     for (const transcript of transcriptsToFetch) {
@@ -146,9 +154,10 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
                 sequenceData,
                 protein,
               })
+              console.log('[CanvasFeatureRenderer.fetchPeptideData] Stored peptide data for:', transcript.id(), 'protein length:', protein.length)
             } catch (error) {
               console.warn(
-                `Failed to convert sequence to peptides for ${transcript.id()}:`,
+                `[CanvasFeatureRenderer.fetchPeptideData] Failed to convert sequence to peptides for ${transcript.id()}:`,
                 error,
               )
               // Still store the sequence data even if peptide conversion failed
@@ -158,12 +167,13 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
         }
       } catch (error) {
         console.warn(
-          `Failed to fetch sequence for transcript ${transcript.id()}:`,
+          `[CanvasFeatureRenderer.fetchPeptideData] Failed to fetch sequence for transcript ${transcript.id()}:`,
           error,
         )
       }
     }
 
+    console.log('[CanvasFeatureRenderer.fetchPeptideData] Returning peptideDataMap with', peptideDataMap.size, 'entries')
     return peptideDataMap
   }
 

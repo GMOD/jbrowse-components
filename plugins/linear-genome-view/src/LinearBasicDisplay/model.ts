@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -11,7 +11,6 @@ import { BaseLinearDisplay } from '../BaseLinearDisplay'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from 'mobx-state-tree'
-import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 
 const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
@@ -177,19 +176,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         renderProps() {
           const superProps = superRenderProps()
-          const { assemblyManager, parentTrack } = superProps as any
+          const session = getSession(self)
+          const { assemblyManager } = session
 
           // Get the assembly's sequenceAdapter configuration
           let sequenceAdapter
           try {
-            const assemblyNames = getTrackAssemblyNames(parentTrack)
-            const assembly = assemblyManager.get(assemblyNames[0])
-            if (assembly) {
-              sequenceAdapter = getConf(assembly, ['sequence', 'adapter'])
+            // Get assembly names from the display's configuration
+            const displayConf = self.configuration
+            const assemblyNames = readConfObject(displayConf, 'assemblyNames') as string[]
+            console.log('[LinearBasicDisplay] assemblyNames:', assemblyNames)
+
+            if (assemblyNames && assemblyNames.length > 0) {
+              const assembly = assemblyManager.get(assemblyNames[0])
+              if (assembly) {
+                // Get the sequence adapter config and ensure it's a plain object
+                const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
+                sequenceAdapter = adapterConfig
+                console.log('[LinearBasicDisplay] Got sequenceAdapter:', sequenceAdapter)
+              } else {
+                console.warn('[LinearBasicDisplay] No assembly found for:', assemblyNames[0])
+              }
             }
           } catch (e) {
             // If we can't get the assembly, just continue without sequenceAdapter
-            console.warn('Could not get assembly sequence adapter:', e)
+            console.warn('[LinearBasicDisplay] Could not get assembly sequence adapter:', e)
           }
 
           return {
