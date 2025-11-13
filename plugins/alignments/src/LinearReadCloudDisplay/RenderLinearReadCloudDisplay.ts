@@ -9,6 +9,38 @@ interface RenderToAbstractCanvasOptions {
   highResolutionScaling?: number
 }
 
+/**
+ * Simple helper to convert base pair coordinates to pixel coordinates
+ * for RPC rendering context
+ */
+function bpToPxSimple({
+  refName,
+  coord,
+  regions,
+  bpPerPx,
+}: {
+  refName: string
+  coord: number
+  regions: Region[]
+  bpPerPx: number
+}): { offsetPx: number } | undefined {
+  for (const region of regions) {
+    if (
+      refName === region.refName &&
+      coord >= region.start &&
+      coord <= region.end
+    ) {
+      const bpOffset = region.reversed
+        ? region.end - coord
+        : coord - region.start
+      return {
+        offsetPx: Math.round(bpOffset / bpPerPx),
+      }
+    }
+  }
+  return undefined
+}
+
 export interface RenderLinearReadCloudDisplayArgs {
   regions: Region[]
   chainData: ChainData
@@ -54,28 +86,19 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       exportSVG,
     } = deserializedArgs
 
-    // Create region lookup map for fast bpToPx calculations
-    // Assume refNames are already canonical
-    const regionMap = new Map<string, Region>()
-    for (const region of regions) {
-      regionMap.set(region.refName, region)
-    }
-
     // Create a mock view object with the necessary properties
+    // offsetPx is positive when scrolled right
     const view: any = {
       bpPerPx,
       offsetPx,
       assemblyNames: [assemblyName],
       bpToPx: (arg: { refName: string; coord: number }) => {
-        const { refName, coord } = arg
-        const region = regionMap.get(refName)
-        if (!region) {
-          return undefined
-        }
-        // Calculate offset in pixels from start of region
-        const bpOffset = coord - region.start
-        const pxOffset = bpOffset / bpPerPx + (region.refName === regions[0]?.refName ? 0 : offsetPx)
-        return { offsetPx: pxOffset }
+        return bpToPxSimple({
+          refName: arg.refName,
+          coord: arg.coord,
+          regions,
+          bpPerPx,
+        })
       },
     }
 
@@ -124,7 +147,13 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
           featureHeight: number,
         ) => {
           // Always pass height, even for stack mode (it just won't use it)
-          return calculateYOffsets(computedChains, params, view, featureHeight, height)
+          return calculateYOffsets(
+            computedChains,
+            params,
+            view,
+            featureHeight,
+            height,
+          )
         }
 
         // Call the drawing function
