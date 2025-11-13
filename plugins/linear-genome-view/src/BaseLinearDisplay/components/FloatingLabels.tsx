@@ -9,27 +9,7 @@ import {
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { BaseLinearDisplayModel } from '../model'
-
-// Cache for text measurements to avoid re-measuring same text
-const textMeasureCache = new Map<string, number>()
-
-function getCachedMeasureText(text: string, fontSize: number): number {
-  const key = `${text}:${fontSize}`
-  let width = textMeasureCache.get(key)
-  if (width === undefined) {
-    width = measureText(text, fontSize)
-    // Keep cache size reasonable (max 500 entries)
-    if (textMeasureCache.size > 500) {
-      const firstKey = textMeasureCache.keys().next().value
-      if (firstKey) {
-        textMeasureCache.delete(firstKey)
-      }
-    }
-    textMeasureCache.set(key, width)
-  }
-  return width
-}
+import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 
 interface LabelItemProps {
   label: string
@@ -41,7 +21,7 @@ interface LabelItemProps {
 const FloatingLabels = observer(function FloatingLabels({
   model,
 }: {
-  model: BaseLinearDisplayModel
+  model: FeatureTrackModel
 }): React.ReactElement | null {
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)
@@ -51,6 +31,7 @@ const FloatingLabels = observer(function FloatingLabels({
 
   const containerRef = useRef<HTMLDivElement>(null)
   const domElementsRef = useRef<Map<string, HTMLDivElement>>(new Map())
+  const { layoutFeatures, showLabels, showDescriptions } = model
 
   // Memoize the processed label data to avoid recalculating positions
   const labelData = useMemo(() => {
@@ -61,16 +42,23 @@ const FloatingLabels = observer(function FloatingLabels({
     const fontSize = 11
     const result: (LabelItemProps & { key: string })[] = []
 
+    // Use model getters for showLabels and showDescriptions
+
     for (const [key, val] of model.layoutFeatures.entries()) {
       if (!val?.[4]) {
         continue
       }
 
       const [left, , right, bottom, feature] = val
-      const { refName = '', description, label } = feature
+      const { refName = '', description = '', label = '' } = feature
 
-      // Skip if both label and description are empty
-      if (!label && !description) {
+      // Determine what to display based on config settings
+      const displayLabel = showLabels && label ? label : ''
+      const displayDescription =
+        showDescriptions && description ? description : ''
+
+      // Skip if both display label and description are empty
+      if (!displayLabel && !displayDescription) {
         continue
       }
 
@@ -88,9 +76,10 @@ const FloatingLabels = observer(function FloatingLabels({
         continue
       }
 
-      // Cache text measurement - use label if available, otherwise use description
-      const textForWidth = label || description || ''
-      const labelWidth = getCachedMeasureText(textForWidth, fontSize)
+      const labelWidth = measureText(
+        displayLabel || displayDescription,
+        fontSize,
+      )
 
       // Calculate clamped position
       const leftPos = clamp(
@@ -101,19 +90,19 @@ const FloatingLabels = observer(function FloatingLabels({
           : Number.POSITIVE_INFINITY,
       )
 
-      const topPos = bottom - 14 * (+!!description + +!!label)
+      const topPos = bottom - 14 * (+!!displayDescription + +!!displayLabel)
 
       result.push({
         key,
-        label,
-        description: description || '',
+        label: displayLabel,
+        description: displayDescription,
         leftPos,
         topPos,
       })
     }
 
     return result
-  }, [model.layoutFeatures, view, assembly, offsetPx])
+  }, [layoutFeatures, view, assembly, offsetPx, showLabels, showDescriptions])
 
   // Manually manipulate DOM for better performance
   useEffect(() => {
