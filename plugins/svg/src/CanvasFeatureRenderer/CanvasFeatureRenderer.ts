@@ -41,7 +41,6 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
         return fetchPeptideData(this.pluginManager, renderProps, features)
       },
     )
-    console.log({ peptideDataMap })
 
     // Render to canvas
     const res = await updateStatus(
