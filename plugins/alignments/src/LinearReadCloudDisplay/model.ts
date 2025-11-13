@@ -95,6 +95,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Flag to indicate if we're currently rendering via RPC
        */
       isRendering: false,
+      /**
+       * #volatile
+       * Chain ID of the currently selected feature for persistent highlighting
+       */
+      selectedFeatureId: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -183,6 +188,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setIsRendering(flag: boolean) {
         self.isRendering = flag
+      },
+      /**
+       * #action
+       * Set the ID of the selected feature for persistent highlighting
+       */
+      setSelectedFeatureId(id: string | undefined) {
+        self.selectedFeatureId = id
       },
     }))
     .views(self => {

@@ -40,6 +40,29 @@ const Cloud = observer(function ({
     return model.featureLayout ? Flatbush.from(model.featureLayout.data) : null
   }, [model.featureLayout])
 
+  // Look up the bounds of the selected feature by ID
+  const selectedFeatureBounds = useMemo(() => {
+    if (!model.selectedFeatureId) {
+      return null
+    }
+
+    // Find the feature with the matching chain ID
+    const feature = model.featuresForFlatbush.find(
+      f => f.chainId === model.selectedFeatureId,
+    )
+
+    if (feature) {
+      return {
+        x: feature.chainMinX,
+        y: feature.y1,
+        width: feature.chainMaxX - feature.chainMinX,
+        height: feature.y2 - feature.y1,
+      }
+    }
+
+    return null
+  }, [model.selectedFeatureId, model.featuresForFlatbush])
+
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const cb = useCallback(
     (ref: HTMLCanvasElement) => {
@@ -137,7 +160,12 @@ const Cloud = observer(function ({
 
         if (feature) {
           model.selectFeature(feature.chain)
+          // Store the chain ID for persistent highlighting
+          model.setSelectedFeatureId(feature.chainId)
         }
+      } else {
+        // Clear selection when clicking on empty area
+        model.setSelectedFeatureId(undefined)
       }
     },
     [flatbushIndex, model],
@@ -173,6 +201,21 @@ const Cloud = observer(function ({
         width={width * 2}
         height={height * 2}
       />
+      {selectedFeatureBounds ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: selectedFeatureBounds.x,
+            top: selectedFeatureBounds.y,
+            width: selectedFeatureBounds.width,
+            height: selectedFeatureBounds.height,
+            border: '2px solid #0066cc',
+            backgroundColor: 'rgba(0, 102, 204, 0.1)',
+            pointerEvents: 'none',
+            boxSizing: 'border-box',
+          }}
+        />
+      ) : null}
       {hoveredFeature ? (
         <div
           style={{
