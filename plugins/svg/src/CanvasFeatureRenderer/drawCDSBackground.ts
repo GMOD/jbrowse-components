@@ -35,11 +35,9 @@ export function drawCDSBackground(args: DrawCDSBackgroundArgs) {
 
   const flipper = reversed ? -1 : 1
   const rightPos = left + width
-
-  // Draw each amino acid background
-  for (const [index, aggregatedAminoAcid] of aggregatedAminoAcids.entries()) {
-    const aa = aggregatedAminoAcid
-    const isAlternate = index % 2 === 1
+  for (let i = 0, l = aggregatedAminoAcids.length; i < l; i++) {
+    const aa = aggregatedAminoAcids[i]!
+    const isAlternate = i % 2 === 1
     const bgColor = isAlternate
       ? darken(colord(baseColor).toHex(), 0.1)
       : lighten(colord(baseColor).toHex(), 0.2)

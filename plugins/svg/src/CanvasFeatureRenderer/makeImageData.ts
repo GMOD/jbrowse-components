@@ -3,7 +3,6 @@ import { bpToPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { drawFeature } from './drawFeature'
-import { getLayoutWidth, layoutFeature } from './simpleLayout'
 
 import type {
   FlatbushItem,
@@ -11,11 +10,6 @@ import type {
   RenderArgs,
   SubfeatureInfo,
 } from './types'
-import type { Feature } from '@jbrowse/core/util'
-
-const xPadding = 3
-const yPadding = 5
-
 /**
  * Render features to a canvas context and return spatial index data
  */
@@ -318,68 +312,4 @@ export function makeImageData({
     subfeatureFlatbush: subfeatureFlatbush.data,
     subfeatureInfos,
   }
-}
-
-/**
- * Compute layouts for all features before rendering
- * This is called in the worker to pre-compute collision detection
- */
-export function computeLayouts({
-  features,
-  bpPerPx,
-  region,
-  config,
-  layout,
-}: {
-  features: Map<string, Feature>
-  bpPerPx: number
-  region: any
-  config: any
-  layout: any
-}): LayoutRecord[] {
-  const reversed = region.reversed || false
-  const layoutRecords: LayoutRecord[] = []
-
-  for (const feature of features.values()) {
-    // Create simple layout for feature and its subfeatures
-    const featureLayout = layoutFeature({
-      feature,
-      bpPerPx,
-      reversed,
-      config,
-    })
-
-    // Calculate total width and height including subfeatures
-    const totalWidth = getLayoutWidth(featureLayout)
-    // Use total height (including label space) for collision detection
-    const totalHeight = featureLayout.totalHeight
-
-    // Add to collision detection layout
-    const topPx = layout.addRect(
-      feature.id(),
-      feature.get('start'),
-      feature.get('start') + totalWidth * bpPerPx + xPadding * bpPerPx,
-      totalHeight + yPadding,
-      feature,
-      {
-        label: feature.get('name') || feature.get('id'),
-        description: feature.get('description') || feature.get('note'),
-        refName: feature.get('refName'),
-        serializableData: {
-          name: feature.get('name') || feature.get('id'),
-          description: feature.get('description') || feature.get('note'),
-        },
-      },
-    )
-
-    if (topPx !== null) {
-      layoutRecords.push({
-        feature,
-        layout: featureLayout,
-        topPx,
-      })
-    }
-  }
-
-  return layoutRecords
 }

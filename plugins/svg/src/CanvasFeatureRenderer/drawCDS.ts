@@ -20,6 +20,7 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
     theme,
     reversed,
     peptideDataMap,
+    colorByCDS = false,
   } = args
   const { start, end } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
@@ -38,25 +39,26 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
     return { coords, items }
   }
 
-  const { colorByCDS: colorByCDSFromArgs = false } = args
-  const zoomedInEnough = 1 / bpPerPx >= 8
+  const zoomedInEnoughForBackground = 1 / bpPerPx >= 1
+  const zoomedInEnoughForText = 1 / bpPerPx >= 8
 
   // Get peptide data for the parent feature (transcript)
   const parent = feature.parent() ?? feature
   const peptideData = peptideDataMap?.get(parent.id())
   const protein = peptideData?.protein
-  const doRender = zoomedInEnough && colorByCDSFromArgs && !!protein
+  const doRenderBackground =
+    zoomedInEnoughForBackground && colorByCDS && !!protein
 
   // Get the base CDS color (frame-based coloring if colorByCDS is on)
   const baseColor = getBoxColor({
     feature,
     config,
-    colorByCDS: colorByCDSFromArgs,
+    colorByCDS,
     theme,
   })
 
-  // If we have peptide data and should render it (amino acid backgrounds + labels)
-  if (doRender) {
+  // If we have peptide data and should render amino acid backgrounds
+  if (doRenderBackground) {
     const aggregatedAminoAcids = prepareAminoAcidData(
       parent,
       protein,
@@ -65,22 +67,22 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
       strand,
     )
 
-    if (aggregatedAminoAcids) {
-      // Draw the alternating amino acid background colors
-      drawCDSBackground({
-        ctx,
-        aggregatedAminoAcids,
-        baseColor,
-        left,
-        top,
-        width,
-        height,
-        bpPerPx,
-        strand,
-        reversed,
-      })
+    // Draw the alternating amino acid background colors
+    drawCDSBackground({
+      ctx,
+      aggregatedAminoAcids,
+      baseColor,
+      left,
+      top,
+      width,
+      height,
+      bpPerPx,
+      strand,
+      reversed,
+    })
 
-      // Draw the amino acid text labels on top
+    // Draw the amino acid text labels on top (only if zoomed in enough)
+    if (zoomedInEnoughForText) {
       drawPeptidesOnCDS({
         ctx,
         aggregatedAminoAcids,
@@ -113,12 +115,10 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
         topPx: top,
         bottomPx: top + height,
       })
-
-      return { coords, items }
     }
-    // If amino acid data preparation failed, fall through to regular box
+    return { coords, items }
+  } else {
+    // Fall back to regular box drawing if peptide rendering is not available or failed
+    return drawBox(args)
   }
-
-  // Fall back to regular box drawing if peptide rendering is not available or failed
-  return drawBox(args)
 }
