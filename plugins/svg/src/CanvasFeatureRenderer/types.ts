@@ -5,7 +5,7 @@ import type { Theme } from '@mui/material'
 
 export interface SequenceData {
   seq: string
-  cds: Array<{ start: number; end: number }>
+  cds: { start: number; end: number }[]
 }
 
 export interface PeptideData {

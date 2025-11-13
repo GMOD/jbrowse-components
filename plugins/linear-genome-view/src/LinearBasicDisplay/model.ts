@@ -1,6 +1,10 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, getConf, readConfObject } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -183,20 +187,35 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           let sequenceAdapter
           try {
             // Get assembly names from the parent track's configuration
-            const track = getParent(self, 2) as any
-            if (track && track.configuration) {
-              const assemblyNames = readConfObject(track.configuration, 'assemblyNames') as string[]
-              console.log('[LinearBasicDisplay] assemblyNames from track:', assemblyNames)
+            const track = getParent(self, 2)
+            if (track?.configuration) {
+              const assemblyNames = readConfObject(
+                track.configuration,
+                'assemblyNames',
+              ) as string[]
+              console.log(
+                '[LinearBasicDisplay] assemblyNames from track:',
+                assemblyNames,
+              )
 
               if (assemblyNames && assemblyNames.length > 0) {
-                const assembly = assemblyManager.get(assemblyNames[0])
+                const assembly = assemblyManager.get(assemblyNames[0]!)
                 if (assembly) {
                   // Get the sequence adapter config and ensure it's a plain object
-                  const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
+                  const adapterConfig = getConf(assembly, [
+                    'sequence',
+                    'adapter',
+                  ])
                   sequenceAdapter = adapterConfig
-                  console.log('[LinearBasicDisplay] Got sequenceAdapter:', sequenceAdapter)
+                  console.log(
+                    '[LinearBasicDisplay] Got sequenceAdapter:',
+                    sequenceAdapter,
+                  )
                 } else {
-                  console.warn('[LinearBasicDisplay] No assembly found for:', assemblyNames[0])
+                  console.warn(
+                    '[LinearBasicDisplay] No assembly found for:',
+                    assemblyNames[0],
+                  )
                 }
               }
             } else {
@@ -204,7 +223,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             }
           } catch (e) {
             // If we can't get the assembly, just continue without sequenceAdapter
-            console.warn('[LinearBasicDisplay] Could not get assembly sequence adapter:', e)
+            console.warn(
+              '[LinearBasicDisplay] Could not get assembly sequence adapter:',
+              e,
+            )
           }
 
           return {

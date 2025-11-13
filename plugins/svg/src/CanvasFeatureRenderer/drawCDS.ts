@@ -110,10 +110,22 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
   // Get peptide data for the parent feature (transcript)
   const parent = feature.parent() ?? feature
   const peptideData = peptideDataMap?.get(parent.id())
-  const doRender = zoomedInEnough && colorByCDSFromArgs && !!peptideData?.protein
+  const doRender =
+    zoomedInEnough && colorByCDSFromArgs && !!peptideData?.protein
 
   if (colorByCDSFromArgs && zoomedInEnough) {
-    console.log('[drawCDS] feature:', feature.id(), 'parent:', parent.id(), 'has peptideData:', !!peptideData, 'has protein:', !!peptideData?.protein, 'doRender:', doRender)
+    console.log(
+      '[drawCDS] feature:',
+      feature.id(),
+      'parent:',
+      parent.id(),
+      'has peptideData:',
+      !!peptideData,
+      'has protein:',
+      !!peptideData?.protein,
+      'doRender:',
+      doRender,
+    )
   }
 
   // Draw the base rectangle
@@ -146,8 +158,11 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
           const rightPos = left + width
 
           // Draw each amino acid
-          for (let index = 0; index < aggregatedAminoAcids.length; index++) {
-            const aa = aggregatedAminoAcids[index]!
+          for (const [
+            index,
+            aggregatedAminoAcid,
+          ] of aggregatedAminoAcids.entries()) {
+            const aa = aggregatedAminoAcid
             const centerIndex = Math.floor((aa.startIndex + aa.endIndex) / 2)
             const isNonTriplet = aa.length % 3 !== 0 || aa.aminoAcid === '&'
 

@@ -52,8 +52,12 @@ export default class PileupRenderer extends BoxRendererType {
       async () => {
         const { sessionId, adapterConfig } = renderProps
         const { sequenceAdapter } = adapterConfig
-        let regionSequence
-        if (colorBy?.type === 'methylation' && features.size && sequenceAdapter) {
+        let regionSequence: string | undefined
+        if (
+          colorBy?.type === 'methylation' &&
+          features.size &&
+          sequenceAdapter
+        ) {
           const { dataAdapter } = await getAdapter(
             this.pluginManager,
             sessionId,
