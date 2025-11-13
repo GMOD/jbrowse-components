@@ -1,4 +1,4 @@
-import { fillRectCtx, strokeRectCtx } from './canvasUtils'
+import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
 import { drawChevron } from './chevron'
 import { fillColor, getSingletonColor, strokeColor } from './color'
 import { getPrimaryStrandFromFlags } from './primaryStrand'
@@ -89,12 +89,15 @@ export function drawLongReadChains({
       })?.offsetPx
 
       if (firstPx !== undefined && lastPx !== undefined) {
-        const lineY = chainY + featureHeight / 2 - 0.5
-        ctx.beginPath()
-        ctx.strokeStyle = '#666'
-        ctx.moveTo(firstPx - view.offsetPx, lineY)
-        ctx.lineTo(lastPx - view.offsetPx, lineY)
-        ctx.stroke()
+        const lineY = chainY + featureHeight / 2
+        lineToCtx(
+          firstPx - view.offsetPx,
+          lineY,
+          lastPx - view.offsetPx,
+          lineY,
+          ctx,
+          '#666',
+        )
       }
     }
 

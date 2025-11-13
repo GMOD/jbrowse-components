@@ -1,4 +1,4 @@
-import { fillRectCtx, strokeRectCtx } from './canvasUtils'
+import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
 import { drawChevron } from './chevron'
 import { getPairedColor, getSingletonColor } from './color'
 import { CHEVRON_WIDTH } from './util'
@@ -92,11 +92,12 @@ export function drawPairChains({
       })?.offsetPx
 
       if (r1s !== undefined && r2s !== undefined) {
-        fillRectCtx(
+        const lineY = chainY + featureHeight / 2
+        lineToCtx(
           r1s - view.offsetPx,
-          chainY + featureHeight / 2 - 0.5,
-          r2s - r1s,
-          1,
+          lineY,
+          r2s - view.offsetPx,
+          lineY,
           ctx,
           '#666',
         )
