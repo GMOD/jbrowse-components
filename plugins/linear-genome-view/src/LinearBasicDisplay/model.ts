@@ -12,7 +12,7 @@ import { cast, getEnv, getParent, types } from 'mobx-state-tree'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from 'mobx-state-tree'
 
@@ -187,7 +187,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           let sequenceAdapter
           try {
             // Get assembly names from the parent track's configuration
-            const track = getParent(self, 2)
+            const track = getParent<{ configuration: AnyConfigurationModel }>(
+              self,
+              2,
+            )
             if (track.configuration) {
               const assemblyNames = readConfObject(
                 track.configuration,

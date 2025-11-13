@@ -163,9 +163,7 @@ export function layoutFeature(args: {
     // Add the label height to totalHeight only (not to visual height)
     layout.totalHeight = layout.height + extraHeight
     // Add the label width (converted to bp) to totalWidth
-    if (maxLabelWidth > 0) {
-      layout.totalWidth = layout.width + maxLabelWidth
-    }
+    layout.totalWidth = layout.width + maxLabelWidth
   }
 
   return layout
