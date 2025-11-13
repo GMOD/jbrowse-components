@@ -61,6 +61,7 @@ const CanvasFeatureRendering = observer(function (props: {
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
+  const mouseDownPos = useRef<{ x: number; y: number } | null>(null)
   // For selected features, look up in items map (O(1) instead of O(n))
   const selectedItem = selectedFeatureId
     ? itemsById.get(selectedFeatureId)
@@ -95,9 +96,17 @@ const CanvasFeatureRendering = observer(function (props: {
       data-testid="canvas-feature-overlay"
       style={{ position: 'relative', width: canvasWidth, height }}
       onMouseLeave={onMouseLeave}
-      onMouseDown={(_event: React.MouseEvent) => {
+      onMouseDown={(event: React.MouseEvent) => {
         setMouseIsDown(true)
         setMovedDuringLastMouseDown(false)
+        if (ref.current) {
+          const rect = ref.current.getBoundingClientRect()
+          const scrollT = ref.current.scrollTop
+          mouseDownPos.current = {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top + scrollT,
+          }
+        }
       }}
       onMouseUp={() => {
         setMouseIsDown(false)
@@ -106,13 +115,20 @@ const CanvasFeatureRendering = observer(function (props: {
         if (!ref.current) {
           return
         }
-        if (mouseIsDown) {
-          setMovedDuringLastMouseDown(true)
-        }
         const rect = ref.current.getBoundingClientRect()
         const scrollT = ref.current.scrollTop
         const offsetX = event.clientX - rect.left
         const offsetY = event.clientY - rect.top + scrollT
+
+        // Only set movedDuringLastMouseDown if mouse has moved more than 3px
+        if (mouseIsDown && mouseDownPos.current) {
+          const dx = offsetX - mouseDownPos.current.x
+          const dy = offsetY - mouseDownPos.current.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+          if (distance > 3) {
+            setMovedDuringLastMouseDown(true)
+          }
+        }
 
         // Search primary flatbush for feature to highlight
         const search = flatbush2.search(

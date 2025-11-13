@@ -51,6 +51,7 @@ export function computeLayouts({
     )
 
     // Add to collision detection layout
+    // Pass feature as data (not serialized) and minimal info as serializableData
     const topPx = layout.addRect(
       feature.id(),
       feature.get('start'),
@@ -61,10 +62,6 @@ export function computeLayouts({
         label: name,
         description,
         refName: feature.get('refName'),
-        serializableData: {
-          name,
-          description,
-        },
       },
     )
 

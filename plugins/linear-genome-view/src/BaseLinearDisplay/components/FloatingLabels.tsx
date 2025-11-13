@@ -8,8 +8,8 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 
 interface LabelItemProps {
   label: string
@@ -41,7 +41,7 @@ const FloatingLabels = observer(function FloatingLabels({
 
     const fontSize = 11
     const result: (LabelItemProps & { key: string })[] = []
-    for (const [key, val] of model.layoutFeatures.entries()) {
+    for (const [key, val] of layoutFeatures.entries()) {
       if (!val?.[4]) {
         continue
       }
@@ -113,7 +113,6 @@ const FloatingLabels = observer(function FloatingLabels({
 
     // Create or update elements
     for (const { key, label, description, leftPos, topPos } of labelData) {
-      console.log('wtf here', label)
       newKeys.add(key)
 
       let element = domElements.get(key)

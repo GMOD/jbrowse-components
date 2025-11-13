@@ -6,9 +6,14 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getSession } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  getContainingTrack,
+  getSession,
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { cast, getEnv, getParent, types } from 'mobx-state-tree'
+import { cast, getEnv, getParent, isAlive, types } from 'mobx-state-tree'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
@@ -17,6 +22,7 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
 
 const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
@@ -188,43 +194,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
           // Get the assembly's sequenceAdapter configuration
           let sequenceAdapter
-          try {
-            // Get assembly names from the parent track's configuration
-            const track = getParent<{ configuration: AnyConfigurationModel }>(
-              self,
-              2,
-            )
-            if (track.configuration) {
-              const assemblyNames = readConfObject(
-                track.configuration,
-                'assemblyNames',
-              ) as string[]
+          // Get assembly names from the parent track's configuration
+          const track = getParent<{ configuration: AnyConfigurationModel }>(
+            self,
+            2,
+          )
+          const assemblyNames = readConfObject(
+            track.configuration,
+            'assemblyNames',
+          ) as string[]
 
-              if (assemblyNames.length > 0) {
-                const assembly = assemblyManager.get(assemblyNames[0]!)
-                if (assembly) {
-                  // Get the sequence adapter config and ensure it's a plain object
-                  const adapterConfig = getConf(assembly, [
-                    'sequence',
-                    'adapter',
-                  ])
-                  sequenceAdapter = adapterConfig
-                } else {
-                  console.warn(
-                    '[LinearBasicDisplay] No assembly found for:',
-                    assemblyNames[0],
-                  )
-                }
-              }
-            } else {
-              console.warn('[LinearBasicDisplay] Could not get parent track')
-            }
-          } catch (e) {
-            // If we can't get the assembly, just continue without sequenceAdapter
-            console.warn(
-              '[LinearBasicDisplay] Could not get assembly sequence adapter:',
-              e,
-            )
+          const assembly = assemblyManager.get(assemblyNames[0]!)
+          if (assembly) {
+            // Get the sequence adapter config and ensure it's a plain object
+            const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
+            sequenceAdapter = adapterConfig
+          } else {
+            console.warn('No assembly found for:', assemblyNames[0])
           }
 
           return {
@@ -234,6 +220,65 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               filters: self.activeFilters,
             }),
             sequenceAdapter,
+            // Override onFeatureClick to use CoreGetFeatureDetails This avoids
+            // heavy serialization overhead from webworker
+            async onFeatureClick(_: unknown, featureId?: string) {
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      layoutId: getContainingTrack(self).id,
+                      rendererType: self.rendererTypeName,
+                    },
+                  )) as { feature: SimpleFeatureSerialized | undefined }
+
+                  if (isAlive(self) && feature) {
+                    self.selectFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notifyError(`${e}`, e)
+              }
+            },
+            // Override onFeatureContextMenu to use CoreGetFeatureDetails
+            async onFeatureContextMenu(_: unknown, featureId?: string) {
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      layoutId: getContainingTrack(self).id,
+                      rendererType: self.rendererTypeName,
+                    },
+                  )) as { feature: SimpleFeatureSerialized | undefined }
+
+                  if (isAlive(self) && feature) {
+                    self.setContextMenuFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notifyError(`${e}`, e)
+              }
+            },
           }
         },
 

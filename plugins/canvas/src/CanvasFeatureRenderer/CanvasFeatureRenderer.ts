@@ -70,6 +70,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     const result = await super.render({
       ...renderProps,
       ...res,
+      features,
       layout,
       height,
       width,
@@ -78,6 +79,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     return {
       ...result,
       ...res,
+      features: new Map(),
       layout,
       height,
       width,

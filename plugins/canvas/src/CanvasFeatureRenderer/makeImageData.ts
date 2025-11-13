@@ -219,24 +219,20 @@ export function makeImageData({
         name: transcriptName,
       })
 
-      // Store the rectangle data for the transcript for selection/clicking
-      // Note: This is stored but not used for primary mouseover highlighting
-      layout.rectangles.set(childFeature.id(), [
+      // Store child feature using addRect so CoreGetFeatureDetails can access it
+      // Pass feature as data (not serialized) and minimal info as serializableData
+      layout.addRect(
+        childFeature.id(),
         childStart,
-        topPx,
         childEnd,
-        bottomPx,
+        bottomPx - topPx,
+        childFeature,
         {
           label: transcriptName,
           description: transcriptDescription,
           refName: childFeature.get('refName'),
         },
-      ])
-
-      // Store the feature data for CoreGetFeatureDetails
-      if (layout.rectangleData) {
-        layout.rectangleData.set(childFeature.id(), childFeature)
-      }
+      )
 
       // Debug: Draw blue bounding box for transcript subfeatures only
       // (includes totalWidth and totalHeight with label extent)
@@ -282,21 +278,19 @@ export function makeImageData({
           }) || '',
         )
 
-        layout.rectangles.set(childFeature.id(), [
+        // Store nested child feature using addRect so CoreGetFeatureDetails can access it
+        layout.addRect(
+          childFeature.id(),
           childStart,
-          child.y,
           childEnd,
-          child.y + child.height,
+          child.height,
+          childFeature,
           {
             label: childName,
             description: childDescription,
             refName: childFeature.get('refName'),
           },
-        ])
-
-        if (layout.rectangleData) {
-          layout.rectangleData.set(childFeature.id(), childFeature)
-        }
+        )
 
         if (child.children.length > 0) {
           addNestedSubfeaturesToLayout(layout, child, region, bpPerPx, config)

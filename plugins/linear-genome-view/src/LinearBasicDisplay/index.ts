@@ -1,7 +1,7 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchema from './configSchema'
 import LinearBasicDisplayComponent from './components/LinearBasicDisplayComponent'
+import configSchema from './configSchema'
 import modelFactory from './model'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
