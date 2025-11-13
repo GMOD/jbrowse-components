@@ -85,6 +85,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Current height of the layout after drawing
        */
       layoutHeight: 0,
+      /**
+       * #volatile
+       * ImageData returned from RPC rendering
+       */
+      renderingImageData: undefined as ImageBitmap | undefined,
+      /**
+       * #volatile
+       * Flag to indicate if we're currently rendering via RPC
+       */
+      isRendering: false,
     }))
     .views(self => ({
       /**
@@ -159,6 +169,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setDrawCloud(b: boolean) {
         self.drawCloud = b
+      },
+      /**
+       * #action
+       * Set the rendering imageData from RPC
+       */
+      setRenderingImageData(imageData: ImageBitmap | undefined) {
+        self.renderingImageData = imageData
+      },
+      /**
+       * #action
+       * Set the rendering flag
+       */
+      setIsRendering(flag: boolean) {
+        self.isRendering = flag
       },
     }))
     .views(self => {
@@ -289,9 +313,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('../shared/afterAttach')
-            const { drawFeats } = await import('./drawFeatsAbstract')
-            doAfterAttach(self, drawFeats)
+            const { doAfterAttachRPC } = await import('./afterAttachRPC')
+            doAfterAttachRPC(self)
           } catch (e) {
             console.error(e)
             self.setError(e)

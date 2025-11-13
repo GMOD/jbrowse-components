@@ -212,35 +212,53 @@ export function addChainMouseoverRects(
   }
 }
 
+export interface DrawFeatsParams {
+  chainData: ChainData
+  featureHeight: number
+  colorBy: { type: string; tag?: string; extra?: Record<string, unknown> }
+  drawSingletons: boolean
+  drawProperPairs: boolean
+  flipStrandLongReadChains: boolean
+  noSpacing?: boolean
+  trackMaxHeight?: number
+}
+
+export interface DrawFeatsResult {
+  featuresForFlatbush: FlatbushEntry[]
+  layoutHeight?: number
+}
+
 /**
- * Common drawing function that delegates Y-offset calculation to a strategy function
+ * Core drawing function without model dependencies
+ * Can be used in RPC context
  */
-export function drawFeatsCommon(
-  self: LinearReadCloudDisplayModel,
+export function drawFeatsCore(
   ctx: CanvasRenderingContext2D,
+  params: DrawFeatsParams,
+  view: LGV,
+  asm: any,
   calculateYOffsets: (
     computedChains: ComputedChain[],
-    self: LinearReadCloudDisplayModel,
+    params: DrawFeatsParams,
     view: LGV,
     featureHeight: number,
+    height?: number,
   ) => { chainYOffsets: Map<string, number>; layoutHeight?: number },
-) {
-  const { chainData } = self
-  if (!chainData) {
-    return
-  }
-  const { assemblyManager } = getSession(self)
-  const view = getContainingView(self) as LGV
-  const assemblyName = view.assemblyNames[0]!
-  const asm = assemblyManager.get(assemblyName)
-  if (!asm) {
-    return
-  }
-  const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
+): DrawFeatsResult {
+  const {
+    chainData,
+    featureHeight,
+    colorBy,
+    drawSingletons,
+    drawProperPairs,
+    flipStrandLongReadChains,
+  } = params
 
-  const type = self.colorBy?.type || 'insertSizeAndOrientation'
-  const drawSingletons = self.drawSingletons
-  const drawProperPairs = self.drawProperPairs
+  if (!chainData) {
+    return { featuresForFlatbush: [] }
+  }
+
+  const type = colorBy?.type || 'insertSizeAndOrientation'
   const { chains } = chainData
 
   // Filter chains based on settings
@@ -261,7 +279,7 @@ export function drawFeatsCommon(
   // Calculate Y-offsets using the provided strategy
   const { chainYOffsets, layoutHeight } = calculateYOffsets(
     computedChains,
-    self,
+    params,
     view,
     featureHeight,
   )
@@ -295,7 +313,7 @@ export function drawFeatsCommon(
     featureHeight,
     featuresForFlatbush,
     computedChains,
-    flipStrandLongReadChains: self.flipStrandLongReadChains,
+    flipStrandLongReadChains,
   })
 
   // Add full-width rectangles for each chain to enable mouseover on connecting lines
@@ -305,6 +323,65 @@ export function drawFeatsCommon(
     featureHeight,
     view,
     featuresForFlatbush,
+  )
+
+  return { featuresForFlatbush, layoutHeight }
+}
+
+/**
+ * Common drawing function that delegates Y-offset calculation to a strategy function
+ */
+export function drawFeatsCommon(
+  self: LinearReadCloudDisplayModel,
+  ctx: CanvasRenderingContext2D,
+  calculateYOffsets: (
+    computedChains: ComputedChain[],
+    self: LinearReadCloudDisplayModel,
+    view: LGV,
+    featureHeight: number,
+  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number },
+) {
+  const { chainData } = self
+  if (!chainData) {
+    return
+  }
+  const { assemblyManager } = getSession(self)
+  const view = getContainingView(self) as LGV
+  const assemblyName = view.assemblyNames[0]!
+  const asm = assemblyManager.get(assemblyName)
+  if (!asm) {
+    return
+  }
+  const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
+
+  const params: DrawFeatsParams = {
+    chainData,
+    featureHeight,
+    colorBy: self.colorBy,
+    drawSingletons: self.drawSingletons,
+    drawProperPairs: self.drawProperPairs,
+    flipStrandLongReadChains: self.flipStrandLongReadChains,
+    noSpacing: self.noSpacing,
+    trackMaxHeight: self.trackMaxHeight,
+  }
+
+  // Adapter function to convert self-based to params-based signature
+  const adaptedCalculateYOffsets = (
+    computedChains: ComputedChain[],
+    params: DrawFeatsParams,
+    view: LGV,
+    featureHeight: number,
+    _height?: number,
+  ) => {
+    return calculateYOffsets(computedChains, self, view, featureHeight)
+  }
+
+  const { featuresForFlatbush, layoutHeight } = drawFeatsCore(
+    ctx,
+    params,
+    view,
+    asm,
+    adaptedCalculateYOffsets,
   )
 
   // Build and set Flatbush index
