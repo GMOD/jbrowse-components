@@ -3,6 +3,16 @@ import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 import type { Theme } from '@mui/material'
 
+export interface SequenceData {
+  seq: string
+  cds: Array<{ start: number; end: number }>
+}
+
+export interface PeptideData {
+  sequenceData: SequenceData
+  protein?: string
+}
+
 export interface FeatureLayout {
   feature: Feature
   x: number
@@ -31,6 +41,7 @@ export interface DrawFeatureArgs {
   reversed: boolean
   topLevel: boolean
   canvasWidth: number
+  peptideDataMap?: Map<string, PeptideData>
 }
 
 export interface DrawingResult {
@@ -65,6 +76,7 @@ export interface RenderArgs {
   theme: Record<string, any>
   highResolutionScaling?: number
   stopToken?: string
+  peptideDataMap?: Map<string, PeptideData>
 }
 
 export type GlyphType =

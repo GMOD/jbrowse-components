@@ -1,5 +1,6 @@
 import { drawArrow } from './drawArrow'
 import { drawBox } from './drawBox'
+import { drawCDS } from './drawCDS'
 import { drawSegments } from './drawSegments'
 import { chooseGlyphType } from './util'
 
@@ -9,7 +10,7 @@ import type { DrawFeatureArgs, DrawingResult } from './types'
  * Draw a processed transcript feature (special handling for CDS/UTR subfeatures)
  */
 export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
-  const { featureLayout } = args
+  const { featureLayout, peptideDataMap } = args
 
   // Draw the connecting line
   const result = drawSegments(args)
@@ -21,6 +22,7 @@ export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
       feature: childLayout.feature,
       featureLayout: childLayout,
       topLevel: false,
+      peptideDataMap,
     })
     result.coords.push(...subResult.coords)
     result.items.push(...subResult.items)
@@ -53,6 +55,7 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
           feature: childLayout.feature,
           featureLayout: childLayout,
           topLevel: false,
+          peptideDataMap: args.peptideDataMap,
         })
         result.coords.push(...subResult.coords)
         result.items.push(...subResult.items)
@@ -60,8 +63,8 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
       break
     }
     case 'CDS':
-      // For now, CDS is just drawn as a box (amino acids skipped)
-      result = drawBox(args)
+      // Draw CDS with optional peptide rendering
+      result = drawCDS(args)
       break
     case 'Subfeatures': {
       // Draw subfeatures vertically offset
@@ -73,6 +76,7 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
           feature: childLayout.feature,
           featureLayout: childLayout,
           topLevel: false,
+          peptideDataMap: args.peptideDataMap,
         })
         coords.push(...subResult.coords)
         items.push(...subResult.items)

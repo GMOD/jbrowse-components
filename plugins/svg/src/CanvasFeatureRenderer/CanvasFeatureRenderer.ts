@@ -1,13 +1,171 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BoxRendererType } from '@jbrowse/core/pluggableElementTypes'
-import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import {
+  defaultCodonTable,
+  generateCodonTable,
+  renderToAbstractCanvas,
+  updateStatus,
+} from '@jbrowse/core/util'
+import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 
 import { computeLayouts } from './makeImageData'
 
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, Region } from '@jbrowse/core/util'
+import { firstValueFrom, toArray } from 'rxjs'
+
+interface SequenceData {
+  seq: string
+  cds: Array<{ start: number; end: number }>
+}
+
+interface PeptideData {
+  sequenceData: SequenceData
+  protein?: string
+}
 
 export default class CanvasFeatureRenderer extends BoxRendererType {
   supportsSVG = true
+
+  async fetchSequence(
+    renderProps: RenderArgsDeserialized,
+    region: Region,
+  ): Promise<string | undefined> {
+    const { sessionId, sequenceAdapter } = renderProps
+    if (!sequenceAdapter) {
+      return undefined
+    }
+    try {
+      const { dataAdapter } = await getAdapter(
+        this.pluginManager,
+        sessionId,
+        sequenceAdapter,
+      )
+
+      const feats = await firstValueFrom(
+        (dataAdapter as BaseFeatureDataAdapter)
+          .getFeatures({
+            ...region,
+            start: Math.max(0, region.start),
+            end: region.end,
+          })
+          .pipe(toArray()),
+      )
+      return feats[0]?.get('seq') as string | undefined
+    } catch (error) {
+      console.warn('Failed to fetch sequence:', error)
+      return undefined
+    }
+  }
+
+  /**
+   * Process feature subfeatures to extract CDS regions
+   */
+  private extractCDSRegions(
+    feature: Feature,
+  ): Array<{ start: number; end: number }> {
+    const subfeatures = feature.get('subfeatures') || []
+    const featureStart = feature.get('start')
+
+    return subfeatures
+      .filter((sub: Feature) => sub.get('type') === 'CDS')
+      .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
+      .map((sub: Feature) => ({
+        start: sub.get('start') - featureStart,
+        end: sub.get('end') - featureStart,
+      }))
+  }
+
+  /**
+   * Fetch peptide data for all features that need it
+   */
+  async fetchPeptideData(
+    renderProps: RenderArgsDeserialized,
+    features: Map<string, Feature>,
+  ): Promise<Map<string, PeptideData>> {
+    const { colorByCDS, bpPerPx } = renderProps as any
+    const peptideDataMap = new Map<string, PeptideData>()
+
+    // Only fetch if colorByCDS is enabled and zoomed in enough
+    const zoomedInEnough = 1 / bpPerPx >= 10
+    if (!colorByCDS || !zoomedInEnough) {
+      return peptideDataMap
+    }
+
+    // Find all features that are transcripts with CDS subfeatures
+    const transcriptsToFetch: Feature[] = []
+    for (const feature of features.values()) {
+      const type = feature.get('type')
+      const subfeatures = feature.get('subfeatures')
+
+      // Check if this is a transcript with CDS
+      if (
+        subfeatures?.length &&
+        (type === 'mRNA' ||
+          type === 'transcript' ||
+          type === 'primary_transcript' ||
+          type === 'protein_coding_primary_transcript')
+      ) {
+        const hasCDS = subfeatures.some(
+          (sub: Feature) => sub.get('type') === 'CDS',
+        )
+        if (hasCDS) {
+          transcriptsToFetch.push(feature)
+        }
+      }
+    }
+
+    // Fetch sequences for all transcripts
+    for (const transcript of transcriptsToFetch) {
+      try {
+        const region = {
+          ...renderProps.regions[0]!,
+          start: transcript.get('start'),
+          end: transcript.get('end'),
+          refName: transcript.get('refName'),
+        }
+
+        const seq = await this.fetchSequence(renderProps, region)
+        if (seq) {
+          const cds = this.extractCDSRegions(transcript)
+
+          if (cds.length > 0) {
+            const sequenceData: SequenceData = { seq, cds }
+
+            // Convert to peptides
+            try {
+              const protein = convertCodingSequenceToPeptides({
+                cds,
+                sequence: seq,
+                codonTable: generateCodonTable(defaultCodonTable),
+              })
+
+              peptideDataMap.set(transcript.id(), {
+                sequenceData,
+                protein,
+              })
+            } catch (error) {
+              console.warn(
+                `Failed to convert sequence to peptides for ${transcript.id()}:`,
+                error,
+              )
+              // Still store the sequence data even if peptide conversion failed
+              peptideDataMap.set(transcript.id(), { sequenceData })
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(
+          `Failed to fetch sequence for transcript ${transcript.id()}:`,
+          error,
+        )
+      }
+    }
+
+    return peptideDataMap
+  }
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
@@ -33,6 +191,13 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
 
     const height = Math.max(1, layout.getTotalHeight())
 
+    // Fetch peptide data for CDS features
+    const peptideDataMap = await updateStatus(
+      'Fetching peptide data',
+      statusCallback as (arg: string) => void,
+      () => this.fetchPeptideData(renderProps, features),
+    )
+
     // Render to canvas
     const res = await updateStatus(
       'Rendering features',
@@ -50,6 +215,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
               features,
               layout,
               displayMode,
+              peptideDataMap,
             },
           }),
         )

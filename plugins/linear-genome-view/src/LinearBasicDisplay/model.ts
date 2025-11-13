@@ -11,6 +11,7 @@ import { BaseLinearDisplay } from '../BaseLinearDisplay'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from 'mobx-state-tree'
+import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 
 const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
@@ -176,12 +177,28 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         renderProps() {
           const superProps = superRenderProps()
+          const { assemblyManager, parentTrack } = superProps as any
+
+          // Get the assembly's sequenceAdapter configuration
+          let sequenceAdapter
+          try {
+            const assemblyNames = getTrackAssemblyNames(parentTrack)
+            const assembly = assemblyManager.get(assemblyNames[0])
+            if (assembly) {
+              sequenceAdapter = getConf(assembly, ['sequence', 'adapter'])
+            }
+          } catch (e) {
+            // If we can't get the assembly, just continue without sequenceAdapter
+            console.warn('Could not get assembly sequence adapter:', e)
+          }
+
           return {
             ...(superProps as Omit<typeof superProps, symbol>),
             config: self.rendererConfig,
             filters: new SerializableFilterChain({
               filters: self.activeFilters,
             }),
+            sequenceAdapter,
           }
         },
 
