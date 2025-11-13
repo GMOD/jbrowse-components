@@ -3,11 +3,12 @@ import { Fragment } from 'react'
 import {
   ReactRendering,
   getContainingView,
+  getSession,
   getViewParams,
 } from '@jbrowse/core/util'
 
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-import { getId } from './util'
+import { calculateLabelPositions, getId } from './util'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { ExportSvgOptions } from '../../LinearGenomeView/types'
@@ -70,6 +71,13 @@ export async function renderBaseLinearDisplaySvg(
     }),
   )
 
+  // Calculate label positions for SVG export
+  const { assemblyManager } = getSession(self)
+  const { offsetPx } = view
+  const assemblyName = view.assemblyNames[0]
+  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+  const labelData = calculateLabelPositions(self, view, assembly, offsetPx)
+
   return (
     <>
       {renderings.map(([block, rendering], index) => {
@@ -98,6 +106,31 @@ export async function renderBaseLinearDisplaySvg(
           </Fragment>
         )
       })}
+      {/* Render floating labels */}
+      {labelData.map(({ key, label, description, leftPos, topPos }) => (
+        <g key={`label-${key}`} transform={`translate(${leftPos}, ${topPos})`}>
+          <text
+            x={0}
+            y={11}
+            fontSize={11}
+            fill="currentColor"
+            style={{ pointerEvents: 'none' }}
+          >
+            {label}
+          </text>
+          {description ? (
+            <text
+              x={0}
+              y={25}
+              fontSize={11}
+              fill="blue"
+              style={{ pointerEvents: 'none' }}
+            >
+              {description}
+            </text>
+          ) : null}
+        </g>
+      ))}
     </>
   )
 }
