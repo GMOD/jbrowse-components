@@ -188,17 +188,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           try {
             // Get assembly names from the parent track's configuration
             const track = getParent(self, 2)
-            if (track?.configuration) {
+            if (track.configuration) {
               const assemblyNames = readConfObject(
                 track.configuration,
                 'assemblyNames',
               ) as string[]
-              console.log(
-                '[LinearBasicDisplay] assemblyNames from track:',
-                assemblyNames,
-              )
 
-              if (assemblyNames && assemblyNames.length > 0) {
+              if (assemblyNames.length > 0) {
                 const assembly = assemblyManager.get(assemblyNames[0]!)
                 if (assembly) {
                   // Get the sequence adapter config and ensure it's a plain object
@@ -207,10 +203,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     'adapter',
                   ])
                   sequenceAdapter = adapterConfig
-                  console.log(
-                    '[LinearBasicDisplay] Got sequenceAdapter:',
-                    sequenceAdapter,
-                  )
                 } else {
                   console.warn(
                     '[LinearBasicDisplay] No assembly found for:',

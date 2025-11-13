@@ -36,12 +36,6 @@ export async function fetchSequence(
   region: Region,
 ): Promise<string | undefined> {
   const { sessionId, sequenceAdapter } = renderProps
-  console.log(
-    '[fetchSequence] sequenceAdapter:',
-    sequenceAdapter,
-    'region:',
-    region,
-  )
   if (!sequenceAdapter) {
     console.warn('[fetchSequence] No sequenceAdapter provided')
     return undefined
@@ -52,7 +46,6 @@ export async function fetchSequence(
       sessionId,
       sequenceAdapter,
     )
-    console.log('[fetchSequence] Got dataAdapter:', dataAdapter)
 
     const feats = await firstValueFrom(
       (dataAdapter as BaseFeatureDataAdapter)
@@ -64,7 +57,6 @@ export async function fetchSequence(
         .pipe(toArray()),
     )
     const seq = feats[0]?.get('seq') as string | undefined
-    console.log('[fetchSequence] Fetched sequence length:', seq?.length)
     return seq
   } catch (error) {
     console.warn('[fetchSequence] Failed to fetch sequence:', error)
@@ -105,36 +97,17 @@ export function findTranscriptsWithCDS(
     const type = feature.get('type')
     const subfeatures = feature.get('subfeatures')
 
-    console.log(
-      '[findTranscriptsWithCDS] Checking feature type:',
-      type,
-      'has subfeatures:',
-      !!subfeatures?.length,
-    )
-
     // Check if this is a gene with transcript children
     if (type === 'gene' && subfeatures?.length) {
       for (const subfeature of subfeatures) {
         const subType = subfeature.get('type')
         if (isTranscriptType(subType) && hasCDSSubfeatures(subfeature)) {
-          console.log(
-            '[findTranscriptsWithCDS] Found transcript in gene:',
-            subfeature.id(),
-            'type:',
-            subType,
-          )
           transcripts.push(subfeature)
         }
       }
     }
     // Check if this is a direct transcript with CDS
     else if (isTranscriptType(type) && hasCDSSubfeatures(feature)) {
-      console.log(
-        '[findTranscriptsWithCDS] Found direct transcript:',
-        feature.id(),
-        'type:',
-        type,
-      )
       transcripts.push(feature)
     }
   }
@@ -196,12 +169,6 @@ export async function fetchTranscriptPeptides(
         codonTable: generateCodonTable(defaultCodonTable),
       })
 
-      console.log(
-        '[fetchTranscriptPeptides] Stored peptide data for:',
-        transcript.id(),
-        'protein length:',
-        protein.length,
-      )
       return { sequenceData, protein }
     } catch (error) {
       console.warn(
@@ -228,33 +195,17 @@ export async function fetchPeptideData(
   renderProps: RenderArgsDeserialized,
   features: Map<string, Feature>,
 ): Promise<Map<string, PeptideData>> {
-  const { colorByCDS, bpPerPx, exportSVG } = renderProps as any
+  const { colorByCDS, bpPerPx } = renderProps as any
   const peptideDataMap = new Map<string, PeptideData>()
 
   // Only fetch if colorByCDS is enabled and zoomed in enough
   const zoomedInEnough = 1 / bpPerPx >= 10
-  console.log(
-    '[fetchPeptideData] colorByCDS:',
-    colorByCDS,
-    'zoomedInEnough:',
-    zoomedInEnough,
-    'exportSVG:',
-    exportSVG,
-    'features:',
-    features.size,
-  )
   if (!colorByCDS || !zoomedInEnough) {
-    console.log('[fetchPeptideData] Skipping: colorByCDS or zoom level not met')
     return peptideDataMap
   }
 
   // Find all transcripts with CDS subfeatures
   const transcriptsToFetch = findTranscriptsWithCDS(features)
-  console.log(
-    '[fetchPeptideData] Found',
-    transcriptsToFetch.length,
-    'transcripts to fetch',
-  )
 
   // Fetch sequences and convert to peptides for all transcripts
   for (const transcript of transcriptsToFetch) {
@@ -268,11 +219,6 @@ export async function fetchPeptideData(
     }
   }
 
-  console.log(
-    '[fetchPeptideData] Returning peptideDataMap with',
-    peptideDataMap.size,
-    'entries',
-  )
   return peptideDataMap
 }
 
