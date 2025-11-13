@@ -31,8 +31,6 @@ const CanvasFeatureRendering = observer(function (props: {
     displayModel,
     width,
     height,
-    regions,
-    bpPerPx,
     flatbush,
     items,
     subfeatureFlatbush,
@@ -59,7 +57,6 @@ const CanvasFeatureRendering = observer(function (props: {
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel
 
-  const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =

@@ -1,9 +1,11 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+
 import { getLayoutWidth, layoutFeature } from './simpleLayout'
 
 import type { LayoutRecord } from './types'
 import type { Feature } from '@jbrowse/core/util'
 
-const xPadding = 3
+const xPadding = 2
 const yPadding = 5
 
 /**
@@ -40,20 +42,28 @@ export function computeLayouts({
     // Use total height (including label space) for collision detection
     const totalHeight = featureLayout.totalHeight
 
+    // Get name and description using config (consistent with label display)
+    const name = String(
+      readConfObject(config, ['labels', 'name'], { feature }) || '',
+    )
+    const description = String(
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    )
+
     // Add to collision detection layout
     const topPx = layout.addRect(
       feature.id(),
       feature.get('start'),
-      feature.get('start') + totalWidth * bpPerPx + xPadding * bpPerPx,
+      feature.get('start') + totalWidth * bpPerPx + xPadding,
       totalHeight + yPadding,
       feature,
       {
-        label: feature.get('name') || feature.get('id'),
-        description: feature.get('description') || feature.get('note'),
+        label: name,
+        description,
         refName: feature.get('refName'),
         serializableData: {
-          name: feature.get('name') || feature.get('id'),
-          description: feature.get('description') || feature.get('note'),
+          name,
+          description,
         },
       },
     )

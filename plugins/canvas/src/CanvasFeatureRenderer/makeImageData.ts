@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -126,10 +127,17 @@ export function makeImageData({
         bpPerPx,
         subfeatureCoords,
         subfeatureInfos,
+        config,
       )
     } else if (adjustedLayout.children.length > 0) {
       // Still need to add children to layout for data storage (not flatbush)
-      addNestedSubfeaturesToLayout(layout, adjustedLayout, region, bpPerPx)
+      addNestedSubfeaturesToLayout(
+        layout,
+        adjustedLayout,
+        region,
+        bpPerPx,
+        config,
+      )
     }
   })
 
@@ -157,6 +165,7 @@ export function makeImageData({
     bpPerPx: number,
     subfeatureCoords: number[],
     subfeatureInfos: SubfeatureInfo[],
+    config: any,
   ) {
     // Add transcript children (e.g., mRNA, transcript) of a gene to secondary flatbush
     // This provides extra info (transcript ID) when hovering over transcripts
@@ -192,8 +201,16 @@ export function makeImageData({
       const bottomPx = child.y + child.totalHeight // Use totalHeight to include labels
       subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
-      // Compute user-friendly name for the transcript
-      const transcriptName = childFeature.get('name') || childFeature.get('id')
+      // Get name and description using config (consistent with label display)
+      const transcriptName = String(
+        readConfObject(config, ['labels', 'name'], { feature: childFeature }) ||
+          '',
+      )
+      const transcriptDescription = String(
+        readConfObject(config, ['labels', 'description'], {
+          feature: childFeature,
+        }) || '',
+      )
 
       subfeatureInfos.push({
         subfeatureId: childFeature.id(),
@@ -210,9 +227,8 @@ export function makeImageData({
         childEnd,
         bottomPx,
         {
-          label: childFeature.get('name') || childFeature.get('id'),
-          description:
-            childFeature.get('description') || childFeature.get('note'),
+          label: transcriptName,
+          description: transcriptDescription,
           refName: childFeature.get('refName'),
         },
       ])
@@ -234,7 +250,7 @@ export function makeImageData({
       // Store layout/feature data for nested children (CDS, UTR, exons) but don't add them to flatbush
       // This allows clicking on them to get details, but mouseover targets the parent transcript
       if (child.children.length > 0) {
-        addNestedSubfeaturesToLayout(layout, child, region, bpPerPx)
+        addNestedSubfeaturesToLayout(layout, child, region, bpPerPx, config)
       }
     }
   }
@@ -244,6 +260,7 @@ export function makeImageData({
     featureLayout: any,
     region: any,
     bpPerPx: number,
+    config: any,
   ) {
     // Recursively add deeply nested children (CDS, UTR, exons) to layout only
     // They won't be separate mouseover targets, but their data is available
@@ -253,15 +270,26 @@ export function makeImageData({
         const childStart = childFeature.get('start')
         const childEnd = childFeature.get('end')
 
+        // Get name and description using config (consistent with label display)
+        const childName = String(
+          readConfObject(config, ['labels', 'name'], {
+            feature: childFeature,
+          }) || '',
+        )
+        const childDescription = String(
+          readConfObject(config, ['labels', 'description'], {
+            feature: childFeature,
+          }) || '',
+        )
+
         layout.rectangles.set(childFeature.id(), [
           childStart,
           child.y,
           childEnd,
           child.y + child.height,
           {
-            label: childFeature.get('name') || childFeature.get('id'),
-            description:
-              childFeature.get('description') || childFeature.get('note'),
+            label: childName,
+            description: childDescription,
             refName: childFeature.get('refName'),
           },
         ])
@@ -271,7 +299,7 @@ export function makeImageData({
         }
 
         if (child.children.length > 0) {
-          addNestedSubfeaturesToLayout(layout, child, region, bpPerPx)
+          addNestedSubfeaturesToLayout(layout, child, region, bpPerPx, config)
         }
       }
     }

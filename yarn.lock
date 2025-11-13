@@ -2378,7 +2378,7 @@
   dependencies:
     "@babel/runtime" "^7.28.4"
 
-"@mui/utils@^7.3.3", "@mui/utils@^7.3.5":
+"@mui/utils@^7.3.5":
   version "7.3.5"
   resolved "https://registry.yarnpkg.com/@mui/utils/-/utils-7.3.5.tgz#77f3e2b83454bbd47877c73b04cd804f490bf028"
   integrity sha512-jisvFsEC3sgjUjcPnR4mYfhzjCDIudttSGSbe1o/IXFNu0kZuR+7vqQI0jg8qtcVZBHWrwTfvAZj9MNMumcq1g==
@@ -2391,9 +2391,9 @@
     react-is "^19.2.0"
 
 "@mui/x-charts-vendor@^8.0.0":
-  version "8.15.0"
-  resolved "https://registry.yarnpkg.com/@mui/x-charts-vendor/-/x-charts-vendor-8.15.0.tgz#73b798580e4c4e2db5657248695a74dc3619e246"
-  integrity sha512-0w7Who278kmRFm+5LUZY5MErSJBO75tqBH8abDkTiDNfsCe88vnrImmIT7OGzJGyRJfyrEBht8RLL6bHNEParg==
+  version "8.18.0"
+  resolved "https://registry.yarnpkg.com/@mui/x-charts-vendor/-/x-charts-vendor-8.18.0.tgz#abe15a80182e745ef10d5fde1e30fa4ed2a6ad00"
+  integrity sha512-NFbFMOR8tsa02C3+YKQOdbzPaDtZLJPprsySw9xVxJpcYw5y/v02TuV/yQCIE0Pk1dVGHW2yvCMBs8AS+irjLA==
   dependencies:
     "@babel/runtime" "^7.28.4"
     "@types/d3-color" "^3.1.3"
@@ -2412,36 +2412,36 @@
     d3-timer "^3.0.1"
 
 "@mui/x-data-grid@^8.0.0":
-  version "8.17.0"
-  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-8.17.0.tgz#73e06b1e93687a8e1c0d3c39175b69e972e62fe1"
-  integrity sha512-eIzYM700Er5AKGS7T9NxQfpFNGpGP0NYpJ6RiQWSv904CkzAY0mbMZ6/XKldavbhSwzHVUfv37GK9mFeUl7I5g==
+  version "8.18.0"
+  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-8.18.0.tgz#cdf50f5cd5f5ff1fff1b0029f2fe23e201a1377c"
+  integrity sha512-g8y5EI3TNqrimHpH/Hv6u6i04cbvsqh39Tg4bZEhGq+SDxWp42iABlUvB7p+gtXfyd+IbmpfzUQ1hOCsHlTMZw==
   dependencies:
     "@babel/runtime" "^7.28.4"
-    "@mui/utils" "^7.3.3"
-    "@mui/x-internals" "8.17.0"
-    "@mui/x-virtualizer" "0.2.7"
+    "@mui/utils" "^7.3.5"
+    "@mui/x-internals" "8.18.0"
+    "@mui/x-virtualizer" "0.2.8"
     clsx "^2.1.1"
     prop-types "^15.8.1"
     use-sync-external-store "^1.6.0"
 
-"@mui/x-internals@8.17.0":
-  version "8.17.0"
-  resolved "https://registry.yarnpkg.com/@mui/x-internals/-/x-internals-8.17.0.tgz#e7c613f4db123cfdb97db7bedc6300e0af711eb2"
-  integrity sha512-KvmR0PPX1j2i44y0DXwzs45jIPMu/YZYXYy7xvzo+ZNdYebbW5LbVeG4zdEUnKHyOG02oHdI7MM9AxcZE16TBw==
+"@mui/x-internals@8.18.0":
+  version "8.18.0"
+  resolved "https://registry.yarnpkg.com/@mui/x-internals/-/x-internals-8.18.0.tgz#480a7f86c09f1fc96bc366bc8e75dddd3b08b485"
+  integrity sha512-iM2SJALLo4kNqxTel8lfjIymYV9MgTa6021/rAlfdh/vwPMglaKyXQHrxkkWs2Eu/JFKkCKr5Fd34Gsdp63wIg==
   dependencies:
     "@babel/runtime" "^7.28.4"
-    "@mui/utils" "^7.3.3"
+    "@mui/utils" "^7.3.5"
     reselect "^5.1.1"
     use-sync-external-store "^1.6.0"
 
-"@mui/x-virtualizer@0.2.7":
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/@mui/x-virtualizer/-/x-virtualizer-0.2.7.tgz#6943816650467aee5b5d9d70fa3f7b367a8a2c71"
-  integrity sha512-xcdo+lvlfwuLE2FVAQtOEg078liB/aiVGjEuiyPv02Vzp8Y50qNH0EtV9lk/E/d/lbkkMGnapnk+JFT5HlUB0w==
+"@mui/x-virtualizer@0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@mui/x-virtualizer/-/x-virtualizer-0.2.8.tgz#a46d7f1abd3ef3f4b7f8c55b639550e0ad79a962"
+  integrity sha512-hCkhTg3BLLbf0SIw9Cx/NHTCUmbna+P5F2V+Bcv/9XiYhfzzmhYnm68+V6vOOhKVbV3j8JKsUEqcTC9K2Jpu8A==
   dependencies:
     "@babel/runtime" "^7.28.4"
-    "@mui/utils" "^7.3.3"
-    "@mui/x-internals" "8.17.0"
+    "@mui/utils" "^7.3.5"
+    "@mui/x-internals" "8.18.0"
 
 "@napi-rs/wasm-runtime@0.2.4":
   version "0.2.4"
@@ -3267,9 +3267,9 @@
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
 "@tsconfig/node10@^1.0.7":
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.11.tgz#6ee46400685f130e278128c7b38b7e031ff5b2f2"
-  integrity sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.12.tgz#be57ceac1e4692b41be9de6be8c32a106636dba4"
+  integrity sha512-UCYBaeFvM11aU2y3YPZ//O5Rhj+xKyzy7mvcIoAjASbigy8mHMryP5cK7dgjlz2hWxh1g5pLw084E0a/wlUSFQ==
 
 "@tsconfig/node12@^1.0.7":
   version "1.0.11"

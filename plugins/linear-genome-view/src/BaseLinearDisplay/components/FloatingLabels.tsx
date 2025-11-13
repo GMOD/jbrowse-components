@@ -69,7 +69,8 @@ const FloatingLabels = observer(function FloatingLabels({
       const [left, , right, bottom, feature] = val
       const { refName = '', description, label } = feature
 
-      if (!label) {
+      // Skip if both label and description are empty
+      if (!label && !description) {
         continue
       }
 
@@ -87,8 +88,9 @@ const FloatingLabels = observer(function FloatingLabels({
         continue
       }
 
-      // Cache text measurement
-      const labelWidth = getCachedMeasureText(label, fontSize)
+      // Cache text measurement - use label if available, otherwise use description
+      const textForWidth = label || description || ''
+      const labelWidth = getCachedMeasureText(textForWidth, fontSize)
 
       // Calculate clamped position
       const leftPos = clamp(
