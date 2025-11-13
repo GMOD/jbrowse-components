@@ -25,10 +25,11 @@ import type {
  *    - Eliminates function call overhead (critical for 100k+ features)
  *    - Uses labeled loops (continue outer) for immediate row skipping
  *
- * 4. BITWISE OPERATIONS
- *    - x / pitchX | 0 instead of Math.floor() - faster integer conversion
+ * 4. BITWISE OPERATIONS (for array indices only)
  *    - len >> 1 instead of len / 2 - bit shift division
  *    - mid << 1 instead of mid * 2 - bit shift multiplication
+ *    - i >> 1 for converting flat array index to interval index
+ *    - Note: Math.trunc() used for coordinates (not bitwise) to avoid 32-bit overflow
  *
  * 5. SORTED INSERTION
  *    - Maintains sorted intervals for binary search efficiency
@@ -300,9 +301,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       return storedRec.top * this.pitchY
     }
 
-    // Use bitwise OR for fast floor operation
-    const pLeft = (left / this.pitchX) | 0
-    const pRight = (right / this.pitchX) | 0
+    // Use Math.trunc for fast floor operation that works with large coordinates
+    // (bitwise | 0 overflows above 2^31, causing layout issues with large genomic coordinates)
+    const pLeft = Math.trunc(left / this.pitchX)
+    const pRight = Math.trunc(right / this.pitchX)
     const pHeight = Math.ceil(height / this.pitchY)
 
     const rectangle: Rectangle<T> = {
@@ -425,8 +427,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
    *  the features.
    */
   discardRange(left: number, right: number) {
-    const pLeft = Math.floor(left / this.pitchX)
-    const pRight = Math.floor(right / this.pitchX)
+    const pLeft = Math.trunc(left / this.pitchX)
+    const pRight = Math.trunc(right / this.pitchX)
     const { bitmap } = this
     for (const row of bitmap) {
       row.discardRange(pLeft, pRight)
@@ -438,12 +440,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   getByCoord(x: number, y: number) {
-    const pY = Math.floor(y / this.pitchY)
+    const pY = Math.trunc(y / this.pitchY)
     const row = this.bitmap[pY]
     if (!row) {
       return undefined
     }
-    const pX = Math.floor(x / this.pitchX)
+    const pX = Math.trunc(x / this.pitchX)
     return row.getItemAt(pX)
   }
 
