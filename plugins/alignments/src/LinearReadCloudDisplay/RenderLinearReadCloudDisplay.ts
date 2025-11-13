@@ -1,8 +1,14 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { dedupe, groupBy, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+import { calculateCloudYOffsetsCore } from './drawFeatsCloud'
+import { calculateStackYOffsetsCore } from './drawFeatsStack'
+
+import { drawFeatsCore } from './drawFeatsCommon'
 
 import { getClip } from '../MismatchParser'
 import { filterForPairs, getInsertSizeStats } from '../PileupRPC/util'
@@ -14,38 +20,6 @@ import type { Region } from '@jbrowse/core/util'
 interface RenderToAbstractCanvasOptions {
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
   highResolutionScaling?: number
-}
-
-/**
- * Simple helper to convert base pair coordinates to pixel coordinates
- * for RPC rendering context
- */
-function bpToPxSimple({
-  refName,
-  coord,
-  regions,
-  bpPerPx,
-}: {
-  refName: string
-  coord: number
-  regions: Region[]
-  bpPerPx: number
-}): { offsetPx: number } | undefined {
-  for (const region of regions) {
-    if (
-      refName === region.refName &&
-      coord >= region.start &&
-      coord <= region.end
-    ) {
-      const bpOffset = region.reversed
-        ? region.end - coord
-        : coord - region.start
-      return {
-        offsetPx: Math.round(bpOffset / bpPerPx),
-      }
-    }
-  }
-  return undefined
 }
 
 export interface RenderLinearReadCloudDisplayArgs {
@@ -79,7 +53,6 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       sessionId,
       regions,
       adapterConfig,
-      filterBy,
       featureHeight,
       noSpacing,
       drawCloud,
@@ -138,25 +111,35 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         min: Math.min(...tlens),
       }
     }
-    const chains = groupBy(reduced, f => f.name)
 
     const chainData: ChainData = {
-      chains: Object.values(chains),
+      chains: Object.values(groupBy(reduced, f => f.name)),
       stats,
     }
 
-    // Create a mock view object with the necessary properties
-    // offsetPx is positive when scrolled right
-    const view: any = {
+    const staticBlocks = calculateStaticBlocks({
+      displayedRegions: regions,
+      bpPerPx,
+      width,
+      offsetPx,
+      interRegionPaddingWidth: 0,
+      minimumBlockWidth: 0,
+    })
+
+    const viewSnap: any = {
       bpPerPx,
       offsetPx,
       assemblyNames: [assemblyName],
+      displayedRegions: regions,
+      interRegionPaddingWidth: 0,
+      minimumBlockWidth: 0,
+      staticBlocks: staticBlocks, // bpToPx expects staticBlocks property
+      width,
       bpToPx: (arg: { refName: string; coord: number }) => {
-        return bpToPxSimple({
+        return bpToPx({
+          self: viewSnap,
           refName: arg.refName,
           coord: arg.coord,
-          regions,
-          bpPerPx,
         })
       },
     }
@@ -184,13 +167,10 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       exportSVG,
     }
 
-    // Import the drawing functions
-    const { drawFeatsCore } = await import('./drawFeatsCommon')
-
     // Import the appropriate calculate Y offsets function
     const calculateYOffsets = drawCloud
-      ? (await import('./drawFeatsCloud')).calculateCloudYOffsetsCore
-      : (await import('./drawFeatsStack')).calculateStackYOffsetsCore
+      ? calculateCloudYOffsetsCore
+      : calculateStackYOffsetsCore
 
     // Render using renderToAbstractCanvas
     const result = await renderToAbstractCanvas(
@@ -202,14 +182,14 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         const wrappedCalculateYOffsets = (
           computedChains: any,
           params: any,
-          view: any,
+          _view: any,
           featureHeight: number,
         ) => {
           // Always pass height, even for stack mode (it just won't use it)
           return calculateYOffsets(
             computedChains,
             params,
-            view,
+            viewSnap,
             featureHeight,
             height,
           )
@@ -219,7 +199,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         const { layoutHeight, featuresForFlatbush } = drawFeatsCore(
           ctx,
           params,
-          view,
+          viewSnap,
           asm,
           wrappedCalculateYOffsets,
         )
