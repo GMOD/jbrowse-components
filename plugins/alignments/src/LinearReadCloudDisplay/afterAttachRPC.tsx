@@ -1,6 +1,7 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 
 import { createAutorun } from '../util'
+import { buildFlatbushIndex } from './drawFeatsCommon'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -78,7 +79,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
             self.setLayoutHeight(result.layoutHeight)
           }
           if (result.featuresForFlatbush) {
-            self.setFeaturesForFlatbush(result.featuresForFlatbush)
+            buildFlatbushIndex(result.featuresForFlatbush, self)
           }
         }
 
