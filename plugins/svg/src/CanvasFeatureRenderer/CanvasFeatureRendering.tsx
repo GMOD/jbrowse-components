@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import { bpSpanPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -78,18 +77,13 @@ const CanvasFeatureRendering = observer(function (props: {
 
   // Convert FlatbushItem to display rectangle
   function itemToRect(item: FlatbushItem, offset = 2) {
-    const [leftPx, rightPx] = bpSpanPx(
-      item.startBp,
-      item.endBp,
-      region,
-      bpPerPx,
-    )
+    // Use the stored pixel coordinates which include label extent
     const rectTop = Math.round(item.topPx)
     const rectHeight = Math.round(item.bottomPx - item.topPx)
     return {
-      left: leftPx - offset,
+      left: item.leftPx - offset,
       top: rectTop - offset,
-      width: rightPx - leftPx,
+      width: item.rightPx - item.leftPx,
       height: rectHeight,
     }
   }

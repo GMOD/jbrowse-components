@@ -56,6 +56,8 @@ export interface FlatbushItem {
   // Store rectangle in BP and pixel coordinates for highlighting
   startBp: number
   endBp: number
+  leftPx: number
+  rightPx: number
   topPx: number
   bottomPx: number
 }

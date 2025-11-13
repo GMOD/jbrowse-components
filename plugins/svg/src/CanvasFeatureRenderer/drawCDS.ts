@@ -113,6 +113,8 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
         type: 'cds',
         startBp: featureStart,
         endBp: featureEnd,
+        leftPx: leftWithinBlock,
+        rightPx: leftWithinBlock + widthWithinBlock,
         topPx: top,
         bottomPx: top + height,
       })

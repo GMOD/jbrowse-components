@@ -82,6 +82,8 @@ export function drawBox(args: DrawFeatureArgs): DrawingResult {
     type: 'box',
     startBp: feature.get('start'),
     endBp: feature.get('end'),
+    leftPx: leftWithinBlock,
+    rightPx: leftWithinBlock + widthWithinBlock,
     topPx: top,
     bottomPx: top + height,
   })

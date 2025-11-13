@@ -97,13 +97,11 @@ export function makeImageData({
     })
 
     // Always add the feature's bounding box to the primary flatbush
-    // Use BP coordinates for left/right (no label padding), but totalHeight for top/bottom (includes labels)
+    // Use totalWidth and totalHeight to include label extent
     const featureStartBp = feature.get('start')
     const featureEndBp = feature.get('end')
-    const [leftPx, rightPx] = [
-      bpToPx(featureStartBp, region, bpPerPx),
-      bpToPx(featureEndBp, region, bpPerPx),
-    ]
+    const leftPx = adjustedLayout.x
+    const rightPx = adjustedLayout.x + adjustedLayout.totalWidth
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalHeight // Use totalHeight to include labels
     coords.push(leftPx, topPx, rightPx, bottomPx)
@@ -112,6 +110,8 @@ export function makeImageData({
       type: 'box',
       startBp: featureStartBp,
       endBp: featureEndBp,
+      leftPx,
+      rightPx,
       topPx,
       bottomPx,
     })
@@ -185,11 +185,9 @@ export function makeImageData({
 
       // Add the transcript's bounding box to secondary flatbush
       // This allows us to detect when hovering over a specific transcript and provide extra info
-      // Use BP coordinates for left/right (no label padding), but totalHeight for top/bottom (includes labels)
-      const [childLeftPx, childRightPx] = [
-        bpToPx(childStart, region, bpPerPx),
-        bpToPx(childEnd, region, bpPerPx),
-      ]
+      // Use totalWidth and totalHeight to include label extent
+      const childLeftPx = child.x
+      const childRightPx = child.x + child.totalWidth
       const topPx = child.y
       const bottomPx = child.y + child.totalHeight // Use totalHeight to include labels
       subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
@@ -225,7 +223,7 @@ export function makeImageData({
       }
 
       // Debug: Draw blue bounding box for transcript subfeatures only
-      // (BP-based left/right, totalHeight for top/bottom)
+      // (includes totalWidth and totalHeight with label extent)
       // ctx.save()
       // ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)' // Blue for transcripts
       // ctx.lineWidth = 1

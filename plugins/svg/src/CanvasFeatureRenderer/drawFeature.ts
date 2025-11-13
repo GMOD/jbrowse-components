@@ -5,6 +5,7 @@ import { drawSegments } from './drawSegments'
 import { chooseGlyphType } from './util'
 
 import type { DrawFeatureArgs, DrawingResult } from './types'
+import { bpToPx } from '@jbrowse/core/util'
 
 /**
  * Draw a processed transcript feature (special handling for CDS/UTR subfeatures)
@@ -99,27 +100,21 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
     result.items.push(...arrowResult.items)
   }
 
-  // Draw bounding box for debugging (shows BP-based left/right, totalHeight for top/bottom)
-  // if (topLevel) {
-  //   const { ctx, featureLayout, feature, region, bpPerPx } = args
-  //   ctx.save()
-  //   ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)' // Semi-transparent red
-  //   ctx.lineWidth = 1
-  //   ctx.setLineDash([2, 2]) // Dashed line
-  //   const featureStartBp = feature.get('start')
-  //   const featureEndBp = feature.get('end')
-  //   const [leftPx, rightPx] = [
-  //     bpToPx(featureStartBp, region, bpPerPx),
-  //     bpToPx(featureEndBp, region, bpPerPx),
-  //   ]
-  //   ctx.strokeRect(
-  //     leftPx,
-  //     featureLayout.y,
-  //     rightPx - leftPx,
-  //     featureLayout.totalHeight,
-  //   )
-  //   ctx.restore()
-  // }
+  // Draw bounding box for debugging (shows totalWidth including labels, totalHeight for top/bottom)
+  if (topLevel) {
+    const { ctx, featureLayout } = args
+    ctx.save()
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)' // Semi-transparent red
+    ctx.lineWidth = 1
+    ctx.setLineDash([2, 2]) // Dashed line
+    ctx.strokeRect(
+      featureLayout.x,
+      featureLayout.y,
+      featureLayout.totalWidth,
+      featureLayout.totalHeight,
+    )
+    ctx.restore()
+  }
 
   return result
 }
