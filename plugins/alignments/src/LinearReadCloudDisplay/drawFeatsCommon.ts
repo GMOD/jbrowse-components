@@ -121,8 +121,20 @@ export function computeChainBounds(
       }
     }
 
-    // For pairs/chains, prefer TLEN over pixel distance; singletons use pixel distance
-    const distance = tlenDistance > 0 ? tlenDistance : Math.abs(maxX - minX)
+    // For pairs/chains, prefer TLEN over pixel distance; singletons use 0 (for y=0)
+    let distance: number
+    if (tlenDistance > 0) {
+      distance = tlenDistance
+    } else if (chainLength === 1) {
+      // Singletons get distance of 0 to be placed at y=0
+      distance = 0
+    } else if (minX !== Number.MAX_VALUE && maxX !== Number.MIN_VALUE) {
+      // Fall back to pixel distance for long reads (e.g., SA-tagged chains)
+      distance = Math.abs(maxX - minX)
+    } else {
+      // Skip chains with no valid positions and no TLEN
+      continue
+    }
 
     computedChains.push({
       distance,
@@ -254,11 +266,7 @@ export function drawFeatsCore(
     flipStrandLongReadChains,
   } = params
 
-  if (!chainData) {
-    return { featuresForFlatbush: [] }
-  }
-
-  const type = colorBy?.type || 'insertSizeAndOrientation'
+  const type = colorBy.type || 'insertSizeAndOrientation'
   const { chains } = chainData
 
   // Filter chains based on settings

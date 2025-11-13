@@ -5,16 +5,15 @@ import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import { calculateCloudYOffsetsCore } from './drawFeatsCloud'
-import { calculateStackYOffsetsCore } from './drawFeatsStack'
-
 import { drawFeatsCore } from './drawFeatsCommon'
-
+import { calculateStackYOffsetsCore } from './drawFeatsStack'
 import { getClip } from '../MismatchParser'
 import { filterForPairs, getInsertSizeStats } from '../PileupRPC/util'
 
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ChainData } from '../shared/fetchChains'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 
 interface RenderToAbstractCanvasOptions {
@@ -103,12 +102,18 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     const filtered = filterForPairs(reduced)
     let stats
     if (filtered.length) {
-      const insertSizeStats = getInsertSizeStats(filtered)
-      const tlens = filtered.map(f => Math.abs(f.tlen))
-      stats = {
-        ...insertSizeStats,
-        max: Math.max(...tlens),
-        min: Math.min(...tlens),
+      // Filter out features without valid TLEN values
+      const validTlenFeatures = filtered.filter(
+        f => f.tlen !== undefined && f.tlen !== 0 && !Number.isNaN(f.tlen),
+      )
+      if (validTlenFeatures.length > 0) {
+        const insertSizeStats = getInsertSizeStats(validTlenFeatures)
+        const tlens = validTlenFeatures.map(f => Math.abs(f.tlen))
+        stats = {
+          ...insertSizeStats,
+          max: Math.max(...tlens),
+          min: Math.min(...tlens),
+        }
       }
     }
 

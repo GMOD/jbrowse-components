@@ -258,8 +258,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Toggle read cloud (y-coordinate proportional to TLEN)',
+              label: 'Toggle read cloud',
               type: 'checkbox',
+              helpText:
+                'In read cloud mode, the y-coordinate of the reads is proportional to TLEN (template length)',
               checked: self.drawCloud,
               onClick: () => {
                 self.setDrawCloud(!self.drawCloud)
@@ -268,6 +270,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             {
               label: 'Draw singletons',
               type: 'checkbox',
+              helpText:
+                'If disabled, does not single parts of a paired end read, or a single long read alignment. Will only draw paired reads or split alignments',
               checked: self.drawSingletons,
               onClick: () => {
                 self.setDrawSingletons(!self.drawSingletons)
@@ -275,6 +279,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Draw proper pairs',
+              helpText:
+                'If disabled, will not draw "normally paired" reads which can help highlight structural variants',
               type: 'checkbox',
               checked: self.drawProperPairs,
               onClick: () => {
@@ -282,8 +288,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label:
-                'Flip strand relative to primary alignment for long read chains',
+              label: 'Draw read strand relative to primary',
+              helpText:
+                'This makes all the reads draw their strand relative to the primary alignment, which can be helpful in seeing patterns of flipping orientation in split long-read alignments',
               type: 'checkbox',
               checked: self.flipStrandLongReadChains,
               onClick: () => {

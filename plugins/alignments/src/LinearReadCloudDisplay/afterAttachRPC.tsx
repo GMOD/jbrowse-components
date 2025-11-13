@@ -9,7 +9,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
-
   // Autorun to trigger RPC rendering when view changes
   createAutorun(
     self,
@@ -17,7 +16,11 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       const view = getContainingView(self) as LGV
 
       // Check if we have the necessary conditions to render
-      if (!view.initialized || self.error || !self.statsReadyAndRegionNotTooLarge) {
+      if (
+        !view.initialized ||
+        self.error ||
+        !self.statsReadyAndRegionNotTooLarge
+      ) {
         return
       }
 
@@ -109,7 +112,6 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       return
     }
 
-    const height = self.layoutHeight || self.height
     ctx.resetTransform()
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(renderingImageData, 0, 0)

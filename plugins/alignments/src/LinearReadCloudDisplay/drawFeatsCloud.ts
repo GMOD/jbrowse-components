@@ -29,9 +29,10 @@ export function calculateCloudYOffsetsCore(
   // The offset shifts the logarithmic curve, reducing the dramatic variation for small TLEN
   // This provides a smooth compression without hard thresholds
   const logOffset = 10
+  const rangePadding = 100 // Add/subtract to reduce stratification when values are similar
 
-  const maxD = Math.log(max(distances) + logOffset)
-  const minD = Math.log(min(distances) + logOffset)
+  const maxD = Math.log(max(distances) + logOffset + rangePadding)
+  const minD = Math.log(min(distances) + logOffset - rangePadding)
   const scaler = (height - 20) / (maxD - minD || 1)
 
   // Calculate Y-offsets for each chain
@@ -65,9 +66,10 @@ function calculateCloudYOffsets(
   // The offset shifts the logarithmic curve, reducing the dramatic variation for small TLEN
   // This provides a smooth compression without hard thresholds
   const logOffset = 10
+  const rangePadding = 100 // Add/subtract to reduce stratification when values are similar
 
-  const maxD = Math.log(max(distances) + logOffset)
-  const minD = Math.log(min(distances) + logOffset)
+  const maxD = Math.log(max(distances) + logOffset + rangePadding)
+  const minD = Math.log(min(distances) + logOffset - rangePadding)
   const scaler = (self.height - 20) / (maxD - minD || 1)
 
   // Calculate Y-offsets for each chain
