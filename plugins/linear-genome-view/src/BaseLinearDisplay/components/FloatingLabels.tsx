@@ -41,9 +41,6 @@ const FloatingLabels = observer(function FloatingLabels({
 
     const fontSize = 11
     const result: (LabelItemProps & { key: string })[] = []
-
-    // Use model getters for showLabels and showDescriptions
-
     for (const [key, val] of model.layoutFeatures.entries()) {
       if (!val?.[4]) {
         continue
@@ -116,6 +113,7 @@ const FloatingLabels = observer(function FloatingLabels({
 
     // Create or update elements
     for (const { key, label, description, leftPos, topPos } of labelData) {
+      console.log('wtf here', label)
       newKeys.add(key)
 
       let element = domElements.get(key)
@@ -176,7 +174,17 @@ const FloatingLabels = observer(function FloatingLabels({
   }, [labelData])
 
   return labelData.length > 0 ? (
-    <div ref={containerRef} style={{ position: 'relative' }} />
+    <div
+      ref={containerRef}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+      }}
+    />
   ) : null
 })
 

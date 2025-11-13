@@ -185,7 +185,7 @@ export function makeImageData({
       // Only add transcript-type children to secondary flatbush
       if (!isTranscript) {
         // Non-transcript children just get stored in layout
-        addNestedSubfeaturesToLayout(layout, child, region, bpPerPx)
+        addNestedSubfeaturesToLayout(layout, child, region, bpPerPx, config)
         continue
       }
 

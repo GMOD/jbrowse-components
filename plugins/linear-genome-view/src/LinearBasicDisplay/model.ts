@@ -12,7 +12,10 @@ import { cast, getEnv, getParent, types } from 'mobx-state-tree'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from 'mobx-state-tree'
 
