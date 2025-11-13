@@ -1,6 +1,13 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { renderToAbstractCanvas } from '@jbrowse/core/util'
+import { dedupe, groupBy, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
+import { getClip } from '../MismatchParser'
+import { filterForPairs, getInsertSizeStats } from '../PileupRPC/util'
+
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ChainData } from '../shared/fetchChains'
 import type { Region } from '@jbrowse/core/util'
 
@@ -42,8 +49,10 @@ function bpToPxSimple({
 }
 
 export interface RenderLinearReadCloudDisplayArgs {
+  sessionId: string
   regions: Region[]
-  chainData: ChainData
+  adapterConfig: Record<string, unknown>
+  filterBy: Record<string, unknown>
   featureHeight: number
   noSpacing: boolean
   drawCloud: boolean
@@ -67,8 +76,10 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
   async execute(args: RenderLinearReadCloudDisplayArgs, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const {
+      sessionId,
       regions,
-      chainData,
+      adapterConfig,
+      filterBy,
       featureHeight,
       noSpacing,
       drawCloud,
@@ -85,6 +96,54 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       highResolutionScaling,
       exportSVG,
     } = deserializedArgs
+
+    // Fetch chainData directly in the RPC to avoid serializing features from main thread
+    const dataAdapter = (
+      await getAdapter(this.pluginManager, sessionId, adapterConfig)
+    ).dataAdapter as BaseFeatureDataAdapter
+
+    const featuresArray = await firstValueFrom(
+      dataAdapter
+        .getFeaturesInMultipleRegions(regions, deserializedArgs)
+        .pipe(toArray()),
+    )
+
+    const reduced = dedupe(
+      featuresArray.map(f => ({
+        id: f.id(),
+        refName: f.get('refName'),
+        name: f.get('name'),
+        start: f.get('start'),
+        strand: f.get('strand'),
+        end: f.get('end'),
+        flags: f.get('flags'),
+        tlen: f.get('template_length'),
+        pair_orientation: f.get('pair_orientation'),
+        next_ref: f.get('next_ref'),
+        next_pos: f.get('next_pos'),
+        clipPos: getClip(f.get('CIGAR'), f.get('strand')),
+        SA: f.get('tags')?.SA,
+      })),
+      f => f.id,
+    )
+
+    const filtered = filterForPairs(reduced)
+    let stats
+    if (filtered.length) {
+      const insertSizeStats = getInsertSizeStats(filtered)
+      const tlens = filtered.map(f => Math.abs(f.tlen))
+      stats = {
+        ...insertSizeStats,
+        max: Math.max(...tlens),
+        min: Math.min(...tlens),
+      }
+    }
+    const chains = groupBy(reduced, f => f.name)
+
+    const chainData: ChainData = {
+      chains: Object.values(chains),
+      stats,
+    }
 
     // Create a mock view object with the necessary properties
     // offsetPx is positive when scrolled right
@@ -157,14 +216,14 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         }
 
         // Call the drawing function
-        const { layoutHeight } = drawFeatsCore(
+        const { layoutHeight, featuresForFlatbush } = drawFeatsCore(
           ctx,
           params,
           view,
           asm,
           wrappedCalculateYOffsets,
         )
-        return { layoutHeight }
+        return { layoutHeight, featuresForFlatbush }
       },
     )
 

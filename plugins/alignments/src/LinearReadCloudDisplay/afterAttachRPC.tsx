@@ -1,7 +1,6 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 
 import { createAutorun } from '../util'
-import { fetchChains } from '../shared/fetchChains'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -9,23 +8,15 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
-  // Keep the existing autorun for fetching chains
-  createAutorun(
-    self,
-    async () => {
-      await fetchChains(self)
-    },
-    { delay: 1000 },
-  )
 
-  // Autorun to trigger RPC rendering when chainData or view changes
+  // Autorun to trigger RPC rendering when view changes
   createAutorun(
     self,
     async () => {
       const view = getContainingView(self) as LGV
-      const { chainData } = self
 
-      if (!chainData) {
+      // Check if we have the necessary conditions to render
+      if (!view.initialized || self.error || !self.statsReadyAndRegionNotTooLarge) {
         return
       }
 
@@ -50,13 +41,15 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         const { bpPerPx, offsetPx } = view
         const regions = view.dynamicBlocks.contentBlocks
 
-        // Call RPC method
+        // Call RPC method - it will fetch chainData internally
         const result = (await rpcManager.call(
           self.id,
           'RenderLinearReadCloudDisplay',
           {
+            sessionId: session.id,
             regions,
-            chainData,
+            adapterConfig: self.adapterConfig,
+            filterBy: self.filterBy,
             featureHeight: self.featureHeightSetting,
             noSpacing: self.noSpacing ?? false,
             drawCloud: self.drawCloud,
@@ -75,6 +68,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         )) as {
           imageData?: ImageBitmap
           layoutHeight?: number
+          featuresForFlatbush?: any[]
         }
 
         // Store the result
@@ -82,6 +76,9 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           self.setRenderingImageData(result.imageData)
           if (result.layoutHeight !== undefined) {
             self.setLayoutHeight(result.layoutHeight)
+          }
+          if (result.featuresForFlatbush) {
+            self.setFeaturesForFlatbush(result.featuresForFlatbush)
           }
         }
 
