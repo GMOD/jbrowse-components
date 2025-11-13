@@ -201,6 +201,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
+                  label: 'Super-compact',
+                  onClick: () => {
+                    self.setFeatureHeight(1)
+                    self.setNoSpacing(true)
+                  },
+                },
+                {
                   label: 'Manually set height...',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
