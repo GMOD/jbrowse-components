@@ -42,6 +42,7 @@ export interface DrawFeatureArgs {
   topLevel: boolean
   canvasWidth: number
   peptideDataMap?: Map<string, PeptideData>
+  colorByCDS?: boolean
 }
 
 export interface DrawingResult {
@@ -77,6 +78,7 @@ export interface RenderArgs {
   highResolutionScaling?: number
   stopToken?: string
   peptideDataMap?: Map<string, PeptideData>
+  colorByCDS?: boolean
 }
 
 export type GlyphType =

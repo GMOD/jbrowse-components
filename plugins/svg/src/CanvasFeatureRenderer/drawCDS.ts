@@ -104,15 +104,15 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
     return { coords, items }
   }
 
-  const colorByCDS = readConfObject(config, 'colorByCDS') as boolean
+  const { colorByCDS: colorByCDSFromArgs } = args
   const zoomedInEnough = 1 / bpPerPx >= 10
 
   // Get peptide data for the parent feature (transcript)
   const parent = feature.parent() ?? feature
   const peptideData = peptideDataMap?.get(parent.id())
-  const doRender = zoomedInEnough && colorByCDS && !!peptideData?.protein
+  const doRender = zoomedInEnough && colorByCDSFromArgs && !!peptideData?.protein
 
-  if (colorByCDS && zoomedInEnough) {
+  if (colorByCDSFromArgs && zoomedInEnough) {
     console.log('[drawCDS] feature:', feature.id(), 'parent:', parent.id(), 'has peptideData:', !!peptideData, 'has protein:', !!peptideData?.protein, 'doRender:', doRender)
   }
 
@@ -120,7 +120,7 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
   const baseColor = getBoxColor({
     feature,
     config,
-    colorByCDS,
+    colorByCDS: !!colorByCDSFromArgs,
     theme,
   })
 

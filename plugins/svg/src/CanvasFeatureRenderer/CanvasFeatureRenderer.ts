@@ -107,8 +107,33 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       const type = feature.get('type')
       const subfeatures = feature.get('subfeatures')
 
-      // Check if this is a transcript with CDS
-      if (
+      console.log('[CanvasFeatureRenderer.fetchPeptideData] Checking feature type:', type, 'has subfeatures:', !!subfeatures?.length)
+
+      // Check if this is a gene with transcript children
+      if (type === 'gene' && subfeatures?.length) {
+        for (const subfeature of subfeatures) {
+          const subType = subfeature.get('type')
+          const subSubfeatures = subfeature.get('subfeatures')
+
+          if (
+            (subType === 'mRNA' ||
+              subType === 'transcript' ||
+              subType === 'primary_transcript' ||
+              subType === 'protein_coding_primary_transcript') &&
+            subSubfeatures?.length
+          ) {
+            const hasCDS = subSubfeatures.some(
+              (sub: Feature) => sub.get('type') === 'CDS',
+            )
+            if (hasCDS) {
+              console.log('[CanvasFeatureRenderer.fetchPeptideData] Found transcript in gene:', subfeature.id(), 'type:', subType)
+              transcriptsToFetch.push(subfeature)
+            }
+          }
+        }
+      }
+      // Check if this is a direct transcript with CDS
+      else if (
         subfeatures?.length &&
         (type === 'mRNA' ||
           type === 'transcript' ||
@@ -119,6 +144,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
           (sub: Feature) => sub.get('type') === 'CDS',
         )
         if (hasCDS) {
+          console.log('[CanvasFeatureRenderer.fetchPeptideData] Found direct transcript:', feature.id(), 'type:', type)
           transcriptsToFetch.push(feature)
         }
       }
@@ -226,6 +252,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
               layout,
               displayMode,
               peptideDataMap,
+              colorByCDS: (renderProps as any).colorByCDS,
             },
           }),
         )

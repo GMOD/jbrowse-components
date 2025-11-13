@@ -4,7 +4,7 @@ import { ConfigurationReference, getConf, readConfObject } from '@jbrowse/core/c
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { cast, getEnv, types } from 'mobx-state-tree'
+import { cast, getEnv, getParent, types } from 'mobx-state-tree'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
@@ -182,21 +182,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           // Get the assembly's sequenceAdapter configuration
           let sequenceAdapter
           try {
-            // Get assembly names from the display's configuration
-            const displayConf = self.configuration
-            const assemblyNames = readConfObject(displayConf, 'assemblyNames') as string[]
-            console.log('[LinearBasicDisplay] assemblyNames:', assemblyNames)
+            // Get assembly names from the parent track's configuration
+            const track = getParent(self, 2) as any
+            if (track && track.configuration) {
+              const assemblyNames = readConfObject(track.configuration, 'assemblyNames') as string[]
+              console.log('[LinearBasicDisplay] assemblyNames from track:', assemblyNames)
 
-            if (assemblyNames && assemblyNames.length > 0) {
-              const assembly = assemblyManager.get(assemblyNames[0])
-              if (assembly) {
-                // Get the sequence adapter config and ensure it's a plain object
-                const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
-                sequenceAdapter = adapterConfig
-                console.log('[LinearBasicDisplay] Got sequenceAdapter:', sequenceAdapter)
-              } else {
-                console.warn('[LinearBasicDisplay] No assembly found for:', assemblyNames[0])
+              if (assemblyNames && assemblyNames.length > 0) {
+                const assembly = assemblyManager.get(assemblyNames[0])
+                if (assembly) {
+                  // Get the sequence adapter config and ensure it's a plain object
+                  const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
+                  sequenceAdapter = adapterConfig
+                  console.log('[LinearBasicDisplay] Got sequenceAdapter:', sequenceAdapter)
+                } else {
+                  console.warn('[LinearBasicDisplay] No assembly found for:', assemblyNames[0])
+                }
               }
+            } else {
+              console.warn('[LinearBasicDisplay] Could not get parent track')
             }
           } catch (e) {
             // If we can't get the assembly, just continue without sequenceAdapter

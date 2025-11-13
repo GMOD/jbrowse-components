@@ -36,6 +36,7 @@ export function makeImageData({
     stopToken,
     layout,
     peptideDataMap,
+    colorByCDS,
   } = renderArgs
   const region = regions[0]!
   const theme = createJBrowseTheme(configTheme)
@@ -86,6 +87,7 @@ export function makeImageData({
       topLevel: true,
       canvasWidth,
       peptideDataMap,
+      colorByCDS,
     })
 
     // Determine if this feature is a gene with transcript children
