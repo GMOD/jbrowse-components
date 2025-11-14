@@ -152,7 +152,12 @@ export function getPairedInsertSizeColor(
   f2: { refName: string },
   stats?: ChainStats,
 ) {
-  const pairType = getPairedType({ type: 'insertSize', f1, f2, stats })
+  const pairType = getPairedType({
+    type: 'insertSize',
+    f1,
+    f2,
+    stats,
+  })
 
   switch (pairType) {
     case PairType.UNMAPPED_MATE:
@@ -234,13 +239,17 @@ export function getPairedInsertSizeAndOrientationColor(
 }
 
 export function getSingletonColor(
-  f: Feature | { tlen?: number },
+  f: { tlen?: number; pair_orientation?: string; flags?: number },
   stats?: ChainStats,
 ) {
-  const tlen = Math.abs(
-    (f instanceof Object && 'get' in f ? f.get('template_length') : f.tlen) ||
-      0,
-  )
+  // Check orientation first
+  const orientationColor = getPairedOrientationColorOrDefault(f)
+  if (orientationColor) {
+    return orientationColor
+  }
+
+  // Check insert size
+  const tlen = Math.abs(f.tlen || 0)
   // If TLEN is abnormally large, color it dark red
   if (stats && tlen > stats.upper) {
     return [

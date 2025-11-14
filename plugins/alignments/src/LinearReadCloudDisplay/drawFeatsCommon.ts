@@ -70,8 +70,15 @@ export function filterChains(
         const v1 = nonSupplementary[1]!
         const pairType = getPairedType({
           type,
-          f1: v0,
-          f2: v1,
+          f1: {
+            refName: v0.get('refName'),
+            pair_orientation: v0.get('pair_orientation'),
+            tlen: v0.get('template_length'),
+            flags: v0.get('flags'),
+          },
+          f2: {
+            refName: v1.get('refName'),
+          },
           stats: chainData.stats,
         })
         // Filter out proper pairs
@@ -227,6 +234,10 @@ export function addChainMouseoverRects(
           end: firstFeat.get('end'),
           strand: firstFeat.get('strand'),
           flags: firstFeat.get('flags'),
+          id: firstFeat.id(),
+          tlen: firstFeat.get('template_length') || 0,
+          pair_orientation: firstFeat.get('pair_orientation') || '',
+          clipPos: firstFeat.get('clipPos') || 0,
         },
         chainId: id,
         chainMinX: chainMinXPx,
@@ -238,6 +249,10 @@ export function addChainMouseoverRects(
           end: f.get('end'),
           strand: f.get('strand'),
           flags: f.get('flags'),
+          id: f.id(),
+          tlen: f.get('template_length') || 0,
+          pair_orientation: f.get('pair_orientation') || '',
+          clipPos: f.get('clipPos') || 0,
         })),
       })
     }
@@ -265,14 +280,6 @@ export interface DrawFeatsResult {
   layoutHeight?: number
 }
 
-/**
- * Core drawing function without model dependencies
- * Can be used in RPC context
- *
- * Note: view and asm are typed as any because this function is called from both:
- * 1. Main thread with real LinearGenomeViewModel and Assembly instances
- * 2. RPC context with minimal mock objects (ViewSnapshot and AssemblyLike)
- */
 export function drawFeatsCore({
   ctx,
   params,
@@ -397,7 +404,8 @@ export function drawFeatsCommon({
   if (!chainData) {
     return
   }
-  const { assemblyManager } = getSession(self)
+  const session = getSession(self)
+  const { assemblyManager } = session
   const view = getContainingView(self) as LGV
   const assemblyName = view.assemblyNames[0]!
   const asm = assemblyManager.get(assemblyName)
@@ -418,6 +426,10 @@ export function drawFeatsCommon({
       flipStrandLongReadChains: self.flipStrandLongReadChains,
       noSpacing: self.noSpacing,
       trackMaxHeight: self.trackMaxHeight,
+      config: self.configuration,
+      theme: session.theme!,
+      regions: view.staticBlocks.contentBlocks,
+      bpPerPx: view.bpPerPx,
     },
     view,
     calculateYOffsets: (

@@ -70,7 +70,6 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           regions,
           adapterConfig: self.adapterConfig,
           config: self.configuration,
-          // @ts-expect-error
           theme: session.theme,
           filterBy,
           featureHeight,

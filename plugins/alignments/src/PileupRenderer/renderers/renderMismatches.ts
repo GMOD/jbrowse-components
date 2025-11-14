@@ -4,13 +4,15 @@ import { colord } from '@jbrowse/core/util/colord'
 import { fillRect } from '../util'
 
 import type { Mismatch } from '../../shared/types'
-import type { FlatbushItem, ProcessedRenderArgs } from '../types'
+import type { Region } from '@jbrowse/core/util'
+import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 
 export function renderMismatches({
   ctx,
   feat,
-  renderArgs,
+  bpPerPx,
+  regions,
   minSubfeatureWidth,
   largeInsertionIndicatorScale,
   mismatchAlpha,
@@ -25,7 +27,8 @@ export function renderMismatches({
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
-  renderArgs: ProcessedRenderArgs
+  bpPerPx: number
+  regions: Region[]
   colorMap: Record<string, string>
   colorContrastMap: Record<string, string>
   mismatchAlpha?: boolean
@@ -40,7 +43,6 @@ export function renderMismatches({
 }) {
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
-  const { bpPerPx, regions } = renderArgs
   const { heightPx, topPx, feature } = feat
   const region = regions[0]!
   const start = feature.get('start')

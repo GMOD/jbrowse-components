@@ -80,7 +80,8 @@ export function makeImageData({
     const ret = renderMismatches({
       ctx,
       feat,
-      renderArgs,
+      bpPerPx: renderArgs.bpPerPx,
+      regions: renderArgs.regions,
       hideSmallIndels,
       mismatchAlpha,
       drawSNPsMuted,

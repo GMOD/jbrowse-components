@@ -5,6 +5,10 @@ export interface ReducedFeatureForFlatbush {
   end: number
   strand: number
   flags: number
+  id: string
+  tlen: number
+  pair_orientation: string
+  clipPos: number
 }
 
 export interface FlatbushEntry {

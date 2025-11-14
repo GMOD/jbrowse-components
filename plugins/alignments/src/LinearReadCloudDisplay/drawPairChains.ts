@@ -17,9 +17,10 @@ import {
 import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ThemeOptions } from '@mui/material'
+import { ColorBy } from '../shared/types'
 
 type LGV = LinearGenomeViewModel
 
@@ -58,9 +59,9 @@ export function drawPairChains({
   config: AnyConfigurationModel
   theme: ThemeOptions
   canvasWidth: number
-  regions: { refName: string; start: number; end: number }[]
+  regions: Region[]
   bpPerPx: number
-  colorBy: { type: string; tag?: string; extra?: Record<string, unknown> }
+  colorBy: ColorBy
 }): void {
   // Setup rendering configuration from PileupRenderer
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
@@ -114,7 +115,17 @@ export function drawPairChains({
           v1: nonSupplementary[1]!,
           stats: chainData.stats,
         }) || ['lightgrey', '#888']
-      : getSingletonColor(nonSupplementary[0] || chain[0]!, chainData.stats)
+      : (() => {
+          const feat = nonSupplementary[0] || chain[0]!
+          return getSingletonColor(
+            {
+              tlen: feat.get('template_length'),
+              pair_orientation: feat.get('pair_orientation'),
+              flags: feat.get('flags'),
+            },
+            chainData.stats,
+          )
+        })()
 
     // Draw connecting line for pairs with both mates visible
     if (hasBothMates) {
@@ -195,13 +206,8 @@ export function drawPairChains({
         renderMismatches({
           ctx,
           feat: layoutFeat,
-          renderArgs: {
-            config,
-            bpPerPx,
-            regions,
-            colorBy,
-            theme: configTheme,
-          } as any,
+          bpPerPx,
+          regions,
           hideSmallIndels,
           mismatchAlpha,
           drawSNPsMuted,
@@ -228,6 +234,10 @@ export function drawPairChains({
           end: feat.get('end'),
           strand: feat.get('strand'),
           flags: feat.get('flags'),
+          id: feat.id(),
+          tlen: feat.get('template_length') || 0,
+          pair_orientation: feat.get('pair_orientation') || '',
+          clipPos: feat.get('clipPos') || 0,
         },
         chainId: id,
         chainMinX: chainMinXPx,
@@ -239,6 +249,10 @@ export function drawPairChains({
           end: f.get('end'),
           strand: f.get('strand'),
           flags: f.get('flags'),
+          id: f.id(),
+          tlen: f.get('template_length') || 0,
+          pair_orientation: f.get('pair_orientation') || '',
+          clipPos: f.get('clipPos') || 0,
         })),
       })
     }
