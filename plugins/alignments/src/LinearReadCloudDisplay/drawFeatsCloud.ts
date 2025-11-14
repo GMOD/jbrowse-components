@@ -4,9 +4,6 @@ import { drawFeatsCommon } from './drawFeatsCommon'
 
 import type { ComputedChain } from './drawFeatsCommon'
 import type { LinearReadCloudDisplayModel } from './model'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 /**
  * Core utility function to calculate Y-offsets using logarithmic scaling
@@ -51,8 +48,6 @@ export function calculateCloudYOffsetsUtil(
 function calculateCloudYOffsets(
   computedChains: ComputedChain[],
   self: LinearReadCloudDisplayModel,
-  _view: any,
-  _featureHeight: number,
 ) {
   return calculateCloudYOffsetsUtil(computedChains, self.height)
 }

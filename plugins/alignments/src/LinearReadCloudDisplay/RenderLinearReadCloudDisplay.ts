@@ -15,7 +15,6 @@ import { filterForPairs, getInsertSizeStats } from '../PileupRPC/util'
 import type { ChainData } from '../shared/fetchChains'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Documents the minimal view snapshot interface for RPC rendering context
@@ -203,7 +202,6 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         const wrappedCalculateYOffsets = (
           computedChains: any,
           params: any,
-          _view: any,
           featureHeight: number,
         ) => {
           if (drawCloud) {
@@ -212,9 +210,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
           return calculateStackYOffsetsCore(
             computedChains,
             params,
-            viewSnap,
             featureHeight,
-            height,
           )
         }
 

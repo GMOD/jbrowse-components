@@ -255,9 +255,7 @@ export function drawFeatsCore(
   calculateYOffsets: (
     computedChains: ComputedChain[],
     params: DrawFeatsParams,
-    view: any,
     featureHeight: number,
-    height?: number,
   ) => { chainYOffsets: Map<string, number>; layoutHeight?: number },
 ): DrawFeatsResult {
   const {
@@ -291,7 +289,6 @@ export function drawFeatsCore(
   const { chainYOffsets, layoutHeight } = calculateYOffsets(
     computedChains,
     params,
-    view,
     featureHeight,
   )
 
@@ -346,7 +343,6 @@ export function drawFeatsCommon(
   calculateYOffsets: (
     computedChains: ComputedChain[],
     self: LinearReadCloudDisplayModel,
-    view: any,
     featureHeight: number,
   ) => { chainYOffsets: Map<string, number>; layoutHeight?: number },
 ) {
@@ -377,11 +373,10 @@ export function drawFeatsCommon(
   // Adapter function to convert self-based to params-based signature
   const adaptedCalculateYOffsets = (
     computedChains: ComputedChain[],
-    view: any,
+    params: DrawFeatsParams,
     featureHeight: number,
-    _height?: number,
   ) => {
-    return calculateYOffsets(computedChains, self, view, featureHeight)
+    return calculateYOffsets(computedChains, self, featureHeight)
   }
 
   const { featuresForFlatbush, layoutHeight } = drawFeatsCore(

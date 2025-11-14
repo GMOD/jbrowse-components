@@ -6,7 +6,6 @@ import { CHEVRON_WIDTH } from './util'
 
 import type { ChainData, ReducedFeature } from './fetchChains'
 import type { FlatbushEntry } from './flatbushType'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

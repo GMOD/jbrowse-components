@@ -5,9 +5,6 @@ import { drawFeatsCommon } from './drawFeatsCommon'
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 interface LayoutData {
   feat: ReducedFeature
@@ -22,9 +19,7 @@ interface LayoutData {
 export function calculateStackYOffsetsCore(
   computedChains: ComputedChain[],
   params: DrawFeatsParams,
-  _view: any,
   featureHeight: number,
-  _height?: number,
 ) {
   const noSpacing = params.noSpacing ?? false
   const maxHeight = params.trackMaxHeight ?? 1200
@@ -64,7 +59,6 @@ export function calculateStackYOffsetsCore(
 function calculateStackYOffsets(
   computedChains: ComputedChain[],
   self: LinearReadCloudDisplayModel,
-  _view: any,
   featureHeight: number,
 ) {
   const noSpacing = self.noSpacing ?? false
