@@ -19,7 +19,6 @@ import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import type { Region } from '@jbrowse/core/util'
 import type { ThemeOptions } from '@mui/material'
 
 interface RenderToAbstractCanvasOptions {

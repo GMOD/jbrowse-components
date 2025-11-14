@@ -1,6 +1,6 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { getSnapshot } from 'mobx-state-tree'
 import { untracked } from 'mobx'
+import { getSnapshot } from 'mobx-state-tree'
 
 import { createAutorun } from '../util'
 import { buildFlatbushIndex } from './drawFeatsCommon'
@@ -37,7 +37,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       return
     }
 
-    const { bpPerPx, offsetPx } = view
+    const { bpPerPx } = view
     const {
       featureHeightSetting: featureHeight,
       colorBy,

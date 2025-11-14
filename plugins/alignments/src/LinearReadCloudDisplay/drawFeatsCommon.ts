@@ -13,6 +13,7 @@ import type { FlatbushEntry } from '../shared/flatbushType'
 import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ThemeOptions } from '@mui/material'
 
@@ -267,7 +268,7 @@ export interface DrawFeatsParams {
   trackMaxHeight?: number
   config: AnyConfigurationModel
   theme: ThemeOptions
-  regions: Region[]
+  regions: BaseBlock[]
   bpPerPx: number
   canvasWidth: number
 }

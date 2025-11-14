@@ -19,6 +19,7 @@ import type { FlatbushEntry } from '../shared/flatbushType'
 import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
 interface MinimalView {
@@ -64,7 +65,7 @@ export function drawPairChains({
   config: AnyConfigurationModel
   theme: ThemeOptions
   canvasWidth: number
-  regions: Region[]
+  regions: BaseBlock[]
   bpPerPx: number
   colorBy: ColorBy
 }): void {
