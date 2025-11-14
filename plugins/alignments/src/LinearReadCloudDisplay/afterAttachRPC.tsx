@@ -4,9 +4,17 @@ import { createAutorun } from '../util'
 import { buildFlatbushIndex } from './drawFeatsCommon'
 
 import type { LinearReadCloudDisplayModel } from './model'
+import type { FlatbushEntry } from '../shared/flatbushType'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+interface RenderResult {
+  imageData?: ImageBitmap
+  layoutHeight?: number
+  featuresForFlatbush?: FlatbushEntry[]
+  offsetPx?: number
+}
 
 export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
   // Autorun to trigger RPC rendering when view changes
@@ -72,12 +80,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
             assemblyName,
             highResolutionScaling: 2,
           },
-        )) as {
-          imageData?: ImageBitmap
-          layoutHeight?: number
-          featuresForFlatbush?: any[]
-          offsetPx?: number
-        }
+        )) as RenderResult
 
         // Store the result
         if (result.imageData) {

@@ -15,6 +15,15 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+/**
+ * Minimal assembly interface required for drawing features
+ * Can be satisfied by full Assembly objects or minimal mocks in RPC context
+ */
+export interface AssemblyLike {
+  getCanonicalRefName: (refName: string) => string
+  getCanonicalRefName2?: (refName: string) => string
+}
+
 export interface ComputedChain {
   distance: number
   minX: number
@@ -248,7 +257,7 @@ export function drawFeatsCore(
   ctx: CanvasRenderingContext2D,
   params: DrawFeatsParams,
   view: LGV,
-  asm: any,
+  asm: AssemblyLike,
   calculateYOffsets: (
     computedChains: ComputedChain[],
     params: DrawFeatsParams,

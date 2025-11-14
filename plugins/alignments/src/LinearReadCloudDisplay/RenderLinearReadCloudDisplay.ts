@@ -13,8 +13,29 @@ import { getClip } from '../MismatchParser'
 import { filterForPairs, getInsertSizeStats } from '../PileupRPC/util'
 
 import type { ChainData } from '../shared/fetchChains'
+import type { AssemblyLike } from './drawFeatsCommon'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+/**
+ * Mock view snapshot interface for RPC rendering context
+ * Provides minimal LinearGenomeViewModel-like interface needed for coordinate calculations
+ */
+interface ViewSnapshot {
+  bpPerPx: number
+  offsetPx: number
+  assemblyNames: string[]
+  displayedRegions: Region[]
+  interRegionPaddingWidth: number
+  minimumBlockWidth: number
+  staticBlocks: ReturnType<typeof calculateStaticBlocks>
+  width: number
+  bpToPx: (arg: {
+    refName: string
+    coord: number
+  }) => { offsetPx: number; index: number } | undefined
+}
 
 interface RenderToAbstractCanvasOptions {
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
@@ -131,7 +152,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       minimumBlockWidth: 0,
     })
 
-    const viewSnap: any = {
+    const viewSnap: ViewSnapshot = {
       bpPerPx,
       offsetPx,
       assemblyNames: [assemblyName],
@@ -156,7 +177,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     }
 
     // Create a mock assembly object that assumes refNames are canonical
-    const asm = {
+    const asm: AssemblyLike = {
       getCanonicalRefName: (refName: string) => refName,
       getCanonicalRefName2: (refName: string) => refName,
     }
