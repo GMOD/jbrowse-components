@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`NCDN collapsed intron 1`] = `
 ">NM_014284.3-gene_collapsed_intron NC_000001.10:36,023,400-36,032,380(+)
