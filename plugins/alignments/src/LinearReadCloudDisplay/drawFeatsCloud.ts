@@ -2,7 +2,7 @@ import { max, min } from '@jbrowse/core/util'
 
 import { drawFeatsCommon } from './drawFeatsCommon'
 
-import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
+import type { ComputedChain } from './drawFeatsCommon'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

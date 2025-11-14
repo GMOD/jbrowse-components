@@ -104,7 +104,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     if (filtered.length) {
       // Filter out features without valid TLEN values
       const validTlenFeatures = filtered.filter(
-        f => f.tlen !== undefined && f.tlen !== 0 && !Number.isNaN(f.tlen),
+        f => f.tlen !== 0 && !Number.isNaN(f.tlen),
       )
       if (validTlenFeatures.length > 0) {
         const insertSizeStats = getInsertSizeStats(validTlenFeatures)

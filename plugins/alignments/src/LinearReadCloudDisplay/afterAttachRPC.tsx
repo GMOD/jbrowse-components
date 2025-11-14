@@ -44,7 +44,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         // For cloud mode, use fixed height. For stack mode, use trackMaxHeight or large default
         const height = self.drawCloud
           ? self.height
-          : self.trackMaxHeight ?? 10000
+          : (self.trackMaxHeight ?? 10000)
         const { bpPerPx, offsetPx } = view
         const regions = view.dynamicBlocks.contentBlocks
 
@@ -90,7 +90,6 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           }
           // Store the offsetPx that was used to render this image
           if (result.offsetPx !== undefined) {
-            self.setRenderedOffsetPx(result.offsetPx)
             self.setLastDrawnOffsetPx(result.offsetPx)
           }
         }
