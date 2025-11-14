@@ -3,6 +3,7 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { dedupe, groupBy, renderToAbstractCanvas } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { getSnapshot } from 'mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -79,18 +80,42 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       exportSVG,
     } = deserializedArgs
 
-    // Recreate the view from the snapshot
+    // Recreate the view from the snapshot following DotplotRenderer pattern
     const view = Base1DView.create(viewSnapshot)
-    // Set the volatile width if it wasn't preserved in the snapshot
+    // Set the volatile width which is not part of the snapshot
     if (viewSnapshot.width) {
       view.setVolatileWidth(viewSnapshot.width)
     }
+
+    // Extract properties from the recreated view
     const { bpPerPx, offsetPx } = view
     const width = view.staticBlocks.totalWidthPx
     const regions = view.staticBlocks.contentBlocks
     const assemblyName = view.assemblyNames[0]
     if (!assemblyName) {
       throw new Error('No assembly name found in view')
+    }
+
+    // Create a snapshot from the live view including computed properties
+    // Following the DotplotRenderer pattern
+    const viewSnap: any = {
+      ...getSnapshot(view),
+      staticBlocks: view.staticBlocks,
+      width: view.width,
+    }
+    // Add bpToPx method after viewSnap is defined to avoid circular reference
+    viewSnap.bpToPx = (arg: { refName: string; coord: number }) => {
+      const res = bpToPx({
+        self: viewSnap,
+        refName: arg.refName,
+        coord: arg.coord,
+      })
+      return res !== undefined
+        ? {
+            offsetPx: res.offsetPx,
+            index: res.index,
+          }
+        : undefined
     }
 
     // Fetch chainData directly in the RPC to avoid serializing features from main thread
@@ -180,7 +205,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
             regions,
             bpPerPx,
           },
-          view,
+          view: viewSnap,
           calculateYOffsets: (
             chains: ComputedChain[],
             params: DrawFeatsParams,
