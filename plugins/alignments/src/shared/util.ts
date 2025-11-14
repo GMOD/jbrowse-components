@@ -2,9 +2,14 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import type { ChainData } from './fetchChains'
 
+/**
+ * Check if ChainData contains paired-end reads
+ * Note: This checks the data content, not the type.
+ * For type-level checking, use hasPairedChainData() from fetchChains.ts
+ */
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {
-    if (f[0]!.flags & 1) {
+    if (f[0]!.get('flags') & 1) {
       return true
     }
   }

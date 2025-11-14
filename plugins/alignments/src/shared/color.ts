@@ -1,6 +1,7 @@
 import { orientationTypes, pairMap } from '../util'
 
-import type { ChainStats, ReducedFeature } from './fetchChains'
+import type { ChainStats } from './fetchChains'
+import type { Feature } from '@jbrowse/core/util'
 
 /**
  * Numeric codes for pair types
@@ -32,7 +33,7 @@ export const fillColor = {
   color_rev_missing_mate: '#1919D1',
   color_fwd_diff_chr: '#000',
   color_rev_diff_chr: '#969696',
-  color_pair_lr: '#c8c8c8',
+  color_pair_lr: 'lightgrey',
   color_pair_rr: '#3a3a9d',
   color_pair_rl: 'teal',
   color_pair_ll: 'green',
@@ -81,36 +82,34 @@ const defaultColor = [
  * Used internally by color functions and externally for filtering logic
  *
  * @param type - Color scheme type (insertSizeAndOrientation, orientation, insertSize)
- * @param f1 - First read in the pair
- * @param f2 - Second read in the pair
+ * @param f - Feature with pair_orientation, tlen, flags, refName, and next_ref
  * @param stats - Optional statistics for insert size thresholds
  * @returns Numeric code representing the pair type
  */
 export function getPairedType({
   type,
-  f1,
-  f2,
+  f,
   stats,
 }: {
   type: string
-  f1: {
+  f: {
     refName: string
+    next_ref?: string
     pair_orientation?: string
     tlen?: number
     flags?: number
   }
-  f2: { refName: string }
   stats?: ChainStats
 }): PairTypeValue {
   // Check for unmapped mate first (highest priority)
-  if (f1.flags !== undefined && f1.flags & 8) {
+  if (f.flags !== undefined && f.flags & 8) {
     return PairType.UNMAPPED_MATE
   }
 
   // Check orientation first (if applicable)
   if (type === 'insertSizeAndOrientation' || type === 'orientation') {
     const orientationType = orientationTypes.fr
-    const r = orientationType[f1.pair_orientation || ''] as
+    const r = orientationType[f.pair_orientation || ''] as
       | keyof typeof pairMap
       | undefined
     // If orientation is not LR (proper), it's abnormal
@@ -121,8 +120,8 @@ export function getPairedType({
 
   // Check insert size (if applicable)
   if (type === 'insertSizeAndOrientation' || type === 'insertSize') {
-    const sameRef = f1.refName === f2.refName
-    const tlen = Math.abs(f1.tlen || 0)
+    const sameRef = f.refName === f.next_ref
+    const tlen = Math.abs(f.tlen || 0)
 
     if (!sameRef) {
       return PairType.INTER_CHROM
@@ -147,11 +146,14 @@ export function getPairedType({
  * Uses getPairedType() internally to determine classification
  */
 export function getPairedInsertSizeColor(
-  f1: { refName: string; tlen?: number; flags?: number },
-  f2: { refName: string },
+  f: { refName: string; next_ref?: string; tlen?: number; flags?: number },
   stats?: ChainStats,
 ) {
-  const pairType = getPairedType({ type: 'insertSize', f1, f2, stats })
+  const pairType = getPairedType({
+    type: 'insertSize',
+    f,
+    stats,
+  })
 
   switch (pairType) {
     case PairType.UNMAPPED_MATE:
@@ -216,23 +218,33 @@ export function getPairedOrientationColor(f: {
  * Uses getPairedType() internally to determine classification
  */
 export function getPairedInsertSizeAndOrientationColor(
-  f1: {
+  f: {
     refName: string
+    next_ref?: string
     pair_orientation?: string
     tlen?: number
     flags?: number
   },
-  f2: { refName: string },
   stats?: ChainStats,
 ) {
   return (
-    getPairedOrientationColorOrDefault(f1) ||
-    getPairedInsertSizeColor(f1, f2, stats) ||
+    getPairedOrientationColorOrDefault(f) ||
+    getPairedInsertSizeColor(f, stats) ||
     defaultColor
   )
 }
 
-export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
+export function getSingletonColor(
+  f: { tlen?: number; pair_orientation?: string; flags?: number },
+  stats?: ChainStats,
+) {
+  // Check orientation first
+  // const orientationColor = getPairedOrientationColorOrDefault(f)
+  // if (orientationColor) {
+  //   return orientationColor
+  // }
+
+  // Check insert size
   const tlen = Math.abs(f.tlen || 0)
   // If TLEN is abnormally large, color it dark red
   if (stats && tlen > stats.upper) {
@@ -248,22 +260,29 @@ export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
 export function getPairedColor({
   type,
   v0,
-  v1,
   stats,
 }: {
   type: string
-  v0: ReducedFeature
-  v1: ReducedFeature
+  v0: Feature
   stats?: ChainStats
 }) {
+  // Extract properties from Feature objects
+  const f0 = {
+    refName: v0.get('refName'),
+    next_ref: v0.get('next_ref'),
+    pair_orientation: v0.get('pair_orientation'),
+    tlen: v0.get('template_length'),
+    flags: v0.get('flags'),
+  }
+
   if (type === 'insertSizeAndOrientation') {
-    return getPairedInsertSizeAndOrientationColor(v0, v1, stats)
+    return getPairedInsertSizeAndOrientationColor(f0, stats)
   }
   if (type === 'orientation') {
-    return getPairedOrientationColor(v0)
+    return getPairedOrientationColor(f0)
   }
   if (type === 'insertSize') {
-    return getPairedInsertSizeColor(v0, v1, stats)
+    return getPairedInsertSizeColor(f0, stats)
   }
   return undefined
 }

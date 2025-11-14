@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import type { ReducedFeature } from './fetchChains'
+import type { ReducedFeature } from '../shared/fetchChains'
 
 /**
  * Helper function to convert a chain of ReducedFeatures into a SimpleFeature

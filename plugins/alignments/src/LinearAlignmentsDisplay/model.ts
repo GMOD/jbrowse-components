@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import deepEqual from 'fast-deep-equal'
-import { autorun, when } from 'mobx'
+import { autorun } from 'mobx'
 import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
@@ -15,6 +15,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
 
 const minDisplayHeight = 20
@@ -289,20 +290,9 @@ function stateModelFactory(
       /**
        * #action
        */
-      async renderSvg(opts: { rasterizeLayers?: boolean }) {
-        const pileupHeight = self.height - self.SNPCoverageDisplay.height
-        await when(() => !self.notReady())
-        return (
-          <>
-            <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
-            <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
-              {await self.PileupDisplay.renderSvg({
-                ...opts,
-                overrideHeight: pileupHeight,
-              })}
-            </g>
-          </>
-        )
+      async renderSvg(opts: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg')
+        return renderSvg(self, opts)
       },
     }))
     .views(self => {

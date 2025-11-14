@@ -1,5 +1,3 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
-
 import { featurizeSA } from '../MismatchParser'
 import {
   getPairedInsertSizeAndOrientationColor,
@@ -8,11 +6,8 @@ import {
 } from '../shared/color'
 import { hasPairedReads } from '../shared/util'
 
-import type { LinearReadArcsDisplayModel } from './model'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
+import type { ChainData } from '../shared/fetchChains'
+import type { ColorBy } from '../shared/types'
 
 function jitter(n: number) {
   return Math.random() * 2 * n - n
@@ -39,38 +34,43 @@ function drawLineAtOffset(
   ctx.stroke()
 }
 
-export function drawFeats(
-  self: LinearReadArcsDisplayModel,
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-) {
+interface DrawFeatsRPCParams {
+  ctx: CanvasRenderingContext2D
+  width: number
+  height: number
+  chainData: ChainData
+  colorBy: ColorBy
+  drawInter: boolean
+  drawLongRange: boolean
+  lineWidth: number
+  jitter: number
+  view: any
+  offsetPx: number
+}
+
+export function drawFeatsRPC(params: DrawFeatsRPCParams) {
   const {
+    ctx,
+    height,
     chainData,
     colorBy,
     drawInter,
     drawLongRange,
-    lineWidthSetting,
-    jitterVal,
-  } = self
-  if (!chainData) {
-    return
-  }
-  const view = getContainingView(self) as LGV
-  const { assemblyManager } = getSession(self)
+    lineWidth,
+    jitter: jitterVal,
+    view,
+    offsetPx,
+  } = params
+
   const { chains, stats } = chainData
+  const { type } = colorBy
   const hasPaired = hasPairedReads(chainData)
-  const asm = assemblyManager.get(view.assemblyNames[0]!)
-  const type = colorBy?.type || 'insertSizeAndOrientation'
-  if (!asm) {
-    return
-  }
-  ctx.lineWidth = lineWidthSetting
+
+  ctx.lineWidth = lineWidth
 
   function draw(
     k1: CoreFeat & { tlen?: number; pair_orientation?: string },
     k2: CoreFeat,
-    assembly: Assembly,
     longRange?: boolean,
   ) {
     const s1 = k1.strand
@@ -80,16 +80,15 @@ export function drawFeats(
 
     const p1 = f1 ? k1.start : k1.end
     const p2 = hasPaired ? (f2 ? k2.start : k2.end) : f2 ? k2.end : k2.start
-    const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
-    const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
-    const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
-    const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
+    // Assume refNames are already canonical in the webworker context
+    const r1 = view.bpToPx({ refName: k1.refName, coord: p1 })?.offsetPx
+    const r2 = view.bpToPx({ refName: k2.refName, coord: p2 })?.offsetPx
 
     if (r1 !== undefined && r2 !== undefined) {
       const radius = (r2 - r1) / 2
       const absrad = Math.abs(radius)
-      const p = r1 - view.offsetPx
-      const p2 = r2 - view.offsetPx
+      const p = r1 - offsetPx
+      const p2 = r2 - offsetPx
       const drawArcInsteadOfBezier = absrad > 10_000
 
       // bezier (used for non-long-range arcs) requires moveTo before beginPath
@@ -168,7 +167,7 @@ export function drawFeats(
         ctx.stroke()
       }
     } else if (r1 && drawInter) {
-      drawLineAtOffset(ctx, r1 - view.offsetPx, height, 'purple')
+      drawLineAtOffset(ctx, r1 - offsetPx, height, 'purple')
     }
   }
 
@@ -192,7 +191,7 @@ export function drawFeats(
           tlen: f.get('template_length'),
           pair_orientation: f.get('pair_orientation'),
         }
-        draw(k1, mate, asm, true)
+        draw(k1, mate, true)
       } else {
         const features = [
           f,
@@ -226,7 +225,7 @@ export function drawFeats(
                   strand: v1Item.get('strand'),
                 }
               : v1Item
-          draw(k1, k2, asm, true)
+          draw(k1, k2, true)
         }
       }
     } else {
@@ -253,7 +252,7 @@ export function drawFeats(
           end: v1.get('end'),
           strand: v1.get('strand'),
         }
-        draw(k1, k2, asm, false)
+        draw(k1, k2, false)
       }
     }
   }

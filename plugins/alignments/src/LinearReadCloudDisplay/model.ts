@@ -10,15 +10,16 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import {
+  type ExportSvgDisplayOptions,
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
+import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
-import { chainToSimpleFeature } from '../shared/chainToSimpleFeature'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -85,6 +86,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Current height of the layout after drawing
        */
       layoutHeight: 0,
+      /**
+       * #volatile
+       * ImageData returned from RPC rendering
+       */
+      renderingImageData: undefined as ImageBitmap | undefined,
+      /**
+       * #volatile
+       * Flag to indicate if we're currently rendering via RPC
+       */
+      isRendering: false,
+      /**
+       * #volatile
+       * Chain ID of the currently selected feature for persistent highlighting
+       */
+      selectedFeatureId: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -142,8 +158,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const syntheticFeature = chainToSimpleFeature(chain)
         if (isSessionModelWithWidgets(session)) {
           const featureWidget = session.addWidget(
-            'AlignmentsFeatureWidget',
-            'alignmentFeature',
+            'BaseFeatureWidget',
+            'baseFeature',
             {
               featureData: syntheticFeature.toJSON(),
               view: getContainingView(self),
@@ -160,6 +176,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setDrawCloud(b: boolean) {
         self.drawCloud = b
       },
+      /**
+       * #action
+       * Set the rendering imageData from RPC
+       */
+      setRenderingImageData(imageData: ImageBitmap | undefined) {
+        self.renderingImageData = imageData
+      },
+      /**
+       * #action
+       * Set the rendering flag
+       */
+      setIsRendering(flag: boolean) {
+        self.isRendering = flag
+      },
+      /**
+       * #action
+       * Set the ID of the selected feature for persistent highlighting
+       */
+      setSelectedFeatureId(id: string | undefined) {
+        self.selectedFeatureId = id
+      },
     }))
     .views(self => {
       const {
@@ -173,7 +210,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
-            notReady: !self.chainData,
+            // We use RPC rendering, so we're always ready (data is fetched in RPC)
+            notReady: false,
           }
         },
 
@@ -222,8 +260,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Toggle read cloud (y-coordinate proportional to TLEN)',
+              label: 'Toggle read cloud',
               type: 'checkbox',
+              helpText:
+                'In read cloud mode, the y-coordinate of the reads is proportional to TLEN (template length)',
               checked: self.drawCloud,
               onClick: () => {
                 self.setDrawCloud(!self.drawCloud)
@@ -232,6 +272,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             {
               label: 'Draw singletons',
               type: 'checkbox',
+              helpText:
+                'If disabled, does not single parts of a paired end read, or a single long read alignment. Will only draw paired reads or split alignments',
               checked: self.drawSingletons,
               onClick: () => {
                 self.setDrawSingletons(!self.drawSingletons)
@@ -239,6 +281,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Draw proper pairs',
+              helpText:
+                'If disabled, will not draw "normally paired" reads which can help highlight structural variants',
               type: 'checkbox',
               checked: self.drawProperPairs,
               onClick: () => {
@@ -246,8 +290,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label:
-                'Flip strand relative to primary alignment for long read chains',
+              label: 'Draw read strand relative to primary',
+              helpText:
+                'This makes all the reads draw their strand relative to the primary alignment, which can be helpful in seeing patterns of flipping orientation in split long-read alignments',
               type: 'checkbox',
               checked: self.flipStrandLongReadChains,
               onClick: () => {
@@ -262,25 +307,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        async renderSvg(opts: {
-          rasterizeLayers?: boolean
-        }): Promise<React.ReactNode> {
-          const { renderSvg } = await import('../shared/renderSvgUtil')
-          if (self.drawCloud) {
-            const { drawFeats } = await import('./drawFeatsCloud')
-            return renderSvg(
-              self as LinearReadCloudDisplayModel,
-              opts,
-              drawFeats,
-            )
-          } else {
-            const { drawFeats } = await import('./drawFeatsStack')
-            return renderSvg(
-              self as LinearReadCloudDisplayModel,
-              opts,
-              drawFeats,
-            )
-          }
+        async renderSvg(
+          opts: ExportSvgDisplayOptions,
+        ): Promise<React.ReactNode> {
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self as LinearReadCloudDisplayModel, opts)
         },
       }
     })
@@ -289,9 +320,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('../shared/afterAttach')
-            const { drawFeats } = await import('./drawFeatsAbstract')
-            doAfterAttach(self, drawFeats)
+            const { doAfterAttachRPC } = await import('./afterAttachRPC')
+            doAfterAttachRPC(self)
           } catch (e) {
             console.error(e)
             self.setError(e)
