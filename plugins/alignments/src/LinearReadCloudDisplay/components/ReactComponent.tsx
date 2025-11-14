@@ -22,6 +22,13 @@ const Cloud = observer(function ({
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const height = model.drawCloud ? model.height : model.layoutHeight
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Calculate the horizontal offset for canvas positioning
+  // If the user scrolled while rendering was happening, we need to shift the canvas
+  const canvasLeftOffset =
+    model.renderedOffsetPx !== undefined
+      ? model.renderedOffsetPx - view.offsetPx
+      : 0
   const [hoveredFeature, setHoveredFeature] = useState<{
     x: number
     y: number
@@ -91,7 +98,7 @@ const Cloud = observer(function ({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left
+      const offsetX = event.clientX - rect.left - canvasLeftOffset
       const offsetY = event.clientY - rect.top
 
       // Track mouse position for tooltip
@@ -127,7 +134,7 @@ const Cloud = observer(function ({
         setHoveredFeatureData(null)
       }
     },
-    [flatbushIndex, model.featuresForFlatbush],
+    [flatbushIndex, model.featuresForFlatbush, canvasLeftOffset],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -143,7 +150,7 @@ const Cloud = observer(function ({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left
+      const offsetX = event.clientX - rect.left - canvasLeftOffset
       const offsetY = event.clientY - rect.top
 
       // Search for features at this position
@@ -168,7 +175,7 @@ const Cloud = observer(function ({
         model.setSelectedFeatureId(undefined)
       }
     },
-    [flatbushIndex, model],
+    [flatbushIndex, model, canvasLeftOffset],
   )
 
   // note: the position absolute below avoids scrollbar from appearing on track
@@ -183,7 +190,13 @@ const Cloud = observer(function ({
       <canvas
         data-testid={model.drawCloud ? 'cloud-canvas' : 'stack-canvas'}
         ref={cb}
-        style={{ width, height, position: 'absolute', left: 0, top: 0 }}
+        style={{
+          width,
+          height,
+          position: 'absolute',
+          left: canvasLeftOffset,
+          top: 0,
+        }}
         width={width * 2}
         height={height * 2}
       />
@@ -194,7 +207,7 @@ const Cloud = observer(function ({
           width,
           height,
           position: 'absolute',
-          left: 0,
+          left: canvasLeftOffset,
           top: 0,
           pointerEvents: 'none',
         }}
@@ -205,7 +218,7 @@ const Cloud = observer(function ({
         <div
           style={{
             position: 'absolute',
-            left: selectedFeatureBounds.x,
+            left: selectedFeatureBounds.x + canvasLeftOffset,
             top: selectedFeatureBounds.y,
             width: selectedFeatureBounds.width,
             height: selectedFeatureBounds.height,
@@ -220,7 +233,7 @@ const Cloud = observer(function ({
         <div
           style={{
             position: 'absolute',
-            left: hoveredFeature.x,
+            left: hoveredFeature.x + canvasLeftOffset,
             top: hoveredFeature.y,
             width: hoveredFeature.width,
             height: hoveredFeature.height,

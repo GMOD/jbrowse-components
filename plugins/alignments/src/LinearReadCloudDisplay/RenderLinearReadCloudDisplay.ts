@@ -215,6 +215,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       },
     )
 
-    return result
+    // Include the offsetPx in the result so the main thread can position the canvas correctly
+    return { ...result, offsetPx }
   }
 }

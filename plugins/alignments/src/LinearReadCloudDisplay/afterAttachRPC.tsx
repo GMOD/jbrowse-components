@@ -73,6 +73,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           imageData?: ImageBitmap
           layoutHeight?: number
           featuresForFlatbush?: any[]
+          offsetPx?: number
         }
 
         // Store the result
@@ -83,6 +84,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           }
           if (result.featuresForFlatbush) {
             buildFlatbushIndex(result.featuresForFlatbush, self)
+          }
+          // Store the offsetPx that was used to render this image
+          if (result.offsetPx !== undefined) {
+            self.setRenderedOffsetPx(result.offsetPx)
           }
         }
 

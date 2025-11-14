@@ -100,6 +100,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Chain ID of the currently selected feature for persistent highlighting
        */
       selectedFeatureId: undefined as string | undefined,
+      /**
+       * #volatile
+       * The offsetPx value that was used to render the current imageData
+       */
+      renderedOffsetPx: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -195,6 +200,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setSelectedFeatureId(id: string | undefined) {
         self.selectedFeatureId = id
+      },
+      /**
+       * #action
+       * Set the offsetPx value that was used to render the current imageData
+       */
+      setRenderedOffsetPx(offsetPx: number | undefined) {
+        self.renderedOffsetPx = offsetPx
       },
     }))
     .views(self => {
