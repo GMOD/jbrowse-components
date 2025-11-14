@@ -5,6 +5,7 @@ import {
   ReactRendering,
   getSerializedSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { getSnapshot } from 'mobx-state-tree'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type {
@@ -34,11 +35,8 @@ export async function renderSvg(
     return null
   }
 
-  const { bpPerPx, offsetPx } = view
-  const width = view.staticBlocks.totalWidthPx
+  const { offsetPx } = view
   const height = opts.overrideHeight
-  const regions = view.staticBlocks.contentBlocks
-  const theme = opts.theme
 
   const {
     featureHeightSetting: featureHeight,
@@ -51,16 +49,24 @@ export async function renderSvg(
     trackMaxHeight,
   } = self
 
+  // Serialize the full view snapshot for RPC
+  // Include staticBlocks and width which are not part of the regular snapshot
+  const viewSnapshot = structuredClone({
+    ...getSnapshot(view),
+    staticBlocks: view.staticBlocks,
+    width: view.width,
+  })
+
   // Call RPC method with exportSVG options
   const rendering = (await rpcManager.call(
     self.id,
     'RenderLinearReadCloudDisplay',
     {
       sessionId: session.id,
-      regions,
+      view: viewSnapshot,
       adapterConfig: self.adapterConfig,
       config: self.configuration,
-      theme,
+      theme: opts.theme,
       filterBy,
       featureHeight,
       noSpacing: noSpacing ?? false,
@@ -70,11 +76,7 @@ export async function renderSvg(
       drawProperPairs,
       flipStrandLongReadChains,
       trackMaxHeight,
-      width,
       height,
-      bpPerPx,
-      offsetPx,
-      assemblyName,
       exportSVG: opts,
     },
   )) as RenderingResult
@@ -83,7 +85,7 @@ export async function renderSvg(
   let finalRendering = rendering
   if (rendering.canvasRecordedData && !rendering.html) {
     const html = await getSerializedSvg({
-      width,
+      width: view.staticBlocks.totalWidthPx,
       height,
       canvasRecordedData: rendering.canvasRecordedData,
     })

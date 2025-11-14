@@ -1,4 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSnapshot } from 'mobx-state-tree'
 import { untracked } from 'mobx'
 
 import { createAutorun } from '../util'
@@ -58,11 +59,13 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         return
       }
 
-      const screenWidth = view.dynamicBlocks.totalWidthPx
-      // Adjust canvas width when offsetPx is negative
-      // This prevents issues with mismatch rendering when scrolled left
-      const width = offsetPx < 0 ? screenWidth + offsetPx : screenWidth
-      const regions = view.dynamicBlocks.contentBlocks
+      // Serialize the full view snapshot for RPC
+      // Include staticBlocks and width which are not part of the regular snapshot
+      const viewSnapshot = structuredClone({
+        ...getSnapshot(view),
+        staticBlocks: view.staticBlocks,
+        width: view.width,
+      })
 
       // Call RPC method - it will fetch chainData internally
       const result = (await rpcManager.call(
@@ -70,7 +73,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         'RenderLinearReadCloudDisplay',
         {
           sessionId: session.id,
-          regions,
+          view: viewSnapshot,
           adapterConfig: self.adapterConfig,
           config: self.configuration,
           theme: session.theme,
@@ -83,11 +86,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           drawProperPairs,
           flipStrandLongReadChains,
           trackMaxHeight,
-          width,
           height,
-          bpPerPx,
-          offsetPx,
-          assemblyName,
           highResolutionScaling: 2,
         },
       )) as RenderResult

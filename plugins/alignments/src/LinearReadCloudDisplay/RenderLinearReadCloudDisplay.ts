@@ -2,7 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { dedupe, groupBy, renderToAbstractCanvas } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -17,28 +17,9 @@ import type { ChainData } from '../shared/fetchChains'
 import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { Region } from '@jbrowse/core/util'
 import type { ThemeOptions } from '@mui/material'
-
-/**
- * Documents the minimal view snapshot interface for RPC rendering context
- * Provides the properties needed for coordinate calculations
- * Note: Not used as a type constraint - drawFeatsCore accepts `any` for flexibility
- */
-interface ViewSnapshot {
-  bpPerPx: number
-  offsetPx: number
-  assemblyNames: string[]
-  displayedRegions: Region[]
-  interRegionPaddingWidth: number
-  minimumBlockWidth: number
-  staticBlocks: ReturnType<typeof calculateStaticBlocks>
-  width: number
-  bpToPx: (arg: {
-    refName: string
-    coord: number
-  }) => { offsetPx: number; index: number } | undefined
-}
 
 interface RenderToAbstractCanvasOptions {
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
@@ -47,7 +28,7 @@ interface RenderToAbstractCanvasOptions {
 
 export interface RenderLinearReadCloudDisplayArgs {
   sessionId: string
-  regions: Region[]
+  view: Base1DViewModel
   adapterConfig: AnyConfigurationModel
   config: AnyConfigurationModel
   theme: ThemeOptions
@@ -60,11 +41,7 @@ export interface RenderLinearReadCloudDisplayArgs {
   drawProperPairs: boolean
   flipStrandLongReadChains: boolean
   trackMaxHeight?: number
-  width: number
   height: number
-  bpPerPx: number
-  offsetPx: number
-  assemblyName: string
   highResolutionScaling?: number
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
 }
@@ -85,7 +62,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
 
     const {
       sessionId,
-      regions,
+      view: viewSnapshot,
       adapterConfig,
       config,
       theme,
@@ -97,14 +74,24 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       drawProperPairs,
       flipStrandLongReadChains,
       trackMaxHeight,
-      width,
       height,
-      bpPerPx,
-      offsetPx,
-      assemblyName,
       highResolutionScaling,
       exportSVG,
     } = deserializedArgs
+
+    // Recreate the view from the snapshot
+    const view = Base1DView.create(viewSnapshot)
+    // Set the volatile width if it wasn't preserved in the snapshot
+    if (viewSnapshot.width) {
+      view.setVolatileWidth(viewSnapshot.width)
+    }
+    const { bpPerPx, offsetPx } = view
+    const width = view.staticBlocks.totalWidthPx
+    const regions = view.staticBlocks.contentBlocks
+    const assemblyName = view.assemblyNames[0]
+    if (!assemblyName) {
+      throw new Error('No assembly name found in view')
+    }
 
     // Fetch chainData directly in the RPC to avoid serializing features from main thread
     const dataAdapter = (
@@ -163,43 +150,6 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       stats,
     }
 
-    const staticBlocks = calculateStaticBlocks({
-      displayedRegions: regions,
-      bpPerPx,
-      width,
-      offsetPx,
-      interRegionPaddingWidth: 0,
-      minimumBlockWidth: 0,
-    })
-
-    const viewSnap: ViewSnapshot = {
-      bpPerPx,
-      // When offsetPx < 0, set it to 0 for the view snapshot since the canvas
-      // is positioned to handle the negative offset via CSS
-      offsetPx: Math.max(0, offsetPx),
-      assemblyNames: [assemblyName],
-      displayedRegions: regions,
-      interRegionPaddingWidth: 0,
-      minimumBlockWidth: 0,
-      staticBlocks, // bpToPx expects staticBlocks property
-      width,
-      bpToPx: (arg: { refName: string; coord: number }) => {
-        const res = bpToPx({
-          self: viewSnap,
-          refName: arg.refName,
-          coord: arg.coord,
-        })
-        return res !== undefined
-          ? {
-              // Adjust coordinates: add original offsetPx when positive (scroll right),
-              // no adjustment when negative (canvas positioning handles it)
-              offsetPx: res.offsetPx + Math.max(0, offsetPx),
-              index: res.index,
-            }
-          : undefined
-      },
-    }
-
     // Create params object for drawing
 
     const renderOpts: RenderToAbstractCanvasOptions = {
@@ -230,7 +180,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
             regions,
             bpPerPx,
           },
-          view: viewSnap,
+          view,
           calculateYOffsets: (
             chains: ComputedChain[],
             params: DrawFeatsParams,
