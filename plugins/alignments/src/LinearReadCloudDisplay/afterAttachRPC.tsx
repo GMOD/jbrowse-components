@@ -91,10 +91,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           // Store the offsetPx that was used to render this image
           if (result.offsetPx !== undefined) {
             self.setRenderedOffsetPx(result.offsetPx)
+            self.setLastDrawnOffsetPx(result.offsetPx)
           }
         }
 
-        self.setLastDrawnOffsetPx(view.offsetPx)
         self.setLastDrawnBpPerPx(view.bpPerPx)
       } catch (error) {
         console.error('RPC rendering error:', error)
