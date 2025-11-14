@@ -9,6 +9,7 @@ import { toArray } from 'rxjs/operators'
 
 import configSchema from './configSchema'
 import { drawFeatsRPC } from './drawFeatsRPC'
+import { getInsertSizeStats } from '../PileupRPC/util'
 
 import type { ChainData } from '../shared/fetchChains'
 import type { ColorBy } from '../shared/types'
@@ -119,8 +120,47 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
     // Dedupe features by ID while preserving full Feature objects
     const deduped = dedupe(featuresArray, f => f.id())
 
+    // For stats calculation, we need to extract the template_length values
+    const filtered = deduped.filter(f => {
+      // Filter similar to what filterForPairs does
+      const flags = f.get('flags')
+      // Only keep paired reads
+      if (!(flags & 1)) {
+        return false
+      }
+      // Skip secondary and supplementary alignments for stats
+      if (flags & 256 || flags & 2048) {
+        return false
+      }
+      return true
+    })
+    let stats
+    if (filtered.length) {
+      // Filter out features without valid TLEN values
+      const validTlenFeatures = filtered.filter(f => {
+        const tlen = f.get('template_length')
+        return tlen !== 0 && !Number.isNaN(tlen)
+      })
+      if (validTlenFeatures.length > 0) {
+        // Convert to simple objects for getInsertSizeStats
+        const simpleTlenFeatures = validTlenFeatures.map(f => ({
+          tlen: f.get('template_length'),
+        }))
+        const insertSizeStats = getInsertSizeStats(simpleTlenFeatures)
+        const tlens = validTlenFeatures.map(f =>
+          Math.abs(f.get('template_length')),
+        )
+        stats = {
+          ...insertSizeStats,
+          max: Math.max(...tlens),
+          min: Math.min(...tlens),
+        }
+      }
+    }
+
     const chainData: ChainData = {
       chains: Object.values(groupBy(deduped, f => f.get('name'))),
+      stats,
     }
 
     const renderOpts: RenderToAbstractCanvasOptions = {
