@@ -1,6 +1,12 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { dedupe, groupBy, renderToAbstractCanvas } from '@jbrowse/core/util'
+import {
+  dedupe,
+  groupBy,
+  max,
+  min,
+  renderToAbstractCanvas,
+} from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { getSnapshot } from 'mobx-state-tree'
@@ -12,6 +18,7 @@ import { calculateCloudYOffsetsUtil } from './drawFeatsCloud'
 import { drawFeatsCore } from './drawFeatsCommon'
 import { calculateStackYOffsetsCore } from './drawFeatsStack'
 import { getInsertSizeStats } from '../PileupRPC/util'
+import { createChainData } from '../shared/fetchChains'
 
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type { ChainData } from '../shared/fetchChains'
@@ -166,16 +173,19 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         )
         stats = {
           ...insertSizeStats,
-          max: Math.max(...tlens),
-          min: Math.min(...tlens),
+          max: max(tlens),
+          min: min(tlens),
         }
       }
     }
 
-    const chainData: ChainData = {
-      chains: Object.values(groupBy(deduped, f => f.get('name'))),
-      stats,
-    }
+    // Use helper function to ensure proper typing
+    // If stats is defined, TypeScript will infer PairedChainData
+    // If stats is undefined, TypeScript will infer UnpairedChainData
+    const chains = Object.values(groupBy(deduped, f => f.get('name')))
+    const chainData: ChainData = stats
+      ? createChainData(chains, stats)
+      : createChainData(chains)
 
     // Create params object for drawing
 

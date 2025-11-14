@@ -10,6 +10,7 @@ import { toArray } from 'rxjs/operators'
 import configSchema from './configSchema'
 import { drawFeatsRPC } from './drawFeatsRPC'
 import { getInsertSizeStats } from '../PileupRPC/util'
+import { createChainData } from '../shared/fetchChains'
 
 import type { ChainData } from '../shared/fetchChains'
 import type { ColorBy } from '../shared/types'
@@ -158,10 +159,13 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
       }
     }
 
-    const chainData: ChainData = {
-      chains: Object.values(groupBy(deduped, f => f.get('name'))),
-      stats,
-    }
+    // Use helper function to ensure proper typing
+    // If stats is defined, TypeScript will infer PairedChainData
+    // If stats is undefined, TypeScript will infer UnpairedChainData
+    const chains = Object.values(groupBy(deduped, f => f.get('name')))
+    const chainData: ChainData = stats
+      ? createChainData(chains, stats)
+      : createChainData(chains)
 
     const renderOpts: RenderToAbstractCanvasOptions = {
       highResolutionScaling,
