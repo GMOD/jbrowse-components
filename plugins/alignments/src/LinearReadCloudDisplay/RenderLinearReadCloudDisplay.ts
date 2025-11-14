@@ -6,7 +6,7 @@ import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { calculateCloudYOffsetsCore } from './drawFeatsCloud'
+import { calculateCloudYOffsetsUtil } from './drawFeatsCloud'
 import { drawFeatsCore } from './drawFeatsCommon'
 import { calculateStackYOffsetsCore } from './drawFeatsStack'
 import { getClip } from '../MismatchParser'
@@ -178,26 +178,23 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       exportSVG,
     }
 
-    // Import the appropriate calculate Y offsets function
-    const calculateYOffsets = drawCloud
-      ? calculateCloudYOffsetsCore
-      : calculateStackYOffsetsCore
-
     // Render using renderToAbstractCanvas
     const result = await renderToAbstractCanvas(
       width,
       height,
       renderOpts,
       async (ctx: CanvasRenderingContext2D) => {
-        // Wrap calculateYOffsets to add height parameter
+        // Wrap calculateYOffsets to handle cloud vs stack mode
         const wrappedCalculateYOffsets = (
           computedChains: any,
           params: any,
           _view: any,
           featureHeight: number,
         ) => {
-          // Always pass height, even for stack mode (it just won't use it)
-          return calculateYOffsets(
+          if (drawCloud) {
+            return calculateCloudYOffsetsUtil(computedChains, height)
+          }
+          return calculateStackYOffsetsCore(
             computedChains,
             params,
             viewSnap,

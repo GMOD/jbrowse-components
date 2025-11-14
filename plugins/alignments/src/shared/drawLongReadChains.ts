@@ -96,7 +96,7 @@ export function drawLongReadChains({
           lastPx - view.offsetPx,
           lineY,
           ctx,
-          '#666',
+          '#6665',
         )
       }
     }

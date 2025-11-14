@@ -99,7 +99,7 @@ export function drawPairChains({
           r2s - view.offsetPx,
           lineY,
           ctx,
-          '#666',
+          '#6665',
         )
       }
     }
