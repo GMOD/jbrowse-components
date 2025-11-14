@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { clamp, getFillProps } from '@jbrowse/core/util'
+import { getFillProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -42,7 +42,7 @@ const LegendItemText = function ({
   textFillProps: ReturnType<typeof getFillProps>
 }) {
   const { color, name, label } = source
-  const svgFontSize = clamp(rowHeight, 8, 12)
+  const svgFontSize = Math.min(rowHeight, 12)
   const colorBoxWidth = 15
   return (
     <text

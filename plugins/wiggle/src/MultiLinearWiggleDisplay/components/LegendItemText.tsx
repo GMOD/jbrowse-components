@@ -20,7 +20,7 @@ const LegendItemText = function ({
 }) {
   const { graphType, rowHeightTooSmallForScalebar, renderColorBoxes } = model
   const svgFontSize = Math.min(rowHeight, 12)
-  const canDisplayLabel = rowHeight >= 7
+  const canDisplayLabel = rowHeight >= 6
   const colorBoxWidth = renderColorBoxes ? 15 : 0
   const svgOffset = exportSVG ? 10 : 0
   const extraOffset =

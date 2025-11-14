@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { clamp, getContainingView, measureText } from '@jbrowse/core/util'
+import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './MultiVariantColorLegend'
@@ -53,7 +53,7 @@ export const LegendBar = observer(function (props: {
 }) {
   const { model } = props
   const { canDisplayLabels, rowHeight, sources } = model
-  const svgFontSize = clamp(rowHeight, 8, 12)
+  const svgFontSize = Math.min(rowHeight, 12)
 
   const labelWidth = useMemo(() => {
     if (!sources) {

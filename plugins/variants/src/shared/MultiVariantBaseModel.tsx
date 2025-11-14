@@ -482,7 +482,7 @@ export default function MultiVariantBaseModelF(
        * #getter
        */
       get canDisplayLabels() {
-        return self.rowHeight >= 7 && self.showSidebarLabelsSetting
+        return self.rowHeight >= 6 && self.showSidebarLabelsSetting
       },
       /**
        * #getter
