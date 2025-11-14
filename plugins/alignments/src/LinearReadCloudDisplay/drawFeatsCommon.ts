@@ -250,10 +250,10 @@ export interface DrawFeatsParams {
   flipStrandLongReadChains: boolean
   noSpacing?: boolean
   trackMaxHeight?: number
-  config?: Record<string, unknown>
-  theme?: Record<string, unknown>
-  regions?: { refName: string; start: number; end: number }[]
-  bpPerPx?: number
+  config: Record<string, unknown>
+  theme: Record<string, unknown>
+  regions: { refName: string; start: number; end: number }[]
+  bpPerPx: number
 }
 
 export interface DrawFeatsResult {
@@ -329,6 +329,11 @@ export function drawFeatsCore(
     featureHeight,
     featuresForFlatbush,
     computedChains,
+    config: params.config,
+    theme: params.theme,
+    regions: params.regions,
+    bpPerPx: params.bpPerPx,
+    colorBy: params.colorBy,
   })
 
   drawLongReadChains({
@@ -341,6 +346,11 @@ export function drawFeatsCore(
     featuresForFlatbush,
     computedChains,
     flipStrandLongReadChains,
+    config: params.config,
+    theme: params.theme,
+    regions: params.regions,
+    bpPerPx: params.bpPerPx,
+    colorBy: params.colorBy,
   })
 
   // Add full-width rectangles for each chain to enable mouseover on connecting lines

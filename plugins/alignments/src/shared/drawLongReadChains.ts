@@ -1,3 +1,14 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+
+import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
+import {
+  getCharWidthHeight,
+  getColorBaseMap,
+  getContrastBaseMap,
+  shouldDrawIndels,
+  shouldDrawSNPsMuted,
+} from '../PileupRenderer/util'
 import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
 import { drawChevron } from './chevron'
 import { fillColor, getSingletonColor, strokeColor } from './color'
@@ -21,6 +32,11 @@ export function drawLongReadChains({
   featuresForFlatbush,
   computedChains,
   flipStrandLongReadChains,
+  config,
+  theme: configTheme,
+  regions,
+  bpPerPx,
+  colorBy,
 }: {
   ctx: CanvasRenderingContext2D
   chainData: ChainData
@@ -37,7 +53,28 @@ export function drawLongReadChains({
     id: string
   }[]
   flipStrandLongReadChains: boolean
+  config: Record<string, unknown>
+  theme: Record<string, unknown>
+  regions: { refName: string; start: number; end: number }[]
+  bpPerPx: number
+  colorBy: { type: string; tag?: string; extra?: Record<string, unknown> }
 }): void {
+  // Setup rendering configuration from PileupRenderer
+  const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
+  const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth')
+  const largeInsertionIndicatorScale = readConfObject(
+    config,
+    'largeInsertionIndicatorScale',
+  )
+  const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
+  const theme = createJBrowseTheme(configTheme)
+  const colorMap = getColorBaseMap(theme)
+  const colorContrastMap = getContrastBaseMap(theme)
+  const { charWidth, charHeight } = getCharWidthHeight()
+  const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
+  const drawIndels = shouldDrawIndels()
+  const canvasWidth = view.dynamicBlocks?.totalWidthPx || 800
+
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 
@@ -135,6 +172,13 @@ export function drawLongReadChains({
       const xPos = s.offsetPx - viewOffsetPx
       const width = Math.max(e.offsetPx - s.offsetPx, 3)
 
+      // Render the alignment base shape
+      const layoutFeat = {
+        feature: feat,
+        heightPx: featureHeight,
+        topPx: chainY,
+      }
+
       if (renderChevrons) {
         drawChevron(
           ctx,
@@ -150,6 +194,33 @@ export function drawLongReadChains({
       } else {
         fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
         strokeRectCtx(xPos, chainY, width, featureHeight, ctx, featureStroke)
+      }
+
+      // Render mismatches on top if available
+      const region = regions[0]
+      if (region) {
+        renderMismatches({
+          ctx,
+          feat: layoutFeat,
+          renderArgs: {
+            config,
+            bpPerPx,
+            regions,
+            colorBy,
+            theme: configTheme,
+          } as any,
+          hideSmallIndels,
+          mismatchAlpha,
+          drawSNPsMuted,
+          drawIndels,
+          largeInsertionIndicatorScale,
+          minSubfeatureWidth,
+          charWidth,
+          charHeight,
+          colorMap,
+          colorContrastMap,
+          canvasWidth,
+        })
       }
 
       featuresForFlatbush.push({

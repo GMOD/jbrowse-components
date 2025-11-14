@@ -1,4 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { untracked } from 'mobx'
 
 import { createAutorun } from '../util'
 import { buildFlatbushIndex } from './drawFeatsCommon'
@@ -6,6 +7,7 @@ import { buildFlatbushIndex } from './drawFeatsCommon'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { trace } from 'mobx'
 
 type LGV = LinearGenomeViewModel
 
@@ -30,12 +32,11 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       return
     }
 
-    // Don't render if already rendering
-    if (self.isRendering) {
+    // Don't render if already rendering (use untracked to avoid triggering autorun)
+    if (untracked(() => self.isRendering)) {
       return
     }
 
-    // Synchronously read all shared properties - MobX tracks these automatically
     const { bpPerPx, offsetPx } = view
     const {
       featureHeightSetting: featureHeight,
@@ -69,6 +70,8 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           sessionId: session.id,
           regions,
           adapterConfig: self.adapterConfig,
+          config: self.configuration,
+          theme: session.theme,
           filterBy,
           featureHeight,
           noSpacing: noSpacing ?? false,

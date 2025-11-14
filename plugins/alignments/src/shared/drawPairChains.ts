@@ -1,3 +1,15 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+
+import { renderAlignment } from '../PileupRenderer/renderers/renderAlignment'
+import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
+import {
+  getCharWidthHeight,
+  getColorBaseMap,
+  getContrastBaseMap,
+  shouldDrawIndels,
+  shouldDrawSNPsMuted,
+} from '../PileupRenderer/util'
 import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
 import { drawChevron } from './chevron'
 import { getPairedColor, getSingletonColor } from './color'
@@ -20,6 +32,11 @@ export function drawPairChains({
   featureHeight,
   featuresForFlatbush,
   computedChains,
+  config,
+  theme: configTheme,
+  regions,
+  bpPerPx,
+  colorBy,
 }: {
   ctx: CanvasRenderingContext2D
   type: string
@@ -36,7 +53,29 @@ export function drawPairChains({
     chain: Feature[]
     id: string
   }[]
+  config: Record<string, unknown>
+  theme: Record<string, unknown>
+  regions: { refName: string; start: number; end: number }[]
+  bpPerPx: number
+  colorBy: { type: string; tag?: string; extra?: Record<string, unknown> }
 }): void {
+  // Setup rendering configuration from PileupRenderer
+  const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
+  const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth')
+  const largeInsertionIndicatorScale = readConfObject(
+    config,
+    'largeInsertionIndicatorScale',
+  )
+  const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
+  const defaultColor = readConfObject(config, 'color') === '#f0f'
+  const theme = createJBrowseTheme(configTheme)
+  const colorMap = getColorBaseMap(theme)
+  const colorContrastMap = getContrastBaseMap(theme)
+  const { charWidth, charHeight } = getCharWidthHeight()
+  const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
+  const drawIndels = shouldDrawIndels()
+  const canvasWidth = view.dynamicBlocks?.totalWidthPx || 800
+
   for (const computedChain of computedChains) {
     const { id, chain, minX, maxX } = computedChain
 
@@ -125,6 +164,13 @@ export function drawPairChains({
       const xPos = s.offsetPx - viewOffsetPx
       const width = Math.max(e.offsetPx - s.offsetPx, 3)
 
+      // Render the alignment base shape
+      const layoutFeat = {
+        feature: feat,
+        heightPx: featureHeight,
+        topPx: chainY,
+      }
+
       if (renderChevrons) {
         drawChevron(
           ctx,
@@ -140,6 +186,33 @@ export function drawPairChains({
       } else {
         fillRectCtx(xPos, chainY, width, featureHeight, ctx, pairedFill)
         strokeRectCtx(xPos, chainY, width, featureHeight, ctx, pairedStroke)
+      }
+
+      // Render mismatches on top if available
+      const region = regions[0]
+      if (region) {
+        renderMismatches({
+          ctx,
+          feat: layoutFeat,
+          renderArgs: {
+            config,
+            bpPerPx,
+            regions,
+            colorBy,
+            theme: configTheme,
+          } as any,
+          hideSmallIndels,
+          mismatchAlpha,
+          drawSNPsMuted,
+          drawIndels,
+          largeInsertionIndicatorScale,
+          minSubfeatureWidth,
+          charWidth,
+          charHeight,
+          colorMap,
+          colorContrastMap,
+          canvasWidth,
+        })
       }
 
       featuresForFlatbush.push({

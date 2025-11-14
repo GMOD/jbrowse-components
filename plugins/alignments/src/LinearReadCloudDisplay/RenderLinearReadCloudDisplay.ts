@@ -45,6 +45,8 @@ export interface RenderLinearReadCloudDisplayArgs {
   sessionId: string
   regions: Region[]
   adapterConfig: Record<string, unknown>
+  config: Record<string, unknown>
+  theme: Record<string, unknown>
   filterBy: Record<string, unknown>
   featureHeight: number
   noSpacing: boolean
@@ -72,6 +74,8 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       sessionId,
       regions,
       adapterConfig,
+      config,
+      theme,
       featureHeight,
       noSpacing,
       drawCloud,
@@ -203,6 +207,10 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
             drawProperPairs,
             flipStrandLongReadChains,
             trackMaxHeight,
+            config,
+            theme,
+            regions,
+            bpPerPx,
           },
           viewSnap,
           (
