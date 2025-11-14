@@ -49,12 +49,15 @@ export interface RenderLinearReadCloudDisplayArgs {
 export default class RenderLinearReadCloudDisplay extends RpcMethodType {
   name = 'RenderLinearReadCloudDisplay'
 
-  deserializeArguments(args: any, _rpcDriver: string) {
+  deserializeArguments(args: any, rpcDriver: string) {
     return {
       ...args,
-      config: configSchema(this.pluginManager).create(args.config, {
-        pluginManager: this.pluginManager,
-      }),
+      config:
+        rpcDriver !== 'MainThreadRpcDriver'
+          ? configSchema(this.pluginManager).create(args.config, {
+              pluginManager: this.pluginManager,
+            })
+          : args.config,
     }
   }
   async execute(args: RenderLinearReadCloudDisplayArgs, rpcDriver: string) {
