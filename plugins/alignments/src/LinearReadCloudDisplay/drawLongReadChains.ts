@@ -87,6 +87,18 @@ export function drawLongReadChains({
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 
+  // Log once per render
+  const region = regions[0]
+  if (region) {
+    console.log('[drawLongReadChains] view.offsetPx:', view.offsetPx)
+    console.log('[drawLongReadChains] region.offsetPx:', region.offsetPx)
+    console.log('[drawLongReadChains] region.start:', region.start)
+    console.log('[drawLongReadChains] bpPerPx:', bpPerPx)
+    console.log('[drawLongReadChains] adjustment:', (region.offsetPx - view.offsetPx) * bpPerPx)
+  }
+
+  let logCount = 0
+
   for (const computedChain of computedChains) {
     const { id, chain, minX, maxX } = computedChain
 
@@ -187,6 +199,16 @@ export function drawLongReadChains({
 
       const xPos = s.offsetPx - viewOffsetPx
       const width = Math.max(e.offsetPx - s.offsetPx, 3)
+
+      // Log feature positioning for first 3 features only
+      if (i === 0 && logCount < 3) {
+        console.log(`[drawLongReadChains] Feature #${logCount + 1} positioning:`)
+        console.log('  feat.start:', feat.get('start'), 'feat.end:', feat.get('end'))
+        console.log('  s.offsetPx:', s.offsetPx, 'e.offsetPx:', e.offsetPx)
+        console.log('  viewOffsetPx:', viewOffsetPx)
+        console.log('  xPos (canvas position):', xPos)
+        logCount++
+      }
 
       // Render the alignment base shape
       const layoutFeat = {

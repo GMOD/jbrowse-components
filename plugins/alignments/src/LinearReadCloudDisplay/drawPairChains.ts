@@ -83,6 +83,18 @@ export function drawPairChains({
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
   const drawIndels = shouldDrawIndels()
 
+  // Log once per render
+  const region = regions[0]
+  if (region) {
+    console.log('[drawPairChains] view.offsetPx:', view.offsetPx)
+    console.log('[drawPairChains] region.offsetPx:', region.offsetPx)
+    console.log('[drawPairChains] region.start:', region.start)
+    console.log('[drawPairChains] bpPerPx:', bpPerPx)
+    console.log('[drawPairChains] adjustment:', (region.offsetPx - view.offsetPx) * bpPerPx)
+  }
+
+  let logCount = 0
+
   for (const computedChain of computedChains) {
     const { id, chain, minX, maxX } = computedChain
 
@@ -169,6 +181,16 @@ export function drawPairChains({
 
       const xPos = s.offsetPx - viewOffsetPx
       const width = Math.max(e.offsetPx - s.offsetPx, 3)
+
+      // Log feature positioning for first 3 features only
+      if (i === 0 && logCount < 3) {
+        console.log(`[drawPairChains] Feature #${logCount + 1} positioning:`)
+        console.log('  feat.start:', feat.get('start'), 'feat.end:', feat.get('end'))
+        console.log('  s.offsetPx:', s.offsetPx, 'e.offsetPx:', e.offsetPx)
+        console.log('  viewOffsetPx:', viewOffsetPx)
+        console.log('  xPos (canvas position):', xPos)
+        logCount++
+      }
 
       // Render the alignment base shape
       const layoutFeat = {
