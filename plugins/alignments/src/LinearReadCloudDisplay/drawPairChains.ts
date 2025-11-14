@@ -11,7 +11,7 @@ import {
 } from '../PileupRenderer/util'
 import { fillRectCtx, lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
-import { getPairedColor, getSingletonColor } from '../shared/color'
+import { getPairedColor } from '../shared/color'
 import { CHEVRON_WIDTH } from '../shared/util'
 
 import type { ChainData } from '../shared/fetchChains'
@@ -112,25 +112,14 @@ export function drawPairChains({
     }
     const hasBothMates = nonSupplementary.length === 2
 
-    // Get colors based on whether both mates are visible
-    const [pairedFill, pairedStroke] = hasBothMates
-      ? getPairedColor({
-          type,
-          v0: nonSupplementary[0]!,
-          v1: nonSupplementary[1]!,
-          stats: chainData.stats,
-        }) || ['lightgrey', '#888']
-      : (() => {
-          const feat = nonSupplementary[0] || chain[0]!
-          return getSingletonColor(
-            {
-              tlen: feat.get('template_length'),
-              pair_orientation: feat.get('pair_orientation'),
-              flags: feat.get('flags'),
-            },
-            chainData.stats,
-          )
-        })()
+    // Get colors for this read pair/singleton
+    const feat = nonSupplementary[0] || chain[0]!
+    const [pairedFill, pairedStroke] =
+      getPairedColor({
+        type,
+        v0: feat,
+        stats: chainData.stats,
+      }) || ['lightgrey', '#888']
 
     // Draw connecting line for pairs with both mates visible
     if (hasBothMates) {

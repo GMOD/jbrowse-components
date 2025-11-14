@@ -67,17 +67,14 @@ export function filterChains(
 
       if (nonSupplementary.length === 2) {
         const v0 = nonSupplementary[0]!
-        const v1 = nonSupplementary[1]!
         const pairType = getPairedType({
           type,
-          f1: {
+          f: {
             refName: v0.get('refName'),
+            next_ref: v0.get('next_ref'),
             pair_orientation: v0.get('pair_orientation'),
             tlen: v0.get('template_length'),
             flags: v0.get('flags'),
-          },
-          f2: {
-            refName: v1.get('refName'),
           },
           stats: chainData.stats,
         })

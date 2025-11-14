@@ -110,14 +110,13 @@ export function drawFeats(
           if (type === 'insertSizeAndOrientation') {
             ctx.strokeStyle = getPairedInsertSizeAndOrientationColor(
               k1,
-              k2,
               stats,
             )[0]
           } else if (type === 'orientation') {
             ctx.strokeStyle = getPairedOrientationColor(k1)[0]
           } else if (type === 'insertSize') {
             ctx.strokeStyle =
-              getPairedInsertSizeColor(k1, k2, stats)?.[0] || 'grey'
+              getPairedInsertSizeColor(k1, stats)?.[0] || 'grey'
           } else if (type === 'gradient') {
             ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }
@@ -187,6 +186,7 @@ export function drawFeats(
         }
         const k1 = {
           refName: f.get('refName'),
+          next_ref: f.get('next_ref'),
           start: f.get('start'),
           end: f.get('end'),
           strand: f.get('strand'),
@@ -210,6 +210,7 @@ export function drawFeats(
             'get' in fItem
               ? {
                   refName: fItem.get('refName'),
+                  next_ref: fItem.get('next_ref'),
                   start: fItem.get('start'),
                   end: fItem.get('end'),
                   strand: fItem.get('strand'),
@@ -240,6 +241,7 @@ export function drawFeats(
         const v1 = res[i + 1]!
         const k1 = {
           refName: f.get('refName'),
+          next_ref: f.get('next_ref'),
           start: f.get('start'),
           end: f.get('end'),
           strand: f.get('strand'),
