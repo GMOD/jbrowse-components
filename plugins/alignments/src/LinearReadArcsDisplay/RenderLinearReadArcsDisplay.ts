@@ -1,6 +1,12 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { dedupe, groupBy, renderToAbstractCanvas } from '@jbrowse/core/util'
+import {
+  dedupe,
+  groupBy,
+  max,
+  min,
+  renderToAbstractCanvas,
+} from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { getSnapshot } from 'mobx-state-tree'
@@ -152,8 +158,8 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
         )
         stats = {
           ...insertSizeStats,
-          max: Math.max(...tlens),
-          min: Math.min(...tlens),
+          max: max(tlens),
+          min: min(tlens),
         }
       }
     }
