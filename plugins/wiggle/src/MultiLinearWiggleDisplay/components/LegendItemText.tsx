@@ -1,7 +1,6 @@
-import type { getFillProps } from '@jbrowse/core/util'
-
 import type { Source } from '../../util'
 import type { WiggleDisplayModel } from '../model'
+import type { getFillProps } from '@jbrowse/core/util'
 
 const LegendItemText = function ({
   source,
