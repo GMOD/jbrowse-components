@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
-import { clamp } from '@jbrowse/core/util'
+import { clamp, getFillProps } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import RectBg from './RectBg'
@@ -38,7 +39,7 @@ const LegendItemText = function ({
   source: Source
   idx: number
   rowHeight: number
-  textFillProps: { fillOpacity: number; fill: string }
+  textFillProps: ReturnType<typeof getFillProps>
 }) {
   const { color, name, label } = source
   const svgFontSize = clamp(rowHeight, 8, 12)
