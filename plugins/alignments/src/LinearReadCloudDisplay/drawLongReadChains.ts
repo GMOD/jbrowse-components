@@ -215,11 +215,23 @@ export function drawLongReadChains({
       // Render mismatches on top if available
       const region = regions[0]
       if (region) {
+        // Create adjusted regions for renderMismatches
+        // renderMismatches uses bpSpanPx which calculates (bp - region.start) / bpPerPx
+        // This doesn't account for where the region is positioned in static blocks
+        // The region has offsetPx which is its position in the view coordinate system
+        // Canvas position for a bp should be: (bp - region.start) / bpPerPx + (region.offsetPx - view.offsetPx)
+        // To make renderMismatches work, we adjust region.start so that (bp - adjusted_start) / bpPerPx gives the correct canvas position
+        // adjusted_start = region.start - (region.offsetPx - view.offsetPx) * bpPerPx
+        const adjustedRegions = regions.map(r => ({
+          ...r,
+          start: r.start - (r.offsetPx - view.offsetPx) * bpPerPx,
+        }))
+
         renderMismatches({
           ctx,
           feat: layoutFeat,
           bpPerPx,
-          regions,
+          regions: adjustedRegions,
           hideSmallIndels,
           mismatchAlpha,
           drawSNPsMuted,
