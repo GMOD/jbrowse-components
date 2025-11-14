@@ -86,11 +86,13 @@ export function drawPairChains({
   // Log once per render
   const region = regions[0]
   if (region) {
-    console.log('[drawPairChains] view.offsetPx:', view.offsetPx)
+    const clampedOffsetPx = Math.max(0, view.offsetPx)
+    console.log('[drawPairChains] view.offsetPx (raw):', view.offsetPx)
+    console.log('[drawPairChains] view.offsetPx (clamped):', clampedOffsetPx)
     console.log('[drawPairChains] region.offsetPx:', region.offsetPx)
     console.log('[drawPairChains] region.start:', region.start)
     console.log('[drawPairChains] bpPerPx:', bpPerPx)
-    console.log('[drawPairChains] adjustment:', (region.offsetPx - view.offsetPx) * bpPerPx)
+    console.log('[drawPairChains] adjustment:', (region.offsetPx - clampedOffsetPx) * bpPerPx)
   }
 
   let logCount = 0
@@ -160,7 +162,8 @@ export function drawPairChains({
     }
 
     // Draw the paired-end features (both mates or singleton)
-    const viewOffsetPx = view.offsetPx
+    // Clamp viewOffsetPx to 0 when negative - features should start at canvas pixel 0
+    const viewOffsetPx = Math.max(0, view.offsetPx)
     const chainMinXPx = minX - viewOffsetPx
     const chainMaxXPx = maxX - viewOffsetPx
 
@@ -226,9 +229,10 @@ export function drawPairChains({
         // Canvas position for a bp should be: (bp - region.start) / bpPerPx + (region.offsetPx - view.offsetPx)
         // To make renderMismatches work, we adjust region.start so that (bp - adjusted_start) / bpPerPx gives the correct canvas position
         // adjusted_start = region.start - (region.offsetPx - view.offsetPx) * bpPerPx
+        // Note: use the clamped viewOffsetPx to match feature positioning
         const adjustedRegions = regions.map(r => ({
           ...r,
-          start: r.start - (r.offsetPx - view.offsetPx) * bpPerPx,
+          start: r.start - (r.offsetPx - viewOffsetPx) * bpPerPx,
         }))
 
         renderMismatches({
