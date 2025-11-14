@@ -1,4 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { untracked } from 'mobx'
 import { getSnapshot } from 'mobx-state-tree'
 
@@ -59,6 +60,15 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         return
       }
 
+      // Stop any previous rendering operation
+      if (self.renderingStopToken) {
+        stopStopToken(self.renderingStopToken)
+      }
+
+      // Create stop token for this render operation
+      const stopToken = createStopToken()
+      self.setRenderingStopToken(stopToken)
+
       // Serialize the full view snapshot for RPC
       // Include staticBlocks and width which are not part of the regular snapshot
       const viewSnapshot = structuredClone({
@@ -88,6 +98,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           trackMaxHeight,
           height,
           highResolutionScaling: 2,
+          stopToken,
         },
       )) as RenderResult
 
@@ -111,6 +122,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       console.error(error)
       self.setError(error)
     } finally {
+      self.setRenderingStopToken(undefined)
       self.setIsRendering(false)
     }
   }

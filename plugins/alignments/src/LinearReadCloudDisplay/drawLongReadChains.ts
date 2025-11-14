@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
@@ -48,6 +49,7 @@ export function drawLongReadChains({
   regions,
   bpPerPx,
   colorBy,
+  stopToken,
 }: {
   ctx: CanvasRenderingContext2D
   chainData: ChainData
@@ -69,6 +71,7 @@ export function drawLongReadChains({
   regions: BaseBlock[]
   bpPerPx: number
   colorBy: ColorBy
+  stopToken?: string
 }): void {
   // Setup rendering configuration from PileupRenderer
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
@@ -90,7 +93,7 @@ export function drawLongReadChains({
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 
-  for (const computedChain of computedChains) {
+  forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain, minX, maxX } = computedChain
 
     // Guard clause: skip paired-end reads (handled by drawPairChains)
@@ -102,12 +105,12 @@ export function drawLongReadChains({
       }
     }
     if (isPairedEnd) {
-      continue
+      return
     }
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
-      continue
+      return
     }
 
     // Collect non-supplementary alignments
@@ -289,5 +292,5 @@ export function drawLongReadChains({
         clipPos: f.get('clipPos') || 0,
       })),
     })
-  }
+  })
 }

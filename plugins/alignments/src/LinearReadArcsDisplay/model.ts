@@ -1,5 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
@@ -78,6 +79,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Flag to indicate if we're currently rendering via RPC
        */
       isRendering: false,
+      /**
+       * #volatile
+       * Stop token for the current rendering operation
+       */
+      renderingStopToken: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -148,6 +154,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setIsRendering(flag: boolean) {
         self.isRendering = flag
+      },
+
+      /**
+       * #action
+       * Set the rendering stop token
+       */
+      setRenderingStopToken(token: string | undefined) {
+        self.renderingStopToken = token
       },
     }))
     .views(self => ({
@@ -263,6 +277,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      beforeDestroy() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+        }
+      },
+    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

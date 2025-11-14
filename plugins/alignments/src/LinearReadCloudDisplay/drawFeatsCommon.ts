@@ -271,6 +271,7 @@ export interface DrawFeatsParams {
   regions: BaseBlock[]
   bpPerPx: number
   canvasWidth: number
+  stopToken?: string
 }
 
 export interface DrawFeatsResult {
@@ -300,6 +301,7 @@ export function drawFeatsCore({
     drawSingletons,
     drawProperPairs,
     flipStrandLongReadChains,
+    stopToken,
   } = params
 
   const type = colorBy.type || 'insertSizeAndOrientation'
@@ -349,6 +351,7 @@ export function drawFeatsCore({
     regions: params.regions,
     bpPerPx: params.bpPerPx,
     colorBy: params.colorBy,
+    stopToken,
   })
 
   drawLongReadChains({
@@ -366,6 +369,7 @@ export function drawFeatsCore({
     regions: params.regions,
     bpPerPx: params.bpPerPx,
     colorBy: params.colorBy,
+    stopToken,
   })
 
   // Add full-width rectangles for each chain to enable mouseover on connecting lines

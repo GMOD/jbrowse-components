@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
@@ -47,6 +48,7 @@ export function drawPairChains({
   canvasWidth,
   bpPerPx,
   colorBy,
+  stopToken,
 }: {
   ctx: CanvasRenderingContext2D
   type: string
@@ -69,6 +71,7 @@ export function drawPairChains({
   regions: BaseBlock[]
   bpPerPx: number
   colorBy: ColorBy
+  stopToken?: string
 }): void {
   // Setup rendering configuration from PileupRenderer
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
@@ -86,7 +89,7 @@ export function drawPairChains({
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
   const drawIndels = shouldDrawIndels()
 
-  for (const computedChain of computedChains) {
+  forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain, minX, maxX } = computedChain
 
     // Guard clause: skip non-paired-end chains
@@ -98,12 +101,12 @@ export function drawPairChains({
       }
     }
     if (!isPairedEnd) {
-      continue
+      return
     }
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
-      continue
+      return
     }
 
     // Collect non-supplementary alignments
@@ -270,5 +273,5 @@ export function drawPairChains({
         clipPos: f.get('clipPos') || 0,
       })),
     })
-  }
+  })
 }

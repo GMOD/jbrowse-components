@@ -9,6 +9,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   type ExportSvgDisplayOptions,
   FeatureDensityMixin,
@@ -101,6 +102,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Chain ID of the currently selected feature for persistent highlighting
        */
       selectedFeatureId: undefined as string | undefined,
+      /**
+       * #volatile
+       * Stop token for the current rendering operation
+       */
+      renderingStopToken: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -196,6 +202,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setSelectedFeatureId(id: string | undefined) {
         self.selectedFeatureId = id
+      },
+
+      /**
+       * #action
+       * Set the rendering stop token
+       */
+      setRenderingStopToken(token: string | undefined) {
+        self.renderingStopToken = token
       },
     }))
     .views(self => {
@@ -315,6 +329,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      beforeDestroy() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+        }
+      },
+    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
