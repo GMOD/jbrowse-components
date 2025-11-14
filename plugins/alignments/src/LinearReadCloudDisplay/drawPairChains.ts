@@ -206,6 +206,10 @@ export function drawPairChains({
         const offsetAdjustment = region.offsetPx - viewOffsetPx
         ctx.translate(offsetAdjustment, 0)
 
+        // After translation, use a large canvasWidth to avoid clipping on the right side
+        // The actual canvas clipping will handle bounds correctly
+        const effectiveCanvasWidth = canvasWidth + Math.abs(offsetAdjustment)
+
         renderMismatches({
           ctx,
           feat: layoutFeat,
@@ -221,7 +225,7 @@ export function drawPairChains({
           charHeight,
           colorMap,
           colorContrastMap,
-          canvasWidth,
+          canvasWidth: effectiveCanvasWidth,
         })
 
         ctx.restore()
