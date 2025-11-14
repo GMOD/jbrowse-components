@@ -41,7 +41,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
 
         // Get current view dimensions and settings
         const width = view.dynamicBlocks.totalWidthPx
-        const height = self.height
+        // For cloud mode, use fixed height. For stack mode, use trackMaxHeight or large default
+        const height = self.drawCloud
+          ? self.height
+          : self.trackMaxHeight ?? 10000
         const { bpPerPx, offsetPx } = view
         const regions = view.dynamicBlocks.contentBlocks
 
