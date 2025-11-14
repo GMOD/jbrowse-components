@@ -4,6 +4,7 @@ import { parseCigar } from '../../MismatchParser'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
+import { CHEVRON_WIDTH } from '../../shared/util'
 
 export function renderAlignmentShape({
   ctx,
@@ -63,7 +64,7 @@ export function renderAlignmentShape({
           ctx.moveTo(leftPx, topPx)
           ctx.lineTo(leftPx, topPx + heightPx)
           ctx.lineTo(rightPx, topPx + heightPx)
-          ctx.lineTo(rightPx + 5, topPx + heightPx / 2)
+          ctx.lineTo(rightPx + CHEVRON_WIDTH, topPx + heightPx / 2)
           ctx.lineTo(rightPx, topPx)
           ctx.closePath()
           ctx.fill()
@@ -105,7 +106,7 @@ export function renderAlignmentShape({
 
         if (renderChevrons) {
           ctx.beginPath()
-          ctx.moveTo(leftPx - 5, topPx + heightPx / 2)
+          ctx.moveTo(leftPx - CHEVRON_WIDTH, topPx + heightPx / 2)
           ctx.lineTo(leftPx, topPx + heightPx)
           ctx.lineTo(rightPx, topPx + heightPx)
           ctx.lineTo(rightPx, topPx)
@@ -122,7 +123,7 @@ export function renderAlignmentShape({
     if (bpPerPx < 10 && heightPx > 5) {
       if (strand === -1) {
         ctx.beginPath()
-        ctx.moveTo(leftPx - 5, topPx + heightPx / 2)
+        ctx.moveTo(leftPx - CHEVRON_WIDTH, topPx + heightPx / 2)
         ctx.lineTo(leftPx, topPx + heightPx)
         ctx.lineTo(rightPx, topPx + heightPx)
         ctx.lineTo(rightPx, topPx)
@@ -134,7 +135,7 @@ export function renderAlignmentShape({
         ctx.moveTo(leftPx, topPx)
         ctx.lineTo(leftPx, topPx + heightPx)
         ctx.lineTo(rightPx, topPx + heightPx)
-        ctx.lineTo(rightPx + 5, topPx + heightPx / 2)
+        ctx.lineTo(rightPx + CHEVRON_WIDTH, topPx + heightPx / 2)
         ctx.lineTo(rightPx, topPx)
         ctx.closePath()
         ctx.fill()

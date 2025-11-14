@@ -18,7 +18,6 @@ export function fillRect(
   if (color) {
     ctx.fillStyle = color
   }
-  console.log(color, l, t, w, h)
   ctx.fillRect(l, t, w, h)
 }
 

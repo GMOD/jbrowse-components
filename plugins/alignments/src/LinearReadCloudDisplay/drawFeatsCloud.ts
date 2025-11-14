@@ -55,6 +55,12 @@ function calculateCloudYOffsets(
 export function drawFeats(
   self: LinearReadCloudDisplayModel,
   ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
 ) {
-  drawFeatsCommon(self, ctx, calculateCloudYOffsets)
+  drawFeatsCommon({
+    self,
+    ctx,
+    canvasWidth,
+    calculateYOffsets: calculateCloudYOffsets,
+  })
 }

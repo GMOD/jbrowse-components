@@ -33,7 +33,7 @@ export const fillColor = {
   color_rev_missing_mate: '#1919D1',
   color_fwd_diff_chr: '#000',
   color_rev_diff_chr: '#969696',
-  color_pair_lr: '#c8c8c8',
+  color_pair_lr: 'lightgrey',
   color_pair_rr: '#3a3a9d',
   color_pair_rl: 'teal',
   color_pair_ll: 'green',

@@ -113,7 +113,7 @@ export function drawPairChains({
           v0: nonSupplementary[0]!,
           v1: nonSupplementary[1]!,
           stats: chainData.stats,
-        }) || ['#888', '#888']
+        }) || ['lightgrey', '#888']
       : getSingletonColor(nonSupplementary[0] || chain[0]!, chainData.stats)
 
     // Draw connecting line for pairs with both mates visible
@@ -186,7 +186,7 @@ export function drawPairChains({
         )
       } else {
         fillRectCtx(xPos, chainY, width, featureHeight, ctx, pairedFill)
-        strokeRectCtx(xPos, chainY, width, featureHeight, ctx, pairedStroke)
+        // strokeRectCtx(xPos, chainY, width, featureHeight, ctx, pairedStroke)
       }
 
       // Render mismatches on top if available

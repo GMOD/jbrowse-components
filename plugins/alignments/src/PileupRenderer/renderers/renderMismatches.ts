@@ -77,7 +77,6 @@ export function renderMismatches({
                 .toHslString()
             : baseColor
 
-        console.log(mismatch.base, c)
         fillRect(
           ctx,
           Math.round(leftPx),

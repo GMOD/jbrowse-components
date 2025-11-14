@@ -4,7 +4,6 @@ import { drawFeatsCommon } from './drawFeatsCommon'
 
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type { LinearReadCloudDisplayModel } from './model'
-import type { ReducedFeature } from '../shared/fetchChains'
 import type { Feature } from '@jbrowse/core/util'
 
 interface LayoutData {
@@ -97,6 +96,12 @@ function calculateStackYOffsets(
 export function drawFeats(
   self: LinearReadCloudDisplayModel,
   ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
 ) {
-  drawFeatsCommon(self, ctx, calculateStackYOffsets)
+  drawFeatsCommon({
+    self,
+    ctx,
+    canvasWidth,
+    calculateYOffsets: calculateStackYOffsets,
+  })
 }

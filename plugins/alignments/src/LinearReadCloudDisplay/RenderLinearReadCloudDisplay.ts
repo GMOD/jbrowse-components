@@ -178,7 +178,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       displayedRegions: regions,
       interRegionPaddingWidth: 0,
       minimumBlockWidth: 0,
-      staticBlocks: staticBlocks, // bpToPx expects staticBlocks property
+      staticBlocks, // bpToPx expects staticBlocks property
       width,
       bpToPx: (arg: { refName: string; coord: number }) => {
         const res = bpToPx({
@@ -208,11 +208,12 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       height,
       renderOpts,
       async (ctx: CanvasRenderingContext2D) => {
-        const { layoutHeight, featuresForFlatbush } = drawFeatsCore(
+        const { layoutHeight, featuresForFlatbush } = drawFeatsCore({
           ctx,
-          {
+          params: {
             chainData,
             featureHeight,
+            canvasWidth: width,
             noSpacing,
             colorBy,
             drawSingletons,
@@ -224,20 +225,17 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
             regions,
             bpPerPx,
           },
-          viewSnap,
-          (
-            computedChains: ComputedChain[],
+          view: viewSnap,
+          calculateYOffsets: (
+            chains: ComputedChain[],
             params: DrawFeatsParams,
             featureHeight: number,
-          ) =>
-            drawCloud
-              ? calculateCloudYOffsetsUtil(computedChains, height)
-              : calculateStackYOffsetsCore(
-                  computedChains,
-                  params,
-                  featureHeight,
-                ),
-        )
+          ) => {
+            return drawCloud
+              ? calculateCloudYOffsetsUtil(chains, height)
+              : calculateStackYOffsetsCore(chains, params, featureHeight)
+          },
+        })
         return {
           layoutHeight,
           featuresForFlatbush,

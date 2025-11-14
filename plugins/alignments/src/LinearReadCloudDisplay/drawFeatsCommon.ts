@@ -11,9 +11,10 @@ import type { LinearReadCloudDisplayModel } from './model'
 import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ThemeOptions } from '@mui/material'
+import { ColorBy } from '../shared/types'
 
 type LGV = LinearGenomeViewModel
 
@@ -246,7 +247,7 @@ export function addChainMouseoverRects(
 export interface DrawFeatsParams {
   chainData: ChainData
   featureHeight: number
-  colorBy: { type: string; tag?: string; extra?: Record<string, unknown> }
+  colorBy: ColorBy
   drawSingletons: boolean
   drawProperPairs: boolean
   flipStrandLongReadChains: boolean
@@ -254,8 +255,9 @@ export interface DrawFeatsParams {
   trackMaxHeight?: number
   config: AnyConfigurationModel
   theme: ThemeOptions
-  regions: { refName: string; start: number; end: number }[]
+  regions: Region[]
   bpPerPx: number
+  canvasWidth: number
 }
 
 export interface DrawFeatsResult {
@@ -271,16 +273,21 @@ export interface DrawFeatsResult {
  * 1. Main thread with real LinearGenomeViewModel and Assembly instances
  * 2. RPC context with minimal mock objects (ViewSnapshot and AssemblyLike)
  */
-export function drawFeatsCore(
-  ctx: CanvasRenderingContext2D,
-  params: DrawFeatsParams,
-  view: any,
+export function drawFeatsCore({
+  ctx,
+  params,
+  view,
+  calculateYOffsets,
+}: {
+  ctx: CanvasRenderingContext2D
+  params: DrawFeatsParams
+  view: any
   calculateYOffsets: (
     computedChains: ComputedChain[],
     params: DrawFeatsParams,
     featureHeight: number,
-  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number },
-): DrawFeatsResult {
+  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
+}): DrawFeatsResult {
   const {
     chainData,
     featureHeight,
@@ -322,6 +329,7 @@ export function drawFeatsCore(
 
   // Delegate rendering to specialized functions for paired and long-read chains
   drawPairChains({
+    canvasWidth: params.canvasWidth,
     ctx,
     type,
     chainData,
@@ -370,15 +378,21 @@ export function drawFeatsCore(
 /**
  * Common drawing function that delegates Y-offset calculation to a strategy function
  */
-export function drawFeatsCommon(
-  self: LinearReadCloudDisplayModel,
-  ctx: CanvasRenderingContext2D,
+export function drawFeatsCommon({
+  self,
+  ctx,
+  canvasWidth,
+  calculateYOffsets,
+}: {
+  self: LinearReadCloudDisplayModel
+  ctx: CanvasRenderingContext2D
+  canvasWidth: number
   calculateYOffsets: (
     computedChains: ComputedChain[],
     self: LinearReadCloudDisplayModel,
     featureHeight: number,
-  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number },
-) {
+  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
+}) {
   const { chainData } = self
   if (!chainData) {
     return
@@ -392,32 +406,28 @@ export function drawFeatsCommon(
   }
   const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
 
-  const params: DrawFeatsParams = {
-    chainData,
-    featureHeight,
-    colorBy: self.colorBy,
-    drawSingletons: self.drawSingletons,
-    drawProperPairs: self.drawProperPairs,
-    flipStrandLongReadChains: self.flipStrandLongReadChains,
-    noSpacing: self.noSpacing,
-    trackMaxHeight: self.trackMaxHeight,
-  }
-
-  // Adapter function to convert self-based to params-based signature
-  const adaptedCalculateYOffsets = (
-    computedChains: ComputedChain[],
-    params: DrawFeatsParams,
-    featureHeight: number,
-  ) => {
-    return calculateYOffsets(computedChains, self, featureHeight)
-  }
-
-  const { featuresForFlatbush, layoutHeight } = drawFeatsCore(
+  const { featuresForFlatbush, layoutHeight } = drawFeatsCore({
     ctx,
-    params,
+    params: {
+      canvasWidth,
+      chainData,
+      featureHeight,
+      colorBy: self.colorBy,
+      drawSingletons: self.drawSingletons,
+      drawProperPairs: self.drawProperPairs,
+      flipStrandLongReadChains: self.flipStrandLongReadChains,
+      noSpacing: self.noSpacing,
+      trackMaxHeight: self.trackMaxHeight,
+    },
     view,
-    adaptedCalculateYOffsets,
-  )
+    calculateYOffsets: (
+      computedChains: ComputedChain[],
+      _params: DrawFeatsParams,
+      featureHeight: number,
+    ) => {
+      return calculateYOffsets(computedChains, self, featureHeight)
+    },
+  })
 
   // Build and set Flatbush index
   buildFlatbushIndex(featuresForFlatbush, self)
