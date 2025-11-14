@@ -6,6 +6,7 @@ import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import configSchema from './configSchema'
 import { calculateCloudYOffsetsUtil } from './drawFeatsCloud'
 import { drawFeatsCore } from './drawFeatsCommon'
 import { calculateStackYOffsetsCore } from './drawFeatsStack'
@@ -13,8 +14,10 @@ import { getInsertSizeStats } from '../PileupRPC/util'
 
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type { ChainData } from '../shared/fetchChains'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
+import type { ThemeOptions } from '@mui/material'
 
 /**
  * Documents the minimal view snapshot interface for RPC rendering context
@@ -44,9 +47,9 @@ interface RenderToAbstractCanvasOptions {
 export interface RenderLinearReadCloudDisplayArgs {
   sessionId: string
   regions: Region[]
-  adapterConfig: Record<string, unknown>
-  config: Record<string, unknown>
-  theme: Record<string, unknown>
+  adapterConfig: AnyConfigurationModel
+  config: AnyConfigurationModel
+  theme: ThemeOptions
   filterBy: Record<string, unknown>
   featureHeight: number
   noSpacing: boolean
@@ -68,8 +71,17 @@ export interface RenderLinearReadCloudDisplayArgs {
 export default class RenderLinearReadCloudDisplay extends RpcMethodType {
   name = 'RenderLinearReadCloudDisplay'
 
+  deserializeArguments(args: any, _rpcDriver: string) {
+    return {
+      ...args,
+      config: configSchema(this.pluginManager).create(args.config, {
+        pluginManager: this.pluginManager,
+      }),
+    }
+  }
   async execute(args: RenderLinearReadCloudDisplayArgs, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
+
     const {
       sessionId,
       regions,

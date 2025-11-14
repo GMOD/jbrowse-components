@@ -5,7 +5,7 @@ import { drawFeatsCommon } from './drawFeatsCommon'
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
-import { Feature } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 interface LayoutData {
   feat: Feature

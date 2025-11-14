@@ -38,6 +38,7 @@ export function renderMismatches({
   charHeight: number
   canvasWidth: number
 }) {
+  console.log('t1', colorMap)
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
   const { bpPerPx, regions } = renderArgs
@@ -61,6 +62,7 @@ export function renderMismatches({
     const mbase = mismatch.base
     const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
+    console.log(minSubfeatureWidth, rightPx, leftPx, 'k1')
     if (mismatch.type === 'mismatch') {
       items.push({
         type: 'mismatch',
@@ -243,6 +245,7 @@ export function renderMismatches({
       }
     }
   }
+  console.log({ coords, items })
   return {
     coords,
     items,

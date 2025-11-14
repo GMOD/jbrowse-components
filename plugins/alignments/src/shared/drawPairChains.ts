@@ -1,9 +1,11 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { readConf } from '@jbrowse/web/src/util'
 
+import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
+import { drawChevron } from './chevron'
+import { getPairedColor, getSingletonColor } from './color'
+import { CHEVRON_WIDTH } from './util'
 import { renderAlignment } from '../PileupRenderer/renderers/renderAlignment'
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
@@ -13,13 +15,10 @@ import {
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../PileupRenderer/util'
-import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
-import { drawChevron } from './chevron'
-import { getPairedColor, getSingletonColor } from './color'
-import { CHEVRON_WIDTH } from './util'
 
 import type { ChainData } from './fetchChains'
 import type { FlatbushEntry } from './flatbushType'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ThemeOptions } from '@mui/material'
@@ -65,7 +64,8 @@ export function drawPairChains({
 }): void {
   // Setup rendering configuration from PileupRenderer
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
-  const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth')
+  const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth') ?? 1
+  console.log({ config, minSubfeatureWidth })
   const largeInsertionIndicatorScale = readConfObject(
     config,
     'largeInsertionIndicatorScale',

@@ -7,7 +7,6 @@ import { buildFlatbushIndex } from './drawFeatsCommon'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { trace } from 'mobx'
 
 type LGV = LinearGenomeViewModel
 
@@ -71,6 +70,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           regions,
           adapterConfig: self.adapterConfig,
           config: self.configuration,
+          // @ts-expect-error
           theme: session.theme,
           filterBy,
           featureHeight,

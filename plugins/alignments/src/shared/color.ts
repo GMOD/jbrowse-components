@@ -233,8 +233,14 @@ export function getPairedInsertSizeAndOrientationColor(
   )
 }
 
-export function getSingletonColor(f: Feature | { tlen?: number }, stats?: ChainStats) {
-  const tlen = Math.abs((f instanceof Object && 'get' in f ? f.get('template_length') : f.tlen) || 0)
+export function getSingletonColor(
+  f: Feature | { tlen?: number },
+  stats?: ChainStats,
+) {
+  const tlen = Math.abs(
+    (f instanceof Object && 'get' in f ? f.get('template_length') : f.tlen) ||
+      0,
+  )
   // If TLEN is abnormally large, color it dark red
   if (stats && tlen > stats.upper) {
     return [

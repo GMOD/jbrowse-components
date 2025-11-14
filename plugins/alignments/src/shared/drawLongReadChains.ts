@@ -1,9 +1,11 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
+import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
+import { drawChevron } from './chevron'
+import { fillColor, getSingletonColor, strokeColor } from './color'
+import { getPrimaryStrandFromFlags } from './primaryStrand'
+import { CHEVRON_WIDTH } from './util'
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
   getCharWidthHeight,
@@ -12,17 +14,13 @@ import {
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../PileupRenderer/util'
-import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
-import { drawChevron } from './chevron'
-import { fillColor, getSingletonColor, strokeColor } from './color'
-import { getPrimaryStrandFromFlags } from './primaryStrand'
-import { CHEVRON_WIDTH } from './util'
 
 import type { ChainData } from './fetchChains'
 import type { FlatbushEntry } from './flatbushType'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { ThemeOptions } from '@mui/material'
+import type { ThemeOptions } from '@mui/material'
 
 type LGV = LinearGenomeViewModel
 

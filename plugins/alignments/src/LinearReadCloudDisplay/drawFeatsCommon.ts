@@ -1,4 +1,4 @@
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
@@ -10,9 +10,10 @@ import { shouldRenderChevrons } from '../shared/util'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { ThemeOptions } from '@mui/material'
+import type { ThemeOptions } from '@mui/material'
 
 type LGV = LinearGenomeViewModel
 

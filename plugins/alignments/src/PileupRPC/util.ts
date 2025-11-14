@@ -1,4 +1,4 @@
-import { ReducedFeature } from '../shared/fetchChains'
+import type { ReducedFeature } from '../shared/fetchChains'
 
 export function getInsertSizeStats(features: { tlen: number }[]) {
   const filtered = features.map(f => Math.abs(f.tlen))
