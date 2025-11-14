@@ -83,20 +83,6 @@ export function drawPairChains({
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
   const drawIndels = shouldDrawIndels()
 
-  // Log once per render
-  const region = regions[0]
-  if (region) {
-    const clampedOffsetPx = Math.max(0, view.offsetPx)
-    console.log('[drawPairChains] view.offsetPx (raw):', view.offsetPx)
-    console.log('[drawPairChains] view.offsetPx (clamped):', clampedOffsetPx)
-    console.log('[drawPairChains] region.offsetPx:', region.offsetPx)
-    console.log('[drawPairChains] region.start:', region.start)
-    console.log('[drawPairChains] bpPerPx:', bpPerPx)
-    console.log('[drawPairChains] adjustment:', (region.offsetPx - clampedOffsetPx) * bpPerPx)
-  }
-
-  let logCount = 0
-
   for (const computedChain of computedChains) {
     const { id, chain, minX, maxX } = computedChain
 
@@ -135,6 +121,9 @@ export function drawPairChains({
         stats: chainData.stats,
       }) || ['lightgrey', '#888']
 
+    // Clamp viewOffsetPx to 0 when negative - features should start at canvas pixel 0
+    const viewOffsetPx = Math.max(0, view.offsetPx)
+
     // Draw connecting line for pairs with both mates visible
     if (hasBothMates) {
       const v0 = nonSupplementary[0]!
@@ -151,9 +140,9 @@ export function drawPairChains({
       if (r1s !== undefined && r2s !== undefined) {
         const lineY = chainY + featureHeight / 2
         lineToCtx(
-          r1s - view.offsetPx,
+          r1s - viewOffsetPx,
           lineY,
-          r2s - view.offsetPx,
+          r2s - viewOffsetPx,
           lineY,
           ctx,
           '#6665',
@@ -162,8 +151,6 @@ export function drawPairChains({
     }
 
     // Draw the paired-end features (both mates or singleton)
-    // Clamp viewOffsetPx to 0 when negative - features should start at canvas pixel 0
-    const viewOffsetPx = Math.max(0, view.offsetPx)
     const chainMinXPx = minX - viewOffsetPx
     const chainMaxXPx = maxX - viewOffsetPx
 
@@ -184,16 +171,6 @@ export function drawPairChains({
 
       const xPos = s.offsetPx - viewOffsetPx
       const width = Math.max(e.offsetPx - s.offsetPx, 3)
-
-      // Log feature positioning for first 3 features only
-      if (i === 0 && logCount < 3) {
-        console.log(`[drawPairChains] Feature #${logCount + 1} positioning:`)
-        console.log('  feat.start:', feat.get('start'), 'feat.end:', feat.get('end'))
-        console.log('  s.offsetPx:', s.offsetPx, 'e.offsetPx:', e.offsetPx)
-        console.log('  viewOffsetPx:', viewOffsetPx)
-        console.log('  xPos (canvas position):', xPos)
-        logCount++
-      }
 
       // Render the alignment base shape
       const layoutFeat = {

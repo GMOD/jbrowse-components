@@ -87,20 +87,6 @@ export function drawLongReadChains({
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 
-  // Log once per render
-  const region = regions[0]
-  if (region) {
-    const clampedOffsetPx = Math.max(0, view.offsetPx)
-    console.log('[drawLongReadChains] view.offsetPx (raw):', view.offsetPx)
-    console.log('[drawLongReadChains] view.offsetPx (clamped):', clampedOffsetPx)
-    console.log('[drawLongReadChains] region.offsetPx:', region.offsetPx)
-    console.log('[drawLongReadChains] region.start:', region.start)
-    console.log('[drawLongReadChains] bpPerPx:', bpPerPx)
-    console.log('[drawLongReadChains] adjustment:', (region.offsetPx - clampedOffsetPx) * bpPerPx)
-  }
-
-  let logCount = 0
-
   for (const computedChain of computedChains) {
     const { id, chain, minX, maxX } = computedChain
 
@@ -132,6 +118,9 @@ export function drawLongReadChains({
     const c1 = nonSupplementary[0] || chain[0]!
     const primaryStrand = getPrimaryStrandFromFlags(c1)
 
+    // Clamp viewOffsetPx to 0 when negative - features should start at canvas pixel 0
+    const viewOffsetPx = Math.max(0, view.offsetPx)
+
     // Draw connecting line for multi-segment long reads
     if (!isSingleton) {
       const firstFeat = chain[0]!
@@ -149,9 +138,9 @@ export function drawLongReadChains({
       if (firstPx !== undefined && lastPx !== undefined) {
         const lineY = chainY + featureHeight / 2
         lineToCtx(
-          firstPx - view.offsetPx,
+          firstPx - viewOffsetPx,
           lineY,
-          lastPx - view.offsetPx,
+          lastPx - viewOffsetPx,
           lineY,
           ctx,
           '#6665',
@@ -160,8 +149,6 @@ export function drawLongReadChains({
     }
 
     // Draw the features
-    // Clamp viewOffsetPx to 0 when negative - features should start at canvas pixel 0
-    const viewOffsetPx = Math.max(0, view.offsetPx)
     const chainMinXPx = minX - viewOffsetPx
     const chainMaxXPx = maxX - viewOffsetPx
 
@@ -202,16 +189,6 @@ export function drawLongReadChains({
 
       const xPos = s.offsetPx - viewOffsetPx
       const width = Math.max(e.offsetPx - s.offsetPx, 3)
-
-      // Log feature positioning for first 3 features only
-      if (i === 0 && logCount < 3) {
-        console.log(`[drawLongReadChains] Feature #${logCount + 1} positioning:`)
-        console.log('  feat.start:', feat.get('start'), 'feat.end:', feat.get('end'))
-        console.log('  s.offsetPx:', s.offsetPx, 'e.offsetPx:', e.offsetPx)
-        console.log('  viewOffsetPx:', viewOffsetPx)
-        console.log('  xPos (canvas position):', xPos)
-        logCount++
-      }
 
       // Render the alignment base shape
       const layoutFeat = {
