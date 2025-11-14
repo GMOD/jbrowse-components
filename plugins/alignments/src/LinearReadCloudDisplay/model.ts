@@ -157,8 +157,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const syntheticFeature = chainToSimpleFeature(chain)
         if (isSessionModelWithWidgets(session)) {
           const featureWidget = session.addWidget(
-            'AlignmentsFeatureWidget',
-            'alignmentFeature',
+            'BaseFeatureWidget',
+            'baseFeature',
             {
               featureData: syntheticFeature.toJSON(),
               view: getContainingView(self),

@@ -58,7 +58,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         return
       }
 
-      const width = view.dynamicBlocks.totalWidthPx
+      const screenWidth = view.dynamicBlocks.totalWidthPx
+      // Adjust canvas width when offsetPx is negative
+      // This prevents issues with mismatch rendering when scrolled left
+      const width = offsetPx < 0 ? screenWidth + offsetPx : screenWidth
       const regions = view.dynamicBlocks.contentBlocks
 
       // Call RPC method - it will fetch chainData internally

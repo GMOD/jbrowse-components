@@ -19,7 +19,15 @@ const Cloud = observer(function ({
   model: LinearReadCloudDisplayModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const screenWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+  const offsetPx = view.offsetPx
+
+  // Adjust canvas width and position when offsetPx is negative
+  // This ensures drawing code doesn't need to account for negative offsets
+  const canvasWidth = offsetPx < 0 ? screenWidth + offsetPx : screenWidth
+  const canvasLeft = offsetPx < 0 ? -offsetPx : 0
+
+  const width = screenWidth // Keep container full width
   const height = model.drawCloud ? model.height : model.layoutHeight
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredFeature, setHoveredFeature] = useState<{
@@ -91,7 +99,8 @@ const Cloud = observer(function ({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left
+      // Adjust for canvas position when offsetPx < 0
+      const offsetX = event.clientX - rect.left - canvasLeft
       const offsetY = event.clientY - rect.top
 
       // Track mouse position for tooltip
@@ -127,7 +136,7 @@ const Cloud = observer(function ({
         setHoveredFeatureData(null)
       }
     },
-    [flatbushIndex, model.featuresForFlatbush],
+    [flatbushIndex, model.featuresForFlatbush, canvasLeft],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -143,7 +152,8 @@ const Cloud = observer(function ({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left
+      // Adjust for canvas position when offsetPx < 0
+      const offsetX = event.clientX - rect.left - canvasLeft
       const offsetY = event.clientY - rect.top
 
       // Search for features at this position
@@ -168,7 +178,7 @@ const Cloud = observer(function ({
         model.setSelectedFeatureId(undefined)
       }
     },
-    [flatbushIndex, model],
+    [flatbushIndex, model, canvasLeft],
   )
 
   // note: the position absolute below avoids scrollbar from appearing on track
@@ -183,36 +193,41 @@ const Cloud = observer(function ({
       <canvas
         data-testid={model.drawCloud ? 'cloud-canvas' : 'stack-canvas'}
         ref={cb}
-        style={{ width, height, position: 'absolute', left: 0, top: 0 }}
-        width={width * 2}
+        style={{
+          width: canvasWidth,
+          height,
+          position: 'absolute',
+          left: canvasLeft,
+          top: 0,
+        }}
+        width={canvasWidth * 2}
         height={height * 2}
       />
       <canvas
         data-testid="cloud-mouseover-canvas"
         ref={mouseoverCb}
         style={{
-          width,
+          width: canvasWidth,
           height,
           position: 'absolute',
-          left: 0,
+          left: canvasLeft,
           top: 0,
           pointerEvents: 'none',
         }}
-        width={width * 2}
+        width={canvasWidth * 2}
         height={height * 2}
       />
       {selectedFeatureBounds ? (
         <div
           style={{
             position: 'absolute',
-            left: selectedFeatureBounds.x,
+            left: selectedFeatureBounds.x + canvasLeft,
             top: selectedFeatureBounds.y,
             width: selectedFeatureBounds.width,
             height: selectedFeatureBounds.height,
-            border: '2px solid #0066cc',
-            backgroundColor: 'rgba(0, 102, 204, 0.1)',
-            pointerEvents: 'none',
+            border: '2px solid #00b8ff',
             boxSizing: 'border-box',
+            pointerEvents: 'none',
           }}
         />
       ) : null}
@@ -220,7 +235,7 @@ const Cloud = observer(function ({
         <div
           style={{
             position: 'absolute',
-            left: hoveredFeature.x,
+            left: hoveredFeature.x + canvasLeft,
             top: hoveredFeature.y,
             width: hoveredFeature.width,
             height: hoveredFeature.height,

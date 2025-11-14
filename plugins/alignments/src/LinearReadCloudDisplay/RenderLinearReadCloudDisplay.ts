@@ -174,7 +174,9 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
 
     const viewSnap: ViewSnapshot = {
       bpPerPx,
-      offsetPx,
+      // When offsetPx < 0, set it to 0 for the view snapshot since the canvas
+      // is positioned to handle the negative offset via CSS
+      offsetPx: Math.max(0, offsetPx),
       assemblyNames: [assemblyName],
       displayedRegions: regions,
       interRegionPaddingWidth: 0,
@@ -189,7 +191,9 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         })
         return res !== undefined
           ? {
-              offsetPx: res.offsetPx + Math.max(0, viewSnap.offsetPx),
+              // Adjust coordinates: add original offsetPx when positive (scroll right),
+              // no adjustment when negative (canvas positioning handles it)
+              offsetPx: res.offsetPx + Math.max(0, offsetPx),
               index: res.index,
             }
           : undefined
