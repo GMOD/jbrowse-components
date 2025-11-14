@@ -1,4 +1,7 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
@@ -19,6 +22,7 @@ import type { ChainData } from './fetchChains'
 import type { FlatbushEntry } from './flatbushType'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { ThemeOptions } from '@mui/material'
 
 type LGV = LinearGenomeViewModel
 
@@ -53,8 +57,8 @@ export function drawLongReadChains({
     id: string
   }[]
   flipStrandLongReadChains: boolean
-  config: Record<string, unknown>
-  theme: Record<string, unknown>
+  config: AnyConfigurationModel
+  theme: ThemeOptions
   regions: { refName: string; start: number; end: number }[]
   bpPerPx: number
   colorBy: { type: string; tag?: string; extra?: Record<string, unknown> }

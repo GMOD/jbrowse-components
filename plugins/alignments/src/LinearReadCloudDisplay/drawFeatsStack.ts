@@ -5,9 +5,10 @@ import { drawFeatsCommon } from './drawFeatsCommon'
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ReducedFeature } from '../shared/fetchChains'
+import { Feature } from '@jbrowse/core/util'
 
 interface LayoutData {
-  feat: ReducedFeature
+  feat: Feature
   fill: string
   stroke: string
   distance: number

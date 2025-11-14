@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
@@ -12,6 +12,7 @@ import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { ThemeOptions } from '@mui/material'
 
 type LGV = LinearGenomeViewModel
 
@@ -250,8 +251,8 @@ export interface DrawFeatsParams {
   flipStrandLongReadChains: boolean
   noSpacing?: boolean
   trackMaxHeight?: number
-  config: Record<string, unknown>
-  theme: Record<string, unknown>
+  config: AnyConfigurationModel
+  theme: ThemeOptions
   regions: { refName: string; start: number; end: number }[]
   bpPerPx: number
 }

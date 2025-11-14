@@ -178,32 +178,74 @@ export function drawFeats(
     // chain.length === 1, singleton (other pairs/mates not in view)
     if (chain.length === 1 && drawLongRange) {
       const f = chain[0]!
-      if (hasPaired && !(f.flags & 8)) {
+      if (hasPaired && !(f.get('flags') & 8)) {
         const mate = {
-          refName: f.next_ref || '',
-          start: f.next_pos || 0,
-          end: f.next_pos || 0,
-          strand: f.strand,
+          refName: f.get('next_ref') || '',
+          start: f.get('next_pos') || 0,
+          end: f.get('next_pos') || 0,
+          strand: f.get('strand'),
         }
-        draw(f, mate, asm, true)
+        const k1 = {
+          refName: f.get('refName'),
+          start: f.get('start'),
+          end: f.get('end'),
+          strand: f.get('strand'),
+          tlen: f.get('template_length'),
+          pair_orientation: f.get('pair_orientation'),
+        }
+        draw(k1, mate, asm, true)
       } else {
-        const features = [f, ...featurizeSA(f.SA, f.id, f.strand, f.name)].sort(
-          (a, b) => a.clipPos - b.clipPos,
+        const features = [f, ...featurizeSA(f.get('SA'), f.id(), f.get('strand'), f.get('name'))].sort(
+          (a, b) => {
+            const aClipPos = 'get' in a ? a.get('clipPos') : a.clipPos
+            const bClipPos = 'get' in b ? b.get('clipPos') : b.clipPos
+            return aClipPos - bClipPos
+          },
         )
         for (let i = 0; i < features.length - 1; i++) {
-          const f = features[i]!
-          const v1 = features[i + 1]!
-          draw(f, v1, asm, true)
+          const fItem = features[i]!
+          const v1Item = features[i + 1]!
+          const k1 = 'get' in fItem ? {
+            refName: fItem.get('refName'),
+            start: fItem.get('start'),
+            end: fItem.get('end'),
+            strand: fItem.get('strand'),
+            tlen: fItem.get('template_length'),
+            pair_orientation: fItem.get('pair_orientation'),
+          } : fItem
+          const k2 = 'get' in v1Item ? {
+            refName: v1Item.get('refName'),
+            start: v1Item.get('start'),
+            end: v1Item.get('end'),
+            strand: v1Item.get('strand'),
+          } : v1Item
+          draw(k1, k2, asm, true)
         }
       }
     } else {
       const res = hasPaired
-        ? chain.filter(f => !(f.flags & 2048) && !(f.flags & 8))
+        ? chain.filter(f => !(f.get('flags') & 2048) && !(f.get('flags') & 8))
         : chain
-            .sort((a, b) => a.clipPos - b.clipPos)
-            .filter(f => !(f.flags & 256))
+            .sort((a, b) => a.get('clipPos') - b.get('clipPos'))
+            .filter(f => !(f.get('flags') & 256))
       for (let i = 0; i < res.length - 1; i++) {
-        draw(res[i]!, res[i + 1]!, asm, false)
+        const f = res[i]!
+        const v1 = res[i + 1]!
+        const k1 = {
+          refName: f.get('refName'),
+          start: f.get('start'),
+          end: f.get('end'),
+          strand: f.get('strand'),
+          tlen: f.get('template_length'),
+          pair_orientation: f.get('pair_orientation'),
+        }
+        const k2 = {
+          refName: v1.get('refName'),
+          start: v1.get('start'),
+          end: v1.get('end'),
+          strand: v1.get('strand'),
+        }
+        draw(k1, k2, asm, false)
       }
     }
   }
