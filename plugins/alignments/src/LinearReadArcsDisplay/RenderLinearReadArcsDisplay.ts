@@ -1,0 +1,162 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { dedupe, groupBy, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { getSnapshot } from 'mobx-state-tree'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
+import configSchema from './configSchema'
+import { drawFeatsRPC } from './drawFeatsRPC'
+
+import type { ChainData } from '../shared/fetchChains'
+import type { ColorBy } from '../shared/types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ThemeOptions } from '@mui/material'
+
+interface RenderToAbstractCanvasOptions {
+  exportSVG?: { rasterizeLayers?: boolean; scale?: number }
+  highResolutionScaling?: number
+}
+
+export interface RenderLinearReadArcsDisplayArgs {
+  sessionId: string
+  view: Base1DViewModel
+  adapterConfig: AnyConfigurationModel
+  config: AnyConfigurationModel
+  theme: ThemeOptions
+  filterBy: Record<string, unknown>
+  colorBy: ColorBy
+  drawInter: boolean
+  drawLongRange: boolean
+  lineWidth: number
+  jitter: number
+  height: number
+  highResolutionScaling?: number
+  exportSVG?: { rasterizeLayers?: boolean; scale?: number }
+}
+
+export default class RenderLinearReadArcsDisplay extends RpcMethodType {
+  name = 'RenderLinearReadArcsDisplay'
+
+  deserializeArguments(args: any, rpcDriver: string) {
+    return {
+      ...args,
+      config:
+        rpcDriver !== 'MainThreadRpcDriver'
+          ? configSchema(this.pluginManager).create(args.config, {
+              pluginManager: this.pluginManager,
+            })
+          : args.config,
+    }
+  }
+  async execute(args: RenderLinearReadArcsDisplayArgs, rpcDriver: string) {
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
+
+    const {
+      sessionId,
+      view: viewSnapshot,
+      adapterConfig,
+      theme,
+      colorBy,
+      drawInter,
+      drawLongRange,
+      lineWidth,
+      jitter,
+      height,
+      highResolutionScaling,
+      exportSVG,
+    } = deserializedArgs
+
+    // Recreate the view from the snapshot following DotplotRenderer pattern
+    const view = Base1DView.create(viewSnapshot)
+    // Set the volatile width which is not part of the snapshot
+    if (viewSnapshot.width) {
+      view.setVolatileWidth(viewSnapshot.width)
+    }
+
+    // Extract properties from the recreated view
+    const { bpPerPx, offsetPx } = view
+    const width = view.staticBlocks.totalWidthPx
+    const regions = view.staticBlocks.contentBlocks
+
+    // Create a snapshot from the live view including computed properties
+    // Following the DotplotRenderer pattern
+    const viewSnap: any = {
+      ...getSnapshot(view),
+      staticBlocks: view.staticBlocks,
+      width: view.width,
+    }
+    // Add bpToPx method after viewSnap is defined to avoid circular reference
+    viewSnap.bpToPx = (arg: { refName: string; coord: number }) => {
+      const res = bpToPx({
+        self: viewSnap,
+        refName: arg.refName,
+        coord: arg.coord,
+      })
+      return res !== undefined
+        ? {
+            offsetPx: res.offsetPx,
+            index: res.index,
+          }
+        : undefined
+    }
+
+    // Fetch chainData directly in the RPC to avoid serializing features from main thread
+    const dataAdapter = (
+      await getAdapter(this.pluginManager, sessionId, adapterConfig)
+    ).dataAdapter as BaseFeatureDataAdapter
+
+    const featuresArray = await firstValueFrom(
+      dataAdapter
+        .getFeaturesInMultipleRegions(regions, deserializedArgs)
+        .pipe(toArray()),
+    )
+
+    // Dedupe features by ID while preserving full Feature objects
+    const deduped = dedupe(featuresArray, f => f.id())
+
+    const chainData: ChainData = {
+      chains: Object.values(groupBy(deduped, f => f.get('name'))),
+    }
+
+    const renderOpts: RenderToAbstractCanvasOptions = {
+      highResolutionScaling,
+      exportSVG,
+    }
+
+    // Render using renderToAbstractCanvas
+    const result = await renderToAbstractCanvas(
+      width,
+      height,
+      renderOpts,
+      async (ctx: CanvasRenderingContext2D) => {
+        // Call drawFeatsRPC with all necessary parameters
+        drawFeatsRPC({
+          ctx,
+          width,
+          height,
+          chainData,
+          colorBy,
+          drawInter,
+          drawLongRange,
+          lineWidth,
+          jitter,
+          view: viewSnap,
+          offsetPx,
+        })
+        return {}
+      },
+    )
+
+    // Include the offsetPx in the result so the main thread can position the canvas correctly
+    return {
+      ...result,
+      offsetPx,
+      containsNoTransferables: true,
+    }
+  }
+}

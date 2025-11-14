@@ -69,6 +69,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         drawLongRange: true,
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       * ImageData returned from RPC rendering
+       */
+      renderingImageData: undefined as ImageBitmap | undefined,
+      /**
+       * #volatile
+       * Flag to indicate if we're currently rendering via RPC
+       */
+      isRendering: false,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -123,6 +135,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setJitter(n: number) {
         self.jitter = n
       },
+
+      /**
+       * #action
+       * Set the rendering imageData from RPC
+       */
+      setRenderingImageData(imageData: ImageBitmap | undefined) {
+        self.renderingImageData = imageData
+      },
+
+      /**
+       * #action
+       * Set the rendering flag
+       */
+      setIsRendering(flag: boolean) {
+        self.isRendering = flag
+      },
     }))
     .views(self => ({
       /**
@@ -152,7 +180,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
-            notReady: !self.chainData,
+            // We use RPC rendering, so we're always ready (data is fetched in RPC)
+            notReady: false,
           }
         },
 
@@ -236,26 +265,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
-    .views(self => ({
-      /**
-       * #method
-       */
-      async renderSvg(opts: {
-        rasterizeLayers?: boolean
-      }): Promise<React.ReactNode> {
-        const { renderSvg } = await import('../shared/renderSvgUtil')
-        const { drawFeats } = await import('./drawFeats')
-        return renderSvg(self as LinearReadArcsDisplayModel, opts, drawFeats)
-      },
-    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('../shared/afterAttach')
-            const { drawFeats } = await import('./drawFeats')
-            doAfterAttach(self, drawFeats)
+            const { doAfterAttachRPC } = await import('./afterAttachRPC')
+            doAfterAttachRPC(self)
           } catch (e) {
             console.error(e)
             self.setError(e)
