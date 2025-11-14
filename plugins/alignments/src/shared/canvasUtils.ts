@@ -49,3 +49,20 @@ export function strokeRectCtx(
   }
   ctx.strokeRect(x, y, width, height)
 }
+
+export function lineToCtx(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  ctx: CanvasRenderingContext2D,
+  strokeColor?: string,
+) {
+  if (strokeColor) {
+    ctx.strokeStyle = strokeColor
+  }
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2, y2)
+  ctx.stroke()
+}

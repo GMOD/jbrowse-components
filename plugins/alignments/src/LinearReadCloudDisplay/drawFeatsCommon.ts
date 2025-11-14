@@ -2,16 +2,20 @@ import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { drawLongReadChains } from './drawLongReadChains'
+import { drawPairChains } from './drawPairChains'
 import { PairType, getPairedType } from '../shared/color'
-import { drawLongReadChains } from '../shared/drawLongReadChains'
-import { drawPairChains } from '../shared/drawPairChains'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
-import type { ChainData, ReducedFeature } from '../shared/fetchChains'
+import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { ColorBy } from '../shared/types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { ThemeOptions } from '@mui/material'
 
 type LGV = LinearGenomeViewModel
 
@@ -19,7 +23,7 @@ export interface ComputedChain {
   distance: number
   minX: number
   maxX: number
-  chain: ReducedFeature[]
+  chain: Feature[]
   id: string
 }
 
@@ -27,13 +31,13 @@ export interface ComputedChain {
  * Filter chains based on singleton and proper pair settings
  */
 export function filterChains(
-  chains: ReducedFeature[][],
+  chains: Feature[][],
   drawSingletons: boolean,
   drawProperPairs: boolean,
   type: string,
   chainData: ChainData,
 ) {
-  const filtered: ReducedFeature[][] = []
+  const filtered: Feature[][] = []
 
   for (const chain_ of chains) {
     const chain = chain_
@@ -47,7 +51,7 @@ export function filterChains(
     // Check if this is a paired-end read using SAM flag 1 (read paired)
     let isPairedEnd = false
     for (const element of chain) {
-      if (element.flags & 1) {
+      if (element.get('flags') & 1) {
         isPairedEnd = true
         break
       }
@@ -55,20 +59,24 @@ export function filterChains(
 
     if (!drawProperPairs && isPairedEnd) {
       // Collect non-supplementary alignments
-      const nonSupplementary: ReducedFeature[] = []
+      const nonSupplementary: Feature[] = []
       for (const element of chain) {
-        if (!(element.flags & 2048)) {
+        if (!(element.get('flags') & 2048)) {
           nonSupplementary.push(element)
         }
       }
 
       if (nonSupplementary.length === 2) {
         const v0 = nonSupplementary[0]!
-        const v1 = nonSupplementary[1]!
         const pairType = getPairedType({
           type,
-          f1: v0,
-          f2: v1,
+          f: {
+            refName: v0.get('refName'),
+            next_ref: v0.get('next_ref'),
+            pair_orientation: v0.get('pair_orientation'),
+            tlen: v0.get('template_length'),
+            flags: v0.get('flags'),
+          },
           stats: chainData.stats,
         })
         // Filter out proper pairs
@@ -87,11 +95,7 @@ export function filterChains(
 /**
  * Compute pixel bounds for each chain
  */
-export function computeChainBounds(
-  chains: ReducedFeature[][],
-  view: LGV,
-  asm: Assembly,
-) {
+export function computeChainBounds(chains: Feature[][], view: LGV) {
   const computedChains: ComputedChain[] = []
 
   // get bounds on the 'distances' (TLEN for pairs, pixel span for others)
@@ -105,24 +109,42 @@ export function computeChainBounds(
 
     for (let j = 0; j < chainLength; j++) {
       const elt = chain[j]!
-      const refName = asm.getCanonicalRefName(elt.refName) || elt.refName
-      const rs = view.bpToPx({ refName, coord: elt.start })?.offsetPx
-      const re = view.bpToPx({ refName, coord: elt.end })?.offsetPx
+      const rs = view.bpToPx({
+        refName: elt.get('refName'),
+        coord: elt.get('start'),
+      })?.offsetPx
+      const re = view.bpToPx({
+        refName: elt.get('refName'),
+        coord: elt.get('end'),
+      })?.offsetPx
       if (rs !== undefined && re !== undefined) {
         minX = Math.min(minX, rs)
         maxX = Math.max(maxX, re)
       }
       if (!chainId) {
-        chainId = elt.id
+        chainId = elt.id()
       }
       // Use TLEN from the first feature that has it (only for non-singletons)
-      if (chainLength > 1 && tlenDistance === 0 && elt.tlen) {
-        tlenDistance = Math.abs(elt.tlen)
+      const tlen = elt.get('template_length')
+      if (chainLength > 1 && tlenDistance === 0 && tlen) {
+        tlenDistance = Math.abs(tlen)
       }
     }
 
-    // For pairs/chains, prefer TLEN over pixel distance; singletons use pixel distance
-    const distance = tlenDistance > 0 ? tlenDistance : Math.abs(maxX - minX)
+    // For pairs/chains, prefer TLEN over pixel distance; singletons use 0 (for y=0)
+    let distance: number
+    if (tlenDistance > 0) {
+      distance = tlenDistance
+    } else if (chainLength === 1) {
+      // Singletons get distance of 0 to be placed at y=0
+      distance = 0
+    } else if (minX !== Number.MAX_VALUE && maxX !== Number.MIN_VALUE) {
+      // Fall back to pixel distance for long reads (e.g., SA-tagged chains)
+      distance = Math.abs(maxX - minX)
+    } else {
+      // Skip chains with no valid positions and no TLEN
+      continue
+    }
 
     computedChains.push({
       distance,
@@ -197,50 +219,90 @@ export function addChainMouseoverRects(
     const chainMinXPx = minX - view.offsetPx
     const chainMaxXPx = maxX - view.offsetPx
     if (chain.length > 0) {
+      const firstFeat = chain[0]!
       featuresForFlatbush.push({
         x1: chainMinXPx,
         y1: chainY,
         x2: chainMaxXPx,
         y2: chainY + featureHeight,
-        data: chain[0]!, // Use first feature as representative
+        data: {
+          name: firstFeat.get('name'),
+          refName: firstFeat.get('refName'),
+          start: firstFeat.get('start'),
+          end: firstFeat.get('end'),
+          strand: firstFeat.get('strand'),
+          flags: firstFeat.get('flags'),
+          id: firstFeat.id(),
+          tlen: firstFeat.get('template_length') || 0,
+          pair_orientation: firstFeat.get('pair_orientation') || '',
+          clipPos: firstFeat.get('clipPos') || 0,
+        },
         chainId: id,
         chainMinX: chainMinXPx,
         chainMaxX: chainMaxXPx,
-        chain,
+        chain: chain.map(f => ({
+          name: f.get('name'),
+          refName: f.get('refName'),
+          start: f.get('start'),
+          end: f.get('end'),
+          strand: f.get('strand'),
+          flags: f.get('flags'),
+          id: f.id(),
+          tlen: f.get('template_length') || 0,
+          pair_orientation: f.get('pair_orientation') || '',
+          clipPos: f.get('clipPos') || 0,
+        })),
       })
     }
   }
 }
 
-/**
- * Common drawing function that delegates Y-offset calculation to a strategy function
- */
-export function drawFeatsCommon(
-  self: LinearReadCloudDisplayModel,
-  ctx: CanvasRenderingContext2D,
+export interface DrawFeatsParams {
+  chainData: ChainData
+  featureHeight: number
+  colorBy: ColorBy
+  drawSingletons: boolean
+  drawProperPairs: boolean
+  flipStrandLongReadChains: boolean
+  noSpacing?: boolean
+  trackMaxHeight?: number
+  config: AnyConfigurationModel
+  theme: ThemeOptions
+  regions: BaseBlock[]
+  bpPerPx: number
+  canvasWidth: number
+}
+
+export interface DrawFeatsResult {
+  featuresForFlatbush: FlatbushEntry[]
+  layoutHeight?: number
+}
+
+export function drawFeatsCore({
+  ctx,
+  params,
+  view,
+  calculateYOffsets,
+}: {
+  ctx: CanvasRenderingContext2D
+  params: DrawFeatsParams
+  view: any
   calculateYOffsets: (
     computedChains: ComputedChain[],
-    self: LinearReadCloudDisplayModel,
-    view: LGV,
+    params: DrawFeatsParams,
     featureHeight: number,
-  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number },
-) {
-  const { chainData } = self
-  if (!chainData) {
-    return
-  }
-  const { assemblyManager } = getSession(self)
-  const view = getContainingView(self) as LGV
-  const assemblyName = view.assemblyNames[0]!
-  const asm = assemblyManager.get(assemblyName)
-  if (!asm) {
-    return
-  }
-  const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
+  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
+}): DrawFeatsResult {
+  const {
+    chainData,
+    featureHeight,
+    colorBy,
+    drawSingletons,
+    drawProperPairs,
+    flipStrandLongReadChains,
+  } = params
 
-  const type = self.colorBy?.type || 'insertSizeAndOrientation'
-  const drawSingletons = self.drawSingletons
-  const drawProperPairs = self.drawProperPairs
+  const type = colorBy.type || 'insertSizeAndOrientation'
   const { chains } = chainData
 
   // Filter chains based on settings
@@ -253,7 +315,7 @@ export function drawFeatsCommon(
   )
 
   // Compute pixel bounds for each chain
-  const computedChains = computeChainBounds(filteredChains, view, asm)
+  const computedChains = computeChainBounds(filteredChains, view)
 
   // Sort chains: singletons first, then by width within each group
   sortComputedChains(computedChains)
@@ -261,8 +323,7 @@ export function drawFeatsCommon(
   // Calculate Y-offsets using the provided strategy
   const { chainYOffsets, layoutHeight } = calculateYOffsets(
     computedChains,
-    self,
-    view,
+    params,
     featureHeight,
   )
 
@@ -273,29 +334,38 @@ export function drawFeatsCommon(
 
   // Delegate rendering to specialized functions for paired and long-read chains
   drawPairChains({
+    canvasWidth: params.canvasWidth,
     ctx,
     type,
     chainData,
     view,
-    asm,
     chainYOffsets,
     renderChevrons,
     featureHeight,
     featuresForFlatbush,
     computedChains,
+    config: params.config,
+    theme: params.theme,
+    regions: params.regions,
+    bpPerPx: params.bpPerPx,
+    colorBy: params.colorBy,
   })
 
   drawLongReadChains({
     ctx,
     chainData,
     view,
-    asm,
     chainYOffsets,
     renderChevrons,
     featureHeight,
     featuresForFlatbush,
     computedChains,
-    flipStrandLongReadChains: self.flipStrandLongReadChains,
+    flipStrandLongReadChains,
+    config: params.config,
+    theme: params.theme,
+    regions: params.regions,
+    bpPerPx: params.bpPerPx,
+    colorBy: params.colorBy,
   })
 
   // Add full-width rectangles for each chain to enable mouseover on connecting lines
@@ -306,6 +376,68 @@ export function drawFeatsCommon(
     view,
     featuresForFlatbush,
   )
+
+  return { featuresForFlatbush, layoutHeight }
+}
+
+/**
+ * Common drawing function that delegates Y-offset calculation to a strategy function
+ */
+export function drawFeatsCommon({
+  self,
+  ctx,
+  canvasWidth,
+  calculateYOffsets,
+}: {
+  self: LinearReadCloudDisplayModel
+  ctx: CanvasRenderingContext2D
+  canvasWidth: number
+  calculateYOffsets: (
+    computedChains: ComputedChain[],
+    self: LinearReadCloudDisplayModel,
+    featureHeight: number,
+  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
+}) {
+  const { chainData } = self
+  if (!chainData) {
+    return
+  }
+  const session = getSession(self)
+  const { assemblyManager } = session
+  const view = getContainingView(self) as LGV
+  const assemblyName = view.assemblyNames[0]!
+  const asm = assemblyManager.get(assemblyName)
+  if (!asm) {
+    return
+  }
+  const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
+
+  const { featuresForFlatbush, layoutHeight } = drawFeatsCore({
+    ctx,
+    params: {
+      canvasWidth,
+      chainData,
+      featureHeight,
+      colorBy: self.colorBy,
+      drawSingletons: self.drawSingletons,
+      drawProperPairs: self.drawProperPairs,
+      flipStrandLongReadChains: self.flipStrandLongReadChains,
+      noSpacing: self.noSpacing,
+      trackMaxHeight: self.trackMaxHeight,
+      config: self.configuration,
+      theme: session.theme!,
+      regions: view.staticBlocks.contentBlocks,
+      bpPerPx: view.bpPerPx,
+    },
+    view,
+    calculateYOffsets: (
+      computedChains: ComputedChain[],
+      _params: DrawFeatsParams,
+      featureHeight: number,
+    ) => {
+      return calculateYOffsets(computedChains, self, featureHeight)
+    },
+  })
 
   // Build and set Flatbush index
   buildFlatbushIndex(featuresForFlatbush, self)

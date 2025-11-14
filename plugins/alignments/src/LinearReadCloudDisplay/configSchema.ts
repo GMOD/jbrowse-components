@@ -12,6 +12,11 @@ function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearReadCloudDisplay',
     {
+      minSubfeatureWidth: {
+        type: 'number',
+        defaultValue: 1,
+      },
+
       /**
        * #slot
        */

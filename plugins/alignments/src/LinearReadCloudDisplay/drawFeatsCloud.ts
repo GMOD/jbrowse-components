@@ -4,18 +4,14 @@ import { drawFeatsCommon } from './drawFeatsCommon'
 
 import type { ComputedChain } from './drawFeatsCommon'
 import type { LinearReadCloudDisplayModel } from './model'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 /**
- * Calculate Y-offsets using logarithmic scaling based on distance
+ * Core utility function to calculate Y-offsets using logarithmic scaling
+ * Shared between RPC and model contexts for maintainability
  */
-function calculateCloudYOffsets(
+export function calculateCloudYOffsetsUtil(
   computedChains: ComputedChain[],
-  self: LinearReadCloudDisplayModel,
-  _view: LGV,
-  _featureHeight: number,
+  height: number,
 ) {
   // Calculate Y-offsets based on distance (logarithmic scaling)
   const distances = computedChains.map(c => c.distance).filter(d => d > 0)
@@ -28,10 +24,11 @@ function calculateCloudYOffsets(
   // The offset shifts the logarithmic curve, reducing the dramatic variation for small TLEN
   // This provides a smooth compression without hard thresholds
   const logOffset = 10
+  const rangePadding = 100 // Add/subtract to reduce stratification when values are similar
 
-  const maxD = Math.log(max(distances) + logOffset)
-  const minD = Math.log(min(distances) + logOffset)
-  const scaler = (self.height - 20) / (maxD - minD || 1)
+  const maxD = Math.log(max(distances) + logOffset + rangePadding)
+  const minD = Math.log(Math.max(1, min(distances) + logOffset - rangePadding))
+  const scaler = (height - 20) / (maxD - minD || 1)
 
   // Calculate Y-offsets for each chain
   const chainYOffsets = new Map<string, number>()
@@ -44,9 +41,26 @@ function calculateCloudYOffsets(
   return { chainYOffsets }
 }
 
+/**
+ * Calculate Y-offsets using logarithmic scaling based on distance (model-based version)
+ * This is a thin adapter that extracts height from the model
+ */
+function calculateCloudYOffsets(
+  computedChains: ComputedChain[],
+  self: LinearReadCloudDisplayModel,
+) {
+  return calculateCloudYOffsetsUtil(computedChains, self.height)
+}
+
 export function drawFeats(
   self: LinearReadCloudDisplayModel,
   ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
 ) {
-  drawFeatsCommon(self, ctx, calculateCloudYOffsets)
+  drawFeatsCommon({
+    self,
+    ctx,
+    canvasWidth,
+    calculateYOffsets: calculateCloudYOffsets,
+  })
 }

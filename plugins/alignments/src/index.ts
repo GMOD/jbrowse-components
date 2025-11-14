@@ -9,7 +9,9 @@ import HtsgetBamAdapterF from './HtsgetBamAdapter'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay'
 import LinearPileupDisplayF from './LinearPileupDisplay'
 import LinearReadArcsDisplayF from './LinearReadArcsDisplay'
+import LinearReadArcsDisplayRPCMethodsF from './LinearReadArcsDisplay/RPC'
 import LinearReadCloudDisplayF from './LinearReadCloudDisplay'
+import LinearReadCloudDisplayRPCMethodsF from './LinearReadCloudDisplay/RPC'
 import LinearSNPCoverageDisplayF from './LinearSNPCoverageDisplay'
 import PileupRPCMethodsF from './PileupRPC'
 import PileupRendererF from './PileupRenderer'
@@ -32,6 +34,8 @@ export default class AlignmentsPlugin extends Plugin {
       HtsgetBamAdapterF,
       PileupRendererF,
       PileupRPCMethodsF,
+      LinearReadArcsDisplayRPCMethodsF,
+      LinearReadCloudDisplayRPCMethodsF,
       SNPCoverageRendererF,
       LinearReadArcsDisplayF,
       LinearReadCloudDisplayF,
