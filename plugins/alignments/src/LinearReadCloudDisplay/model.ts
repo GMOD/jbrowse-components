@@ -12,6 +12,7 @@ import {
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
+  type ExportSvgDisplayOptions,
 } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
@@ -209,7 +210,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
-            notReady: !self.chainData,
+            // We use RPC rendering, so we're always ready (data is fetched in RPC)
+            notReady: false,
           }
         },
 
@@ -305,24 +307,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        async renderSvg(opts: {
-          rasterizeLayers?: boolean
-        }): Promise<React.ReactNode> {
-          const { renderSvg } = await import('../shared/renderSvgUtil')
-          if (self.drawCloud) {
-            const { drawFeats } = await import('./drawFeatsCloud')
-            return renderSvg(
-              self as LinearReadCloudDisplayModel,
-              opts,
-              drawFeats,
-            )
-          } else {
-            const { drawFeats } = await import('./drawFeatsStack')
-            return renderSvg(
-              self as LinearReadCloudDisplayModel,
-              opts,
-              drawFeats,
-            )
+        async renderSvg(opts: ExportSvgDisplayOptions): Promise<React.ReactNode> {
+          console.log('[LinearReadCloudDisplay model.renderSvg] Called with opts:', opts)
+          try {
+            const { renderSvg } = await import('./renderSvg')
+            console.log('[LinearReadCloudDisplay model.renderSvg] Imported renderSvg, calling it...')
+            const result = await renderSvg(self as LinearReadCloudDisplayModel, opts)
+            console.log('[LinearReadCloudDisplay model.renderSvg] renderSvg completed')
+            return result
+          } catch (error) {
+            console.error('[LinearReadCloudDisplay model.renderSvg] Error:', error)
+            throw error
           }
         },
       }

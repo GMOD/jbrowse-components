@@ -106,19 +106,39 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       exportSVG,
     } = deserializedArgs
 
+    console.log(
+      '[RenderLinearReadCloudDisplay RPC] Execute called',
+      {
+        width,
+        height,
+        regionCount: regions.length,
+        hasExportSVG: !!exportSVG,
+        exportSVG,
+      },
+    )
+
+    console.log('[RenderLinearReadCloudDisplay RPC] Fetching data adapter...')
     // Fetch chainData directly in the RPC to avoid serializing features from main thread
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
+    console.log('[RenderLinearReadCloudDisplay RPC] Fetching features...')
     const featuresArray = await firstValueFrom(
       dataAdapter
         .getFeaturesInMultipleRegions(regions, deserializedArgs)
         .pipe(toArray()),
     )
 
+    console.log(
+      `[RenderLinearReadCloudDisplay RPC] Fetched ${featuresArray.length} features`,
+    )
+
     // Dedupe features by ID while preserving full Feature objects
     const deduped = dedupe(featuresArray, f => f.id())
+    console.log(
+      `[RenderLinearReadCloudDisplay RPC] After deduplication: ${deduped.length} features`,
+    )
 
     // For stats calculation, we still need to extract the template_length values
     const filtered = deduped.filter(f => {
@@ -163,6 +183,10 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       stats,
     }
 
+    console.log(
+      `[RenderLinearReadCloudDisplay RPC] Created ${chainData.chains.length} chains`,
+    )
+
     const staticBlocks = calculateStaticBlocks({
       displayedRegions: regions,
       bpPerPx,
@@ -171,6 +195,15 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       interRegionPaddingWidth: 0,
       minimumBlockWidth: 0,
     })
+
+    console.log(
+      '[RenderLinearReadCloudDisplay RPC] Calculated static blocks',
+      {
+        blockCount: staticBlocks.contentBlocks.length,
+        totalWidthPx: staticBlocks.totalWidthPx,
+        offsetPx: staticBlocks.offsetPx,
+      },
+    )
 
     const viewSnap: ViewSnapshot = {
       bpPerPx,
@@ -207,12 +240,19 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       exportSVG,
     }
 
+    console.log('[RenderLinearReadCloudDisplay RPC] Starting render...', {
+      width,
+      height,
+      exportSVG,
+    })
+
     // Render using renderToAbstractCanvas
     const result = await renderToAbstractCanvas(
       width,
       height,
       renderOpts,
       async (ctx: CanvasRenderingContext2D) => {
+        console.log('[RenderLinearReadCloudDisplay RPC] Drawing features...')
         const { layoutHeight, featuresForFlatbush } = drawFeatsCore({
           ctx,
           params: {
@@ -241,12 +281,20 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
               : calculateStackYOffsetsCore(chains, params, featureHeight)
           },
         })
+        console.log('[RenderLinearReadCloudDisplay RPC] Drawing complete')
         return {
           layoutHeight,
           featuresForFlatbush,
         }
       },
     )
+
+    console.log('[RenderLinearReadCloudDisplay RPC] Render complete', {
+      hasImageData: 'imageData' in result,
+      hasCanvasRecordedData: 'canvasRecordedData' in result,
+      hasHtml: 'html' in result,
+      resultKeys: Object.keys(result),
+    })
 
     // Include the offsetPx in the result so the main thread can position the canvas correctly
     return {

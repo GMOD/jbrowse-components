@@ -1118,10 +1118,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
+        console.log('[LinearGenomeView.exportSvg] Called with opts:', opts)
         const { renderToSvg } = await import(
           './svgcomponents/SVGLinearGenomeView'
         )
+        console.log('[LinearGenomeView.exportSvg] Calling renderToSvg...')
         const html = await renderToSvg(self as LinearGenomeViewModel, opts)
+        console.log('[LinearGenomeView.exportSvg] renderToSvg complete, saving file...')
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
 
@@ -1129,6 +1132,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           new Blob([html], { type: 'image/svg+xml' }),
           opts.filename || 'image.svg',
         )
+        console.log('[LinearGenomeView.exportSvg] File saved')
       },
     }))
     .actions(self => {

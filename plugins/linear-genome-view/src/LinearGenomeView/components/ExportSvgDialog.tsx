@@ -141,18 +141,26 @@ export default function ExportSvgDialog({
           color="primary"
           type="submit"
           onClick={async () => {
+            console.log('[ExportSvgDialog] Submit clicked', {
+              rasterizeLayers,
+              filename,
+              trackLabels,
+              themeName,
+            })
             setLoading(true)
             setError(undefined)
             try {
+              console.log('[ExportSvgDialog] Calling model.exportSvg...')
               await model.exportSvg({
                 rasterizeLayers,
                 filename,
                 trackLabels,
                 themeName,
               })
+              console.log('[ExportSvgDialog] model.exportSvg complete')
               handleClose()
             } catch (e) {
-              console.error(e)
+              console.error('[ExportSvgDialog] Error:', e)
               setError(e)
             } finally {
               setLoading(false)

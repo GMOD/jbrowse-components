@@ -15,6 +15,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
 
 const minDisplayHeight = 20
@@ -289,20 +290,43 @@ function stateModelFactory(
       /**
        * #action
        */
-      async renderSvg(opts: { rasterizeLayers?: boolean }) {
-        const pileupHeight = self.height - self.SNPCoverageDisplay.height
-        await when(() => !self.notReady())
-        return (
-          <>
-            <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
-            <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
-              {await self.PileupDisplay.renderSvg({
-                ...opts,
-                overrideHeight: pileupHeight,
-              })}
-            </g>
-          </>
-        )
+      async renderSvg(opts: ExportSvgDisplayOptions) {
+        try {
+          console.log('[LinearAlignmentsDisplay] renderSvg called', {
+            lowerPanelType: self.lowerPanelType,
+            pileupDisplayType: self.PileupDisplay?.type,
+            hasPileupDisplay: !!self.PileupDisplay,
+            hasRenderSvg: !!(self.PileupDisplay as any)?.renderSvg,
+          })
+          const pileupHeight = self.height - self.SNPCoverageDisplay.height
+
+          console.log('[LinearAlignmentsDisplay] Waiting for not ready...')
+          await when(() => !self.notReady())
+          console.log('[LinearAlignmentsDisplay] Ready!')
+
+          console.log('[LinearAlignmentsDisplay] About to call SNPCoverageDisplay.renderSvg')
+          const snpCoverageResult = await self.SNPCoverageDisplay.renderSvg(opts)
+          console.log('[LinearAlignmentsDisplay] SNPCoverageDisplay.renderSvg complete')
+
+          console.log('[LinearAlignmentsDisplay] About to call PileupDisplay.renderSvg')
+          const pileupResult = await self.PileupDisplay.renderSvg({
+            ...opts,
+            overrideHeight: pileupHeight,
+          })
+          console.log('[LinearAlignmentsDisplay] PileupDisplay.renderSvg complete')
+
+          return (
+            <>
+              <g>{snpCoverageResult}</g>
+              <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
+                {pileupResult}
+              </g>
+            </>
+          )
+        } catch (error) {
+          console.error('[LinearAlignmentsDisplay] renderSvg error:', error)
+          throw error
+        }
       },
     }))
     .views(self => {
