@@ -1,10 +1,10 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
 import { parseCigar } from '../../MismatchParser'
+import { CHEVRON_WIDTH } from '../../shared/util'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
-import { CHEVRON_WIDTH } from '../../shared/util'
 
 export function renderAlignmentShape({
   ctx,

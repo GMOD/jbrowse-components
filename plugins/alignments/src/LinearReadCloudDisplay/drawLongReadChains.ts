@@ -1,11 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-import { fillRectCtx, lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { drawChevron } from '../shared/chevron'
-import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
-import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
-import { CHEVRON_WIDTH } from '../shared/util'
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
   getCharWidthHeight,
@@ -14,16 +9,27 @@ import {
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../PileupRenderer/util'
+import { fillRectCtx, lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
+import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
+import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
+import { CHEVRON_WIDTH } from '../shared/util'
 
 import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
+import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ThemeOptions } from '@mui/material'
-import { ColorBy } from '../shared/types'
 
-type LGV = LinearGenomeViewModel
+interface MinimalView {
+  width: number
+  offsetPx: number
+  bpToPx: (arg: {
+    refName: string
+    coord: number
+  }) => { offsetPx: number; index: number } | undefined
+}
 
 export function drawLongReadChains({
   ctx,
@@ -43,7 +49,7 @@ export function drawLongReadChains({
 }: {
   ctx: CanvasRenderingContext2D
   chainData: ChainData
-  view: LGV
+  view: MinimalView
   chainYOffsets: Map<string, number>
   renderChevrons: boolean
   featureHeight: number
@@ -74,9 +80,9 @@ export function drawLongReadChains({
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
   const { charWidth, charHeight } = getCharWidthHeight()
-  const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
+  const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
   const drawIndels = shouldDrawIndels()
-  const canvasWidth = view.dynamicBlocks?.totalWidthPx || 800
+  const canvasWidth = view.width
 
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'

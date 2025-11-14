@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import {
   ReactRendering,
@@ -6,10 +8,9 @@ import {
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type {
-  LinearGenomeViewModel,
   ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type React from 'react'
 
 type LGV = LinearGenomeViewModel
 
@@ -35,11 +36,9 @@ export async function renderSvg(
 
   const { bpPerPx, offsetPx } = view
   const width = view.staticBlocks.totalWidthPx
-  // Use overrideHeight from opts if provided, otherwise use display's height
-  const height = opts.overrideHeight ?? (self.drawCloud ? self.height : self.layoutHeight)
+  const height = opts.overrideHeight
   const regions = view.staticBlocks.contentBlocks
-  // Use theme from opts if provided, otherwise use session theme
-  const theme = opts.theme ?? session.theme
+  const theme = opts.theme
 
   const {
     featureHeightSetting: featureHeight,

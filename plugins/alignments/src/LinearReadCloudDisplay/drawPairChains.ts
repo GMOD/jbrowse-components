@@ -1,10 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-import { fillRectCtx, lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { drawChevron } from '../shared/chevron'
-import { getPairedColor, getSingletonColor } from '../shared/color'
-import { CHEVRON_WIDTH } from '../shared/util'
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
   getCharWidthHeight,
@@ -13,16 +9,25 @@ import {
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../PileupRenderer/util'
+import { fillRectCtx, lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
+import { getPairedColor, getSingletonColor } from '../shared/color'
+import { CHEVRON_WIDTH } from '../shared/util'
 
 import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
+import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ThemeOptions } from '@mui/material'
-import { ColorBy } from '../shared/types'
 
-type LGV = LinearGenomeViewModel
+interface MinimalView {
+  offsetPx: number
+  bpToPx: (arg: {
+    refName: string
+    coord: number
+  }) => { offsetPx: number; index: number } | undefined
+}
 
 export function drawPairChains({
   ctx,
@@ -44,7 +49,7 @@ export function drawPairChains({
   ctx: CanvasRenderingContext2D
   type: string
   chainData: ChainData
-  view: LGV
+  view: MinimalView
   chainYOffsets: Map<string, number>
   renderChevrons: boolean
   featureHeight: number
@@ -75,7 +80,7 @@ export function drawPairChains({
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
   const { charWidth, charHeight } = getCharWidthHeight()
-  const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
+  const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
   const drawIndels = shouldDrawIndels()
 
   for (const computedChain of computedChains) {
@@ -197,7 +202,7 @@ export function drawPairChains({
         )
       } else {
         fillRectCtx(xPos, chainY, width, featureHeight, ctx, pairedFill)
-        // strokeRectCtx(xPos, chainY, width, featureHeight, ctx, pairedStroke)
+        strokeRectCtx(xPos, chainY, width, featureHeight, ctx, pairedStroke)
       }
 
       // Render mismatches on top if available

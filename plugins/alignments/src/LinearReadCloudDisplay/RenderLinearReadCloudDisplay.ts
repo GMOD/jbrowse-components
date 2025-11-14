@@ -14,11 +14,11 @@ import { getInsertSizeStats } from '../PileupRPC/util'
 
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type { ChainData } from '../shared/fetchChains'
+import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { ThemeOptions } from '@mui/material'
-import { ColorBy } from '../shared/types'
 
 /**
  * Documents the minimal view snapshot interface for RPC rendering context

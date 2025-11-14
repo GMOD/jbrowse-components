@@ -10,16 +10,16 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import {
+  type ExportSvgDisplayOptions,
   FeatureDensityMixin,
   TrackHeightMixin,
-  type ExportSvgDisplayOptions,
 } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
+import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
-import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -307,7 +307,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        async renderSvg(opts: ExportSvgDisplayOptions): Promise<React.ReactNode> {
+        async renderSvg(
+          opts: ExportSvgDisplayOptions,
+        ): Promise<React.ReactNode> {
           const { renderSvg } = await import('./renderSvg')
           return renderSvg(self as LinearReadCloudDisplayModel, opts)
         },

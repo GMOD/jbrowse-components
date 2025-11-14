@@ -4,9 +4,9 @@ import { colord } from '@jbrowse/core/util/colord'
 import { fillRect } from '../util'
 
 import type { Mismatch } from '../../shared/types'
-import type { Region } from '@jbrowse/core/util'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
+import type { Region } from '@jbrowse/core/util'
 
 export function renderMismatches({
   ctx,
