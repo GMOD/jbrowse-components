@@ -1,11 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
-import { drawChevron } from './chevron'
-import { fillColor, getSingletonColor, strokeColor } from './color'
-import { getPrimaryStrandFromFlags } from './primaryStrand'
-import { CHEVRON_WIDTH } from './util'
+import { fillRectCtx, lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
+import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
+import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
+import { CHEVRON_WIDTH } from '../shared/util'
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
   getCharWidthHeight,
@@ -15,8 +15,8 @@ import {
   shouldDrawSNPsMuted,
 } from '../PileupRenderer/util'
 
-import type { ChainData } from './fetchChains'
-import type { FlatbushEntry } from './flatbushType'
+import type { ChainData } from '../shared/fetchChains'
+import type { FlatbushEntry } from '../shared/flatbushType'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

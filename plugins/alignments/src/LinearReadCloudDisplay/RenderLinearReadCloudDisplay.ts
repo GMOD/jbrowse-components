@@ -238,12 +238,14 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
                   featureHeight,
                 ),
         )
-        return { layoutHeight, featuresForFlatbush }
+        return {
+          layoutHeight,
+          featuresForFlatbush,
+        }
       },
     )
 
     // Include the offsetPx in the result so the main thread can position the canvas correctly
-    console.log({ result })
     return {
       ...result,
       offsetPx,

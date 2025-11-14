@@ -1,12 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { readConf } from '@jbrowse/web/src/util'
 
-import { fillRectCtx, lineToCtx, strokeRectCtx } from './canvasUtils'
-import { drawChevron } from './chevron'
-import { getPairedColor, getSingletonColor } from './color'
-import { CHEVRON_WIDTH } from './util'
-import { renderAlignment } from '../PileupRenderer/renderers/renderAlignment'
+import { fillRectCtx, lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
+import { getPairedColor, getSingletonColor } from '../shared/color'
+import { CHEVRON_WIDTH } from '../shared/util'
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
   getCharWidthHeight,
@@ -16,8 +14,8 @@ import {
   shouldDrawSNPsMuted,
 } from '../PileupRenderer/util'
 
-import type { ChainData } from './fetchChains'
-import type { FlatbushEntry } from './flatbushType'
+import type { ChainData } from '../shared/fetchChains'
+import type { FlatbushEntry } from '../shared/flatbushType'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -38,6 +36,7 @@ export function drawPairChains({
   config,
   theme: configTheme,
   regions,
+  canvasWidth,
   bpPerPx,
   colorBy,
 }: {
@@ -58,6 +57,7 @@ export function drawPairChains({
   }[]
   config: AnyConfigurationModel
   theme: ThemeOptions
+  canvasWidth: number
   regions: { refName: string; start: number; end: number }[]
   bpPerPx: number
   colorBy: { type: string; tag?: string; extra?: Record<string, unknown> }
@@ -65,20 +65,17 @@ export function drawPairChains({
   // Setup rendering configuration from PileupRenderer
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
   const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth') ?? 1
-  console.log({ config, minSubfeatureWidth })
   const largeInsertionIndicatorScale = readConfObject(
     config,
     'largeInsertionIndicatorScale',
   )
   const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
-  const defaultColor = readConfObject(config, 'color') === '#f0f'
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
   const drawIndels = shouldDrawIndels()
-  const canvasWidth = view.dynamicBlocks?.totalWidthPx || 800
 
   for (const computedChain of computedChains) {
     const { id, chain, minX, maxX } = computedChain

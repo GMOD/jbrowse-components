@@ -3,8 +3,8 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { PairType, getPairedType } from '../shared/color'
-import { drawLongReadChains } from '../shared/drawLongReadChains'
-import { drawPairChains } from '../shared/drawPairChains'
+import { drawLongReadChains } from './drawLongReadChains'
+import { drawPairChains } from './drawPairChains'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'

@@ -18,7 +18,7 @@ import { types } from 'mobx-state-tree'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
-import { chainToSimpleFeature } from '../shared/chainToSimpleFeature'
+import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
