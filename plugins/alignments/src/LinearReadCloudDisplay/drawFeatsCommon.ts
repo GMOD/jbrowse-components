@@ -10,19 +10,9 @@ import { shouldRenderChevrons } from '../shared/util'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { ChainData, ReducedFeature } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-/**
- * Minimal assembly interface required for drawing features
- * Can be satisfied by full Assembly objects or minimal mocks in RPC context
- */
-export interface AssemblyLike {
-  getCanonicalRefName: (refName: string) => string
-  getCanonicalRefName2?: (refName: string) => string
-}
 
 export interface ComputedChain {
   distance: number
@@ -96,11 +86,7 @@ export function filterChains(
 /**
  * Compute pixel bounds for each chain
  */
-export function computeChainBounds(
-  chains: ReducedFeature[][],
-  view: LGV,
-  asm: Assembly,
-) {
+export function computeChainBounds(chains: ReducedFeature[][], view: LGV) {
   const computedChains: ComputedChain[] = []
 
   // get bounds on the 'distances' (TLEN for pairs, pixel span for others)
@@ -114,9 +100,14 @@ export function computeChainBounds(
 
     for (let j = 0; j < chainLength; j++) {
       const elt = chain[j]!
-      const refName = asm.getCanonicalRefName(elt.refName) || elt.refName
-      const rs = view.bpToPx({ refName, coord: elt.start })?.offsetPx
-      const re = view.bpToPx({ refName, coord: elt.end })?.offsetPx
+      const rs = view.bpToPx({
+        refName: elt.refName,
+        coord: elt.start,
+      })?.offsetPx
+      const re = view.bpToPx({
+        refName: elt.refName,
+        coord: elt.end,
+      })?.offsetPx
       if (rs !== undefined && re !== undefined) {
         minX = Math.min(minX, rs)
         maxX = Math.max(maxX, re)
@@ -252,16 +243,19 @@ export interface DrawFeatsResult {
 /**
  * Core drawing function without model dependencies
  * Can be used in RPC context
+ *
+ * Note: view and asm are typed as any because this function is called from both:
+ * 1. Main thread with real LinearGenomeViewModel and Assembly instances
+ * 2. RPC context with minimal mock objects (ViewSnapshot and AssemblyLike)
  */
 export function drawFeatsCore(
   ctx: CanvasRenderingContext2D,
   params: DrawFeatsParams,
-  view: LGV,
-  asm: AssemblyLike,
+  view: any,
   calculateYOffsets: (
     computedChains: ComputedChain[],
     params: DrawFeatsParams,
-    view: LGV,
+    view: any,
     featureHeight: number,
     height?: number,
   ) => { chainYOffsets: Map<string, number>; layoutHeight?: number },
@@ -288,7 +282,7 @@ export function drawFeatsCore(
   )
 
   // Compute pixel bounds for each chain
-  const computedChains = computeChainBounds(filteredChains, view, asm)
+  const computedChains = computeChainBounds(filteredChains, view)
 
   // Sort chains: singletons first, then by width within each group
   sortComputedChains(computedChains)
@@ -312,7 +306,6 @@ export function drawFeatsCore(
     type,
     chainData,
     view,
-    asm,
     chainYOffsets,
     renderChevrons,
     featureHeight,
@@ -324,7 +317,6 @@ export function drawFeatsCore(
     ctx,
     chainData,
     view,
-    asm,
     chainYOffsets,
     renderChevrons,
     featureHeight,
@@ -354,7 +346,7 @@ export function drawFeatsCommon(
   calculateYOffsets: (
     computedChains: ComputedChain[],
     self: LinearReadCloudDisplayModel,
-    view: LGV,
+    view: any,
     featureHeight: number,
   ) => { chainYOffsets: Map<string, number>; layoutHeight?: number },
 ) {
@@ -385,8 +377,7 @@ export function drawFeatsCommon(
   // Adapter function to convert self-based to params-based signature
   const adaptedCalculateYOffsets = (
     computedChains: ComputedChain[],
-    params: DrawFeatsParams,
-    view: LGV,
+    view: any,
     featureHeight: number,
     _height?: number,
   ) => {
@@ -397,7 +388,6 @@ export function drawFeatsCommon(
     ctx,
     params,
     view,
-    asm,
     adaptedCalculateYOffsets,
   )
 

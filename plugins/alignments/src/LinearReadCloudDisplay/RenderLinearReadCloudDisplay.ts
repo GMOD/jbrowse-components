@@ -13,14 +13,14 @@ import { getClip } from '../MismatchParser'
 import { filterForPairs, getInsertSizeStats } from '../PileupRPC/util'
 
 import type { ChainData } from '../shared/fetchChains'
-import type { AssemblyLike } from './drawFeatsCommon'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * Mock view snapshot interface for RPC rendering context
- * Provides minimal LinearGenomeViewModel-like interface needed for coordinate calculations
+ * Documents the minimal view snapshot interface for RPC rendering context
+ * Provides the properties needed for coordinate calculations
+ * Note: Not used as a type constraint - drawFeatsCore accepts `any` for flexibility
  */
 interface ViewSnapshot {
   bpPerPx: number
@@ -176,12 +176,6 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       },
     }
 
-    // Create a mock assembly object that assumes refNames are canonical
-    const asm: AssemblyLike = {
-      getCanonicalRefName: (refName: string) => refName,
-      getCanonicalRefName2: (refName: string) => refName,
-    }
-
     // Create params object for drawing
     const params = {
       chainData,
@@ -229,7 +223,6 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
           ctx,
           params,
           viewSnap,
-          asm,
           wrappedCalculateYOffsets,
         )
         return { layoutHeight, featuresForFlatbush }

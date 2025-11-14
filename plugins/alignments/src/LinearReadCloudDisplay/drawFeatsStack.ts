@@ -22,7 +22,7 @@ interface LayoutData {
 export function calculateStackYOffsetsCore(
   computedChains: ComputedChain[],
   params: DrawFeatsParams,
-  _view: LGV,
+  _view: any,
   featureHeight: number,
   _height?: number,
 ) {
@@ -64,7 +64,7 @@ export function calculateStackYOffsetsCore(
 function calculateStackYOffsets(
   computedChains: ComputedChain[],
   self: LinearReadCloudDisplayModel,
-  _view: LGV,
+  _view: any,
   featureHeight: number,
 ) {
   const noSpacing = self.noSpacing ?? false

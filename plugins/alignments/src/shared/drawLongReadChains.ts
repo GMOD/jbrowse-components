@@ -15,7 +15,6 @@ export function drawLongReadChains({
   ctx,
   chainData,
   view,
-  asm,
   chainYOffsets,
   renderChevrons,
   featureHeight,
@@ -26,7 +25,6 @@ export function drawLongReadChains({
   ctx: CanvasRenderingContext2D
   chainData: ChainData
   view: LGV
-  asm: Assembly
   chainYOffsets: Map<string, number>
   renderChevrons: boolean
   featureHeight: number
@@ -80,11 +78,11 @@ export function drawLongReadChains({
       const lastFeat = chain[chain.length - 1]!
 
       const firstPx = view.bpToPx({
-        refName: asm.getCanonicalRefName2(firstFeat.refName),
+        refName: firstFeat.refName,
         coord: firstFeat.start,
       })?.offsetPx
       const lastPx = view.bpToPx({
-        refName: asm.getCanonicalRefName2(lastFeat.refName),
+        refName: lastFeat.refName,
         coord: lastFeat.end,
       })?.offsetPx
 
@@ -109,11 +107,11 @@ export function drawLongReadChains({
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const s = view.bpToPx({
-        refName: asm.getCanonicalRefName2(feat.refName),
+        refName: feat.refName,
         coord: feat.start,
       })
       const e = view.bpToPx({
-        refName: asm.getCanonicalRefName2(feat.refName),
+        refName: feat.refName,
         coord: feat.end,
       })
 

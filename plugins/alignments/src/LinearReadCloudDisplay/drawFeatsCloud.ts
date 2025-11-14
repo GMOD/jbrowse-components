@@ -51,7 +51,7 @@ export function calculateCloudYOffsetsUtil(
 function calculateCloudYOffsets(
   computedChains: ComputedChain[],
   self: LinearReadCloudDisplayModel,
-  _view: LGV,
+  _view: any,
   _featureHeight: number,
 ) {
   return calculateCloudYOffsetsUtil(computedChains, self.height)

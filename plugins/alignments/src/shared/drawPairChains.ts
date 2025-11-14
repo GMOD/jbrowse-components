@@ -5,7 +5,6 @@ import { CHEVRON_WIDTH } from './util'
 
 import type { ChainData, ReducedFeature } from './fetchChains'
 import type { FlatbushEntry } from './flatbushType'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -15,7 +14,6 @@ export function drawPairChains({
   type,
   chainData,
   view,
-  asm,
   chainYOffsets,
   renderChevrons,
   featureHeight,
@@ -26,7 +24,6 @@ export function drawPairChains({
   type: string
   chainData: ChainData
   view: LGV
-  asm: Assembly
   chainYOffsets: Map<string, number>
   renderChevrons: boolean
   featureHeight: number
@@ -83,11 +80,11 @@ export function drawPairChains({
       const v0 = nonSupplementary[0]!
       const v1 = nonSupplementary[1]!
       const r1s = view.bpToPx({
-        refName: asm.getCanonicalRefName2(v0.refName),
+        refName: v0.refName,
         coord: v0.start,
       })?.offsetPx
       const r2s = view.bpToPx({
-        refName: asm.getCanonicalRefName2(v1.refName),
+        refName: v1.refName,
         coord: v1.start,
       })?.offsetPx
 
@@ -112,11 +109,11 @@ export function drawPairChains({
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const s = view.bpToPx({
-        refName: asm.getCanonicalRefName2(feat.refName),
+        refName: feat.refName,
         coord: feat.start,
       })
       const e = view.bpToPx({
-        refName: asm.getCanonicalRefName2(feat.refName),
+        refName: feat.refName,
         coord: feat.end,
       })
 
