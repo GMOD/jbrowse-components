@@ -12,6 +12,7 @@ import { calculateStackYOffsetsCore } from './drawFeatsStack'
 import { getClip } from '../MismatchParser'
 import { filterForPairs, getInsertSizeStats } from '../PileupRPC/util'
 
+import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type { ChainData } from '../shared/fetchChains'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
@@ -176,16 +177,6 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     }
 
     // Create params object for drawing
-    const params = {
-      chainData,
-      featureHeight,
-      noSpacing,
-      colorBy,
-      drawSingletons,
-      drawProperPairs,
-      flipStrandLongReadChains,
-      trackMaxHeight,
-    }
 
     const renderOpts: RenderToAbstractCanvasOptions = {
       highResolutionScaling,
@@ -198,34 +189,40 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       height,
       renderOpts,
       async (ctx: CanvasRenderingContext2D) => {
-        // Wrap calculateYOffsets to handle cloud vs stack mode
-        const wrappedCalculateYOffsets = (
-          computedChains: any,
-          params: any,
-          featureHeight: number,
-        ) => {
-          if (drawCloud) {
-            return calculateCloudYOffsetsUtil(computedChains, height)
-          }
-          return calculateStackYOffsetsCore(
-            computedChains,
-            params,
-            featureHeight,
-          )
-        }
-
-        // Call the drawing function
         const { layoutHeight, featuresForFlatbush } = drawFeatsCore(
           ctx,
-          params,
+          {
+            chainData,
+            featureHeight,
+            noSpacing,
+            colorBy,
+            drawSingletons,
+            drawProperPairs,
+            flipStrandLongReadChains,
+            trackMaxHeight,
+          },
           viewSnap,
-          wrappedCalculateYOffsets,
+          (
+            computedChains: ComputedChain[],
+            params: DrawFeatsParams,
+            featureHeight: number,
+          ) =>
+            drawCloud
+              ? calculateCloudYOffsetsUtil(computedChains, height)
+              : calculateStackYOffsetsCore(
+                  computedChains,
+                  params,
+                  featureHeight,
+                ),
         )
         return { layoutHeight, featuresForFlatbush }
       },
     )
 
     // Include the offsetPx in the result so the main thread can position the canvas correctly
-    return { ...result, offsetPx }
+    return {
+      ...result,
+      offsetPx,
+    }
   }
 }

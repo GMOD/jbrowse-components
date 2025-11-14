@@ -17,7 +17,7 @@ interface RenderResult {
 }
 
 export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
-  // Common rendering logic shared by both cloud and stack modes
+  // Common rendering logic
   const performRender = async (drawCloud: boolean, height: number) => {
     const view = getContainingView(self) as LGV
 
@@ -35,16 +35,18 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       return
     }
 
-    // Get current view state
+    // Synchronously read all shared properties - MobX tracks these automatically
     const { bpPerPx, offsetPx } = view
-
-    // Skip if view hasn't changed since last render
-    if (
-      self.lastDrawnBpPerPx === bpPerPx &&
-      self.lastDrawnOffsetPx === offsetPx
-    ) {
-      return
-    }
+    const {
+      featureHeightSetting: featureHeight,
+      colorBy,
+      filterBy,
+      drawSingletons,
+      drawProperPairs,
+      flipStrandLongReadChains,
+      noSpacing,
+      trackMaxHeight,
+    } = self
 
     try {
       self.setIsRendering(true)
@@ -67,15 +69,15 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           sessionId: session.id,
           regions,
           adapterConfig: self.adapterConfig,
-          filterBy: self.filterBy,
-          featureHeight: self.featureHeightSetting,
-          noSpacing: self.noSpacing ?? false,
+          filterBy,
+          featureHeight,
+          noSpacing: noSpacing ?? false,
           drawCloud,
-          colorBy: self.colorBy,
-          drawSingletons: self.drawSingletons,
-          drawProperPairs: self.drawProperPairs,
-          flipStrandLongReadChains: self.flipStrandLongReadChains,
-          trackMaxHeight: self.trackMaxHeight,
+          colorBy,
+          drawSingletons,
+          drawProperPairs,
+          flipStrandLongReadChains,
+          trackMaxHeight,
           width,
           height,
           bpPerPx,
@@ -100,7 +102,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         }
       }
 
-      self.setLastDrawnBpPerPx(view.bpPerPx)
+      self.setLastDrawnBpPerPx(bpPerPx)
     } catch (error) {
       console.error(error)
       self.setError(error)
@@ -109,21 +111,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
     }
   }
 
-  // Rendering function for cloud mode
-  // Crucially, this function does observe model.height while
-  // performStackRender does not
-  const performCloudRender = async () => {
-    await performRender(true, self.height)
-  }
-
-  // Rendering function for stack mode
-  // Crucially, this function does not observe model.height while
-  // performCloudRender does
-  const performStackRender = async () => {
-    await performRender(false, self.trackMaxHeight ?? 10000)
-  }
-
-  // Autorun for cloud mode - observes view changes and height
+  // Autorun for cloud mode
   createAutorun(
     self,
     async () => {
@@ -131,14 +119,17 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         return
       }
 
+      // Only read cloud-specific property - shared properties read in performRender
+      const height = self.height
+
       // Fire off the async render but don't await it
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      performCloudRender()
+      performRender(true, height)
     },
     { delay: 1000 },
   )
 
-  // Autorun for stack mode - observes view changes, trackMaxHeight, noSpacing
+  // Autorun for stack mode
   createAutorun(
     self,
     async () => {
@@ -146,9 +137,12 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         return
       }
 
+      // Only read stack-specific property - shared properties read in performRender
+      const height = self.trackMaxHeight ?? 10000
+
       // Fire off the async render but don't await it
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      performStackRender()
+      performRender(false, height)
     },
     { delay: 1000 },
   )
