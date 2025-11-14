@@ -17,10 +17,8 @@ interface RenderResult {
 }
 
 export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
-  // Rendering function for cloud mode
-  // Crucially, this function does observe model.height while
-  // performStackRender does not
-  const performCloudRender = async () => {
+  // Common rendering logic shared by both cloud and stack modes
+  const performRender = async (drawCloud: boolean, height: number) => {
     const view = getContainingView(self) as LGV
 
     // Check if we have the necessary conditions to render
@@ -59,7 +57,6 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       }
 
       const width = view.dynamicBlocks.totalWidthPx
-      const height = self.height
       const regions = view.dynamicBlocks.contentBlocks
 
       // Call RPC method - it will fetch chainData internally
@@ -73,7 +70,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           filterBy: self.filterBy,
           featureHeight: self.featureHeightSetting,
           noSpacing: self.noSpacing ?? false,
-          drawCloud: true,
+          drawCloud,
           colorBy: self.colorBy,
           drawSingletons: self.drawSingletons,
           drawProperPairs: self.drawProperPairs,
@@ -91,98 +88,8 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       // Store the result
       if (result.imageData) {
         self.setRenderingImageData(result.imageData)
-        if (result.featuresForFlatbush) {
-          buildFlatbushIndex(result.featuresForFlatbush, self)
-        }
-        if (result.offsetPx !== undefined) {
-          self.setLastDrawnOffsetPx(result.offsetPx)
-        }
-      }
-
-      self.setLastDrawnBpPerPx(view.bpPerPx)
-    } catch (error) {
-      console.error(error)
-      self.setError(error)
-    } finally {
-      self.setIsRendering(false)
-    }
-  }
-
-  // Rendering function for stack mode
-  // Crucially, this function does not observe model.height while
-  // performCloudRender does
-  const performStackRender = async () => {
-    const view = getContainingView(self) as LGV
-
-    // Check if we have the necessary conditions to render
-    if (
-      !view.initialized ||
-      self.error ||
-      !self.statsReadyAndRegionNotTooLarge
-    ) {
-      return
-    }
-
-    // Don't render if already rendering
-    if (self.isRendering) {
-      return
-    }
-
-    // Get current view state
-    const { bpPerPx, offsetPx } = view
-
-    // Skip if view hasn't changed since last render
-    if (
-      self.lastDrawnBpPerPx === bpPerPx &&
-      self.lastDrawnOffsetPx === offsetPx
-    ) {
-      return
-    }
-
-    try {
-      self.setIsRendering(true)
-
-      const session = getSession(self)
-      const { rpcManager } = session
-      const assemblyName = view.assemblyNames[0]
-      if (!assemblyName) {
-        return
-      }
-
-      const width = view.dynamicBlocks.totalWidthPx
-      const height = self.trackMaxHeight ?? 10000
-      const regions = view.dynamicBlocks.contentBlocks
-
-      // Call RPC method - it will fetch chainData internally
-      const result = (await rpcManager.call(
-        self.id,
-        'RenderLinearReadCloudDisplay',
-        {
-          sessionId: session.id,
-          regions,
-          adapterConfig: self.adapterConfig,
-          filterBy: self.filterBy,
-          featureHeight: self.featureHeightSetting,
-          noSpacing: self.noSpacing ?? false,
-          drawCloud: false,
-          colorBy: self.colorBy,
-          drawSingletons: self.drawSingletons,
-          drawProperPairs: self.drawProperPairs,
-          flipStrandLongReadChains: self.flipStrandLongReadChains,
-          trackMaxHeight: self.trackMaxHeight,
-          width,
-          height,
-          bpPerPx,
-          offsetPx,
-          assemblyName,
-          highResolutionScaling: 2,
-        },
-      )) as RenderResult
-
-      // Store the result
-      if (result.imageData) {
-        self.setRenderingImageData(result.imageData)
-        if (result.layoutHeight !== undefined) {
+        // Only set layout height for stack mode
+        if (!drawCloud && result.layoutHeight !== undefined) {
           self.setLayoutHeight(result.layoutHeight)
         }
         if (result.featuresForFlatbush) {
@@ -200,6 +107,20 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
     } finally {
       self.setIsRendering(false)
     }
+  }
+
+  // Rendering function for cloud mode
+  // Crucially, this function does observe model.height while
+  // performStackRender does not
+  const performCloudRender = async () => {
+    await performRender(true, self.height)
+  }
+
+  // Rendering function for stack mode
+  // Crucially, this function does not observe model.height while
+  // performCloudRender does
+  const performStackRender = async () => {
+    await performRender(false, self.trackMaxHeight ?? 10000)
   }
 
   // Autorun for cloud mode - observes view changes and height
