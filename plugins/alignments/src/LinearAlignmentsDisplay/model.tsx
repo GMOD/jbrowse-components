@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import deepEqual from 'fast-deep-equal'
-import { autorun, when } from 'mobx'
+import { autorun } from 'mobx'
 import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
@@ -291,42 +291,8 @@ function stateModelFactory(
        * #action
        */
       async renderSvg(opts: ExportSvgDisplayOptions) {
-        try {
-          console.log('[LinearAlignmentsDisplay] renderSvg called', {
-            lowerPanelType: self.lowerPanelType,
-            pileupDisplayType: self.PileupDisplay?.type,
-            hasPileupDisplay: !!self.PileupDisplay,
-            hasRenderSvg: !!(self.PileupDisplay as any)?.renderSvg,
-          })
-          const pileupHeight = self.height - self.SNPCoverageDisplay.height
-
-          console.log('[LinearAlignmentsDisplay] Waiting for not ready...')
-          await when(() => !self.notReady())
-          console.log('[LinearAlignmentsDisplay] Ready!')
-
-          console.log('[LinearAlignmentsDisplay] About to call SNPCoverageDisplay.renderSvg')
-          const snpCoverageResult = await self.SNPCoverageDisplay.renderSvg(opts)
-          console.log('[LinearAlignmentsDisplay] SNPCoverageDisplay.renderSvg complete')
-
-          console.log('[LinearAlignmentsDisplay] About to call PileupDisplay.renderSvg')
-          const pileupResult = await self.PileupDisplay.renderSvg({
-            ...opts,
-            overrideHeight: pileupHeight,
-          })
-          console.log('[LinearAlignmentsDisplay] PileupDisplay.renderSvg complete')
-
-          return (
-            <>
-              <g>{snpCoverageResult}</g>
-              <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
-                {pileupResult}
-              </g>
-            </>
-          )
-        } catch (error) {
-          console.error('[LinearAlignmentsDisplay] renderSvg error:', error)
-          throw error
-        }
+        const { renderSvg } = await import('./renderSvg')
+        return renderSvg(self, opts)
       },
     }))
     .views(self => {

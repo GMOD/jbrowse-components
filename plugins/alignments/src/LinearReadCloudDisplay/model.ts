@@ -308,17 +308,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         async renderSvg(opts: ExportSvgDisplayOptions): Promise<React.ReactNode> {
-          console.log('[LinearReadCloudDisplay model.renderSvg] Called with opts:', opts)
-          try {
-            const { renderSvg } = await import('./renderSvg')
-            console.log('[LinearReadCloudDisplay model.renderSvg] Imported renderSvg, calling it...')
-            const result = await renderSvg(self as LinearReadCloudDisplayModel, opts)
-            console.log('[LinearReadCloudDisplay model.renderSvg] renderSvg completed')
-            return result
-          } catch (error) {
-            console.error('[LinearReadCloudDisplay model.renderSvg] Error:', error)
-            throw error
-          }
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self as LinearReadCloudDisplayModel, opts)
         },
       }
     })

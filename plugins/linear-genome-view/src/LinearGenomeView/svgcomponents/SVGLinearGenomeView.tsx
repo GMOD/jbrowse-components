@@ -43,38 +43,13 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 10
   const height = totalHeight(tracks, textHeight, trackLabels) + offset + 100
-
-  console.log('[SVGLinearGenomeView] Starting SVG export', {
-    trackCount: tracks.length,
-    pinnedCount: pinnedTracks.length,
-    unpinnedCount: unpinnedTracks.length,
-  })
-
   const displayResults = await Promise.all(
-    [...pinnedTracks, ...unpinnedTracks].map(async (track, idx) => {
+    [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
-      console.log(`[SVGLinearGenomeView] Processing track ${idx}`, {
-        trackType: track.type,
-        displayType: display?.type,
-        hasRenderSvg: !!(display as any)?.renderSvg,
-        renderSvgType: typeof (display as any)?.renderSvg,
-      })
-
       await when(() => !display.renderProps().notReady)
-      console.log(`[SVGLinearGenomeView] Track ${idx} ready, calling renderSvg...`)
-
-      try {
-        const result = await display.renderSvg({ ...opts, theme })
-        console.log(`[SVGLinearGenomeView] Track ${idx} renderSvg complete`)
-        return { track, result }
-      } catch (error) {
-        console.error(`[SVGLinearGenomeView] Track ${idx} renderSvg error:`, error)
-        throw error
-      }
+      return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )
-
-  console.log('[SVGLinearGenomeView] All tracks rendered')
   const trackLabelMaxLen =
     max(
       tracks.map(t =>
