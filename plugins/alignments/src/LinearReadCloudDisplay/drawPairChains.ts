@@ -18,7 +18,7 @@ import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
@@ -115,12 +115,11 @@ export function drawPairChains({
 
     // Get colors for this read pair/singleton
     const feat = nonSupplementary[0] || chain[0]!
-    const [pairedFill, pairedStroke] =
-      getPairedColor({
-        type,
-        v0: feat,
-        stats: chainData.stats,
-      }) || ['lightgrey', '#888']
+    const [pairedFill, pairedStroke] = getPairedColor({
+      type,
+      v0: feat,
+      stats: chainData.stats,
+    }) || ['lightgrey', '#888']
 
     // Clamp viewOffsetPx to 0 when negative - features should start at canvas pixel 0
     const viewOffsetPx = Math.max(0, view.offsetPx)

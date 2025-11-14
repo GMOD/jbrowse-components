@@ -51,7 +51,6 @@ interface DrawFeatsRPCParams {
 export function drawFeatsRPC(params: DrawFeatsRPCParams) {
   const {
     ctx,
-    width,
     height,
     chainData,
     colorBy,
@@ -63,13 +62,9 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     offsetPx,
   } = params
 
-  if (!chainData) {
-    return
-  }
-
   const { chains, stats } = chainData
+  const { type } = colorBy
   const hasPaired = hasPairedReads(chainData)
-  const type = colorBy?.type || 'insertSizeAndOrientation'
 
   ctx.lineWidth = lineWidth
 
@@ -119,8 +114,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
           } else if (type === 'orientation') {
             ctx.strokeStyle = getPairedOrientationColor(k1)[0]
           } else if (type === 'insertSize') {
-            ctx.strokeStyle =
-              getPairedInsertSizeColor(k1, stats)?.[0] || 'grey'
+            ctx.strokeStyle = getPairedInsertSizeColor(k1, stats)?.[0] || 'grey'
           } else if (type === 'gradient') {
             ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }

@@ -62,7 +62,6 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
       sessionId,
       view: viewSnapshot,
       adapterConfig,
-      theme,
       colorBy,
       drawInter,
       drawLongRange,
@@ -81,7 +80,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
     }
 
     // Extract properties from the recreated view
-    const { bpPerPx, offsetPx } = view
+    const { offsetPx } = view
     const width = view.staticBlocks.totalWidthPx
     const regions = view.staticBlocks.contentBlocks
 

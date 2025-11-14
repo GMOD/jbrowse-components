@@ -101,9 +101,7 @@ export function createChainData(
  * Type guard to check if ChainData has stats (is PairedChainData)
  * This narrows the type from ChainData to PairedChainData
  */
-export function hasPairedChainData(
-  data: ChainData,
-): data is PairedChainData {
+export function hasPairedChainData(data: ChainData): data is PairedChainData {
   return data.stats !== undefined
 }
 

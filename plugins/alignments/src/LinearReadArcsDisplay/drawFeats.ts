@@ -115,8 +115,7 @@ export function drawFeats(
           } else if (type === 'orientation') {
             ctx.strokeStyle = getPairedOrientationColor(k1)[0]
           } else if (type === 'insertSize') {
-            ctx.strokeStyle =
-              getPairedInsertSizeColor(k1, stats)?.[0] || 'grey'
+            ctx.strokeStyle = getPairedInsertSizeColor(k1, stats)?.[0] || 'grey'
           } else if (type === 'gradient') {
             ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }
