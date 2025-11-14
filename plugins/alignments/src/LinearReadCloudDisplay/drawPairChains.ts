@@ -6,6 +6,7 @@ import {
   getCharWidthHeight,
   getColorBaseMap,
   getContrastBaseMap,
+  setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../PileupRenderer/util'
@@ -80,6 +81,7 @@ export function drawPairChains({
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
+  setAlignmentFont(ctx)
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
   const drawIndels = shouldDrawIndels()

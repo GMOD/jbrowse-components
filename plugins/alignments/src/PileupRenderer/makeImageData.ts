@@ -10,6 +10,7 @@ import {
   getCharWidthHeight,
   getColorBaseMap,
   getContrastBaseMap,
+  setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from './util'
@@ -52,7 +53,7 @@ export function makeImageData({
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
-  ctx.font = 'bold 10px Courier New,monospace'
+  setAlignmentFont(ctx)
 
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
