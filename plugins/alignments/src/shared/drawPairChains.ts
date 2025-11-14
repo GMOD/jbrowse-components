@@ -3,8 +3,9 @@ import { drawChevron } from './chevron'
 import { getPairedColor, getSingletonColor } from './color'
 import { CHEVRON_WIDTH } from './util'
 
-import type { ChainData, ReducedFeature } from './fetchChains'
+import type { ChainData } from './fetchChains'
 import type { FlatbushEntry } from './flatbushType'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -32,7 +33,7 @@ export function drawPairChains({
     distance: number
     minX: number
     maxX: number
-    chain: ReducedFeature[]
+    chain: Feature[]
     id: string
   }[]
 }): void {
@@ -42,7 +43,7 @@ export function drawPairChains({
     // Guard clause: skip non-paired-end chains
     let isPairedEnd = false
     for (const element of chain) {
-      if (element.flags & 1) {
+      if (element.get('flags') & 1) {
         isPairedEnd = true
         break
       }
@@ -57,9 +58,9 @@ export function drawPairChains({
     }
 
     // Collect non-supplementary alignments
-    const nonSupplementary: ReducedFeature[] = []
+    const nonSupplementary: Feature[] = []
     for (const element of chain) {
-      if (!(element.flags & 2048)) {
+      if (!(element.get('flags') & 2048)) {
         nonSupplementary.push(element)
       }
     }
@@ -80,12 +81,12 @@ export function drawPairChains({
       const v0 = nonSupplementary[0]!
       const v1 = nonSupplementary[1]!
       const r1s = view.bpToPx({
-        refName: v0.refName,
-        coord: v0.start,
+        refName: v0.get('refName'),
+        coord: v0.get('start'),
       })?.offsetPx
       const r2s = view.bpToPx({
-        refName: v1.refName,
-        coord: v1.start,
+        refName: v1.get('refName'),
+        coord: v1.get('start'),
       })?.offsetPx
 
       if (r1s !== undefined && r2s !== undefined) {
@@ -109,12 +110,12 @@ export function drawPairChains({
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const s = view.bpToPx({
-        refName: feat.refName,
-        coord: feat.start,
+        refName: feat.get('refName'),
+        coord: feat.get('start'),
       })
       const e = view.bpToPx({
-        refName: feat.refName,
-        coord: feat.end,
+        refName: feat.get('refName'),
+        coord: feat.get('end'),
       })
 
       if (!s || !e) {
@@ -131,7 +132,7 @@ export function drawPairChains({
           chainY,
           width,
           featureHeight,
-          feat.strand,
+          feat.get('strand'),
           pairedFill,
           CHEVRON_WIDTH,
           pairedStroke,
@@ -146,11 +147,25 @@ export function drawPairChains({
         y1: chainY,
         x2: xPos + width,
         y2: chainY + featureHeight,
-        data: feat,
+        data: {
+          name: feat.get('name'),
+          refName: feat.get('refName'),
+          start: feat.get('start'),
+          end: feat.get('end'),
+          strand: feat.get('strand'),
+          flags: feat.get('flags'),
+        },
         chainId: id,
         chainMinX: chainMinXPx,
         chainMaxX: chainMaxXPx,
-        chain,
+        chain: chain.map(f => ({
+          name: f.get('name'),
+          refName: f.get('refName'),
+          start: f.get('start'),
+          end: f.get('end'),
+          strand: f.get('strand'),
+          flags: f.get('flags'),
+        })),
       })
     }
   }

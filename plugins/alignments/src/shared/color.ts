@@ -1,6 +1,7 @@
 import { orientationTypes, pairMap } from '../util'
 
-import type { ChainStats, ReducedFeature } from './fetchChains'
+import type { ChainStats } from './fetchChains'
+import type { Feature } from '@jbrowse/core/util'
 
 /**
  * Numeric codes for pair types
@@ -232,8 +233,8 @@ export function getPairedInsertSizeAndOrientationColor(
   )
 }
 
-export function getSingletonColor(f: { tlen?: number }, stats?: ChainStats) {
-  const tlen = Math.abs(f.tlen || 0)
+export function getSingletonColor(f: Feature | { tlen?: number }, stats?: ChainStats) {
+  const tlen = Math.abs((f instanceof Object && 'get' in f ? f.get('template_length') : f.tlen) || 0)
   // If TLEN is abnormally large, color it dark red
   if (stats && tlen > stats.upper) {
     return [
@@ -252,18 +253,29 @@ export function getPairedColor({
   stats,
 }: {
   type: string
-  v0: ReducedFeature
-  v1: ReducedFeature
+  v0: Feature
+  v1: Feature
   stats?: ChainStats
 }) {
+  // Extract properties from Feature objects
+  const f0 = {
+    refName: v0.get('refName'),
+    pair_orientation: v0.get('pair_orientation'),
+    tlen: v0.get('template_length'),
+    flags: v0.get('flags'),
+  }
+  const f1 = {
+    refName: v1.get('refName'),
+  }
+
   if (type === 'insertSizeAndOrientation') {
-    return getPairedInsertSizeAndOrientationColor(v0, v1, stats)
+    return getPairedInsertSizeAndOrientationColor(f0, f1, stats)
   }
   if (type === 'orientation') {
-    return getPairedOrientationColor(v0)
+    return getPairedOrientationColor(f0)
   }
   if (type === 'insertSize') {
-    return getPairedInsertSizeColor(v0, v1, stats)
+    return getPairedInsertSizeColor(f0, f1, stats)
   }
   return undefined
 }

@@ -1,4 +1,4 @@
-import type { ReducedFeature } from './fetchChains'
+import type { Feature } from '@jbrowse/core/util'
 
 /**
  * Gets the primary strand for a feature, handling both primary and supplementary alignments.
@@ -9,13 +9,15 @@ import type { ReducedFeature } from './fetchChains'
  * @param feat - The feature to get the primary strand from
  * @returns The primary strand (-1 for reverse, 1 for forward, or undefined if SA tag is missing)
  */
-export function getPrimaryStrand(feat: ReducedFeature) {
+export function getPrimaryStrand(feat: Feature) {
+  const flags = feat.get('flags')
   // Check if this is not a supplementary alignment (flag 2048)
-  if (!(feat.flags & 2048)) {
-    return feat.strand
+  if (!(flags & 2048)) {
+    return feat.get('strand')
   } else {
     // Parse SA tag to get primary alignment strand
-    const res = feat.SA?.split(';')[0]?.split(',')[2]
+    const SA = feat.get('tags')?.SA
+    const res = SA?.split(';')[0]?.split(',')[2]
     return res === '-' ? -1 : 1
   }
 }
@@ -29,13 +31,15 @@ export function getPrimaryStrand(feat: ReducedFeature) {
  * @param feat - The feature to get the primary strand from
  * @returns The primary strand (-1 for reverse, 1 for forward, or undefined if SA tag is missing)
  */
-export function getPrimaryStrandFromFlags(feat: ReducedFeature) {
+export function getPrimaryStrandFromFlags(feat: Feature) {
+  const flags = feat.get('flags')
   // Check if this is not a supplementary alignment (flag 2048)
-  if (!(feat.flags & 2048)) {
-    return feat.flags & 16 ? -1 : 1
+  if (!(flags & 2048)) {
+    return flags & 16 ? -1 : 1
   } else {
     // Parse SA tag to get primary alignment strand
-    const res = feat.SA?.split(';')[0]?.split(',')[2]
+    const SA = feat.get('tags')?.SA
+    const res = SA?.split(';')[0]?.split(',')[2]
     return res === '-' ? -1 : 1
   }
 }

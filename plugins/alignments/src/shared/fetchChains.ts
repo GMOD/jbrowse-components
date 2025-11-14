@@ -3,6 +3,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
 import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -31,7 +32,7 @@ export interface ChainStats {
 }
 
 export interface ChainData {
-  chains: ReducedFeature[][]
+  chains: Feature[][]
   stats?: ChainStats
 }
 

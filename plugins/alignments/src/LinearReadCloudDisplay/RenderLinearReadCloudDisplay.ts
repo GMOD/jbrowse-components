@@ -9,8 +9,7 @@ import { toArray } from 'rxjs/operators'
 import { calculateCloudYOffsetsUtil } from './drawFeatsCloud'
 import { drawFeatsCore } from './drawFeatsCommon'
 import { calculateStackYOffsetsCore } from './drawFeatsStack'
-import { getClip } from '../MismatchParser'
-import { filterForPairs, getInsertSizeStats } from '../PileupRPC/util'
+import { getInsertSizeStats } from '../PileupRPC/util'
 
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type { ChainData } from '../shared/fetchChains'
@@ -101,35 +100,39 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         .pipe(toArray()),
     )
 
-    const reduced = dedupe(
-      featuresArray.map(f => ({
-        id: f.id(),
-        refName: f.get('refName'),
-        name: f.get('name'),
-        start: f.get('start'),
-        strand: f.get('strand'),
-        end: f.get('end'),
-        flags: f.get('flags'),
-        tlen: f.get('template_length'),
-        pair_orientation: f.get('pair_orientation'),
-        next_ref: f.get('next_ref'),
-        next_pos: f.get('next_pos'),
-        clipPos: getClip(f.get('CIGAR'), f.get('strand')),
-        SA: f.get('tags')?.SA,
-      })),
-      f => f.id,
-    )
+    // Dedupe features by ID while preserving full Feature objects
+    const deduped = dedupe(featuresArray, f => f.id())
 
-    const filtered = filterForPairs(reduced)
+    // For stats calculation, we still need to extract the template_length values
+    const filtered = deduped.filter(f => {
+      // Filter similar to what filterForPairs does
+      const flags = f.get('flags')
+      // Only keep paired reads
+      if (!(flags & 1)) {
+        return false
+      }
+      // Skip secondary and supplementary alignments for stats
+      if (flags & 256 || flags & 2048) {
+        return false
+      }
+      return true
+    })
     let stats
     if (filtered.length) {
       // Filter out features without valid TLEN values
-      const validTlenFeatures = filtered.filter(
-        f => f.tlen !== 0 && !Number.isNaN(f.tlen),
-      )
+      const validTlenFeatures = filtered.filter(f => {
+        const tlen = f.get('template_length')
+        return tlen !== 0 && !Number.isNaN(tlen)
+      })
       if (validTlenFeatures.length > 0) {
-        const insertSizeStats = getInsertSizeStats(validTlenFeatures)
-        const tlens = validTlenFeatures.map(f => Math.abs(f.tlen))
+        // Convert to simple objects for getInsertSizeStats
+        const simpleTlenFeatures = validTlenFeatures.map(f => ({
+          tlen: f.get('template_length'),
+        }))
+        const insertSizeStats = getInsertSizeStats(simpleTlenFeatures)
+        const tlens = validTlenFeatures.map(f =>
+          Math.abs(f.get('template_length')),
+        )
         stats = {
           ...insertSizeStats,
           max: Math.max(...tlens),
@@ -139,7 +142,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     }
 
     const chainData: ChainData = {
-      chains: Object.values(groupBy(reduced, f => f.name)),
+      chains: Object.values(groupBy(deduped, f => f.get('name'))),
       stats,
     }
 
@@ -220,9 +223,11 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     )
 
     // Include the offsetPx in the result so the main thread can position the canvas correctly
+    console.log({ result })
     return {
       ...result,
       offsetPx,
+      containsNoTransferables: true,
     }
   }
 }

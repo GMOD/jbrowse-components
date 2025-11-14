@@ -4,8 +4,9 @@ import { fillColor, getSingletonColor, strokeColor } from './color'
 import { getPrimaryStrandFromFlags } from './primaryStrand'
 import { CHEVRON_WIDTH } from './util'
 
-import type { ChainData, ReducedFeature } from './fetchChains'
+import type { ChainData } from './fetchChains'
 import type { FlatbushEntry } from './flatbushType'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -32,7 +33,7 @@ export function drawLongReadChains({
     distance: number
     minX: number
     maxX: number
-    chain: ReducedFeature[]
+    chain: Feature[]
     id: string
   }[]
   flipStrandLongReadChains: boolean
@@ -46,7 +47,7 @@ export function drawLongReadChains({
     // Guard clause: skip paired-end reads (handled by drawPairChains)
     let isPairedEnd = false
     for (const element of chain) {
-      if (element.flags & 1) {
+      if (element.get('flags') & 1) {
         isPairedEnd = true
         break
       }
@@ -61,9 +62,9 @@ export function drawLongReadChains({
     }
 
     // Collect non-supplementary alignments
-    const nonSupplementary: ReducedFeature[] = []
+    const nonSupplementary: Feature[] = []
     for (const element of chain) {
-      if (!(element.flags & 2048)) {
+      if (!(element.get('flags') & 2048)) {
         nonSupplementary.push(element)
       }
     }
@@ -77,12 +78,12 @@ export function drawLongReadChains({
       const lastFeat = chain[chain.length - 1]!
 
       const firstPx = view.bpToPx({
-        refName: firstFeat.refName,
-        coord: firstFeat.start,
+        refName: firstFeat.get('refName'),
+        coord: firstFeat.get('start'),
       })?.offsetPx
       const lastPx = view.bpToPx({
-        refName: lastFeat.refName,
-        coord: lastFeat.end,
+        refName: lastFeat.get('refName'),
+        coord: lastFeat.get('end'),
       })?.offsetPx
 
       if (firstPx !== undefined && lastPx !== undefined) {
@@ -106,22 +107,23 @@ export function drawLongReadChains({
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const s = view.bpToPx({
-        refName: feat.refName,
-        coord: feat.start,
+        refName: feat.get('refName'),
+        coord: feat.get('start'),
       })
       const e = view.bpToPx({
-        refName: feat.refName,
-        coord: feat.end,
+        refName: feat.get('refName'),
+        coord: feat.get('end'),
       })
 
       if (!s || !e) {
         continue
       }
 
+      const featStrand = feat.get('strand')
       const effectiveStrand =
         isSingleton || !flipStrandLongReadChains
-          ? feat.strand
-          : feat.strand * primaryStrand
+          ? featStrand
+          : featStrand * primaryStrand
 
       const [featureFill, featureStroke] = isSingleton
         ? getSingletonColor(feat, chainData.stats)
@@ -155,11 +157,25 @@ export function drawLongReadChains({
         y1: chainY,
         x2: xPos + width,
         y2: chainY + featureHeight,
-        data: feat,
+        data: {
+          name: feat.get('name'),
+          refName: feat.get('refName'),
+          start: feat.get('start'),
+          end: feat.get('end'),
+          strand: feat.get('strand'),
+          flags: feat.get('flags'),
+        },
         chainId: id,
         chainMinX: chainMinXPx,
         chainMaxX: chainMaxXPx,
-        chain,
+        chain: chain.map(f => ({
+          name: f.get('name'),
+          refName: f.get('refName'),
+          start: f.get('start'),
+          end: f.get('end'),
+          strand: f.get('strand'),
+          flags: f.get('flags'),
+        })),
       })
     }
   }

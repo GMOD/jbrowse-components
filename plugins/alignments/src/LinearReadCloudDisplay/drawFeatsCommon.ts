@@ -8,8 +8,9 @@ import { drawPairChains } from '../shared/drawPairChains'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
-import type { ChainData, ReducedFeature } from '../shared/fetchChains'
+import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -18,7 +19,7 @@ export interface ComputedChain {
   distance: number
   minX: number
   maxX: number
-  chain: ReducedFeature[]
+  chain: Feature[]
   id: string
 }
 
@@ -26,13 +27,13 @@ export interface ComputedChain {
  * Filter chains based on singleton and proper pair settings
  */
 export function filterChains(
-  chains: ReducedFeature[][],
+  chains: Feature[][],
   drawSingletons: boolean,
   drawProperPairs: boolean,
   type: string,
   chainData: ChainData,
 ) {
-  const filtered: ReducedFeature[][] = []
+  const filtered: Feature[][] = []
 
   for (const chain_ of chains) {
     const chain = chain_
@@ -46,7 +47,7 @@ export function filterChains(
     // Check if this is a paired-end read using SAM flag 1 (read paired)
     let isPairedEnd = false
     for (const element of chain) {
-      if (element.flags & 1) {
+      if (element.get('flags') & 1) {
         isPairedEnd = true
         break
       }
@@ -54,9 +55,9 @@ export function filterChains(
 
     if (!drawProperPairs && isPairedEnd) {
       // Collect non-supplementary alignments
-      const nonSupplementary: ReducedFeature[] = []
+      const nonSupplementary: Feature[] = []
       for (const element of chain) {
-        if (!(element.flags & 2048)) {
+        if (!(element.get('flags') & 2048)) {
           nonSupplementary.push(element)
         }
       }
@@ -86,7 +87,7 @@ export function filterChains(
 /**
  * Compute pixel bounds for each chain
  */
-export function computeChainBounds(chains: ReducedFeature[][], view: LGV) {
+export function computeChainBounds(chains: Feature[][], view: LGV) {
   const computedChains: ComputedChain[] = []
 
   // get bounds on the 'distances' (TLEN for pairs, pixel span for others)
@@ -101,23 +102,24 @@ export function computeChainBounds(chains: ReducedFeature[][], view: LGV) {
     for (let j = 0; j < chainLength; j++) {
       const elt = chain[j]!
       const rs = view.bpToPx({
-        refName: elt.refName,
-        coord: elt.start,
+        refName: elt.get('refName'),
+        coord: elt.get('start'),
       })?.offsetPx
       const re = view.bpToPx({
-        refName: elt.refName,
-        coord: elt.end,
+        refName: elt.get('refName'),
+        coord: elt.get('end'),
       })?.offsetPx
       if (rs !== undefined && re !== undefined) {
         minX = Math.min(minX, rs)
         maxX = Math.max(maxX, re)
       }
       if (!chainId) {
-        chainId = elt.id
+        chainId = elt.id()
       }
       // Use TLEN from the first feature that has it (only for non-singletons)
-      if (chainLength > 1 && tlenDistance === 0 && elt.tlen) {
-        tlenDistance = Math.abs(elt.tlen)
+      const tlen = elt.get('template_length')
+      if (chainLength > 1 && tlenDistance === 0 && tlen) {
+        tlenDistance = Math.abs(tlen)
       }
     }
 
@@ -209,16 +211,31 @@ export function addChainMouseoverRects(
     const chainMinXPx = minX - view.offsetPx
     const chainMaxXPx = maxX - view.offsetPx
     if (chain.length > 0) {
+      const firstFeat = chain[0]!
       featuresForFlatbush.push({
         x1: chainMinXPx,
         y1: chainY,
         x2: chainMaxXPx,
         y2: chainY + featureHeight,
-        data: chain[0]!, // Use first feature as representative
+        data: {
+          name: firstFeat.get('name'),
+          refName: firstFeat.get('refName'),
+          start: firstFeat.get('start'),
+          end: firstFeat.get('end'),
+          strand: firstFeat.get('strand'),
+          flags: firstFeat.get('flags'),
+        },
         chainId: id,
         chainMinX: chainMinXPx,
         chainMaxX: chainMaxXPx,
-        chain,
+        chain: chain.map(f => ({
+          name: f.get('name'),
+          refName: f.get('refName'),
+          start: f.get('start'),
+          end: f.get('end'),
+          strand: f.get('strand'),
+          flags: f.get('flags'),
+        })),
       })
     }
   }
@@ -233,6 +250,10 @@ export interface DrawFeatsParams {
   flipStrandLongReadChains: boolean
   noSpacing?: boolean
   trackMaxHeight?: number
+  config?: Record<string, unknown>
+  theme?: Record<string, unknown>
+  regions?: { refName: string; start: number; end: number }[]
+  bpPerPx?: number
 }
 
 export interface DrawFeatsResult {
