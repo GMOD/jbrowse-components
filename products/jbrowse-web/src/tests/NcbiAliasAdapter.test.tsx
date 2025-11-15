@@ -1,6 +1,4 @@
-import { waitFor } from '@testing-library/dom'
-
-import { createView, doBeforeEach, setup } from './util'
+import { createView, doBeforeEach, expectCanvasMatch, pv, setup } from './util'
 import config from '../../test_data/cfam2/config.json'
 
 setup()
@@ -10,11 +8,7 @@ const opts = [{}, delay]
 
 test('ncbi config', async () => {
   doBeforeEach(url => require.resolve(`../../test_data/cfam2/${url}`))
-  const { queryAllByTestId, getAllByTestId } = await createView(config)
+  const { findByTestId } = await createView(config)
 
-  await waitFor(() => {
-    expect(queryAllByTestId('svgfeatures').length).toBe(2)
-  }, delay)
-  const features = getAllByTestId('svgfeatures', ...opts)
-  expect(features).toMatchSnapshot()
+  expectCanvasMatch(await findByTestId(pv('1..50000-0'), ...opts))
 }, 50000)

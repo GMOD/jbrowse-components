@@ -1,8 +1,7 @@
 import '@testing-library/jest-dom'
-import { waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, doBeforeEach, hts } from './util'
+import { createView, doBeforeEach, expectCanvasMatch, hts, pv } from './util'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 const delay = { timeout: 30000 }
@@ -13,7 +12,7 @@ beforeEach(() => {
 
 test('change color on track', async () => {
   const user = userEvent.setup()
-  const { view, getByTestId, findByTestId, findByText, findByDisplayValue } =
+  const { view, findByTestId, findByText, findByDisplayValue } =
     await createView(undefined, true)
 
   view.setNewView(0.05, 5000)
@@ -31,10 +30,5 @@ test('change color on track', async () => {
   await user.clear(elt)
   await user.type(elt, 'green')
 
-  await waitFor(() => {
-    expect(getByTestId('box-test-vcf-604453')).toHaveAttribute(
-      'fill',
-      '#008000',
-    )
-  }, delay)
+  expectCanvasMatch(await findByTestId(pv('1..5000-0'), {}, delay))
 }, 40000)
