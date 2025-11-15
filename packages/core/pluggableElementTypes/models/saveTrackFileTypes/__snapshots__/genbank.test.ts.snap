@@ -1,0 +1,78 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`GenBank export can export a feature with subfeatures (mRNA, CDS, exon) 1`] = `
+"LOCUS       chr1:1001..2000      1000 bp        DNA       linear    UNK 10-JAN-1970
+FEATURES             Location/Qualifiers
+     gene            1..1000
+                     /name=gene2
+                     /id="gene2"
+     mRNA            1..1000
+                     /gene="gene2"
+                     /name=mrna1
+                     /id="mrna1"
+     CDS             join(51..150,851..950)
+                     /mRNA="mrna1"
+ORIGIN
+	1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+//"
+`;
+
+exports[`GenBank export can export a simple feature 1`] = `
+"LOCUS       chr1:101..200        100 bp         DNA       linear    UNK 10-JAN-1970
+FEATURES             Location/Qualifiers
+     gene            1..100
+                     /name=gene1
+                     /id="gene1"
+                     /Name="gene_name"
+                     /note="some note"
+ORIGIN
+	1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+//"
+`;
+
+exports[`GenBank export handles custom attributes 1`] = `
+"LOCUS       chr1:701..800        100 bp         DNA       linear    UNK 10-JAN-1970
+FEATURES             Location/Qualifiers
+     gene            1..100
+                     /name=gene6
+                     /id="gene6"
+                     /custom_tag="custom_value"
+                     /another_tag="val1,val2"
+                     /null_val="null"
+                     /undef_val="undefined"
+                     /complex_obj="{"key":"value"}"
+ORIGIN
+	1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+//"
+`;
+
+exports[`GenBank export handles features on negative strand 1`] = `
+"LOCUS       chr1:501..600        100 bp         DNA       linear    UNK 10-JAN-1970
+FEATURES             Location/Qualifiers
+     gene            complement(1..100)
+                     /name=gene5
+                     /id="gene5"
+     mRNA            complement(1..100)
+                     /gene="gene5"
+                     /name=mrna2
+                     /id="mrna2"
+     CDS             complement(join(21..80))
+                     /mRNA="mrna2"
+ORIGIN
+	1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+//"
+`;
+
+exports[`GenBank export handles multiple top-level features 1`] = `
+"LOCUS       chr1:101..400        300 bp         DNA       linear    UNK 10-JAN-1970
+FEATURES             Location/Qualifiers
+     gene            1..100
+                     /name=gene3
+                     /id="gene3"
+     gene            201..300
+                     /name=gene4
+                     /id="gene4"
+ORIGIN
+	1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+//"
+`;

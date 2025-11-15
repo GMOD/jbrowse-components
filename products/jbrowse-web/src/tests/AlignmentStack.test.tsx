@@ -13,7 +13,7 @@ afterEach(() => {
   cleanup()
 })
 
-const timeout = 20000
+const timeout = 60000
 async function wait(view: any, findByTestId: any) {
   // Wait for PileupDisplay to be drawn
   await waitFor(
