@@ -4,43 +4,37 @@ exports[`click on one feature, and do not re-render 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="145"
+    height="100"
     style="display: block;"
     width="333.3333333333333"
   >
-    <g>
-      <rect
-        data-testid="box-one"
-        fill="#daa520"
-        fill-opacity="1"
-        height="10"
-        width="2"
-        x="0.3"
-        y="0"
-      />
-    </g>
-    <g>
-      <rect
-        data-testid="box-two"
-        fill="#daa520"
-        fill-opacity="1"
-        height="10"
-        width="2"
-        x="0.3"
-        y="15"
-      />
-    </g>
-    <g>
-      <rect
-        data-testid="box-three"
-        fill="#daa520"
-        fill-opacity="1"
-        height="10"
-        width="2"
-        x="0.3"
-        y="30"
-      />
-    </g>
+    <rect
+      data-testid="box-one"
+      fill="#daa520"
+      fill-opacity="1"
+      height="10"
+      width="2"
+      x="0.3"
+      y="0"
+    />
+    <rect
+      data-testid="box-two"
+      fill="#daa520"
+      fill-opacity="1"
+      height="10"
+      width="2"
+      x="0.3"
+      y="15"
+    />
+    <rect
+      data-testid="box-three"
+      fill="#daa520"
+      fill-opacity="1"
+      height="10"
+      width="2"
+      x="0.3"
+      y="30"
+    />
   </svg>
 </div>
 `;
@@ -49,32 +43,30 @@ exports[`gene with CDS children 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="115"
+    height="100"
     style="display: block;"
     width="333.3333333333333"
   >
-    <g>
-      <line
-        data-testid="one"
-        stroke="#000000"
-        x1="1991.7"
-        x2="3248.0333333333333"
-        y1="5"
-        y2="5"
-      />
-      <line
-        stroke="#000000"
-        x1="3248.0333333333333"
-        x2="3255.0333333333333"
-        y1="5"
-        y2="5"
-      />
-      <polygon
-        fill="#000000"
-        points="3251.5333333333333,2.5,3251.5333333333333,7.5,3255.0333333333333,5"
-        stroke="#000000"
-      />
-    </g>
+    <line
+      data-testid="one"
+      stroke="#000000"
+      x1="1991.7"
+      x2="3248.0333333333333"
+      y1="5"
+      y2="5"
+    />
+    <line
+      stroke="#000000"
+      x1="3248.0333333333333"
+      x2="3255.0333333333333"
+      y1="5"
+      y2="5"
+    />
+    <polygon
+      fill="#000000"
+      points="3251.5333333333333,2.5,3251.5333333333333,7.5,3255.0333333333333,5"
+      stroke="#000000"
+    />
   </svg>
 </div>
 `;
@@ -94,58 +86,48 @@ exports[`one feature (compact mode) 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="122"
+    height="100"
     style="display: block;"
     width="333.3333333333333"
   >
-    <g>
-      <line
-        data-testid="one"
-        stroke="#000000"
-        x1="1991.7"
-        x2="3248.0333333333333"
-        y1="2.5"
-        y2="2.5"
-      />
-      <rect
-        data-testid="box-one-0"
-        fill="#357089"
-        fill-opacity="1"
-        height="3.25"
-        width="44.666666666666664"
-        x="1991.7"
-        y="0.875"
-      />
-      <rect
-        data-testid="box-one-15"
-        fill="#357089"
-        fill-opacity="1"
-        height="3.25"
-        width="83"
-        x="3165.0333333333333"
-        y="0.875"
-      />
-      <line
-        stroke="#000000"
-        x1="3248.0333333333333"
-        x2="3255.0333333333333"
-        y1="2.5"
-        y2="2.5"
-      />
-      <polygon
-        fill="#000000"
-        points="3251.5333333333333,0,3251.5333333333333,5,3255.0333333333333,2.5"
-        stroke="#000000"
-      />
-      <text
-        fill="#000000"
-        font-size="12"
-        x="1991.7"
-        y="17"
-      >
-        au9.g1002.t1
-      </text>
-    </g>
+    <line
+      data-testid="one"
+      stroke="#000000"
+      x1="1991.7"
+      x2="3248.0333333333333"
+      y1="2.5"
+      y2="2.5"
+    />
+    <rect
+      data-testid="box-one-0"
+      fill="#357089"
+      fill-opacity="1"
+      height="3.25"
+      width="44.666666666666664"
+      x="1991.7"
+      y="0.875"
+    />
+    <rect
+      data-testid="box-one-15"
+      fill="#357089"
+      fill-opacity="1"
+      height="3.25"
+      width="83"
+      x="3165.0333333333333"
+      y="0.875"
+    />
+    <line
+      stroke="#000000"
+      x1="3248.0333333333333"
+      x2="3255.0333333333333"
+      y1="2.5"
+      y2="2.5"
+    />
+    <polygon
+      fill="#000000"
+      points="3251.5333333333333,0,3251.5333333333333,5,3255.0333333333333,2.5"
+      stroke="#000000"
+    />
   </svg>
 </div>
 `;
@@ -154,21 +136,19 @@ exports[`one feature 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="115"
+    height="100"
     style="display: block;"
     width="333.3333333333333"
   >
-    <g>
-      <rect
-        data-testid="box-one"
-        fill="#daa520"
-        fill-opacity="1"
-        height="10"
-        width="2"
-        x="0.3"
-        y="0"
-      />
-    </g>
+    <rect
+      data-testid="box-one"
+      fill="#daa520"
+      fill-opacity="1"
+      height="10"
+      width="2"
+      x="0.3"
+      y="0"
+    />
   </svg>
 </div>
 `;
@@ -177,66 +157,48 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="139"
+    height="100"
     style="display: block;"
     width="333.3333333333333"
   >
-    <g>
-      <line
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0"
-        stroke="#000000"
-        x1="7759845"
-        x2="7766453"
-        y1="5"
-        y2="5"
-      />
-      <rect
-        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_7"
-        fill="#357089"
-        fill-opacity="1"
-        height="6.5"
-        width="31.666666666666668"
-        x="7766421.333333333"
-        y="1.75"
-      />
-      <rect
-        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_6"
-        fill="#357089"
-        fill-opacity="1"
-        height="6.5"
-        width="38.333333333333336"
-        x="7766269.666666667"
-        y="1.75"
-      />
-      <line
-        stroke="#000000"
-        x1="7759845"
-        x2="7759838"
-        y1="5"
-        y2="5"
-      />
-      <polygon
-        fill="#000000"
-        points="7759841.5,2.5,7759841.5,7.5,7759838,5"
-        stroke="#000000"
-      />
-      <text
-        fill="#000000"
-        font-size="12"
-        x="7759845"
-        y="22"
-      >
-        LACTBL1
-      </text>
-      <text
-        fill="blue"
-        font-size="12"
-        x="7759845"
-        y="34"
-      >
-        lactamase beta like 1
-      </text>
-    </g>
+    <line
+      data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0"
+      stroke="#000000"
+      x1="7759845"
+      x2="7766453"
+      y1="5"
+      y2="5"
+    />
+    <rect
+      data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_7"
+      fill="#357089"
+      fill-opacity="1"
+      height="6.5"
+      width="31.666666666666668"
+      x="7766421.333333333"
+      y="1.75"
+    />
+    <rect
+      data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_6"
+      fill="#357089"
+      fill-opacity="1"
+      height="6.5"
+      width="38.333333333333336"
+      x="7766269.666666667"
+      y="1.75"
+    />
+    <line
+      stroke="#000000"
+      x1="7759845"
+      x2="7759838"
+      y1="5"
+      y2="5"
+    />
+    <polygon
+      fill="#000000"
+      points="7759841.5,2.5,7759841.5,7.5,7759838,5"
+      stroke="#000000"
+    />
   </svg>
 </div>
 `;
@@ -245,21 +207,19 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="115"
+    height="100"
     style="display: block;"
     width="333.3333333333333"
   >
-    <g>
-      <rect
-        data-testid="box-one"
-        fill="#daa520"
-        fill-opacity="1"
-        height="10"
-        width="2"
-        x="0.3"
-        y="0"
-      />
-    </g>
+    <rect
+      data-testid="box-one"
+      fill="#daa520"
+      fill-opacity="1"
+      height="10"
+      width="2"
+      x="0.3"
+      y="0"
+    />
   </svg>
 </div>
 `;
@@ -268,58 +228,48 @@ exports[`processed transcript 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="127"
+    height="100"
     style="display: block;"
     width="333.3333333333333"
   >
-    <g>
-      <line
-        data-testid="one"
-        stroke="#000000"
-        x1="1991.7"
-        x2="3248.0333333333333"
-        y1="5"
-        y2="5"
-      />
-      <rect
-        data-testid="box-one-0"
-        fill="#357089"
-        fill-opacity="1"
-        height="6.5"
-        width="44.666666666666664"
-        x="1991.7"
-        y="1.75"
-      />
-      <rect
-        data-testid="box-one-15"
-        fill="#357089"
-        fill-opacity="1"
-        height="6.5"
-        width="83"
-        x="3165.0333333333333"
-        y="1.75"
-      />
-      <line
-        stroke="#000000"
-        x1="3248.0333333333333"
-        x2="3255.0333333333333"
-        y1="5"
-        y2="5"
-      />
-      <polygon
-        fill="#000000"
-        points="3251.5333333333333,2.5,3251.5333333333333,7.5,3255.0333333333333,5"
-        stroke="#000000"
-      />
-      <text
-        fill="#000000"
-        font-size="12"
-        x="1991.7"
-        y="22"
-      >
-        au9.g1002.t1
-      </text>
-    </g>
+    <line
+      data-testid="one"
+      stroke="#000000"
+      x1="1991.7"
+      x2="3248.0333333333333"
+      y1="5"
+      y2="5"
+    />
+    <rect
+      data-testid="box-one-0"
+      fill="#357089"
+      fill-opacity="1"
+      height="6.5"
+      width="44.666666666666664"
+      x="1991.7"
+      y="1.75"
+    />
+    <rect
+      data-testid="box-one-15"
+      fill="#357089"
+      fill-opacity="1"
+      height="6.5"
+      width="83"
+      x="3165.0333333333333"
+      y="1.75"
+    />
+    <line
+      stroke="#000000"
+      x1="3248.0333333333333"
+      x2="3255.0333333333333"
+      y1="5"
+      y2="5"
+    />
+    <polygon
+      fill="#000000"
+      points="3251.5333333333333,2.5,3251.5333333333333,7.5,3255.0333333333333,5"
+      stroke="#000000"
+    />
   </svg>
 </div>
 `;
