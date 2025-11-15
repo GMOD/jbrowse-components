@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { getSnapshot } from 'mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -45,6 +46,7 @@ export interface RenderLinearReadArcsDisplayArgs {
   height: number
   highResolutionScaling?: number
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
+  stopToken?: string
 }
 
 export default class RenderLinearReadArcsDisplay extends RpcMethodType {
@@ -76,6 +78,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
       height,
       highResolutionScaling,
       exportSVG,
+      stopToken,
     } = deserializedArgs
 
     // Recreate the view from the snapshot following DotplotRenderer pattern
@@ -122,6 +125,9 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
         .getFeaturesInMultipleRegions(regions, deserializedArgs)
         .pipe(toArray()),
     )
+
+    // Check stop token after fetching features
+    checkStopToken(stopToken)
 
     // Dedupe features by ID while preserving full Feature objects
     const deduped = dedupe(featuresArray, f => f.id())
@@ -172,6 +178,9 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
       ? createChainData(chains, stats)
       : createChainData(chains)
 
+    // Check stop token after processing chain data
+    checkStopToken(stopToken)
+
     const renderOpts: RenderToAbstractCanvasOptions = {
       highResolutionScaling,
       exportSVG,
@@ -196,6 +205,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
           jitter,
           view: viewSnap,
           offsetPx,
+          stopToken,
         })
         return {}
       },
