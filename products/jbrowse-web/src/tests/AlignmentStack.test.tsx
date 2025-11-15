@@ -10,7 +10,7 @@ beforeEach(() => {
 })
 
 const timeout = 20000
-async function wait(view: any) {
+async function wait(view: any, findByTestId: any) {
   // Wait for PileupDisplay to be drawn
   await waitFor(
     () => {
@@ -19,15 +19,21 @@ async function wait(view: any) {
     { timeout },
   )
 
-  // Wait for LinkedReadsDisplay (displays[1]) to have rendered data
+  // Wait for the stack-canvas element to appear and be rendered
+  await findByTestId('stack-canvas', {}, { timeout })
+
+  // Wait a bit for the canvas to be fully populated
   await waitFor(
     () => {
-      const linkedReadsDisplay = view.tracks[0].displays[1]
-      console.log('LinkedReadsDisplay exists:', !!linkedReadsDisplay)
-      console.log('LinkedReadsDisplay has imageData:', !!linkedReadsDisplay?.renderingImageData)
-      console.log('LinkedReadsDisplay layoutHeight:', linkedReadsDisplay?.layoutHeight)
-      expect(linkedReadsDisplay).toBeDefined()
-      expect(linkedReadsDisplay.renderingImageData).toBeDefined()
+      const canvas = document.querySelector(
+        '[data-testid="stack-canvas"]',
+      ) as HTMLCanvasElement
+      expect(canvas).toBeDefined()
+      // Check that the canvas has been drawn to (not blank)
+      const ctx = canvas?.getContext('2d')
+      const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height)
+      const hasContent = imageData?.data.some(pixel => pixel !== 0)
+      expect(hasContent).toBe(true)
     },
     { timeout },
   )
@@ -42,8 +48,7 @@ async function testStack(loc: string, track: string) {
   await user.click(await findByTestId('track_menu_icon', ...opts))
   await user.click(await findByText('Replace lower panel with...'))
   await user.click((await findAllByText('Linked reads display'))[0]!)
-  await wait(view)
-  console.log('About to take snapshot of stack-canvas')
+  await wait(view, findByTestId)
   expectCanvasMatch(await findByTestId('stack-canvas'))
 }
 
