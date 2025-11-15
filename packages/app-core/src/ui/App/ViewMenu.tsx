@@ -1,6 +1,7 @@
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { bindPopover, bindTrigger, usePopupState } from '@jbrowse/core/ui/hooks'
 import { getSession } from '@jbrowse/core/util'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -17,6 +18,39 @@ import type {
   IconButtonProps as IconButtonPropsType,
   SvgIconProps,
 } from '@mui/material'
+
+function renameIds(obj: Record<string, unknown>): Record<string, unknown> {
+  const idMap = new Map<string, string>()
+
+  function transformIds(value: unknown): unknown {
+    if (value === null || value === undefined) {
+      return value
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(transformIds)
+    }
+
+    if (typeof value === 'object') {
+      const result: Record<string, unknown> = {}
+      for (const [key, val] of Object.entries(value)) {
+        if (key === 'id' && typeof val === 'string') {
+          if (!idMap.has(val)) {
+            idMap.set(val, nanoid())
+          }
+          result[key] = `${val}-${idMap.get(val)}`
+        } else {
+          result[key] = transformIds(val)
+        }
+      }
+      return result
+    }
+
+    return value
+  }
+
+  return transformIds(obj) as Record<string, unknown>
+}
 
 const ViewMenu = observer(function ({
   model,
@@ -59,23 +93,38 @@ const ViewMenu = observer(function ({
           callback()
         }}
         menuItems={[
-          ...(session.views.length > 1
-            ? [
-                {
-                  label: 'View order',
-                  type: 'subMenu' as const,
-                  subMenu: [
-                    ...(session.views.length > 2
-                      ? [
-                          {
-                            label: 'Move view to top',
-                            icon: KeyboardDoubleArrowUpIcon,
-                            onClick: () => {
-                              session.moveViewToTop(model.id)
-                            },
-                          },
-                        ]
-                      : []),
+          {
+            label: 'View options',
+            type: 'subMenu' as const,
+            subMenu: [
+              {
+                label: 'Copy view',
+                icon: ContentCopyIcon,
+                onClick: () => {
+                  session.addView(
+                    model.type,
+                    renameIds(
+                      structuredClone(
+                        // @ts-expect-error
+                        getSnapshot(model) as Record<string, unknown>,
+                      ),
+                    ),
+                  )
+                },
+              },
+              ...(session.views.length > 2
+                ? [
+                    {
+                      label: 'Move view to top',
+                      icon: KeyboardDoubleArrowUpIcon,
+                      onClick: () => {
+                        session.moveViewToTop(model.id)
+                      },
+                    },
+                  ]
+                : []),
+              ...(session.views.length > 1
+                ? [
                     {
                       label: 'Move view up',
                       icon: KeyboardArrowUpIcon,
@@ -90,32 +139,22 @@ const ViewMenu = observer(function ({
                         session.moveViewDown(model.id)
                       },
                     },
-                    ...(session.views.length > 2
-                      ? [
-                          {
-                            label: 'Move view to bottom',
-                            icon: KeyboardDoubleArrowDownIcon,
-                            onClick: () => {
-                              session.moveViewToBottom(model.id)
-                            },
-                          },
-                        ]
-                      : []),
-                  ],
-                },
-              ]
-            : []),
-          {
-            label: 'Copy view',
-            icon: ContentCopyIcon,
-            onClick: () => {
-              const { id, ...rest } = getSnapshot(model)
-              session.addView(model.type, rest)
-            },
+                  ]
+                : []),
+              ...(session.views.length > 2
+                ? [
+                    {
+                      label: 'Move view to bottom',
+                      icon: KeyboardDoubleArrowDownIcon,
+                      onClick: () => {
+                        session.moveViewToBottom(model.id)
+                      },
+                    },
+                  ]
+                : []),
+            ],
           },
-          {
-            type: 'divider',
-          },
+
           ...model.menuItems(),
         ]}
         popupState={popupState}

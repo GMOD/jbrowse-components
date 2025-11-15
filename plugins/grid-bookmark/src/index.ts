@@ -124,7 +124,6 @@ export default class GridBookmarkPlugin extends Plugin {
                 menuItems() {
                   return [
                     ...superMenuItems(),
-                    { type: 'divider' },
                     {
                       label: 'Bookmarks',
                       icon: BookmarksIcon,
