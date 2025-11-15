@@ -1227,6 +1227,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * return the view menu items
        */
       menuItems(): MenuItem[] {
+        if (!self.hasDisplayedRegions) {
+          return []
+        }
         const { canShowCytobands, showCytobands } = self
         const session = getSession(self)
         const menuItems: MenuItem[] = [
