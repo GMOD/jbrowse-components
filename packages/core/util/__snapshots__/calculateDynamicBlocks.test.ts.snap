@@ -29,11 +29,11 @@ exports[`five 1`] = `
 exports[`four 1`] = `
 [
   InterRegionPaddingBlock {
-    "assemblyName": "test",
+    "assemblyName": undefined,
     "end": undefined,
     "key": "{test}ctgA:1..250-0-beforeFirstRegion",
     "offsetPx": -100,
-    "refName": "ctgA",
+    "refName": undefined,
     "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
@@ -65,11 +65,11 @@ exports[`four 1`] = `
 exports[`one 1`] = `
 [
   InterRegionPaddingBlock {
-    "assemblyName": "test",
+    "assemblyName": undefined,
     "end": undefined,
     "key": "{test}ctgA:1..200-0-beforeFirstRegion",
     "offsetPx": 0,
-    "refName": "ctgA",
+    "refName": undefined,
     "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
@@ -101,11 +101,11 @@ exports[`one 1`] = `
 exports[`three 1`] = `
 [
   InterRegionPaddingBlock {
-    "assemblyName": "test",
+    "assemblyName": undefined,
     "end": undefined,
     "key": "{test}ctgA:49901..50000[rev]-0-reversed-beforeFirstRegion",
     "offsetPx": -100,
-    "refName": "ctgA",
+    "refName": undefined,
     "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
@@ -138,11 +138,11 @@ exports[`three 1`] = `
 exports[`two 1`] = `
 [
   InterRegionPaddingBlock {
-    "assemblyName": "test",
+    "assemblyName": undefined,
     "end": undefined,
     "key": "{test}ctgA:49801..50000[rev]-0-reversed-beforeFirstRegion",
     "offsetPx": 0,
-    "refName": "ctgA",
+    "refName": undefined,
     "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",

@@ -4,11 +4,11 @@ exports[`block calculation can calculate some blocks 1 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:1..800-0-beforeFirstRegion",
       "offsetPx": -800,
-      "refName": "ctgA",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "variant": "boundary",
@@ -62,11 +62,11 @@ exports[`block calculation can calculate some blocks 2 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:1..100-0-beforeFirstRegion",
       "offsetPx": -800,
-      "refName": "ctgA",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "variant": "boundary",
@@ -93,11 +93,11 @@ BlockSet {
       "widthPx": 100,
     },
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:1..100-0-rightpad",
       "offsetPx": 100,
-      "refName": "ctgB",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "widthPx": 2,
@@ -123,11 +123,11 @@ BlockSet {
       "widthPx": 100,
     },
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgB:101..200-1-afterLastRegion",
       "offsetPx": 202,
-      "refName": "ctgB",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "variant": "boundary",
@@ -188,11 +188,11 @@ exports[`block calculation can calculate some blocks 6 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:1..200-0-beforeFirstRegion",
       "offsetPx": -800,
-      "refName": "ctgA",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "variant": "boundary",
@@ -219,11 +219,11 @@ BlockSet {
       "widthPx": 200,
     },
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:1..200-0-rightpad",
       "offsetPx": 200,
-      "refName": "ctgB",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "widthPx": 2,
@@ -296,11 +296,11 @@ BlockSet {
       "widthPx": 200,
     },
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgB:801..1000-1-afterLastRegion",
       "offsetPx": 1200,
-      "refName": "ctgB",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "variant": "boundary",
@@ -407,11 +407,11 @@ BlockSet {
 exports[`block calculation can calculate some blocks 10 1`] = `
 [
   InterRegionPaddingBlock {
-    "assemblyName": "test",
+    "assemblyName": undefined,
     "end": undefined,
     "key": "{test}ctgA:101..140-0-beforeFirstRegion",
     "offsetPx": -800,
-    "refName": "ctgA",
+    "refName": undefined,
     "start": undefined,
     "type": "InterRegionPaddingBlock",
     "variant": "boundary",
@@ -464,11 +464,11 @@ exports[`reverse block calculation 1 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:9201..10000[rev]-0-reversed-beforeFirstRegion",
       "offsetPx": -800,
-      "refName": "ctgA",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "variant": "boundary",
@@ -524,11 +524,11 @@ exports[`reversed displayed regions with elided region 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:1[rev]-0-reversed-beforeFirstRegion",
       "offsetPx": -800,
-      "refName": "ctgA",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "variant": "boundary",
@@ -606,11 +606,11 @@ exports[`reversed displayed regions without elided region 1`] = `
 BlockSet {
   "blocks": [
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:101..200[rev]-0-reversed-beforeFirstRegion",
       "offsetPx": -800,
-      "refName": "ctgA",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "variant": "boundary",
@@ -638,11 +638,11 @@ BlockSet {
       "widthPx": 100,
     },
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:101..200[rev]-0-reversed-rightpad",
       "offsetPx": 100,
-      "refName": "ctgA",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "widthPx": 2,
@@ -669,11 +669,11 @@ BlockSet {
       "widthPx": 100,
     },
     InterRegionPaddingBlock {
-      "assemblyName": "test",
+      "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgA:501..600[rev]-1-reversed-afterLastRegion",
       "offsetPx": 202,
-      "refName": "ctgA",
+      "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
       "variant": "boundary",
