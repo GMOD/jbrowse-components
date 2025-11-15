@@ -1,3 +1,7 @@
+import { useMemo } from 'react'
+
+import { getFillProps } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LegendItem from './LegendItem'
@@ -28,6 +32,12 @@ const ColorLegend = observer(function ({
   const svgOffset = exportSVG ? 10 : 0
   const extraOffset =
     svgOffset || (graphType && !rowHeightTooSmallForScalebar ? 50 : 0)
+  const theme = useTheme()
+
+  const textFillProps = useMemo(
+    () => getFillProps(theme.palette.text.primary),
+    [theme.palette.text.primary],
+  )
 
   return sources ? (
     <>
@@ -63,6 +73,7 @@ const ColorLegend = observer(function ({
           model={model}
           rowHeight={rowHeight}
           exportSVG={exportSVG}
+          textFillProps={textFillProps}
         />
       ))}
     </>
