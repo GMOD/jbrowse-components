@@ -37,7 +37,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       'Fetching peptide data',
       statusCallback,
       async () => {
-        const { fetchPeptideData } = await import('./peptideUtils.ts')
+        const { fetchPeptideData } = await import('./peptideUtils')
         return fetchPeptideData(this.pluginManager, renderProps, features)
       },
     )
