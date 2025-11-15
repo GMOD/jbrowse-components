@@ -99,6 +99,11 @@ const blockState = types
      * #volatile
      */
     renderProps: undefined as any,
+    /**
+     * #volatile
+     * Whether a render is currently in flight (but data is not ready yet)
+     */
+    isRenderingPending: true,
   }))
   .actions(self => ({
     /**
@@ -140,14 +145,12 @@ const blockState = types
       if (self.stopToken !== undefined) {
         stopStopToken(self.stopToken)
       }
-      self.filled = false
-      self.message = undefined
-      self.reactElement = undefined
-      self.features = undefined
-      self.layout = undefined
+      self.isRenderingPending = true
       self.error = undefined
-      self.maxHeightReached = false
-      self.renderProps = undefined
+      self.message = undefined
+      // Note: We intentionally do NOT clear reactElement/features/layout here
+      // so that old content remains visible with a loading overlay while new
+      // content is being rendered
       self.stopToken = newStopToken
     },
     /**
@@ -157,6 +160,7 @@ const blockState = types
       if (self.stopToken !== undefined) {
         stopStopToken(self.stopToken)
       }
+      self.isRenderingPending = false
       self.filled = false
       self.message = messageText
       self.reactElement = undefined
@@ -177,6 +181,7 @@ const blockState = types
       const { reactElement, features, layout, maxHeightReached, renderProps } =
         props
       self.filled = true
+      self.isRenderingPending = false
       self.message = undefined
       self.reactElement = reactElement
       self.features = features
@@ -194,7 +199,7 @@ const blockState = types
       if (self.stopToken !== undefined) {
         stopStopToken(self.stopToken)
       }
-      // the rendering failed for some reason
+      self.isRenderingPending = false
       self.filled = false
       self.message = undefined
       self.reactElement = undefined
@@ -214,6 +219,7 @@ const blockState = types
     reload() {
       self.stopToken = undefined
       self.filled = false
+      self.isRenderingPending = false
       self.reactElement = undefined
       self.features = undefined
       self.layout = undefined
@@ -339,6 +345,8 @@ async function renderBlockEffect(
     self.setMessage(cannotBeRenderedReason)
     return undefined
   } else if (renderProps.notReady) {
+    // Just return without rendering - isRenderingPending will stay true from setLoading
+    // so old content remains visible with loading overlay
     return undefined
   } else {
     const { reactElement, features, layout, maxHeightReached } =
