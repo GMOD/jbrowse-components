@@ -1,5 +1,10 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  isAbortException,
+} from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { untracked } from 'mobx'
 import { getSnapshot } from 'mobx-state-tree'
 
 import { createAutorun } from '../util'
@@ -46,9 +51,10 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
         return
       }
 
-      // Stop any previous rendering operation
-      if (self.renderingStopToken) {
-        stopStopToken(self.renderingStopToken)
+      // Stop any previous rendering operation (use untracked to avoid triggering reactions)
+      const previousToken = untracked(() => self.renderingStopToken)
+      if (previousToken) {
+        stopStopToken(previousToken)
       }
 
       // Create stop token for this render operation
@@ -95,8 +101,9 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
 
       self.setLastDrawnBpPerPx(bpPerPx)
     } catch (error) {
-      console.error(error)
-      self.setError(error)
+      if (!isAbortException(error)) {
+        self.setError(error)
+      }
     } finally {
       self.setRenderingStopToken(undefined)
     }

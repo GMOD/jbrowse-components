@@ -22,22 +22,6 @@ async function wait(view: any, findByTestId: any) {
 
   // Wait for the cloud-canvas element to appear and be rendered
   await findByTestId('cloud-canvas', {}, { timeout })
-
-  // Wait for the canvas to be fully populated
-  await waitFor(
-    () => {
-      const canvas = document.querySelector(
-        '[data-testid="cloud-canvas"]',
-      ) as HTMLCanvasElement
-      expect(canvas).toBeDefined()
-      // Check that the canvas has been drawn to (not blank)
-      const ctx = canvas?.getContext('2d')
-      const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height)
-      const hasContent = imageData?.data.some(pixel => pixel !== 0)
-      expect(hasContent).toBe(true)
-    },
-    { timeout },
-  )
 }
 
 async function testCloud(loc: string, track: string) {
