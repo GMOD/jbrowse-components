@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.7.0",
+    "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@mui/material": "^7.0.0",
     "g2p_mapper": "^1.0.9",
     "mobx": "^6.0.0",
