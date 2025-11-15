@@ -200,10 +200,10 @@ export function renderMismatches({
       const len = +mismatch.base || mismatch.length
       if (mismatch.type === 'insertion' && len >= 10) {
         const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
-        const txt = `${len}`
+        const txt = `${len}bp ins`
         items.push({
           type: 'insertion',
-          seq: mismatch.insertedBases || 'unknown',
+          seq: `${len}bp ins`,
         })
         coords.push(leftPx - 3, topPx, leftPx + 4, topPx + heightPx)
         if (bpPerPx > largeInsertionIndicatorScale) {
