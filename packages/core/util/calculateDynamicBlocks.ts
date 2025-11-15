@@ -135,8 +135,6 @@ export default function calculateDynamicBlocks(
             widthPx: -offsetPx,
             offsetPx: blockData.offsetPx + offsetPx,
             variant: 'boundary',
-            refName: blockData.refName,
-            assemblyName: blockData.assemblyName,
           }),
         )
       }
@@ -154,14 +152,11 @@ export default function calculateDynamicBlocks(
           blockData.isRightEndOfDisplayedRegion &&
           regionNumber < displayedRegions.length - 1
         ) {
-          const nextRegion = displayedRegions[regionNumber + 1]!
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-rightpad`,
               widthPx: interRegionPaddingWidth,
               offsetPx: blockData.offsetPx + blockData.widthPx,
-              refName: nextRegion.refName,
-              assemblyName: nextRegion.assemblyName,
             }),
           )
           displayedRegionLeftPx += interRegionPaddingWidth
@@ -178,8 +173,6 @@ export default function calculateDynamicBlocks(
               widthPx: width - blockOffsetPx + offsetPx,
               offsetPx: blockOffsetPx,
               variant: 'boundary',
-              refName: blockData.refName,
-              assemblyName: blockData.assemblyName,
             }),
           )
         }

@@ -130,8 +130,6 @@ export default function calculateStaticBlocks(
             widthPx: width,
             offsetPx: blockData.offsetPx - width,
             variant: 'boundary',
-            refName: blockData.refName,
-            assemblyName: blockData.assemblyName,
           }),
         )
       }
@@ -150,14 +148,11 @@ export default function calculateStaticBlocks(
           regionNumber < displayedRegions.length - 1
         ) {
           regionBpOffset += interRegionPaddingWidth * bpPerPx
-          const nextRegion = displayedRegions[regionNumber + 1]!
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-rightpad`,
               widthPx: interRegionPaddingWidth,
               offsetPx: blockData.offsetPx + blockData.widthPx,
-              refName: nextRegion.refName,
-              assemblyName: nextRegion.assemblyName,
             }),
           )
         }
@@ -172,8 +167,6 @@ export default function calculateStaticBlocks(
               widthPx: width,
               offsetPx: blockData.offsetPx + blockData.widthPx,
               variant: 'boundary',
-              refName: blockData.refName,
-              assemblyName: blockData.assemblyName,
             }),
           )
         }
