@@ -154,13 +154,14 @@ export default function calculateDynamicBlocks(
           blockData.isRightEndOfDisplayedRegion &&
           regionNumber < displayedRegions.length - 1
         ) {
+          const nextRegion = displayedRegions[regionNumber + 1]!
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-rightpad`,
               widthPx: interRegionPaddingWidth,
               offsetPx: blockData.offsetPx + blockData.widthPx,
-              refName: blockData.refName,
-              assemblyName: blockData.assemblyName,
+              refName: nextRegion.refName,
+              assemblyName: nextRegion.assemblyName,
             }),
           )
           displayedRegionLeftPx += interRegionPaddingWidth

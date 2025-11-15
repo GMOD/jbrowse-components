@@ -79,7 +79,8 @@ export function moveTo(
     }
   }
 
-  self.scrollTo(Math.round(bpToStart / self.bpPerPx))
+  const scrollPos = Math.round(bpToStart / self.bpPerPx)
+  self.scrollTo(scrollPos)
 }
 
 function coord(r: Region, bp: number) {
@@ -146,6 +147,21 @@ export function pxToBp(
     // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
     // a static block
     if (blocks[currBlock]?.regionNumber === i) {
+      const paddingStart = bpSoFar + len
+      const paddingEnd = paddingStart + interRegionPaddingBp
+      // If bp is in the inter-region padding, use the next region's info
+      if (bp >= paddingStart && bp < paddingEnd && i + 1 < displayedRegions.length) {
+        const nextR = displayedRegions[i + 1]!
+        const snap = nextR
+        return {
+          // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+          ...(snap as Omit<typeof snap, symbol>),
+          oob: false,
+          offset: 0,
+          coord: coord(nextR, 0),
+          index: i + 1,
+        }
+      }
       bpSoFar += len + interRegionPaddingBp
       currBlock++
     } else {
