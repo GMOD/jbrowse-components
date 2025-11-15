@@ -10,10 +10,31 @@ beforeEach(() => {
 })
 
 const timeout = 100000
-async function wait(view: any) {
+
+async function wait(view: any, findByTestId: any) {
+  // Wait for PileupDisplay to be drawn
   await waitFor(
     () => {
       expect(view.tracks[0].displays[0].PileupDisplay.drawn).toBe(true)
+    },
+    { timeout },
+  )
+
+  // Wait for the cloud-canvas element to appear and be rendered
+  await findByTestId('cloud-canvas', {}, { timeout })
+
+  // Wait for the canvas to be fully populated
+  await waitFor(
+    () => {
+      const canvas = document.querySelector(
+        '[data-testid="cloud-canvas"]',
+      ) as HTMLCanvasElement
+      expect(canvas).toBeDefined()
+      // Check that the canvas has been drawn to (not blank)
+      const ctx = canvas?.getContext('2d')
+      const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height)
+      const hasContent = imageData?.data.some(pixel => pixel !== 0)
+      expect(hasContent).toBe(true)
     },
     { timeout },
   )
@@ -23,7 +44,7 @@ async function testCloud(loc: string, track: string) {
   const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
-  const opts = [{}, { timeout: timeout }] as const
+  const opts = [{}, { timeout }] as const
   await view.navToLocString(loc)
   await user.click(await findByTestId(hts(track), ...opts))
   await user.click(await findByTestId('track_menu_icon', ...opts))
@@ -31,8 +52,7 @@ async function testCloud(loc: string, track: string) {
   await user.click((await findAllByText('Linked reads display'))[0]!)
   await user.click(await findByTestId('track_menu_icon', ...opts))
   await user.click((await findAllByText(/Toggle read cloud/))[0]!)
-  await wait(view)
-  await new Promise(res => setTimeout(res, 2000))
+  await wait(view, findByTestId)
   expectCanvasMatch(getByTestId('cloud-canvas'))
 }
 

@@ -9,12 +9,34 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-async function wait(view: any) {
+const timeout = 60000
+
+async function wait(view: any, findByTestId: any) {
+  // Wait for PileupDisplay to be drawn
   await waitFor(
     () => {
       expect(view.tracks[0].displays[0].PileupDisplay.drawn).toBe(true)
     },
-    { timeout: 60000 },
+    { timeout },
+  )
+
+  // Wait for the arc-canvas element to appear and be rendered
+  await findByTestId('arc-canvas', {}, { timeout })
+
+  // Wait for the canvas to be fully populated
+  await waitFor(
+    () => {
+      const canvas = document.querySelector(
+        '[data-testid="arc-canvas"]',
+      ) as HTMLCanvasElement
+      expect(canvas).toBeDefined()
+      // Check that the canvas has been drawn to (not blank)
+      const ctx = canvas?.getContext('2d')
+      const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height)
+      const hasContent = imageData?.data.some(pixel => pixel !== 0)
+      expect(hasContent).toBe(true)
+    },
+    { timeout },
   )
 }
 
@@ -22,14 +44,13 @@ async function testArc(loc: string, track: string) {
   const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
-  const opts = [{}, { timeout: 60000 }] as const
+  const opts = [{}, { timeout }] as const
   await view.navToLocString(loc)
   await user.click(await findByTestId(hts(track), ...opts))
   await user.click(await findByTestId('track_menu_icon', ...opts))
   await user.click(await findByText('Replace lower panel with...'))
   await user.click((await findAllByText('Read arc display'))[0]!)
-  await wait(view)
-  await new Promise(res => setTimeout(res, 2000))
+  await wait(view, findByTestId)
   expectCanvasMatch(getByTestId('arc-canvas'))
 }
 
