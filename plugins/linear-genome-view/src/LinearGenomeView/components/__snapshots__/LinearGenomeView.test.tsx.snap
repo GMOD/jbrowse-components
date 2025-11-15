@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`renders one track, one region 1`] = `
 <div>
@@ -25,7 +25,7 @@ exports[`renders one track, one region 1`] = `
               />
               <div
                 class="css-2jeg0a-scalebarContig"
-                style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+                style="width: 0px; left: 0px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
               />
               <div>
                 <p
@@ -72,7 +72,7 @@ exports[`renders one track, one region 1`] = `
               </div>
               <div
                 class="css-2jeg0a-scalebarContig"
-                style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+                style="width: 0px; left: 800px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
               />
             </div>
           </div>
@@ -729,7 +729,7 @@ exports[`renders two tracks, two regions 1`] = `
               />
               <div
                 class="css-2jeg0a-scalebarContig"
-                style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+                style="width: 0px; left: 0px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
               />
               <div>
                 <p
@@ -745,7 +745,7 @@ exports[`renders two tracks, two regions 1`] = `
               </div>
               <div
                 class="css-2jeg0a-scalebarContig"
-                style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
+                style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
               />
               <div>
                 <p
@@ -792,7 +792,7 @@ exports[`renders two tracks, two regions 1`] = `
               </div>
               <div
                 class="css-2jeg0a-scalebarContig"
-                style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+                style="width: 0px; left: 800px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
               />
             </div>
           </div>

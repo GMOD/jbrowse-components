@@ -1,8 +1,15 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { dedupe, groupBy, renderToAbstractCanvas } from '@jbrowse/core/util'
+import {
+  dedupe,
+  groupBy,
+  max,
+  min,
+  renderToAbstractCanvas,
+} from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { getSnapshot } from 'mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -39,6 +46,7 @@ export interface RenderLinearReadArcsDisplayArgs {
   height: number
   highResolutionScaling?: number
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
+  stopToken?: string
 }
 
 export default class RenderLinearReadArcsDisplay extends RpcMethodType {
@@ -70,6 +78,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
       height,
       highResolutionScaling,
       exportSVG,
+      stopToken,
     } = deserializedArgs
 
     // Recreate the view from the snapshot following DotplotRenderer pattern
@@ -117,6 +126,9 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
         .pipe(toArray()),
     )
 
+    // Check stop token after fetching features
+    checkStopToken(stopToken)
+
     // Dedupe features by ID while preserving full Feature objects
     const deduped = dedupe(featuresArray, f => f.id())
 
@@ -152,8 +164,8 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
         )
         stats = {
           ...insertSizeStats,
-          max: Math.max(...tlens),
-          min: Math.min(...tlens),
+          max: max(tlens),
+          min: min(tlens),
         }
       }
     }
@@ -165,6 +177,9 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
     const chainData: ChainData = stats
       ? createChainData(chains, stats)
       : createChainData(chains)
+
+    // Check stop token after processing chain data
+    checkStopToken(stopToken)
 
     const renderOpts: RenderToAbstractCanvasOptions = {
       highResolutionScaling,
@@ -190,6 +205,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
           jitter,
           view: viewSnap,
           offsetPx,
+          stopToken,
         })
         return {}
       },

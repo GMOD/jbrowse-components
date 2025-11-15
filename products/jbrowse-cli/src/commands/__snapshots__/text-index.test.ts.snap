@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`fails if no track ids are provided with --tracks flag. 1`] = `"Error: TypeError [ERR_PARSE_ARGS_INVALID_OPTION_VALUE]: Option '--tracks <value>' argument missing"`;
 

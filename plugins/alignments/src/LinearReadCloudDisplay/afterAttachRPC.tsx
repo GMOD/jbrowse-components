@@ -1,4 +1,9 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  isAbortException,
+} from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { untracked } from 'mobx'
 import { getSnapshot } from 'mobx-state-tree'
 
@@ -32,11 +37,6 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       return
     }
 
-    // Don't render if already rendering (use untracked to avoid triggering autorun)
-    if (untracked(() => self.isRendering)) {
-      return
-    }
-
     const { bpPerPx } = view
     const {
       featureHeightSetting: featureHeight,
@@ -50,14 +50,22 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
     } = self
 
     try {
-      self.setIsRendering(true)
-
       const session = getSession(self)
       const { rpcManager } = session
       const assemblyName = view.assemblyNames[0]
       if (!assemblyName) {
         return
       }
+
+      // Stop any previous rendering operation (use untracked to avoid triggering reactions)
+      const previousToken = untracked(() => self.renderingStopToken)
+      if (previousToken) {
+        stopStopToken(previousToken)
+      }
+
+      // Create stop token for this render operation
+      const stopToken = createStopToken()
+      self.setRenderingStopToken(stopToken)
 
       // Serialize the full view snapshot for RPC
       // Include staticBlocks and width which are not part of the regular snapshot
@@ -88,6 +96,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           trackMaxHeight,
           height,
           highResolutionScaling: 2,
+          stopToken,
         },
       )) as RenderResult
 
@@ -108,10 +117,11 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
 
       self.setLastDrawnBpPerPx(bpPerPx)
     } catch (error) {
-      console.error(error)
-      self.setError(error)
+      if (!isAbortException(error)) {
+        self.setError(error)
+      }
     } finally {
-      self.setIsRendering(false)
+      self.setRenderingStopToken(undefined)
     }
   }
 

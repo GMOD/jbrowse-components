@@ -8,15 +8,9 @@ import { Loader } from '../components/Loader'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 export function App({ search }: { search: string }) {
-  const location = {
-    // eslint-disable-next-line @typescript-eslint/no-misused-spread
-    ...window.location,
-    search,
-  }
-  Object.defineProperty(window, 'location', {
-    writable: true,
-    value: location,
-  })
+  // Jest 30 with jsdom 26+ requires using proper navigation APIs
+  // instead of directly mutating window.location
+  window.history.replaceState(null, '', search)
   return (
     <QueryParamProvider adapter={WindowHistoryAdapter}>
       <Loader />

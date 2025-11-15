@@ -1,11 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
   getCharWidthHeight,
   getColorBaseMap,
   getContrastBaseMap,
+  setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../PileupRenderer/util'
@@ -47,6 +49,7 @@ export function drawLongReadChains({
   regions,
   bpPerPx,
   colorBy,
+  stopToken,
 }: {
   ctx: CanvasRenderingContext2D
   chainData: ChainData
@@ -68,6 +71,7 @@ export function drawLongReadChains({
   regions: BaseBlock[]
   bpPerPx: number
   colorBy: ColorBy
+  stopToken?: string
 }): void {
   // Setup rendering configuration from PileupRenderer
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
@@ -80,6 +84,7 @@ export function drawLongReadChains({
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
+  setAlignmentFont(ctx)
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
   const drawIndels = shouldDrawIndels()
@@ -88,7 +93,7 @@ export function drawLongReadChains({
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 
-  for (const computedChain of computedChains) {
+  forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain, minX, maxX } = computedChain
 
     // Guard clause: skip paired-end reads (handled by drawPairChains)
@@ -100,12 +105,12 @@ export function drawLongReadChains({
       }
     }
     if (isPairedEnd) {
-      continue
+      return
     }
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
-      continue
+      return
     }
 
     // Collect non-supplementary alignments
@@ -225,6 +230,10 @@ export function drawLongReadChains({
         const offsetAdjustment = region.offsetPx - viewOffsetPx
         ctx.translate(offsetAdjustment, 0)
 
+        // After translation, use a large canvasWidth to avoid clipping on the right side
+        // The actual canvas clipping will handle bounds correctly
+        const effectiveCanvasWidth = canvasWidth + Math.abs(offsetAdjustment)
+
         renderMismatches({
           ctx,
           feat: layoutFeat,
@@ -240,7 +249,7 @@ export function drawLongReadChains({
           charHeight,
           colorMap,
           colorContrastMap,
-          canvasWidth,
+          canvasWidth: effectiveCanvasWidth,
         })
 
         ctx.restore()
@@ -283,5 +292,5 @@ export function drawLongReadChains({
         clipPos: f.get('clipPos') || 0,
       })),
     })
-  }
+  })
 }

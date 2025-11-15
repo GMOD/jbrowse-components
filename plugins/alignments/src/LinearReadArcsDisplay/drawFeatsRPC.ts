@@ -1,3 +1,5 @@
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+
 import { featurizeSA } from '../MismatchParser'
 import {
   getPairedInsertSizeAndOrientationColor,
@@ -46,6 +48,7 @@ interface DrawFeatsRPCParams {
   jitter: number
   view: any
   offsetPx: number
+  stopToken?: string
 }
 
 export function drawFeatsRPC(params: DrawFeatsRPCParams) {
@@ -60,6 +63,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     jitter: jitterVal,
     view,
     offsetPx,
+    stopToken,
   } = params
 
   const { chains, stats } = chainData
@@ -171,7 +175,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     }
   }
 
-  for (const chain of chains) {
+  forEachWithStopTokenCheck(chains, stopToken, chain => {
     // chain.length === 1, singleton (other pairs/mates not in view)
     if (chain.length === 1 && drawLongRange) {
       const f = chain[0]!
@@ -255,5 +259,5 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
         draw(k1, k2, false)
       }
     }
-  }
+  })
 }

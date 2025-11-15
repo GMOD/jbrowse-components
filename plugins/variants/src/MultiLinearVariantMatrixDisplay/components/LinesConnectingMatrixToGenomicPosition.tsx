@@ -10,14 +10,16 @@ import type { MultiLinearVariantMatrixDisplayModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   resizeHandle: {
-    height: 4,
-    background: '#ccc',
+    height: 5,
     boxSizing: 'border-box',
-    borderTop: '1px solid #fafafa',
+    background: 'transparent',
+    '&:hover': {
+      background: theme.palette.divider,
+    },
   },
-})
+}))
 
 const Wrapper = observer(function ({
   children,

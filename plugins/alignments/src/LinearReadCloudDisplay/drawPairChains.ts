@@ -1,11 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import {
   getCharWidthHeight,
   getColorBaseMap,
   getContrastBaseMap,
+  setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../PileupRenderer/util'
@@ -46,6 +48,7 @@ export function drawPairChains({
   canvasWidth,
   bpPerPx,
   colorBy,
+  stopToken,
 }: {
   ctx: CanvasRenderingContext2D
   type: string
@@ -68,6 +71,7 @@ export function drawPairChains({
   regions: BaseBlock[]
   bpPerPx: number
   colorBy: ColorBy
+  stopToken?: string
 }): void {
   // Setup rendering configuration from PileupRenderer
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
@@ -80,11 +84,12 @@ export function drawPairChains({
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
+  setAlignmentFont(ctx)
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
   const drawIndels = shouldDrawIndels()
 
-  for (const computedChain of computedChains) {
+  forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain, minX, maxX } = computedChain
 
     // Guard clause: skip non-paired-end chains
@@ -96,12 +101,12 @@ export function drawPairChains({
       }
     }
     if (!isPairedEnd) {
-      continue
+      return
     }
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
-      continue
+      return
     }
 
     // Collect non-supplementary alignments
@@ -206,6 +211,10 @@ export function drawPairChains({
         const offsetAdjustment = region.offsetPx - viewOffsetPx
         ctx.translate(offsetAdjustment, 0)
 
+        // After translation, use a large canvasWidth to avoid clipping on the right side
+        // The actual canvas clipping will handle bounds correctly
+        const effectiveCanvasWidth = canvasWidth + Math.abs(offsetAdjustment)
+
         renderMismatches({
           ctx,
           feat: layoutFeat,
@@ -221,7 +230,7 @@ export function drawPairChains({
           charHeight,
           colorMap,
           colorContrastMap,
-          canvasWidth,
+          canvasWidth: effectiveCanvasWidth,
         })
 
         ctx.restore()
@@ -264,5 +273,5 @@ export function drawPairChains({
         clipPos: f.get('clipPos') || 0,
       })),
     })
-  }
+  })
 }
