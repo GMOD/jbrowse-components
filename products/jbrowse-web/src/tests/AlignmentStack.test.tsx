@@ -34,23 +34,12 @@ async function testStack(loc: string, track: string) {
   const opts = [{}, { timeout }] as const
 
   await view.navToLocString(loc)
-
   await user.click(await findByTestId(hts(track), ...opts))
-
   await user.click(await findByTestId('track_menu_icon', ...opts))
-
   await user.click(await findByText('Replace lower panel with...'))
-
-  // Add a small delay to let the submenu render
-  await new Promise(resolve => setTimeout(resolve, 100))
-
   await user.click((await findAllByText('Linked reads display'))[0]!)
-
-  // Wait for the menu to close
-  await new Promise(resolve => setTimeout(resolve, 100))
-
   await wait(view, findByTestId)
-
+  await new Promise(res => setTimeout(res, 2000))
   expectCanvasMatch(await findByTestId('stack-canvas'))
 }
 

@@ -37,6 +37,7 @@ async function testCloud(loc: string, track: string) {
   await user.click(await findByTestId('track_menu_icon', ...opts))
   await user.click((await findAllByText(/Toggle read cloud/))[0]!)
   await wait(view, findByTestId)
+  await new Promise(res => setTimeout(res, 2000))
   expectCanvasMatch(getByTestId('cloud-canvas'))
 }
 
