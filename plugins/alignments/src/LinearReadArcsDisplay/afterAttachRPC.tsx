@@ -1,6 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-import { untracked } from 'mobx'
 import { getSnapshot } from 'mobx-state-tree'
 
 import { createAutorun } from '../util'
@@ -29,11 +28,6 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
       return
     }
 
-    // Don't render if already rendering (use untracked to avoid triggering autorun)
-    if (untracked(() => self.isRendering)) {
-      return
-    }
-
     const { bpPerPx } = view
     const {
       colorBy,
@@ -45,8 +39,6 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
     } = self
 
     try {
-      self.setIsRendering(true)
-
       const session = getSession(self)
       const { rpcManager } = session
       const assemblyName = view.assemblyNames[0]
@@ -107,7 +99,6 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
       self.setError(error)
     } finally {
       self.setRenderingStopToken(undefined)
-      self.setIsRendering(false)
     }
   }
 

@@ -9,11 +9,25 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const timeout = 100000
+const timeout = 20000
 async function wait(view: any) {
+  // Wait for PileupDisplay to be drawn
   await waitFor(
     () => {
       expect(view.tracks[0].displays[0].PileupDisplay.drawn).toBe(true)
+    },
+    { timeout },
+  )
+
+  // Wait for LinkedReadsDisplay (displays[1]) to have rendered data
+  await waitFor(
+    () => {
+      const linkedReadsDisplay = view.tracks[0].displays[1]
+      console.log('LinkedReadsDisplay exists:', !!linkedReadsDisplay)
+      console.log('LinkedReadsDisplay has imageData:', !!linkedReadsDisplay?.renderingImageData)
+      console.log('LinkedReadsDisplay layoutHeight:', linkedReadsDisplay?.layoutHeight)
+      expect(linkedReadsDisplay).toBeDefined()
+      expect(linkedReadsDisplay.renderingImageData).toBeDefined()
     },
     { timeout },
   )
@@ -29,7 +43,7 @@ async function testStack(loc: string, track: string) {
   await user.click(await findByText('Replace lower panel with...'))
   await user.click((await findAllByText('Linked reads display'))[0]!)
   await wait(view)
-  await new Promise(res => setTimeout(res, 2000))
+  console.log('About to take snapshot of stack-canvas')
   expectCanvasMatch(await findByTestId('stack-canvas'))
 }
 

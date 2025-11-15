@@ -94,11 +94,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       renderingImageData: undefined as ImageBitmap | undefined,
       /**
        * #volatile
-       * Flag to indicate if we're currently rendering via RPC
-       */
-      isRendering: false,
-      /**
-       * #volatile
        * Chain ID of the currently selected feature for persistent highlighting
        */
       selectedFeatureId: undefined as string | undefined,
@@ -188,13 +183,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setRenderingImageData(imageData: ImageBitmap | undefined) {
         self.renderingImageData = imageData
-      },
-      /**
-       * #action
-       * Set the rendering flag
-       */
-      setIsRendering(flag: boolean) {
-        self.isRendering = flag
       },
       /**
        * #action
