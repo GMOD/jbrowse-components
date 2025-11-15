@@ -42,6 +42,21 @@ export async function createPIF(
       await writeWithBackpressure(
         `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`,
       )
+
+      // Create a copy of rest without the CIGAR string for stripped versions
+      const restNoCigar = cigarIdx !== -1
+        ? [...rest.slice(0, cigarIdx), ...rest.slice(cigarIdx + 1)]
+        : rest
+
+      // Write the third line (target coords, CIGAR stripped) and handle backpressure
+      await writeWithBackpressure(
+        `${[`a${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...restNoCigar].join('\t')}\n`,
+      )
+
+      // Write the fourth line (query coords, CIGAR stripped) and handle backpressure
+      await writeWithBackpressure(
+        `${[`b${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...restNoCigar].join('\t')}\n`,
+      )
     }
   } catch (error) {
     console.error('Error processing PAF file:', error)
