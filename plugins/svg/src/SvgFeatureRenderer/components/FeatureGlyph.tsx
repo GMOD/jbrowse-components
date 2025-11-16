@@ -38,6 +38,7 @@ const FeatureGlyph = observer(function (props: {
     shouldShowName,
     feature,
     rootLayout,
+    topLevel,
   } = props
 
   // bad or old code might not be a string id but try to assume it is
@@ -58,6 +59,7 @@ const FeatureGlyph = observer(function (props: {
             y={rootLayout.getSubRecord('nameLabel')?.absolute.top || 0}
             color={readConfObject(config, ['labels', 'nameColor'], { feature })}
             featureWidth={featureLayout.width}
+            bold={topLevel}
             {...props}
           />
         ) : null}
@@ -70,6 +72,7 @@ const FeatureGlyph = observer(function (props: {
               feature,
             })}
             featureWidth={featureLayout.width}
+            bold={topLevel}
             {...props}
           />
         ) : null}
