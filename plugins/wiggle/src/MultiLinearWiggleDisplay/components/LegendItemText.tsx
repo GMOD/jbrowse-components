@@ -27,7 +27,7 @@ const LegendItemText = function ({
 
   return canDisplayLabel ? (
     <text
-      y={idx * rowHeight + 13}
+      y={idx * rowHeight + svgFontSize}
       x={extraOffset + colorBoxWidth + 2}
       fontSize={svgFontSize}
       {...textFillProps}
