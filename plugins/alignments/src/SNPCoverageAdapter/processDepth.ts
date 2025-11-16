@@ -18,24 +18,6 @@ export function processDepth({
   for (let j = fstart; j < fend + 1; j++) {
     const i = j - region.start
     if (i >= 0 && i < regionLength) {
-      if (bins[i] === undefined) {
-        bins[i] = {
-          depth: 0,
-          readsCounted: 0,
-          ref: {
-            probabilities: [],
-            entryDepth: 0,
-            '-1': 0,
-            0: 0,
-            1: 0,
-          },
-          snps: {},
-          mods: {},
-          nonmods: {},
-          delskips: {},
-          noncov: {},
-        }
-      }
       if (j !== fend) {
         bins[i].depth++
         bins[i].readsCounted++
