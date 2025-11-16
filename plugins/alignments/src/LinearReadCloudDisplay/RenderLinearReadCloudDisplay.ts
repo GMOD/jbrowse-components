@@ -1,11 +1,12 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import {
   dedupe,
   groupBy,
   max,
   min,
   renderToAbstractCanvas,
+  renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
@@ -55,13 +56,45 @@ export interface RenderLinearReadCloudDisplayArgs {
   stopToken?: string
 }
 
-export default class RenderLinearReadCloudDisplay extends RpcMethodTypeWithFiltersAndRenameRegions {
+export default class RenderLinearReadCloudDisplay extends RpcMethodType {
   name = 'RenderLinearReadCloudDisplay'
 
-  async deserializeArguments(args: any, rpcDriver: string) {
-    const deserialized = await super.deserializeArguments(args, rpcDriver)
+  async renameRegionsIfNeeded(
+    args: RenderLinearReadCloudDisplayArgs,
+  ): Promise<RenderLinearReadCloudDisplayArgs> {
+    const pm = this.pluginManager
+    const assemblyManager = pm.rootModel?.session?.assemblyManager
+
+    if (!assemblyManager) {
+      throw new Error('no assembly manager')
+    }
+
+    const { view: viewSnapshot, sessionId, adapterConfig } = args
+    const displayedRegions =
+      (viewSnapshot as any).displayedRegions || ([] as any[])
+
+    if (!displayedRegions.length) {
+      return args
+    }
+
+    const result = await renameRegionsIfNeeded(assemblyManager, {
+      sessionId,
+      adapterConfig,
+      regions: displayedRegions,
+    })
+
     return {
-      ...deserialized,
+      ...args,
+      view: {
+        ...viewSnapshot,
+        displayedRegions: result.regions,
+      },
+    }
+  }
+
+  deserializeArguments(args: any, rpcDriver: string) {
+    return {
+      ...args,
       config:
         rpcDriver !== 'MainThreadRpcDriver'
           ? configSchema(this.pluginManager).create(args.config, {
@@ -69,6 +102,14 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodTypeWithFilte
             })
           : args.config,
     }
+  }
+
+  async serializeArguments(
+    args: RenderLinearReadCloudDisplayArgs,
+    rpcDriver: string,
+  ) {
+    const renamed = await this.renameRegionsIfNeeded(args)
+    return super.serializeArguments(renamed, rpcDriver)
   }
   async execute(args: RenderLinearReadCloudDisplayArgs, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
