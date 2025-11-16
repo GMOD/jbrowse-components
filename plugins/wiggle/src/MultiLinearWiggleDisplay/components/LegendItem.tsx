@@ -2,7 +2,6 @@ import RectBg from './RectBg'
 
 import type { MinimalModel } from './types'
 import type { Source } from '../../util'
-import type { WiggleDisplayModel } from '../model'
 
 const LegendItem = function ({
   source,

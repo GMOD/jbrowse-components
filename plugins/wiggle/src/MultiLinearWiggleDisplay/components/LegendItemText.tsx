@@ -1,6 +1,5 @@
 import type { MinimalModel } from './types'
 import type { Source } from '../../util'
-import type { WiggleDisplayModel } from '../model'
 import type { getFillProps } from '@jbrowse/core/util'
 
 const LegendItemText = function ({
