@@ -137,18 +137,19 @@ function stateModelFactory(
           const { inverted, scaleType, domain, height } = self
           const minimalTicks = getConf(self, 'minimalTicks')
           if (domain) {
-            const ticks = axisPropsFromTickScale(
-              getScale({
-                scaleType,
-                domain,
-                range: [
-                  height - YSCALEBAR_LABEL_OFFSET,
-                  YSCALEBAR_LABEL_OFFSET,
-                ],
-                inverted,
-              }),
-              4,
-            )
+            const scale = getScale({
+              scaleType,
+              domain,
+              range: [
+                height - YSCALEBAR_LABEL_OFFSET,
+                YSCALEBAR_LABEL_OFFSET,
+              ],
+              inverted,
+            })
+            if (!scale) {
+              return undefined
+            }
+            const ticks = axisPropsFromTickScale(scale, 4)
             return height < 100 || minimalTicks
               ? { ...ticks, values: domain }
               : ticks
@@ -163,11 +164,18 @@ function stateModelFactory(
        * #method
        */
       renderProps() {
-        const { inverted, ticks, height } = self
+        const { inverted, ticks, height, domain } = self
         const superProps = self.adapterProps()
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const statsRegion = JSON.stringify(view.dynamicBlocks)
+        const singleRegion = view.dynamicBlocks.contentBlocks.length === 1
         return {
           ...self.adapterProps(),
-          notReady: superProps.notReady || !self.stats,
+          notReady:
+            superProps.notReady ||
+            !domain ||
+            (!singleRegion &&
+              (!self.stats || self.statsRegion !== statsRegion)),
           height,
           ticks,
           inverted,

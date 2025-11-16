@@ -44,6 +44,9 @@ export function getScale({
   pivotValue,
   inverted,
 }: ScaleOpts) {
+  if (!domain) {
+    return undefined
+  }
   let scale:
     | ReturnType<typeof scaleLinear<number>>
     | ReturnType<typeof scaleLog<number>>
