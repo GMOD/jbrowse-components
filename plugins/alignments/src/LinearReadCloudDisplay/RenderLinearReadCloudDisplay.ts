@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import {
   dedupe,
   groupBy,
@@ -55,12 +55,13 @@ export interface RenderLinearReadCloudDisplayArgs {
   stopToken?: string
 }
 
-export default class RenderLinearReadCloudDisplay extends RpcMethodType {
+export default class RenderLinearReadCloudDisplay extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'RenderLinearReadCloudDisplay'
 
-  deserializeArguments(args: any, rpcDriver: string) {
+  async deserializeArguments(args: any, rpcDriver: string) {
+    const deserialized = await super.deserializeArguments(args, rpcDriver)
     return {
-      ...args,
+      ...deserialized,
       config:
         rpcDriver !== 'MainThreadRpcDriver'
           ? configSchema(this.pluginManager).create(args.config, {
