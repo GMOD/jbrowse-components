@@ -1,5 +1,6 @@
 import { Suspense, isValidElement, lazy } from 'react'
 
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -8,11 +9,12 @@ import BlockMsg from './BlockMsg'
 // lazies
 const BlockErrorMessage = lazy(() => import('./BlockErrorMessage'))
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   contentContainer: {
     position: 'relative',
     width: '100%',
     height: '100%',
+    minHeight: '100px',
   },
   loadingOverlay: {
     position: 'absolute',
@@ -25,7 +27,15 @@ const useStyles = makeStyles()({
     pointerEvents: 'none',
     zIndex: 1,
   },
-})
+  loadingMessage: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    zIndex: 2,
+    pointerEvents: 'none',
+  },
+}))
 
 const ServerSideRenderedBlockContent = observer(function ({
   model,
@@ -66,6 +76,9 @@ const ServerSideRenderedBlockContent = observer(function ({
       <div className={classes.contentContainer}>
         {model.reactElement}
         <div className={classes.loadingOverlay} />
+        <div className={classes.loadingMessage}>
+          <LoadingEllipses message={model.status} />
+        </div>
       </div>
     )
   } else if (model.filled) {
