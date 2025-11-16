@@ -8,9 +8,9 @@ import { YSCALEBAR_LABEL_OFFSET } from './util'
 
 import type { Feature } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   hoverVertical: {
-    background: '#333',
+    background: theme.palette.text.primary,
     border: 'none',
     width: 1,
     height: '100%',
@@ -19,7 +19,7 @@ const useStyles = makeStyles()({
     position: 'absolute',
     pointerEvents: 'none',
   },
-})
+}))
 
 type Coord = [number, number]
 

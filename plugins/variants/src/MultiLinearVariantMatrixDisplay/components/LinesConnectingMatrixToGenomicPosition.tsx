@@ -10,7 +10,6 @@ import {
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import type { MultiLinearVariantMatrixDisplayModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { alpha, useTheme } from '@mui/material'
@@ -26,12 +25,19 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+interface MinimalModel {
+  setLineZoneHeight: (arg: number) => number
+  height: number
+  lineZoneHeight: number
+  featuresVolatile: Feature[] | undefined
+}
+
 const Wrapper = observer(function ({
   children,
   model,
   exportSVG,
 }: {
-  model: MultiLinearVariantMatrixDisplayModel
+  model: MinimalModel
   children: React.ReactNode
   exportSVG?: boolean
 }) {
@@ -65,7 +71,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
   model,
   exportSVG,
 }: {
-  model: MultiLinearVariantMatrixDisplayModel
+  model: MinimalModel
   exportSVG?: boolean
 }) {
   const { classes } = useStyles()
@@ -142,7 +148,7 @@ const AllLines = observer(function ({
   model,
   setMouseOverLine,
 }: {
-  model: MultiLinearVariantMatrixDisplayModel
+  model: MinimalModel
   setMouseOverLine: (arg: any) => void
 }) {
   const theme = useTheme()
@@ -161,7 +167,7 @@ const AllLines = observer(function ({
         const ref = f.get('refName')
         const c =
           (view.bpToPx({
-            refName: assembly.getCanonicalRefName(ref) || ref,
+            refName: assembly.getCanonicalRefName2(ref),
             coord: f.get('start'),
           })?.offsetPx || 0) - l
         return (
