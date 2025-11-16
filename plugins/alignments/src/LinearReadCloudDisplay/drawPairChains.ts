@@ -202,7 +202,10 @@ export function drawPairChains({
       }
 
       // Render mismatches on top if available
-      const region = regions[0]
+      const featRefName = feat.get('refName')
+      const region = regions.find(
+        r => r.refName === featRefName && r.start <= feat.get('start') && feat.get('end') <= r.end,
+      )
       if (region) {
         // renderMismatches uses bpSpanPx which calculates (bp - region.start) / bpPerPx
         // This doesn't account for where the region is positioned in static blocks

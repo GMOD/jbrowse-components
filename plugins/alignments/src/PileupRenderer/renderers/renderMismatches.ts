@@ -44,8 +44,13 @@ export function renderMismatches({
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
   const { heightPx, topPx, feature } = feat
-  const region = regions[0]!
-  const start = feature.get('start')
+  const featRefName = feature.get('refName')
+  const featStart = feature.get('start')
+  const featEnd = feature.get('end')
+  const region = regions.find(
+    r => r.refName === featRefName && r.start <= featStart && featEnd <= r.end,
+  ) || regions[0]!
+  const start = featStart
 
   const pxPerBp = Math.min(1 / bpPerPx, 2)
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
