@@ -24,9 +24,52 @@ export async function generateCoverageBins({
 }) {
   const { stopToken, colorBy } = opts
   const skipmap = {} as SkipMap
-  const bins = [] as PreBaseCoverageBin[]
+  const isModificationMode = colorBy?.type === 'modifications' || colorBy?.type === 'methylation'
+  const regionLength = region.end - region.start
+  const bins = new Array<PreBaseCoverageBin>(regionLength)
+
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
+
+  if (isModificationMode) {
+    for (let i = 0; i < regionLength; i++) {
+      bins[i] = {
+        depth: 0,
+        readsCounted: 0,
+        ref: {
+          probabilities: [],
+          entryDepth: 0,
+          '-1': 0,
+          0: 0,
+          1: 0,
+        },
+        snps: {},
+        mods: {},
+        nonmods: {},
+        delskips: {},
+        noncov: {},
+      }
+    }
+  } else {
+    for (let i = 0; i < regionLength; i++) {
+      bins[i] = {
+        depth: 0,
+        readsCounted: 0,
+        ref: {
+          probabilities: [],
+          entryDepth: 0,
+          '-1': 0,
+          0: 0,
+          1: 0,
+        },
+        snps: {},
+        mods: {},
+        nonmods: {},
+        delskips: {},
+        noncov: {},
+      } as PreBaseCoverageBin
+    }
+  }
 
   let regionSequence
   let start = performance.now()
@@ -74,35 +117,37 @@ export async function generateCoverageBins({
     processMismatches({ feature, skipmap, bins, region })
   }
 
-  for (const bin of bins) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (bin) {
-      bin.mods = Object.fromEntries(
-        Object.entries(bin.mods).map(([key, val]) => {
-          return [
-            key,
-            {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
-                : undefined,
-            },
-          ] as const
-        }),
-      )
-      bin.nonmods = Object.fromEntries(
-        Object.entries(bin.nonmods).map(([key, val]) => {
-          return [
-            key,
-            {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
-                : undefined,
-            },
-          ] as const
-        }),
-      )
+  if (isModificationMode) {
+    for (const bin of bins) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (bin) {
+        bin.mods = Object.fromEntries(
+          Object.entries(bin.mods).map(([key, val]) => {
+            return [
+              key,
+              {
+                ...val,
+                avgProbability: val.probabilities.length
+                  ? sum(val.probabilities) / val.probabilities.length
+                  : undefined,
+              },
+            ] as const
+          }),
+        )
+        bin.nonmods = Object.fromEntries(
+          Object.entries(bin.nonmods).map(([key, val]) => {
+            return [
+              key,
+              {
+                ...val,
+                avgProbability: val.probabilities.length
+                  ? sum(val.probabilities) / val.probabilities.length
+                  : undefined,
+              },
+            ] as const
+          }),
+        )
+      }
     }
   }
 
