@@ -47,9 +47,11 @@ export function renderMismatches({
   const featRefName = feature.get('refName')
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
-  const region = regions.find(
-    r => r.refName === featRefName && r.start <= featStart && featEnd <= r.end,
-  ) || regions[0]!
+  const region =
+    regions.find(
+      r =>
+        r.refName === featRefName && r.start <= featStart && featEnd <= r.end,
+    ) || regions[0]!
   const start = featStart
 
   const pxPerBp = Math.min(1 / bpPerPx, 2)

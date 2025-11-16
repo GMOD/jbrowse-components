@@ -95,7 +95,6 @@
         }
       }
     },
-
     {
       "name": "volvox_del",
       "sequence": {
@@ -757,7 +756,6 @@
         ]
       }
     },
-
     {
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi",
@@ -2360,6 +2358,34 @@
           }
         }
       ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox-sv.renamed",
+      "name": "volvox-sv.renamed",
+      "category": ["Alignments"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sv.renamed.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sv.renamed.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["volvox"]
     }
   ],
   "plugins": [
