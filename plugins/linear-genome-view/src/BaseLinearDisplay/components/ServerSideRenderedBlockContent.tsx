@@ -9,7 +9,7 @@ import BlockMsg from './BlockMsg'
 // lazies
 const BlockErrorMessage = lazy(() => import('./BlockErrorMessage'))
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   contentContainer: {
     position: 'relative',
     width: '100%',
@@ -35,7 +35,7 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 2,
     pointerEvents: 'none',
   },
-}))
+})
 
 const ServerSideRenderedBlockContent = observer(function ({
   model,

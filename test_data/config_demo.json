@@ -2,11 +2,11 @@
   "plugins": [
     {
       "name": "Biothings",
-      "url": "https://unpkg.com/jbrowse-plugin-biothings@^1/dist/jbrowse-plugin-biothings.umd.production.min.js"
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-biothings/dist/jbrowse-plugin-biothings.umd.production.min.js"
     },
     {
       "name": "UCSC",
-      "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js"
     }
   ],
   "assemblies": [
