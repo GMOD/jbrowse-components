@@ -10,8 +10,6 @@ import type { TooltipContentsComponent } from '../../Tooltip'
 import type { Source } from '../../util'
 import type { Feature } from '@jbrowse/core/util'
 
-const en = toLocale
-
 interface Props {
   model: { sources: Source[] }
   feature: Feature
@@ -21,7 +19,8 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
     const start = feature.get('start')
     const end = feature.get('end')
     const refName = feature.get('refName')
-    const coord = start === end ? en(start) : `${en(start)}..${en(end)}`
+    const coord =
+      start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`
     const sources = feature.get('sources') as
       | Record<string, { score: number }>
       | undefined
@@ -88,12 +87,9 @@ const WiggleTooltip = observer(function (props: {
   height: number
   offsetMouseCoord: Coord
   clientMouseCoord: Coord
-  clientRect?: DOMRect
   TooltipContents?: TooltipContentsComponent
 }) {
-  return <Tooltip useClientY TooltipContents={TooltipContents} {...props} />
+  return <Tooltip TooltipContents={TooltipContents} {...props} />
 })
 
 export default WiggleTooltip
-
-export { default as Tooltip } from '../../Tooltip'
