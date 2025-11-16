@@ -11,6 +11,25 @@ import type { PreBaseCoverageBin, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
+function initializeMinimalBin(): PreBaseCoverageBin {
+  return {
+    depth: 0,
+    readsCounted: 0,
+    ref: {
+      probabilities: [],
+      entryDepth: 0,
+      '-1': 0,
+      0: 0,
+      1: 0,
+    },
+    snps: {},
+    mods: {},
+    nonmods: {},
+    delskips: {},
+    noncov: {},
+  }
+}
+
 export async function generateCoverageBins({
   fetchSequence,
   features,
@@ -24,7 +43,13 @@ export async function generateCoverageBins({
 }) {
   const { stopToken, colorBy } = opts
   const skipmap = {} as SkipMap
-  const bins = [] as PreBaseCoverageBin[]
+  const regionLength = region.end - region.start
+  const bins = new Array<PreBaseCoverageBin>(regionLength)
+
+  for (let i = 0; i < regionLength; i++) {
+    bins[i] = initializeMinimalBin()
+  }
+
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
 
@@ -74,35 +99,37 @@ export async function generateCoverageBins({
     processMismatches({ feature, skipmap, bins, region })
   }
 
-  for (const bin of bins) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (bin) {
-      bin.mods = Object.fromEntries(
-        Object.entries(bin.mods).map(([key, val]) => {
-          return [
-            key,
-            {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
-                : undefined,
-            },
-          ] as const
-        }),
-      )
-      bin.nonmods = Object.fromEntries(
-        Object.entries(bin.nonmods).map(([key, val]) => {
-          return [
-            key,
-            {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
-                : undefined,
-            },
-          ] as const
-        }),
-      )
+  if (colorBy?.type === 'modifications' || colorBy?.type === 'methylation') {
+    for (const bin of bins) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (bin) {
+        bin.mods = Object.fromEntries(
+          Object.entries(bin.mods).map(([key, val]) => {
+            return [
+              key,
+              {
+                ...val,
+                avgProbability: val.probabilities.length
+                  ? sum(val.probabilities) / val.probabilities.length
+                  : undefined,
+              },
+            ] as const
+          }),
+        )
+        bin.nonmods = Object.fromEntries(
+          Object.entries(bin.nonmods).map(([key, val]) => {
+            return [
+              key,
+              {
+                ...val,
+                avgProbability: val.probabilities.length
+                  ? sum(val.probabilities) / val.probabilities.length
+                  : undefined,
+              },
+            ] as const
+          }),
+        )
+      }
     }
   }
 
