@@ -7,12 +7,12 @@ import {
   getSession,
   getStrokeProps,
 } from '@jbrowse/core/util'
+import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { alpha, useTheme } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {

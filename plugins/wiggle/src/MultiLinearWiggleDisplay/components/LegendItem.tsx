@@ -1,5 +1,6 @@
 import RectBg from './RectBg'
 
+import type { MinimalModel } from './types'
 import type { Source } from '../../util'
 import type { WiggleDisplayModel } from '../model'
 
@@ -15,7 +16,7 @@ const LegendItem = function ({
   idx: number
   rowHeight: number
   labelWidth: number
-  model: WiggleDisplayModel
+  model: MinimalModel
   exportSVG?: boolean
 }) {
   const boxHeight = Math.min(20, rowHeight)
