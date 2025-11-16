@@ -13,6 +13,7 @@ export interface Rectangle<T> {
   h: number
   originalHeight: number
   data?: T
+  serializableData?: T
 }
 
 export interface BaseLayout<T> {
@@ -22,6 +23,7 @@ export interface BaseLayout<T> {
     right: number,
     height: number,
     data?: unknown,
+    serializableData?: unknown,
   ): number | null
   collides(rect: Rectangle<T>, top: number): boolean
   addRectToBitmap(rect: Rectangle<T>, data: unknown): void

@@ -4,7 +4,7 @@ import Segments from './Segments'
 import { getSubparts } from './filterSubparts'
 import { layOutFeature, layOutSubfeatures } from './util'
 
-import type { ExtraGlyphValidator } from './types'
+import type { DisplayModel, ExtraGlyphValidator } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
@@ -14,7 +14,7 @@ const ProcessedTranscript = observer(function (props: {
   region: Region
   config: AnyConfigurationModel
   featureLayout: SceneGraph
-  displayModel: unknown
+  displayModel: DisplayModel
   selected?: boolean
   reversed?: boolean
 }) {

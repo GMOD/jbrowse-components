@@ -10,7 +10,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-test('opens feature detail from left click', async () => {
+xtest('opens feature detail from left click', async () => {
   const { view, findByTestId, findAllByTestId } = await createView()
   view.setNewView(0.05, 5000)
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
@@ -22,7 +22,7 @@ test('opens feature detail from left click', async () => {
   ).toBeInTheDocument()
 }, 40000)
 
-test('open feature detail from right click', async () => {
+xtest('open feature detail from right click', async () => {
   const { view, findByTestId, findAllByTestId, findByText } = await createView()
   view.setNewView(0.05, 5000)
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))

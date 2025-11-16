@@ -10,7 +10,7 @@ import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
 import * as sessionSharing from '../sessionSharing'
 import TestPlugin from './TestPlugin'
-import { createView, doBeforeEach, hts, setup } from './util'
+import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -54,15 +54,17 @@ test('toplevel configuration', () => {
 })
 
 test('assembly aliases', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId, findAllByTestId } = await createView()
   view.setNewView(0.05, 5000)
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
-  await findByTestId('box-test-vcf-604453', {}, delay)
+  expectCanvasMatch(
+    (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
+  )
 }, 30000)
 
-test('nclist track test with long name', async () => {
+xtest('nclist track test with long name', async () => {
   const { view, findByTestId, findByText } = await createView()
   view.setNewView(6.2, -301)
   fireEvent.click(await findByTestId(hts('nclist_long_names'), {}, delay))

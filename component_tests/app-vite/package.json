@@ -45,6 +45,7 @@
     "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",
     "@jbrowse/plugin-spreadsheet-view": "file:./packed/jbrowse-plugin-spreadsheet-view.tgz",
     "@jbrowse/plugin-svg": "file:./packed/jbrowse-plugin-svg.tgz",
+    "@jbrowse/plugin-canvas": "file:./packed/jbrowse-plugin-canvas.tgz",
     "@jbrowse/plugin-sv-inspector": "file:./packed/jbrowse-plugin-sv-inspector.tgz",
     "@jbrowse/plugin-text-indexing": "file:./packed/jbrowse-plugin-text-indexing.tgz",
     "@jbrowse/plugin-trix": "file:./packed/jbrowse-plugin-trix.tgz",

@@ -136,6 +136,39 @@ exports[`renders with the available plugins 1`] = `
                     <p
                       class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
                     >
+                      CanvasPlugin
+                    </p>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-qyw6ft-MuiListItem-root"
+                  >
+                    <span
+                      aria-label="This plugin was installed by an administrator, you cannot remove it."
+                      class="css-1xdepnh-iconMargin"
+                      data-mui-internal-clone-element="true"
+                    >
+                      <button
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        disabled=""
+                        tabindex="-1"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          data-testid="LockIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
+                          />
+                        </svg>
+                      </button>
+                    </span>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                    >
                       SVGPlugin
                     </p>
                   </li>

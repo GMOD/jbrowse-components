@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
@@ -20,10 +22,25 @@ const BlockLoadingMessage = observer(function ({
 }: {
   model: { status?: string }
 }) {
+  const [show, setShow] = useState(false)
   const { classes } = useStyles()
   const { status: blockStatus } = model
   const { message: displayStatus } = getParent<{ message?: string }>(model, 2)
   const status = displayStatus || blockStatus
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShow(true)
+    }, 500)
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [])
+
+  if (!show) {
+    return null
+  }
+
   return (
     <div className={classes.loading}>
       <LoadingEllipses message={status} />

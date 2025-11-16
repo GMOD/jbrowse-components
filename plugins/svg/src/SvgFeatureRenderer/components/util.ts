@@ -290,6 +290,7 @@ export function layoutFeatures({
       feature.get('start'),
       feature.get('start') + rootLayout.width * bpPerPx + xPadding * bpPerPx,
       rootLayout.height + yPadding,
+      feature,
       {
         label: feature.get('name') || feature.get('id'),
         description: feature.get('description') || feature.get('note'),

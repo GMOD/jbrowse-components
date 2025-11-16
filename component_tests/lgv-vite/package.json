@@ -33,6 +33,7 @@
     "@jbrowse/plugin-linear-genome-view": "file:./packed/jbrowse-plugin-linear-genome-view.tgz",
     "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",
     "@jbrowse/plugin-svg": "file:./packed/jbrowse-plugin-svg.tgz",
+    "@jbrowse/plugin-canvas": "file:./packed/jbrowse-plugin-canvas.tgz",
     "@jbrowse/plugin-trix": "file:./packed/jbrowse-plugin-trix.tgz",
     "@jbrowse/plugin-variants": "file:./packed/jbrowse-plugin-variants.tgz",
     "@jbrowse/plugin-wiggle": "file:./packed/jbrowse-plugin-wiggle.tgz",

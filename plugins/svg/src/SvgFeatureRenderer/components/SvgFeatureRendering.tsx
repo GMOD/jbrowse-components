@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx, measureText } from '@jbrowse/core/util'
@@ -9,12 +9,7 @@ import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
 
-import type {
-  Coord,
-  DisplayModel,
-  ExtraGlyphValidator,
-  ViewParams,
-} from './types'
+import type { Coord, DisplayModel, ExtraGlyphValidator } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -39,7 +34,6 @@ function RenderedFeatureGlyph(props: {
   exportSVG?: unknown
   displayModel?: DisplayModel
   detectRerender?: () => void
-  viewParams: ViewParams
 }) {
   const {
     feature,
@@ -168,7 +162,6 @@ const RenderedFeatures = observer(function (props: {
   exportSVG?: unknown
   extraGlyphs?: ExtraGlyphValidator[]
   layout: BaseLayout<unknown>
-  viewParams: ViewParams
 }) {
   const { features = new Map(), isFeatureDisplayed } = props
   return (
@@ -199,7 +192,6 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   features: Map<string, Feature>
   displayModel?: DisplayModel
   exportSVG?: boolean
-  viewParams: ViewParams
   featureDisplayHandler?: (f: Feature) => boolean
   extraGlyphs?: ExtraGlyphValidator[]
   onMouseOut?: React.MouseEventHandler
@@ -245,7 +237,6 @@ function Wrapper(props: {
   colorByCDS: boolean
   features: Map<string, Feature>
   displayModel?: DisplayModel
-  viewParams: ViewParams
   extraGlyphs?: ExtraGlyphValidator[]
   onMouseOut?: React.MouseEventHandler
   onMouseDown?: React.MouseEventHandler
@@ -261,7 +252,6 @@ function Wrapper(props: {
     blockKey,
     regions = [],
     bpPerPx,
-    config,
     displayModel = {},
     onMouseOut,
     onMouseDown,
@@ -276,18 +266,13 @@ function Wrapper(props: {
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const maxConfHeight = readConfObject(config, 'maxHeight') as number
-
   const ref = useRef<SVGSVGElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [height, setHeight] = useState(maxConfHeight)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const [initialMousePos, setInitialMousePos] = useState<Coord>()
 
-  useEffect(() => {
-    setHeight(layout.getTotalHeight())
-  }, [layout])
+  const height = layout.getTotalHeight()
 
   return (
     <svg

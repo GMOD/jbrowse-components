@@ -42,8 +42,16 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
     right: number,
     height: number,
     data: Record<string, T> = {},
+    serializableData?: Record<string, T>,
   ) {
-    return this.getSublayout(layoutName).addRect(id, left, right, height, data)
+    return this.getSublayout(layoutName).addRect(
+      id,
+      left,
+      right,
+      height,
+      data,
+      serializableData,
+    )
   }
 
   discardRange(layoutName: string, left: number, right: number) {

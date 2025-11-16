@@ -110,3 +110,4 @@ export {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
+export { default as LinearBasicDisplayComponent } from './LinearBasicDisplay/components/LinearBasicDisplayComponent'
