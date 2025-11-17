@@ -6,6 +6,7 @@ import {
   max,
   min,
   renderToAbstractCanvas,
+  updateStatus,
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
@@ -46,6 +47,7 @@ export interface RenderLinearReadArcsDisplayArgs {
   height: number
   highResolutionScaling?: number
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
+  statusCallback?: (status: string) => void
   stopToken?: string
 }
 
@@ -63,7 +65,10 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
           : args.config,
     }
   }
-  async execute(args: RenderLinearReadArcsDisplayArgs, rpcDriver: string) {
+  async execute(
+    args: Record<string, unknown>,
+    rpcDriver: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
 
     const {
@@ -78,6 +83,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
       height,
       highResolutionScaling,
       exportSVG,
+      statusCallback = () => {},
       stopToken,
     } = deserializedArgs
 
@@ -120,60 +126,71 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const featuresArray = await firstValueFrom(
-      dataAdapter
-        .getFeaturesInMultipleRegions(regions, deserializedArgs)
-        .pipe(toArray()),
+    const featuresArray = await updateStatus(
+      'Fetching alignments',
+      statusCallback,
+      () =>
+        firstValueFrom(
+          dataAdapter
+            .getFeaturesInMultipleRegions(regions, deserializedArgs)
+            .pipe(toArray()),
+        ),
     )
 
     // Check stop token after fetching features
     checkStopToken(stopToken)
 
-    // Dedupe features by ID while preserving full Feature objects
-    const deduped = dedupe(featuresArray, f => f.id())
+    // Process chain data with status updates
+    const { chains, stats } = await updateStatus(
+      'Processing alignments',
+      statusCallback,
+      async () => {
+        // Dedupe features by ID while preserving full Feature objects
+        const deduped = dedupe(featuresArray, f => f.id())
 
-    // For stats calculation, we need to extract the template_length values
-    const filtered = deduped.filter(f => {
-      // Filter similar to what filterForPairs does
-      const flags = f.get('flags')
-      // Only keep paired reads
-      if (!(flags & 1)) {
-        return false
-      }
-      // Skip secondary and supplementary alignments for stats
-      if (flags & 256 || flags & 2048) {
-        return false
-      }
-      return true
-    })
-    let stats
-    if (filtered.length) {
-      // Filter out features without valid TLEN values
-      const validTlenFeatures = filtered.filter(f => {
-        const tlen = f.get('template_length')
-        return tlen !== 0 && !Number.isNaN(tlen)
-      })
-      if (validTlenFeatures.length > 0) {
-        // Convert to simple objects for getInsertSizeStats
-        const simpleTlenFeatures = validTlenFeatures.map(f => ({
-          tlen: f.get('template_length'),
-        }))
-        const insertSizeStats = getInsertSizeStats(simpleTlenFeatures)
-        const tlens = validTlenFeatures.map(f =>
-          Math.abs(f.get('template_length')),
-        )
-        stats = {
-          ...insertSizeStats,
-          max: max(tlens),
-          min: min(tlens),
+        // For stats calculation, we need to extract the template_length values
+        const filtered = deduped.filter(f => {
+          // Filter similar to what filterForPairs does
+          const flags = f.get('flags')
+          // Only keep paired reads
+          if (!(flags & 1)) {
+            return false
+          }
+          // Skip secondary and supplementary alignments for stats
+          if (flags & 256 || flags & 2048) {
+            return false
+          }
+          return true
+        })
+        let statsResult
+        if (filtered.length) {
+          // Filter out features without valid TLEN values
+          const validTlenFeatures = filtered.filter(f => {
+            const tlen = f.get('template_length')
+            return tlen !== 0 && !Number.isNaN(tlen)
+          })
+          if (validTlenFeatures.length > 0) {
+            // Convert to simple objects for getInsertSizeStats
+            const simpleTlenFeatures = validTlenFeatures.map(f => ({
+              tlen: f.get('template_length'),
+            }))
+            const insertSizeStats = getInsertSizeStats(simpleTlenFeatures)
+            const tlens = validTlenFeatures.map(f =>
+              Math.abs(f.get('template_length')),
+            )
+            statsResult = {
+              ...insertSizeStats,
+              max: max(tlens),
+              min: min(tlens),
+            }
+          }
         }
-      }
-    }
 
-    // Use helper function to ensure proper typing
-    // If stats is defined, TypeScript will infer PairedChainData
-    // If stats is undefined, TypeScript will infer UnpairedChainData
-    const chains = Object.values(groupBy(deduped, f => f.get('name')))
+        const chainsResult = Object.values(groupBy(deduped, f => f.get('name')))
+        return { chains: chainsResult, stats: statsResult }
+      },
+    )
+
     const chainData: ChainData = stats
       ? createChainData(chains, stats)
       : createChainData(chains)
@@ -187,28 +204,33 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
     }
 
     // Render using renderToAbstractCanvas
-    const result = await renderToAbstractCanvas(
-      width,
-      height,
-      renderOpts,
-      async (ctx: CanvasRenderingContext2D) => {
-        // Call drawFeatsRPC with all necessary parameters
-        drawFeatsRPC({
-          ctx,
+    const result = await updateStatus(
+      'Rendering arcs',
+      statusCallback,
+      () =>
+        renderToAbstractCanvas(
           width,
           height,
-          chainData,
-          colorBy,
-          drawInter,
-          drawLongRange,
-          lineWidth,
-          jitter,
-          view: viewSnap,
-          offsetPx,
-          stopToken,
-        })
-        return {}
-      },
+          renderOpts,
+          async (ctx: CanvasRenderingContext2D) => {
+            // Call drawFeatsRPC with all necessary parameters
+            drawFeatsRPC({
+              ctx,
+              width,
+              height,
+              chainData,
+              colorBy,
+              drawInter,
+              drawLongRange,
+              lineWidth,
+              jitter,
+              view: viewSnap,
+              offsetPx,
+              stopToken,
+            })
+            return {}
+          },
+        ),
     )
 
     // Include the offsetPx in the result so the main thread can position the canvas correctly

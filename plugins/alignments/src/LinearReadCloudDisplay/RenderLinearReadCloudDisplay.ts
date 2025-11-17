@@ -7,6 +7,7 @@ import {
   min,
   renderToAbstractCanvas,
   renameRegionsIfNeeded,
+  updateStatus,
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
@@ -17,7 +18,12 @@ import { toArray } from 'rxjs/operators'
 
 import configSchema from './configSchema'
 import { calculateCloudYOffsetsUtil } from './drawFeatsCloud'
-import { drawFeatsCore } from './drawFeatsCommon'
+import {
+  computeChainBounds,
+  drawFeatsCore,
+  filterChains,
+  sortComputedChains,
+} from './drawFeatsCommon'
 import { calculateStackYOffsetsCore } from './drawFeatsStack'
 import { getInsertSizeStats } from '../PileupRPC/util'
 import { createChainData } from '../shared/fetchChains'
@@ -50,9 +56,10 @@ export interface RenderLinearReadCloudDisplayArgs {
   drawProperPairs: boolean
   flipStrandLongReadChains: boolean
   trackMaxHeight?: number
-  height: number
+  cloudModeHeight?: number
   highResolutionScaling?: number
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
+  statusCallback?: (status: string) => void
   stopToken?: string
 }
 
@@ -105,13 +112,21 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
   }
 
   async serializeArguments(
-    args: RenderLinearReadCloudDisplayArgs,
+    args: Record<string, unknown>,
     rpcDriver: string,
   ) {
-    const renamed = await this.renameRegionsIfNeeded(args)
-    return super.serializeArguments(renamed, rpcDriver)
+    const renamed = await this.renameRegionsIfNeeded(
+      args as unknown as RenderLinearReadCloudDisplayArgs,
+    )
+    return super.serializeArguments(
+      renamed as unknown as Record<string, unknown>,
+      rpcDriver,
+    )
   }
-  async execute(args: RenderLinearReadCloudDisplayArgs, rpcDriver: string) {
+  async execute(
+    args: Record<string, unknown>,
+    rpcDriver: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
 
     const {
@@ -128,9 +143,10 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       drawProperPairs,
       flipStrandLongReadChains,
       trackMaxHeight,
-      height,
+      cloudModeHeight,
       highResolutionScaling,
       exportSVG,
+      statusCallback = () => {},
       stopToken,
     } = deserializedArgs
 
@@ -177,10 +193,15 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const featuresArray = await firstValueFrom(
-      dataAdapter
-        .getFeaturesInMultipleRegions(regions, deserializedArgs)
-        .pipe(toArray()),
+    const featuresArray = await updateStatus(
+      'Fetching alignments',
+      statusCallback,
+      () =>
+        firstValueFrom(
+          dataAdapter
+            .getFeaturesInMultipleRegions(regions, deserializedArgs)
+            .pipe(toArray()),
+        ),
     )
 
     // Check stop token after fetching features
@@ -189,48 +210,54 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     // Dedupe features by ID while preserving full Feature objects
     const deduped = dedupe(featuresArray, f => f.id())
 
-    // For stats calculation, we still need to extract the template_length values
-    const filtered = deduped.filter(f => {
-      // Filter similar to what filterForPairs does
-      const flags = f.get('flags')
-      // Only keep paired reads
-      if (!(flags & 1)) {
-        return false
-      }
-      // Skip secondary and supplementary alignments for stats
-      if (flags & 256 || flags & 2048) {
-        return false
-      }
-      return true
-    })
-    let stats
-    if (filtered.length) {
-      // Filter out features without valid TLEN values
-      const validTlenFeatures = filtered.filter(f => {
-        const tlen = f.get('template_length')
-        return tlen !== 0 && !Number.isNaN(tlen)
-      })
-      if (validTlenFeatures.length > 0) {
-        // Convert to simple objects for getInsertSizeStats
-        const simpleTlenFeatures = validTlenFeatures.map(f => ({
-          tlen: f.get('template_length'),
-        }))
-        const insertSizeStats = getInsertSizeStats(simpleTlenFeatures)
-        const tlens = validTlenFeatures.map(f =>
-          Math.abs(f.get('template_length')),
-        )
-        stats = {
-          ...insertSizeStats,
-          max: max(tlens),
-          min: min(tlens),
+    // Process chain data with status updates
+    const { chains, stats } = await updateStatus(
+      'Processing alignments',
+      statusCallback,
+      async () => {
+        // For stats calculation, we still need to extract the template_length values
+        const filtered = deduped.filter(f => {
+          // Filter similar to what filterForPairs does
+          const flags = f.get('flags')
+          // Only keep paired reads
+          if (!(flags & 1)) {
+            return false
+          }
+          // Skip secondary and supplementary alignments for stats
+          if (flags & 256 || flags & 2048) {
+            return false
+          }
+          return true
+        })
+        let statsResult
+        if (filtered.length) {
+          // Filter out features without valid TLEN values
+          const validTlenFeatures = filtered.filter(f => {
+            const tlen = f.get('template_length')
+            return tlen !== 0 && !Number.isNaN(tlen)
+          })
+          if (validTlenFeatures.length > 0) {
+            // Convert to simple objects for getInsertSizeStats
+            const simpleTlenFeatures = validTlenFeatures.map(f => ({
+              tlen: f.get('template_length'),
+            }))
+            const insertSizeStats = getInsertSizeStats(simpleTlenFeatures)
+            const tlens = validTlenFeatures.map(f =>
+              Math.abs(f.get('template_length')),
+            )
+            statsResult = {
+              ...insertSizeStats,
+              max: max(tlens),
+              min: min(tlens),
+            }
+          }
         }
-      }
-    }
 
-    // Use helper function to ensure proper typing
-    // If stats is defined, TypeScript will infer PairedChainData
-    // If stats is undefined, TypeScript will infer UnpairedChainData
-    const chains = Object.values(groupBy(deduped, f => f.get('name')))
+        const chainsResult = Object.values(groupBy(deduped, f => f.get('name')))
+        return { chains: chainsResult, stats: statsResult }
+      },
+    )
+
     const chainData: ChainData = stats
       ? createChainData(chains, stats)
       : createChainData(chains)
@@ -238,22 +265,29 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     // Check stop token after processing chain data
     checkStopToken(stopToken)
 
-    // Create params object for drawing
+    // Pre-calculate actual layout height to avoid oversized canvas
+    const { filteredChains, computedChains } = await updateStatus(
+      'Calculating layout',
+      statusCallback,
+      async () => {
+        const filtered = filterChains(
+          chains,
+          drawSingletons,
+          drawProperPairs,
+          colorBy.type || 'insertSizeAndOrientation',
+          chainData,
+        )
+        const computed = computeChainBounds(filtered, viewSnap)
+        sortComputedChains(computed)
+        return { filteredChains: filtered, computedChains: computed }
+      },
+    )
 
-    const renderOpts: RenderToAbstractCanvasOptions = {
-      highResolutionScaling,
-      exportSVG,
-    }
-
-    // Render using renderToAbstractCanvas
-    const result = await renderToAbstractCanvas(
-      width,
-      height,
-      renderOpts,
-      async (ctx: CanvasRenderingContext2D) => {
-        const { layoutHeight, featuresForFlatbush } = drawFeatsCore({
-          ctx,
-          params: {
+    const actualHeight = drawCloud
+      ? cloudModeHeight ?? 1200
+      : calculateStackYOffsetsCore(
+          computedChains,
+          {
             chainData,
             featureHeight,
             canvasWidth: width,
@@ -269,22 +303,59 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
             bpPerPx,
             stopToken,
           },
-          view: viewSnap,
-          calculateYOffsets: (
-            chains: ComputedChain[],
-            params: DrawFeatsParams,
-            featureHeight: number,
-          ) => {
-            return drawCloud
-              ? calculateCloudYOffsetsUtil(chains, height)
-              : calculateStackYOffsetsCore(chains, params, featureHeight)
+          featureHeight,
+        ).layoutHeight
+
+    const renderOpts: RenderToAbstractCanvasOptions = {
+      highResolutionScaling,
+      exportSVG,
+    }
+
+    // Render using renderToAbstractCanvas with actual height
+    const result = await updateStatus(
+      'Rendering alignments',
+      statusCallback,
+      () =>
+        renderToAbstractCanvas(
+          width,
+          actualHeight,
+          renderOpts,
+          async (ctx: CanvasRenderingContext2D) => {
+            const { layoutHeight, featuresForFlatbush } = drawFeatsCore({
+              ctx,
+              params: {
+                chainData,
+                featureHeight,
+                canvasWidth: width,
+                noSpacing,
+                colorBy,
+                drawSingletons,
+                drawProperPairs,
+                flipStrandLongReadChains,
+                trackMaxHeight,
+                config,
+                theme,
+                regions,
+                bpPerPx,
+                stopToken,
+              },
+              view: viewSnap,
+              calculateYOffsets: (
+                chains: ComputedChain[],
+                params: DrawFeatsParams,
+                featureHeight: number,
+              ) => {
+                return drawCloud
+                  ? calculateCloudYOffsetsUtil(chains, actualHeight)
+                  : calculateStackYOffsetsCore(chains, params, featureHeight)
+              },
+            })
+            return {
+              layoutHeight,
+              featuresForFlatbush,
+            }
           },
-        })
-        return {
-          layoutHeight,
-          featuresForFlatbush,
-        }
-      },
+        ),
     )
 
     // Include the offsetPx in the result so the main thread can position the canvas correctly

@@ -87,6 +87,9 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
           jitter: jitterVal,
           height,
           highResolutionScaling: 2,
+          statusCallback: (msg: string) => {
+            self.setMessage(msg)
+          },
           stopToken,
         },
       )) as RenderResult

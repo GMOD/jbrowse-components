@@ -25,7 +25,7 @@ interface RenderResult {
 
 export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
   // Common rendering logic
-  const performRender = async (drawCloud: boolean, height: number) => {
+  const performRender = async (drawCloud: boolean) => {
     const view = getContainingView(self) as LGV
 
     // Check if we have the necessary conditions to render
@@ -47,6 +47,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       flipStrandLongReadChains,
       noSpacing,
       trackMaxHeight,
+      height,
     } = self
 
     try {
@@ -94,8 +95,11 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           drawProperPairs,
           flipStrandLongReadChains,
           trackMaxHeight,
-          height,
+          ...(drawCloud && { cloudModeHeight: height }),
           highResolutionScaling: 2,
+          statusCallback: (msg: string) => {
+            self.setMessage(msg)
+          },
           stopToken,
         },
       )) as RenderResult
@@ -133,12 +137,9 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         return
       }
 
-      // Only read cloud-specific property - shared properties read in performRender
-      const height = self.height
-
       // Fire off the async render but don't await it
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      performRender(true, height)
+      performRender(true)
     },
     { delay: 1000 },
   )
@@ -151,12 +152,9 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         return
       }
 
-      // Only read stack-specific property - shared properties read in performRender
-      const height = self.trackMaxHeight ?? 10000
-
       // Fire off the async render but don't await it
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      performRender(false, height)
+      performRender(false)
     },
     { delay: 1000 },
   )
