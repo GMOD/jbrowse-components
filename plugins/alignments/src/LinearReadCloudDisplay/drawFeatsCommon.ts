@@ -8,9 +8,8 @@ import { PairType, getPairedType } from '../shared/color'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
-import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
-import type { ColorBy } from '../shared/types'
+import type { ChainData, ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -216,8 +215,9 @@ export function addChainMouseoverRects(
       continue
     }
 
-    const chainMinXPx = minX - view.offsetPx
-    const chainMaxXPx = maxX - view.offsetPx
+    const viewOffsetPx = Math.max(0, view.offsetPx)
+    const chainMinXPx = minX - viewOffsetPx
+    const chainMaxXPx = maxX - viewOffsetPx
     if (chain.length > 0) {
       const firstFeat = chain[0]!
       featuresForFlatbush.push({

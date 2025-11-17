@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
@@ -14,6 +16,7 @@ import {
 } from '../shared/menuItems'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
 
 /**
@@ -261,6 +264,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             getColorSchemeMenuItem(self),
           ]
+        },
+
+        /**
+         * #method
+         */
+        async renderSvg(
+          opts: ExportSvgDisplayOptions,
+        ): Promise<React.ReactNode> {
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self as LinearReadArcsDisplayModel, opts)
         },
       }
     })

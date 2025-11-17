@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
-import type { ReducedFeature } from '../../shared/fetchChains'
+import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -35,13 +35,12 @@ const Cloud = observer(function ({
     y: number
     width: number
     height: number
-  } | null>(null)
-  const [hoveredFeatureData, setHoveredFeatureData] =
-    useState<ReducedFeature | null>(null)
+  }>()
+  const [hoveredFeatureData, setHoveredFeatureData] = useState<ReducedFeature>()
   const [mousePosition, setMousePosition] = useState<{
     x: number
     y: number
-  } | null>(null)
+  }>()
 
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(() => {
@@ -92,9 +91,9 @@ const Cloud = observer(function ({
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
       if (!containerRef.current || !flatbushIndex) {
-        setHoveredFeature(null)
-        setHoveredFeatureData(null)
-        setMousePosition(null)
+        setHoveredFeature(undefined)
+        setHoveredFeatureData(undefined)
+        setMousePosition(undefined)
         return
       }
 
@@ -128,21 +127,21 @@ const Cloud = observer(function ({
           })
           setHoveredFeatureData(feature.data)
         } else {
-          setHoveredFeature(null)
-          setHoveredFeatureData(null)
+          setHoveredFeature(undefined)
+          setHoveredFeatureData(undefined)
         }
       } else {
-        setHoveredFeature(null)
-        setHoveredFeatureData(null)
+        setHoveredFeature(undefined)
+        setHoveredFeatureData(undefined)
       }
     },
     [flatbushIndex, model.featuresForFlatbush, canvasLeft],
   )
 
   const onMouseLeave = useCallback(() => {
-    setHoveredFeature(null)
-    setHoveredFeatureData(null)
-    setMousePosition(null)
+    setHoveredFeature(undefined)
+    setHoveredFeatureData(undefined)
+    setMousePosition(undefined)
   }, [])
 
   const onClick = useCallback(

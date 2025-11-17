@@ -26,12 +26,11 @@ const useStyles = makeStyles()({
     backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.05) 8px, rgba(0, 0, 0, 0.05) 16px)`,
     pointerEvents: 'none',
     zIndex: 1,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingMessage: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
     zIndex: 2,
     pointerEvents: 'none',
   },
@@ -75,9 +74,10 @@ const ServerSideRenderedBlockContent = observer(function ({
     return (
       <div className={classes.contentContainer}>
         {model.reactElement}
-        <div className={classes.loadingOverlay} />
-        <div className={classes.loadingMessage}>
-          <LoadingEllipses message={model.status} />
+        <div className={classes.loadingOverlay}>
+          <div className={classes.loadingMessage}>
+            <LoadingEllipses message={model.status} />
+          </div>
         </div>
       </div>
     )

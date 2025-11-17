@@ -8,8 +8,7 @@ import {
 } from '../shared/color'
 import { hasPairedReads } from '../shared/util'
 
-import type { ChainData } from '../shared/fetchChains'
-import type { ColorBy } from '../shared/types'
+import type { ChainData, ColorBy } from '../shared/types'
 
 function jitter(n: number) {
   return Math.random() * 2 * n - n
