@@ -49,7 +49,9 @@ export async function renderToAbstractCanvas<
       if (!ctx) {
         throw new Error('2d canvas rendering not supported on this platform')
       }
-      ctx.scale(s, s)
+      if (s !== 1) {
+        ctx.scale(s, s)
+      }
       const callbackResult = await cb(ctx)
 
       // two methods needed for converting canvas to PNG, one for webworker
@@ -76,7 +78,9 @@ export async function renderToAbstractCanvas<
     if (!ctx) {
       throw new Error('2d canvas rendering not supported on this platform')
     }
-    ctx.scale(highResolutionScaling, highResolutionScaling)
+    if (highResolutionScaling !== 1) {
+      ctx.scale(highResolutionScaling, highResolutionScaling)
+    }
     const callbackResult = await cb(ctx)
     return {
       ...callbackResult,
