@@ -16,6 +16,7 @@ import {
 } from '../shared/menuItems'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
 
 /**
@@ -269,7 +270,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         async renderSvg(
-          opts: Parameters<typeof import('./renderSvg').renderSvg>[1],
+          opts: ExportSvgDisplayOptions,
         ): Promise<React.ReactNode> {
           const { renderSvg } = await import('./renderSvg')
           return renderSvg(self as LinearReadArcsDisplayModel, opts)

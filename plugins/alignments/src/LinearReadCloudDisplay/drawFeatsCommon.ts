@@ -216,8 +216,9 @@ export function addChainMouseoverRects(
       continue
     }
 
-    const chainMinXPx = minX - view.offsetPx
-    const chainMaxXPx = maxX - view.offsetPx
+    const viewOffsetPx = Math.max(0, view.offsetPx)
+    const chainMinXPx = minX - viewOffsetPx
+    const chainMaxXPx = maxX - viewOffsetPx
     if (chain.length > 0) {
       const firstFeat = chain[0]!
       featuresForFlatbush.push({

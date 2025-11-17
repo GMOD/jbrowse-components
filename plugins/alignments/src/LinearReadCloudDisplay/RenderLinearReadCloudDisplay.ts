@@ -264,7 +264,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     checkStopToken(stopToken)
 
     // Pre-calculate actual layout height to avoid oversized canvas
-    const { filteredChains, computedChains } = await updateStatus(
+    const { computedChains } = await updateStatus(
       'Calculating layout',
       statusCallback,
       async () => {

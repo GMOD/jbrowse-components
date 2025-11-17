@@ -28,12 +28,6 @@ export async function renderSvg(
   const view = getContainingView(self) as LGV
   const session = getSession(self)
   const { rpcManager } = session
-  const assemblyName = view.assemblyNames[0]
-  if (!assemblyName) {
-    return null
-  }
-
-  const { offsetPx } = view
   const height = opts.overrideHeight ?? self.height
 
   const {
@@ -85,14 +79,6 @@ export async function renderSvg(
     finalRendering = { ...rendering, html }
   }
 
-  // Calculate positioning offset
-  // Use the first content block's offsetPx to position the rendering
-  // offsetPx is the current view scroll position
-  // The offset positions our rendered content correctly in the SVG
-  const staticBlocksOffsetPx = view.staticBlocks.contentBlocks[0]?.offsetPx ?? 0
-  const viewOffsetPx = offsetPx
-  const offset = staticBlocksOffsetPx - viewOffsetPx
-
   // Clip to the visible region (view width), not the full staticBlocks width
   const visibleWidth = view.width
 
@@ -108,7 +94,9 @@ export async function renderSvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${clipId})`}>
-        <ReactRendering rendering={finalRendering} />
+        <g transform={`translate(${Math.max(0, -view.offsetPx)} 0)`}>
+          <ReactRendering rendering={finalRendering} />
+        </g>
       </g>
     </>
   )

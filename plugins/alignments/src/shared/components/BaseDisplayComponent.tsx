@@ -21,7 +21,7 @@ interface BaseDisplayModel {
   message?: string
 }
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   loading: {
     position: 'absolute',
     top: 0,
@@ -40,7 +40,7 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 2,
     pointerEvents: 'none',
   },
-}))
+})
 
 const BlockError = observer(function ({ model }: { model: BaseDisplayModel }) {
   const { error } = model
