@@ -95,6 +95,10 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       view: {
         ...viewSnapshot,
         displayedRegions: result.regions,
+        staticBlocks: {
+          ...(viewSnapshot as any).staticBlocks,
+          contentBlocks: result.regions,
+        },
       },
     }
   }
@@ -111,10 +115,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     }
   }
 
-  async serializeArguments(
-    args: Record<string, unknown>,
-    rpcDriver: string,
-  ) {
+  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
     const renamed = await this.renameRegionsIfNeeded(
       args as unknown as RenderLinearReadCloudDisplayArgs,
     )
@@ -123,10 +124,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       rpcDriver,
     )
   }
-  async execute(
-    args: Record<string, unknown>,
-    rpcDriver: string,
-  ) {
+  async execute(args: Record<string, unknown>, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
 
     const {
@@ -284,7 +282,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     )
 
     const actualHeight = drawCloud
-      ? cloudModeHeight ?? 1200
+      ? (cloudModeHeight ?? 1200)
       : calculateStackYOffsetsCore(
           computedChains,
           {
@@ -316,46 +314,41 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       'Rendering alignments',
       statusCallback,
       () =>
-        renderToAbstractCanvas(
-          width,
-          actualHeight,
-          renderOpts,
-          async (ctx: CanvasRenderingContext2D) => {
-            const { layoutHeight, featuresForFlatbush } = drawFeatsCore({
-              ctx,
-              params: {
-                chainData,
-                featureHeight,
-                canvasWidth: width,
-                noSpacing,
-                colorBy,
-                drawSingletons,
-                drawProperPairs,
-                flipStrandLongReadChains,
-                trackMaxHeight,
-                config,
-                theme,
-                regions,
-                bpPerPx,
-                stopToken,
-              },
-              view: viewSnap,
-              calculateYOffsets: (
-                chains: ComputedChain[],
-                params: DrawFeatsParams,
-                featureHeight: number,
-              ) => {
-                return drawCloud
-                  ? calculateCloudYOffsetsUtil(chains, actualHeight)
-                  : calculateStackYOffsetsCore(chains, params, featureHeight)
-              },
-            })
-            return {
-              layoutHeight,
-              featuresForFlatbush,
-            }
-          },
-        ),
+        renderToAbstractCanvas(width, actualHeight, renderOpts, async ctx => {
+          const { layoutHeight, featuresForFlatbush } = drawFeatsCore({
+            ctx,
+            params: {
+              chainData,
+              featureHeight,
+              canvasWidth: width,
+              noSpacing,
+              colorBy,
+              drawSingletons,
+              drawProperPairs,
+              flipStrandLongReadChains,
+              trackMaxHeight,
+              config,
+              theme,
+              regions,
+              bpPerPx,
+              stopToken,
+            },
+            view: viewSnap,
+            calculateYOffsets: (
+              chains: ComputedChain[],
+              params: DrawFeatsParams,
+              featureHeight: number,
+            ) => {
+              return drawCloud
+                ? calculateCloudYOffsetsUtil(chains, actualHeight)
+                : calculateStackYOffsetsCore(chains, params, featureHeight)
+            },
+          })
+          return {
+            layoutHeight,
+            featuresForFlatbush,
+          }
+        }),
     )
 
     // Include the offsetPx in the result so the main thread can position the canvas correctly

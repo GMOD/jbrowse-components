@@ -6,6 +6,7 @@ import {
   max,
   min,
   renderToAbstractCanvas,
+  renameRegionsIfNeeded,
   updateStatus,
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
@@ -65,10 +66,55 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
           : args.config,
     }
   }
-  async execute(
-    args: Record<string, unknown>,
-    rpcDriver: string,
-  ) {
+
+  async renameRegionsIfNeeded(
+    args: RenderLinearReadArcsDisplayArgs,
+  ): Promise<RenderLinearReadArcsDisplayArgs> {
+    const pm = this.pluginManager
+    const assemblyManager = pm.rootModel?.session?.assemblyManager
+
+    if (!assemblyManager) {
+      throw new Error('no assembly manager')
+    }
+
+    const { view: viewSnapshot, sessionId, adapterConfig } = args
+    const displayedRegions =
+      (viewSnapshot as any).displayedRegions || ([] as any[])
+
+    if (!displayedRegions.length) {
+      return args
+    }
+
+    const result = await renameRegionsIfNeeded(assemblyManager, {
+      sessionId,
+      adapterConfig,
+      regions: displayedRegions,
+    })
+
+    return {
+      ...args,
+      view: {
+        ...viewSnapshot,
+        displayedRegions: result.regions,
+        staticBlocks: {
+          ...(viewSnapshot as any).staticBlocks,
+          contentBlocks: result.regions,
+        },
+      },
+    }
+  }
+
+  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
+    const renamed = await this.renameRegionsIfNeeded(
+      args as unknown as RenderLinearReadArcsDisplayArgs,
+    )
+    return super.serializeArguments(
+      renamed as unknown as Record<string, unknown>,
+      rpcDriver,
+    )
+  }
+
+  async execute(args: Record<string, unknown>, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
 
     const {
@@ -204,33 +250,25 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
     }
 
     // Render using renderToAbstractCanvas
-    const result = await updateStatus(
-      'Rendering arcs',
-      statusCallback,
-      () =>
-        renderToAbstractCanvas(
+    const result = await updateStatus('Rendering arcs', statusCallback, () =>
+      renderToAbstractCanvas(width, height, renderOpts, async ctx => {
+        // Call drawFeatsRPC with all necessary parameters
+        drawFeatsRPC({
+          ctx,
           width,
           height,
-          renderOpts,
-          async (ctx: CanvasRenderingContext2D) => {
-            // Call drawFeatsRPC with all necessary parameters
-            drawFeatsRPC({
-              ctx,
-              width,
-              height,
-              chainData,
-              colorBy,
-              drawInter,
-              drawLongRange,
-              lineWidth,
-              jitter,
-              view: viewSnap,
-              offsetPx,
-              stopToken,
-            })
-            return {}
-          },
-        ),
+          chainData,
+          colorBy,
+          drawInter,
+          drawLongRange,
+          lineWidth,
+          jitter,
+          view: viewSnap,
+          offsetPx,
+          stopToken,
+        })
+        return {}
+      }),
     )
 
     // Include the offsetPx in the result so the main thread can position the canvas correctly
