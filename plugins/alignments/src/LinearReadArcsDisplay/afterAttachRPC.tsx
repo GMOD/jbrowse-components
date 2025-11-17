@@ -60,6 +60,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
       // Create stop token for this render operation
       const stopToken = createStopToken()
       self.setRenderingStopToken(stopToken)
+      self.setLoading(true)
 
       // Serialize the full view snapshot for RPC
       // Include staticBlocks and width which are not part of the regular snapshot
@@ -109,6 +110,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
       }
     } finally {
       self.setRenderingStopToken(undefined)
+      self.setLoading(false)
     }
   }
 
