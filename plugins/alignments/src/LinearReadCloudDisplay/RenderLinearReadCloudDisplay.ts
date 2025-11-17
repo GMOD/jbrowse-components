@@ -213,15 +213,14 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       'Processing alignments',
       statusCallback,
       async () => {
-        // For stats calculation, we still need to extract the template_length values
+        // For stats calculation, only use reads with proper paired flag (flag 2)
         const filtered = deduped.filter(f => {
-          // Filter similar to what filterForPairs does
           const flags = f.get('flags')
-          // Only keep paired reads
-          if (!(flags & 1)) {
+          // Only keep reads mapped in proper pair (flag 2)
+          if (!(flags & 2)) {
             return false
           }
-          // Skip secondary and supplementary alignments for stats
+          // Skip secondary and supplementary alignments
           if (flags & 256 || flags & 2048) {
             return false
           }
