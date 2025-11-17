@@ -5,8 +5,8 @@ import {
   groupBy,
   max,
   min,
-  renderToAbstractCanvas,
   renameRegionsIfNeeded,
+  renderToAbstractCanvas,
   updateStatus,
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'

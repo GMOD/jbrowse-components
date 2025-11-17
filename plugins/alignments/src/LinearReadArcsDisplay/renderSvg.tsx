@@ -36,8 +36,14 @@ export async function renderSvg(
   const { offsetPx } = view
   const height = opts.overrideHeight ?? self.height
 
-  const { colorBy, filterBy, drawInter, drawLongRange, lineWidthSetting, jitterVal } =
-    self
+  const {
+    colorBy,
+    filterBy,
+    drawInter,
+    drawLongRange,
+    lineWidthSetting,
+    jitterVal,
+  } = self
 
   // Serialize the full view snapshot for RPC
   // Include staticBlocks and width which are not part of the regular snapshot
@@ -102,9 +108,7 @@ export async function renderSvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${clipId})`}>
-        <g transform={`translate(${offset} 0)`}>
-          <ReactRendering rendering={finalRendering} />
-        </g>
+        <ReactRendering rendering={finalRendering} />
       </g>
     </>
   )

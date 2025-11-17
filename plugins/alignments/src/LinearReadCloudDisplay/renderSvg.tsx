@@ -36,7 +36,7 @@ export async function renderSvg(
   }
 
   const { offsetPx } = view
-  const height = opts.overrideHeight
+  const height = opts.overrideHeight ?? self.height
 
   const {
     featureHeightSetting: featureHeight,
@@ -81,30 +81,42 @@ export async function renderSvg(
     },
   )) as RenderingResult
 
+  console.log('renderSvg rendering result:', rendering)
+
   // Convert canvasRecordedData to SVG if present (vector SVG mode)
   let finalRendering = rendering
   if (rendering.canvasRecordedData && !rendering.html) {
+    console.log('Converting canvasRecordedData to SVG')
     const html = await getSerializedSvg({
       width: view.staticBlocks.totalWidthPx,
       height,
       canvasRecordedData: rendering.canvasRecordedData,
     })
+    console.log(
+      'Generated HTML from canvasRecordedData:',
+      html ? 'success' : 'failed',
+    )
     finalRendering = { ...rendering, html }
   }
 
-  // Calculate positioning offset
-  // Use the first content block's offsetPx to position the rendering
-  // offsetPx is the current view scroll position
-  // The offset positions our rendered content correctly in the SVG
-  const staticBlocksOffsetPx = view.staticBlocks.contentBlocks[0]?.offsetPx ?? 0
-  const viewOffsetPx = offsetPx
-  const offset = staticBlocksOffsetPx - viewOffsetPx
+  console.log('finalRendering:', finalRendering)
 
   // Clip to the visible region (view width), not the full staticBlocks width
   const visibleWidth = view.width
 
+  console.log('SVG positioning debug:', {
+    view_staticBlocks_totalWidthPx: view.staticBlocks.totalWidthPx,
+    view_width: view.width,
+    view_offsetPx: offsetPx,
+    contentBlocks: view.staticBlocks.contentBlocks.map(cb => ({
+      refName: cb.refName,
+      start: cb.start,
+      end: cb.end,
+      offsetPx: cb.offsetPx,
+    })),
+  })
+
   // Create a clip path to clip to the visible region
-  // Apply clipping BEFORE transform, at the view level
   const clipId = `clip-${self.id}-svg`
 
   return (
@@ -115,9 +127,7 @@ export async function renderSvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${clipId})`}>
-        <g transform={`translate(${offset} 0)`}>
-          <ReactRendering rendering={finalRendering} />
-        </g>
+        <ReactRendering rendering={finalRendering} />
       </g>
     </>
   )
