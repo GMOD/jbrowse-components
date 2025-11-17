@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
@@ -261,6 +263,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             getColorSchemeMenuItem(self),
           ]
+        },
+
+        /**
+         * #method
+         */
+        async renderSvg(
+          opts: Parameters<typeof import('./renderSvg').renderSvg>[1],
+        ): Promise<React.ReactNode> {
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self as LinearReadArcsDisplayModel, opts)
         },
       }
     })
