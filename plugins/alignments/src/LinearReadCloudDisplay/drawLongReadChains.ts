@@ -17,9 +17,8 @@ import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
 import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
 import { CHEVRON_WIDTH } from '../shared/util'
 
-import type { ChainData } from '../shared/fetchChains'
 import type { FlatbushEntry } from '../shared/flatbushType'
-import type { ColorBy } from '../shared/types'
+import type { ChainData, ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -132,14 +131,45 @@ export function drawLongReadChains({
       const firstFeat = chain[0]!
       const lastFeat = chain[chain.length - 1]!
 
-      const firstPx = view.bpToPx({
-        refName: firstFeat.get('refName'),
+      const firstRefName = firstFeat.get('refName')
+      const lastRefName = lastFeat.get('refName')
+      const firstRegion = regions.find(
+        r =>
+          r.refName === firstRefName &&
+          r.start < firstFeat.get('end') &&
+          firstFeat.get('start') < r.end,
+      )
+      const lastRegion = regions.find(
+        r =>
+          r.refName === lastRefName &&
+          r.start < lastFeat.get('end') &&
+          lastFeat.get('start') < r.end,
+      )
+
+      let firstPx = view.bpToPx({
+        refName: firstRefName,
         coord: firstFeat.get('start'),
       })?.offsetPx
-      const lastPx = view.bpToPx({
-        refName: lastFeat.get('refName'),
+      let lastPx = view.bpToPx({
+        refName: lastRefName,
         coord: lastFeat.get('end'),
       })?.offsetPx
+
+      if (firstPx === undefined && firstRegion) {
+        const clippedStart = Math.max(firstFeat.get('start'), firstRegion.start)
+        firstPx = view.bpToPx({
+          refName: firstRefName,
+          coord: clippedStart,
+        })?.offsetPx
+      }
+
+      if (lastPx === undefined && lastRegion) {
+        const clippedEnd = Math.min(lastFeat.get('end'), lastRegion.end)
+        lastPx = view.bpToPx({
+          refName: lastRefName,
+          coord: clippedEnd,
+        })?.offsetPx
+      }
 
       if (firstPx !== undefined && lastPx !== undefined) {
         const lineY = chainY + featureHeight / 2
@@ -160,16 +190,50 @@ export function drawLongReadChains({
 
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
+      const featRefName = feat.get('refName')
+      const featStart = feat.get('start')
+      const featEnd = feat.get('end')
+
       const s = view.bpToPx({
-        refName: feat.get('refName'),
-        coord: feat.get('start'),
+        refName: featRefName,
+        coord: featStart,
       })
       const e = view.bpToPx({
-        refName: feat.get('refName'),
-        coord: feat.get('end'),
+        refName: featRefName,
+        coord: featEnd,
       })
 
-      if (!s || !e) {
+      const region = regions.find(
+        r =>
+          r.refName === featRefName && r.start < featEnd && featStart < r.end,
+      )
+
+      let startPx: number | undefined
+      let endPx: number | undefined
+
+      if (s && e) {
+        startPx = s.offsetPx
+        endPx = e.offsetPx
+      } else if (region) {
+        const clippedStart = Math.max(featStart, region.start)
+        const clippedEnd = Math.min(featEnd, region.end)
+
+        const clippedStartPx = view.bpToPx({
+          refName: featRefName,
+          coord: clippedStart,
+        })?.offsetPx
+        const clippedEndPx = view.bpToPx({
+          refName: featRefName,
+          coord: clippedEnd,
+        })?.offsetPx
+
+        if (clippedStartPx !== undefined && clippedEndPx !== undefined) {
+          startPx = clippedStartPx
+          endPx = clippedEndPx
+        }
+      }
+
+      if (startPx === undefined || endPx === undefined) {
         continue
       }
 
@@ -193,8 +257,8 @@ export function drawLongReadChains({
             strokeColor[getStrandColorKey(effectiveStrand)],
           ]
 
-      const xPos = s.offsetPx - viewOffsetPx
-      const width = Math.max(e.offsetPx - s.offsetPx, 3)
+      const xPos = startPx - viewOffsetPx
+      const width = Math.max(endPx - startPx, 3)
 
       // Render the alignment base shape
       const layoutFeat = {
@@ -221,13 +285,6 @@ export function drawLongReadChains({
       }
 
       // Render mismatches on top if available
-      const featRefName = feat.get('refName')
-      const region = regions.find(
-        r =>
-          r.refName === featRefName &&
-          r.start <= feat.get('start') &&
-          feat.get('end') <= r.end,
-      )
       if (region) {
         // renderMismatches uses bpSpanPx which calculates (bp - region.start) / bpPerPx
         // This doesn't account for where the region is positioned in static blocks

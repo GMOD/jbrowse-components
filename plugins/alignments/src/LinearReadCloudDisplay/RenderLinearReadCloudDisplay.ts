@@ -25,11 +25,9 @@ import {
   sortComputedChains,
 } from './drawFeatsCommon'
 import { calculateStackYOffsetsCore } from './drawFeatsStack'
-import { getInsertSizeStats } from '../PileupRPC/util'
-import { createChainData } from '../shared/fetchChains'
+import { getInsertSizeStats } from '../shared/insertSizeStats'
 
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
-import type { ChainData } from '../shared/fetchChains'
 import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -234,14 +232,10 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
             return tlen !== 0 && !Number.isNaN(tlen)
           })
           if (validTlenFeatures.length > 0) {
-            // Convert to simple objects for getInsertSizeStats
-            const simpleTlenFeatures = validTlenFeatures.map(f => ({
-              tlen: f.get('template_length'),
-            }))
-            const insertSizeStats = getInsertSizeStats(simpleTlenFeatures)
             const tlens = validTlenFeatures.map(f =>
               Math.abs(f.get('template_length')),
             )
+            const insertSizeStats = getInsertSizeStats(tlens)
             statsResult = {
               ...insertSizeStats,
               max: max(tlens),
@@ -251,13 +245,14 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         }
 
         const chainsResult = Object.values(groupBy(deduped, f => f.get('name')))
-        return { chains: chainsResult, stats: statsResult }
+        return {
+          chains: chainsResult,
+          stats: statsResult,
+        }
       },
     )
 
-    const chainData: ChainData = stats
-      ? createChainData(chains, stats)
-      : createChainData(chains)
+    const chainData = { chains, stats }
 
     // Check stop token after processing chain data
     checkStopToken(stopToken)
@@ -276,7 +271,10 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
         )
         const computed = computeChainBounds(filtered, viewSnap)
         sortComputedChains(computed)
-        return { filteredChains: filtered, computedChains: computed }
+        return {
+          filteredChains: filtered,
+          computedChains: computed,
+        }
       },
     )
 

@@ -1,6 +1,6 @@
 import { colord } from '@jbrowse/core/util/colord'
 
-import type { ChainData } from './fetchChains'
+import type { ChainData } from './types'
 
 /**
  * Check if ChainData contains paired-end reads

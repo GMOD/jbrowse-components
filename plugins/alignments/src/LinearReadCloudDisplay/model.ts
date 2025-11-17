@@ -26,7 +26,7 @@ import {
   getFilterByMenuItem,
 } from '../shared/menuItems'
 
-import type { ReducedFeature } from '../shared/fetchChains'
+import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from 'mobx-state-tree'
 

@@ -18,10 +18,8 @@ import { toArray } from 'rxjs/operators'
 
 import configSchema from './configSchema'
 import { drawFeatsRPC } from './drawFeatsRPC'
-import { getInsertSizeStats } from '../PileupRPC/util'
-import { createChainData } from '../shared/fetchChains'
+import { getInsertSizeStats } from '../shared/insertSizeStats'
 
-import type { ChainData } from '../shared/fetchChains'
 import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -215,14 +213,10 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
             return tlen !== 0 && !Number.isNaN(tlen)
           })
           if (validTlenFeatures.length > 0) {
-            // Convert to simple objects for getInsertSizeStats
-            const simpleTlenFeatures = validTlenFeatures.map(f => ({
-              tlen: f.get('template_length'),
-            }))
-            const insertSizeStats = getInsertSizeStats(simpleTlenFeatures)
             const tlens = validTlenFeatures.map(f =>
               Math.abs(f.get('template_length')),
             )
+            const insertSizeStats = getInsertSizeStats(tlens)
             statsResult = {
               ...insertSizeStats,
               max: max(tlens),
@@ -232,13 +226,17 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
         }
 
         const chainsResult = Object.values(groupBy(deduped, f => f.get('name')))
-        return { chains: chainsResult, stats: statsResult }
+        return {
+          chains: chainsResult,
+          stats: statsResult,
+        }
       },
     )
 
-    const chainData: ChainData = stats
-      ? createChainData(chains, stats)
-      : createChainData(chains)
+    const chainData = {
+      chains,
+      stats,
+    }
 
     // Check stop token after processing chain data
     checkStopToken(stopToken)
@@ -250,7 +248,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
 
     // Render using renderToAbstractCanvas
     const result = await updateStatus('Rendering arcs', statusCallback, () =>
-      renderToAbstractCanvas(width, height, renderOpts, async ctx => {
+      renderToAbstractCanvas(width, height, renderOpts, ctx => {
         // Call drawFeatsRPC with all necessary parameters
         drawFeatsRPC({
           ctx,
@@ -266,11 +264,12 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
           offsetPx,
           stopToken,
         })
-        return {}
+        return undefined
       }),
     )
 
-    // Include the offsetPx in the result so the main thread can position the canvas correctly
+    // Include the offsetPx in the result so the main thread can position the
+    // canvas correctly
     return {
       ...result,
       offsetPx,
