@@ -1,20 +1,22 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 
-import { getMatchedPairedFeatures } from './util'
-import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
+import InteractivePath from './InteractivePath'
+import { getCanonicalRefNames } from './assemblyUtils'
+import { getViewCoordinates } from './coordinateUtils'
+import { getMatchedPairedFeatures } from './featureMatching'
+import { useMouseoverTracking, useOverlaySetup } from './hooks'
+import { showVariantFeatureWidget } from './widgetUtils'
+import { LAYOUT_LEFT } from '../constants'
+import { yPos } from '../util'
 
 import type { BreakpointViewModel } from '../model'
-
-const [LEFT] = [0, 1, 2, 3] as const
 
 const PairedFeatures = observer(function ({
   model,
   trackId,
-  parentRef: ref,
+  parentRef,
   getTrackYPosOverride,
 }: {
   model: BreakpointViewModel
@@ -23,8 +25,6 @@ const PairedFeatures = observer(function ({
   getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
   const { interactiveOverlay, views } = model
-  const session = getSession(model)
-  const { assemblyManager } = session
   const totalFeatures = model.getTrackFeatures(trackId)
   const layoutMatches = useMemo(
     () =>
@@ -35,19 +35,22 @@ const PairedFeatures = observer(function ({
     [totalFeatures, trackId, model],
   )
 
-  const [mouseoverElt, setMouseoverElt] = useState<string>()
-  const snap = getSnapshot(model)
-  useNextFrame(snap)
-  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
+  const { session, assembly } = useOverlaySetup(model)
+  const { mouseoverElt, handlers } = useMouseoverTracking()
+
+  let yOffset = 0
+  if (parentRef.current) {
+    const rect = parentRef.current.getBoundingClientRect()
+    yOffset = rect.top
+  }
+
+  const tracks = useMemo(
+    () => views.map(v => v.getTrack(trackId)),
+    [views, trackId],
+  )
 
   if (!assembly) {
     return null
-  }
-
-  let yoff = 0
-  if (ref.current) {
-    const rect = ref.current.getBoundingClientRect()
-    yoff = rect.top
   }
 
   return (
@@ -69,54 +72,39 @@ const PairedFeatures = observer(function ({
           if (!c1 || !c2) {
             return null
           }
-          const f1origref = f1.get('refName')
-          const f2origref = f2.get('refName')
-          const f1ref = assembly.getCanonicalRefName(f1origref)
-          const f2ref = assembly.getCanonicalRefName(f2origref)
-          if (!f1ref || !f2ref) {
-            throw new Error(`unable to find ref for ${f1ref || f2ref}`)
-          }
-          const x1 = getPxFromCoordinate(views[level1]!, f1ref, c1[LEFT])
-          const x2 = getPxFromCoordinate(views[level2]!, f2ref, c2[LEFT])
 
-          const tracks = views.map(v => v.getTrack(trackId))
+          const { f1ref, f2ref } = getCanonicalRefNames(assembly, f1, f2)
+          const { px: x1 } = getViewCoordinates(
+            views[level1]!,
+            f1ref,
+            c1[LAYOUT_LEFT],
+          )
+          const { px: x2 } = getViewCoordinates(
+            views[level2]!,
+            f2ref,
+            c2[LAYOUT_LEFT],
+          )
+
           const y1 =
             yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
-            yoff
+            yOffset
           const y2 =
             yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
-            yoff
-          const path = [
-            'M', // move to
-            x1,
-            y1,
-            'L', // line to
-            x2,
-            y2,
-          ].join(' ')
+            yOffset
+
+          const path = ['M', x1, y1, 'L', x2, y2].join(' ')
           ret.push(
-            <path
-              d={path}
+            <InteractivePath
+              pathData={path}
               data-testid="r2"
               key={JSON.stringify(path)}
-              pointerEvents={interactiveOverlay ? 'auto' : undefined}
-              strokeWidth={id === mouseoverElt ? 10 : 5}
+              interactiveOverlay={interactiveOverlay}
+              isHovered={id === mouseoverElt}
               onClick={() => {
-                const featureWidget = session.addWidget?.(
-                  'VariantFeatureWidget',
-                  'variantFeature',
-                  {
-                    featureData: totalFeatures.get(id)?.toJSON(),
-                  },
-                )
-                session.showWidget?.(featureWidget)
+                showVariantFeatureWidget(session, totalFeatures.get(id))
               }}
-              onMouseOver={() => {
-                setMouseoverElt(id)
-              }}
-              onMouseOut={() => {
-                setMouseoverElt(undefined)
-              }}
+              onMouseOverCallback={handlers.onMouseOver(id)}
+              onMouseOutCallback={handlers.onMouseOut()}
             />,
           )
         }

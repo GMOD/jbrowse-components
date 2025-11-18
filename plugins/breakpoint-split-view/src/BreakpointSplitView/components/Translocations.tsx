@@ -1,31 +1,23 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 
-import { getMatchedTranslocationFeatures } from './util'
-import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
+import InteractivePath from './InteractivePath'
+import { getViewCoordinates } from './coordinateUtils'
+import { getMatchedTranslocationFeatures } from './featureMatching'
+import { useMouseoverTracking, useOverlaySetup } from './hooks'
+import { strandSymbolToDirection } from './strandUtils'
+import { showVariantFeatureWidget } from './widgetUtils'
+import { DIRECTION_INDICATOR_LENGTH, LAYOUT_LEFT } from '../constants'
+import { getPxFromCoordinate, yPos } from '../util'
 
 import type { BreakpointViewModel } from '../model'
 import type { LayoutRecord } from '../types'
 
-const [LEFT] = [0, 1, 2, 3] as const
-
-function str(s: string) {
-  if (s === '+') {
-    return 1
-  } else if (s === '-') {
-    return -1
-  } else {
-    return 0
-  }
-}
-
 const Translocations = observer(function ({
   model,
   trackId,
-  parentRef: ref,
+  parentRef,
   getTrackYPosOverride,
 }: {
   model: BreakpointViewModel
@@ -34,8 +26,6 @@ const Translocations = observer(function ({
   getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
   const { interactiveOverlay, views } = model
-  const session = getSession(model)
-  const { assemblyManager } = session
   const totalFeatures = model.getTrackFeatures(trackId)
   const layoutMatches = useMemo(
     () =>
@@ -43,29 +33,23 @@ const Translocations = observer(function ({
         trackId,
         getMatchedTranslocationFeatures(totalFeatures),
       ),
-
     [totalFeatures, trackId, model],
   )
 
-  const [mouseoverElt, setMouseoverElt] = useState<string>()
-  const snap = getSnapshot(model)
-  useNextFrame(snap)
-
-  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
-  if (!assembly) {
-    return null
-  }
+  const { session } = useOverlaySetup(model)
+  const { mouseoverElt, handlers } = useMouseoverTracking()
 
   let yOffset = 0
-  if (ref.current) {
-    const rect = ref.current.getBoundingClientRect()
+  if (parentRef.current) {
+    const rect = parentRef.current.getBoundingClientRect()
     yOffset = rect.top
   }
 
-  // we hardcode the TRA to go to the "other view" and if there is none, we
-  // just return null here note: would need to do processing of the INFO
-  // CHR2/END and see which view could contain those coordinates to really do
-  // it properly
+  const tracks = useMemo(
+    () => views.map(v => v.getTrack(trackId)),
+    [views, trackId],
+  )
+
   if (views.length < 2) {
     return null
   }
@@ -90,22 +74,24 @@ const Translocations = observer(function ({
           const info = f1.get('INFO')
           const chr2 = info.CHR2[0]
           const end2 = info.END[0]
-          const res = info.STRANDS?.[0]?.split('') // not all files have STRANDS
+          const res = info.STRANDS?.[0]?.split('')
           const [myDirection, mateDirection] = res ?? ['.', '.']
 
           const r = getPxFromCoordinate(views[level2]!, chr2, end2)
           if (r) {
             const c2: LayoutRecord = [r, 0, r + 1, 0]
-            const x1 = getPxFromCoordinate(
+            const { px: x1, reversalFactor: rf1 } = getViewCoordinates(
               views[level1]!,
               f1.get('refName'),
-              c1[LEFT],
+              c1[LAYOUT_LEFT],
+            )
+            const { reversalFactor: rf2 } = getViewCoordinates(
+              views[level2]!,
+              chr2,
+              r,
             )
             const x2 = r
-            const reversed1 = views[level1]!.pxToBp(x1).reversed
-            const reversed2 = views[level2]!.pxToBp(x2).reversed
 
-            const tracks = views.map(v => v.getTrack(trackId))
             const y1 =
               yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
               yOffset
@@ -114,43 +100,36 @@ const Translocations = observer(function ({
               yOffset
 
             const path = [
-              'M', // move to
-              x1 - 20 * str(myDirection) * (reversed1 ? -1 : 1),
+              'M',
+              x1 -
+                DIRECTION_INDICATOR_LENGTH *
+                  strandSymbolToDirection(myDirection) *
+                  rf1,
               y1,
-              'L', // line to
+              'L',
               x1,
               y1,
-              'L', // line to as const
+              'L',
               x2,
               y2,
-              'L', // line to
-              x2 - 20 * str(mateDirection) * (reversed2 ? -1 : 1),
+              'L',
+              x2 -
+                DIRECTION_INDICATOR_LENGTH *
+                  strandSymbolToDirection(mateDirection) *
+                  rf2,
               y2,
             ].join(' ')
             ret.push(
-              <path
-                d={path}
+              <InteractivePath
+                pathData={path}
                 key={JSON.stringify(path)}
-                pointerEvents={interactiveOverlay ? 'auto' : undefined}
-                strokeWidth={id === mouseoverElt ? 10 : 5}
+                interactiveOverlay={interactiveOverlay}
+                isHovered={id === mouseoverElt}
                 onClick={() => {
-                  const featureWidget = session.addWidget?.(
-                    'VariantFeatureWidget',
-                    'variantFeature',
-                    {
-                      featureData: (
-                        totalFeatures.get(id) || { toJSON: () => {} }
-                      ).toJSON(),
-                    },
-                  )
-                  session.showWidget?.(featureWidget)
+                  showVariantFeatureWidget(session, totalFeatures.get(id))
                 }}
-                onMouseOver={() => {
-                  setMouseoverElt(id)
-                }}
-                onMouseOut={() => {
-                  setMouseoverElt(undefined)
-                }}
+                onMouseOverCallback={handlers.onMouseOver(id)}
+                onMouseOutCallback={handlers.onMouseOut()}
               />,
             )
           }

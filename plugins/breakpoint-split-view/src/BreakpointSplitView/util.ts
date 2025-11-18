@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useReducer } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { clamp, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+
+import { LAYOUT_BOTTOM, LAYOUT_TOP } from './constants'
 
 import type { LayoutRecord } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -24,10 +26,8 @@ interface Track {
   configuration: AnyConfigurationModel
 }
 
-const [, TOP, , BOTTOM] = [0, 1, 2, 3] as const
-
 function cheight(chunk: LayoutRecord) {
-  return chunk[BOTTOM] - chunk[TOP]
+  return chunk[LAYOUT_BOTTOM] - chunk[LAYOUT_TOP]
 }
 
 export function heightFromSpecificLevel(
@@ -64,20 +64,26 @@ export function yPos(
   }
   const yPos = getYPosOverride ? 0 : display.scrollTop
   return (
-    clamp(c[TOP] - yPos + cheight(c) / 2 + offset, min, max) +
+    clamp(c[LAYOUT_TOP] - yPos + cheight(c) / 2 + offset, min, max) +
     heightFromSpecificLevel(views, trackId, level, getYPosOverride) +
     display.scrollTop
   )
 }
 
-// we combo a useEffect and useState combo to force rerender on snap changing.
-// the setup of this being a useEffect+useState makes it re-render once the
-// useEffect is called, which is generally the "next frame". If we removed the
-// below use
+// Forces a re-render on the next animation frame when the variable changes.
+// This is needed to ensure getBoundingClientRect() calls get accurate DOM
+// positions after the view has settled. Uses requestAnimationFrame to schedule
+// the re-render at the optimal time in the browser's rendering cycle.
 export const useNextFrame = (variable: unknown) => {
-  const [, setNextFrameState] = useState<unknown>()
-  useEffect(() => {
-    setNextFrameState(variable)
+  const [, forceUpdate] = useReducer(x => x + 1, 0)
+
+  useLayoutEffect(() => {
+    const rafId = requestAnimationFrame(() => {
+      forceUpdate()
+    })
+    return () => {
+      cancelAnimationFrame(rafId)
+    }
   }, [variable])
 }
 

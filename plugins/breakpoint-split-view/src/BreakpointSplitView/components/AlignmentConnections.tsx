@@ -1,31 +1,28 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
-import { getSession, getStrokeProps } from '@jbrowse/core/util'
+import { getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 
+import InteractivePath from './InteractivePath'
+import { getViewCoordinates } from './coordinateUtils'
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
   hasPairedReads,
-} from './util'
-import {
-  getPxFromCoordinate,
-  heightFromSpecificLevel,
-  useNextFrame,
-  yPos,
-} from '../util'
+} from './featureMatching'
 import {
   getLongReadOrientationAbnormal,
   getLongReadOrientationColorOrDefault,
   getPairedOrientationColor,
   isAbnormalOrientation,
 } from './getOrientationColor'
+import { useMouseoverTracking, useOverlaySetup } from './hooks'
+import { showBreakpointAlignmentsWidget } from './widgetUtils'
+import { BEZIER_CURVE_OFFSET, LAYOUT_LEFT, LAYOUT_RIGHT } from '../constants'
+import { heightFromSpecificLevel, yPos } from '../util'
 
 import type { BreakpointViewModel } from '../model'
-
-const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 
 const AlignmentConnections = observer(function ({
   model,
@@ -40,12 +37,15 @@ const AlignmentConnections = observer(function ({
 }) {
   const { interactiveOverlay, views, showIntraviewLinks } = model
   const theme = useTheme()
-  const session = getSession(model)
-  const snap = getSnapshot(model)
-  const { assemblyManager } = session
-  const v0 = views[0]
-  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
-  useNextFrame(snap)
+  const { session, assembly } = useOverlaySetup(model)
+  const { mouseoverElt, handlers } = useMouseoverTracking()
+
+  let yOffset = 0
+  if (parentRef.current) {
+    const rect = parentRef.current.getBoundingClientRect()
+    yOffset = rect.top
+  }
+
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
   const layoutMatches = useMemo(() => {
@@ -63,13 +63,10 @@ const AlignmentConnections = observer(function ({
     return layoutMatches
   }, [allFeatures, trackId, hasPaired, model])
 
-  const [mouseoverElt, setMouseoverElt] = useState<string>()
-
-  let yOffset = 0
-  if (parentRef.current) {
-    const rect = parentRef.current.getBoundingClientRect()
-    yOffset = rect.top
-  }
+  const tracks = useMemo(
+    () => views.map(v => v.getTrack(trackId)),
+    [views, trackId],
+  )
 
   return assembly ? (
     <g
@@ -118,16 +115,21 @@ const AlignmentConnections = observer(function ({
               isAbnormal = getLongReadOrientationAbnormal(s1, s2)
             }
           }
-          const p1 = c1[s1 === -1 ? LEFT : RIGHT]
+          const p1 = c1[s1 === -1 ? LAYOUT_LEFT : LAYOUT_RIGHT]
           const sn1 = s2 === -1
-          const p2 = hasPaired ? c2[sn1 ? LEFT : RIGHT] : c2[sn1 ? RIGHT : LEFT]
-          const x1 = getPxFromCoordinate(views[level1]!, f1ref, p1)
-          const x2 = getPxFromCoordinate(views[level2]!, f2ref, p2)
-          const reversed1 = views[level1]!.pxToBp(x1).reversed
-          const reversed2 = views[level2]!.pxToBp(x2).reversed
-          const rf1 = reversed1 ? -1 : 1
-          const rf2 = reversed2 ? -1 : 1
-          const tracks = views.map(v => v.getTrack(trackId))
+          const p2 = hasPaired
+            ? c2[sn1 ? LAYOUT_LEFT : LAYOUT_RIGHT]
+            : c2[sn1 ? LAYOUT_RIGHT : LAYOUT_LEFT]
+          const { px: x1, reversalFactor: rf1 } = getViewCoordinates(
+            views[level1]!,
+            f1ref,
+            p1,
+          )
+          const { px: x2, reversalFactor: rf2 } = getViewCoordinates(
+            views[level2]!,
+            f2ref,
+            p2,
+          )
           const y1 =
             yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
             yOffset
@@ -147,64 +149,44 @@ const AlignmentConnections = observer(function ({
             getTrackYPosOverride,
           )
 
-          // possible todo: use totalCurveHeight to possibly make alternative
-          // squiggle if the S is too small
           const path = [
             'M',
             x1,
             y1,
             'C',
-
-            // first bezier x,y
-            x1 + 200 * f1.get('strand') * rf1,
+            x1 + BEZIER_CURVE_OFFSET * f1.get('strand') * rf1,
             abnormalSpecialRenderFlag
               ? Math.min(y0 - yOffset + trackHeight, y1 + trackHeight)
               : y1,
-
-            // second bezier x,y
-            x2 - 200 * f2.get('strand') * rf2 * pf1,
+            x2 - BEZIER_CURVE_OFFSET * f2.get('strand') * rf2 * pf1,
             abnormalSpecialRenderFlag
               ? Math.min(y0 - yOffset + trackHeight, y2 + trackHeight)
               : y2,
-
-            // third bezier x,y
             x2,
             y2,
           ].join(' ')
           const id = `${f1.id()}-${f2.id()}`
           ret.push(
-            <path
-              d={path}
+            <InteractivePath
+              pathData={path}
               key={id}
               data-testid="r1"
-              pointerEvents={interactiveOverlay ? 'auto' : undefined}
-              strokeWidth={mouseoverElt === id ? 5 : 1}
+              interactiveOverlay={interactiveOverlay}
+              strokeWidth={1}
+              hoverStrokeWidth={5}
+              isHovered={mouseoverElt === id}
               {...getStrokeProps(
                 orientationColor || theme.palette.text.disabled,
               )}
               onClick={() => {
-                const featureWidget = session.addWidget?.(
-                  'BreakpointAlignmentsWidget',
-                  'breakpointAlignments',
-                  {
-                    featureData: {
-                      feature1: (
-                        allFeatures.get(f1.id()) || { toJSON: () => {} }
-                      ).toJSON(),
-                      feature2: (
-                        allFeatures.get(f2.id()) || { toJSON: () => {} }
-                      ).toJSON(),
-                    },
-                  },
+                showBreakpointAlignmentsWidget(
+                  session,
+                  allFeatures.get(f1.id()),
+                  allFeatures.get(f2.id()),
                 )
-                session.showWidget?.(featureWidget)
               }}
-              onMouseOver={() => {
-                setMouseoverElt(id)
-              }}
-              onMouseOut={() => {
-                setMouseoverElt(undefined)
-              }}
+              onMouseOverCallback={handlers.onMouseOver(id)}
+              onMouseOutCallback={handlers.onMouseOut()}
             />,
           )
         }

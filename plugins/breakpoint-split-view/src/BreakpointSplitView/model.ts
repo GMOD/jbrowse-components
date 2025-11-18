@@ -185,40 +185,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          onAction(
-            self,
-            ({
-              name,
-              path,
-              args,
-            }: {
-              name: string
-              path?: string
-              args?: unknown[]
-            }) => {
-              if (self.linkViews) {
-                const actions = [
-                  'horizontalScroll',
-                  'zoomTo',
-                  'setScaleFactor',
-                  'showTrack',
-                  'toggleTrack',
-                  'hideTrack',
-                  'setTrackLabels',
-                  'toggleCenterLine',
-                ]
-                if (actions.includes(name) && path) {
-                  this.onSubviewAction(name, path, args)
-                }
-              }
-            },
-          ),
-        )
-      },
-
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
         for (const view of self.views) {
           const ret = getPath(view)
@@ -282,6 +248,38 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
+        addDisposer(
+          self,
+          onAction(
+            self,
+            ({
+              name,
+              path,
+              args,
+            }: {
+              name: string
+              path?: string
+              args?: unknown[]
+            }) => {
+              if (self.linkViews) {
+                const actions = [
+                  'horizontalScroll',
+                  'zoomTo',
+                  'setScaleFactor',
+                  'showTrack',
+                  'toggleTrack',
+                  'hideTrack',
+                  'setTrackLabels',
+                  'toggleCenterLine',
+                ]
+                if (actions.includes(name) && path) {
+                  self.onSubviewAction(name, path, args)
+                }
+              }
+            },
+          ),
+        )
+
         addDisposer(
           self,
           autorun(async () => {
