@@ -56,7 +56,11 @@ type LayoutRecord =
       number,
       number,
       number,
-      { label?: string; description?: string; refName: string },
+      {
+        label?: string
+        description?: string
+        refName: string
+      },
     ]
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {

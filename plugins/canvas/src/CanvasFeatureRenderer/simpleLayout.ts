@@ -59,8 +59,9 @@ export function layoutFeature(args: {
     y,
     width,
     height: actualHeight,
-    totalHeight: actualHeight, // Will be updated below
-    totalWidth: width, // Will be updated below
+    totalFeatureHeight: actualHeight, // Visual height (will be updated for stacked children)
+    totalLayoutHeight: actualHeight, // Layout height including label space (will be updated below)
+    totalLayoutWidth: width, // Layout width including label space (will be updated below)
     children: [],
   }
 
@@ -92,7 +93,8 @@ export function layoutFeature(args: {
       // Update heights to include all stacked children
       const totalStackedHeight = currentY - parentY
       layout.height = totalStackedHeight
-      layout.totalHeight = totalStackedHeight
+      layout.totalFeatureHeight = totalStackedHeight
+      layout.totalLayoutHeight = totalStackedHeight
     } else if (glyphType === 'ProcessedTranscript') {
       // Overlay subfeatures (CDS, UTR on transcript)
       const subparts = getSubparts(feature, config)
@@ -160,10 +162,11 @@ export function layoutFeature(args: {
       )
     }
 
-    // Add the label height to totalHeight only (not to visual height)
-    layout.totalHeight = layout.height + extraHeight
-    // Add the label width (converted to bp) to totalWidth
-    layout.totalWidth = layout.width + maxLabelWidth
+    // totalFeatureHeight stays as visual height (without labels)
+    // Add label height to totalLayoutHeight
+    layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
+    // Add label width to totalLayoutWidth
+    layout.totalLayoutWidth = layout.width + maxLabelWidth
   }
 
   return layout
@@ -189,16 +192,16 @@ export function findFeatureLayout(
 }
 
 /**
- * Calculate total width of layout including label width
- * For top-level features, this should return totalWidth
+ * Calculate total layout width including label width
+ * For top-level features, this should return totalLayoutWidth
  */
 export function getLayoutWidth(layout: FeatureLayout): number {
   if (layout.children.length === 0) {
-    return layout.totalWidth
+    return layout.totalLayoutWidth
   }
 
-  // For features with children, find the max x+totalWidth among all children
-  let maxRight = layout.totalWidth
+  // For features with children, find the max x+totalLayoutWidth among all children
+  let maxRight = layout.totalLayoutWidth
   for (const child of layout.children) {
     const childRight = child.x + getLayoutWidth(child)
     maxRight = Math.max(maxRight, childRight)

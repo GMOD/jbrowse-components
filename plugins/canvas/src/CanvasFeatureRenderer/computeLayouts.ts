@@ -37,10 +37,9 @@ export function computeLayouts({
       config,
     })
 
-    // Calculate total width and height including subfeatures
-    const totalWidth = getLayoutWidth(featureLayout)
-    // Use total height (including label space) for collision detection
-    const totalHeight = featureLayout.totalHeight
+    // Calculate total layout width and height including label space
+    const totalLayoutWidth = getLayoutWidth(featureLayout)
+    const totalLayoutHeight = featureLayout.totalLayoutHeight
 
     // Get name and description using config (consistent with label display)
     const name = String(
@@ -52,11 +51,13 @@ export function computeLayouts({
 
     // Add to collision detection layout
     // Pass feature as data (not serialized) and minimal info as serializableData
+    // The left/right coordinates define the layout rectangle boundaries (feature + label space)
+    const featureStart = feature.get('start')
     const topPx = layout.addRect(
       feature.id(),
-      feature.get('start'),
-      feature.get('start') + totalWidth * bpPerPx + xPadding,
-      totalHeight + yPadding,
+      featureStart,
+      featureStart + totalLayoutWidth * bpPerPx + xPadding,
+      totalLayoutHeight + yPadding,
       feature,
       {
         label: name,

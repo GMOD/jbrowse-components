@@ -61,8 +61,9 @@ export function makeImageData({
       x: startPx + featureLayout.x,
       y: recordTopPx + featureLayout.y,
       height: featureLayout.height, // Visual height (what gets drawn)
-      totalHeight: featureLayout.totalHeight, // Total with label space
-      totalWidth: featureLayout.totalWidth, // Total with label width
+      totalFeatureHeight: featureLayout.totalFeatureHeight, // Total visual height with stacked children
+      totalLayoutHeight: featureLayout.totalLayoutHeight, // Total with label space
+      totalLayoutWidth: featureLayout.totalLayoutWidth, // Total with label width
       children: adjustChildPositions(
         featureLayout.children,
         startPx,
@@ -98,13 +99,13 @@ export function makeImageData({
     })
 
     // Always add the feature's bounding box to the primary flatbush
-    // Use totalWidth and totalHeight to include label extent
+    // Use totalLayoutWidth and totalLayoutHeight to include label extent
     const featureStartBp = feature.get('start')
     const featureEndBp = feature.get('end')
     const leftPx = adjustedLayout.x
-    const rightPx = adjustedLayout.x + adjustedLayout.totalWidth
+    const rightPx = adjustedLayout.x + adjustedLayout.totalLayoutWidth
     const topPx = adjustedLayout.y
-    const bottomPx = adjustedLayout.y + adjustedLayout.totalHeight // Use totalHeight to include labels
+    const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight // Use totalLayoutHeight to include labels
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({
       featureId: feature.id(),
@@ -151,8 +152,9 @@ export function makeImageData({
       x: child.x + xOffset,
       y: child.y + yOffset,
       height: child.height, // Keep original visual height
-      totalHeight: child.totalHeight, // Keep total height with labels
-      totalWidth: child.totalWidth, // Keep total width with labels
+      totalFeatureHeight: child.totalFeatureHeight, // Keep total visual height with stacked children
+      totalLayoutHeight: child.totalLayoutHeight, // Keep total height with labels
+      totalLayoutWidth: child.totalLayoutWidth, // Keep total width with labels
       children: adjustChildPositions(child.children, xOffset, yOffset),
     }))
   }
@@ -194,11 +196,11 @@ export function makeImageData({
 
       // Add the transcript's bounding box to secondary flatbush
       // This allows us to detect when hovering over a specific transcript and provide extra info
-      // Use totalWidth and totalHeight to include label extent
+      // Use totalLayoutWidth and totalLayoutHeight to include label extent
       const childLeftPx = child.x
-      const childRightPx = child.x + child.totalWidth
+      const childRightPx = child.x + child.totalLayoutWidth
       const topPx = child.y
-      const bottomPx = child.y + child.totalHeight // Use totalHeight to include labels
+      const bottomPx = child.y + child.totalLayoutHeight // Use totalLayoutHeight to include labels
       subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
       // Get name for subfeature info (for tooltips/details)
@@ -228,12 +230,12 @@ export function makeImageData({
       )
 
       // Debug: Draw blue bounding box for transcript subfeatures only
-      // (includes totalWidth and totalHeight with label extent)
+      // (includes totalLayoutWidth and totalLayoutHeight with label extent)
       // ctx.save()
       // ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)' // Blue for transcripts
       // ctx.lineWidth = 1
       // ctx.setLineDash([2, 2])
-      // ctx.strokeRect(childLeftPx, topPx, childRightPx - childLeftPx, child.totalHeight)
+      // ctx.strokeRect(childLeftPx, topPx, childRightPx - childLeftPx, child.totalLayoutHeight)
       // ctx.restore()
 
       // Store layout/feature data for nested children (CDS, UTR, exons) but don't add them to flatbush

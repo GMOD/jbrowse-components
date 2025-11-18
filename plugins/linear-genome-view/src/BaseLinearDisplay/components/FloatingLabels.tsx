@@ -47,36 +47,29 @@ function calculateLabelTopOffset(hasLabel: boolean, hasDescription: boolean) {
 }
 
 function shouldShowLabel(
-  featureLeftPx: number | undefined,
-  featureRightPx: number | undefined,
-  viewOffsetPx: number,
+  layoutLeftPx: number | undefined,
+  layoutRightPx: number | undefined,
   labelWidth: number,
 ) {
-  if (featureLeftPx === undefined || featureRightPx === undefined) {
+  if (layoutLeftPx === undefined || layoutRightPx === undefined) {
     return false
   }
 
-  const featureWidth = featureRightPx - featureLeftPx
-  if (labelWidth > featureWidth) {
-    return false
-  }
-
-  // Check that label won't extend beyond feature's right edge in viewport
-  const featureRightViewport = featureRightPx - viewOffsetPx
-  return featureRightViewport >= labelWidth
+  const layoutWidth = layoutRightPx - layoutLeftPx
+  return labelWidth <= layoutWidth
 }
 
 function calculateClampedLabelPosition(
-  featureLeftPx: number,
-  featureRightPx: number | undefined,
+  layoutLeftPx: number,
+  layoutRightPx: number | undefined,
   viewOffsetPx: number,
   labelWidth: number,
 ) {
   const minPosition = 0
-  const naturalPosition = featureLeftPx - viewOffsetPx
+  const naturalPosition = layoutLeftPx - viewOffsetPx
   const maxPosition =
-    featureRightPx !== undefined
-      ? featureRightPx - viewOffsetPx - labelWidth
+    layoutRightPx !== undefined
+      ? layoutRightPx - viewOffsetPx - labelWidth
       : Number.POSITIVE_INFINITY
 
   return clamp(minPosition, naturalPosition, maxPosition)
@@ -123,7 +116,8 @@ const FloatingLabels = observer(function FloatingLabels({
         continue
       }
 
-      // Get feature pixel positions
+      // Get layout boundary pixel positions
+      // left and right are the layout boundaries (in BP) which include label space
       const { leftPx, rightPx } = getFeaturePixelPositions(
         view,
         assembly,
@@ -132,14 +126,17 @@ const FloatingLabels = observer(function FloatingLabels({
         right,
       )
 
-      // Calculate label dimensions
-      const labelWidth = calculateLabelWidth(
-        displayLabel || displayDescription,
-        fontSize,
-      )
+      // Calculate label dimensions (need to check both label and description)
+      const labelWidth = displayLabel
+        ? calculateLabelWidth(displayLabel, fontSize)
+        : 0
+      const descriptionWidth = displayDescription
+        ? calculateLabelWidth(displayDescription, fontSize)
+        : 0
+      const maxLabelWidth = Math.max(labelWidth, descriptionWidth)
 
-      // Only show labels that fit within the feature bounds (no floating)
-      if (!shouldShowLabel(leftPx, rightPx, offsetPx, labelWidth)) {
+      // Only show labels that fit within the layout bounds
+      if (!shouldShowLabel(leftPx, rightPx, maxLabelWidth)) {
         continue
       }
 
@@ -148,7 +145,7 @@ const FloatingLabels = observer(function FloatingLabels({
         leftPx!,
         rightPx,
         offsetPx,
-        labelWidth,
+        maxLabelWidth,
       )
 
       // Calculate vertical position
