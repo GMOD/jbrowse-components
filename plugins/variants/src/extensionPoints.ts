@@ -50,10 +50,10 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-guessTrackTypeForLocation',
     (trackTypeGuesser: TrackTypeGuesser) => {
-      return (adapterName: string) => {
+      return (adapterName: string, fileName?: string) => {
         return ['VcfTabixAdapter', 'VcfAdapter'].includes(adapterName)
           ? 'VariantTrack'
-          : trackTypeGuesser(adapterName)
+          : trackTypeGuesser(adapterName, fileName)
       }
     },
   )

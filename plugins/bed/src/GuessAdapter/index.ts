@@ -88,14 +88,15 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
 
   pluginManager.addToExtensionPoint(
     'Core-guessTrackTypeForLocation',
-    (trackTypeGuesser: TrackTypeGuesser) => (adapterName: string) => {
-      return (
-        {
-          BedpeAdapter: 'VariantTrack',
-          BedGraphAdapter: 'QuantitativeTrack',
-          BedGraphTabixAdapter: 'QuantitativeTrack',
-        }[adapterName] || trackTypeGuesser(adapterName)
-      )
-    },
+    (trackTypeGuesser: TrackTypeGuesser) =>
+      (adapterName: string, fileName?: string) => {
+        return (
+          {
+            BedpeAdapter: 'VariantTrack',
+            BedGraphAdapter: 'QuantitativeTrack',
+            BedGraphTabixAdapter: 'QuantitativeTrack',
+          }[adapterName] || trackTypeGuesser(adapterName, fileName)
+        )
+      },
   )
 }

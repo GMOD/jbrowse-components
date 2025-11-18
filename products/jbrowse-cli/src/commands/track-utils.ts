@@ -117,7 +117,8 @@ export function buildTrackParams({
   adapter: any
   configContents: Config
 }) {
-  const trackType = flags.trackType || guessTrackType(adapter.type)
+  const trackType =
+    flags.trackType || guessTrackType(adapter.type, undefined, location)
   const trackId =
     flags.trackId || path.basename(location, path.extname(location))
   const name = flags.name || trackId

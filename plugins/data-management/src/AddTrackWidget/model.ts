@@ -247,7 +247,11 @@ export default function f(pluginManager: PluginManager) {
         return (
           self.altTrackType ||
           (this.trackAdapterType
-            ? guessTrackType(this.trackAdapterType, self)
+            ? guessTrackType(
+                this.trackAdapterType,
+                self,
+                self.trackData ? getFileName(self.trackData) : undefined,
+              )
             : '')
         )
       },
