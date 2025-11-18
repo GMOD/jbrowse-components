@@ -99,8 +99,10 @@ export function chooseGlyphType({
   const subfeatures = feature.get('subfeatures')
 
   // Read from config only if not provided (for backward compatibility)
-  const transcriptTypesArray = transcriptTypes ?? (config ? readConfObject(config, 'transcriptTypes') : [])
-  const containerTypesArray = containerTypes ?? (config ? readConfObject(config, 'containerTypes') : [])
+  const transcriptTypesArray =
+    transcriptTypes ?? (config ? readConfObject(config, 'transcriptTypes') : [])
+  const containerTypesArray =
+    containerTypes ?? (config ? readConfObject(config, 'containerTypes') : [])
 
   if (subfeatures?.length && type !== 'CDS') {
     const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)

@@ -5,7 +5,6 @@ import { layoutFeature } from './simpleLayout'
 import type { LayoutRecord } from './types'
 import type { Feature } from '@jbrowse/core/util'
 
-const xPadding = 0
 const yPadding = 5
 
 /**
@@ -91,9 +90,11 @@ export function computeLayouts({
     // Calculate floating labels with relative Y positions (positive = below feature)
     // Use pre-read showLabels, showDescriptions, fontHeight from top of function
     // Only re-read fontHeight if it's a callback (feature-dependent)
-    const actualFontHeight = fontHeight ?? (readConfObject(config, ['labels', 'fontSize'], {
-      feature,
-    }) as number)
+    const actualFontHeight =
+      fontHeight ??
+      (readConfObject(config, ['labels', 'fontSize'], {
+        feature,
+      }) as number)
 
     const shouldShowLabel = /\S/.test(name) && showLabels
     const shouldShowDescription = /\S/.test(description) && showDescriptions

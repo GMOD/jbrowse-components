@@ -24,19 +24,6 @@ function calculateLabelWidth(text: string, fontSize: number) {
   return measureText(text, fontSize)
 }
 
-function shouldShowLabel(
-  layoutLeftPx: number | undefined,
-  layoutRightPx: number | undefined,
-  labelWidth: number,
-) {
-  if (layoutLeftPx === undefined || layoutRightPx === undefined) {
-    return false
-  }
-
-  const layoutWidth = layoutRightPx - layoutLeftPx
-  return labelWidth <= layoutWidth
-}
-
 function calculateClampedLabelPosition(
   layoutLeftPx: number,
   layoutRightPx: number | undefined,
@@ -204,7 +191,14 @@ const FloatingLabels = observer(function FloatingLabels({
     // Second pass: create label items from de-duplicated features
     for (const [
       key,
-      { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels, totalLayoutWidth },
+      {
+        leftPx,
+        rightPx,
+        topPx,
+        totalFeatureHeight,
+        floatingLabels,
+        totalLayoutWidth,
+      },
     ] of featureLabels.entries()) {
       // Calculate the bottom of the visual feature (not including label space)
       const featureVisualBottom = topPx + totalFeatureHeight
@@ -219,16 +213,15 @@ const FloatingLabels = observer(function FloatingLabels({
 
         // Only show labels that fit within the layout bounds
         // Use totalLayoutWidth if available (includes label space), otherwise fall back to rect width
-        const layoutWidth = totalLayoutWidth ?? (rightPx - leftPx)
+        const layoutWidth = totalLayoutWidth ?? rightPx - leftPx
         if (labelWidth > layoutWidth) {
           continue
         }
 
         // Calculate clamped horizontal position
         // Use totalLayoutWidth if available to determine the right edge for clamping
-        const effectiveRightPx = totalLayoutWidth !== undefined
-          ? leftPx + totalLayoutWidth
-          : rightPx
+        const effectiveRightPx =
+          totalLayoutWidth !== undefined ? leftPx + totalLayoutWidth : rightPx
         const x = calculateClampedLabelPosition(
           leftPx,
           effectiveRightPx,

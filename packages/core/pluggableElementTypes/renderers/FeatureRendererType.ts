@@ -7,7 +7,6 @@ import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { iterMap } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
-import { checkStopToken } from '../../util/stopToken'
 
 import type {
   RenderArgs as ServerSideRenderArgs,
@@ -111,7 +110,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
     renderArgs: RenderArgsDeserialized,
   ): Promise<Map<string, Feature>> {
     const pm = this.pluginManager
-    const { stopToken, regions, sessionId, adapterConfig } = renderArgs
+    const { regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     if (!isFeatureAdapter(dataAdapter)) {
