@@ -19,26 +19,6 @@ interface LabelItem {
   color: string
 }
 
-function getFeaturePixelPositions(
-  view: LinearGenomeViewModel,
-  assembly: { getCanonicalRefName: (refName: string) => string | undefined } | undefined,
-  refName: string,
-  left: number,
-  right: number,
-) {
-  const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
-  const leftPx = view.bpToPx({
-    refName: canonicalRefName,
-    coord: left,
-  })?.offsetPx
-  const rightPx = view.bpToPx({
-    refName: canonicalRefName,
-    coord: right,
-  })?.offsetPx
-
-  return { leftPx, rightPx }
-}
-
 function calculateLabelWidth(text: string, fontSize: number) {
   return measureText(text, fontSize)
 }
@@ -72,6 +52,134 @@ function calculateClampedLabelPosition(
   return clamp(minPosition, naturalPosition, maxPosition)
 }
 
+interface PixelPositions {
+  leftPx: number
+  rightPx: number
+}
+
+function calculateFeaturePixelPositions(
+  view: LinearGenomeViewModel,
+  assembly: { getCanonicalRefName: (refName: string) => string | undefined } | undefined,
+  refName: string,
+  left: number,
+  right: number,
+): PixelPositions | undefined {
+  const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
+  const { bpPerPx } = view
+
+  const leftBpPx = view.bpToPx({
+    refName: canonicalRefName,
+    coord: left,
+  })?.offsetPx
+
+  const rightBpPx = view.bpToPx({
+    refName: canonicalRefName,
+    coord: right,
+  })?.offsetPx
+
+  // Handle partially visible features in multi-region views:
+  // - If left is visible, use it; if right is in collapsed region, calculate it
+  // - If left is in collapsed region but right is visible, calculate left from right
+  // - If neither is visible, return undefined
+  if (leftBpPx !== undefined) {
+    // Left edge is visible
+    const leftPx = leftBpPx
+    const rightPx = rightBpPx !== undefined ? rightBpPx : leftPx + (right - left) / bpPerPx
+    return { leftPx, rightPx }
+  } else if (rightBpPx !== undefined) {
+    // Right edge is visible but left is not (feature starts in collapsed region)
+    const rightPx = rightBpPx
+    const leftPx = rightPx - (right - left) / bpPerPx
+    return { leftPx, rightPx }
+  } else {
+    // Neither edge is visible
+    return undefined
+  }
+}
+
+interface FeatureLabelData {
+  leftPx: number
+  rightPx: number
+  topPx: number
+  totalFeatureHeight: number
+  floatingLabels: Array<{ text: string; relativeY: number; color: string }>
+}
+
+function deduplicateFeatureLabels(
+  layoutFeatures: Map<string, [number, number, number, number] | [number, number, number, number, {
+    label?: string
+    description?: string
+    refName: string
+    floatingLabels?: Array<{ text: string; relativeY: number; color: string }>
+    totalFeatureHeight?: number
+  }]>,
+  view: LinearGenomeViewModel,
+  assembly: { getCanonicalRefName: (refName: string) => string | undefined } | undefined,
+): Map<string, FeatureLabelData> {
+  const featureLabels = new Map<string, FeatureLabelData>()
+
+  console.log('FloatingLabels: Processing', layoutFeatures.size, 'layout features')
+
+  for (const [key, val] of layoutFeatures.entries()) {
+    if (!val?.[4]) {
+      continue
+    }
+
+    const [left, topPx, right, , feature] = val
+    const { refName = '', floatingLabels, totalFeatureHeight } = feature
+
+    // Skip if no floating labels
+    if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
+      continue
+    }
+
+    console.log('FloatingLabels: Feature', key, {
+      refName,
+      left,
+      right,
+      topPx,
+      totalFeatureHeight,
+      floatingLabels,
+    })
+
+    const positions = calculateFeaturePixelPositions(
+      view,
+      assembly,
+      refName,
+      left,
+      right,
+    )
+
+    if (!positions) {
+      console.log('FloatingLabels: Feature not visible', key)
+      continue
+    }
+
+    const { leftPx, rightPx } = positions
+
+    console.log('FloatingLabels: Pixel positions for', key, {
+      leftPx,
+      rightPx,
+      bpPerPx: view.bpPerPx,
+      bpWidth: right - left,
+    })
+
+    // De-duplicate: keep the left-most position for each feature
+    const existing = featureLabels.get(key)
+    if (!existing || leftPx < existing.leftPx) {
+      featureLabels.set(key, {
+        leftPx,
+        rightPx,
+        topPx,
+        totalFeatureHeight,
+        floatingLabels,
+      })
+    }
+  }
+
+  return featureLabels
+}
+
 const FloatingLabels = observer(function FloatingLabels({
   model,
 }: {
@@ -90,34 +198,18 @@ const FloatingLabels = observer(function FloatingLabels({
   // Memoize the processed label data to avoid recalculating positions
   const labelData = useMemo(() => {
     if (!assembly) {
+      console.log('FloatingLabels: No assembly')
       return []
     }
 
     const fontSize = 11
     const result: LabelItem[] = []
 
-    for (const [key, val] of layoutFeatures.entries()) {
-      if (!val?.[4]) {
-        continue
-      }
+    // First pass: de-duplicate features and get left-most positions
+    const featureLabels = deduplicateFeatureLabels(layoutFeatures, view, assembly)
 
-      const [left, topPx, right, , feature] = val
-      const { refName = '', floatingLabels, totalFeatureHeight } = feature
-
-      // Skip if no floating labels
-      if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
-        continue
-      }
-
-      // Get layout boundary pixel positions
-      const { leftPx, rightPx } = getFeaturePixelPositions(
-        view,
-        assembly,
-        refName,
-        left,
-        right,
-      )
-
+    // Second pass: create label items from de-duplicated features
+    for (const [key, { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels }] of featureLabels.entries()) {
       // Calculate the bottom of the visual feature (not including label space)
       const featureVisualBottom = topPx + totalFeatureHeight
 
@@ -131,12 +223,19 @@ const FloatingLabels = observer(function FloatingLabels({
 
         // Only show labels that fit within the layout bounds
         if (!shouldShowLabel(leftPx, rightPx, labelWidth)) {
+          console.log('FloatingLabels: Label does not fit', key, {
+            text,
+            labelWidth,
+            leftPx,
+            rightPx,
+            layoutWidth: rightPx - leftPx,
+          })
           continue
         }
 
         // Calculate clamped horizontal position
         const x = calculateClampedLabelPosition(
-          leftPx!,
+          leftPx,
           rightPx,
           offsetPx,
           labelWidth,
@@ -144,6 +243,13 @@ const FloatingLabels = observer(function FloatingLabels({
 
         // Convert relative Y to absolute Y
         const y = featureVisualBottom + relativeY
+
+        console.log('FloatingLabels: Adding label', key, {
+          text,
+          x,
+          y,
+          color,
+        })
 
         result.push({
           key: `${key}-${i}`,
@@ -154,6 +260,8 @@ const FloatingLabels = observer(function FloatingLabels({
         })
       }
     }
+
+    console.log('FloatingLabels: Final result count:', result.length)
 
     return result
   }, [layoutFeatures, view, assembly, offsetPx, showLabels, showDescriptions])
