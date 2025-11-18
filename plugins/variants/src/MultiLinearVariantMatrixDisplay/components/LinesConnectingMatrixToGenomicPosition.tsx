@@ -2,11 +2,15 @@ import { forwardRef, isValidElement, useState } from 'react'
 
 import { ResizeHandle, SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  getStrokeProps,
+} from '@jbrowse/core/util'
+import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import type { MultiLinearVariantMatrixDisplayModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -21,12 +25,19 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+interface MinimalModel {
+  setLineZoneHeight: (arg: number) => number
+  height: number
+  lineZoneHeight: number
+  featuresVolatile: Feature[] | undefined
+}
+
 const Wrapper = observer(function ({
   children,
   model,
   exportSVG,
 }: {
-  model: MultiLinearVariantMatrixDisplayModel
+  model: MinimalModel
   children: React.ReactNode
   exportSVG?: boolean
 }) {
@@ -60,7 +71,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(function ({
   model,
   exportSVG,
 }: {
-  model: MultiLinearVariantMatrixDisplayModel
+  model: MinimalModel
   exportSVG?: boolean
 }) {
   const { classes } = useStyles()
@@ -137,9 +148,10 @@ const AllLines = observer(function ({
   model,
   setMouseOverLine,
 }: {
-  model: MultiLinearVariantMatrixDisplayModel
+  model: MinimalModel
   setMouseOverLine: (arg: any) => void
 }) {
+  const theme = useTheme()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { lineZoneHeight, featuresVolatile } = model
@@ -148,18 +160,19 @@ const AllLines = observer(function ({
   const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
   const w = b0 / (featuresVolatile?.length || 1)
   const l = Math.max(offsetPx, 0)
+  const p = getStrokeProps(alpha(theme.palette.text.primary, 0.4))
   return assembly && featuresVolatile ? (
     <>
       {featuresVolatile.map((f, i) => {
         const ref = f.get('refName')
         const c =
           (view.bpToPx({
-            refName: assembly.getCanonicalRefName(ref) || ref,
+            refName: assembly.getCanonicalRefName2(ref),
             coord: f.get('start'),
           })?.offsetPx || 0) - l
         return (
           <line
-            stroke="#0004"
+            {...p}
             strokeWidth={1}
             key={f.id()}
             x1={i * w + w / 2}

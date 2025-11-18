@@ -12,15 +12,11 @@ import { calculateLabelPositions, getId } from './util'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { ExportSvgOptions } from '../../LinearGenomeView/types'
-import type { BaseLinearDisplayModel } from '../model'
-import type { ThemeOptions } from '@mui/material'
+import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from '../model'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
-  opts: ExportSvgOptions & {
-    overrideHeight: number
-    theme?: ThemeOptions
-  },
+  opts: ExportSvgOptions & ExportSvgDisplayOptions,
 ) {
   const { height, id } = self
   const { overrideHeight } = opts
@@ -86,7 +82,6 @@ export async function renderBaseLinearDisplaySvg(
         const clipid = getId(id, index)
 
         return (
-          /* biome-ignore lint/suspicious/noArrayIndexKey: */
           <Fragment key={`frag-${index}`}>
             <defs>
               <clipPath id={clipid}>

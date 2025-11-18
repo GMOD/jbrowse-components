@@ -16,9 +16,11 @@ const RenderedBlocks = observer(function ({
     id: string
     blockDefinitions: BlockSet
     blockState: any
+    renderProps: () => { notReady?: boolean }
   }
 }) {
   const { blockDefinitions, blockState } = model
+  const { notReady } = model.renderProps()
   return blockDefinitions.map(block => {
     const key = `${model.id}-${block.key}`
     if (block.type === 'ContentBlock') {
@@ -26,6 +28,8 @@ const RenderedBlocks = observer(function ({
       return (
         <ContentBlockComponent block={block} key={key}>
           {state?.ReactComponent ? (
+            <state.ReactComponent model={state} />
+          ) : notReady && state ? (
             <state.ReactComponent model={state} />
           ) : null}
           {state?.maxHeightReached ? (

@@ -60,8 +60,8 @@ type LayoutRecord =
     ]
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
-  overrideHeight: number
-  theme: ThemeOptions
+  overrideHeight?: number
+  theme?: ThemeOptions
 }
 
 /**

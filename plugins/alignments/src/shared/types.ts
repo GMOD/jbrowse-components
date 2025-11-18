@@ -1,3 +1,5 @@
+import type { Feature } from '@jbrowse/core/util'
+
 export type SkipMap = Record<
   string,
   {
@@ -118,4 +120,32 @@ export interface Mismatch {
   altbase?: string
   seq?: string
   cliplen?: number
+}
+
+export interface ReducedFeature {
+  name: string
+  strand: number
+  refName: string
+  start: number
+  end: number
+  id: string
+  flags: number
+  tlen: number
+  pair_orientation: string
+  next_ref?: string
+  next_pos?: number
+  clipPos: number
+  SA?: string
+}
+
+export interface ChainStats {
+  max: number
+  min: number
+  upper: number
+  lower: number
+}
+
+export interface ChainData {
+  stats?: ChainStats
+  chains: Feature[][]
 }

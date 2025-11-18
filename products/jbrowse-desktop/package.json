@@ -88,7 +88,7 @@
     "electron-debug": "^4.1.0",
     "electron-updater": "^6.1.1",
     "electron-window-state": "^5.0.3",
-    "json-parse-even-better-errors": "^4.0.0",
+    "json-parse-even-better-errors": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
@@ -106,13 +106,13 @@
     "use-query-params": "^2.0.0"
   },
   "devDependencies": {
-    "electron": "39.1.1"
+    "electron": "39.2.1"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "39.1.1",
+    "electronVersion": "39.2.1",
     "extraMetadata": {
       "main": "build/electron.js"
     },

@@ -8,14 +8,14 @@ import LegendItem from './LegendItem'
 import LegendItemText from './LegendItemText'
 import RectBg from './RectBg'
 
-import type { WiggleDisplayModel } from '../model'
+import type { MinimalModel } from './types'
 
 const ColorLegend = observer(function ({
   model,
   rowHeight,
   exportSVG,
 }: {
-  model: WiggleDisplayModel
+  model: MinimalModel
   rowHeight: number
   exportSVG?: boolean
 }) {
@@ -27,7 +27,7 @@ const ColorLegend = observer(function ({
     sources,
     labelWidth,
   } = model
-  const colorBoxWidth = renderColorBoxes ? 15 : 0
+  const colorBoxWidth = renderColorBoxes ? 20 : 0
   const legendWidth = labelWidth + colorBoxWidth + 5
   const svgOffset = exportSVG ? 10 : 0
   const extraOffset =
@@ -61,7 +61,7 @@ const ColorLegend = observer(function ({
           model={model}
           rowHeight={rowHeight}
           exportSVG={exportSVG}
-          labelWidth={labelWidth}
+          labelWidth={legendWidth}
         />
       ))}
       {/* Then render all text elements on top */}

@@ -1,7 +1,6 @@
 import { types } from 'mobx-state-tree'
 
-import type { ChainData } from './fetchChains'
-import type { ColorBy, FilterBy } from './types'
+import type { ChainData, ColorBy, FilterBy } from './types'
 
 /**
  * Base mixin for all LinearRead displays (Cloud, Stack, Arcs)

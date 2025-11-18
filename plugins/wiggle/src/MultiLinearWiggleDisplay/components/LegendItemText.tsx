@@ -1,5 +1,5 @@
+import type { MinimalModel } from './types'
 import type { Source } from '../../util'
-import type { WiggleDisplayModel } from '../model'
 import type { getFillProps } from '@jbrowse/core/util'
 
 const LegendItemText = function ({
@@ -13,7 +13,7 @@ const LegendItemText = function ({
   source: Source
   idx: number
   rowHeight: number
-  model: WiggleDisplayModel
+  model: MinimalModel
   exportSVG?: boolean
   textFillProps: ReturnType<typeof getFillProps>
 }) {
@@ -27,7 +27,7 @@ const LegendItemText = function ({
 
   return canDisplayLabel ? (
     <text
-      y={idx * rowHeight + 13}
+      y={idx * rowHeight + svgFontSize}
       x={extraOffset + colorBoxWidth + 2}
       fontSize={svgFontSize}
       {...textFillProps}

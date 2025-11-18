@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { getSnapshot } from 'mobx-state-tree'
 
-import type { LinearReadCloudDisplayModel } from './model'
+import type { LinearReadArcsDisplayModel } from './model'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -19,12 +19,10 @@ interface RenderingResult {
   reactElement?: React.ReactNode
   html?: string
   canvasRecordedData?: unknown
-  layoutHeight?: number
-  featuresForFlatbush?: unknown
 }
 
 export async function renderSvg(
-  self: LinearReadCloudDisplayModel,
+  self: LinearReadArcsDisplayModel,
   opts: ExportSvgDisplayOptions,
 ) {
   const view = getContainingView(self) as LGV
@@ -33,14 +31,12 @@ export async function renderSvg(
   const height = opts.overrideHeight ?? self.height
 
   const {
-    featureHeightSetting: featureHeight,
     colorBy,
     filterBy,
-    drawSingletons,
-    drawProperPairs,
-    flipStrandLongReadChains,
-    noSpacing,
-    trackMaxHeight,
+    drawInter,
+    drawLongRange,
+    lineWidthSetting,
+    jitterVal,
   } = self
 
   // Serialize the full view snapshot for RPC
@@ -54,7 +50,7 @@ export async function renderSvg(
   // Call RPC method with exportSVG options
   const rendering = (await rpcManager.call(
     self.id,
-    'RenderLinearReadCloudDisplay',
+    'RenderLinearReadArcsDisplay',
     {
       sessionId: session.id,
       view: viewSnapshot,
@@ -62,14 +58,11 @@ export async function renderSvg(
       config: self.configuration,
       theme: opts.theme,
       filterBy,
-      featureHeight,
-      noSpacing: noSpacing ?? false,
-      drawCloud: self.drawCloud,
       colorBy,
-      drawSingletons,
-      drawProperPairs,
-      flipStrandLongReadChains,
-      trackMaxHeight,
+      drawInter,
+      drawLongRange,
+      lineWidth: lineWidthSetting,
+      jitter: jitterVal,
       height,
       exportSVG: opts,
     },
@@ -90,6 +83,7 @@ export async function renderSvg(
   const visibleWidth = view.width
 
   // Create a clip path to clip to the visible region
+  // Apply clipping BEFORE transform, at the view level
   const clipId = `clip-${self.id}-svg`
 
   return (

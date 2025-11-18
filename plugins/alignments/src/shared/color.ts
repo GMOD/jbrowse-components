@@ -1,6 +1,6 @@
 import { orientationTypes, pairMap } from '../util'
 
-import type { ChainStats } from './fetchChains'
+import type { ChainStats } from './types'
 import type { Feature } from '@jbrowse/core/util'
 
 /**

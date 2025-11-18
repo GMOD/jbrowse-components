@@ -1,14 +1,30 @@
 import { getFillProps } from '@jbrowse/core/util'
+import { alpha, useTheme } from '@mui/material'
 
-const RectBg = (props: {
+const RectBg = ({
+  x,
+  y,
+  width,
+  height,
+  color,
+}: {
   x: number
   y: number
   width: number
   height: number
   color?: string
 }) => {
-  const { color = 'rgb(255,255,255,0.8)' } = props
-  return <rect {...props} {...getFillProps(color)} />
+  const theme = useTheme()
+  return (
+    <rect
+      pointerEvents="auto"
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      {...getFillProps(color || alpha(theme.palette.background.paper, 0.3))}
+    />
+  )
 }
 
 export default RectBg
