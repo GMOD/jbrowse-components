@@ -49,6 +49,12 @@ export interface Layout {
   name: string
 }
 
+export interface FloatingLabelData {
+  text: string
+  relativeY: number
+  color: string
+}
+
 type LayoutRecord =
   | [number, number, number, number]
   | [
@@ -60,6 +66,8 @@ type LayoutRecord =
         label?: string
         description?: string
         refName: string
+        floatingLabels?: FloatingLabelData[]
+        totalFeatureHeight?: number
       },
     ]
 

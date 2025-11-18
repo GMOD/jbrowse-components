@@ -40,6 +40,7 @@ export function computeLayouts({
     // Calculate total layout width and height including label space
     const totalLayoutWidth = getLayoutWidth(featureLayout)
     const totalLayoutHeight = featureLayout.totalLayoutHeight
+    const totalFeatureHeight = featureLayout.totalFeatureHeight
 
     // Get name and description using config (consistent with label display)
     const name = String(
@@ -49,9 +50,49 @@ export function computeLayouts({
       readConfObject(config, ['labels', 'description'], { feature }) || '',
     )
 
-    // Add to collision detection layout
-    // Pass feature as data (not serialized) and minimal info as serializableData
-    // The left/right coordinates define the layout rectangle boundaries (feature + label space)
+    // Pre-calculate label config
+    const showLabels = readConfObject(config, 'showLabels')
+    const showDescriptions = readConfObject(config, 'showDescriptions')
+    const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
+      feature,
+    }) as number
+
+    // Calculate floating labels with relative Y positions (positive = below feature)
+    const shouldShowLabel = /\S/.test(name) && showLabels
+    const shouldShowDescription = /\S/.test(description) && showDescriptions
+
+    const floatingLabels: Array<{
+      text: string
+      relativeY: number
+      color: string
+    }> = []
+
+    if (shouldShowLabel && shouldShowDescription) {
+      floatingLabels.push({
+        text: name,
+        relativeY: 0,
+        color: 'black',
+      })
+      floatingLabels.push({
+        text: description,
+        relativeY: fontHeight,
+        color: 'blue',
+      })
+    } else if (shouldShowLabel) {
+      floatingLabels.push({
+        text: name,
+        relativeY: 0,
+        color: 'black',
+      })
+    } else if (shouldShowDescription) {
+      floatingLabels.push({
+        text: description,
+        relativeY: 0,
+        color: 'blue',
+      })
+    }
+
+    // Add rect to layout with floating labels
     const featureStart = feature.get('start')
     const topPx = layout.addRect(
       feature.id(),
@@ -63,6 +104,8 @@ export function computeLayouts({
         label: name,
         description,
         refName: feature.get('refName'),
+        floatingLabels,
+        totalFeatureHeight,
       },
     )
 

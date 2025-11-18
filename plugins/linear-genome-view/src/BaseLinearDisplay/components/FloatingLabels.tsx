@@ -11,11 +11,12 @@ import { observer } from 'mobx-react'
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 
-interface LabelItemProps {
-  label: string
-  description: string
-  leftPos: number
-  topPos: number
+interface LabelItem {
+  key: string
+  text: string
+  x: number
+  y: number
+  color: string
 }
 
 function getFeaturePixelPositions(
@@ -40,10 +41,6 @@ function getFeaturePixelPositions(
 
 function calculateLabelWidth(text: string, fontSize: number) {
   return measureText(text, fontSize)
-}
-
-function calculateLabelTopOffset(hasLabel: boolean, hasDescription: boolean) {
-  return 14 * (+hasDescription + +hasLabel)
 }
 
 function shouldShowLabel(
@@ -97,27 +94,22 @@ const FloatingLabels = observer(function FloatingLabels({
     }
 
     const fontSize = 11
-    const result: (LabelItemProps & { key: string })[] = []
+    const result: LabelItem[] = []
+
     for (const [key, val] of layoutFeatures.entries()) {
       if (!val?.[4]) {
         continue
       }
 
-      const [left, , right, bottom, feature] = val
-      const { refName = '', description = '', label = '' } = feature
+      const [left, topPx, right, , feature] = val
+      const { refName = '', floatingLabels, totalFeatureHeight } = feature
 
-      // Determine what to display based on config settings
-      const displayLabel = showLabels && label ? label : ''
-      const displayDescription =
-        showDescriptions && description ? description : ''
-
-      // Skip if both display label and description are empty
-      if (!displayLabel && !displayDescription) {
+      // Skip if no floating labels
+      if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
         continue
       }
 
       // Get layout boundary pixel positions
-      // left and right are the layout boundaries (in BP) which include label space
       const { leftPx, rightPx } = getFeaturePixelPositions(
         view,
         assembly,
@@ -126,45 +118,47 @@ const FloatingLabels = observer(function FloatingLabels({
         right,
       )
 
-      // Calculate label dimensions (need to check both label and description)
-      const labelWidth = displayLabel
-        ? calculateLabelWidth(displayLabel, fontSize)
-        : 0
-      const descriptionWidth = displayDescription
-        ? calculateLabelWidth(displayDescription, fontSize)
-        : 0
-      const maxLabelWidth = Math.max(labelWidth, descriptionWidth)
+      // Calculate the bottom of the visual feature (not including label space)
+      const featureVisualBottom = topPx + totalFeatureHeight
 
-      // Only show labels that fit within the layout bounds
-      if (!shouldShowLabel(leftPx, rightPx, maxLabelWidth)) {
-        continue
+      // Process each floating label
+      for (let i = 0; i < floatingLabels.length; i++) {
+        const labelItem = floatingLabels[i]!
+        const { text, relativeY, color } = labelItem
+
+        // Calculate label width for this specific text
+        const labelWidth = calculateLabelWidth(text, fontSize)
+
+        // Only show labels that fit within the layout bounds
+        if (!shouldShowLabel(leftPx, rightPx, labelWidth)) {
+          continue
+        }
+
+        // Calculate clamped horizontal position
+        const x = calculateClampedLabelPosition(
+          leftPx!,
+          rightPx,
+          offsetPx,
+          labelWidth,
+        )
+
+        // Convert relative Y to absolute Y
+        const y = featureVisualBottom + relativeY
+
+        result.push({
+          key: `${key}-${i}`,
+          text,
+          x,
+          y,
+          color,
+        })
       }
-
-      // Calculate clamped horizontal position
-      const leftPos = calculateClampedLabelPosition(
-        leftPx!,
-        rightPx,
-        offsetPx,
-        maxLabelWidth,
-      )
-
-      // Calculate vertical position
-      const topPos =
-        bottom - calculateLabelTopOffset(!!displayLabel, !!displayDescription)
-
-      result.push({
-        key,
-        label: displayLabel,
-        description: displayDescription,
-        leftPos,
-        topPos,
-      })
     }
 
     return result
   }, [layoutFeatures, view, assembly, offsetPx, showLabels, showDescriptions])
 
-  // Manually manipulate DOM for better performance
+  // Render labels with minimal DOM manipulation
   useEffect(() => {
     const container = containerRef.current
     if (!container) {
@@ -174,49 +168,32 @@ const FloatingLabels = observer(function FloatingLabels({
     const domElements = domElementsRef.current
     const newKeys = new Set<string>()
 
-    // Create or update elements
-    for (const { key, label, description, leftPos, topPos } of labelData) {
+    for (const { key, text, x, y, color } of labelData) {
       newKeys.add(key)
-
       let element = domElements.get(key)
 
       if (!element) {
-        // Create new element
         element = document.createElement('div')
         element.style.position = 'absolute'
         element.style.fontSize = '11px'
         element.style.pointerEvents = 'none'
         element.style.willChange = 'transform'
-
-        const labelDiv = document.createElement('div')
-        const descDiv = document.createElement('div')
-        descDiv.style.color = 'blue'
-
-        element.append(labelDiv)
-        element.append(descDiv)
-
         container.append(element)
         domElements.set(key, element)
       }
 
-      // Update element content and position
-      const labelDiv = element.children[0] as HTMLDivElement
-      const descDiv = element.children[1] as HTMLDivElement
-
-      if (labelDiv.textContent !== label) {
-        labelDiv.textContent = label
+      if (element.textContent !== text) {
+        element.textContent = text
       }
-      if (descDiv.textContent !== description) {
-        descDiv.textContent = description
+      if (element.style.color !== color) {
+        element.style.color = color
       }
-
-      element.style.transform = `translate(${leftPos}px, ${topPos}px)`
+      element.style.transform = `translate(${x}px, ${y}px)`
     }
 
     // Remove elements that are no longer needed
     for (const [key, element] of domElements.entries()) {
       if (!newKeys.has(key)) {
-        // Check if element is actually a child before removing
         if (element.parentNode === container) {
           element.remove()
         }
@@ -224,7 +201,6 @@ const FloatingLabels = observer(function FloatingLabels({
       }
     }
 
-    // Cleanup function to remove all elements on unmount
     return () => {
       for (const [key, element] of domElements.entries()) {
         if (element.parentNode === container) {
