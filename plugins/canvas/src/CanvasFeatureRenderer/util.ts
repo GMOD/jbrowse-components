@@ -17,21 +17,39 @@ export function isUTR(feature: Feature) {
 
 /**
  * Get the appropriate color for a box feature based on its properties
+ * Optimized to minimize readConfObject calls by checking isCallback first
  */
 export function getBoxColor({
   feature,
   config,
   colorByCDS,
   theme,
+  color1,
+  color3,
+  isColor1Callback,
+  isColor3Callback,
 }: {
   feature: Feature
   config: AnyConfigurationModel
   colorByCDS: boolean
   theme: Theme
+  color1?: string
+  color3?: string
+  isColor1Callback?: boolean
+  isColor3Callback?: boolean
 }) {
-  let fill: string = isUTR(feature)
-    ? readConfObject(config, 'color3', { feature })
-    : readConfObject(config, 'color1', { feature })
+  // Determine fill color based on UTR status
+  // Only use readConfObject if the color is a callback (feature-dependent)
+  let fill: string
+  if (isUTR(feature)) {
+    fill = isColor3Callback
+      ? readConfObject(config, 'color3', { feature })
+      : (color3 ?? readConfObject(config, 'color3'))
+  } else {
+    fill = isColor1Callback
+      ? readConfObject(config, 'color1', { feature })
+      : (color1 ?? readConfObject(config, 'color1'))
+  }
 
   const featureType: string | undefined = feature.get('type')
   const featureStrand: -1 | 1 | undefined = feature.get('strand')
@@ -64,27 +82,34 @@ export function getBoxColor({
 /**
  * Selects the appropriate glyph type to render a feature based on its
  * type and structure
+ * Optimized to accept pre-read config values to avoid repeated readConfObject calls
  */
 export function chooseGlyphType({
   feature,
   config,
+  transcriptTypes,
+  containerTypes,
 }: {
   feature: Feature
-  config: AnyConfigurationModel
+  config?: AnyConfigurationModel
+  transcriptTypes?: string[]
+  containerTypes?: string[]
 }): GlyphType {
   const type = feature.get('type')
   const subfeatures = feature.get('subfeatures')
-  const transcriptTypes = readConfObject(config, 'transcriptTypes')
-  const containerTypes = readConfObject(config, 'containerTypes')
+
+  // Read from config only if not provided (for backward compatibility)
+  const transcriptTypesArray = transcriptTypes ?? (config ? readConfObject(config, 'transcriptTypes') : [])
+  const containerTypesArray = containerTypes ?? (config ? readConfObject(config, 'containerTypes') : [])
 
   if (subfeatures?.length && type !== 'CDS') {
     const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
     const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
-    if (transcriptTypes.includes(type) && hasCDS) {
+    if (transcriptTypesArray.includes(type) && hasCDS) {
       return 'ProcessedTranscript'
     } else if (
       (!feature.parent() && hasSubSub) ||
-      containerTypes.includes(type)
+      containerTypesArray.includes(type)
     ) {
       return 'Subfeatures'
     } else {

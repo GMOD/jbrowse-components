@@ -50,6 +50,10 @@ export function drawBox(args: DrawFeatureArgs): DrawingResult {
     config,
     colorByCDS,
     theme,
+    color1: args.color1,
+    color3: args.color3,
+    isColor1Callback: args.isColor1Callback,
+    isColor3Callback: args.isColor3Callback,
   })
   const stroke = readConfObject(config, 'outline', { feature }) as string
 

@@ -22,6 +22,13 @@ export function layoutFeature(args: {
   parentX?: number
   parentY?: number
   isNested?: boolean
+  displayMode?: string
+  transcriptTypes?: string[]
+  containerTypes?: string[]
+  showLabels?: boolean
+  showDescriptions?: boolean
+  fontHeight?: number
+  labelAllowed?: boolean
 }): FeatureLayout {
   const {
     feature,
@@ -31,9 +38,21 @@ export function layoutFeature(args: {
     parentX = 0,
     parentY = 0,
     isNested = false,
+    displayMode: displayModeArg,
+    transcriptTypes: transcriptTypesArg,
+    containerTypes: containerTypesArg,
+    showLabels: showLabelsArg,
+    showDescriptions: showDescriptionsArg,
+    fontHeight: fontHeightArg,
+    labelAllowed: labelAllowedArg,
   } = args
-  const displayMode = readConfObject(config, 'displayMode') as string
-  const glyphType = chooseGlyphType({ feature, config })
+
+  // Pre-read config values once (use provided args to avoid repeated readConfObject calls)
+  const displayMode = displayModeArg ?? (readConfObject(config, 'displayMode') as string)
+  const transcriptTypes = transcriptTypesArg ?? readConfObject(config, 'transcriptTypes')
+  const containerTypes = containerTypesArg ?? readConfObject(config, 'containerTypes')
+
+  const glyphType = chooseGlyphType({ feature, transcriptTypes, containerTypes })
 
   // Calculate x position
   const parentFeature = feature.parent()
@@ -81,6 +100,9 @@ export function layoutFeature(args: {
           parentX: x,
           parentY: currentY,
           isNested: true,
+          displayMode,
+          transcriptTypes,
+          containerTypes,
         })
         layout.children.push(childLayout)
         // Use visual height for stacking (not totalHeight with label space)
@@ -107,6 +129,9 @@ export function layoutFeature(args: {
           parentX: x,
           parentY,
           isNested: true,
+          displayMode,
+          transcriptTypes,
+          containerTypes,
         })
         layout.children.push(childLayout)
       }
@@ -121,6 +146,9 @@ export function layoutFeature(args: {
           parentX: x,
           parentY,
           isNested: true,
+          displayMode,
+          transcriptTypes,
+          containerTypes,
         })
         layout.children.push(childLayout)
       }
@@ -129,14 +157,15 @@ export function layoutFeature(args: {
 
   // Add extra height and width for labels (name and description)
   // Labels are drawn by floating label system, but we need to reserve space
-  const labelAllowed = displayMode !== 'collapsed'
+  const labelAllowed = labelAllowedArg ?? (displayMode !== 'collapsed')
   if (labelAllowed && !isNested) {
     // Only add label space for top-level features (not nested subfeatures)
-    const showLabels = readConfObject(config, 'showLabels')
-    const showDescriptions = readConfObject(config, 'showDescriptions')
-    const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
+    // Use pre-read values if provided to avoid repeated readConfObject calls
+    const showLabels = showLabelsArg ?? readConfObject(config, 'showLabels')
+    const showDescriptions = showDescriptionsArg ?? readConfObject(config, 'showDescriptions')
+    const fontHeight = fontHeightArg ?? (readConfObject(config, ['labels', 'fontSize'], {
       feature,
-    })
+    }) as number)
 
     const name = String(
       readConfObject(config, ['labels', 'name'], { feature }) || '',

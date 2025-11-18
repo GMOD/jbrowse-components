@@ -48,6 +48,13 @@ export function makeImageData({
   ctx.textBaseline = 'top'
   ctx.textAlign = 'left'
 
+  // Pre-read color config values to optimize getBoxColor performance
+  // Check if colors are callbacks to avoid unnecessary readConfObject calls
+  const isColor1Callback = config.color1?.isCallback ?? false
+  const isColor3Callback = config.color3?.isCallback ?? false
+  const color1 = isColor1Callback ? undefined : readConfObject(config, 'color1')
+  const color3 = isColor3Callback ? undefined : readConfObject(config, 'color3')
+
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
     const { feature, layout: featureLayout, topPx: recordTopPx } = record
 
@@ -84,6 +91,10 @@ export function makeImageData({
       canvasWidth,
       peptideDataMap,
       colorByCDS,
+      color1,
+      color3,
+      isColor1Callback,
+      isColor3Callback,
     })
 
     // Determine if this feature is a gene with transcript children

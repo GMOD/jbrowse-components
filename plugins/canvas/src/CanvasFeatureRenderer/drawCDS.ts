@@ -56,6 +56,10 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
     config,
     colorByCDS,
     theme,
+    color1: args.color1,
+    color3: args.color3,
+    isColor1Callback: args.isColor1Callback,
+    isColor3Callback: args.isColor3Callback,
   })
 
   // If we have peptide data and should render amino acid backgrounds

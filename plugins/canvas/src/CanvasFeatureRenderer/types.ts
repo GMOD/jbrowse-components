@@ -44,6 +44,11 @@ export interface DrawFeatureArgs {
   canvasWidth: number
   peptideDataMap?: Map<string, PeptideData>
   colorByCDS?: boolean
+  // Pre-read color configs for performance optimization
+  color1?: string
+  color3?: string
+  isColor1Callback?: boolean
+  isColor3Callback?: boolean
 }
 
 export interface DrawingResult {

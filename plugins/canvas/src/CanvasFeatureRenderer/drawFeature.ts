@@ -10,7 +10,15 @@ import type { DrawFeatureArgs, DrawingResult } from './types'
  * Draw a processed transcript feature (special handling for CDS/UTR subfeatures)
  */
 export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
-  const { featureLayout, peptideDataMap, colorByCDS } = args
+  const {
+    featureLayout,
+    peptideDataMap,
+    colorByCDS,
+    color1,
+    color3,
+    isColor1Callback,
+    isColor3Callback,
+  } = args
 
   // Draw the connecting line
   const result = drawSegments(args)
@@ -24,6 +32,10 @@ export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
       topLevel: false,
       peptideDataMap,
       colorByCDS,
+      color1,
+      color3,
+      isColor1Callback,
+      isColor3Callback,
     })
     result.coords.push(...subResult.coords)
     result.items.push(...subResult.items)

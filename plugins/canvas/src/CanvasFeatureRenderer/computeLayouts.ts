@@ -40,6 +40,22 @@ export function computeLayouts({
   const reversed = region.reversed || false
   const layoutRecords: LayoutRecord[] = []
 
+  // Pre-read config values once to avoid repeated readConfObject calls in hot path
+  // This is a significant performance optimization for large feature sets
+  const displayMode = readConfObject(config, 'displayMode') as string
+  const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
+  const containerTypes = readConfObject(config, 'containerTypes') as string[]
+  const showLabels = readConfObject(config, 'showLabels') as boolean
+  const showDescriptions = readConfObject(config, 'showDescriptions') as boolean
+  const labelAllowed = displayMode !== 'collapsed'
+
+  // Note: fontHeight can be feature-dependent, so we read it once without feature context
+  // If it's a callback, layoutFeature will re-read it with feature context
+  const fontHeightConfig = config.labels?.fontSize
+  const fontHeight = fontHeightConfig?.isCallback
+    ? undefined
+    : (readConfObject(config, ['labels', 'fontSize']) as number)
+
   for (const feature of features.values()) {
     // Create simple layout for feature and its subfeatures
     const featureLayout = layoutFeature({
@@ -47,6 +63,13 @@ export function computeLayouts({
       bpPerPx,
       reversed,
       config,
+      displayMode,
+      transcriptTypes,
+      containerTypes,
+      showLabels,
+      showDescriptions,
+      fontHeight,
+      labelAllowed,
     })
 
     // Extract layout dimensions from the feature layout tree
@@ -65,14 +88,13 @@ export function computeLayouts({
       readConfObject(config, ['labels', 'description'], { feature }) || '',
     )
 
-    // Pre-calculate label config
-    const showLabels = readConfObject(config, 'showLabels')
-    const showDescriptions = readConfObject(config, 'showDescriptions')
-    const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
-      feature,
-    }) as number
-
     // Calculate floating labels with relative Y positions (positive = below feature)
+    // Use pre-read showLabels, showDescriptions, fontHeight from top of function
+    // Only re-read fontHeight if it's a callback (feature-dependent)
+    const actualFontHeight = fontHeight ?? (readConfObject(config, ['labels', 'fontSize'], {
+      feature,
+    }) as number)
+
     const shouldShowLabel = /\S/.test(name) && showLabels
     const shouldShowDescription = /\S/.test(description) && showDescriptions
 
@@ -91,7 +113,7 @@ export function computeLayouts({
         },
         {
           text: description,
-          relativeY: fontHeight,
+          relativeY: actualFontHeight,
           color: 'blue',
         },
       )
