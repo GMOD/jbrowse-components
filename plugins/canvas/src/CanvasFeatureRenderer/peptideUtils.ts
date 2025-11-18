@@ -1,5 +1,9 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { defaultCodonTable, generateCodonTable } from '@jbrowse/core/util'
+import {
+  defaultCodonTable,
+  generateCodonTable,
+  revcom,
+} from '@jbrowse/core/util'
 import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import { firstValueFrom, toArray } from 'rxjs'
 
@@ -144,14 +148,29 @@ export async function fetchTranscriptPeptides(
       refName,
     }
 
-    const seq = await fetchSequence(pluginManager, renderProps, region)
+    let seq = await fetchSequence(pluginManager, renderProps, region)
     if (!seq) {
       return undefined
     }
 
-    const cds = extractCDSRegions(transcript)
+    const strand = transcript.get('strand') as number
+    let cds = extractCDSRegions(transcript)
     if (cds.length === 0) {
       return undefined
+    }
+
+    // For reverse strand features, reverse complement the sequence
+    // and reverse the CDS regions
+    if (strand === -1) {
+      seq = revcom(seq)
+      const seqLen = seq.length
+      // Reverse the CDS array and flip coordinates
+      cds = cds
+        .map(region => ({
+          start: seqLen - region.end,
+          end: seqLen - region.start,
+        }))
+        .reverse()
     }
 
     const sequenceData: SequenceData = { seq, cds }

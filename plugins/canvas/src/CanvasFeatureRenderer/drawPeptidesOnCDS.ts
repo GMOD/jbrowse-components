@@ -36,7 +36,10 @@ export function drawPeptidesOnCDS(args: DrawPeptidesArgs) {
 
   const flipper = reversed ? -1 : 1
   const rightPos = left + width
-  const fontSize = Math.floor(height * 0.85)
+  const fontSize = height
+  ctx.font = `${fontSize}px sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
 
   // Draw each amino acid text label
   for (const aggregatedAminoAcid of aggregatedAminoAcids) {
@@ -45,10 +48,6 @@ export function drawPeptidesOnCDS(args: DrawPeptidesArgs) {
     const isNonTriplet = aa.length % 3 !== 0 || aa.aminoAcid === '&'
 
     ctx.fillStyle = isNonTriplet ? 'red' : 'black'
-    ctx.font = `${fontSize}px sans-serif`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-
     const text =
       isNonTriplet || aa.aminoAcid === '*' || aa.aminoAcid === '&'
         ? aa.aminoAcid
