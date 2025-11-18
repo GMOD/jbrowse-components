@@ -61,23 +61,25 @@ export function computeLayouts({
     const shouldShowLabel = /\S/.test(name) && showLabels
     const shouldShowDescription = /\S/.test(description) && showDescriptions
 
-    const floatingLabels: Array<{
+    const floatingLabels: {
       text: string
       relativeY: number
       color: string
-    }> = []
+    }[] = []
 
     if (shouldShowLabel && shouldShowDescription) {
-      floatingLabels.push({
-        text: name,
-        relativeY: 0,
-        color: 'black',
-      })
-      floatingLabels.push({
-        text: description,
-        relativeY: fontHeight,
-        color: 'blue',
-      })
+      floatingLabels.push(
+        {
+          text: name,
+          relativeY: 0,
+          color: 'black',
+        },
+        {
+          text: description,
+          relativeY: fontHeight,
+          color: 'blue',
+        },
+      )
     } else if (shouldShowLabel) {
       floatingLabels.push({
         text: name,

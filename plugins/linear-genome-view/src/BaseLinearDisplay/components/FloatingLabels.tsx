@@ -60,7 +60,9 @@ interface PixelPositions {
 
 function calculateFeaturePixelPositions(
   view: LinearGenomeViewModel,
-  assembly: { getCanonicalRefName: (refName: string) => string | undefined } | undefined,
+  assembly:
+    | { getCanonicalRefName: (refName: string) => string | undefined }
+    | undefined,
   refName: string,
   left: number,
   right: number,
@@ -85,7 +87,8 @@ function calculateFeaturePixelPositions(
   if (leftBpPx !== undefined) {
     // Left edge is visible
     const leftPx = leftBpPx
-    const rightPx = rightBpPx !== undefined ? rightBpPx : leftPx + (right - left) / bpPerPx
+    const rightPx =
+      rightBpPx !== undefined ? rightBpPx : leftPx + (right - left) / bpPerPx
     return { leftPx, rightPx }
   } else if (rightBpPx !== undefined) {
     // Right edge is visible but left is not (feature starts in collapsed region)
@@ -111,7 +114,9 @@ function deduplicateFeatureLabels(
     entries(): IterableIterator<readonly [string, LayoutRecord | undefined]>
   },
   view: LinearGenomeViewModel,
-  assembly: { getCanonicalRefName: (refName: string) => string | undefined } | undefined,
+  assembly:
+    | { getCanonicalRefName: (refName: string) => string | undefined }
+    | undefined,
 ): Map<string, FeatureLabelData> {
   const featureLabels = new Map<string, FeatureLabelData>()
 
@@ -171,7 +176,7 @@ const FloatingLabels = observer(function FloatingLabels({
 
   const containerRef = useRef<HTMLDivElement>(null)
   const domElementsRef = useRef<Map<string, HTMLDivElement>>(new Map())
-  const { layoutFeatures, showLabels, showDescriptions } = model
+  const { layoutFeatures } = model
 
   // Memoize the processed label data to avoid recalculating positions
   const labelData = useMemo(() => {
@@ -183,16 +188,23 @@ const FloatingLabels = observer(function FloatingLabels({
     const result: LabelItem[] = []
 
     // First pass: de-duplicate features and get left-most positions
-    const featureLabels = deduplicateFeatureLabels(layoutFeatures, view, assembly)
+    const featureLabels = deduplicateFeatureLabels(
+      layoutFeatures,
+      view,
+      assembly,
+    )
 
     // Second pass: create label items from de-duplicated features
-    for (const [key, { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels }] of featureLabels.entries()) {
+    for (const [
+      key,
+      { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels },
+    ] of featureLabels.entries()) {
       // Calculate the bottom of the visual feature (not including label space)
       const featureVisualBottom = topPx + totalFeatureHeight
 
       // Process each floating label
-      for (let i = 0; i < floatingLabels.length; i++) {
-        const labelItem = floatingLabels[i]!
+      for (const [i, floatingLabel] of floatingLabels.entries()) {
+        const labelItem = floatingLabel
         const { text, relativeY, color } = labelItem
 
         // Calculate label width for this specific text
@@ -225,7 +237,7 @@ const FloatingLabels = observer(function FloatingLabels({
     }
 
     return result
-  }, [layoutFeatures, view, assembly, offsetPx, showLabels, showDescriptions])
+  }, [layoutFeatures, view, assembly, offsetPx])
 
   // Render labels with minimal DOM manipulation
   useEffect(() => {
