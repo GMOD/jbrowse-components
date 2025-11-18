@@ -10,6 +10,7 @@ import { observer } from 'mobx-react'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { FloatingLabelData, LayoutRecord } from '../model'
 
 interface LabelItem {
   key: string
@@ -102,23 +103,17 @@ interface FeatureLabelData {
   rightPx: number
   topPx: number
   totalFeatureHeight: number
-  floatingLabels: Array<{ text: string; relativeY: number; color: string }>
+  floatingLabels: FloatingLabelData[]
 }
 
 function deduplicateFeatureLabels(
-  layoutFeatures: Map<string, [number, number, number, number] | [number, number, number, number, {
-    label?: string
-    description?: string
-    refName: string
-    floatingLabels?: Array<{ text: string; relativeY: number; color: string }>
-    totalFeatureHeight?: number
-  }]>,
+  layoutFeatures: {
+    entries(): IterableIterator<readonly [string, LayoutRecord | undefined]>
+  },
   view: LinearGenomeViewModel,
   assembly: { getCanonicalRefName: (refName: string) => string | undefined } | undefined,
 ): Map<string, FeatureLabelData> {
   const featureLabels = new Map<string, FeatureLabelData>()
-
-  console.log('FloatingLabels: Processing', layoutFeatures.size, 'layout features')
 
   for (const [key, val] of layoutFeatures.entries()) {
     if (!val?.[4]) {
@@ -133,15 +128,6 @@ function deduplicateFeatureLabels(
       continue
     }
 
-    console.log('FloatingLabels: Feature', key, {
-      refName,
-      left,
-      right,
-      topPx,
-      totalFeatureHeight,
-      floatingLabels,
-    })
-
     const positions = calculateFeaturePixelPositions(
       view,
       assembly,
@@ -151,18 +137,10 @@ function deduplicateFeatureLabels(
     )
 
     if (!positions) {
-      console.log('FloatingLabels: Feature not visible', key)
       continue
     }
 
     const { leftPx, rightPx } = positions
-
-    console.log('FloatingLabels: Pixel positions for', key, {
-      leftPx,
-      rightPx,
-      bpPerPx: view.bpPerPx,
-      bpWidth: right - left,
-    })
 
     // De-duplicate: keep the left-most position for each feature
     const existing = featureLabels.get(key)
@@ -198,7 +176,6 @@ const FloatingLabels = observer(function FloatingLabels({
   // Memoize the processed label data to avoid recalculating positions
   const labelData = useMemo(() => {
     if (!assembly) {
-      console.log('FloatingLabels: No assembly')
       return []
     }
 
@@ -223,13 +200,6 @@ const FloatingLabels = observer(function FloatingLabels({
 
         // Only show labels that fit within the layout bounds
         if (!shouldShowLabel(leftPx, rightPx, labelWidth)) {
-          console.log('FloatingLabels: Label does not fit', key, {
-            text,
-            labelWidth,
-            leftPx,
-            rightPx,
-            layoutWidth: rightPx - leftPx,
-          })
           continue
         }
 
@@ -244,13 +214,6 @@ const FloatingLabels = observer(function FloatingLabels({
         // Convert relative Y to absolute Y
         const y = featureVisualBottom + relativeY
 
-        console.log('FloatingLabels: Adding label', key, {
-          text,
-          x,
-          y,
-          color,
-        })
-
         result.push({
           key: `${key}-${i}`,
           text,
@@ -260,8 +223,6 @@ const FloatingLabels = observer(function FloatingLabels({
         })
       }
     }
-
-    console.log('FloatingLabels: Final result count:', result.length)
 
     return result
   }, [layoutFeatures, view, assembly, offsetPx, showLabels, showDescriptions])

@@ -55,7 +55,7 @@ export interface FloatingLabelData {
   color: string
 }
 
-type LayoutRecord =
+export type LayoutRecord =
   | [number, number, number, number]
   | [
       number,
