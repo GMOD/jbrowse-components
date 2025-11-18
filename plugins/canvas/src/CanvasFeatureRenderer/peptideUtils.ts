@@ -135,11 +135,13 @@ export async function fetchTranscriptPeptides(
   transcript: Feature,
 ): Promise<PeptideData | undefined> {
   try {
+    const baseRegion = renderProps.regions[0]!
+    const refName = baseRegion.originalRefName || baseRegion.refName
     const region = {
-      ...renderProps.regions[0]!,
+      ...baseRegion,
       start: transcript.get('start'),
       end: transcript.get('end'),
-      refName: transcript.get('refName'),
+      refName,
     }
 
     const seq = await fetchSequence(pluginManager, renderProps, region)

@@ -186,19 +186,7 @@
           "chrY",
           "chrMT"
         ]
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "nclist_genes_hg19_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -419,19 +407,7 @@
           "chrY",
           "chrMT"
         ]
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "gencode_nclist_hg38_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -473,19 +449,7 @@
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb",
           "locationType": "UriLocation"
         }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "mane_hg38_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'geneName2')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -2644,19 +2608,7 @@
           },
           "indexType": "TBI"
         }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "gencode_nclist_v36_hg37_lift_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -2677,19 +2629,7 @@
           },
           "indexType": "TBI"
         }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "gencode_nclist_v36_hg38_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "VariantTrack",
@@ -3322,19 +3262,7 @@
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/encode3/ccre/encodeCcreCombined.bb",
           "locationType": "UriLocation"
         }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "testing1",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'ucscLabel')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -4940,19 +4868,7 @@
         }
       },
       "category": ["Annotation", "MANE"],
-      "assemblyNames": ["hg38"],
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "MANE.GRCh38.v1.4.refseq-LinearBasicDisplay",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'geneSymbol')"
-            }
-          }
-        }
-      ]
+      "assemblyNames": ["hg38"]
     },
     {
       "type": "FeatureTrack",
