@@ -4,7 +4,6 @@ import { getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import InteractivePath from './InteractivePath'
 import { getViewCoordinates } from './coordinateUtils'
 import {
   getBadlyPairedAlignments,
@@ -18,6 +17,7 @@ import {
   isAbnormalOrientation,
 } from './getOrientationColor'
 import { useMouseoverTracking, useOverlaySetup } from './hooks'
+import { getInteractivePathProps } from './pathUtils'
 import { showBreakpointAlignmentsWidget } from './widgetUtils'
 import { BEZIER_CURVE_OFFSET, LAYOUT_LEFT, LAYOUT_RIGHT } from '../constants'
 import { heightFromSpecificLevel, yPos } from '../util'
@@ -63,10 +63,7 @@ const AlignmentConnections = observer(function ({
     return layoutMatches
   }, [allFeatures, trackId, hasPaired, model])
 
-  const tracks = useMemo(
-    () => views.map(v => v.getTrack(trackId)),
-    [views, trackId],
-  )
+  const tracks = views.map(v => v.getTrack(trackId))
 
   return assembly ? (
     <g
@@ -167,14 +164,16 @@ const AlignmentConnections = observer(function ({
           ].join(' ')
           const id = `${f1.id()}-${f2.id()}`
           ret.push(
-            <InteractivePath
-              pathData={path}
+            <path
+              d={path}
               key={id}
               data-testid="r1"
-              interactiveOverlay={interactiveOverlay}
-              strokeWidth={1}
-              hoverStrokeWidth={5}
-              isHovered={mouseoverElt === id}
+              {...getInteractivePathProps({
+                interactiveOverlay,
+                isHovered: mouseoverElt === id,
+                strokeWidth: 1,
+                hoverStrokeWidth: 5,
+              })}
               {...getStrokeProps(
                 orientationColor || theme.palette.text.disabled,
               )}
@@ -185,8 +184,8 @@ const AlignmentConnections = observer(function ({
                   allFeatures.get(f2.id()),
                 )
               }}
-              onMouseOverCallback={handlers.onMouseOver(id)}
-              onMouseOutCallback={handlers.onMouseOut()}
+              onMouseOver={handlers.onMouseOver(id)}
+              onMouseOut={handlers.onMouseOut()}
             />,
           )
         }

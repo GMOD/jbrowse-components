@@ -5,8 +5,8 @@ import { getSnapshot } from 'mobx-state-tree'
 
 import { useNextFrame } from '../util'
 
-import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { BreakpointViewModel } from '../model'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 export function useOverlaySetup(model: BreakpointViewModel) {
   const snap = getSnapshot(model)

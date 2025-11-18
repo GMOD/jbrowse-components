@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 
 import { observer } from 'mobx-react'
 
-import InteractivePath from './InteractivePath'
 import { getCanonicalRefNames } from './assemblyUtils'
 import { getViewCoordinates } from './coordinateUtils'
 import { findMatchingAlt, getMatchedBreakendFeatures } from './featureMatching'
 import { useMouseoverTracking, useOverlaySetup } from './hooks'
+import { getInteractivePathProps } from './pathUtils'
 import { showVariantFeatureWidget } from './widgetUtils'
 import { DIRECTION_INDICATOR_LENGTH, LAYOUT_LEFT } from '../constants'
 import { yPos } from '../util'
@@ -44,10 +44,7 @@ const Breakends = observer(function ({
     yOffset = rect.top
   }
 
-  const tracks = useMemo(
-    () => views.map(v => v.getTrack(trackId)),
-    [views, trackId],
-  )
+  const tracks = views.map(v => v.getTrack(trackId))
 
   if (!assembly) {
     return null
@@ -117,17 +114,19 @@ const Breakends = observer(function ({
               y2,
             ].join(' ')
             ret.push(
-              <InteractivePath
-                pathData={path}
+              <path
+                d={path}
                 data-testid="r2"
-                interactiveOverlay={interactiveOverlay}
                 key={JSON.stringify(path)}
-                isHovered={id === mouseoverElt}
+                {...getInteractivePathProps({
+                  interactiveOverlay,
+                  isHovered: id === mouseoverElt,
+                })}
                 onClick={() => {
                   showVariantFeatureWidget(session, totalFeatures.get(id))
                 }}
-                onMouseOverCallback={handlers.onMouseOver(id)}
-                onMouseOutCallback={handlers.onMouseOut()}
+                onMouseOver={handlers.onMouseOver(id)}
+                onMouseOut={handlers.onMouseOut()}
               />,
             )
           }

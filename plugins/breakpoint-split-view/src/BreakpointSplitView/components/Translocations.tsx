@@ -2,10 +2,10 @@ import { useMemo } from 'react'
 
 import { observer } from 'mobx-react'
 
-import InteractivePath from './InteractivePath'
 import { getViewCoordinates } from './coordinateUtils'
 import { getMatchedTranslocationFeatures } from './featureMatching'
 import { useMouseoverTracking, useOverlaySetup } from './hooks'
+import { getInteractivePathProps } from './pathUtils'
 import { strandSymbolToDirection } from './strandUtils'
 import { showVariantFeatureWidget } from './widgetUtils'
 import { DIRECTION_INDICATOR_LENGTH, LAYOUT_LEFT } from '../constants'
@@ -45,10 +45,7 @@ const Translocations = observer(function ({
     yOffset = rect.top
   }
 
-  const tracks = useMemo(
-    () => views.map(v => v.getTrack(trackId)),
-    [views, trackId],
-  )
+  const tracks = views.map(v => v.getTrack(trackId))
 
   if (views.length < 2) {
     return null
@@ -120,16 +117,18 @@ const Translocations = observer(function ({
               y2,
             ].join(' ')
             ret.push(
-              <InteractivePath
-                pathData={path}
+              <path
+                d={path}
                 key={JSON.stringify(path)}
-                interactiveOverlay={interactiveOverlay}
-                isHovered={id === mouseoverElt}
+                {...getInteractivePathProps({
+                  interactiveOverlay,
+                  isHovered: id === mouseoverElt,
+                })}
                 onClick={() => {
                   showVariantFeatureWidget(session, totalFeatures.get(id))
                 }}
-                onMouseOverCallback={handlers.onMouseOver(id)}
-                onMouseOutCallback={handlers.onMouseOut()}
+                onMouseOver={handlers.onMouseOver(id)}
+                onMouseOut={handlers.onMouseOut()}
               />,
             )
           }
