@@ -99,7 +99,7 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
     result.items.push(...arrowResult.items)
   }
 
-  // Draw bounding box for debugging (shows totalWidth including labels, totalHeight for top/bottom)
+  // Draw bounding box for debugging (shows totalLayoutWidth and totalLayoutHeight)
   // if (topLevel) {
   //   const { ctx, featureLayout } = args
   //   ctx.save()
@@ -109,8 +109,8 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
   //   ctx.strokeRect(
   //     featureLayout.x,
   //     featureLayout.y,
-  //     featureLayout.totalWidth,
-  //     featureLayout.totalHeight,
+  //     featureLayout.totalLayoutWidth,
+  //     featureLayout.totalLayoutHeight,
   //   )
   //   ctx.restore()
   // }

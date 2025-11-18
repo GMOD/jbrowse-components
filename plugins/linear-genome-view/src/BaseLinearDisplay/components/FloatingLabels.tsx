@@ -107,6 +107,7 @@ interface FeatureLabelData {
   topPx: number
   totalFeatureHeight: number
   floatingLabels: FloatingLabelData[]
+  totalLayoutWidth?: number
 }
 
 function deduplicateFeatureLabels(
@@ -126,7 +127,12 @@ function deduplicateFeatureLabels(
     }
 
     const [left, topPx, right, , feature] = val
-    const { refName = '', floatingLabels, totalFeatureHeight } = feature
+    const {
+      refName = '',
+      floatingLabels,
+      totalFeatureHeight,
+      totalLayoutWidth,
+    } = feature
 
     // Skip if no floating labels
     if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
@@ -156,6 +162,7 @@ function deduplicateFeatureLabels(
         topPx,
         totalFeatureHeight,
         floatingLabels,
+        totalLayoutWidth,
       })
     }
   }
@@ -197,7 +204,7 @@ const FloatingLabels = observer(function FloatingLabels({
     // Second pass: create label items from de-duplicated features
     for (const [
       key,
-      { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels },
+      { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels, totalLayoutWidth },
     ] of featureLabels.entries()) {
       // Calculate the bottom of the visual feature (not including label space)
       const featureVisualBottom = topPx + totalFeatureHeight
@@ -211,14 +218,20 @@ const FloatingLabels = observer(function FloatingLabels({
         const labelWidth = calculateLabelWidth(text, fontSize)
 
         // Only show labels that fit within the layout bounds
-        if (!shouldShowLabel(leftPx, rightPx, labelWidth)) {
+        // Use totalLayoutWidth if available (includes label space), otherwise fall back to rect width
+        const layoutWidth = totalLayoutWidth ?? (rightPx - leftPx)
+        if (labelWidth > layoutWidth) {
           continue
         }
 
         // Calculate clamped horizontal position
+        // Use totalLayoutWidth if available to determine the right edge for clamping
+        const effectiveRightPx = totalLayoutWidth !== undefined
+          ? leftPx + totalLayoutWidth
+          : rightPx
         const x = calculateClampedLabelPosition(
           leftPx,
-          rightPx,
+          effectiveRightPx,
           offsetPx,
           labelWidth,
         )

@@ -163,10 +163,18 @@ export function layoutFeature(args: {
     }
 
     // totalFeatureHeight stays as visual height (without labels)
-    // Add label height to totalLayoutHeight
+    // Add label height to totalLayoutHeight for vertical collision detection
     layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
-    // Add label width to totalLayoutWidth
-    layout.totalLayoutWidth = layout.width + maxLabelWidth
+
+    // IMPORTANT: totalLayoutWidth is the MAX of feature width or label width, not the sum.
+    // Labels are displayed below the feature, horizontally aligned with the feature start
+    // (but clamped to stay within the viewport). The layout width determines the horizontal
+    // space needed for collision detection:
+    // 1. Short features with long labels: layout width = label width (label may extend past feature)
+    // 2. Long features with short labels: layout width = feature width (label fits within)
+    // The collision detection uses this width to prevent labels from overlapping vertically
+    // when features are stacked, while allowing horizontal label overlap across rows.
+    layout.totalLayoutWidth = Math.max(layout.width, maxLabelWidth)
   }
 
   return layout
