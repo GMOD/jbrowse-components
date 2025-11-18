@@ -117,7 +117,6 @@ export default class FeatureRendererType extends ServerSideRendererType {
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    checkStopToken(stopToken)
 
     const requestRegions = regions.map(r => normalizeRegion(r))
     const featureObservable =
@@ -129,7 +128,6 @@ export default class FeatureRendererType extends ServerSideRendererType {
         : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
     const feats = await firstValueFrom(featureObservable.pipe(toArray()))
-    checkStopToken(stopToken)
     return new Map<string, Feature>(
       feats
         .filter(feat => this.featurePassesFilters(renderArgs, feat))
