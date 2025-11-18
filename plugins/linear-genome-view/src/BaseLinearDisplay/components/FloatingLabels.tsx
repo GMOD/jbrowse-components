@@ -18,6 +18,70 @@ interface LabelItemProps {
   topPos: number
 }
 
+function getFeaturePixelPositions(
+  view: LinearGenomeViewModel,
+  assembly: { getCanonicalRefName: (refName: string) => string | undefined } | undefined,
+  refName: string,
+  left: number,
+  right: number,
+) {
+  const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
+  const leftPx = view.bpToPx({
+    refName: canonicalRefName,
+    coord: left,
+  })?.offsetPx
+  const rightPx = view.bpToPx({
+    refName: canonicalRefName,
+    coord: right,
+  })?.offsetPx
+
+  return { leftPx, rightPx }
+}
+
+function calculateLabelWidth(text: string, fontSize: number) {
+  return measureText(text, fontSize)
+}
+
+function calculateLabelTopOffset(hasLabel: boolean, hasDescription: boolean) {
+  return 14 * (+hasDescription + +hasLabel)
+}
+
+function shouldShowLabel(
+  featureLeftPx: number | undefined,
+  featureRightPx: number | undefined,
+  viewOffsetPx: number,
+  labelWidth: number,
+) {
+  if (featureLeftPx === undefined || featureRightPx === undefined) {
+    return false
+  }
+
+  const featureWidth = featureRightPx - featureLeftPx
+  if (labelWidth > featureWidth) {
+    return false
+  }
+
+  // Check that label won't extend beyond feature's right edge in viewport
+  const featureRightViewport = featureRightPx - viewOffsetPx
+  return featureRightViewport >= labelWidth
+}
+
+function calculateClampedLabelPosition(
+  featureLeftPx: number,
+  featureRightPx: number | undefined,
+  viewOffsetPx: number,
+  labelWidth: number,
+) {
+  const minPosition = 0
+  const naturalPosition = featureLeftPx - viewOffsetPx
+  const maxPosition =
+    featureRightPx !== undefined
+      ? featureRightPx - viewOffsetPx - labelWidth
+      : Number.POSITIVE_INFINITY
+
+  return clamp(minPosition, naturalPosition, maxPosition)
+}
+
 const FloatingLabels = observer(function FloatingLabels({
   model,
 }: {
@@ -59,35 +123,37 @@ const FloatingLabels = observer(function FloatingLabels({
         continue
       }
 
-      const r0 = assembly.getCanonicalRefName(refName) || refName
-      const r = view.bpToPx({
-        refName: r0,
-        coord: left,
-      })?.offsetPx
-      const r2 = view.bpToPx({
-        refName: r0,
-        coord: right,
-      })?.offsetPx
+      // Get feature pixel positions
+      const { leftPx, rightPx } = getFeaturePixelPositions(
+        view,
+        assembly,
+        refName,
+        left,
+        right,
+      )
 
-      if (r === undefined) {
-        continue
-      }
-
-      const labelWidth = measureText(
+      // Calculate label dimensions
+      const labelWidth = calculateLabelWidth(
         displayLabel || displayDescription,
         fontSize,
       )
 
-      // Calculate clamped position
-      const leftPos = clamp(
-        0,
-        r - offsetPx,
-        r2 !== undefined
-          ? r2 - offsetPx - labelWidth
-          : Number.POSITIVE_INFINITY,
+      // Only show labels that fit within the feature bounds (no floating)
+      if (!shouldShowLabel(leftPx, rightPx, offsetPx, labelWidth)) {
+        continue
+      }
+
+      // Calculate clamped horizontal position
+      const leftPos = calculateClampedLabelPosition(
+        leftPx!,
+        rightPx,
+        offsetPx,
+        labelWidth,
       )
 
-      const topPos = bottom - 14 * (+!!displayDescription + +!!displayLabel)
+      // Calculate vertical position
+      const topPos =
+        bottom - calculateLabelTopOffset(!!displayLabel, !!displayDescription)
 
       result.push({
         key,

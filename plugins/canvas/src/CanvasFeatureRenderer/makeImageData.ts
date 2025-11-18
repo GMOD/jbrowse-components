@@ -201,15 +201,10 @@ export function makeImageData({
       const bottomPx = child.y + child.totalHeight // Use totalHeight to include labels
       subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
-      // Get name and description using config (consistent with label display)
+      // Get name for subfeature info (for tooltips/details)
       const transcriptName = String(
         readConfObject(config, ['labels', 'name'], { feature: childFeature }) ||
           '',
-      )
-      const transcriptDescription = String(
-        readConfObject(config, ['labels', 'description'], {
-          feature: childFeature,
-        }) || '',
       )
 
       subfeatureInfos.push({
@@ -220,7 +215,7 @@ export function makeImageData({
       })
 
       // Store child feature using addRect so CoreGetFeatureDetails can access it
-      // Pass feature as data (not serialized) and minimal info as serializableData
+      // Don't pass label/description to prevent FloatingLabels from rendering subfeature labels
       layout.addRect(
         childFeature.id(),
         childStart,
@@ -228,8 +223,6 @@ export function makeImageData({
         bottomPx - topPx,
         childFeature,
         {
-          label: transcriptName,
-          description: transcriptDescription,
           refName: childFeature.get('refName'),
         },
       )
@@ -266,19 +259,8 @@ export function makeImageData({
         const childStart = childFeature.get('start')
         const childEnd = childFeature.get('end')
 
-        // Get name and description using config (consistent with label display)
-        const childName = String(
-          readConfObject(config, ['labels', 'name'], {
-            feature: childFeature,
-          }) || '',
-        )
-        const childDescription = String(
-          readConfObject(config, ['labels', 'description'], {
-            feature: childFeature,
-          }) || '',
-        )
-
         // Store nested child feature using addRect so CoreGetFeatureDetails can access it
+        // Don't pass label/description to prevent FloatingLabels from rendering subfeature labels
         layout.addRect(
           childFeature.id(),
           childStart,
@@ -286,8 +268,6 @@ export function makeImageData({
           child.height,
           childFeature,
           {
-            label: childName,
-            description: childDescription,
             refName: childFeature.get('refName'),
           },
         )
