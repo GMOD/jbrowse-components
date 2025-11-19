@@ -33,6 +33,10 @@ const complementBase = {
 
 const fudgeFactor = 0.6
 
+// Regex patterns compiled once for performance
+const NONMOD_MOD_PREFIX = /^(nonmod_|mod_)/
+const MOD_PREFIX = /^mod_/
+
 interface StrandCounts {
   readonly entryDepth: number
   readonly '1': number
@@ -216,15 +220,19 @@ export async function makeImage(
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin
     const w = Math.max(rightPx - leftPx, 1)
     const score0 = feature.get('score')
+
+    // Cache repeated calculations once per feature
+    const height = toHeight(score0)
+    const bottom = toY(score0) + height
+    const leftPxRounded = Math.round(leftPx)
+
     if (drawingModifications) {
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
-      // Sort keys once outside the loop
       const nonmodKeys = Object.keys(nonmods).sort().reverse()
       for (const m of nonmodKeys) {
-        // Remove prefix once for lookup
-        const modKey = m.replace(/^(nonmod_|mod_)/, '')
+        const modKey = m.replace(NONMOD_MOD_PREFIX, '')
         const mod = visibleModifications[modKey]
         if (!mod) {
           console.warn(`${m} not known yet`)
@@ -242,26 +250,17 @@ export async function makeImage(
           score0,
         })
 
-        const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
+        const { entryDepth, avgProbability = 0 } = nonmods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const nonModColor = 'blue'
-        const c = alphaColor(nonModColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const modFractionHeight = modFraction * height
 
-        ctx.fillStyle = c
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - (curr + modFraction * height),
-          w,
-          modFraction * height,
-        )
-        curr += modFraction * height
+        ctx.fillStyle = alphaColor('blue', avgProbability)
+        ctx.fillRect(leftPxRounded, bottom - (curr + modFractionHeight), w, modFractionHeight)
+        curr += modFractionHeight
       }
-      // Sort keys once outside the loop
       const modKeys = Object.keys(mods).sort().reverse()
       for (const m of modKeys) {
-        const modKey = m.replace('mod_', '')
+        const modKey = m.replace(MOD_PREFIX, '')
         const mod = visibleModifications[modKey]
         if (!mod) {
           console.warn(`${m} not known yet`)
@@ -281,64 +280,40 @@ export async function makeImage(
 
         const { entryDepth, avgProbability = 0 } = mods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const baseColor = mod.color || 'black'
-        const c = alphaColor(baseColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const modFractionHeight = modFraction * height
 
-        ctx.fillStyle = c
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - (curr + modFraction * height),
-          w,
-          modFraction * height,
-        )
-        curr += modFraction * height
+        ctx.fillStyle = alphaColor(mod.color || 'black', avgProbability)
+        ctx.fillRect(leftPxRounded, bottom - (curr + modFractionHeight), w, modFractionHeight)
+        curr += modFractionHeight
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = snpinfo
+      const depthInv = 1 / depth
       let curr = 0
 
       for (const base of Object.keys(mods).sort().reverse()) {
         const { entryDepth } = mods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const fraction = entryDepth * depthInv
         ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
-          w,
-          (entryDepth / depth) * height,
-        )
+        ctx.fillRect(leftPxRounded, bottom - ((entryDepth + curr) * depthInv) * height, w, fraction * height)
         curr += entryDepth
       }
       for (const base of Object.keys(nonmods).sort().reverse()) {
         const { entryDepth } = nonmods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const fraction = entryDepth * depthInv
         ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
-          w,
-          (entryDepth / depth) * height,
-        )
+        ctx.fillRect(leftPxRounded, bottom - ((entryDepth + curr) * depthInv) * height, w, fraction * height)
         curr += entryDepth
       }
     } else {
       const { depth, snps } = snpinfo
+      const depthInv = 1 / depth
       let curr = 0
       for (const base of Object.keys(snps).sort().reverse()) {
         const { entryDepth } = snps[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const fraction = entryDepth * depthInv
         ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
-          w,
-          (entryDepth / depth) * height,
-        )
+        ctx.fillRect(leftPxRounded, bottom - ((entryDepth + curr) * depthInv) * height, w, fraction * height)
         curr += entryDepth
       }
     }
