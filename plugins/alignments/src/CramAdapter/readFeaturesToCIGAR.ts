@@ -122,30 +122,40 @@ export function readFeaturesToCIGAR(
   readLen: number,
   refRegion?: { seq: string; start: number },
 ) {
-  let seq = ''
-  let cigar = ''
-  let op = 'M'
-  let oplen = 0
   if (!refRegion) {
     return ''
   }
-  const ref = refRegion.seq
+
+  // Build CIGAR string using array then join - avoids O(n²) string concatenation
+  const cigarParts: string[] = []
+
+  let op = 'M'
+  let oplen = 0
   const refStart = refRegion.start
   let lastPos = alignmentStart
   let sublen = 0
   let insLen = 0
+  let seqLength = 0
+
   if (readFeatures !== undefined) {
-    for (const { code, refPos, sub, data } of readFeatures) {
+    const featuresLength = readFeatures.length
+    for (let i = 0; i < featuresLength; i++) {
+      const feature = readFeatures[i]!
+      const { code, refPos, data } = feature
       sublen = refPos - lastPos
-      seq += ref.slice(lastPos - refStart, refPos - refStart)
+
+      // Track sequence length without building the actual sequence (unused)
+      if (sublen > 0) {
+        seqLength += sublen
+      }
       lastPos = refPos
 
       if (insLen > 0 && sublen) {
-        cigar += `${insLen}I`
+        cigarParts.push(insLen + 'I')
         insLen = 0
       }
       if (oplen && op !== 'M') {
-        cigar += `${oplen}${op}`
+        cigarParts.push(oplen + op)
         oplen = 0
       }
       if (sublen) {
@@ -155,81 +165,74 @@ export function readFeaturesToCIGAR(
 
       if (code === 'b') {
         // An array of bases stored verbatim
-        const ret = data.split(',')
-        const added = String.fromCharCode(...ret)
-        seq += added
-        lastPos += added.length
-        oplen += added.length
-      } else if (code === 'B') {
-        // Single base (+ qual score)
-        seq += sub
-        lastPos++
-        oplen++
-      } else if (code === 'X') {
-        // Substitution
-        seq += sub
+        const addedLen = data.split(',').length
+        seqLength += addedLen
+        lastPos += addedLen
+        oplen += addedLen
+      } else if (code === 'B' || code === 'X') {
+        // Single base (+ qual score) or Substitution
+        seqLength++
         lastPos++
         oplen++
       } else if (code === 'D' || code === 'N') {
         // Deletion or Ref Skip
         lastPos += data
         if (oplen) {
-          cigar += `${oplen}${op}`
+          cigarParts.push(oplen + op)
         }
-        cigar += data + code
+        cigarParts.push(data + code)
         oplen = 0
       } else if (code === 'I' || code === 'S') {
         // Insertion or soft-clip
-        seq += data
+        seqLength += data.length
         if (oplen) {
-          cigar += `${oplen}${op}`
+          cigarParts.push(oplen + op)
         }
-        cigar += data.length + code
+        cigarParts.push(data.length + code)
         oplen = 0
       } else if (code === 'i') {
         // Single base insertion
-        // seq += data
         if (oplen) {
-          cigar += `${oplen}${op}`
+          cigarParts.push(oplen + op)
         }
         insLen++
-        seq += data
+        seqLength++
         oplen = 0
       } else if (code === 'P') {
         // Padding
         if (oplen) {
-          cigar += `${oplen}${op}`
+          cigarParts.push(oplen + op)
         }
-        cigar += `${data}P`
+        cigarParts.push(data + 'P')
       } else if (code === 'H') {
         // Hard clip
         if (oplen) {
-          cigar += `${oplen}${op}`
+          cigarParts.push(oplen + op)
         }
-        cigar += `${data}H`
+        cigarParts.push(data + 'H')
         oplen = 0
       } // else q or Q
     }
   } else {
-    sublen = readLen - seq.length
+    sublen = readLen - seqLength
   }
-  if (seq.length !== readLen) {
-    sublen = readLen - seq.length
-    seq += ref.slice(lastPos - refStart, lastPos - refStart + sublen)
+
+  if (seqLength !== readLen) {
+    sublen = readLen - seqLength
 
     if (oplen && op !== 'M') {
-      cigar += `${oplen}${op}`
+      cigarParts.push(oplen + op)
       oplen = 0
     }
     op = 'M'
     oplen += sublen
   }
   if (sublen && insLen > 0) {
-    cigar += `${insLen}I`
+    cigarParts.push(insLen + 'I')
   }
   if (oplen) {
-    cigar += `${oplen}${op}`
+    cigarParts.push(oplen + op)
   }
 
-  return cigar
+  return cigarParts.join('')
 }
