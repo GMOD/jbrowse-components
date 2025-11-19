@@ -8,17 +8,12 @@ import type { Mismatch, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
-export function processReferenceCpGs({
-  feature,
-  region,
-  bins,
-  regionSequence,
-}: {
-  bins: PreBaseCoverageBin[]
-  feature: Feature
-  region: Region
-  regionSequence: string
-}) {
+export function processReferenceCpGs(
+  feature: Feature,
+  bins: PreBaseCoverageBin[],
+  region: Region,
+  regionSequence: string,
+) {
   const fstart = feature.get('start')
   const fend = feature.get('end')
   const fstrand = feature.get('strand') as -1 | 0 | 1

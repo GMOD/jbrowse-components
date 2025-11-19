@@ -28,17 +28,12 @@ function initBin(): PreBaseCoverageBin {
   }
 }
 
-export async function generateCoverageBins({
-  fetchSequence,
-  features,
-  region,
-  opts,
-}: {
-  features: Feature[]
-  region: Region
-  opts: Opts
-  fetchSequence: (arg: Region) => Promise<string>
-}) {
+export async function generateCoverageBins(
+  features: Feature[],
+  region: Region,
+  opts: Opts,
+  fetchSequence: (arg: Region) => Promise<string | undefined>,
+) {
   const { stopToken, colorBy, statsEstimationMode } = opts
   const skipmap = {} as SkipMap
   const regionLength = region.end - region.start
@@ -70,34 +65,27 @@ export async function generateCoverageBins({
   const featuresLength = features.length
   for (let fi = 0; fi < featuresLength; fi++) {
     const feature = features[fi]!
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
+    if (fi % 100 === 0) {
+      if (performance.now() - start > 400) {
+        checkStopToken(stopToken)
+        start = performance.now()
+      }
     }
-    processDepth({
-      feature,
-      bins,
-      region,
-    })
+    processDepth(feature, bins, region)
 
     if (!statsEstimationMode) {
       if (colorBy?.type === 'modifications') {
-        processModifications({
+        processModifications(
           feature,
           colorBy,
           bins,
           region,
-          regionSequence: regionSequence!.slice(diff),
-        })
+          regionSequence!.slice(diff),
+        )
       } else if (colorBy?.type === 'methylation') {
-        processReferenceCpGs({
-          feature,
-          bins,
-          region,
-          regionSequence: regionSequence!,
-        })
+        processReferenceCpGs(feature, bins, region, regionSequence!)
       }
-      processMismatches({ feature, skipmap, bins, region })
+      processMismatches(feature, skipmap, bins, region)
     }
   }
 
@@ -109,7 +97,9 @@ export async function generateCoverageBins({
       // Pre-compute sorted keys for faster rendering (avoids sorting on every render)
       ;(bin as any).snpsSortedKeys = Object.keys(bin.snps).sort().reverse()
       ;(bin as any).modsSortedKeys = Object.keys(bin.mods).sort().reverse()
-      ;(bin as any).nonmodsSortedKeys = Object.keys(bin.nonmods).sort().reverse()
+      ;(bin as any).nonmodsSortedKeys = Object.keys(bin.nonmods)
+        .sort()
+        .reverse()
 
       const modEntries = Object.entries(bin.mods)
       const modEntriesLen = modEntries.length

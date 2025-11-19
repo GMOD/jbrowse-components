@@ -8,19 +8,13 @@ import type { ColorBy, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
-export function processModifications({
-  feature,
-  colorBy,
-  region,
-  bins,
-  regionSequence,
-}: {
-  bins: PreBaseCoverageBin[]
-  feature: Feature
-  region: Region
-  colorBy?: ColorBy
-  regionSequence: string
-}) {
+export function processModifications(
+  feature: Feature,
+  colorBy: ColorBy | undefined,
+  bins: PreBaseCoverageBin[],
+  region: Region,
+  regionSequence: string,
+) {
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const fend = feature.get('end')

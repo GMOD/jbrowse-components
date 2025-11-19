@@ -50,17 +50,12 @@ function initBin(): PreBaseCoverageBin {
   }
 }
 
-export function processMismatches({
-  feature,
-  region,
-  bins,
-  skipmap,
-}: {
-  region: AugmentedRegion
-  bins: PreBaseCoverageBin[]
-  feature: Feature
-  skipmap: SkipMap
-}) {
+export function processMismatches(
+  feature: Feature,
+  skipmap: SkipMap,
+  bins: PreBaseCoverageBin[],
+  region: AugmentedRegion,
+) {
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
