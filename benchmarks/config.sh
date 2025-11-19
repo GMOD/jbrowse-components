@@ -36,6 +36,18 @@ export LABEL1="${LABEL1:-$BRANCH1}"
 export LABEL2="${LABEL2:-$BRANCH2}"
 export LABEL3="${LABEL3:-$BRANCH3}"
 
+# Validate that all three branches are configured
+if [ -z "$LABEL1" ] || [ -z "$LABEL2" ] || [ -z "$LABEL3" ]; then
+  echo "Error: All three repository branches must exist and be valid git repositories"
+  echo "Current configuration:"
+  echo "  REPO1: $REPO1 -> Branch: ${BRANCH1:-<not found>}"
+  echo "  REPO2: $REPO2 -> Branch: ${BRANCH2:-<not found>}"
+  echo "  REPO3: $REPO3 -> Branch: ${BRANCH3:-<not found>}"
+  echo ""
+  echo "Ensure all three repositories exist and are git repositories."
+  exit 1
+fi
+
 # Hyperfine configuration
 export HYPERFINE_WARMUP=${HYPERFINE_WARMUP:-1}    # Number of warmup runs
 export HYPERFINE_RUNS=${HYPERFINE_RUNS:-5}        # Number of benchmark runs
