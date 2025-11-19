@@ -30,7 +30,6 @@ export function inc(
   if (!thisBin) {
     thisBin = typeObj[field] = {
       entryDepth: 1,
-      probabilities: [],
       '-1': 0,
       '0': 0,
       '1': 0,
@@ -54,7 +53,8 @@ export function incWithProbabilities(
   if (!thisBin) {
     thisBin = typeObj[field] = {
       entryDepth: 1,
-      probabilities: [probability],
+      probabilityTotal: probability,
+      probabilityCount: 1,
       '-1': 0,
       '0': 0,
       '1': 0,
@@ -62,7 +62,8 @@ export function incWithProbabilities(
     thisBin[strand] = 1
   } else {
     thisBin.entryDepth++
-    thisBin.probabilities.push(probability)
+    thisBin.probabilityTotal = (thisBin.probabilityTotal || 0) + probability
+    thisBin.probabilityCount = (thisBin.probabilityCount || 0) + 1
     thisBin[strand]++
   }
 }

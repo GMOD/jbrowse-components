@@ -7,7 +7,6 @@ function initBin(): PreBaseCoverageBin {
     depth: 0,
     readsCounted: 0,
     ref: {
-      probabilities: [],
       entryDepth: 0,
       '-1': 0,
       0: 0,
