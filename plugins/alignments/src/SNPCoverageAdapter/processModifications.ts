@@ -53,18 +53,13 @@ export function processModifications(
           bin = bins[epos] = {
             depth: 0,
             readsCounted: 0,
-            snps: {},
             ref: {
               entryDepth: 0,
               '-1': 0,
               0: 0,
               1: 0,
             },
-            mods: {},
-            nonmods: {},
-            delskips: {},
-            noncov: {},
-          }
+          } as PreBaseCoverageBin
         }
 
         bin.refbase = regionSequence[epos]

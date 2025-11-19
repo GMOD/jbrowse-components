@@ -26,7 +26,10 @@ export function inc(
   type: keyof PreBaseCoverageBinSubtypes,
   field: string,
 ) {
-  const typeObj = bin[type]
+  let typeObj = bin[type]
+  if (!typeObj) {
+    typeObj = bin[type] = {}
+  }
   let thisBin = typeObj[field]
   if (!thisBin) {
     thisBin = typeObj[field] = {
@@ -49,7 +52,10 @@ export function incWithProbabilities(
   field: string,
   probability: number,
 ) {
-  const typeObj = bin[type]
+  let typeObj = bin[type]
+  if (!typeObj) {
+    typeObj = bin[type] = {}
+  }
   let thisBin = typeObj[field]
   if (!thisBin) {
     thisBin = typeObj[field] = {

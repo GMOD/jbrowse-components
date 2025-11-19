@@ -16,7 +16,10 @@ function incInline(
   type: keyof PreBaseCoverageBinSubtypes,
   field: string,
 ) {
-  const typeObj = bin[type]
+  let typeObj = bin[type]
+  if (!typeObj) {
+    typeObj = bin[type] = {}
+  }
   let thisBin = typeObj[field]
   if (!thisBin) {
     // Create new entry with strand pre-set

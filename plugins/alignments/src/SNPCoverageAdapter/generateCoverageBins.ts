@@ -20,12 +20,7 @@ function initBin(): PreBaseCoverageBin {
       0: 0,
       1: 0,
     },
-    snps: {},
-    mods: {},
-    nonmods: {},
-    delskips: {},
-    noncov: {},
-  }
+  } as PreBaseCoverageBin
 }
 
 export async function generateCoverageBins(
@@ -95,33 +90,37 @@ export async function generateCoverageBins(
 
     if (bin) {
       // Pre-compute sorted keys for faster rendering (avoids sorting on every render)
-      ;(bin as any).snpsSortedKeys = Object.keys(bin.snps).sort().reverse()
-      ;(bin as any).modsSortedKeys = Object.keys(bin.mods).sort().reverse()
-      ;(bin as any).nonmodsSortedKeys = Object.keys(bin.nonmods)
-        .sort()
-        .reverse()
+      ;(bin as any).snpsSortedKeys = bin.snps
+        ? Object.keys(bin.snps).sort().reverse()
+        : []
+      ;(bin as any).modsSortedKeys = bin.mods
+        ? Object.keys(bin.mods).sort().reverse()
+        : []
+      ;(bin as any).nonmodsSortedKeys = bin.nonmods
+        ? Object.keys(bin.nonmods).sort().reverse()
+        : []
 
-      const modEntries = Object.entries(bin.mods)
-      const modEntriesLen = modEntries.length
-      for (let i = 0; i < modEntriesLen; i++) {
-        const val = modEntries[i]![1]
-        const count = val.probabilityCount
-        if (count) {
-          ;(val as any).avgProbability = val.probabilityTotal! / count
+      if (bin.mods) {
+        const modEntries = Object.entries(bin.mods)
+        const modEntriesLen = modEntries.length
+        for (let i = 0; i < modEntriesLen; i++) {
+          const val = modEntries[i]![1]
+          const count = val.probabilityCount
+          if (count) {
+            ;(val as any).avgProbability = val.probabilityTotal! / count
+          }
         }
-        delete val.probabilityTotal
-        delete val.probabilityCount
       }
-      const nonmodEntries = Object.entries(bin.nonmods)
-      const nonmodEntriesLen = nonmodEntries.length
-      for (let i = 0; i < nonmodEntriesLen; i++) {
-        const val = nonmodEntries[i]![1]
-        const count = val.probabilityCount
-        if (count) {
-          ;(val as any).avgProbability = val.probabilityTotal! / count
+      if (bin.nonmods) {
+        const nonmodEntries = Object.entries(bin.nonmods)
+        const nonmodEntriesLen = nonmodEntries.length
+        for (let i = 0; i < nonmodEntriesLen; i++) {
+          const val = nonmodEntries[i]![1]
+          const count = val.probabilityCount
+          if (count) {
+            ;(val as any).avgProbability = val.probabilityTotal! / count
+          }
         }
-        delete val.probabilityTotal
-        delete val.probabilityCount
       }
     }
   }

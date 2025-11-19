@@ -64,11 +64,11 @@ export interface PreBaseCoverageBin extends PreBaseCoverageBinSubtypes {
 }
 
 export interface PreBaseCoverageBinSubtypes {
-  snps: PreBinType
-  mods: PreBinType
-  nonmods: PreBinType
-  delskips: PreBinType
-  noncov: PreBinType
+  snps?: PreBinType
+  mods?: PreBinType
+  nonmods?: PreBinType
+  delskips?: PreBinType
+  noncov?: PreBinType
 }
 
 export interface ModificationType {
