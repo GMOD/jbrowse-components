@@ -3,6 +3,10 @@
 # Stop all benchmark servers
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Load configuration to get port numbers
+source "$SCRIPT_DIR/config.sh"
+
 LOG_DIR="$SCRIPT_DIR/logs"
 PID_FILE="$LOG_DIR/server_pids.txt"
 
@@ -23,10 +27,11 @@ if [ -f "$PID_FILE" ]; then
   rm "$PID_FILE"
 fi
 
-# Kill by port
+# Kill by port for all configured repositories
 echo ""
 echo "Ensuring ports are free..."
-for port in 3000 3001 3002; do
+for i in "${!REPOS[@]}"; do
+  port="${PORTS[$i]}"
   if lsof -ti:$port > /dev/null 2>&1; then
     echo "  Killing process on port $port"
     lsof -ti:$port | xargs kill -9 2>/dev/null || true

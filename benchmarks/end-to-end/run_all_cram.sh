@@ -14,9 +14,12 @@ mkdir -p "$BENCH_DIR/results" "$BENCH_DIR/screenshots"
 echo "🚀 Running CRAM benchmarks with hyperfine"
 echo ""
 echo "Testing branches:"
-echo "  - ${LABEL1} (port ${PORT1})"
-echo "  - ${LABEL2} (port ${PORT2})"
-echo "  - ${LABEL3} (port ${PORT3})"
+for i in "${!REPOS[@]}"; do
+  idx=$((i + 1))
+  port_var="PORT${idx}"
+  label_var="LABEL${idx}"
+  echo "  - ${!label_var} (port ${!port_var})"
+done
 echo ""
 echo "Configuration: ${HYPERFINE_WARMUP} warmup runs, ${HYPERFINE_RUNS} benchmark runs"
 echo ""

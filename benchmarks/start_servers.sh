@@ -15,20 +15,22 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "🚀 Starting JBrowse Dev Servers"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
+echo "Starting $REPO_COUNT repositories..."
+echo ""
 
 # Function to start a server
 start_server() {
   local repo_path=$1
   local port=$2
-  local name=$3
+  local label=$3
   local log_file="$LOG_DIR/server_${port}.log"
 
   if [ ! -d "$repo_path" ]; then
-    echo "⚠️  Skipping $name: Directory not found ($repo_path)"
+    echo "⚠️  Skipping $label: Directory not found ($repo_path)"
     return
   fi
 
-  echo "Starting $name on port $port..."
+  echo "Starting $label on port $port..."
 
   # Kill any existing process on this port
   lsof -ti:$port | xargs kill -9 2>/dev/null || true
@@ -51,13 +53,10 @@ start_server() {
 # Clean up old PID file
 rm -f "$LOG_DIR/server_pids.txt"
 
-# Start servers
-start_server "$REPO1" $PORT1 "Repository 1 (Port $PORT1)"
-start_server "$REPO2" $PORT2 "Repository 2 (Port $PORT2)"
-
-if [ -d "$REPO3" ]; then
-  start_server "$REPO3" $PORT3 "Repository 3 (Port $PORT3)"
-fi
+# Start servers for all configured repositories
+for i in "${!REPOS[@]}"; do
+  start_server "${REPOS[$i]}" "${PORTS[$i]}" "${LABELS[$i]}"
+done
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "⏳ Waiting for servers to start..."
@@ -78,11 +77,10 @@ check_server() {
   fi
 }
 
-check_server $PORT1 "Port $PORT1"
-check_server $PORT2 "Port $PORT2"
-if [ -d "$REPO3" ]; then
-  check_server $PORT3 "Port $PORT3"
-fi
+# Check all configured servers
+for i in "${!REPOS[@]}"; do
+  check_server "${PORTS[$i]}" "Port ${PORTS[$i]} (${LABELS[$i]})"
+done
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

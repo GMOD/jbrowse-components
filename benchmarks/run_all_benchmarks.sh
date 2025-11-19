@@ -19,22 +19,23 @@ get_branch_name() {
   fi
 }
 
-ACTUAL_BRANCH1=$(get_branch_name "$REPO1")
-ACTUAL_BRANCH2=$(get_branch_name "$REPO2")
-ACTUAL_BRANCH3=$(get_branch_name "$REPO3")
-
-# Override labels with actual branch names
-export LABEL1="$ACTUAL_BRANCH1"
-export LABEL2="$ACTUAL_BRANCH2"
-export LABEL3="$ACTUAL_BRANCH3"
+# Update labels with actual branch names
+for i in "${!REPOS[@]}"; do
+  idx=$((i + 1))
+  actual_branch=$(get_branch_name "${REPOS[$i]}")
+  export "LABEL${idx}=$actual_branch"
+done
 
 echo "🚀 JBrowse Alignments End-to-End Benchmarks (Hyperfine + Puppeteer)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "Comparing branches:"
-echo "   - Port $PORT1: $LABEL1"
-echo "   - Port $PORT2: $LABEL2"
-[ -n "$LABEL3" ] && echo "   - Port $PORT3: $LABEL3"
+echo "Comparing $REPO_COUNT repositories:"
+for i in "${!REPOS[@]}"; do
+  idx=$((i + 1))
+  port_var="PORT${idx}"
+  label_var="LABEL${idx}"
+  echo "   - Port ${!port_var}: ${!label_var}"
+done
 echo ""
 echo "Hyperfine configuration:"
 echo "   - Warmup runs: ${HYPERFINE_WARMUP:-1}"

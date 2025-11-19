@@ -13,14 +13,26 @@ run_benchmark() {
   echo "📊 $benchmark_name"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  hyperfine \
-    --warmup "$HYPERFINE_WARMUP" \
-    --runs "$HYPERFINE_RUNS" \
-    --export-json "$result_file" \
-    --export-markdown "$export_markdown" \
-    --command-name "${LABEL1}" "BENCHMARK_PORT=${PORT1} BENCHMARK_LABEL=${LABEL1} node $benchmark_script" \
-    --command-name "${LABEL2}" "BENCHMARK_PORT=${PORT2} BENCHMARK_LABEL=${LABEL2} node $benchmark_script" \
-    --command-name "${LABEL3}" "BENCHMARK_PORT=${PORT3} BENCHMARK_LABEL=${LABEL3} node $benchmark_script"
+  # Build hyperfine command arguments dynamically
+  local hyperfine_args=(
+    --warmup "$HYPERFINE_WARMUP"
+    --runs "$HYPERFINE_RUNS"
+    --export-json "$result_file"
+    --export-markdown "$export_markdown"
+  )
+
+  # Add a command for each configured repository
+  for i in "${!REPOS[@]}"; do
+    idx=$((i + 1))
+    port_var="PORT${idx}"
+    label_var="LABEL${idx}"
+    hyperfine_args+=(
+      --command-name "${!label_var} (port ${!port_var})"
+      "BENCHMARK_PORT=${!port_var} BENCHMARK_LABEL=${!label_var} node $benchmark_script"
+    )
+  done
+
+  hyperfine "${hyperfine_args[@]}"
 
   echo ""
 }

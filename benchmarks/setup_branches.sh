@@ -10,20 +10,29 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Load configuration
 source "$SCRIPT_DIR/config.sh"
 
-# Allow command line overrides
-BRANCH1="${1:-$BRANCH1}"
-BRANCH2="${2:-$BRANCH2}"
-BRANCH3="${3:-$BRANCH3}"
+# Allow command line overrides for branch names
+# Usage: ./setup_branches.sh [branch1] [branch2] [branch3] ...
+if [ $# -gt 0 ]; then
+  # Override branches from command line
+  for i in "${!REPOS[@]}"; do
+    if [ $# -gt $i ]; then
+      idx=$((i + 1))
+      export "BRANCH${idx}=${!idx}"
+    fi
+  done
+fi
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🚀 JBrowse Benchmark Branch Setup"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "Branch 1: $BRANCH1 → Port $PORT1 ($REPO1)"
-echo "Branch 2: $BRANCH2 → Port $PORT2 ($REPO2)"
-if [ -n "$BRANCH3" ]; then
-  echo "Branch 3: $BRANCH3 → Port $PORT3 ($REPO3)"
-fi
+echo "Setting up $REPO_COUNT repositories:"
+for i in "${!REPOS[@]}"; do
+  idx=$((i + 1))
+  branch_var="BRANCH${idx}"
+  port_var="PORT${idx}"
+  echo "  Repository $idx: ${!branch_var} → Port ${!port_var} (${REPOS[$i]})"
+done
 echo ""
 
 # Function to setup a repository
@@ -31,6 +40,7 @@ setup_repo() {
   local repo_path=$1
   local branch=$2
   local repo_num=$3
+  local source_repo=$4
 
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "📦 Setting up repository $repo_num: $repo_path"
@@ -38,8 +48,8 @@ setup_repo() {
 
   # Clone if doesn't exist, otherwise just cd
   if [ ! -d "$repo_path" ]; then
-    echo "Cloning repository..."
-    git clone "$REPO1" "$repo_path"
+    echo "Cloning repository from $source_repo..."
+    git clone "$source_repo" "$repo_path"
   fi
 
   cd "$repo_path"
@@ -61,13 +71,13 @@ setup_repo() {
   echo ""
 }
 
-# Setup repositories
-setup_repo "$REPO1" "$BRANCH1" "1"
-setup_repo "$REPO2" "$BRANCH2" "2"
-
-if [ -n "$BRANCH3" ]; then
-  setup_repo "$REPO3" "$BRANCH3" "3"
-fi
+# Setup all repositories
+for i in "${!REPOS[@]}"; do
+  idx=$((i + 1))
+  branch_var="BRANCH${idx}"
+  # Use first repo as source for cloning
+  setup_repo "${REPOS[$i]}" "${!branch_var}" "$idx" "${REPOS[0]}"
+done
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ All repositories setup complete!"

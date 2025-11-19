@@ -5,17 +5,19 @@
 
 # Repository paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="$(dirname "$SCRIPT_DIR")"
-SRC_DIR="$(dirname "$BASE_DIR")"
+HOME_DIR="$HOME"
 
-export REPO1="$SRC_DIR/jbrowse-components"
-export REPO2="$SRC_DIR/jbrowse-components2"
-export REPO3="$SRC_DIR/jbrowse-components3"
+# Default repositories - can be overridden via BENCHMARK_REPOS environment variable
+# Format: space-separated list of repository paths
+# Example: BENCHMARK_REPOS="/path/to/repo1 /path/to/repo2 /path/to/repo3"
+DEFAULT_REPOS="$HOME_DIR/src/jbrowse-components $HOME_DIR/src/jbrowse-components2"
+BENCHMARK_REPOS="${BENCHMARK_REPOS:-$DEFAULT_REPOS}"
 
-# Port assignments
-export PORT1=3000
-export PORT2=3001
-export PORT3=3002
+# Convert space-separated repos to array
+IFS=' ' read -r -a REPOS <<< "$BENCHMARK_REPOS"
+
+# Starting port (will increment for each repo)
+START_PORT=${START_PORT:-3000}
 
 # Auto-detect branch names from git
 get_branch_name() {
@@ -27,24 +29,45 @@ get_branch_name() {
   fi
 }
 
-export BRANCH1=$(get_branch_name "$REPO1")
-export BRANCH2=$(get_branch_name "$REPO2")
-export BRANCH3=$(get_branch_name "$REPO3")
+# Build arrays of ports, branches, and labels
+PORTS=()
+BRANCHES=()
+LABELS=()
 
-# Labels use the detected branch names (can be overridden)
-export LABEL1="${LABEL1:-$BRANCH1}"
-export LABEL2="${LABEL2:-$BRANCH2}"
-export LABEL3="${LABEL3:-$BRANCH3}"
+for i in "${!REPOS[@]}"; do
+  repo="${REPOS[$i]}"
+  port=$((START_PORT + i))
+  branch=$(get_branch_name "$repo")
+  label="${branch}"
 
-# Validate that all three branches are configured
-if [ -z "$LABEL1" ] || [ -z "$LABEL2" ] || [ -z "$LABEL3" ]; then
-  echo "Error: All three repository branches must exist and be valid git repositories"
+  PORTS+=("$port")
+  BRANCHES+=("$branch")
+  LABELS+=("$label")
+done
+
+# Export arrays and count
+export REPO_COUNT=${#REPOS[@]}
+
+# Export individual values for backwards compatibility and easy access
+for i in "${!REPOS[@]}"; do
+  idx=$((i + 1))
+  export "REPO${idx}=${REPOS[$i]}"
+  export "PORT${idx}=${PORTS[$i]}"
+  export "BRANCH${idx}=${BRANCHES[$i]}"
+  export "LABEL${idx}=${LABELS[$i]}"
+done
+
+# Validate that at least two repositories are configured
+if [ "$REPO_COUNT" -lt 2 ]; then
+  echo "Error: At least two repositories must be configured for benchmarking"
   echo "Current configuration:"
-  echo "  REPO1: $REPO1 -> Branch: ${BRANCH1:-<not found>}"
-  echo "  REPO2: $REPO2 -> Branch: ${BRANCH2:-<not found>}"
-  echo "  REPO3: $REPO3 -> Branch: ${BRANCH3:-<not found>}"
+  for i in "${!REPOS[@]}"; do
+    idx=$((i + 1))
+    echo "  REPO${idx}: ${REPOS[$i]} -> Branch: ${BRANCHES[$i]}"
+  done
   echo ""
-  echo "Ensure all three repositories exist and are git repositories."
+  echo "Set BENCHMARK_REPOS environment variable to configure repositories:"
+  echo "  export BENCHMARK_REPOS=\"/path/to/repo1 /path/to/repo2\""
   exit 1
 fi
 
