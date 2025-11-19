@@ -1,8 +1,8 @@
 import puppeteer from 'puppeteer'
 
 const CONFIG = {
-  name: '200x shortread',
-  track: '200x.shortread.cram',
+  name: '200x longread BAM',
+  track: '200x.longread.bam',
   region: 'chr22_mask:80,630..83,605',
 }
 
@@ -39,7 +39,6 @@ async function runBenchmark(port, branchName) {
     )
     console.log('  Canvas appeared, waiting for blocks to complete...')
 
-    // Wait for loading indicators to disappear
     await page.waitForFunction(
       () => {
         const loadingTexts = Array.from(document.querySelectorAll('*')).filter(
@@ -58,14 +57,12 @@ async function runBenchmark(port, branchName) {
     )
     console.log('  Loading indicators cleared')
 
-    // Wait additional time for rendering to stabilize
     console.log('  Waiting for rendering to stabilize...')
     await new Promise(resolve => setTimeout(resolve, 5000))
 
     console.log('  Track fully rendered')
 
-    // Take screenshot
-    const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.cram', '')}_success.png`
+    const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_success.png`
     await page.screenshot({ path: screenshotPath, fullPage: true })
     console.log(`  ✓ Screenshot saved to: ${screenshotPath}`)
 

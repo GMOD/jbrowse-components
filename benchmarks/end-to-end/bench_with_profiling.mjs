@@ -1,5 +1,6 @@
-import puppeteer from 'puppeteer'
 import fs from 'fs'
+
+import puppeteer from 'puppeteer'
 
 async function runBenchmark(url, label, outputFile) {
   const browser = await puppeteer.launch({
@@ -37,7 +38,9 @@ async function runBenchmark(url, label, outputFile) {
 
       let LAST_FRAME_TIME = performance.now()
       function measure(TIME) {
-        window.perfData.fps.push(1 / ((performance.now() - LAST_FRAME_TIME) / 1000))
+        window.perfData.fps.push(
+          1 / ((performance.now() - LAST_FRAME_TIME) / 1000),
+        )
         LAST_FRAME_TIME = performance.now()
         window.requestAnimationFrame(measure)
       }
@@ -55,28 +58,34 @@ async function runBenchmark(url, label, outputFile) {
     )
 
     // Wait for loading indicators to disappear to ensure complete rendering
-    await page.waitForFunction(
-      () => {
-        const loadingTexts = Array.from(document.querySelectorAll('*')).filter(el => {
-          const text = el.textContent || '';
-          return text.includes('Processing alignments') ||
-                 text.includes('Downloading alignments') ||
-                 text.includes('Loading');
-        });
-        return loadingTexts.length === 0;
-      },
-      { timeout: 120000 }
-    ).catch(() => {
-      // If timeout, continue anyway - some tests may not have these indicators
-    });
+    await page
+      .waitForFunction(
+        () => {
+          const loadingTexts = Array.from(
+            document.querySelectorAll('*'),
+          ).filter(el => {
+            const text = el.textContent || ''
+            return (
+              text.includes('Processing alignments') ||
+              text.includes('Downloading alignments') ||
+              text.includes('Loading')
+            )
+          })
+          return loadingTexts.length === 0
+        },
+        { timeout: 120000 },
+      )
+      .catch(() => {
+        // If timeout, continue anyway - some tests may not have these indicators
+      })
 
     // Wait for rendering to stabilize
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise(resolve => setTimeout(resolve, 3000))
 
     // Take screenshot
-    const screenshotPath = `screenshots/${label.toLowerCase().replace(/\s+/g, '_')}_${process.argv[3]}_${process.argv[2]}_success.png`;
-    await page.screenshot({ path: screenshotPath, fullPage: true });
-    console.log(`  ✓ Screenshot saved to: ${screenshotPath}`);
+    const screenshotPath = `screenshots/${label.toLowerCase().replace(/\s+/g, '_')}_${process.argv[3]}_${process.argv[2]}_success.png`
+    await page.screenshot({ path: screenshotPath, fullPage: true })
+    console.log(`  ✓ Screenshot saved to: ${screenshotPath}`)
 
     const endTime = Date.now()
     const totalTime = endTime - startTime
@@ -109,7 +118,9 @@ async function runBenchmark(url, label, outputFile) {
         avgFps,
         minFps: Math.min(...fps),
         maxFps: Math.max(...fps),
-        fpsStdDev: Math.sqrt(fps.reduce((a, b) => a + Math.pow(b - avgFps, 2), 0) / fps.length),
+        fpsStdDev: Math.sqrt(
+          fps.reduce((a, b) => a + Math.pow(b - avgFps, 2), 0) / fps.length,
+        ),
       }
     })
 
@@ -128,7 +139,10 @@ async function runBenchmark(url, label, outputFile) {
       memory: {
         jsHeapUsedSize: metrics.JSHeapUsedSize,
         jsHeapTotalSize: metrics.JSHeapTotalSize,
-        usedPercent: (metrics.JSHeapUsedSize / metrics.JSHeapTotalSize * 100).toFixed(2),
+        usedPercent: (
+          (metrics.JSHeapUsedSize / metrics.JSHeapTotalSize) *
+          100
+        ).toFixed(2),
       },
       performance: {
         scriptDuration: metrics.ScriptDuration,
@@ -176,26 +190,50 @@ async function runMultipleTimes(url, label, numRuns) {
 
   for (let i = 0; i < numRuns; i++) {
     console.log(`  Run ${i + 1}/${numRuns}...`)
-    const result = await runBenchmark(url, label, `results_${label.toLowerCase().replace(/\s+/g, '_')}_${coverage}_${testType}_run${i + 1}.json`)
+    const result = await runBenchmark(
+      url,
+      label,
+      `results_${label.toLowerCase().replace(/\s+/g, '_')}_${coverage}_${testType}_run${i + 1}.json`,
+    )
     runs.push(result)
-    console.log(`    Total: ${result.totalTime}ms, Render: ${result.renderTime.toFixed(2)}ms, Memory: ${(result.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
+    console.log(
+      `    Total: ${result.totalTime}ms, Render: ${result.renderTime.toFixed(2)}ms, Memory: ${(result.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`,
+    )
   }
 
   // Calculate averages and standard deviations
   const avgTotalTime = runs.reduce((sum, r) => sum + r.totalTime, 0) / numRuns
   const avgRenderTime = runs.reduce((sum, r) => sum + r.renderTime, 0) / numRuns
-  const avgMemory = runs.reduce((sum, r) => sum + r.memory.jsHeapUsedSize, 0) / numRuns
-  const avgTaskDuration = runs.reduce((sum, r) => sum + r.performance.taskDuration, 0) / numRuns
-  const avgScriptDuration = runs.reduce((sum, r) => sum + r.performance.scriptDuration, 0) / numRuns
-  const avgLayoutDuration = runs.reduce((sum, r) => sum + r.performance.layoutDuration, 0) / numRuns
-  const avgRecalcStyleDuration = runs.reduce((sum, r) => sum + r.performance.recalcStyleDuration, 0) / numRuns
+  const avgMemory =
+    runs.reduce((sum, r) => sum + r.memory.jsHeapUsedSize, 0) / numRuns
+  const avgTaskDuration =
+    runs.reduce((sum, r) => sum + r.performance.taskDuration, 0) / numRuns
+  const avgScriptDuration =
+    runs.reduce((sum, r) => sum + r.performance.scriptDuration, 0) / numRuns
+  const avgLayoutDuration =
+    runs.reduce((sum, r) => sum + r.performance.layoutDuration, 0) / numRuns
+  const avgRecalcStyleDuration =
+    runs.reduce((sum, r) => sum + r.performance.recalcStyleDuration, 0) /
+    numRuns
   const avgFps = runs.reduce((sum, r) => sum + r.fps.avg, 0) / numRuns
 
-  const stdDevTotalTime = Math.sqrt(runs.reduce((sum, r) => sum + Math.pow(r.totalTime - avgTotalTime, 2), 0) / numRuns)
-  const stdDevRenderTime = Math.sqrt(runs.reduce((sum, r) => sum + Math.pow(r.renderTime - avgRenderTime, 2), 0) / numRuns)
+  const stdDevTotalTime = Math.sqrt(
+    runs.reduce((sum, r) => sum + Math.pow(r.totalTime - avgTotalTime, 2), 0) /
+      numRuns,
+  )
+  const stdDevRenderTime = Math.sqrt(
+    runs.reduce(
+      (sum, r) => sum + Math.pow(r.renderTime - avgRenderTime, 2),
+      0,
+    ) / numRuns,
+  )
 
-  console.log(`  ✓ Avg Total: ${avgTotalTime.toFixed(2)}ms (±${stdDevTotalTime.toFixed(2)}ms)`)
-  console.log(`  ✓ Avg Render: ${isNaN(avgRenderTime) ? 'N/A' : avgRenderTime.toFixed(2) + 'ms (±' + stdDevRenderTime.toFixed(2) + 'ms)'}`)
+  console.log(
+    `  ✓ Avg Total: ${avgTotalTime.toFixed(2)}ms (±${stdDevTotalTime.toFixed(2)}ms)`,
+  )
+  console.log(
+    `  ✓ Avg Render: ${isNaN(avgRenderTime) ? 'N/A' : `${avgRenderTime.toFixed(2)}ms (±${stdDevRenderTime.toFixed(2)}ms)`}`,
+  )
   console.log(`  ✓ Avg Memory: ${(avgMemory / 1024 / 1024).toFixed(2)} MB`)
   console.log('')
 
@@ -216,14 +254,15 @@ async function runMultipleTimes(url, label, numRuns) {
     stdDev: {
       totalTime: stdDevTotalTime,
       renderTime: stdDevRenderTime,
-    }
+    },
   }
 }
 
-console.log(`🔬 Running benchmark: ${coverage} ${testType} (${numRuns} runs per branch)`)
+console.log(
+  `🔬 Running benchmark: ${coverage} ${testType} (${numRuns} runs per branch)`,
+)
 console.log(`URL: ${URL1.split('?')[1]}`)
 console.log('')
-
 ;(async () => {
   try {
     const results1 = await runMultipleTimes(URL1, LABEL1, numRuns)
@@ -245,18 +284,22 @@ console.log('')
     console.log(`📊 RESULTS (sorted by avg total time, ${numRuns} runs each)`)
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-    results.forEach((r, i) => {
+    for (const [i, r] of results.entries()) {
       const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'
       console.log(`${medal} ${r.label}:`)
-      console.log(`   Total time:   ${r.result.totalTime.toFixed(2)}ms (±${r.stdDev.totalTime.toFixed(2)}ms)`)
+      console.log(
+        `   Total time:   ${r.result.totalTime.toFixed(2)}ms (±${r.stdDev.totalTime.toFixed(2)}ms)`,
+      )
       const renderTimeStr = isNaN(r.result.renderTime)
         ? 'N/A'
         : `${r.result.renderTime.toFixed(2)}ms (±${r.stdDev.renderTime.toFixed(2)}ms)`
       console.log(`   Render time:  ${renderTimeStr}`)
-      console.log(`   Memory:       ${(r.result.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
+      console.log(
+        `   Memory:       ${(r.result.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`,
+      )
       console.log(`   Avg FPS:      ${r.result.fps.avg.toFixed(2)}`)
       console.log('')
-    })
+    }
 
     // Export results for shell script
     console.log(`FASTEST=${results[0].label}`)

@@ -5,29 +5,18 @@ import { fillRect } from '../util'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
-export function renderPerBaseLettering({
-  ctx,
-  feat,
-  region,
-  bpPerPx,
-  colorMap,
-  colorContrastMap,
-  charWidth,
-  charHeight,
-  canvasWidth,
-  cigarOps,
-}: {
-  ctx: CanvasRenderingContext2D
-  feat: LayoutFeature
-  region: Region
-  bpPerPx: number
-  colorMap: Record<string, string>
-  colorContrastMap: Record<string, string>
-  charWidth: number
-  charHeight: number
-  canvasWidth: number
-  cigarOps: string[]
-}) {
+export function renderPerBaseLettering(
+  ctx: CanvasRenderingContext2D,
+  feat: LayoutFeature,
+  region: Region,
+  bpPerPx: number,
+  colorMap: Record<string, string>,
+  colorContrastMap: Record<string, string>,
+  charWidth: number,
+  charHeight: number,
+  canvasWidth: number,
+  cigarOps: string[],
+) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat
   const seq = feature.get('seq') as string | undefined

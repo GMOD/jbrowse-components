@@ -21,7 +21,7 @@ export function layoutFeats(props: PreProcessedRenderArgs) {
   const layoutRecords = iterMap(
     featureMap.values(),
     feature =>
-      layoutFeature({
+      layoutFeature(
         feature,
         layout,
         bpPerPx,
@@ -29,7 +29,7 @@ export function layoutFeats(props: PreProcessedRenderArgs) {
         showSoftClip,
         heightPx,
         displayMode,
-      }),
+      ),
     featureMap.size,
   ).filter(notEmpty)
 

@@ -12,23 +12,15 @@ export interface LayoutRecord {
   heightPx: number
 }
 
-export function layoutFeature({
-  feature,
-  layout,
-  bpPerPx,
-  region,
-  showSoftClip,
-  heightPx,
-  displayMode,
-}: {
-  feature: Feature
-  layout: BaseLayout<Feature>
-  bpPerPx: number
-  region: Region
-  showSoftClip?: boolean
-  heightPx: number
-  displayMode: string
-}): LayoutRecord | null {
+export function layoutFeature(
+  feature: Feature,
+  layout: BaseLayout<Feature>,
+  bpPerPx: number,
+  region: Region,
+  showSoftClip: boolean | undefined,
+  heightPx: number,
+  displayMode: string,
+): LayoutRecord | null {
   let expansionBefore = 0
   let expansionAfter = 0
 

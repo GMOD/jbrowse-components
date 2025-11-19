@@ -14,23 +14,15 @@ import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
 // render modifications stored in MM tag in BAM
-export function renderModifications({
-  ctx,
-  feat,
-  region,
-  bpPerPx,
-  renderArgs,
-  canvasWidth,
-  cigarOps,
-}: {
-  ctx: CanvasRenderingContext2D
-  feat: LayoutFeature
-  region: Region
-  bpPerPx: number
-  renderArgs: ProcessedRenderArgs
-  canvasWidth: number
-  cigarOps: string[]
-}) {
+export function renderModifications(
+  ctx: CanvasRenderingContext2D,
+  feat: LayoutFeature,
+  region: Region,
+  bpPerPx: number,
+  renderArgs: ProcessedRenderArgs,
+  canvasWidth: number,
+  cigarOps: string[],
+) {
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
   const { feature, topPx, heightPx } = feat

@@ -11,23 +11,15 @@ import type { Region } from '@jbrowse/core/util'
 // Color by methylation is slightly modified version of color by modifications
 // at reference CpG sites, with non-methylated CpG colored (looking only at the
 // MM tag can not tell you where reference CpG sites are)
-export function renderMethylation({
-  ctx,
-  feat,
-  region,
-  bpPerPx,
-  renderArgs,
-  canvasWidth,
-  cigarOps,
-}: {
-  ctx: CanvasRenderingContext2D
-  feat: LayoutFeature
-  region: Region
-  bpPerPx: number
-  renderArgs: ProcessedRenderArgs
-  canvasWidth: number
-  cigarOps: string[]
-}) {
+export function renderMethylation(
+  ctx: CanvasRenderingContext2D,
+  feat: LayoutFeature,
+  region: Region,
+  bpPerPx: number,
+  renderArgs: ProcessedRenderArgs,
+  canvasWidth: number,
+  cigarOps: string[],
+) {
   const { regionSequence } = renderArgs
   const { feature, topPx, heightPx } = feat
   if (!regionSequence) {

@@ -78,16 +78,11 @@ export default class PileupRenderer extends BoxRendererType {
         const { makeImageData } = await import('./makeImageData')
 
         return renderToAbstractCanvas(width, height, renderProps, ctx =>
-          makeImageData({
-            ctx,
-            layoutRecords,
-            canvasWidth: width,
-            renderArgs: {
-              ...renderProps,
-              layout,
-              features,
-              regionSequence,
-            },
+          makeImageData(ctx, layoutRecords, width, {
+            ...renderProps,
+            layout,
+            features,
+            regionSequence,
           }),
         )
       },

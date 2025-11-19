@@ -1,5 +1,10 @@
 // Old implementation with string concatenation
-function readFeaturesToCIGAR_OLD(readFeatures, alignmentStart, readLen, refRegion) {
+function readFeaturesToCIGAR_OLD(
+  readFeatures,
+  alignmentStart,
+  readLen,
+  refRegion,
+) {
   let seq = ''
   let cigar = ''
   let op = 'M'
@@ -104,7 +109,12 @@ function readFeaturesToCIGAR_OLD(readFeatures, alignmentStart, readLen, refRegio
 }
 
 // New implementation with array building
-function readFeaturesToCIGAR_NEW(readFeatures, alignmentStart, readLen, refRegion) {
+function readFeaturesToCIGAR_NEW(
+  readFeatures,
+  alignmentStart,
+  readLen,
+  refRegion,
+) {
   if (!refRegion) {
     return ''
   }
@@ -132,7 +142,7 @@ function readFeaturesToCIGAR_NEW(readFeatures, alignmentStart, readLen, refRegio
       lastPos = refPos
 
       if (insLen > 0 && sublen) {
-        cigarParts.push(insLen + 'I')
+        cigarParts.push(`${insLen}I`)
         insLen = 0
       }
       if (oplen && op !== 'M') {
@@ -178,12 +188,12 @@ function readFeaturesToCIGAR_NEW(readFeatures, alignmentStart, readLen, refRegio
         if (oplen) {
           cigarParts.push(oplen + op)
         }
-        cigarParts.push(data + 'P')
+        cigarParts.push(`${data}P`)
       } else if (code === 'H') {
         if (oplen) {
           cigarParts.push(oplen + op)
         }
-        cigarParts.push(data + 'H')
+        cigarParts.push(`${data}H`)
         oplen = 0
       }
     }
@@ -202,7 +212,7 @@ function readFeaturesToCIGAR_NEW(readFeatures, alignmentStart, readLen, refRegio
     oplen += sublen
   }
   if (sublen && insLen > 0) {
-    cigarParts.push(insLen + 'I')
+    cigarParts.push(`${insLen}I`)
   }
   if (oplen) {
     cigarParts.push(oplen + op)
@@ -242,7 +252,7 @@ function generateTestData() {
           code: 'X',
           refPos: pos,
           sub: bases[Math.floor(Math.random() * 4)],
-          data: null
+          data: null,
         })
       } else if (rand < 0.6) {
         // Deletion
@@ -250,7 +260,7 @@ function generateTestData() {
           code: 'D',
           refPos: pos,
           sub: null,
-          data: 1 + Math.floor(Math.random() * 5)
+          data: 1 + Math.floor(Math.random() * 5),
         })
       } else if (rand < 0.75) {
         // Insertion
@@ -263,7 +273,7 @@ function generateTestData() {
           code: 'I',
           refPos: pos,
           sub: null,
-          data: insData
+          data: insData,
         })
       } else if (rand < 0.85) {
         // Skip
@@ -271,7 +281,7 @@ function generateTestData() {
           code: 'N',
           refPos: pos,
           sub: null,
-          data: 100 + Math.floor(Math.random() * 500)
+          data: 100 + Math.floor(Math.random() * 500),
         })
       } else {
         // Soft clip
@@ -284,7 +294,7 @@ function generateTestData() {
           code: 'S',
           refPos: pos,
           sub: null,
-          data: clipData
+          data: clipData,
         })
       }
     }
@@ -295,8 +305,8 @@ function generateTestData() {
       readLen,
       refRegion: {
         seq: refSeq,
-        start: 0
-      }
+        start: 0,
+      },
     })
   }
 
@@ -319,8 +329,18 @@ function runBenchmark() {
 
   // Warm up
   for (const data of testData) {
-    readFeaturesToCIGAR_OLD(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
-    readFeaturesToCIGAR_NEW(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
+    readFeaturesToCIGAR_OLD(
+      data.readFeatures,
+      data.alignmentStart,
+      data.readLen,
+      data.refRegion,
+    )
+    readFeaturesToCIGAR_NEW(
+      data.readFeatures,
+      data.alignmentStart,
+      data.readLen,
+      data.refRegion,
+    )
   }
 
   // Benchmark OLD implementation
@@ -328,7 +348,12 @@ function runBenchmark() {
   const startOld = performance.now()
   for (let i = 0; i < iterations; i++) {
     for (const data of testData) {
-      readFeaturesToCIGAR_OLD(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
+      readFeaturesToCIGAR_OLD(
+        data.readFeatures,
+        data.alignmentStart,
+        data.readLen,
+        data.refRegion,
+      )
     }
   }
   const endOld = performance.now()
@@ -339,7 +364,12 @@ function runBenchmark() {
   const startNew = performance.now()
   for (let i = 0; i < iterations; i++) {
     for (const data of testData) {
-      readFeaturesToCIGAR_NEW(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
+      readFeaturesToCIGAR_NEW(
+        data.readFeatures,
+        data.alignmentStart,
+        data.readLen,
+        data.refRegion,
+      )
     }
   }
   const endNew = performance.now()
@@ -350,8 +380,18 @@ function runBenchmark() {
   let allMatch = true
   for (let i = 0; i < Math.min(100, testData.length); i++) {
     const data = testData[i]
-    const oldResult = readFeaturesToCIGAR_OLD(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
-    const newResult = readFeaturesToCIGAR_NEW(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
+    const oldResult = readFeaturesToCIGAR_OLD(
+      data.readFeatures,
+      data.alignmentStart,
+      data.readLen,
+      data.refRegion,
+    )
+    const newResult = readFeaturesToCIGAR_NEW(
+      data.readFeatures,
+      data.alignmentStart,
+      data.readLen,
+      data.refRegion,
+    )
     if (oldResult !== newResult) {
       console.log('❌ MISMATCH FOUND at index', i)
       console.log('Old:', oldResult.slice(0, 100))
@@ -373,15 +413,19 @@ function runBenchmark() {
   console.log(`NEW implementation: ${timeNew.toFixed(2)}ms`)
   console.log('')
 
-  const improvement = ((timeOld - timeNew) / timeOld * 100).toFixed(2)
+  const improvement = (((timeOld - timeNew) / timeOld) * 100).toFixed(2)
   if (timeNew < timeOld) {
     console.log(`✅ NEW is ${improvement}% FASTER`)
   } else {
     console.log(`❌ NEW is ${Math.abs(improvement)}% SLOWER`)
   }
   console.log('')
-  console.log(`Avg time per call (OLD): ${(timeOld / (iterations * testData.length)).toFixed(4)}ms`)
-  console.log(`Avg time per call (NEW): ${(timeNew / (iterations * testData.length)).toFixed(4)}ms`)
+  console.log(
+    `Avg time per call (OLD): ${(timeOld / (iterations * testData.length)).toFixed(4)}ms`,
+  )
+  console.log(
+    `Avg time per call (NEW): ${(timeNew / (iterations * testData.length)).toFixed(4)}ms`,
+  )
   console.log('━'.repeat(60))
 }
 

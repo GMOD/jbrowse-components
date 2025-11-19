@@ -1,8 +1,8 @@
 import puppeteer from 'puppeteer'
 
 const CONFIG = {
-  name: '20x longread - large region',
-  track: '20x.longread.cram',
+  name: '20x longread BAM - large region',
+  track: '20x.longread.bam',
   region: 'chr22_mask:25,101..184,844',
 }
 
@@ -15,7 +15,6 @@ async function runBenchmark(port, branchName) {
   try {
     const page = await browser.newPage()
 
-    // Capture console logs
     const consoleLogs = []
     page.on('console', msg => {
       const text = msg.text()
@@ -48,7 +47,6 @@ async function runBenchmark(port, branchName) {
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 120000 })
 
-    // Wait for and click the first "force load" button
     console.log('  Waiting for first force load button...')
     await page.waitForFunction(
       () => {
@@ -68,7 +66,6 @@ async function runBenchmark(port, branchName) {
     })
     console.log('  Clicked first force load button')
 
-    // Wait a bit and click the second "force load" button
     await new Promise(resolve => setTimeout(resolve, 1000))
     console.log('  Waiting for second force load button...')
     await page.waitForFunction(
@@ -89,7 +86,6 @@ async function runBenchmark(port, branchName) {
     })
     console.log('  Clicked second force load button')
 
-    // Now wait for the track to render (look for any canvas in the track)
     console.log('  Waiting for track to render...')
     try {
       await page.waitForFunction(
@@ -107,10 +103,8 @@ async function runBenchmark(port, branchName) {
       )
       console.log('  Track canvas appeared, waiting for blocks to render...')
 
-      // Wait for loading indicators to disappear
       await page.waitForFunction(
         () => {
-          // Check for loading messages or spinners
           const loadingMessages = document.querySelectorAll(
             '[data-testid*="loading"]',
           )
@@ -123,14 +117,12 @@ async function runBenchmark(port, branchName) {
       )
       console.log('  Loading indicators cleared')
 
-      // Wait additional time for blocks to fully render
       console.log('  Waiting for rendering to stabilize...')
       await new Promise(resolve => setTimeout(resolve, 10000))
 
       console.log('  Track rendered successfully')
 
-      // Take a screenshot of successful render
-      const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.cram', '')}_success.png`
+      const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_success.png`
       await page.screenshot({ path: screenshotPath, fullPage: true })
       console.log(`  ✓ Screenshot saved to: ${screenshotPath}`)
     } catch (error) {
@@ -138,8 +130,7 @@ async function runBenchmark(port, branchName) {
         '  Warning: Canvas did not appear within timeout, checking state...',
       )
 
-      // Take a screenshot
-      const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.cram', '')}_error.png`
+      const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_error.png`
       await page.screenshot({ path: screenshotPath, fullPage: true })
       console.log(`  Screenshot saved to: ${screenshotPath}`)
 

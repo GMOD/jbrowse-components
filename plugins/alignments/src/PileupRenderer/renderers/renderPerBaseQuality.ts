@@ -5,21 +5,14 @@ import { fillRect } from '../util'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
-export function renderPerBaseQuality({
-  ctx,
-  feat,
-  region,
-  bpPerPx,
-  canvasWidth,
-  cigarOps,
-}: {
-  ctx: CanvasRenderingContext2D
-  feat: LayoutFeature
-  region: Region
-  bpPerPx: number
-  canvasWidth: number
-  cigarOps: string[]
-}) {
+export function renderPerBaseQuality(
+  ctx: CanvasRenderingContext2D,
+  feat: LayoutFeature,
+  region: Region,
+  bpPerPx: number,
+  canvasWidth: number,
+  cigarOps: string[],
+) {
   const { feature, topPx, heightPx } = feat
   const qual: string = feature.get('qual') || ''
   const scores = qual.split(' ').map(val => +val)

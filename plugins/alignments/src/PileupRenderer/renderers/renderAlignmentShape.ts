@@ -6,15 +6,11 @@ import { CHEVRON_WIDTH } from '../../shared/util'
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 
-export function renderAlignmentShape({
-  ctx,
-  feat,
-  renderArgs,
-}: {
-  ctx: CanvasRenderingContext2D
-  feat: LayoutFeature
-  renderArgs: ProcessedRenderArgs
-}) {
+export function renderAlignmentShape(
+  ctx: CanvasRenderingContext2D,
+  feat: LayoutFeature,
+  renderArgs: ProcessedRenderArgs,
+) {
   const { regions, bpPerPx } = renderArgs
   const { heightPx, topPx, feature } = feat
   const region = regions[0]!

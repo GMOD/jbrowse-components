@@ -24,17 +24,12 @@ interface LayoutFeature {
   feature: Feature
 }
 
-export function makeImageData({
-  ctx,
-  layoutRecords,
-  canvasWidth,
-  renderArgs,
-}: {
-  ctx: CanvasRenderingContext2D
-  canvasWidth: number
-  layoutRecords: LayoutFeature[]
-  renderArgs: ProcessedRenderArgs
-}) {
+export function makeImageData(
+  ctx: CanvasRenderingContext2D,
+  layoutRecords: LayoutFeature[],
+  canvasWidth: number,
+  renderArgs: ProcessedRenderArgs,
+) {
   const {
     stopToken,
     config,
@@ -64,7 +59,7 @@ export function makeImageData({
     layoutRecords,
     stopToken,
     function forEachPileupInner(feat) {
-      const alignmentRet = renderAlignment({
+      const alignmentRet = renderAlignment(
         ctx,
         feat,
         renderArgs,
@@ -74,7 +69,7 @@ export function makeImageData({
         charWidth,
         charHeight,
         canvasWidth,
-      })
+      )
       const aCoords = alignmentRet.coords
       const aItems = alignmentRet.items
       const aCoordsLen = aCoords.length
@@ -86,11 +81,11 @@ export function makeImageData({
         items.push(aItems[i]!)
       }
 
-      const ret = renderMismatches({
+      const ret = renderMismatches(
         ctx,
         feat,
-        bpPerPx: renderArgs.bpPerPx,
-        regions: renderArgs.regions,
+        renderArgs.bpPerPx,
+        renderArgs.regions,
         hideSmallIndels,
         mismatchAlpha,
         drawSNPsMuted,
@@ -102,7 +97,7 @@ export function makeImageData({
         colorMap,
         colorContrastMap,
         canvasWidth,
-      })
+      )
       const mCoords = ret.coords
       const mItems = ret.items
       const mCoordsLen = mCoords.length
@@ -115,7 +110,7 @@ export function makeImageData({
       }
 
       if (showSoftClip) {
-        renderSoftClipping({
+        renderSoftClipping(
           ctx,
           feat,
           renderArgs,
@@ -123,7 +118,7 @@ export function makeImageData({
           config,
           theme,
           canvasWidth,
-        })
+        )
       }
     },
   )
@@ -131,7 +126,7 @@ export function makeImageData({
   const coordsLen = coords.length
   if (coordsLen) {
     for (let i = 0; i < coordsLen; i += 4) {
-      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2]!, coords[i + 3]!)
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
     }
   } else {
     flatbush.add(0, 0)

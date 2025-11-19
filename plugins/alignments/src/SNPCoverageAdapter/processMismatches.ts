@@ -1,4 +1,4 @@
-import { inc, isInterbase, mismatchLen } from './util'
+import { isInterbase, mismatchLen } from './util'
 
 import type {
   Mismatch,
@@ -29,24 +29,6 @@ function incInline(
   } else {
     thisBin.entryDepth++
     thisBin[strand]++
-  }
-}
-
-function initBin(): PreBaseCoverageBin {
-  return {
-    depth: 0,
-    readsCounted: 0,
-    ref: {
-      entryDepth: 0,
-      '-1': 0,
-      0: 0,
-      1: 0,
-    },
-    snps: {},
-    mods: {},
-    nonmods: {},
-    delskips: {},
-    noncov: {},
   }
 }
 

@@ -10,23 +10,15 @@ import type { LayoutFeature } from '../util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Theme } from '@mui/material'
 
-export function renderSoftClipping({
-  ctx,
-  feat,
-  renderArgs,
-  config,
-  theme,
-  colorMap,
-  canvasWidth,
-}: {
-  ctx: CanvasRenderingContext2D
-  feat: LayoutFeature
-  renderArgs: ProcessedRenderArgs
-  config: AnyConfigurationModel
-  colorMap: Record<string, string>
-  theme: Theme
-  canvasWidth: number
-}) {
+export function renderSoftClipping(
+  ctx: CanvasRenderingContext2D,
+  feat: LayoutFeature,
+  renderArgs: ProcessedRenderArgs,
+  colorMap: Record<string, string>,
+  config: AnyConfigurationModel,
+  theme: Theme,
+  canvasWidth: number,
+) {
   const { feature, topPx, heightPx } = feat
   const { regions, bpPerPx } = renderArgs
   const region = regions[0]!

@@ -1,8 +1,8 @@
 import puppeteer from 'puppeteer'
 
 const CONFIG = {
-  name: '20x shortread - large region',
-  track: '20x.shortread.cram',
+  name: '20x shortread BAM - large region',
+  track: '20x.shortread.bam',
   region: 'chr22_mask:25,101..184,844',
 }
 
@@ -15,7 +15,6 @@ async function runBenchmark(port, branchName) {
   try {
     const page = await browser.newPage()
 
-    // Capture console logs
     const consoleLogs = []
     page.on('console', msg => {
       const text = msg.text()
@@ -42,7 +41,6 @@ async function runBenchmark(port, branchName) {
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 120000 })
 
-    // Try to click force load buttons if they appear
     try {
       console.log('  Checking for force load buttons...')
       await page.waitForFunction(
@@ -85,7 +83,6 @@ async function runBenchmark(port, branchName) {
       console.log('  No force load buttons found, proceeding...')
     }
 
-    // Now wait for the track to render
     console.log('  Waiting for track to render...')
     await page.waitForFunction(
       () => {
@@ -102,7 +99,6 @@ async function runBenchmark(port, branchName) {
     )
     console.log('  Track canvas appeared, waiting for blocks to render...')
 
-    // Wait for loading indicators to disappear
     await page.waitForFunction(
       () => {
         const loadingMessages = document.querySelectorAll(
@@ -115,14 +111,12 @@ async function runBenchmark(port, branchName) {
     )
     console.log('  Loading indicators cleared')
 
-    // Wait additional time for blocks to fully render
     console.log('  Waiting for rendering to stabilize...')
     await new Promise(resolve => setTimeout(resolve, 10000))
 
     console.log('  Track rendered successfully')
 
-    // Take screenshot
-    const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.cram', '')}_large_success.png`
+    const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_large_success.png`
     await page.screenshot({ path: screenshotPath, fullPage: true })
     console.log(`  ✓ Screenshot saved to: ${screenshotPath}`)
 

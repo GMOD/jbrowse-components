@@ -3,7 +3,12 @@ import { IndexedFasta } from '@gmod/indexedfasta'
 import { LocalFile } from 'generic-filehandle2'
 
 // Old implementation with string concatenation
-function readFeaturesToCIGAR_OLD(readFeatures, alignmentStart, readLen, refRegion) {
+function readFeaturesToCIGAR_OLD(
+  readFeatures,
+  alignmentStart,
+  readLen,
+  refRegion,
+) {
   let seq = ''
   let cigar = ''
   let op = 'M'
@@ -108,7 +113,12 @@ function readFeaturesToCIGAR_OLD(readFeatures, alignmentStart, readLen, refRegio
 }
 
 // New implementation with array building
-function readFeaturesToCIGAR_NEW(readFeatures, alignmentStart, readLen, refRegion) {
+function readFeaturesToCIGAR_NEW(
+  readFeatures,
+  alignmentStart,
+  readLen,
+  refRegion,
+) {
   if (!refRegion) {
     return ''
   }
@@ -136,7 +146,7 @@ function readFeaturesToCIGAR_NEW(readFeatures, alignmentStart, readLen, refRegio
       lastPos = refPos
 
       if (insLen > 0 && sublen) {
-        cigarParts.push(insLen + 'I')
+        cigarParts.push(`${insLen}I`)
         insLen = 0
       }
       if (oplen && op !== 'M') {
@@ -182,12 +192,12 @@ function readFeaturesToCIGAR_NEW(readFeatures, alignmentStart, readLen, refRegio
         if (oplen) {
           cigarParts.push(oplen + op)
         }
-        cigarParts.push(data + 'P')
+        cigarParts.push(`${data}P`)
       } else if (code === 'H') {
         if (oplen) {
           cigarParts.push(oplen + op)
         }
-        cigarParts.push(data + 'H')
+        cigarParts.push(`${data}H`)
         oplen = 0
       }
     }
@@ -206,7 +216,7 @@ function readFeaturesToCIGAR_NEW(readFeatures, alignmentStart, readLen, refRegio
     oplen += sublen
   }
   if (sublen && insLen > 0) {
-    cigarParts.push(insLen + 'I')
+    cigarParts.push(`${insLen}I`)
   }
   if (oplen) {
     cigarParts.push(oplen + op)
@@ -243,7 +253,7 @@ async function loadReads() {
         seq: await cramFile.seqFetch.getSequence(
           record.sequenceId,
           record.alignmentStart - 100,
-          record.alignmentStart + record.readLength + 100
+          record.alignmentStart + record.readLength + 100,
         ),
         start: record.alignmentStart - 100,
       }
@@ -275,8 +285,18 @@ async function runBenchmark() {
 
   // Warm up
   for (const data of testData) {
-    readFeaturesToCIGAR_OLD(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
-    readFeaturesToCIGAR_NEW(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
+    readFeaturesToCIGAR_OLD(
+      data.readFeatures,
+      data.alignmentStart,
+      data.readLen,
+      data.refRegion,
+    )
+    readFeaturesToCIGAR_NEW(
+      data.readFeatures,
+      data.alignmentStart,
+      data.readLen,
+      data.refRegion,
+    )
   }
 
   // Benchmark OLD implementation
@@ -284,7 +304,12 @@ async function runBenchmark() {
   const startOld = performance.now()
   for (let i = 0; i < iterations; i++) {
     for (const data of testData) {
-      readFeaturesToCIGAR_OLD(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
+      readFeaturesToCIGAR_OLD(
+        data.readFeatures,
+        data.alignmentStart,
+        data.readLen,
+        data.refRegion,
+      )
     }
   }
   const endOld = performance.now()
@@ -295,7 +320,12 @@ async function runBenchmark() {
   const startNew = performance.now()
   for (let i = 0; i < iterations; i++) {
     for (const data of testData) {
-      readFeaturesToCIGAR_NEW(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
+      readFeaturesToCIGAR_NEW(
+        data.readFeatures,
+        data.alignmentStart,
+        data.readLen,
+        data.refRegion,
+      )
     }
   }
   const endNew = performance.now()
@@ -305,8 +335,18 @@ async function runBenchmark() {
   console.log('\nVerifying correctness...')
   let allMatch = true
   for (const data of testData) {
-    const oldResult = readFeaturesToCIGAR_OLD(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
-    const newResult = readFeaturesToCIGAR_NEW(data.readFeatures, data.alignmentStart, data.readLen, data.refRegion)
+    const oldResult = readFeaturesToCIGAR_OLD(
+      data.readFeatures,
+      data.alignmentStart,
+      data.readLen,
+      data.refRegion,
+    )
+    const newResult = readFeaturesToCIGAR_NEW(
+      data.readFeatures,
+      data.alignmentStart,
+      data.readLen,
+      data.refRegion,
+    )
     if (oldResult !== newResult) {
       console.log('❌ MISMATCH FOUND!')
       console.log('Old:', oldResult)
@@ -328,15 +368,19 @@ async function runBenchmark() {
   console.log(`NEW implementation: ${timeNew.toFixed(2)}ms`)
   console.log('')
 
-  const improvement = ((timeOld - timeNew) / timeOld * 100).toFixed(2)
+  const improvement = (((timeOld - timeNew) / timeOld) * 100).toFixed(2)
   if (timeNew < timeOld) {
     console.log(`✅ NEW is ${improvement}% FASTER`)
   } else {
     console.log(`❌ NEW is ${Math.abs(improvement)}% SLOWER`)
   }
   console.log('')
-  console.log(`Avg time per call (OLD): ${(timeOld / (iterations * testData.length)).toFixed(4)}ms`)
-  console.log(`Avg time per call (NEW): ${(timeNew / (iterations * testData.length)).toFixed(4)}ms`)
+  console.log(
+    `Avg time per call (OLD): ${(timeOld / (iterations * testData.length)).toFixed(4)}ms`,
+  )
+  console.log(
+    `Avg time per call (NEW): ${(timeNew / (iterations * testData.length)).toFixed(4)}ms`,
+  )
   console.log('━'.repeat(60))
 }
 

@@ -247,9 +247,9 @@ export function drawPairChains({
         // The actual canvas clipping will handle bounds correctly
         const effectiveCanvasWidth = canvasWidth + Math.abs(offsetAdjustment)
 
-        renderMismatches({
+        renderMismatches(
           ctx,
-          feat: layoutFeat,
+          layoutFeat,
           bpPerPx,
           regions,
           hideSmallIndels,
@@ -262,8 +262,8 @@ export function drawPairChains({
           charHeight,
           colorMap,
           colorContrastMap,
-          canvasWidth: effectiveCanvasWidth,
-        })
+          effectiveCanvasWidth,
+        )
 
         ctx.restore()
       }

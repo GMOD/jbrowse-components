@@ -12,21 +12,14 @@ import {
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
-export function getAlignmentShapeColor({
-  colorType,
-  tag,
-  feature,
-  config,
-  defaultColor,
-  colorTagMap,
-}: {
-  colorType: string
-  tag: string
-  feature: Feature
-  defaultColor: boolean
-  config: AnyConfigurationModel
-  colorTagMap: Record<string, string>
-}) {
+export function getAlignmentShapeColor(
+  feature: Feature,
+  config: AnyConfigurationModel,
+  tag: string,
+  defaultColor: boolean,
+  colorType: string,
+  colorTagMap: Record<string, string>,
+) {
   // first pass for simple color changes that change the color of the
   // alignment
   switch (colorType) {

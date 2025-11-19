@@ -1,7 +1,8 @@
-import puppeteer from 'puppeteer'
 import fs from 'fs'
+
+import puppeteer from 'puppeteer'
 ;(async () => {
-  const timeoutToken = process.argv[3] + '.timeout'
+  const timeoutToken = `${process.argv[3]}.timeout`
   // if (checkFileExistsSync(timeoutToken)) {
   //   throw new Error('Timed out already')
   // }

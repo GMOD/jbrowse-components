@@ -9,27 +9,17 @@ import { parseCigar } from '../../MismatchParser'
 import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 
-export function renderAlignment({
-  ctx,
-  feat,
-  renderArgs,
-  colorMap,
-  colorContrastMap,
-  charWidth,
-  charHeight,
-  defaultColor,
-  canvasWidth,
-}: {
-  ctx: CanvasRenderingContext2D
-  feat: LayoutFeature
-  renderArgs: ProcessedRenderArgs
-  colorMap: Record<string, string>
-  colorContrastMap: Record<string, string>
-  charWidth: number
-  charHeight: number
-  defaultColor: boolean
-  canvasWidth: number
-}) {
+export function renderAlignment(
+  ctx: CanvasRenderingContext2D,
+  feat: LayoutFeature,
+  renderArgs: ProcessedRenderArgs,
+  defaultColor: boolean,
+  colorMap: Record<string, string>,
+  colorContrastMap: Record<string, string>,
+  charWidth: number,
+  charHeight: number,
+  canvasWidth: number,
+) {
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
   const { config, bpPerPx, regions, colorBy, colorTagMap = {} } = renderArgs
@@ -37,36 +27,29 @@ export function renderAlignment({
   const { feature } = feat
   const region = regions[0]!
 
-  ctx.fillStyle = getAlignmentShapeColor({
+  ctx.fillStyle = getAlignmentShapeColor(
     feature,
     config,
     tag,
     defaultColor,
     colorType,
     colorTagMap,
-  })
+  )
 
-  renderAlignmentShape({ ctx, feat, renderArgs })
+  renderAlignmentShape(ctx, feat, renderArgs)
 
   // second pass for color types that render per-base things that go over the
   // existing drawing
   switch (colorType) {
     case 'perBaseQuality': {
       const cigarOps = parseCigar(feature.get('CIGAR'))
-      renderPerBaseQuality({
-        ctx,
-        feat,
-        region,
-        bpPerPx,
-        canvasWidth,
-        cigarOps,
-      })
+      renderPerBaseQuality(ctx, feat, region, bpPerPx, canvasWidth, cigarOps)
       break
     }
 
     case 'perBaseLettering': {
       const cigarOps = parseCigar(feature.get('CIGAR'))
-      renderPerBaseLettering({
+      renderPerBaseLettering(
         ctx,
         feat,
         region,
@@ -77,13 +60,13 @@ export function renderAlignment({
         charHeight,
         canvasWidth,
         cigarOps,
-      })
+      )
       break
     }
 
     case 'modifications': {
       const cigarOps = parseCigar(feature.get('CIGAR'))
-      const ret = renderModifications({
+      const ret = renderModifications(
         ctx,
         feat,
         region,
@@ -91,7 +74,7 @@ export function renderAlignment({
         renderArgs,
         canvasWidth,
         cigarOps,
-      })
+      )
       for (let i = 0, l = ret.coords.length; i < l; i++) {
         coords.push(ret.coords[i]!)
       }
@@ -103,7 +86,7 @@ export function renderAlignment({
 
     case 'methylation': {
       const cigarOps = parseCigar(feature.get('CIGAR'))
-      renderMethylation({
+      renderMethylation(
         ctx,
         feat,
         region,
@@ -111,7 +94,7 @@ export function renderAlignment({
         renderArgs,
         canvasWidth,
         cigarOps,
-      })
+      )
       break
     }
   }

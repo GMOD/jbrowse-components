@@ -92,7 +92,7 @@ export async function generateCoverageBins(
   const binsLength = bins.length
   for (let bi = 0; bi < binsLength; bi++) {
     const bin = bins[bi]
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
     if (bin) {
       // Pre-compute sorted keys for faster rendering (avoids sorting on every render)
       ;(bin as any).snpsSortedKeys = Object.keys(bin.snps).sort().reverse()

@@ -8,39 +8,23 @@ import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
-export function renderMismatches({
-  ctx,
-  feat,
-  bpPerPx,
-  regions,
-  minSubfeatureWidth,
-  largeInsertionIndicatorScale,
-  mismatchAlpha,
-  charWidth,
-  charHeight,
-  colorMap,
-  colorContrastMap,
-  hideSmallIndels,
-  canvasWidth,
-  drawSNPsMuted,
-  drawIndels = true,
-}: {
-  ctx: CanvasRenderingContext2D
-  feat: LayoutFeature
-  bpPerPx: number
-  regions: Region[]
-  colorMap: Record<string, string>
-  colorContrastMap: Record<string, string>
-  mismatchAlpha?: boolean
-  drawIndels?: boolean
-  drawSNPsMuted?: boolean
-  minSubfeatureWidth: number
-  largeInsertionIndicatorScale: number
-  hideSmallIndels: boolean
-  charWidth: number
-  charHeight: number
-  canvasWidth: number
-}) {
+export function renderMismatches(
+  ctx: CanvasRenderingContext2D,
+  feat: LayoutFeature,
+  bpPerPx: number,
+  regions: Region[],
+  hideSmallIndels: boolean,
+  mismatchAlpha: boolean | undefined,
+  drawSNPsMuted: boolean | undefined,
+  drawIndels: boolean | undefined,
+  largeInsertionIndicatorScale: number,
+  minSubfeatureWidth: number,
+  charWidth: number,
+  charHeight: number,
+  colorMap: Record<string, string>,
+  colorContrastMap: Record<string, string>,
+  canvasWidth: number,
+) {
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
   const { heightPx, topPx, feature } = feat
@@ -57,6 +41,7 @@ export function renderMismatches({
   const pxPerBp = Math.min(1 / bpPerPx, 2)
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
   const heightLim = charHeight - 2
+  const drawIndelsResolved = drawIndels ?? true
 
   // extraHorizontallyFlippedOffset is used to draw interbase items, which are
   // located to the left when forward and right when reversed
@@ -114,7 +99,7 @@ export function renderMismatches({
           topPx + heightPx,
         )
       }
-    } else if (mismatch.type === 'deletion' && drawIndels) {
+    } else if (mismatch.type === 'deletion' && drawIndelsResolved) {
       const len = mismatch.length
       if (!hideSmallIndels || len >= 10) {
         fillRect(
@@ -142,7 +127,7 @@ export function renderMismatches({
           )
         }
       }
-    } else if (mismatch.type === 'insertion' && drawIndels) {
+    } else if (mismatch.type === 'insertion' && drawIndelsResolved) {
       const pos = leftPx + extraHorizontallyFlippedOffset
       const len = +mismatch.base || mismatch.length
       const insW = Math.max(0, Math.min(1.2, 1 / bpPerPx))
@@ -200,7 +185,7 @@ export function renderMismatches({
   }
 
   // second pass, draw wide insertion markers on top
-  if (drawIndels) {
+  if (drawIndelsResolved) {
     for (const mismatch of mismatches) {
       const mstart = start + mismatch.start
       const mlen = mismatch.length

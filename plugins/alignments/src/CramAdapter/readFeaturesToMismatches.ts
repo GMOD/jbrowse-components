@@ -1,3 +1,4 @@
+/* eslint-disable prefer-template */
 import type { Mismatch } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
 
@@ -15,8 +16,8 @@ export function readFeaturesToMismatches(
   let lastPos = start
   let insertedBases = ''
 
-  for (const ret of readFeatures) {
-    const { refPos: p, code, pos, data, sub, ref } = ret
+  for (let i = 0, l = readFeatures.length; i < l; i++) {
+    const { refPos: p, code, pos, data, sub, ref } = readFeatures[i]!
     sublen = refPos - lastPos
     lastPos = refPos
 
@@ -24,7 +25,7 @@ export function readFeaturesToMismatches(
       mismatches[j++] = {
         start: refPos,
         type: 'insertion',
-        base: `${insertedBases.length}`,
+        base: String(insertedBases.length),
         insertedBases,
         length: 0,
       }
@@ -47,7 +48,7 @@ export function readFeaturesToMismatches(
       mismatches[j++] = {
         start: refPos,
         type: 'insertion',
-        base: `${data.length}`,
+        base: String(data.length),
         insertedBases: data,
         length: 0,
       }
@@ -65,7 +66,7 @@ export function readFeaturesToMismatches(
       mismatches[j++] = {
         start: refPos,
         type: 'softclip',
-        base: `S${len}`,
+        base: 'S' + len,
         cliplen: len,
         length: 1,
       }
@@ -77,7 +78,7 @@ export function readFeaturesToMismatches(
       mismatches[j++] = {
         start: refPos,
         type: 'hardclip',
-        base: `H${len}`,
+        base: 'H' + len,
         cliplen: len,
         length: 1,
       }
@@ -108,12 +109,12 @@ export function readFeaturesToMismatches(
     mismatches[j++] = {
       start: refPos,
       type: 'insertion',
-      base: `${insertedBases.length}`,
+      base: String(insertedBases.length),
       insertedBases,
       length: 0,
     }
     insertedBases = ''
   }
 
-  return mismatches.slice(0, j)
+  return mismatches.length !== j ? mismatches.slice(0, j) : mismatches
 }
