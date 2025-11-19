@@ -178,44 +178,18 @@ async function runBenchmark(port, branchName) {
   }
 }
 
-const PORT1 = process.env.PORT1 || '3000'
-const PORT2 = process.env.PORT2 || '3001'
-const PORT3 = process.env.PORT3 || '3002'
-const LABEL1 = process.env.LABEL1 || 'Branch 1'
-const LABEL2 = process.env.LABEL2 || 'Branch 2'
-const LABEL3 = process.env.LABEL3 || 'Branch 3'
+const PORT = process.env.BENCHMARK_PORT || process.argv[2] || '3000'
+const LABEL = process.env.BENCHMARK_LABEL || process.argv[3] || 'test'
 
-console.log('━'.repeat(60))
-console.log(`📊 Testing ${CONFIG.name}`)
-console.log(`Region: ${CONFIG.region} (${184844 - 25101}bp)`)
-console.log('━'.repeat(60))
+console.log(`Testing ${CONFIG.name} on ${LABEL} (port ${PORT})...`)
 
-console.log(`\nTesting ${LABEL1} (port ${PORT1})...`)
-const results1 = await runBenchmark(PORT1, LABEL1)
+try {
+  const results = await runBenchmark(PORT, LABEL)
 
-console.log(`\nTesting ${LABEL2} (port ${PORT2})...`)
-const results2 = await runBenchmark(PORT2, LABEL2)
+  console.log(`MEMORY_MB=${results.memory.toFixed(2)}`)
 
-console.log(`\nTesting ${LABEL3} (port ${PORT3})...`)
-const results3 = await runBenchmark(PORT3, LABEL3)
-
-console.log(`\n${'━'.repeat(60)}`)
-console.log('📊 RESULTS (sorted by total time)')
-console.log('━'.repeat(60))
-
-const results = [
-  { label: LABEL1, result: results1 },
-  { label: LABEL2, result: results2 },
-  { label: LABEL3, result: results3 },
-].sort((a, b) => a.result.totalTime - b.result.totalTime)
-
-for (const [i, r] of results.entries()) {
-  const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'
-  console.log(`${medal} ${r.label}:`)
-  console.log(`   Total time: ${r.result.totalTime}ms`)
-  console.log(`   Memory:     ${r.result.memory.toFixed(2)} MB`)
-  console.log('')
+  process.exit(0)
+} catch (error) {
+  console.error(`Error running benchmark: ${error.message}`)
+  process.exit(1)
 }
-
-console.log('━'.repeat(60))
-console.log(`FASTEST=${results[0].label}`)

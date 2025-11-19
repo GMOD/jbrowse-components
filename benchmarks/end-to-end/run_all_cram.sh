@@ -1,99 +1,83 @@
 #!/bin/bash
 
-# Load configuration if available
+set -e
+
+# Load configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/../config.sh"
 
 if [ -f "$CONFIG_FILE" ]; then
   source "$CONFIG_FILE"
-  # Export for node process
-  export PORT1 PORT2 PORT3 LABEL1 LABEL2 LABEL3
 fi
 
-# Set default number of runs if not specified
-export BENCHMARK_RUNS=${BENCHMARK_RUNS:-5}
+# Create results directory
+mkdir -p "$SCRIPT_DIR/results"
+mkdir -p "$SCRIPT_DIR/screenshots"
 
-echo "🚀 Running comprehensive end-to-end benchmarks..."
+echo "🚀 Running CRAM benchmarks with hyperfine"
 echo ""
 echo "Testing branches:"
-echo "  - ${LABEL1:-Branch 1} (port ${PORT1:-3000})"
-echo "  - ${LABEL2:-Branch 2} (port ${PORT2:-3001})"
-echo "  - ${LABEL3:-Branch 3} (port ${PORT3:-3002})"
+[ -n "$BRANCH1" ] && echo "  - ${LABEL1} (port ${PORT1})"
+[ -n "$BRANCH2" ] && echo "  - ${LABEL2} (port ${PORT2})"
+[ -n "$BRANCH3" ] && echo "  - ${LABEL3} (port ${PORT3})"
 echo ""
 echo "Configuration:"
-echo "  - Runs per test: ${BENCHMARK_RUNS}"
+echo "  - Warmup runs: ${HYPERFINE_WARMUP}"
+echo "  - Benchmark runs: ${HYPERFINE_RUNS}"
 echo ""
 
-# Test 200x longread
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 Testing 200x longread"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-LONGREAD_OUTPUT=$(node bench_with_profiling.mjs longread 200x 2>&1)
-LONGREAD_RESULT=$?
-echo "$LONGREAD_OUTPUT"
-LONGREAD_FASTEST=$(echo "$LONGREAD_OUTPUT" | grep "FASTEST=" | cut -d'=' -f2)
-echo ""
+# Build branch list for hyperfine
+BRANCHES=()
+PORTS=()
+LABELS=()
+[ -n "$BRANCH1" ] && BRANCHES+=("$BRANCH1") && PORTS+=("$PORT1") && LABELS+=("$LABEL1")
+[ -n "$BRANCH2" ] && BRANCHES+=("$BRANCH2") && PORTS+=("$PORT2") && LABELS+=("$LABEL2")
+[ -n "$BRANCH3" ] && BRANCHES+=("$BRANCH3") && PORTS+=("$PORT3") && LABELS+=("$LABEL3")
 
-# Test 200x shortread
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 Testing 200x shortread"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-SHORTREAD_OUTPUT=$(node bench_with_profiling.mjs shortread 200x 2>&1)
-SHORTREAD_RESULT=$?
-echo "$SHORTREAD_OUTPUT"
-SHORTREAD_FASTEST=$(echo "$SHORTREAD_OUTPUT" | grep "FASTEST=" | cut -d'=' -f2)
-echo ""
+# Helper function to run hyperfine for a benchmark
+run_benchmark() {
+  local benchmark_script=$1
+  local benchmark_name=$2
+  local result_file="$SCRIPT_DIR/results/$(basename "$benchmark_script" .mjs).json"
 
-# Test 20x longread - large region
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "📊 $benchmark_name"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+  # Build hyperfine commands for each branch
+  local commands=()
+  for i in "${!BRANCHES[@]}"; do
+    commands+=("BENCHMARK_PORT=${PORTS[$i]} BENCHMARK_LABEL=${LABELS[$i]} node $benchmark_script")
+  done
+
+  # Build hyperfine parameter lists
+  local export_markdown="$SCRIPT_DIR/results/$(basename "$benchmark_script" .mjs).md"
+
+  # Run hyperfine with all branches
+  hyperfine \
+    --warmup "$HYPERFINE_WARMUP" \
+    --runs "$HYPERFINE_RUNS" \
+    --export-json "$result_file" \
+    --export-markdown "$export_markdown" \
+    --command-name "${LABELS[0]}" "${commands[0]}" \
+    $([ ${#commands[@]} -gt 1 ] && echo "--command-name \"${LABELS[1]}\" \"${commands[1]}\"") \
+    $([ ${#commands[@]} -gt 2 ] && echo "--command-name \"${LABELS[2]}\" \"${commands[2]}\"")
+
+  echo ""
+}
+
+# Run benchmarks
+run_benchmark "bench_longread.mjs" "200x longread CRAM"
+run_benchmark "bench_shortread.mjs" "200x shortread CRAM"
+run_benchmark "bench_large_region.mjs" "20x longread CRAM - large region"
+run_benchmark "bench_20x_shortread_large.mjs" "20x shortread CRAM - large region"
+
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 Testing 20x longread - large region"
+echo "✅ All benchmarks completed!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-LONGREAD_LARGE_OUTPUT=$(node bench_large_region.mjs 2>&1)
-LONGREAD_LARGE_RESULT=$?
-echo "$LONGREAD_LARGE_OUTPUT"
-LONGREAD_LARGE_FASTEST=$(echo "$LONGREAD_LARGE_OUTPUT" | grep "FASTEST=" | cut -d'=' -f2)
-echo ""
-
-# Test 20x shortread - large region
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📊 Testing 20x shortread - large region"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-SHORTREAD_LARGE_OUTPUT=$(node bench_20x_shortread_large.mjs 2>&1)
-SHORTREAD_LARGE_RESULT=$?
-echo "$SHORTREAD_LARGE_OUTPUT"
-SHORTREAD_LARGE_FASTEST=$(echo "$SHORTREAD_LARGE_OUTPUT" | grep "FASTEST=" | cut -d'=' -f2)
-echo ""
-
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🏆 OVERALL SUMMARY"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-if [ $LONGREAD_RESULT -eq 0 ]; then
-  echo "✅ 200x longread:              🥇 ${LONGREAD_FASTEST}"
-else
-  echo "❌ 200x longread:              Failed"
-fi
-
-if [ $SHORTREAD_RESULT -eq 0 ]; then
-  echo "✅ 200x shortread:             🥇 ${SHORTREAD_FASTEST}"
-else
-  echo "❌ 200x shortread:             Failed"
-fi
-
-if [ $LONGREAD_LARGE_RESULT -eq 0 ]; then
-  echo "✅ 20x longread large region:  🥇 ${LONGREAD_LARGE_FASTEST}"
-else
-  echo "❌ 20x longread large region:  Failed"
-fi
-
-if [ $SHORTREAD_LARGE_RESULT -eq 0 ]; then
-  echo "✅ 20x shortread large region: 🥇 ${SHORTREAD_LARGE_FASTEST}"
-else
-  echo "❌ 20x shortread large region: Failed"
-fi
-
 echo ""
 echo "📁 Results saved:"
-echo "   - Detailed metrics: results_*.json"
+echo "   - JSON results: results/*.json"
+echo "   - Markdown reports: results/*.md"
 echo "   - Screenshots: screenshots/"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

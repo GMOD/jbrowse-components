@@ -18,6 +18,11 @@ export LABEL1="${LABEL1:-$BRANCH1}"
 export LABEL2="${LABEL2:-$BRANCH2}"
 export LABEL3="${LABEL3:-$BRANCH3}"
 
+# Hyperfine configuration
+export HYPERFINE_WARMUP=${HYPERFINE_WARMUP:-1}    # Number of warmup runs
+export HYPERFINE_RUNS=${HYPERFINE_RUNS:-5}        # Number of benchmark runs
+export HYPERFINE_PREPARE=${HYPERFINE_PREPARE:-}   # Command to run before each timing run
+
 # Repository paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(dirname "$SCRIPT_DIR")"

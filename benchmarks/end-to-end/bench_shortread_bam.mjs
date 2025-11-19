@@ -86,35 +86,18 @@ async function runBenchmark(port, branchName) {
   }
 }
 
-console.log('━'.repeat(60))
-console.log(`📊 Testing ${CONFIG.name}`)
-console.log(`Region: ${CONFIG.region}`)
-console.log('━'.repeat(60))
+const PORT = process.env.BENCHMARK_PORT || process.argv[2] || '3000'
+const LABEL = process.env.BENCHMARK_LABEL || process.argv[3] || 'test'
 
-console.log('\nTesting MASTER branch (port 3001)...')
-const masterResults = await runBenchmark(3001, 'master')
+console.log(`Testing ${CONFIG.name} on ${LABEL} (port ${PORT})...`)
 
-console.log('\nTesting OPTIMIZED branch (port 3000)...')
-const optimizedResults = await runBenchmark(3000, 'optimized')
+try {
+  const results = await runBenchmark(PORT, LABEL)
 
-console.log(`\n${'━'.repeat(60)}`)
-console.log('📊 COMPARISON')
-console.log('━'.repeat(60))
+  console.log(`MEMORY_MB=${results.memory.toFixed(2)}`)
 
-const timeImprovement = (
-  ((masterResults.totalTime - optimizedResults.totalTime) /
-    masterResults.totalTime) *
-  100
-).toFixed(2)
-const memoryImprovement = (
-  ((masterResults.memory - optimizedResults.memory) / masterResults.memory) *
-  100
-).toFixed(2)
-
-console.log(
-  `Total time:         MASTER: ${masterResults.totalTime}ms | OPTIMIZED: ${optimizedResults.totalTime}ms (${timeImprovement > 0 ? '+' : ''}${timeImprovement}%)`,
-)
-console.log(
-  `Memory:             MASTER: ${masterResults.memory.toFixed(2)} MB | OPTIMIZED: ${optimizedResults.memory.toFixed(2)} MB (${memoryImprovement > 0 ? '+' : ''}${memoryImprovement}%)`,
-)
-console.log('━'.repeat(60))
+  process.exit(0)
+} catch (error) {
+  console.error(`Error running benchmark: ${error.message}`)
+  process.exit(1)
+}

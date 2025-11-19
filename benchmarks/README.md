@@ -32,26 +32,44 @@ benchmarks/
 
 Before running benchmarks, ensure:
 
-1. Test data is available in `test_data/` directory (in repository root):
+1. **Hyperfine** is installed:
+   ```bash
+   # macOS
+   brew install hyperfine
+
+   # Ubuntu/Debian
+   apt install hyperfine
+
+   # Or via cargo
+   cargo install hyperfine
+   ```
+
+2. Test data is available in `test_data/` directory (in repository root):
    - CRAM/BAM files (200x and 20x coverage, short and long reads)
    - Reference genome (hg19mod.fa)
    - Index files (.crai, .bai, .fai)
 
-2. For automated benchmarks: The system will handle repository setup and server
+3. For automated benchmarks: The system will handle repository setup and server
    management
 
-3. For manual benchmarks: Two JBrowse instances running on:
+4. For manual benchmarks: JBrowse instances running on configured ports:
    - **Port 3000**: Branch 1 (configured in `config.sh`)
    - **Port 3001**: Branch 2 (configured in `config.sh`)
+   - **Port 3002**: Branch 3 (optional, configured in `config.sh`)
 
 ## Configuration
 
-Edit `benchmarks/config.sh` to configure which branches to test:
+Edit `benchmarks/config.sh` to configure which branches to test and hyperfine settings:
 
 ```bash
+# Branches to test
 export BRANCH1="newopts"      # First branch to test
 export BRANCH2="main"          # Second branch to test
 export BRANCH3=""              # Optional third branch
+
+# Hyperfine configuration
+export HYPERFINE_WARMUP=1     # Number of warmup runs before timing
+export HYPERFINE_RUNS=5       # Number of benchmark runs for statistics
 
 # Labels will automatically use branch names from git
 # You can override them if needed:
@@ -117,7 +135,7 @@ node bench_cigar_bam.mjs     # Real BAM data
 
 #### End-to-End Benchmarks
 
-Compares full rendering pipeline between master and optimized:
+Compares full rendering pipeline between branches using hyperfine:
 
 ```bash
 cd benchmarks/end-to-end
@@ -125,20 +143,20 @@ cd benchmarks/end-to-end
 ./run_all_bam.sh   # Run all BAM benchmarks
 ```
 
-Or run individual tests:
+Or run individual tests manually (bypassing hyperfine):
 
 ```bash
-# CRAM benchmarks
-node bench_shortread.mjs      # 200x shortread CRAM with screenshots
-node bench_longread.mjs        # 200x longread CRAM with screenshots
-node bench_large_region.mjs    # Large 160kb region CRAM
-node bench_20x_shortread_large.mjs # 20x shortread CRAM on large region
+# CRAM benchmarks (single run)
+BENCHMARK_PORT=3000 BENCHMARK_LABEL=branch1 node bench_shortread.mjs
+BENCHMARK_PORT=3000 BENCHMARK_LABEL=branch1 node bench_longread.mjs
+BENCHMARK_PORT=3000 BENCHMARK_LABEL=branch1 node bench_large_region.mjs
+BENCHMARK_PORT=3000 BENCHMARK_LABEL=branch1 node bench_20x_shortread_large.mjs
 
-# BAM benchmarks
-node bench_shortread_bam.mjs   # 200x shortread BAM with screenshots
-node bench_longread_bam.mjs    # 200x longread BAM with screenshots
-node bench_large_region_bam.mjs # Large 160kb region BAM
-node bench_20x_shortread_large_bam.mjs # 20x shortread BAM on large region
+# BAM benchmarks (single run)
+BENCHMARK_PORT=3000 BENCHMARK_LABEL=branch1 node bench_shortread_bam.mjs
+BENCHMARK_PORT=3000 BENCHMARK_LABEL=branch1 node bench_longread_bam.mjs
+BENCHMARK_PORT=3000 BENCHMARK_LABEL=branch1 node bench_large_region_bam.mjs
+BENCHMARK_PORT=3000 BENCHMARK_LABEL=branch1 node bench_20x_shortread_large_bam.mjs
 ```
 
 ## Benchmark Results
@@ -162,9 +180,23 @@ node bench_20x_shortread_large_bam.mjs # 20x shortread BAM on large region
 
 ## Output
 
-- **Console**: Real-time progress and summary statistics
-- **JSON files**: `results_*.json` - Detailed metrics
-- **Screenshots**: `end-to-end/screenshots/` - Visual verification
+Benchmarks now use **hyperfine** for statistical analysis and produce:
+
+- **Console**: Real-time progress with hyperfine's statistical summary
+  - Mean time ± standard deviation
+  - Min/max times
+  - Relative performance comparisons
+- **JSON files**: `end-to-end/results/*.json` - Hyperfine's detailed timing data
+- **Markdown reports**: `end-to-end/results/*.md` - Human-readable comparison tables
+- **Screenshots**: `end-to-end/screenshots/` - Visual verification of rendering
+- **Memory metrics**: Printed to console (MEMORY_MB=XX.XX)
+
+### Benefits of Hyperfine
+
+- **Statistical rigor**: Automatic warmup runs, outlier detection
+- **Accurate timing**: Multiple runs with min/mean/max/stddev
+- **Easy comparisons**: Built-in relative performance metrics
+- **Export formats**: JSON for automation, Markdown for reports
 
 ## Troubleshooting
 
