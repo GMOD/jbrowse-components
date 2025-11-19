@@ -138,51 +138,17 @@ async function runBenchmark(port, branchName) {
       throw error;
     }
 
-    const performanceMetrics = await page.evaluate(() => {
-      const perfEntries = performance.getEntriesByType('measure');
-      const marks = performance.getEntriesByType('mark');
-
-      return {
-        entries: perfEntries.map(e => ({ name: e.name, duration: e.duration })),
-        marks: marks.map(m => ({ name: m.name, startTime: m.startTime })),
-      };
-    });
-
     const memoryUsage = await page.metrics();
-    metrics.memory.push(memoryUsage.JSHeapUsedSize / 1024 / 1024);
-    metrics.performance = performanceMetrics;
-
-    const renderTime = await page.evaluate(() => {
-      const renderMeasures = performance.getEntriesByName('render');
-      return renderMeasures.length > 0
-        ? renderMeasures[renderMeasures.length - 1].duration
-        : null;
-    });
-
-    const totalTime = await page.evaluate(() => {
-      return performance.now();
-    });
-
-    const pageMetrics = await page.metrics();
-    const taskDuration = pageMetrics.TaskDuration;
-    const scriptDuration = pageMetrics.ScriptDuration;
+    const totalTime = await page.evaluate(() => performance.now());
 
     console.log(`  ✓ Total: ${Math.round(totalTime)}ms`);
-    if (renderTime) {
-      console.log(`  ✓ Render: ${renderTime.toFixed(2)}ms`);
-    }
-    console.log(`  ✓ Memory: ${metrics.memory[0].toFixed(2)} MB`);
-    console.log(`  ✓ Task duration: ${(taskDuration * 1000).toFixed(2)}ms`);
-    console.log(`  ✓ Script duration: ${(scriptDuration * 1000).toFixed(2)}ms`);
+    console.log(`  ✓ Memory: ${(memoryUsage.JSHeapUsedSize / 1024 / 1024).toFixed(2)} MB`);
 
     await browser.close();
 
     return {
       totalTime: Math.round(totalTime),
-      renderTime: renderTime || 0,
-      memory: metrics.memory[0],
-      taskDuration: taskDuration * 1000,
-      scriptDuration: scriptDuration * 1000,
+      memory: memoryUsage.JSHeapUsedSize / 1024 / 1024,
     };
   } catch (error) {
     await browser.close();
@@ -224,11 +190,8 @@ const results = [
 results.forEach((r, i) => {
   const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'
   console.log(`${medal} ${r.label}:`)
-  console.log(`   Total time:      ${r.result.totalTime}ms`)
-  console.log(`   Render time:     ${r.result.renderTime.toFixed(2)}ms`)
-  console.log(`   Memory:          ${r.result.memory.toFixed(2)} MB`)
-  console.log(`   Task duration:   ${r.result.taskDuration.toFixed(2)}ms`)
-  console.log(`   Script duration: ${r.result.scriptDuration.toFixed(2)}ms`)
+  console.log(`   Total time: ${r.result.totalTime}ms`)
+  console.log(`   Memory:     ${r.result.memory.toFixed(2)} MB`)
   console.log('')
 });
 

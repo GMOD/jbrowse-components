@@ -258,15 +258,6 @@ console.log('')
       console.log('')
     })
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('📈 DETAILED METRICS')
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log(`Task duration:       ${LABEL1}: ${result1.performance.taskDuration.toFixed(2)}s | ${LABEL2}: ${result2.performance.taskDuration.toFixed(2)}s | ${LABEL3}: ${result3.performance.taskDuration.toFixed(2)}s`)
-    console.log(`Script duration:     ${LABEL1}: ${result1.performance.scriptDuration.toFixed(2)}s | ${LABEL2}: ${result2.performance.scriptDuration.toFixed(2)}s | ${LABEL3}: ${result3.performance.scriptDuration.toFixed(2)}s`)
-    console.log(`Layout duration:     ${LABEL1}: ${result1.performance.layoutDuration.toFixed(2)}s | ${LABEL2}: ${result2.performance.layoutDuration.toFixed(2)}s | ${LABEL3}: ${result3.performance.layoutDuration.toFixed(2)}s`)
-    console.log(`RecalcStyle duration: ${LABEL1}: ${result1.performance.recalcStyleDuration.toFixed(2)}s | ${LABEL2}: ${result2.performance.recalcStyleDuration.toFixed(2)}s | ${LABEL3}: ${result3.performance.recalcStyleDuration.toFixed(2)}s`)
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-
     // Export results for shell script
     console.log(`FASTEST=${results[0].label}`)
 
