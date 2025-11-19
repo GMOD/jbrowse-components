@@ -1,8 +1,54 @@
 import { inc, isInterbase, mismatchLen } from './util'
 
-import type { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type {
+  Mismatch,
+  PreBaseCoverageBin,
+  PreBaseCoverageBinSubtypes,
+  SkipMap,
+} from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
+
+// Inline inc() for performance - avoid 6000+ function calls per longread
+function incInline(
+  bin: PreBaseCoverageBin,
+  strand: -1 | 0 | 1,
+  type: keyof PreBaseCoverageBinSubtypes,
+  field: string,
+) {
+  const typeObj = bin[type]
+  let thisBin = typeObj[field]
+  if (!thisBin) {
+    thisBin = typeObj[field] = {
+      entryDepth: 1,
+      '-1': 0,
+      '0': 0,
+      '1': 0,
+    }
+    thisBin[strand] = 1
+  } else {
+    thisBin.entryDepth++
+    thisBin[strand]++
+  }
+}
+
+function initBin(): PreBaseCoverageBin {
+  return {
+    depth: 0,
+    readsCounted: 0,
+    ref: {
+      entryDepth: 0,
+      '-1': 0,
+      0: 0,
+      1: 0,
+    },
+    snps: {},
+    mods: {},
+    nonmods: {},
+    delskips: {},
+    noncov: {},
+  }
+}
 
 export function processMismatches({
   feature,
@@ -21,52 +67,53 @@ export function processMismatches({
   const regionStart = region.start
   const binsLength = bins.length
   const mismatchesLength = mismatches.length
+  const tags = feature.get('tags')
+  const xs = tags?.XS || tags?.TS
+  const ts = tags?.ts
 
   for (let mi = 0; mi < mismatchesLength; mi++) {
     const mismatch = mismatches[mi]!
     const mstart = fstart + mismatch.start
     const mlen = mismatchLen(mismatch)
-    const mend = mstart + mlen
     const { base, altbase, type } = mismatch
     const interbase = isInterbase(type)
+    const isDeletion = type === 'deletion'
+    const isSkip = type === 'skip'
 
-    for (let j = mstart; j < mend; j++) {
+    for (let j = mstart, jend = mstart + mlen; j < jend; j++) {
       const epos = j - regionStart
       if (epos >= 0 && epos < binsLength) {
-        const bin = bins[epos]!
+        const bin = bins[epos] || (bins[epos] = initBin())
 
-        if (type === 'deletion' || type === 'skip') {
-          inc(bin, fstrand, 'delskips', type)
+        if (isDeletion || isSkip) {
+          incInline(bin, fstrand, 'delskips', type)
           bin.depth--
         } else if (!interbase) {
-          inc(bin, fstrand, 'snps', base)
+          incInline(bin, fstrand, 'snps', base)
           const ref = bin.ref
           ref.entryDepth--
           ref[fstrand]--
           bin.refbase = altbase
         } else {
-          inc(bin, fstrand, 'noncov', type)
+          incInline(bin, fstrand, 'noncov', type)
         }
       }
     }
 
-    if (type === 'skip') {
-      const tags = feature.get('tags')
-      const xs = tags?.XS || tags?.TS
-      const ts = tags?.ts
+    if (isSkip) {
       const effectiveStrand =
         xs === '+'
           ? 1
           : xs === '-'
             ? -1
             : (ts === '+' ? 1 : xs === '-' ? -1 : 0) * fstrand
-      const hash = `${mstart}_${mend}_${effectiveStrand}`
+      const hash = `${mstart}_${mstart + mlen}_${effectiveStrand}`
       const existing = skipmap[hash]
       if (!existing) {
         skipmap[hash] = {
           feature,
           start: mstart,
-          end: mend,
+          end: mstart + mlen,
           strand: fstrand,
           effectiveStrand,
           score: 1,

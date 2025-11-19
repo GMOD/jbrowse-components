@@ -23,7 +23,11 @@ export async function generateCoverageBins({
 }) {
   const { stopToken, colorBy } = opts
   const skipmap = {} as SkipMap
-  const bins = [] as PreBaseCoverageBin[]
+  const regionLength = region.end - region.start
+  const bins =
+    regionLength <= 10_000_000
+      ? (new Array(regionLength) as PreBaseCoverageBin[])
+      : ([] as PreBaseCoverageBin[])
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
   const needsSequence =
