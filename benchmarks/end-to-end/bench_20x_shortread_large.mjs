@@ -126,24 +126,44 @@ async function runBenchmark(port, branchName) {
   }
 }
 
+const PORT1 = process.env.PORT1 || '3000'
+const PORT2 = process.env.PORT2 || '3001'
+const PORT3 = process.env.PORT3 || '3002'
+const LABEL1 = process.env.LABEL1 || 'Branch 1'
+const LABEL2 = process.env.LABEL2 || 'Branch 2'
+const LABEL3 = process.env.LABEL3 || 'Branch 3'
+
 console.log('━'.repeat(60));
 console.log(`📊 Testing ${CONFIG.name}`);
 console.log(`Region: ${CONFIG.region} (${184844 - 25101}bp)`);
 console.log('━'.repeat(60));
 
-console.log('\nTesting MASTER branch (port 3001)...');
-const masterResults = await runBenchmark(3001, 'master');
+console.log(`\nTesting ${LABEL1} (port ${PORT1})...`);
+const results1 = await runBenchmark(PORT1, LABEL1);
 
-console.log('\nTesting OPTIMIZED branch (port 3000)...');
-const optimizedResults = await runBenchmark(3000, 'optimized');
+console.log(`\nTesting ${LABEL2} (port ${PORT2})...`);
+const results2 = await runBenchmark(PORT2, LABEL2);
+
+console.log(`\nTesting ${LABEL3} (port ${PORT3})...`);
+const results3 = await runBenchmark(PORT3, LABEL3);
 
 console.log('\n' + '━'.repeat(60));
-console.log('📊 COMPARISON');
+console.log('📊 RESULTS (sorted by total time)');
 console.log('━'.repeat(60));
 
-const timeImprovement = ((masterResults.totalTime - optimizedResults.totalTime) / masterResults.totalTime * 100).toFixed(2);
-const memoryImprovement = ((masterResults.memory - optimizedResults.memory) / masterResults.memory * 100).toFixed(2);
+const results = [
+  { label: LABEL1, result: results1 },
+  { label: LABEL2, result: results2 },
+  { label: LABEL3, result: results3 },
+].sort((a, b) => a.result.totalTime - b.result.totalTime);
 
-console.log(`Total time:         MASTER: ${masterResults.totalTime}ms | OPTIMIZED: ${optimizedResults.totalTime}ms (${timeImprovement > 0 ? '+' : ''}${timeImprovement}%)`);
-console.log(`Memory:             MASTER: ${masterResults.memory.toFixed(2)} MB | OPTIMIZED: ${optimizedResults.memory.toFixed(2)} MB (${memoryImprovement > 0 ? '+' : ''}${memoryImprovement}%)`);
+results.forEach((r, i) => {
+  const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'
+  console.log(`${medal} ${r.label}:`)
+  console.log(`   Total time: ${r.result.totalTime}ms`)
+  console.log(`   Memory:     ${r.result.memory.toFixed(2)} MB`)
+  console.log('')
+});
+
 console.log('━'.repeat(60));
+console.log(`FASTEST=${results[0].label}`);

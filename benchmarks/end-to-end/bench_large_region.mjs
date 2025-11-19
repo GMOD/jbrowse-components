@@ -145,8 +145,6 @@ async function runBenchmark(port, branchName) {
       return {
         entries: perfEntries.map(e => ({ name: e.name, duration: e.duration })),
         marks: marks.map(m => ({ name: m.name, startTime: m.startTime })),
-        timing: performance.timing,
-        memory: performance.memory
       };
     });
 
@@ -165,16 +163,17 @@ async function runBenchmark(port, branchName) {
       return performance.now();
     });
 
-    const taskDuration = performanceMetrics.timing.domInteractive - performanceMetrics.timing.fetchStart;
-    const scriptDuration = performanceMetrics.timing.domContentLoadedEventEnd - performanceMetrics.timing.domContentLoadedEventStart;
+    const pageMetrics = await page.metrics();
+    const taskDuration = pageMetrics.TaskDuration;
+    const scriptDuration = pageMetrics.ScriptDuration;
 
     console.log(`  ✓ Total: ${Math.round(totalTime)}ms`);
     if (renderTime) {
       console.log(`  ✓ Render: ${renderTime.toFixed(2)}ms`);
     }
     console.log(`  ✓ Memory: ${metrics.memory[0].toFixed(2)} MB`);
-    console.log(`  ✓ Task duration: ${taskDuration}ms`);
-    console.log(`  ✓ Script duration: ${scriptDuration}ms`);
+    console.log(`  ✓ Task duration: ${(taskDuration * 1000).toFixed(2)}ms`);
+    console.log(`  ✓ Script duration: ${(scriptDuration * 1000).toFixed(2)}ms`);
 
     await browser.close();
 
@@ -182,8 +181,8 @@ async function runBenchmark(port, branchName) {
       totalTime: Math.round(totalTime),
       renderTime: renderTime || 0,
       memory: metrics.memory[0],
-      taskDuration,
-      scriptDuration,
+      taskDuration: taskDuration * 1000,
+      scriptDuration: scriptDuration * 1000,
     };
   } catch (error) {
     await browser.close();
@@ -191,28 +190,47 @@ async function runBenchmark(port, branchName) {
   }
 }
 
+const PORT1 = process.env.PORT1 || '3000'
+const PORT2 = process.env.PORT2 || '3001'
+const PORT3 = process.env.PORT3 || '3002'
+const LABEL1 = process.env.LABEL1 || 'Branch 1'
+const LABEL2 = process.env.LABEL2 || 'Branch 2'
+const LABEL3 = process.env.LABEL3 || 'Branch 3'
+
 console.log('━'.repeat(60));
 console.log(`📊 Testing ${CONFIG.name}`);
 console.log(`Region: ${CONFIG.region} (${184844 - 25101}bp)`);
 console.log('━'.repeat(60));
 
-console.log('\nTesting MASTER branch (port 3001)...');
-const masterResults = await runBenchmark(3001, 'master');
+console.log(`\nTesting ${LABEL1} (port ${PORT1})...`);
+const results1 = await runBenchmark(PORT1, LABEL1);
 
-console.log('\nTesting OPTIMIZED branch (port 3000)...');
-const optimizedResults = await runBenchmark(3000, 'optimized');
+console.log(`\nTesting ${LABEL2} (port ${PORT2})...`);
+const results2 = await runBenchmark(PORT2, LABEL2);
+
+console.log(`\nTesting ${LABEL3} (port ${PORT3})...`);
+const results3 = await runBenchmark(PORT3, LABEL3);
 
 console.log('\n' + '━'.repeat(60));
-console.log('📊 COMPARISON');
+console.log('📊 RESULTS (sorted by total time)');
 console.log('━'.repeat(60));
 
-const timeImprovement = ((masterResults.totalTime - optimizedResults.totalTime) / masterResults.totalTime * 100).toFixed(2);
-const renderImprovement = ((masterResults.renderTime - optimizedResults.renderTime) / masterResults.renderTime * 100).toFixed(2);
-const memoryImprovement = ((masterResults.memory - optimizedResults.memory) / masterResults.memory * 100).toFixed(2);
+const results = [
+  { label: LABEL1, result: results1 },
+  { label: LABEL2, result: results2 },
+  { label: LABEL3, result: results3 },
+].sort((a, b) => a.result.totalTime - b.result.totalTime);
 
-console.log(`Total time:         MASTER: ${masterResults.totalTime}ms | OPTIMIZED: ${optimizedResults.totalTime}ms (${timeImprovement > 0 ? '+' : ''}${timeImprovement}%)`);
-console.log(`Render time:        MASTER: ${masterResults.renderTime.toFixed(2)}ms | OPTIMIZED: ${optimizedResults.renderTime.toFixed(2)}ms (${renderImprovement > 0 ? '+' : ''}${renderImprovement}%)`);
-console.log(`Memory:             MASTER: ${masterResults.memory.toFixed(2)} MB | OPTIMIZED: ${optimizedResults.memory.toFixed(2)} MB (${memoryImprovement > 0 ? '+' : ''}${memoryImprovement}%)`);
-console.log(`Task duration:      MASTER: ${masterResults.taskDuration}ms | OPTIMIZED: ${optimizedResults.taskDuration}ms`);
-console.log(`Script duration:    MASTER: ${masterResults.scriptDuration}ms | OPTIMIZED: ${optimizedResults.scriptDuration}ms`);
+results.forEach((r, i) => {
+  const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'
+  console.log(`${medal} ${r.label}:`)
+  console.log(`   Total time:      ${r.result.totalTime}ms`)
+  console.log(`   Render time:     ${r.result.renderTime.toFixed(2)}ms`)
+  console.log(`   Memory:          ${r.result.memory.toFixed(2)} MB`)
+  console.log(`   Task duration:   ${r.result.taskDuration.toFixed(2)}ms`)
+  console.log(`   Script duration: ${r.result.scriptDuration.toFixed(2)}ms`)
+  console.log('')
+});
+
 console.log('━'.repeat(60));
+console.log(`FASTEST=${results[0].label}`);

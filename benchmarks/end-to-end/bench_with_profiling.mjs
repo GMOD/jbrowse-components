@@ -86,14 +86,30 @@ async function runBenchmark(url, label, outputFile) {
     const perfMetrics = await client.send('Performance.getMetrics')
 
     const perfData = await page.evaluate(() => {
-      const fps = window.perfData.fps
+      const fps = window.perfData?.fps || []
+      const renderTime = window.perfData?.renderStart
+        ? performance.now() - window.perfData.renderStart
+        : 0
+
+      if (fps.length === 0) {
+        return {
+          renderTime,
+          fps: [],
+          avgFps: 0,
+          minFps: 0,
+          maxFps: 0,
+          fpsStdDev: 0,
+        }
+      }
+
+      const avgFps = fps.reduce((a, b) => a + b, 0) / fps.length
       return {
-        renderTime: performance.now() - window.perfData.renderStart,
+        renderTime,
         fps: fps,
-        avgFps: fps.reduce((a, b) => a + b, 0) / fps.length,
+        avgFps,
         minFps: Math.min(...fps),
         maxFps: Math.max(...fps),
-        fpsStdDev: Math.sqrt(fps.reduce((a, b) => a + Math.pow(b - (fps.reduce((a, b) => a + b, 0) / fps.length), 2), 0) / fps.length),
+        fpsStdDev: Math.sqrt(fps.reduce((a, b) => a + Math.pow(b - avgFps, 2), 0) / fps.length),
       }
     })
 
@@ -139,6 +155,7 @@ async function runBenchmark(url, label, outputFile) {
 
 const testType = process.argv[2] // 'longread' or 'shortread'
 const coverage = process.argv[3] || '200x'
+const numRuns = parseInt(process.env.BENCHMARK_RUNS || '5', 10)
 
 // Get labels from environment or use defaults
 const PORT1 = process.env.PORT1 || '3000'
@@ -152,61 +169,90 @@ const URL1 = `http://localhost:${PORT1}/?config=test_data%2Fhg19mod.json&assembl
 const URL2 = `http://localhost:${PORT2}/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=chr22_mask:80,630..83,605&tracks=${coverage}.${testType}.cram`
 const URL3 = `http://localhost:${PORT3}/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=chr22_mask:80,630..83,605&tracks=${coverage}.${testType}.cram`
 
-console.log(`🔬 Running benchmark: ${coverage} ${testType}`)
+async function runMultipleTimes(url, label, numRuns) {
+  const runs = []
+
+  console.log(`Testing ${label} (${numRuns} runs)...`)
+
+  for (let i = 0; i < numRuns; i++) {
+    console.log(`  Run ${i + 1}/${numRuns}...`)
+    const result = await runBenchmark(url, label, `results_${label.toLowerCase().replace(/\s+/g, '_')}_${coverage}_${testType}_run${i + 1}.json`)
+    runs.push(result)
+    console.log(`    Total: ${result.totalTime}ms, Render: ${result.renderTime.toFixed(2)}ms, Memory: ${(result.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
+  }
+
+  // Calculate averages and standard deviations
+  const avgTotalTime = runs.reduce((sum, r) => sum + r.totalTime, 0) / numRuns
+  const avgRenderTime = runs.reduce((sum, r) => sum + r.renderTime, 0) / numRuns
+  const avgMemory = runs.reduce((sum, r) => sum + r.memory.jsHeapUsedSize, 0) / numRuns
+  const avgTaskDuration = runs.reduce((sum, r) => sum + r.performance.taskDuration, 0) / numRuns
+  const avgScriptDuration = runs.reduce((sum, r) => sum + r.performance.scriptDuration, 0) / numRuns
+  const avgLayoutDuration = runs.reduce((sum, r) => sum + r.performance.layoutDuration, 0) / numRuns
+  const avgRecalcStyleDuration = runs.reduce((sum, r) => sum + r.performance.recalcStyleDuration, 0) / numRuns
+  const avgFps = runs.reduce((sum, r) => sum + r.fps.avg, 0) / numRuns
+
+  const stdDevTotalTime = Math.sqrt(runs.reduce((sum, r) => sum + Math.pow(r.totalTime - avgTotalTime, 2), 0) / numRuns)
+  const stdDevRenderTime = Math.sqrt(runs.reduce((sum, r) => sum + Math.pow(r.renderTime - avgRenderTime, 2), 0) / numRuns)
+
+  console.log(`  ✓ Avg Total: ${avgTotalTime.toFixed(2)}ms (±${stdDevTotalTime.toFixed(2)}ms)`)
+  console.log(`  ✓ Avg Render: ${isNaN(avgRenderTime) ? 'N/A' : avgRenderTime.toFixed(2) + 'ms (±' + stdDevRenderTime.toFixed(2) + 'ms)'}`)
+  console.log(`  ✓ Avg Memory: ${(avgMemory / 1024 / 1024).toFixed(2)} MB`)
+  console.log('')
+
+  return {
+    runs,
+    avg: {
+      totalTime: avgTotalTime,
+      renderTime: avgRenderTime,
+      memory: { jsHeapUsedSize: avgMemory },
+      performance: {
+        taskDuration: avgTaskDuration,
+        scriptDuration: avgScriptDuration,
+        layoutDuration: avgLayoutDuration,
+        recalcStyleDuration: avgRecalcStyleDuration,
+      },
+      fps: { avg: avgFps },
+    },
+    stdDev: {
+      totalTime: stdDevTotalTime,
+      renderTime: stdDevRenderTime,
+    }
+  }
+}
+
+console.log(`🔬 Running benchmark: ${coverage} ${testType} (${numRuns} runs per branch)`)
 console.log(`URL: ${URL1.split('?')[1]}`)
 console.log('')
 
 ;(async () => {
   try {
-    console.log(`Testing ${LABEL1}...`)
-    const result1 = await runBenchmark(
-      URL1,
-      LABEL1,
-      `results_${LABEL1.toLowerCase().replace(/\s+/g, '_')}_${coverage}_${testType}.json`
-    )
-    console.log(`  ✓ Total: ${result1.totalTime}ms`)
-    console.log(`  ✓ Render: ${result1.renderTime.toFixed(2)}ms`)
-    console.log(`  ✓ Memory: ${(result1.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
-    console.log('')
+    const results1 = await runMultipleTimes(URL1, LABEL1, numRuns)
+    const results2 = await runMultipleTimes(URL2, LABEL2, numRuns)
+    const results3 = await runMultipleTimes(URL3, LABEL3, numRuns)
 
-    console.log(`Testing ${LABEL2}...`)
-    const result2 = await runBenchmark(
-      URL2,
-      LABEL2,
-      `results_${LABEL2.toLowerCase().replace(/\s+/g, '_')}_${coverage}_${testType}.json`
-    )
-    console.log(`  ✓ Total: ${result2.totalTime}ms`)
-    console.log(`  ✓ Render: ${result2.renderTime.toFixed(2)}ms`)
-    console.log(`  ✓ Memory: ${(result2.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
-    console.log('')
-
-    console.log(`Testing ${LABEL3}...`)
-    const result3 = await runBenchmark(
-      URL3,
-      LABEL3,
-      `results_${LABEL3.toLowerCase().replace(/\s+/g, '_')}_${coverage}_${testType}.json`
-    )
-    console.log(`  ✓ Total: ${result3.totalTime}ms`)
-    console.log(`  ✓ Render: ${result3.renderTime.toFixed(2)}ms`)
-    console.log(`  ✓ Memory: ${(result3.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
-    console.log('')
+    const result1 = results1.avg
+    const result2 = results2.avg
+    const result3 = results3.avg
 
     // Sort results by total time
     const results = [
-      { label: LABEL1, result: result1 },
-      { label: LABEL2, result: result2 },
-      { label: LABEL3, result: result3 },
+      { label: LABEL1, result: result1, stdDev: results1.stdDev },
+      { label: LABEL2, result: result2, stdDev: results2.stdDev },
+      { label: LABEL3, result: result3, stdDev: results3.stdDev },
     ].sort((a, b) => a.result.totalTime - b.result.totalTime)
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('📊 RESULTS (sorted by total time)')
+    console.log(`📊 RESULTS (sorted by avg total time, ${numRuns} runs each)`)
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     results.forEach((r, i) => {
       const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'
       console.log(`${medal} ${r.label}:`)
-      console.log(`   Total time:   ${r.result.totalTime}ms`)
-      console.log(`   Render time:  ${r.result.renderTime.toFixed(2)}ms`)
+      console.log(`   Total time:   ${r.result.totalTime.toFixed(2)}ms (±${r.stdDev.totalTime.toFixed(2)}ms)`)
+      const renderTimeStr = isNaN(r.result.renderTime)
+        ? 'N/A'
+        : `${r.result.renderTime.toFixed(2)}ms (±${r.stdDev.renderTime.toFixed(2)}ms)`
+      console.log(`   Render time:  ${renderTimeStr}`)
       console.log(`   Memory:       ${(r.result.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
       console.log(`   Avg FPS:      ${r.result.fps.avg.toFixed(2)}`)
       console.log('')
