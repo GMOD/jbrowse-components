@@ -6,8 +6,8 @@
 run_benchmark() {
   local benchmark_script=$1
   local benchmark_name=$2
-  local result_file="$SCRIPT_DIR/results/$(basename "$benchmark_script" .mjs).json"
-  local export_markdown="$SCRIPT_DIR/results/$(basename "$benchmark_script" .mjs).md"
+  local result_file="$BENCH_DIR/results/$(basename "$benchmark_script" .mjs).json"
+  local export_markdown="$BENCH_DIR/results/$(basename "$benchmark_script" .mjs).md"
 
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "📊 $benchmark_name"

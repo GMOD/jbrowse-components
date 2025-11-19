@@ -2,14 +2,14 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BENCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Load configuration and helper functions
-source "$SCRIPT_DIR/../config.sh"
-source "$SCRIPT_DIR/benchmark_runner.sh"
+source "$BENCH_DIR/../config.sh"
+source "$BENCH_DIR/benchmark_runner.sh"
 
 # Create results directory
-mkdir -p "$SCRIPT_DIR/results" "$SCRIPT_DIR/screenshots"
+mkdir -p "$BENCH_DIR/results" "$BENCH_DIR/screenshots"
 
 echo "🚀 Running BAM benchmarks with hyperfine"
 echo ""
