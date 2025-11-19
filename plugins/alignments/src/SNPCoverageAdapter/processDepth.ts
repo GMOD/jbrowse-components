@@ -38,9 +38,12 @@ export function processDepth({
   const clampedStart = Math.max(fstart, regionStart)
   const clampedEnd = Math.min(fend, regionEnd)
 
-  for (let j = clampedStart; j < clampedEnd; j++) {
-    const i = j - regionStart
-    const bin = bins[i] || (bins[i] = initBin())
+  // Bins are pre-initialized, optimize loop with direct index calculation
+  const startIdx = clampedStart - regionStart
+  const endIdx = clampedEnd - regionStart
+
+  for (let i = startIdx; i < endIdx; i++) {
+    const bin = bins[i]!
     bin.depth++
     bin.readsCounted++
     const ref = bin.ref

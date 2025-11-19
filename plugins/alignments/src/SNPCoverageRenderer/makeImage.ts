@@ -230,7 +230,8 @@ export async function makeImage(
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
-      const nonmodKeys = Object.keys(nonmods).sort().reverse()
+      // Use pre-sorted keys from bin processing to avoid sorting on every render
+      const nonmodKeys = (snpinfo as any).nonmodsSortedKeys || []
       for (const m of nonmodKeys) {
         const modKey = m.replace(NONMOD_MOD_PREFIX, '')
         const mod = visibleModifications[modKey]
@@ -258,7 +259,7 @@ export async function makeImage(
         ctx.fillRect(leftPxRounded, bottom - (curr + modFractionHeight), w, modFractionHeight)
         curr += modFractionHeight
       }
-      const modKeys = Object.keys(mods).sort().reverse()
+      const modKeys = (snpinfo as any).modsSortedKeys || []
       for (const m of modKeys) {
         const modKey = m.replace(MOD_PREFIX, '')
         const mod = visibleModifications[modKey]
@@ -291,14 +292,16 @@ export async function makeImage(
       const depthInv = 1 / depth
       let curr = 0
 
-      for (const base of Object.keys(mods).sort().reverse()) {
+      const modKeys = (snpinfo as any).modsSortedKeys || []
+      for (const base of modKeys) {
         const { entryDepth } = mods[base]!
         const fraction = entryDepth * depthInv
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(leftPxRounded, bottom - ((entryDepth + curr) * depthInv) * height, w, fraction * height)
         curr += entryDepth
       }
-      for (const base of Object.keys(nonmods).sort().reverse()) {
+      const nonmodKeys = (snpinfo as any).nonmodsSortedKeys || []
+      for (const base of nonmodKeys) {
         const { entryDepth } = nonmods[base]!
         const fraction = entryDepth * depthInv
         ctx.fillStyle = colorMap[base] || 'black'
@@ -309,7 +312,9 @@ export async function makeImage(
       const { depth, snps } = snpinfo
       const depthInv = 1 / depth
       let curr = 0
-      for (const base of Object.keys(snps).sort().reverse()) {
+      // Use pre-sorted keys - this is the hot path for common SNP rendering
+      const snpKeys = (snpinfo as any).snpsSortedKeys || []
+      for (const base of snpKeys) {
         const { entryDepth } = snps[base]!
         const fraction = entryDepth * depthInv
         ctx.fillStyle = colorMap[base] || 'black'

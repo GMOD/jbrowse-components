@@ -54,6 +54,25 @@ async function runBenchmark(url, label, outputFile) {
       nblocks,
     )
 
+    // Wait for loading indicators to disappear to ensure complete rendering
+    await page.waitForFunction(
+      () => {
+        const loadingTexts = Array.from(document.querySelectorAll('*')).filter(el => {
+          const text = el.textContent || '';
+          return text.includes('Processing alignments') ||
+                 text.includes('Downloading alignments') ||
+                 text.includes('Loading');
+        });
+        return loadingTexts.length === 0;
+      },
+      { timeout: 120000 }
+    ).catch(() => {
+      // If timeout, continue anyway - some tests may not have these indicators
+    });
+
+    // Wait for rendering to stabilize
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
     const endTime = Date.now()
     const totalTime = endTime - startTime
 

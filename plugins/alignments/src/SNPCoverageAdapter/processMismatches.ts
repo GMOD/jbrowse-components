@@ -9,7 +9,7 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
 
-// Inline inc() for performance - avoid 6000+ function calls per longread
+// Optimized inc() - further reduce property lookups and object creation
 function incInline(
   bin: PreBaseCoverageBin,
   strand: -1 | 0 | 1,
@@ -19,13 +19,13 @@ function incInline(
   const typeObj = bin[type]
   let thisBin = typeObj[field]
   if (!thisBin) {
+    // Create new entry with strand pre-set
     thisBin = typeObj[field] = {
       entryDepth: 1,
-      '-1': 0,
-      '0': 0,
-      '1': 0,
+      '-1': strand === -1 ? 1 : 0,
+      '0': strand === 0 ? 1 : 0,
+      '1': strand === 1 ? 1 : 0,
     }
-    thisBin[strand] = 1
   } else {
     thisBin.entryDepth++
     thisBin[strand]++
@@ -80,23 +80,30 @@ export function processMismatches({
     const isDeletion = type === 'deletion'
     const isSkip = type === 'skip'
 
-    for (let j = mstart, jend = mstart + mlen; j < jend; j++) {
-      const epos = j - regionStart
-      if (epos >= 0 && epos < binsLength) {
-        const bin = bins[epos] || (bins[epos] = initBin())
+    // Compute bounds once
+    const jend = mstart + mlen
+    const startIdx = Math.max(0, mstart - regionStart)
+    const endIdx = Math.min(binsLength, jend - regionStart)
 
-        if (isDeletion || isSkip) {
-          incInline(bin, fstrand, 'delskips', type)
-          bin.depth--
-        } else if (!interbase) {
-          incInline(bin, fstrand, 'snps', base)
-          const ref = bin.ref
-          ref.entryDepth--
-          ref[fstrand]--
-          bin.refbase = altbase
-        } else {
-          incInline(bin, fstrand, 'noncov', type)
-        }
+    if (isDeletion || isSkip) {
+      for (let idx = startIdx; idx < endIdx; idx++) {
+        const bin = bins[idx]!
+        incInline(bin, fstrand, 'delskips', type)
+        bin.depth--
+      }
+    } else if (!interbase) {
+      for (let idx = startIdx; idx < endIdx; idx++) {
+        const bin = bins[idx]!
+        incInline(bin, fstrand, 'snps', base)
+        const ref = bin.ref
+        ref.entryDepth--
+        ref[fstrand]--
+        bin.refbase = altbase
+      }
+    } else {
+      for (let idx = startIdx; idx < endIdx; idx++) {
+        const bin = bins[idx]!
+        incInline(bin, fstrand, 'noncov', type)
       }
     }
 

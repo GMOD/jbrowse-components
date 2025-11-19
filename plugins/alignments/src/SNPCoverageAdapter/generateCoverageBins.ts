@@ -10,6 +10,24 @@ import type { PreBaseCoverageBin, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
+function initBin(): PreBaseCoverageBin {
+  return {
+    depth: 0,
+    readsCounted: 0,
+    ref: {
+      entryDepth: 0,
+      '-1': 0,
+      0: 0,
+      1: 0,
+    },
+    snps: {},
+    mods: {},
+    nonmods: {},
+    delskips: {},
+    noncov: {},
+  }
+}
+
 export async function generateCoverageBins({
   fetchSequence,
   features,
@@ -24,10 +42,15 @@ export async function generateCoverageBins({
   const { stopToken, colorBy } = opts
   const skipmap = {} as SkipMap
   const regionLength = region.end - region.start
-  const bins =
-    regionLength <= 10_000_000
-      ? (new Array(regionLength) as PreBaseCoverageBin[])
-      : ([] as PreBaseCoverageBin[])
+
+  // Pre-allocate and initialize all bins upfront for better performance
+  const bins: PreBaseCoverageBin[] = new Array(regionLength)
+  if (regionLength <= 10_000_000) {
+    for (let i = 0; i < regionLength; i++) {
+      bins[i] = initBin()
+    }
+  }
+
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
   const needsSequence =
@@ -81,6 +104,11 @@ export async function generateCoverageBins({
     const bin = bins[bi]
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (bin) {
+      // Pre-compute sorted keys for faster rendering (avoids sorting on every render)
+      ;(bin as any).snpsSortedKeys = Object.keys(bin.snps).sort().reverse()
+      ;(bin as any).modsSortedKeys = Object.keys(bin.mods).sort().reverse()
+      ;(bin as any).nonmodsSortedKeys = Object.keys(bin.nonmods).sort().reverse()
+
       const modEntries = Object.entries(bin.mods)
       const modEntriesLen = modEntries.length
       for (let i = 0; i < modEntriesLen; i++) {
