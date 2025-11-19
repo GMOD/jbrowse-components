@@ -122,7 +122,7 @@ async function runBenchmark(port, branchName) {
 
       console.log('  Track rendered successfully')
 
-      const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_success.png`
+      const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_bam_success.png`
       await page.screenshot({ path: screenshotPath, fullPage: true })
       console.log(`  ✓ Screenshot saved to: ${screenshotPath}`)
     } catch (error) {
@@ -130,7 +130,7 @@ async function runBenchmark(port, branchName) {
         '  Warning: Canvas did not appear within timeout, checking state...',
       )
 
-      const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_error.png`
+      const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_bam_error.png`
       await page.screenshot({ path: screenshotPath, fullPage: true })
       console.log(`  Screenshot saved to: ${screenshotPath}`)
 

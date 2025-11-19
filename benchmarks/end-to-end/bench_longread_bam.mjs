@@ -62,7 +62,7 @@ async function runBenchmark(port, branchName) {
 
     console.log('  Track fully rendered')
 
-    const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_success.png`
+    const screenshotPath = `screenshots/${branchName}_${CONFIG.track.replace('.bam', '')}_bam_success.png`
     await page.screenshot({ path: screenshotPath, fullPage: true })
     console.log(`  ✓ Screenshot saved to: ${screenshotPath}`)
 
