@@ -39,7 +39,7 @@ export async function generateCoverageBins({
   opts: Opts
   fetchSequence: (arg: Region) => Promise<string>
 }) {
-  const { stopToken, colorBy } = opts
+  const { stopToken, colorBy, statsEstimationMode } = opts
   const skipmap = {} as SkipMap
   const regionLength = region.end - region.start
 
@@ -80,23 +80,25 @@ export async function generateCoverageBins({
       region,
     })
 
-    if (colorBy?.type === 'modifications') {
-      processModifications({
-        feature,
-        colorBy,
-        bins,
-        region,
-        regionSequence: regionSequence!.slice(diff),
-      })
-    } else if (colorBy?.type === 'methylation') {
-      processReferenceCpGs({
-        feature,
-        bins,
-        region,
-        regionSequence: regionSequence!,
-      })
+    if (!statsEstimationMode) {
+      if (colorBy?.type === 'modifications') {
+        processModifications({
+          feature,
+          colorBy,
+          bins,
+          region,
+          regionSequence: regionSequence!.slice(diff),
+        })
+      } else if (colorBy?.type === 'methylation') {
+        processReferenceCpGs({
+          feature,
+          bins,
+          region,
+          regionSequence: regionSequence!,
+        })
+      }
+      processMismatches({ feature, skipmap, bins, region })
     }
-    processMismatches({ feature, skipmap, bins, region })
   }
 
   const binsLength = bins.length
