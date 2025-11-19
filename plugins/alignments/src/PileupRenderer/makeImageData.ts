@@ -60,69 +60,73 @@ export function makeImageData({
   const drawIndels = shouldDrawIndels()
   const coords = [] as number[]
   const items = [] as FlatbushItem[]
-  forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
-    const alignmentRet = renderAlignment({
-      ctx,
-      feat,
-      renderArgs,
-      defaultColor,
-      colorMap,
-      colorContrastMap,
-      charWidth,
-      charHeight,
-      canvasWidth,
-    })
-    const aCoords = alignmentRet.coords
-    const aItems = alignmentRet.items
-    const aCoordsLen = aCoords.length
-    const aItemsLen = aItems.length
-    for (let i = 0; i < aCoordsLen; i++) {
-      coords.push(aCoords[i]!)
-    }
-    for (let i = 0; i < aItemsLen; i++) {
-      items.push(aItems[i]!)
-    }
-
-    const ret = renderMismatches({
-      ctx,
-      feat,
-      bpPerPx: renderArgs.bpPerPx,
-      regions: renderArgs.regions,
-      hideSmallIndels,
-      mismatchAlpha,
-      drawSNPsMuted,
-      drawIndels,
-      largeInsertionIndicatorScale,
-      minSubfeatureWidth,
-      charWidth,
-      charHeight,
-      colorMap,
-      colorContrastMap,
-      canvasWidth,
-    })
-    const mCoords = ret.coords
-    const mItems = ret.items
-    const mCoordsLen = mCoords.length
-    const mItemsLen = mItems.length
-    for (let i = 0; i < mCoordsLen; i++) {
-      coords.push(mCoords[i]!)
-    }
-    for (let i = 0; i < mItemsLen; i++) {
-      items.push(mItems[i]!)
-    }
-
-    if (showSoftClip) {
-      renderSoftClipping({
+  forEachWithStopTokenCheck(
+    layoutRecords,
+    stopToken,
+    function forEachPileupInner(feat) {
+      const alignmentRet = renderAlignment({
         ctx,
         feat,
         renderArgs,
+        defaultColor,
         colorMap,
-        config,
-        theme,
+        colorContrastMap,
+        charWidth,
+        charHeight,
         canvasWidth,
       })
-    }
-  })
+      const aCoords = alignmentRet.coords
+      const aItems = alignmentRet.items
+      const aCoordsLen = aCoords.length
+      const aItemsLen = aItems.length
+      for (let i = 0; i < aCoordsLen; i++) {
+        coords.push(aCoords[i]!)
+      }
+      for (let i = 0; i < aItemsLen; i++) {
+        items.push(aItems[i]!)
+      }
+
+      const ret = renderMismatches({
+        ctx,
+        feat,
+        bpPerPx: renderArgs.bpPerPx,
+        regions: renderArgs.regions,
+        hideSmallIndels,
+        mismatchAlpha,
+        drawSNPsMuted,
+        drawIndels,
+        largeInsertionIndicatorScale,
+        minSubfeatureWidth,
+        charWidth,
+        charHeight,
+        colorMap,
+        colorContrastMap,
+        canvasWidth,
+      })
+      const mCoords = ret.coords
+      const mItems = ret.items
+      const mCoordsLen = mCoords.length
+      const mItemsLen = mItems.length
+      for (let i = 0; i < mCoordsLen; i++) {
+        coords.push(mCoords[i]!)
+      }
+      for (let i = 0; i < mItemsLen; i++) {
+        items.push(mItems[i]!)
+      }
+
+      if (showSoftClip) {
+        renderSoftClipping({
+          ctx,
+          feat,
+          renderArgs,
+          colorMap,
+          config,
+          theme,
+          canvasWidth,
+        })
+      }
+    },
+  )
   const flatbush = new Flatbush(Math.max(items.length, 1))
   const coordsLen = coords.length
   if (coordsLen) {

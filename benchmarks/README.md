@@ -24,24 +24,69 @@ benchmarks/
 
 Before running benchmarks, ensure:
 
-1. Two JBrowse instances are running:
-   - **Port 3000**: Optimized branch
-   - **Port 3001**: Master branch (baseline)
-
-2. Test data is available in `test_data/` directory:
+1. Test data is available in `test_data/` directory (in repository root):
    - CRAM/BAM files (200x and 20x coverage, short and long reads)
    - Reference genome (hg19mod.fa)
    - Index files (.crai, .bai, .fai)
 
+2. For automated benchmarks: The system will handle repository setup and server management
+
+3. For manual benchmarks: Two JBrowse instances running on:
+   - **Port 3000**: Branch 1 (configured in `config.sh`)
+   - **Port 3001**: Branch 2 (configured in `config.sh`)
+
+## Configuration
+
+Edit `benchmarks/config.sh` to configure which branches to test:
+
+```bash
+export BRANCH1="newopts"      # Your optimized branch
+export BRANCH2="main"          # Baseline branch
+export BRANCH3=""              # Optional third branch
+
+export LABEL1="Optimized"
+export LABEL2="Master"
+```
+
 ## Running Benchmarks
 
-### Run All End-to-End Benchmarks (Puppeteer)
+### Option 1: Fully Automated (Recommended)
 
+This handles everything - setup, servers, benchmarks, cleanup:
+
+```bash
+./benchmarks/full_benchmark.sh
+```
+
+### Option 2: Manual Steps
+
+**Step 1: Setup branches** (one time, or when switching branches)
+```bash
+./benchmarks/setup_branches.sh [branch1] [branch2] [branch3]
+```
+
+**Step 2: Start servers**
+```bash
+./benchmarks/start_servers.sh
+```
+
+**Step 3: Run benchmarks**
 ```bash
 ./benchmarks/run_all_benchmarks.sh
 ```
 
-This runs all Puppeteer-based end-to-end tests that compare master vs optimized branches.
+**Step 4: Stop servers**
+```bash
+./benchmarks/stop_servers.sh
+```
+
+### Option 3: Manual - Servers Already Running
+
+If you already have servers running on the configured ports:
+
+```bash
+./benchmarks/run_all_benchmarks.sh
+```
 
 ### Run Specific Benchmark Suites
 
