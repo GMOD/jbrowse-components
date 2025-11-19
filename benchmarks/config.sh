@@ -13,10 +13,10 @@ export PORT1=3000
 export PORT2=3001
 export PORT3=3002
 
-# Branch labels (used in benchmark output)
-export LABEL1="Optimized"
-export LABEL2="Master"
-export LABEL3="Experimental"
+# Labels default to branch names but can be overridden
+export LABEL1="${LABEL1:-$BRANCH1}"
+export LABEL2="${LABEL2:-$BRANCH2}"
+export LABEL3="${LABEL3:-$BRANCH3}"
 
 # Repository paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

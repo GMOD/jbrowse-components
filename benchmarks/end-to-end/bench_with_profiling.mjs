@@ -73,6 +73,11 @@ async function runBenchmark(url, label, outputFile) {
     // Wait for rendering to stabilize
     await new Promise(resolve => setTimeout(resolve, 3000));
 
+    // Take screenshot
+    const screenshotPath = `screenshots/${label.toLowerCase().replace(/\s+/g, '_')}_${process.argv[3]}_${process.argv[2]}_success.png`;
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    console.log(`  ✓ Screenshot saved to: ${screenshotPath}`);
+
     const endTime = Date.now()
     const totalTime = endTime - startTime
 
@@ -135,52 +140,91 @@ async function runBenchmark(url, label, outputFile) {
 const testType = process.argv[2] // 'longread' or 'shortread'
 const coverage = process.argv[3] || '200x'
 
-const OPTIMIZED_URL = `http://localhost:3000/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=chr22_mask:80,630..83,605&tracks=${coverage}.${testType}.cram`
-const MASTER_URL = `http://localhost:3001/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=chr22_mask:80,630..83,605&tracks=${coverage}.${testType}.cram`
+// Get labels from environment or use defaults
+const PORT1 = process.env.PORT1 || '3000'
+const PORT2 = process.env.PORT2 || '3001'
+const PORT3 = process.env.PORT3 || '3002'
+const LABEL1 = process.env.LABEL1 || 'Branch 1'
+const LABEL2 = process.env.LABEL2 || 'Branch 2'
+const LABEL3 = process.env.LABEL3 || 'Branch 3'
+
+const URL1 = `http://localhost:${PORT1}/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=chr22_mask:80,630..83,605&tracks=${coverage}.${testType}.cram`
+const URL2 = `http://localhost:${PORT2}/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=chr22_mask:80,630..83,605&tracks=${coverage}.${testType}.cram`
+const URL3 = `http://localhost:${PORT3}/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=chr22_mask:80,630..83,605&tracks=${coverage}.${testType}.cram`
 
 console.log(`🔬 Running benchmark: ${coverage} ${testType}`)
-console.log(`URL: ${OPTIMIZED_URL.split('?')[1]}`)
+console.log(`URL: ${URL1.split('?')[1]}`)
 console.log('')
 
 ;(async () => {
   try {
-    console.log('Testing MASTER branch...')
-    const masterResult = await runBenchmark(
-      MASTER_URL,
-      'MASTER',
-      `results_master_${coverage}_${testType}.json`
+    console.log(`Testing ${LABEL1}...`)
+    const result1 = await runBenchmark(
+      URL1,
+      LABEL1,
+      `results_${LABEL1.toLowerCase().replace(/\s+/g, '_')}_${coverage}_${testType}.json`
     )
-    console.log(`  ✓ Total: ${masterResult.totalTime}ms`)
-    console.log(`  ✓ Render: ${masterResult.renderTime.toFixed(2)}ms`)
-    console.log(`  ✓ Memory: ${(masterResult.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
+    console.log(`  ✓ Total: ${result1.totalTime}ms`)
+    console.log(`  ✓ Render: ${result1.renderTime.toFixed(2)}ms`)
+    console.log(`  ✓ Memory: ${(result1.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
     console.log('')
 
-    console.log('Testing OPTIMIZED branch...')
-    const optimizedResult = await runBenchmark(
-      OPTIMIZED_URL,
-      'OPTIMIZED',
-      `results_optimized_${coverage}_${testType}.json`
+    console.log(`Testing ${LABEL2}...`)
+    const result2 = await runBenchmark(
+      URL2,
+      LABEL2,
+      `results_${LABEL2.toLowerCase().replace(/\s+/g, '_')}_${coverage}_${testType}.json`
     )
-    console.log(`  ✓ Total: ${optimizedResult.totalTime}ms`)
-    console.log(`  ✓ Render: ${optimizedResult.renderTime.toFixed(2)}ms`)
-    console.log(`  ✓ Memory: ${(optimizedResult.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
+    console.log(`  ✓ Total: ${result2.totalTime}ms`)
+    console.log(`  ✓ Render: ${result2.renderTime.toFixed(2)}ms`)
+    console.log(`  ✓ Memory: ${(result2.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
     console.log('')
 
-    const improvement = ((masterResult.totalTime - optimizedResult.totalTime) / masterResult.totalTime * 100)
-    const memImprovement = ((masterResult.memory.jsHeapUsedSize - optimizedResult.memory.jsHeapUsedSize) / masterResult.memory.jsHeapUsedSize * 100)
-
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('📊 COMPARISON')
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log(`Time improvement:   ${improvement > 0 ? '+' : ''}${improvement.toFixed(2)}%`)
-    console.log(`Memory improvement: ${memImprovement > 0 ? '+' : ''}${memImprovement.toFixed(2)}%`)
+    console.log(`Testing ${LABEL3}...`)
+    const result3 = await runBenchmark(
+      URL3,
+      LABEL3,
+      `results_${LABEL3.toLowerCase().replace(/\s+/g, '_')}_${coverage}_${testType}.json`
+    )
+    console.log(`  ✓ Total: ${result3.totalTime}ms`)
+    console.log(`  ✓ Render: ${result3.renderTime.toFixed(2)}ms`)
+    console.log(`  ✓ Memory: ${(result3.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
     console.log('')
-    console.log(`Task duration:      MASTER: ${masterResult.performance.taskDuration.toFixed(2)}s | OPTIMIZED: ${optimizedResult.performance.taskDuration.toFixed(2)}s`)
-    console.log(`Script duration:    MASTER: ${masterResult.performance.scriptDuration.toFixed(2)}s | OPTIMIZED: ${optimizedResult.performance.scriptDuration.toFixed(2)}s`)
-    console.log(`Layout duration:    MASTER: ${masterResult.performance.layoutDuration.toFixed(2)}s | OPTIMIZED: ${optimizedResult.performance.layoutDuration.toFixed(2)}s`)
+
+    // Sort results by total time
+    const results = [
+      { label: LABEL1, result: result1 },
+      { label: LABEL2, result: result2 },
+      { label: LABEL3, result: result3 },
+    ].sort((a, b) => a.result.totalTime - b.result.totalTime)
+
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📊 RESULTS (sorted by total time)')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-    process.exit(improvement > 0 ? 0 : 1)
+    results.forEach((r, i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'
+      console.log(`${medal} ${r.label}:`)
+      console.log(`   Total time:   ${r.result.totalTime}ms`)
+      console.log(`   Render time:  ${r.result.renderTime.toFixed(2)}ms`)
+      console.log(`   Memory:       ${(r.result.memory.jsHeapUsedSize / 1024 / 1024).toFixed(2)} MB`)
+      console.log(`   Avg FPS:      ${r.result.fps.avg.toFixed(2)}`)
+      console.log('')
+    })
+
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📈 DETAILED METRICS')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log(`Task duration:       ${LABEL1}: ${result1.performance.taskDuration.toFixed(2)}s | ${LABEL2}: ${result2.performance.taskDuration.toFixed(2)}s | ${LABEL3}: ${result3.performance.taskDuration.toFixed(2)}s`)
+    console.log(`Script duration:     ${LABEL1}: ${result1.performance.scriptDuration.toFixed(2)}s | ${LABEL2}: ${result2.performance.scriptDuration.toFixed(2)}s | ${LABEL3}: ${result3.performance.scriptDuration.toFixed(2)}s`)
+    console.log(`Layout duration:     ${LABEL1}: ${result1.performance.layoutDuration.toFixed(2)}s | ${LABEL2}: ${result2.performance.layoutDuration.toFixed(2)}s | ${LABEL3}: ${result3.performance.layoutDuration.toFixed(2)}s`)
+    console.log(`RecalcStyle duration: ${LABEL1}: ${result1.performance.recalcStyleDuration.toFixed(2)}s | ${LABEL2}: ${result2.performance.recalcStyleDuration.toFixed(2)}s | ${LABEL3}: ${result3.performance.recalcStyleDuration.toFixed(2)}s`)
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
+    // Export results for shell script
+    console.log(`FASTEST=${results[0].label}`)
+
+    process.exit(0)
   } catch (e) {
     console.error('Error:', e.message)
     process.exit(1)

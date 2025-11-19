@@ -40,12 +40,13 @@ Before running benchmarks, ensure:
 Edit `benchmarks/config.sh` to configure which branches to test:
 
 ```bash
-export BRANCH1="newopts"      # Your optimized branch
-export BRANCH2="main"          # Baseline branch
+export BRANCH1="newopts"      # First branch to test
+export BRANCH2="main"          # Second branch to test
 export BRANCH3=""              # Optional third branch
 
-export LABEL1="Optimized"
-export LABEL2="Master"
+# Labels will automatically use branch names from git
+# You can override them if needed:
+# export LABEL1="my-custom-label"
 ```
 
 ## Running Benchmarks

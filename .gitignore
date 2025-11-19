@@ -26,3 +26,4 @@ test_data/*x*.cram*
 test_data/hg19mod*
 results*.json
 screenshots
+benchmarks/logs/*
