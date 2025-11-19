@@ -24,3 +24,5 @@ lerna-debug.log
 test_data/*x*.bam*
 test_data/*x*.cram*
 test_data/hg19mod*
+results*.json
+screenshots
