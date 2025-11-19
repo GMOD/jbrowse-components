@@ -39,7 +39,8 @@ export function renderPerBaseLettering({
   if (!seq) {
     return
   }
-  for (let i = 0; i < cigarOps.length; i += 2) {
+  const cigarLen = cigarOps.length
+  for (let i = 0; i < cigarLen; i += 2) {
     const len = +cigarOps[i]!
     const op = cigarOps[i + 1]!
     if (op === 'S' || op === 'I') {

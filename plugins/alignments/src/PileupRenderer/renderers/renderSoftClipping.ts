@@ -45,7 +45,8 @@ export function renderSoftClipping({
   let refOffset = 0
   const CIGAR = feature.get('CIGAR')
   const cigarOps = parseCigar(CIGAR)
-  for (let i = 0; i < cigarOps.length; i += 2) {
+  const cigarLen = cigarOps.length
+  for (let i = 0; i < cigarLen; i += 2) {
     const op = cigarOps[i + 1]!
     const len = +cigarOps[i]!
     if (op === 'S') {

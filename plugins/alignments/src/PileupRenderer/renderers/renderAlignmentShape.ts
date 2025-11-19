@@ -26,10 +26,11 @@ export function renderAlignmentShape({
   const renderChevrons = bpPerPx < 10 && heightPx > 5
   if (CIGAR?.includes('N')) {
     const cigarOps = parseCigar(CIGAR)
+    const cigarLen = cigarOps.length
     if (strand === 1) {
       let drawLen = 0
       let drawStart = s
-      for (let i = 0; i < cigarOps.length; i += 2) {
+      for (let i = 0; i < cigarLen; i += 2) {
         const opLen = +cigarOps[i]!
         const op = cigarOps[i + 1]!
         if (op === 'M' || op === 'X' || op === '=' || op === 'D') {
@@ -75,7 +76,7 @@ export function renderAlignmentShape({
     } else if (strand === -1) {
       let drawLen = 0
       let drawStart = e
-      for (let i = cigarOps.length - 2; i >= 0; i -= 2) {
+      for (let i = cigarLen - 2; i >= 0; i -= 2) {
         const opLen = +cigarOps[i]!
         const op = cigarOps[i + 1]!
         if (op === 'M' || op === 'X' || op === '=' || op === 'D') {

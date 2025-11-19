@@ -27,10 +27,23 @@ export async function generateCoverageBins({
   const bins = [] as PreBaseCoverageBin[]
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
+  const needsSequence =
+    colorBy?.type === 'modifications' || colorBy?.type === 'methylation'
 
-  let regionSequence
+  let regionSequence: string | undefined
+  if (needsSequence) {
+    regionSequence =
+      (await fetchSequence({
+        ...region,
+        start: start2,
+        end: region.end + 1,
+      })) || ''
+  }
+
   let start = performance.now()
-  for (const feature of features) {
+  const featuresLength = features.length
+  for (let fi = 0; fi < featuresLength; fi++) {
+    const feature = features[fi]!
     if (performance.now() - start > 400) {
       checkStopToken(stopToken)
       start = performance.now()
@@ -42,67 +55,49 @@ export async function generateCoverageBins({
     })
 
     if (colorBy?.type === 'modifications') {
-      regionSequence ??=
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: region.end + 1,
-        })) || ''
-
       processModifications({
         feature,
         colorBy,
         bins,
         region,
-        regionSequence: regionSequence.slice(diff),
+        regionSequence: regionSequence!.slice(diff),
       })
     } else if (colorBy?.type === 'methylation') {
-      regionSequence ??=
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: region.end + 1,
-        })) || ''
-
       processReferenceCpGs({
         feature,
         bins,
         region,
-        regionSequence,
+        regionSequence: regionSequence!,
       })
     }
     processMismatches({ feature, skipmap, bins, region })
   }
 
-  for (const bin of bins) {
+  const binsLength = bins.length
+  for (let bi = 0; bi < binsLength; bi++) {
+    const bin = bins[bi]
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (bin) {
-      bin.mods = Object.fromEntries(
-        Object.entries(bin.mods).map(([key, val]) => {
-          return [
-            key,
-            {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
-                : undefined,
-            },
-          ] as const
-        }),
-      )
-      bin.nonmods = Object.fromEntries(
-        Object.entries(bin.nonmods).map(([key, val]) => {
-          return [
-            key,
-            {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
-                : undefined,
-            },
-          ] as const
-        }),
-      )
+      const modEntries = Object.entries(bin.mods)
+      const modEntriesLen = modEntries.length
+      for (let i = 0; i < modEntriesLen; i++) {
+        const val = modEntries[i]![1]
+        const probs = val.probabilities
+        const probsLen = probs.length
+        if (probsLen) {
+          ;(val as any).avgProbability = sum(probs) / probsLen
+        }
+      }
+      const nonmodEntries = Object.entries(bin.nonmods)
+      const nonmodEntriesLen = nonmodEntries.length
+      for (let i = 0; i < nonmodEntriesLen; i++) {
+        const val = nonmodEntries[i]![1]
+        const probs = val.probabilities
+        const probsLen = probs.length
+        if (probsLen) {
+          ;(val as any).avgProbability = sum(probs) / probsLen
+        }
+      }
     }
   }
 

@@ -12,7 +12,9 @@
   "assemblies": [
     {
       "name": "hg19",
-      "aliases": ["GRCh37"],
+      "aliases": [
+        "GRCh37"
+      ],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "Pd8Wh30ei9R",
@@ -36,7 +38,9 @@
     },
     {
       "name": "hg38",
-      "aliases": ["GRCh38"],
+      "aliases": [
+        "GRCh38"
+      ],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "P6R5xbRqRr",
@@ -87,8 +91,13 @@
       "formatDetails": {
         "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
       },
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation", "NCBI RefSeq"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation",
+        "NCBI RefSeq"
+      ],
       "metadata": {
         "source": "https://www.ncbi.nlm.nih.gov/genome/guide/human/",
         "dateaccessed": "12/03/2020"
@@ -112,8 +121,13 @@
       "formatDetails": {
         "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
       },
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation", "NCBI RefSeq"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation",
+        "NCBI RefSeq"
+      ],
       "metadata": {
         "source": "https://www.ncbi.nlm.nih.gov/genome/guide/human/",
         "dateaccessed": "12/03/2020"
@@ -136,8 +150,12 @@
       "type": "FeatureTrack",
       "trackId": "repeats_hg19",
       "name": "Repeats",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -150,8 +168,13 @@
       "type": "FeatureTrack",
       "trackId": "nclist_genes_hg19",
       "name": "Gencode v19",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation", "Gencode"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation",
+        "Gencode"
+      ],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
@@ -204,8 +227,12 @@
       "type": "FeatureTrack",
       "trackId": "hg19_gaps",
       "name": "Gaps",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -218,8 +245,12 @@
       "type": "FeatureTrack",
       "trackId": "clinvar_cnv_hg19",
       "name": "ClinVar CNV (UCSC)",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -232,8 +263,12 @@
       "type": "FeatureTrack",
       "trackId": "mygene_hg38",
       "name": "MyGene v3",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "baseUrl": "https://mygene.info/v3/query?q={ref}:{start}-{end}&size=1000&fields=all&size=1000&species=human",
         "type": "MyGeneV3Adapter"
@@ -243,8 +278,12 @@
       "type": "FeatureTrack",
       "trackId": "mygene_hg19",
       "name": "MyGene v3",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "baseUrl": "https://mygene.info/v3/query?q=hg19.{ref}:{start}-{end}&size=1000&fields=all&size=1000&species=human",
         "type": "MyGeneV3Adapter"
@@ -254,8 +293,12 @@
       "type": "FeatureTrack",
       "trackId": "cpgisland_ucsc_hg38",
       "name": "UCSC CpG islands",
-      "category": ["Annotation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Annotation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "UCSCAdapter",
         "track": "cpgIslandExt"
@@ -265,8 +308,12 @@
       "type": "FeatureTrack",
       "trackId": "segdups_ucsc_hg19",
       "name": "UCSC SegDups",
-      "category": ["Annotation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Annotation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "UCSCAdapter",
         "track": "genomicSuperDups"
@@ -276,8 +323,12 @@
       "type": "FeatureTrack",
       "trackId": "segdups_ucsc_hg38",
       "name": "UCSC SegDups",
-      "category": ["Annotation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Annotation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "UCSCAdapter",
         "track": "genomicSuperDups"
@@ -287,8 +338,13 @@
       "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
       "name": "ClinVar variants (UCSC)",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation", "ClinVar"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation",
+        "ClinVar"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -301,8 +357,13 @@
       "type": "VariantTrack",
       "trackId": "clinvar_ncbi",
       "name": "ClinVar variants (NCBI)",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation", "ClinVar"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation",
+        "ClinVar"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -335,8 +396,13 @@
       "type": "VariantTrack",
       "trackId": "clinvar_ncbi_hg38",
       "name": "ClinVar variants (NCBI)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "ClinVar"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "ClinVar"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -369,8 +435,12 @@
       "type": "FeatureTrack",
       "trackId": "repeats_hg38",
       "name": "Repeats",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -383,8 +453,13 @@
       "type": "FeatureTrack",
       "trackId": "gencode_nclist_hg38",
       "name": "Gencode v32",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "Gencode"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "Gencode"
+      ],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
@@ -437,8 +512,13 @@
       "type": "FeatureTrack",
       "trackId": "clinvar_cnv_hg38",
       "name": "ClinVar CNV (UCSC)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "ClinVar"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "ClinVar"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -451,8 +531,13 @@
       "type": "FeatureTrack",
       "trackId": "clinvar_hg38",
       "name": "ClinVar variants (UCSC)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "ClinVar"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "ClinVar"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -465,8 +550,13 @@
       "type": "FeatureTrack",
       "trackId": "mane_hg38",
       "name": "MANE 1.0",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "MANE"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "MANE"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -491,8 +581,12 @@
       "type": "FeatureTrack",
       "trackId": "gdc_features",
       "name": "GDC cancer variants (UCSC BigBed)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -505,8 +599,12 @@
       "type": "FeatureTrack",
       "trackId": "hg38_gaps",
       "name": "Gaps",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -519,8 +617,13 @@
       "type": "FeatureTrack",
       "trackId": "ncbi_refseq_109_hg38",
       "name": "NCBI RefSeq analysis set (GFF3Tabix)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "NCBI RefSeq"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "NCBI RefSeq"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -539,8 +642,13 @@
       "type": "FeatureTrack",
       "trackId": "ncbi_refseq_109_hg38_latest",
       "name": "NCBI RefSeq (GFF3Tabix)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "NCBI RefSeq"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "NCBI RefSeq"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -559,8 +667,13 @@
       "type": "FeatureTrack",
       "trackId": "ncbi_refseq_analysis_set",
       "name": "NCBI RefSeq (NCList)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "NCBI RefSeq"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "NCBI RefSeq"
+      ],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
@@ -602,8 +715,12 @@
       "trackId": "nanopore_targeted_alignments_0.1",
       "name": "Nanopore amplicon alignments 0.1x (chr7:55,000,000-56,000,000)",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
-      "assemblyNames": ["hg38"],
-      "category": ["Deep coverage"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -636,8 +753,12 @@
       "trackId": "nanopore_targeted_alignments",
       "name": "Nanopore amplicon (chr7:55,000,000-56,000,000) [causes out-of-memory]",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
-      "assemblyNames": ["hg38"],
-      "category": ["Deep coverage"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -669,8 +790,12 @@
       "type": "AlignmentsTrack",
       "trackId": "deep_hg19_bam",
       "name": "Deep sequence chr17:41195312..41276764",
-      "assemblyNames": ["hg19"],
-      "category": ["Deep coverage"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -690,8 +815,12 @@
       "trackId": "amplicon_alignments",
       "name": "Amplicon alignments (chr3:178,916,000-178,918,000)",
       "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",
-      "assemblyNames": ["hg19"],
-      "category": ["Deep coverage"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Deep coverage"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -710,8 +839,12 @@
       "type": "AlignmentsTrack",
       "trackId": "ngmlr",
       "name": "SKBR3 pacbio (NGMLR)",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -743,8 +876,12 @@
       "type": "AlignmentsTrack",
       "trackId": "na12878_minion",
       "name": "NA12878 minion",
-      "assemblyNames": ["hg19"],
-      "category": ["NA12878"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -763,8 +900,12 @@
       "type": "AlignmentsTrack",
       "trackId": "ngmlr_splitters",
       "name": "SKBR3 pacbio (NGMLR) splitters only",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -783,8 +924,12 @@
       "type": "AlignmentsTrack",
       "trackId": "ngmlr_splitters_cram",
       "name": "SKBR3 pacbio (NGMLR) splitters only (CRAM)",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -816,8 +961,12 @@
       "type": "AlignmentsTrack",
       "trackId": "ngmlr_downsample",
       "name": "SKBR3 pacbio (NGMLR) 0.3 downsample",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -836,8 +985,12 @@
       "type": "AlignmentsTrack",
       "trackId": "reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down",
       "name": "SKBR3 pacbio (NGMLR) 0.3 downsample (CRAM)",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -869,8 +1022,12 @@
       "type": "QuantitativeTrack",
       "trackId": "ngmlr_cov",
       "name": "SKBR3 pacbio coverage (NGMLR)",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "resolutionMultiplier": 10,
@@ -884,7 +1041,9 @@
       "type": "QuantitativeTrack",
       "trackId": "gccontent_hg19",
       "name": "GCContent",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "GCContentAdapter",
         "sequenceAdapter": {
@@ -908,8 +1067,12 @@
       "type": "AlignmentsTrack",
       "trackId": "na12878_pacbio",
       "name": "NA12878 Pacbio",
-      "assemblyNames": ["hg19"],
-      "category": ["NA12878"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -943,8 +1106,12 @@
       "type": "AlignmentsTrack",
       "trackId": "na12878_highcov",
       "name": "NA12878 high-coverage",
-      "assemblyNames": ["hg38"],
-      "category": ["NA12878"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -976,8 +1143,12 @@
       "type": "AlignmentsTrack",
       "trackId": "na12878_exome",
       "name": "NA12878 Exome",
-      "assemblyNames": ["hg19"],
-      "category": ["NA12878"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -996,8 +1167,13 @@
       "type": "AlignmentsTrack",
       "trackId": "NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome",
       "name": "NA12878 Exome",
-      "assemblyNames": ["GRCh38"],
-      "category": ["1000 Genomes", "Alignments"],
+      "assemblyNames": [
+        "GRCh38"
+      ],
+      "category": [
+        "1000 Genomes",
+        "Alignments"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -1026,8 +1202,12 @@
       "type": "AlignmentsTrack",
       "trackId": "chm1_pacbio",
       "name": "CHM1 pacbio",
-      "assemblyNames": ["hg19"],
-      "category": ["1000 genomes"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "1000 genomes"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1061,8 +1241,12 @@
       "type": "AlignmentsTrack",
       "trackId": "hg00096_highcov",
       "name": "HG00096 Illumina high coverage",
-      "assemblyNames": ["hg19"],
-      "category": ["1000 genomes"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "1000 genomes"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1096,8 +1280,12 @@
       "type": "AlignmentsTrack",
       "trackId": "nanopore_ultralong",
       "name": "HG002 Nanopore ultralong (BAM)",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1131,8 +1319,12 @@
       "type": "AlignmentsTrack",
       "trackId": "rJxR1X2T0yu",
       "name": "HG00096 Illumina low coverage",
-      "assemblyNames": ["hg19"],
-      "category": ["1000 genomes"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "1000 genomes"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1151,8 +1343,12 @@
       "type": "QuantitativeTrack",
       "trackId": "wiggle_global_autoscale",
       "name": "Encode global autoscale",
-      "assemblyNames": ["hg19"],
-      "category": ["ENCODE bigWigs"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "ENCODE bigWigs"
+      ],
       "autoscale": "global",
       "adapter": {
         "type": "BigWigAdapter",
@@ -1173,8 +1369,12 @@
       "type": "QuantitativeTrack",
       "trackId": "wiggle_local_autoscale",
       "name": "Encode local autoscale",
-      "assemblyNames": ["hg19"],
-      "category": ["ENCODE bigWigs"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "ENCODE bigWigs"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1187,8 +1387,12 @@
       "type": "FeatureTrack",
       "trackId": "bigbed_peaks",
       "name": "Encode peaks",
-      "assemblyNames": ["hg19"],
-      "category": ["ENCODE bigWigs"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "ENCODE bigWigs"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1201,8 +1405,12 @@
       "type": "VariantTrack",
       "trackId": "get_rm_vcf",
       "name": "GeT-RM NCBI vcf",
-      "assemblyNames": ["hg19"],
-      "category": ["NA12878"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1221,8 +1429,12 @@
       "type": "VariantTrack",
       "trackId": "breast_cancer_sniffles_hg19",
       "name": "SKBR3 pacbio (sniffles VCF)",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1248,8 +1460,12 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["SKBR3"],
-      "assemblyNames": ["hg19"]
+      "category": [
+        "SKBR3"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -1269,15 +1485,23 @@
           "indexType": "TBI"
         }
       },
-      "category": ["SKBR3"],
-      "assemblyNames": ["hg19"]
+      "category": [
+        "SKBR3"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "1000genomes_indels",
       "name": "InDels",
-      "assemblyNames": ["hg19"],
-      "category": ["1000 genomes"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "1000 genomes"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1296,8 +1520,12 @@
       "type": "VariantTrack",
       "trackId": "pacbio_sv_vcf",
       "name": "HG002 Pacbio SV (VCF)",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1316,8 +1544,12 @@
       "type": "VariantTrack",
       "trackId": "variants_hg002",
       "name": "HG002 GIAB consensus SV (VCF)",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1336,8 +1568,12 @@
       "type": "VariantTrack",
       "trackId": "skbr3_bedpe",
       "name": "SKBR3 BEDPE",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "BedpeAdapter",
         "bedpeLocation": {
@@ -1349,8 +1585,12 @@
       "type": "VariantTrack",
       "name": "SKBR3 BEDPE arcs",
       "trackId": "skbr3_bedpe_arcs",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "BedpeAdapter",
         "bedpeLocation": {
@@ -1368,8 +1608,12 @@
       "type": "FeatureTrack",
       "trackId": "variants_hg002_ncbi",
       "name": "HG002 GIAB consensus SV NCBI (BED)",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
@@ -1388,8 +1632,12 @@
       "type": "VariantTrack",
       "trackId": "chm_variants",
       "name": "CHM Pacbio SV (VCF)",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1408,8 +1656,12 @@
       "type": "FeatureTrack",
       "trackId": "sparql_togogenome",
       "name": "TogoGenome SPARQL Genes",
-      "assemblyNames": ["hg19"],
-      "category": ["Genes"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Genes"
+      ],
       "adapter": {
         "type": "SPARQLAdapter",
         "endpoint": {
@@ -1445,15 +1697,21 @@
           "Y",
           "MT"
         ],
-        "additionalQueryParams": ["format=application%2Fsparql-results%2Bjson"]
+        "additionalQueryParams": [
+          "format=application%2Fsparql-results%2Bjson"
+        ]
       }
     },
     {
       "type": "FeatureTrack",
       "trackId": "sparql_togovar",
       "name": "TogoVar SPARQL Variants",
-      "assemblyNames": ["hg19"],
-      "category": ["Variants"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Variants"
+      ],
       "adapter": {
         "type": "SPARQLAdapter",
         "endpoint": {
@@ -1489,15 +1747,21 @@
           "Y",
           "MT"
         ],
-        "additionalQueryParams": ["format=application%2Fsparql-results%2Bjson"]
+        "additionalQueryParams": [
+          "format=application%2Fsparql-results%2Bjson"
+        ]
       }
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "hg002_nanopore",
       "name": "HG002 BAM nanopore+whatshap",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1531,8 +1795,12 @@
       "type": "VariantTrack",
       "trackId": "hg002_vcf_tbi",
       "name": "HG002 trio whatshap VCF+TBI haplotype",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1551,8 +1819,12 @@
       "type": "VariantTrack",
       "trackId": "hg002_vcf_csi",
       "name": "HG002 trio whatshap VCF+CSI haplotype",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1572,7 +1844,9 @@
       "type": "HicTrack",
       "trackId": "hic",
       "name": "Hic Track",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "HicAdapter",
         "resolutionMultiplier": 10,
@@ -1586,7 +1860,9 @@
       "type": "AlignmentsTrack",
       "trackId": "htsget_demo",
       "name": "Htsget DNANexus",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "HtsgetBamAdapter",
         "htsgetBase": "http://htsnexus.rnd.dnanex.us/v1/reads",
@@ -1597,8 +1873,12 @@
       "type": "AlignmentsTrack",
       "trackId": "hg_isoforms.fasta_bam",
       "name": "hg_isoforms.fasta_bam",
-      "assemblyNames": ["hg19"],
-      "category": ["Iso-Seq"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Iso-Seq"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1632,8 +1912,12 @@
       "type": "AlignmentsTrack",
       "trackId": "hg_isoforms.fasta_cram",
       "name": "hg_isoforms.fasta_cram",
-      "assemblyNames": ["hg19"],
-      "category": ["Iso-Seq"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Iso-Seq"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -1665,8 +1949,12 @@
       "type": "AlignmentsTrack",
       "trackId": "SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam",
       "name": "SKBR3 illumina bwamem (BAM)",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -1700,8 +1988,12 @@
       "type": "AlignmentsTrack",
       "trackId": "SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram",
       "name": "SKBR3 illumina bwamem (CRAM)",
-      "assemblyNames": ["hg19"],
-      "category": ["SKBR3"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "SKBR3"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -1731,10 +2023,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "category": ["Mappability"],
+      "category": [
+        "Mappability"
+      ],
       "trackId": "wgEncodeCrgMapabilityAlign100mer",
       "name": "wgEncodeCrgMapabilityAlign100mer",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1745,10 +2041,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "category": ["Mappability"],
+      "category": [
+        "Mappability"
+      ],
       "trackId": "wgEncodeCrgMapabilityAlign24mer",
       "name": "wgEncodeCrgMapabilityAlign24mer",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1759,10 +2059,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "category": ["Mappability"],
+      "category": [
+        "Mappability"
+      ],
       "trackId": "wgEncodeCrgMapabilityAlign36mer",
       "name": "wgEncodeCrgMapabilityAlign36mer",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1773,10 +2077,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "category": ["Mappability"],
+      "category": [
+        "Mappability"
+      ],
       "trackId": "wgEncodeCrgMapabilityAlign40mer",
       "name": "wgEncodeCrgMapabilityAlign40mer",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1787,10 +2095,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "category": ["Mappability"],
+      "category": [
+        "Mappability"
+      ],
       "trackId": "wgEncodeCrgMapabilityAlign50mer",
       "name": "wgEncodeCrgMapabilityAlign50mer",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1801,10 +2113,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "category": ["Mappability"],
+      "category": [
+        "Mappability"
+      ],
       "trackId": "wgEncodeCrgMapabilityAlign75mer",
       "name": "wgEncodeCrgMapabilityAlign75mer",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1815,10 +2131,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "category": ["Mappability"],
+      "category": [
+        "Mappability"
+      ],
       "trackId": "wgEncodeDukeMapabilityUniqueness20bp",
       "name": "wgEncodeDukeMapabilityUniqueness20bp",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1829,10 +2149,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "category": ["Mappability"],
+      "category": [
+        "Mappability"
+      ],
       "trackId": "wgEncodeDukeMapabilityUniqueness35bp",
       "name": "wgEncodeDukeMapabilityUniqueness35bp",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -1843,10 +2167,14 @@
     },
     {
       "type": "FeatureTrack",
-      "category": ["Mappability"],
+      "category": [
+        "Mappability"
+      ],
       "trackId": "wgEncodeDukeMapabilityRegionsExcludable.bed",
       "name": "wgEncodeDukeMapabilityRegionsExcludable.bed",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
@@ -1866,8 +2194,12 @@
       "type": "FeatureTrack",
       "trackId": "wgEncodeDacMapabilityConsensusExcludable.bed",
       "name": "wgEncodeDacMapabilityConsensusExcludable.bed",
-      "category": ["Mappability"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Mappability"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
@@ -1887,8 +2219,13 @@
       "type": "FeatureTrack",
       "trackId": "clinGenGeneDisease",
       "name": "ClinGen Gene-Disease mapping",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "ClinGen"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "ClinGen"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1901,8 +2238,13 @@
       "type": "FeatureTrack",
       "trackId": "clinGenHaplo",
       "name": "ClinGen haplosensitivity",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "ClinGen"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "ClinGen"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1915,8 +2257,13 @@
       "type": "FeatureTrack",
       "trackId": "clinGenTriplo",
       "name": "ClinGen triplosensitivity",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation", "ClinGen"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Annotation",
+        "ClinGen"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1929,8 +2276,13 @@
       "type": "FeatureTrack",
       "trackId": "clinGenDiesease_hg19",
       "name": "ClinGen Gene-Disease mapping",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation", "ClinGen"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation",
+        "ClinGen"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1943,8 +2295,13 @@
       "type": "FeatureTrack",
       "trackId": "clinGenHaplo_hg19",
       "name": "ClinGen haplosensitivity",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation", "ClinGen"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation",
+        "ClinGen"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1957,8 +2314,13 @@
       "type": "FeatureTrack",
       "trackId": "clinGenTriplo_hg19",
       "name": "ClinGen triplosensitivity",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation", "ClinGen"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "Annotation",
+        "ClinGen"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1971,8 +2333,12 @@
       "type": "FeatureTrack",
       "trackId": "unipAliSwissprot",
       "name": "unipAliSwissprot",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1985,8 +2351,12 @@
       "type": "FeatureTrack",
       "trackId": "unipAliTrembl",
       "name": "unipAliTrembl",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -1999,8 +2369,12 @@
       "type": "FeatureTrack",
       "trackId": "unipChain",
       "name": "unipChain",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2013,8 +2387,12 @@
       "type": "FeatureTrack",
       "trackId": "unipConflict",
       "name": "unipConflict",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2027,8 +2405,12 @@
       "type": "FeatureTrack",
       "trackId": "unipDisulfBond",
       "name": "unipDisulfBond",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2041,8 +2423,12 @@
       "type": "FeatureTrack",
       "trackId": "unipDomain",
       "name": "unipDomain",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2055,8 +2441,12 @@
       "type": "FeatureTrack",
       "trackId": "unipInterest",
       "name": "unipInterest",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2069,8 +2459,12 @@
       "type": "FeatureTrack",
       "trackId": "unipLocCytopl",
       "name": "unipLocCytopl",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2083,8 +2477,12 @@
       "type": "FeatureTrack",
       "trackId": "unipLocExtra",
       "name": "unipLocExtra",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2097,8 +2495,12 @@
       "type": "FeatureTrack",
       "trackId": "unipLocSignal",
       "name": "unipLocSignal",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2111,8 +2513,12 @@
       "type": "FeatureTrack",
       "trackId": "unipLocTransMemb",
       "name": "unipLocTransMemb",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2125,8 +2531,12 @@
       "type": "FeatureTrack",
       "trackId": "unipModif",
       "name": "unipModif",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2139,8 +2549,12 @@
       "type": "FeatureTrack",
       "trackId": "unipMut",
       "name": "unipMut",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2153,8 +2567,12 @@
       "type": "FeatureTrack",
       "trackId": "unipOther",
       "name": "unipOther",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2167,8 +2585,12 @@
       "type": "FeatureTrack",
       "trackId": "unipRepeat",
       "name": "unipRepeat",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2181,8 +2603,12 @@
       "type": "FeatureTrack",
       "trackId": "unipSplice",
       "name": "unipSplice",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2195,8 +2621,12 @@
       "type": "FeatureTrack",
       "trackId": "unipStruct",
       "name": "unipStruct",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2209,8 +2639,12 @@
       "type": "FeatureTrack",
       "trackId": "unipAliSwissprot_hg38",
       "name": "unipAliSwissprot_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2223,8 +2657,12 @@
       "type": "FeatureTrack",
       "trackId": "unipAliTrembl_hg38",
       "name": "unipAliTrembl_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2237,8 +2675,12 @@
       "type": "FeatureTrack",
       "trackId": "unipChain_hg38",
       "name": "unipChain_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2251,8 +2693,12 @@
       "type": "FeatureTrack",
       "trackId": "unipConflict_hg38",
       "name": "unipConflict_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2265,8 +2711,12 @@
       "type": "FeatureTrack",
       "trackId": "unipDisulfBond_hg38",
       "name": "unipDisulfBond_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2279,8 +2729,12 @@
       "type": "FeatureTrack",
       "trackId": "unipDomain_hg38",
       "name": "unipDomain_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2293,8 +2747,12 @@
       "type": "FeatureTrack",
       "trackId": "unipInterest_hg38",
       "name": "unipInterest_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2307,8 +2765,12 @@
       "type": "FeatureTrack",
       "trackId": "unipLocCytopl_hg38",
       "name": "unipLocCytopl_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2321,8 +2783,12 @@
       "type": "FeatureTrack",
       "trackId": "unipLocExtra_hg38",
       "name": "unipLocExtra_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2335,8 +2801,12 @@
       "type": "FeatureTrack",
       "trackId": "unipLocSignal_hg38",
       "name": "unipLocSignal_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2349,8 +2819,12 @@
       "type": "FeatureTrack",
       "trackId": "unipLocTransMemb_hg38",
       "name": "unipLocTransMemb_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2363,8 +2837,12 @@
       "type": "FeatureTrack",
       "trackId": "unipModif_hg38",
       "name": "unipModif_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2377,8 +2855,12 @@
       "type": "FeatureTrack",
       "trackId": "unipMut_hg38",
       "name": "unipMut_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2391,8 +2873,12 @@
       "type": "FeatureTrack",
       "trackId": "unipOther_hg38",
       "name": "unipOther_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2405,8 +2891,12 @@
       "type": "FeatureTrack",
       "trackId": "unipRepeat_hg38",
       "name": "unipRepeat_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2419,8 +2909,12 @@
       "type": "FeatureTrack",
       "trackId": "unipSplice_hg38",
       "name": "unipSplice_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2433,8 +2927,12 @@
       "type": "FeatureTrack",
       "trackId": "unipStruct_hg38",
       "name": "unipStruct_hg38",
-      "category": ["Uniprot"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Uniprot"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2447,8 +2945,12 @@
       "type": "FeatureTrack",
       "trackId": "knownGene",
       "name": "knownGene",
-      "category": ["Annotation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Annotation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2461,8 +2963,12 @@
       "type": "FeatureTrack",
       "trackId": "knownGene_hg38",
       "name": "knownGene_hg38",
-      "category": ["Annotation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Annotation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2475,8 +2981,12 @@
       "type": "FeatureTrack",
       "trackId": "snp151.bed4",
       "name": "snp151.bed4",
-      "category": ["Variation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2489,8 +2999,12 @@
       "type": "FeatureTrack",
       "trackId": "snp137",
       "name": "snp137",
-      "category": ["Variation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2503,8 +3017,12 @@
       "type": "FeatureTrack",
       "trackId": "snp151_hg38",
       "name": "snp151_hg38",
-      "category": ["Variation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2517,8 +3035,12 @@
       "type": "FeatureTrack",
       "trackId": "gnomad_v2.1_sv.sites",
       "name": "Gnomad - v2.1 SVs",
-      "category": ["Variation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2531,8 +3053,12 @@
       "type": "FeatureTrack",
       "trackId": "missenseConstrained",
       "name": "Gnomad - missense constraint",
-      "category": ["Variation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2545,8 +3071,12 @@
       "type": "FeatureTrack",
       "trackId": "pliByGene",
       "name": "Gnomad - probability of loss-of-function intolerant (pLI) by gene",
-      "category": ["Variation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2559,8 +3089,12 @@
       "type": "FeatureTrack",
       "trackId": "dgvGold",
       "name": "dgvGold",
-      "category": ["Variation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2573,8 +3107,12 @@
       "type": "FeatureTrack",
       "trackId": "dgvMerged",
       "name": "dgvMerged",
-      "category": ["Variation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2587,8 +3125,12 @@
       "type": "FeatureTrack",
       "trackId": "dgvSupporting",
       "name": "dgvSupporting",
-      "category": ["Variation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2601,8 +3143,12 @@
       "type": "FeatureTrack",
       "trackId": "dgvMerged_hg19",
       "name": "dgvMerged",
-      "category": ["Variation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2615,8 +3161,12 @@
       "type": "FeatureTrack",
       "trackId": "dgvSupporting_hg19",
       "name": "dgvSupporting",
-      "category": ["Variation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -2629,8 +3179,13 @@
       "type": "FeatureTrack",
       "trackId": "gencode.v36lift37.annotation.sort.gff3",
       "name": "Gencode v36 (GRCh37 liftover)",
-      "category": ["Annotation", "Gencode"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Annotation",
+        "Gencode"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -2662,8 +3217,13 @@
       "type": "FeatureTrack",
       "trackId": "gencode.v36.annotation.sort.gff3",
       "name": "Gencode v36",
-      "category": ["Annotation", "Gencode"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Annotation",
+        "Gencode"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -2695,8 +3255,12 @@
       "type": "VariantTrack",
       "trackId": "nstd175.GRCh37.variant_call.vcf",
       "name": "HG002 dbVar variant calls",
-      "category": ["GIAB"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -2716,8 +3280,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
       "name": "HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
-      "category": ["GIAB", "Pacbio"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Pacbio"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -2752,8 +3321,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
       "name": "HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
-      "category": ["GIAB", "Pacbio"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Pacbio"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -2788,8 +3362,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio",
       "name": "HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio",
-      "category": ["GIAB", "Pacbio"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Pacbio"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -2824,8 +3403,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
       "name": "HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
-      "category": ["GIAB", "Pacbio"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Pacbio"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -2860,8 +3444,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG002_GRCh37_ONT-UL_UCSC_20200508.phased",
       "name": "HG002_GRCh37_ONT-UL_UCSC_20200508.phased",
-      "category": ["GIAB", "Nanopore"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Nanopore"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -2896,8 +3485,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG002_hs37d5_ONT-UL_GIAB_20200204",
       "name": "HG002_hs37d5_ONT-UL_GIAB_20200204",
-      "category": ["GIAB", "Nanopore"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Nanopore"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -2932,8 +3526,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG003.hs37d5.consensusalignments",
       "name": "HG003.hs37d5.consensusalignments",
-      "category": ["GIAB", "Pacbio"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Pacbio"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -2968,8 +3567,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG003_GRCh37_ONT-UL_UCSC_20200508",
       "name": "HG003_GRCh37_ONT-UL_UCSC_20200508",
-      "category": ["GIAB", "Nanopore"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Nanopore"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3004,8 +3608,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG004_GRCh37_ONT-UL_UCSC_20200508",
       "name": "HG004_GRCh37_ONT-UL_UCSC_20200508",
-      "category": ["GIAB", "Nanopore"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Nanopore"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3040,8 +3649,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG004.hs37d5.consensusalignments",
       "name": "HG004.hs37d5.consensusalignments",
-      "category": ["GIAB", "Pacbio"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Pacbio"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3076,8 +3690,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG004.hs37d5.2x250",
       "name": "HG004.hs37d5.2x250",
-      "category": ["GIAB", "Illumina"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Illumina"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3112,8 +3731,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG003.hs37d5.2x250",
       "name": "HG003.hs37d5.2x250",
-      "category": ["GIAB", "Illumina"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Illumina"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3148,8 +3772,13 @@
       "type": "AlignmentsTrack",
       "trackId": "HG002.hs37d5.2x250",
       "name": "HG002.hs37d5.2x250",
-      "category": ["GIAB", "Illumina"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB",
+        "Illumina"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3184,8 +3813,12 @@
       "type": "VariantTrack",
       "trackId": "svanalyzer_union_171212_v0.5.0_annotated.vcf",
       "name": "Crowdsourced GIAB SV",
-      "category": ["GIAB"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -3205,8 +3838,12 @@
       "type": "AlignmentsTrack",
       "trackId": "HG002.hs37d5.300x",
       "name": "HG002.hs37d5.300x",
-      "category": ["GIAB"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3241,8 +3878,12 @@
       "type": "QuantitativeTrack",
       "trackId": "hg19.100way.phyloP100way_line",
       "name": "hg19.100way.phyloP100way (line)",
-      "category": ["Conservation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Conservation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -3262,8 +3903,12 @@
       "type": "QuantitativeTrack",
       "trackId": "hg19.100way.phyloP100way_density",
       "name": "hg19.100way.phyloP100way (density)",
-      "category": ["Conservation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Conservation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -3283,8 +3928,12 @@
       "type": "QuantitativeTrack",
       "trackId": "hg19.100way.phyloP100way",
       "name": "hg19.100way.phyloP100way",
-      "category": ["Conservation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Conservation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -3297,8 +3946,12 @@
       "type": "QuantitativeTrack",
       "trackId": "hg38.100way.phyloP100way",
       "name": "hg38.100way.phyloP100way",
-      "category": ["Conservation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Conservation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -3311,11 +3964,15 @@
       "type": "FeatureTrack",
       "trackId": "encodeCcreCombined",
       "name": "ENCODE cis-regulatory elements (all cell types)",
-      "category": ["Annotation"],
+      "category": [
+        "Annotation"
+      ],
       "metadata": {
         "source": "https://genome.ucsc.edu/cgi-bin/hgTrackUi?hgsid=1020236289_HOhuYmfogKvSVWee06A1OECtrgLq&c=chrX&g=encodeCcreCombined"
       },
-      "assemblyNames": ["hg38"],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -3340,8 +3997,12 @@
       "type": "FeatureTrack",
       "trackId": "mastermind_hg19",
       "name": "UCSC Mastermind",
-      "category": ["Variation"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -3354,8 +4015,12 @@
       "type": "FeatureTrack",
       "trackId": "mastermind_hg38",
       "name": "UCSC Mastermind",
-      "category": ["Variation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Variation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -3369,8 +4034,12 @@
       "trackId": "human_chr20_mod_call_5mC_5hmC_CG_bam",
       "name": "human_chr20_mod_call_5mC_5hmC_CG (BAM)",
       "description": "Source: Oxford Nanopore Technologies, re-hosted with permission",
-      "assemblyNames": ["hg38"],
-      "category": ["Methylation"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Methylation"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3405,8 +4074,12 @@
       "trackId": "human_chr20_mod_call_5mC_5hmC_CG_cram",
       "name": "human_chr20_mod_call_5mC_5hmC_CG (CRAM)",
       "description": "Source: Oxford Nanopore Technologies, re-hosted with permission",
-      "assemblyNames": ["hg38"],
-      "category": ["Methylation"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Methylation"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -3438,8 +4111,12 @@
       "type": "FeatureTrack",
       "trackId": "modified_bases.5mC",
       "name": "modified_bases.5mC",
-      "category": ["Methylation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Methylation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
@@ -3452,8 +4129,12 @@
       "type": "AlignmentsTrack",
       "trackId": "modbam_test.reference",
       "name": "Nanopolish modbam_test.reference 20:10000000",
-      "assemblyNames": ["hg38"],
-      "category": ["Methylation"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Methylation"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3488,8 +4169,12 @@
       "type": "AlignmentsTrack",
       "trackId": "modbam_test.read",
       "name": "Nanopolish modbam_test.read 20:10000000",
-      "category": ["Methylation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Methylation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3525,8 +4210,12 @@
       "trackId": "truthset_somaticSVs_COLO829",
       "name": "truthset_somaticSVs_COLO829",
       "description": "Source https://github.com/UMCUGenetics/COLO829_somaticSV",
-      "category": ["COLO829"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "COLO829"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "VcfAdapter",
         "vcfLocation": {
@@ -3539,8 +4228,12 @@
       "type": "AlignmentsTrack",
       "trackId": "colo829.normal.ngmlr.sorted",
       "name": "COLO829 MinION normal",
-      "category": ["COLO829"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "COLO829"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
       "adapter": {
         "type": "BamAdapter",
@@ -3575,8 +4268,12 @@
       "type": "AlignmentsTrack",
       "trackId": "colo829.tumor.ngmlr.sorted.merged",
       "name": "COLO829 MinION tumor",
-      "category": ["COLO829"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "COLO829"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
       "adapter": {
         "type": "BamAdapter",
@@ -3612,8 +4309,12 @@
       "trackId": "colo_normal",
       "name": "COLO829 MinION normal (coverage)",
       "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
-      "category": ["COLO829"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "COLO829"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -3627,8 +4328,12 @@
       "trackId": "colo_tumor",
       "name": "COLO829 MinION tumor (coverage)",
       "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
-      "category": ["COLO829"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "COLO829"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -3641,9 +4346,13 @@
       "type": "FeatureTrack",
       "trackId": "lra.inv.bed",
       "name": "lra.inv.bed",
-      "category": ["HG002 inversions"],
+      "category": [
+        "HG002 inversions"
+      ],
       "description": "From <a href=\"https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717\">https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717</a>",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
@@ -3664,8 +4373,12 @@
       "trackId": "mm2.inv.bed",
       "name": "mm2.inv.bed",
       "description": "From <a href=\"https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717\">https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717</a>",
-      "category": ["HG002 inversions"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "HG002 inversions"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
@@ -3685,9 +4398,13 @@
       "type": "FeatureTrack",
       "trackId": "ngmlr.inv.bed",
       "name": "ngmlr.inv.bed",
-      "category": ["HG002 inversions"],
+      "category": [
+        "HG002 inversions"
+      ],
       "description": "From <a href=\"https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717\">https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717</a>",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
@@ -3707,7 +4424,9 @@
       "type": "FeatureTrack",
       "trackId": "dbsuper",
       "name": "dbSUPER adipose enhancers",
-      "assemblyNames": ["hg38"],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
@@ -3728,13 +4447,21 @@
     },
     {
       "type": "SyntenyTrack",
-      "category": ["Synteny"],
+      "category": [
+        "Synteny"
+      ],
       "trackId": "hg19ToHg38.over.chain.gz-1645073157673",
       "name": "hg19ToHg38.over.chain.gz",
-      "assemblyNames": ["hg38", "hg19"],
+      "assemblyNames": [
+        "hg38",
+        "hg19"
+      ],
       "adapter": {
         "type": "ChainAdapter",
-        "assemblyNames": ["hg38", "hg19"],
+        "assemblyNames": [
+          "hg38",
+          "hg19"
+        ],
         "chainLocation": {
           "locationType": "UriLocation",
           "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
@@ -3743,13 +4470,21 @@
     },
     {
       "type": "SyntenyTrack",
-      "category": ["Synteny"],
+      "category": [
+        "Synteny"
+      ],
       "trackId": "hg38ToHs1.over.chain.gz-1645073157673",
       "name": "hg38ToHs1.over.chain.gz",
-      "assemblyNames": ["hg38", "hs1"],
+      "assemblyNames": [
+        "hg38",
+        "hs1"
+      ],
       "adapter": {
         "type": "ChainAdapter",
-        "assemblyNames": ["hs1", "hg38"],
+        "assemblyNames": [
+          "hs1",
+          "hg38"
+        ],
         "chainLocation": {
           "locationType": "UriLocation",
           "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/liftOver/hg38ToHs1.over.chain.gz"
@@ -3760,7 +4495,9 @@
       "type": "AlignmentsTrack",
       "trackId": "bonito_calls",
       "name": "Clive-ome 5mC",
-      "category": ["Methylation"],
+      "category": [
+        "Methylation"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3785,14 +4522,20 @@
           }
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "MultiQuantitativeTrack",
       "trackId": "microarray_multi",
       "name": "MultiWig",
-      "category": ["ENCODE bigWigs"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "ENCODE bigWigs"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "MultiWiggleAdapter",
         "bigWigs": [
@@ -3824,8 +4567,12 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "microarray_multi_groups",
       "name": "MultiWig (groups)",
-      "category": ["ENCODE bigWigs"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "ENCODE bigWigs"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "MultiWiggleAdapter",
         "subadapters": [
@@ -3982,7 +4729,9 @@
     {
       "type": "AlignmentsTrack",
       "name": "Paired-end stranded RNA-seq (BAM,XS)",
-      "category": ["RNA-seq"],
+      "category": [
+        "RNA-seq"
+      ],
       "metadata": {
         "source": "From sample files listed at https://rseqc.sourceforge.net/"
       },
@@ -3995,7 +4744,9 @@
           "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
         }
       },
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -4005,79 +4756,109 @@
         "type": "BedTabixAdapter",
         "uri": "hprc-v1.0-minigraph-grch38.bb.bed.gz"
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "NA12878_LINE1",
       "name": "NA12878_LINE1",
-      "category": ["NA12878"],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "VcfAdapter",
         "uri": "https://jbrowse.org/genomes/hg19/NA12878_LINE1.vcf"
       },
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "NA12878_SVA",
       "name": "NA12878_SVA",
-      "category": ["NA12878"],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "VcfAdapter",
         "uri": "https://jbrowse.org/genomes/hg19/NA12878_SVA.vcf"
       },
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "NA12878_ALU",
       "name": "NA12878_ALU",
-      "category": ["NA12878"],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "VcfAdapter",
         "uri": "https://jbrowse.org/genomes/hg19/NA12878_ALU.vcf"
       },
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "FeatureTrack",
       "trackId": "tiberius_grch38",
       "name": "Tiberius gene predictions",
-      "category": ["Annotation"],
+      "category": [
+        "Annotation"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz"
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "FeatureTrack",
       "trackId": "gencode_47",
       "name": "Gencode v47",
-      "category": ["Annotation", "Gencode"],
+      "category": [
+        "Annotation",
+        "Gencode"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz"
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "FeatureTrack",
       "trackId": "ncbi_08_24",
       "name": "NCBI RefSeq (Aug 2024)",
-      "category": ["Annotation", "NCBI RefSeq"],
+      "category": [
+        "Annotation",
+        "NCBI RefSeq"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/genomic.sorted.gff.gz"
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "HG002_WGS_fiberseq.MAGEL2_2",
       "name": "HG002_WGS_fiberseq.MAGEL2",
-      "category": ["GIAB"],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/HG002_WGS_fiberseq.MAGEL2.bam",
@@ -4086,13 +4867,17 @@
           "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted",
       "name": "NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted",
-      "category": ["NA12878"],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/NA12878/NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted.bam",
@@ -4101,7 +4886,9 @@
           "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -4115,14 +4902,20 @@
           "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
         }
       },
-      "category": ["NA12878"],
-      "assemblyNames": ["hg38"]
+      "category": [
+        "NA12878"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.cram",
       "name": "Paired-end stranded RNA-seq (CRAM,XS)",
-      "category": ["RNA-seq"],
+      "category": [
+        "RNA-seq"
+      ],
       "metadata": {
         "source": "From sample files listed at https://rseqc.sourceforge.net/"
       },
@@ -4134,13 +4927,17 @@
           "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
         }
       },
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS",
       "name": "Paired-end stranded RNA-seq (CRAM,TS)",
-      "category": ["RNA-seq"],
+      "category": [
+        "RNA-seq"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -4156,14 +4953,20 @@
           "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
         }
       },
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "illumina_hg002",
       "name": "HG002 Illumina hs37d5.2x250",
-      "category": ["GIAB"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002.hs37d5.2x250.bam"
@@ -4173,8 +4976,12 @@
       "type": "AlignmentsTrack",
       "trackId": "pacbio_hg002",
       "name": "HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam",
-      "category": ["GIAB"],
-      "assemblyNames": ["hg19"],
+      "category": [
+        "GIAB"
+      ],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/PacBio_SequelII_CCS_11kb/HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam"
@@ -4184,8 +4991,12 @@
       "type": "AlignmentsTrack",
       "trackId": "hg002_cram",
       "name": "HG002 CRAM nanopore+whatshap",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
+      "assemblyNames": [
+        "hg19"
+      ],
+      "category": [
+        "GIAB"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -4217,7 +5028,9 @@
       "type": "AlignmentsTrack",
       "trackId": "Pairend_StrandSpecific_51mer_Human_hg19.chr1.TS.bam",
       "name": "Paired-end stranded RNA-seq (BAM,TS)",
-      "category": ["RNA-seq"],
+      "category": [
+        "RNA-seq"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -4247,7 +5060,9 @@
           }
         }
       },
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -4279,8 +5094,12 @@
           }
         }
       },
-      "assemblyNames": ["hg38"],
-      "category": ["Methylation"]
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Methylation"
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -4315,7 +5134,9 @@
           }
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -4335,8 +5156,12 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hg38"],
-      "category": ["Methylation"]
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Methylation"
+      ]
     },
     {
       "type": "MultiQuantitativeTrack",
@@ -4356,14 +5181,20 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hg38"],
-      "category": ["Methylation"]
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Methylation"
+      ]
     },
     {
       "type": "MultiQuantitativeTrack",
       "trackId": "bilby",
       "name": "Bilby transition matrix",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BedGraphAdapter",
         "bedGraphLocation": {
@@ -4371,13 +5202,17 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["BedGraph"]
+      "category": [
+        "BedGraph"
+      ]
     },
     {
       "type": "MultiQuantitativeTrack",
       "trackId": "bilby2",
       "name": "Bilby transition matrix (full names)",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "BedGraphAdapter",
         "bedGraphLocation": {
@@ -4385,7 +5220,9 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["BedGraph"]
+      "category": [
+        "BedGraph"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4405,13 +5242,17 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf",
       "name": "1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf",
-      "category": ["1000 Genomes"],
+      "category": [
+        "1000 Genomes"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4426,7 +5267,9 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4452,13 +5295,17 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "HG02024_VN049_KHVTrio.chr1.vcf",
       "name": "HG02024_VN049_KHVTrio.chr1.vcf",
-      "category": ["1000 Genomes"],
+      "category": [
+        "1000 Genomes"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4473,7 +5320,9 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -4486,13 +5335,17 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "NA12878.whatshap.strandseq-pacbio-phasing.2017-07-19.vcf",
       "name": "NA12878.whatshap.strandseq-pacbio-phasing.2017-07-19.vcf",
-      "category": ["NA12878"],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4506,13 +5359,17 @@
           }
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "NA12878.vcf",
       "name": "NA12878.vcf",
-      "category": ["NA12878"],
+      "category": [
+        "NA12878"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4527,13 +5384,18 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "variants_T2T-CHM13_indel_insdel_alt_HGSVC2024v1.0.vcf",
       "name": "indel_insdel_alt_HGSVC2024v1.0.vcf",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4548,13 +5410,18 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "variants_T2T-CHM13_snv_snv_alt_HGSVC2024v1.0.vcf",
       "name": "snv_snv_alt_HGSVC2024v1.0.vcf",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4569,13 +5436,18 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "variants_T2T-CHM13_sv_insdel_sym_HGSVC2024v1.0.vcf",
       "name": "sv_insdel_sym_HGSVC2024v1.0.vcf",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4590,13 +5462,18 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "variants_T2T-CHM13_sv_inv_sym_HGSVC2024v1.0.vcf",
       "name": "sv_inv_sym_HGSVC2024v1.0.vcf",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4611,13 +5488,18 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "FeatureTrack",
       "trackId": "complex_variants_T2T-CHM13_HGSVC2024v1.0.bed",
       "name": "complex_HGSVC2024v1.0.bed",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
@@ -4632,13 +5514,18 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "vamos.VNTR.q-0.1.CHM13_anotations.vcf",
       "name": "vamos.VNTR.q-0.1.CHM13_anotations.vcf",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4653,13 +5540,18 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "VariantTrack",
       "trackId": "shapeit-pangenie_chm13_all.vcf",
       "name": "shapeit-pangenie_chm13_all.vcf",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -4674,11 +5566,16 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "VariantTrack",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "trackId": "MEI_Callset_T2T-CHM13.ALL.20241211",
       "name": "MEI_Callset_T2T-CHM13.ALL.20241211",
       "adapter": {
@@ -4688,13 +5585,18 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "FeatureTrack",
       "trackId": "hs1.ncbiRefSeq",
       "name": "NCBI RefSeq genes",
-      "category": ["Annotation", "NCBI RefSeq"],
+      "category": [
+        "Annotation",
+        "NCBI RefSeq"
+      ],
       "adapter": {
         "type": "GtfAdapter",
         "gtfLocation": {
@@ -4702,11 +5604,16 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": [
+        "hs1"
+      ]
     },
     {
       "type": "VariantTrack",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "trackId": "Ortho_MEI_GRCh38.ALL.20241211",
       "name": "Ortho_MEI_GRCh38.ALL.20241211",
       "adapter": {
@@ -4716,11 +5623,16 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
-      "category": ["1000 Genomes", "HGSVC"],
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
       "trackId": "MEI_Callset_GRCh38.ALL.20241211",
       "name": "MEI_Callset_GRCh38.ALL.20241211",
       "adapter": {
@@ -4730,7 +5642,9 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4750,8 +5664,13 @@
           "indexType": "TBI"
         }
       },
-      "category": ["1000 Genomes", "HGSVC"],
-      "assemblyNames": ["hg38"]
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4771,8 +5690,13 @@
           "indexType": "TBI"
         }
       },
-      "category": ["1000 Genomes", "HGSVC"],
-      "assemblyNames": ["hg38"]
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4792,8 +5716,13 @@
           "indexType": "TBI"
         }
       },
-      "category": ["1000 Genomes", "HGSVC"],
-      "assemblyNames": ["hg38"]
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4813,8 +5742,13 @@
           "indexType": "TBI"
         }
       },
-      "category": ["1000 Genomes", "HGSVC"],
-      "assemblyNames": ["hg38"]
+      "category": [
+        "1000 Genomes",
+        "HGSVC"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4834,8 +5768,13 @@
           "indexType": "TBI"
         }
       },
-      "category": ["1000 Genomes", "Integrated SV Map"],
-      "assemblyNames": ["hg38"]
+      "category": [
+        "1000 Genomes",
+        "Integrated SV Map"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4855,8 +5794,13 @@
           "indexType": "TBI"
         }
       },
-      "category": ["1000 Genomes", "Integrated SV Map"],
-      "assemblyNames": ["hg38"]
+      "category": [
+        "1000 Genomes",
+        "Integrated SV Map"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4876,8 +5820,13 @@
           "indexType": "TBI"
         }
       },
-      "category": ["1000 Genomes", "Integrated SV Map"],
-      "assemblyNames": ["hg38"]
+      "category": [
+        "1000 Genomes",
+        "Integrated SV Map"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "VariantTrack",
@@ -4897,13 +5846,21 @@
           "indexType": "TBI"
         }
       },
-      "category": ["1000 Genomes", "STRs"],
-      "assemblyNames": ["hg38"]
+      "category": [
+        "1000 Genomes",
+        "STRs"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_non_pathogenic",
-      "category": ["Annotation", "ClinVar"],
+      "category": [
+        "Annotation",
+        "ClinVar"
+      ],
       "name": "ClinVar Non-pathogenic SVs",
       "adapter": {
         "type": "BigBedAdapter",
@@ -4912,12 +5869,17 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_pathogenic",
-      "category": ["Annotation", "ClinVar"],
+      "category": [
+        "Annotation",
+        "ClinVar"
+      ],
       "name": "ClinVar Pathogenic SVs",
       "adapter": {
         "type": "BigBedAdapter",
@@ -4926,7 +5888,9 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -4939,8 +5903,13 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["Annotation", "MANE"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Annotation",
+        "MANE"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "displays": [
         {
           "type": "LinearBasicDisplay",
@@ -4962,8 +5931,13 @@
         "type": "BigBedAdapter",
         "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.ensembl.bb"
       },
-      "category": ["Annotation", "MANE"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Annotation",
+        "MANE"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "displays": [
         {
           "type": "LinearBasicDisplay",
@@ -4981,7 +5955,9 @@
       "type": "FeatureTrack",
       "trackId": "homo_sapiens.grch38.regulatory_build.regulatory_features",
       "name": "Ensembl Regulatory build",
-      "assemblyNames": ["hg38"],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "Gff3Adapter",
         "uri": "https://ftp.ensembl.org/pub/release-113/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20240230.gff.gz"
@@ -4999,7 +5975,9 @@
         "type": "VcfAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/variants_GRCh38_sv_inv_sym_HGSVC2024v1.0_add_END_to_INFO.vcf"
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -5013,13 +5991,17 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "AlignmentsTrack",
       "trackId": "HG02031.final",
       "name": "HG02031_mother",
-      "assemblyNames": ["hg38"],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
@@ -5048,8 +6030,12 @@
       "type": "AlignmentsTrack",
       "trackId": "PAY22766-nanopore",
       "name": "Nanopore PAY22766 (6mA rep2)",
-      "assemblyNames": ["hg38"],
-      "category": ["Methylation"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Methylation"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PAY22766/basecalls.bam",
@@ -5066,8 +6052,12 @@
       "type": "AlignmentsTrack",
       "trackId": "PBA15131-nanopore",
       "name": "Nanopore PBA15131 (6mA rep1)",
-      "category": ["Methylation"],
-      "assemblyNames": ["hg38"],
+      "category": [
+        "Methylation"
+      ],
+      "assemblyNames": [
+        "hg38"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PBA15131/basecalls.bam",
@@ -5084,8 +6074,12 @@
       "type": "AlignmentsTrack",
       "trackId": "PBA15156-nanopore",
       "name": "Nanopore PBA15156 (native)",
-      "assemblyNames": ["hg38"],
-      "category": ["Methylation"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Methylation"
+      ],
       "adapter": {
         "type": "BamAdapter",
         "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PBA15156/basecalls.bam",
@@ -5097,6 +6091,55 @@
           "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
         }
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "400x.longread",
+      "name": "400x.longread",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "400x.longread.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "400x.longread.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+        }
+      },
+      "assemblyNames": [
+        "hg19"
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "400x.loadread.cram",
+      "name": "400x.loadread.cram",
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "400x.longread.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "400x.longread.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+        }
+      },
+      "assemblyNames": [
+        "hg19"
+      ]
     }
   ],
   "connections": [],
@@ -5113,13 +6156,17 @@
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg19-index",
       "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
-      "assemblyNames": ["hg19"]
+      "assemblyNames": [
+        "hg19"
+      ]
     },
     {
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg38-index",
       "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ix",
-      "assemblyNames": ["hg38"]
+      "assemblyNames": [
+        "hg38"
+      ]
     }
   ]
 }

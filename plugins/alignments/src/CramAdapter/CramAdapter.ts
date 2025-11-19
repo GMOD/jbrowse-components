@@ -122,18 +122,19 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         .pipe(toArray()),
     )
 
-    const sequence = seqChunks
-      .sort((a, b) => a.get('start') - b.get('start'))
-      .map(chunk => {
-        const chunkStart = chunk.get('start')
-        const chunkEnd = chunk.get('end')
-        const trimStart = Math.max(start - chunkStart, 0)
-        const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
-        const trimLength = trimEnd - trimStart
-        const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        return chunkSeq.slice(trimStart, trimStart + trimLength)
-      })
-      .join('')
+    seqChunks.sort((a, b) => a.get('start') - b.get('start'))
+    const parts = []
+    const chunksLength = seqChunks.length
+    for (let ci = 0; ci < chunksLength; ci++) {
+      const chunk = seqChunks[ci]!
+      const chunkStart = chunk.get('start')
+      const chunkEnd = chunk.get('end')
+      const trimStart = Math.max(start - chunkStart, 0)
+      const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
+      const chunkSeq = chunk.get('seq') || chunk.get('residues')
+      parts.push(chunkSeq.slice(trimStart, trimEnd))
+    }
+    const sequence = parts.join('')
 
     const qlen = end - start
     if (sequence.length !== qlen) {
@@ -262,35 +263,39 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           tagFilter,
           readName,
         } = filterBy || {}
+        const hasTagFilter = !!tagFilter
+        const hasReadNameFilter = !!readName
+        const tagFilterTag = tagFilter?.tag
+        const tagFilterValue = tagFilter?.value
+        const readGroups = samHeader.readGroups
+        const recordsLength = records.length
 
-        for (const record of records) {
+        for (let ri = 0; ri < recordsLength; ri++) {
+          const record = records[ri]!
           if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
             continue
           }
-          if (
-            tagFilter &&
-            filterTagValue(
-              tagFilter.tag === 'RG'
-                ? samHeader.readGroups?.[record.readGroupId]
-                : record.tags[tagFilter.tag],
-              tagFilter.value,
-            )
-          ) {
+          if (hasTagFilter) {
+            const tagValue =
+              tagFilterTag === 'RG'
+                ? readGroups?.[record.readGroupId]
+                : record.tags[tagFilterTag!]
+            if (filterTagValue(tagValue, tagFilterValue)) {
+              continue
+            }
+          }
+
+          if (hasReadNameFilter && record.readName !== readName) {
             continue
           }
 
-          if (readName && record.readName !== readName) {
-            continue
-          }
-
-          const ret = this.ultraLongFeatureCache.get(`${record.uniqueId}`)
+          const uniqueId = `${record.uniqueId}`
+          let ret = this.ultraLongFeatureCache.get(uniqueId)
           if (!ret) {
-            const elt = this.cramRecordToFeature(record)
-            this.ultraLongFeatureCache.set(`${record.uniqueId}`, elt)
-            observer.next(elt)
-          } else {
-            observer.next(ret)
+            ret = this.cramRecordToFeature(record)
+            this.ultraLongFeatureCache.set(uniqueId, ret)
           }
+          observer.next(ret)
         }
 
         observer.complete()

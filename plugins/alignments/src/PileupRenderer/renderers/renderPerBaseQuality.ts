@@ -27,8 +27,9 @@ export function renderPerBaseQuality({
   const start = feature.get('start')
   let soffset = 0 // sequence offset
   let roffset = 0 // reference offset
+  const cigarLen = cigarOps.length
 
-  for (let i = 0; i < cigarOps.length; i += 2) {
+  for (let i = 0; i < cigarLen; i += 2) {
     const len = +cigarOps[i]!
     const op = cigarOps[i + 1]!
     if (op === 'S' || op === 'I') {

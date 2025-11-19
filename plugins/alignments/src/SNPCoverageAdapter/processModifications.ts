@@ -35,6 +35,8 @@ export function processModifications({
   }
 
   const cigarOps = parseCigar(feature.get('CIGAR'))
+  const regionStart = region.start
+  const binsLength = bins.length
 
   // Get only the maximum probability modification at each position
   // this is a hole-y array, does not work with normal for loop
@@ -50,10 +52,11 @@ export function processModifications({
         return
       }
 
-      const epos = pos + fstart - region.start
-      if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-        if (bins[epos] === undefined) {
-          bins[epos] = {
+      const epos = pos + fstart - regionStart
+      if (epos >= 0 && epos < binsLength && pos + fstart < fend) {
+        let bin = bins[epos]
+        if (!bin) {
+          bin = bins[epos] = {
             depth: 0,
             readsCounted: 0,
             snps: {},
@@ -71,14 +74,14 @@ export function processModifications({
           }
         }
 
-        const bin = bins[epos]
         bin.refbase = regionSequence[epos]
 
         const s = 1 - sum(allProbs)
+        const modType = `mod_${type}`
         if (twoColor && s > max(allProbs)) {
           incWithProbabilities(bin, fstrand, 'nonmods', `nonmod_${type}`, s)
         } else {
-          incWithProbabilities(bin, fstrand, 'mods', `mod_${type}`, prob)
+          incWithProbabilities(bin, fstrand, 'mods', modType, prob)
         }
       }
     },
