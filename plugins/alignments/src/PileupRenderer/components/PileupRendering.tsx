@@ -10,6 +10,33 @@ import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
+const LARGE_INSERTION_THRESHOLD = 10
+
+function getItemLabel(item: FlatbushItem | undefined): string | undefined {
+  if (!item) {
+    return undefined
+  }
+
+  switch (item.type) {
+    case 'insertion':
+      return item.seq.length > LARGE_INSERTION_THRESHOLD
+        ? `${item.seq.length}bp insertion (click to see)`
+        : `Insertion: ${item.seq}`
+    case 'deletion':
+      return `Deletion: ${item.seq}bp`
+    case 'softclip':
+      return `Soft clip: ${item.seq}bp`
+    case 'hardclip':
+      return `Hard clip: ${item.seq}bp`
+    case 'modification':
+      return item.seq
+    case 'mismatch':
+      return `Mismatch: ${item.seq}`
+    default:
+      return undefined
+  }
+}
+
 const PileupRendering = observer(function (props: {
   blockKey: string
   displayModel: BaseLinearDisplayModel
@@ -141,21 +168,7 @@ const PileupRendering = observer(function (props: {
         )
         const item = search.length ? items[search[0]!] : undefined
         setItemUnderMouse(item)
-        const label = item
-          ? item.type === 'insertion'
-            ? item.seq.length > 10
-              ? `${item.seq.length}bp insertion (click to see)`
-              : `Insertion: ${item.seq}`
-            : item.type === 'deletion'
-              ? `Deletion: ${item.seq}bp`
-              : item.type === 'softclip'
-                ? `Soft clip: ${item.seq}bp`
-                : item.type === 'hardclip'
-                  ? `Hard clip: ${item.seq}bp`
-                  : item.type === 'modification'
-                    ? item.seq
-                    : `Mismatch: ${item.seq}`
-          : undefined
+        const label = getItemLabel(item)
         onMouseMove?.(
           event,
           displayModel.getFeatureOverlapping(blockKey, clientBp, offsetY),

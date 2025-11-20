@@ -44,9 +44,7 @@ const SetFeatureHeightDialog = lazy(
 const SetMaxHeightDialog = lazy(
   () => import('../shared/components/SetMaxHeightDialog'),
 )
-const MismatchInfoDialog = lazy(
-  () => import('./components/MismatchInfoDialog'),
-)
+const MismatchInfoDialog = lazy(() => import('./components/MismatchInfoDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
