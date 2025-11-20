@@ -11,6 +11,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
+import { isReadyOrHasError } from '../svgExportUtil'
 import SVGBackground from './SVGBackground'
 import SVGHeader from './SVGHeader'
 import SVGTracks from './SVGTracks'
@@ -46,7 +47,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const displayResults = await Promise.all(
     [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
-      await when(() => !display.renderProps().notReady || !!display.error)
+      await when(() => isReadyOrHasError(display))
       return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )

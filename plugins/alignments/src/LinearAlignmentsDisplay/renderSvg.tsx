@@ -1,3 +1,4 @@
+import { hasAnySubDisplayError } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/svgExportUtil.tsx'
 import { when } from 'mobx'
 
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -20,12 +21,8 @@ export async function renderSvg(
   opts: ExportSvgDisplayOptions,
 ) {
   const pileupHeight = self.height - self.SNPCoverageDisplay.height
-  await when(
-    () =>
-      !self.notReady() ||
-      !!self.SNPCoverageDisplay.error ||
-      !!self.PileupDisplay.error,
-  )
+  const subDisplays = [self.SNPCoverageDisplay, self.PileupDisplay]
+  await when(() => !self.notReady() || hasAnySubDisplayError(subDisplays))
   return (
     <>
       <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>

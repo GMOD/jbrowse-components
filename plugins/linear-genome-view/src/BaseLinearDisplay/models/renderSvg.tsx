@@ -7,6 +7,7 @@ import {
   getViewParams,
 } from '@jbrowse/core/util'
 
+import { ErrorBox } from '../../LinearGenomeView/svgExportUtil'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 import { calculateLabelPositions, getId } from './util'
 
@@ -24,14 +25,7 @@ export async function renderBaseLinearDisplaySvg(
   const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
 
   if (self.error) {
-    return (
-      <>
-        <rect x={0} y={0} width={width} height={height} fill="#ffdddd" />
-        <text x={10} y={height / 2} fill="#cc0000" fontSize={14}>
-          {`${self.error}`}
-        </text>
-      </>
-    )
+    return <ErrorBox error={self.error} width={width} height={height} />
   }
 
   const renderings = await Promise.all(
