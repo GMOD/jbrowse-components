@@ -173,6 +173,11 @@ test('export svg of synteny', async () => {
     fireEvent.click((await findAllByText('Export SVG', ...opts))[0]!)
     fireEvent.click(await findByText('Submit', ...opts))
 
-    await exportAndVerifySvg(findByTestId, findByText, 'synteny', delay)
+    await exportAndVerifySvg({
+      findByTestId,
+      findByText,
+      filename: 'synteny',
+      delay,
+    })
   })
 }, 45000)

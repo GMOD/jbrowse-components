@@ -185,16 +185,29 @@ export function mockFile404(
   )
 }
 
-export async function exportAndVerifySvg(
-  findByTestId: any,
-  findByText: any,
-  filename: string,
-  delay?: { timeout: number },
-) {
+export async function exportAndVerifySvg({
+  findByTestId,
+  findByText,
+  filename,
+  delay,
+  findAllByText,
+}: {
+  findByTestId: any
+  findByText: any
+  filename: string
+  delay?: { timeout: number }
+  findAllByText?: any
+}) {
   const actualDelay = delay || { timeout: 40000 }
   const opts = [{}, actualDelay]
   fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Export SVG', ...opts))
+
+  if (findAllByText) {
+    fireEvent.click((await findAllByText('Export SVG'))[0])
+  } else {
+    fireEvent.click(await findByText('Export SVG', ...opts))
+  }
+
   fireEvent.click(await findByText('Submit', ...opts))
 
   await waitFor(() => {
@@ -241,6 +254,66 @@ export async function testFileReload(config: {
         : (await findAllByTestId(config.expectedCanvas, ...opts))[0]!
     expectCanvasMatch(canvas)
   })
+}
+
+export async function openSpreadsheetView({
+  user,
+  screen,
+  fileUrl,
+  timeout,
+}: {
+  user: any
+  screen: any
+  fileUrl: string
+  timeout?: number
+}) {
+  const delay = { timeout: timeout || 50000 }
+  const opts = [{}, delay]
+  const { session } = await createView()
+
+  await user.click(await screen.findByText('File'))
+  await user.click(await screen.findByText('Add'))
+  await user.click(await screen.findByText('Spreadsheet view'))
+
+  fireEvent.change(await screen.findByTestId('urlInput', ...opts), {
+    target: { value: fileUrl },
+  })
+
+  await waitFor(() => {
+    expect(screen.getByTestId('open_spreadsheet')).not.toBeDisabled()
+  }, delay)
+
+  await user.click(await screen.findByTestId('open_spreadsheet'))
+  return { session }
+}
+
+export async function openViewWithFileInput({
+  menuPath,
+  fileUrl,
+  timeout,
+}: {
+  menuPath: string[]
+  fileUrl: string
+  timeout?: number
+}) {
+  const delay = { timeout: timeout || 40000 }
+  const result = await createView()
+  const { findByTestId, getByTestId, findByText } = result
+
+  for (const item of menuPath) {
+    fireEvent.click(await findByText(item))
+  }
+
+  fireEvent.change(await findByTestId('urlInput', {}, delay), {
+    target: { value: fileUrl },
+  })
+
+  await waitFor(() => {
+    expect(getByTestId('open_spreadsheet').closest('button')).not.toBeDisabled()
+  }, delay)
+
+  fireEvent.click(await findByTestId('open_spreadsheet'))
+  return result
 }
 
 export { default as JBrowse } from './TestingJBrowse'

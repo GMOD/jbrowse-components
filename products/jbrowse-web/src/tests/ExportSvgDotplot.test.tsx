@@ -98,5 +98,10 @@ test('export svg of dotplot', async () => {
     },
   })
 
-  await exportAndVerifySvg(findByTestId, findByText, 'dotplot', delay)
+  await exportAndVerifySvg({
+    findByTestId,
+    findByText,
+    filename: 'dotplot',
+    delay,
+  })
 }, 45000)

@@ -39,5 +39,10 @@ test('export svg of circular', async () => {
   fireEvent.click(await findByTestId('circular_track_select', ...opts))
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))
 
-  await exportAndVerifySvg(findByTestId, findByText, 'circular', delay)
+  await exportAndVerifySvg({
+    findByTestId,
+    findByText,
+    filename: 'circular',
+    delay,
+  })
 }, 45000)

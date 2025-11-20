@@ -31,5 +31,5 @@ test('export svg of lgv', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
 
-  await exportAndVerifySvg(findByTestId, findByText, 'lgv', delay)
+  await exportAndVerifySvg({ findByTestId, findByText, filename: 'lgv', delay })
 }, 45000)

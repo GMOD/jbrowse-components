@@ -38,12 +38,12 @@ test('export svg with 404 alignment track', async () => {
 
     await findAllByText(/HTTP 404/, {}, delay)
 
-    const svg = await exportAndVerifySvg(
+    const svg = await exportAndVerifySvg({
       findByTestId,
       findByText,
-      'lgv_error_alignment',
+      filename: 'lgv_error_alignment',
       delay,
-    )
+    })
     expect(svg).toContain('Error')
   })
 }, 45000)
@@ -57,12 +57,12 @@ test('export svg with 404 wiggle track', async () => {
 
     await findAllByText(/HTTP 404/, {}, delay)
 
-    const svg = await exportAndVerifySvg(
+    const svg = await exportAndVerifySvg({
       findByTestId,
       findByText,
-      'lgv_error_wiggle',
+      filename: 'lgv_error_wiggle',
       delay,
-    )
+    })
     expect(svg).toContain('Error')
   })
 }, 45000)
@@ -83,12 +83,12 @@ test('export svg with mixed working and 404 tracks', async () => {
 
     await findAllByText(/HTTP 404/, {}, delay)
 
-    const svg = await exportAndVerifySvg(
+    const svg = await exportAndVerifySvg({
       findByTestId,
       findByText,
-      'lgv_error',
+      filename: 'lgv_error',
       delay,
-    )
+    })
     expect(svg).toContain('Error')
   })
 }, 45000)
