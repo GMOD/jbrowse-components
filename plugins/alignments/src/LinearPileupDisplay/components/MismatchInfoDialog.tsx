@@ -25,6 +25,16 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const LengthDisplay = ({ length }: { length: string }) => {
+  const { classes } = useStyles()
+  return (
+    <div className={classes.section}>
+      <Typography className={classes.label}>Length:</Typography>
+      <Typography>{length}bp</Typography>
+    </div>
+  )
+}
+
 const MismatchInfoDialog = observer(function ({
   item,
   handleClose,
@@ -39,13 +49,12 @@ const MismatchInfoDialog = observer(function ({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-
   return (
     <Dialog
       open
       maxWidth="lg"
       onClose={handleClose}
-      title={'Info: ' + item.type}
+      title={`Info: ${item.type}`}
     >
       <DialogContent className={classes.root}>
         {item.type === 'insertion' && (
@@ -70,12 +79,7 @@ const MismatchInfoDialog = observer(function ({
           </div>
         )}
 
-        {item.type === 'deletion' && (
-          <div className={classes.section}>
-            <Typography className={classes.label}>Length:</Typography>
-            <Typography>{item.seq}bp</Typography>
-          </div>
-        )}
+        {item.type === 'deletion' && <LengthDisplay length={item.seq} />}
 
         {item.type === 'modification' && (
           <>
@@ -105,19 +109,9 @@ const MismatchInfoDialog = observer(function ({
           </div>
         )}
 
-        {item.type === 'softclip' && (
-          <div className={classes.section}>
-            <Typography className={classes.label}>Length:</Typography>
-            <Typography>{item.seq}bp</Typography>
-          </div>
-        )}
+        {item.type === 'softclip' && <LengthDisplay length={item.seq} />}
 
-        {item.type === 'hardclip' && (
-          <div className={classes.section}>
-            <Typography className={classes.label}>Length:</Typography>
-            <Typography>{item.seq}bp</Typography>
-          </div>
-        )}
+        {item.type === 'hardclip' && <LengthDisplay length={item.seq} />}
 
         <DialogActions>
           <Button

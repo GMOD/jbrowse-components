@@ -44,9 +44,7 @@ const SetFeatureHeightDialog = lazy(
 const SetMaxHeightDialog = lazy(
   () => import('../shared/components/SetMaxHeightDialog'),
 )
-const MismatchInfoDialog = lazy(
-  () => import('./components/MismatchInfoDialog'),
-)
+const MismatchInfoDialog = lazy(() => import('./components/MismatchInfoDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -460,20 +458,14 @@ export function SharedLinearPileupDisplayMixin(
               },
               featureId?: string,
             ) {
-              const session = getSession(self)
-              try {
-                session.queueDialog(handleClose => [
-                  MismatchInfoDialog,
-                  {
-                    item,
-                    featureId,
-                    handleClose,
-                  },
-                ])
-              } catch (e) {
-                console.error(e)
-                session.notifyError(`${e}`, e)
-              }
+              getSession(self).queueDialog(handleClose => [
+                MismatchInfoDialog,
+                {
+                  item,
+                  featureId,
+                  handleClose,
+                },
+              ])
             },
             // similar to click but opens a menu with further options
             async onFeatureContextMenu(_: unknown, featureId?: string) {
