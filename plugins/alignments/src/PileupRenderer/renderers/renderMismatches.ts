@@ -176,6 +176,11 @@ export function renderMismatches({
       const c = colorMap[mismatch.type]
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       fillRect(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
+      items.push({
+        type: mismatch.type,
+        seq: mismatch.base,
+      })
+      coords.push(pos - clipW, topPx, pos + clipW * 2, topPx + heightPx)
       if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
         const l = pos - clipW
         fillRect(ctx, l, topPx, clipW * 3, 1, canvasWidth)
@@ -210,7 +215,7 @@ export function renderMismatches({
         const txt = `${len}`
         items.push({
           type: 'insertion',
-          seq: len > 20 ? `${len}bp` : mismatch.insertedBases || 'unknown',
+          seq: mismatch.insertedBases || 'unknown',
         })
         if (bpPerPx > largeInsertionIndicatorScale) {
           coords.push(leftPx - 1, topPx, leftPx + 1, topPx + heightPx)
