@@ -4,6 +4,7 @@ import { LocalFile } from 'generic-filehandle2'
 import {
   createView,
   doBeforeEach,
+  expectCanvasMatch,
   generateReadBuffer,
   hts,
   mockConsole,
@@ -38,7 +39,9 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 
-    await findAllByTestId('box-test-vcf-604453', ...opts)
+    expectCanvasMatch(
+      (await findAllByTestId(/prerendered_canvas/, ...opts))[0]!,
+    )
   })
 }, 40000)
 
@@ -55,6 +58,8 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 
-    await findAllByTestId('box-test-vcf-604453', ...opts)
+    expectCanvasMatch(
+      (await findAllByTestId(/prerendered_canvas/, ...opts))[0]!,
+    )
   })
 }, 40000)

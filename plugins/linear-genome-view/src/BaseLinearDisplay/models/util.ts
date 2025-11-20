@@ -1,8 +1,15 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  clamp,
+  getContainingView,
+  getSession,
+  measureText,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from 'mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { BaseLinearDisplayModel } from '../model'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
@@ -66,4 +73,101 @@ export async function getFeatureDensityStatsPre(
       }
     },
   }) as Promise<FeatureDensityStats>
+}
+
+// Cache for text measurements to avoid re-measuring same text
+const textMeasureCache = new Map<string, number>()
+
+function getCachedMeasureText(text: string, fontSize: number): number {
+  const key = `${text}:${fontSize}`
+  let width = textMeasureCache.get(key)
+  if (width === undefined) {
+    width = measureText(text, fontSize)
+    // Keep cache size reasonable (max 500 entries)
+    if (textMeasureCache.size > 500) {
+      const firstKey = textMeasureCache.keys().next().value
+      if (firstKey) {
+        textMeasureCache.delete(firstKey)
+      }
+    }
+    textMeasureCache.set(key, width)
+  }
+  return width
+}
+
+export interface LabelData {
+  key: string
+  label: string
+  description: string
+  leftPos: number
+  topPos: number
+}
+
+/**
+ * Calculate positions for floating feature labels
+ * Labels are "floating" in that they clamp to the left edge of the viewport
+ * when the feature scrolls off-screen to the left
+ */
+export function calculateLabelPositions(
+  model: BaseLinearDisplayModel,
+  view: LinearGenomeViewModel,
+  assembly: Assembly | undefined,
+  offsetPx: number,
+): LabelData[] {
+  if (!assembly) {
+    return []
+  }
+
+  const fontSize = 11
+  const result: LabelData[] = []
+
+  for (const [key, val] of model.layoutFeatures.entries()) {
+    if (!val?.[4]) {
+      continue
+    }
+
+    const [left, , right, bottom, feature] = val
+    const { refName = '', description, label } = feature
+
+    if (!label) {
+      continue
+    }
+
+    const r0 = assembly.getCanonicalRefName(refName) || refName
+    const r = view.bpToPx({
+      refName: r0,
+      coord: left,
+    })?.offsetPx
+    const r2 = view.bpToPx({
+      refName: r0,
+      coord: right,
+    })?.offsetPx
+
+    if (r === undefined) {
+      continue
+    }
+
+    // Cache text measurement
+    const labelWidth = getCachedMeasureText(label, fontSize)
+
+    // Calculate clamped position - this is the "floating" behavior
+    // Labels stick to the left edge (0) when features scroll off-screen
+    const leftPos = clamp(
+      0,
+      r - offsetPx,
+      r2 !== undefined ? r2 - offsetPx - labelWidth : Number.POSITIVE_INFINITY,
+    )
+
+    const topPos = bottom - 14 * (+!!description + +!!label)
+
+    result.push({
+      key,
+      label,
+      description: description || '',
+      leftPos,
+      topPos,
+    })
+  }
+
+  return result
 }

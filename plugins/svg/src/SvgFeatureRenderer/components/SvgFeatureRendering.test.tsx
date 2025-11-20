@@ -25,7 +25,6 @@ test('no features', () => {
           maxHeightReached: false,
         })
       }
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       config={SvgRendererConfigSchema.create({})}
       bpPerPx={3}
     />,
@@ -43,7 +42,6 @@ test('one feature', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -75,7 +73,6 @@ test('click on one feature, and do not re-render', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -129,7 +126,6 @@ test('one feature (compact mode)', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -310,7 +306,6 @@ test('processed transcript (reducedRepresentation mode)', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -341,7 +336,6 @@ test('processed transcript', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -518,7 +512,6 @@ test('processed transcript (exons + impliedUTR)', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -1177,7 +1170,6 @@ test('gene with CDS children', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [

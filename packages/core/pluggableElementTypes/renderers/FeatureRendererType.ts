@@ -7,7 +7,6 @@ import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { iterMap } from '../../util'
 import SimpleFeature from '../../util/simpleFeature'
-import { checkStopToken } from '../../util/stopToken'
 
 import type {
   RenderArgs as ServerSideRenderArgs,
@@ -111,13 +110,12 @@ export default class FeatureRendererType extends ServerSideRendererType {
     renderArgs: RenderArgsDeserialized,
   ): Promise<Map<string, Feature>> {
     const pm = this.pluginManager
-    const { stopToken, regions, sessionId, adapterConfig } = renderArgs
+    const { regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    checkStopToken(stopToken)
 
     const requestRegions = regions.map(r => normalizeRegion(r))
     const featureObservable =
@@ -129,7 +127,6 @@ export default class FeatureRendererType extends ServerSideRendererType {
         : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
     const feats = await firstValueFrom(featureObservable.pipe(toArray()))
-    checkStopToken(stopToken)
     return new Map<string, Feature>(
       feats
         .filter(feat => this.featurePassesFilters(renderArgs, feat))

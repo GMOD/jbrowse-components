@@ -10,6 +10,7 @@ import {
   isFeature,
   isSelectionContainer,
   isSessionModelWithWidgets,
+  mergeIntervals,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
@@ -19,8 +20,8 @@ import {
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { autorun } from 'mobx'
-import { addDisposer, isAlive, types } from 'mobx-state-tree'
+import { autorun, when } from 'mobx'
+import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
@@ -48,14 +49,27 @@ export interface Layout {
   name: string
 }
 
-type LayoutRecord =
+export interface FloatingLabelData {
+  text: string
+  relativeY: number
+  color: string
+}
+
+export type LayoutRecord =
   | [number, number, number, number]
   | [
       number,
       number,
       number,
       number,
-      { label?: string; description?: string; refName: string },
+      {
+        label?: string
+        description?: string
+        refName: string
+        floatingLabels?: FloatingLabelData[]
+        totalFeatureHeight?: number
+        totalLayoutWidth?: number
+      },
     ]
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
@@ -375,6 +389,26 @@ function stateModelFactory() {
        */
       contextMenuItems(): MenuItem[] {
         const feat = self.contextMenuFeature
+        const { contextMenuFeature } = self
+        const singleTranscript =
+          contextMenuFeature?.get('type') === 'mRNA'
+            ? contextMenuFeature
+            : contextMenuFeature?.get('subfeatures')?.[0]
+        const exons =
+          singleTranscript
+            ?.get('subfeatures')
+            ?.filter(
+              f => f.get('type') === 'exon' || f.get('type') === 'CDS',
+            ) || []
+        const cds =
+          singleTranscript
+            ?.get('subfeatures')
+            ?.filter(
+              f => f.get('type') === 'exon' || f.get('type') === 'CDS',
+            ) || []
+
+        // some GFF3 features have CDS and no exon subfeatures
+        const subs = exons.length ? exons : cds.length ? cds : []
         return feat
           ? [
               {
@@ -399,6 +433,49 @@ function stateModelFactory() {
                   self.copyInfoToClipboard(feat)
                 },
               },
+              ...(exons.length > 0 && contextMenuFeature
+                ? [
+                    {
+                      label: 'Collapse introns',
+                      onClick: async () => {
+                        const view = getContainingView(self) as LGV
+                        const { assemblyManager } = getSession(self)
+                        const assemblyName = view.assemblyNames[0]
+                        const assembly = assemblyName
+                          ? assemblyManager.get(assemblyName)
+                          : undefined
+                        const r0 = contextMenuFeature.get('refName')
+                        const refName = assembly?.getCanonicalRefName(r0) || r0
+                        const w = 100
+
+                        // need to strip ID before copying view snap
+                        const { id, ...rest } = getSnapshot(view)
+                        const newView = getSession(self).addView(
+                          'LinearGenomeView',
+                          {
+                            ...rest,
+                            tracks: rest.tracks.map(track => {
+                              const { id, ...rest } = track
+                              return { ...rest }
+                            }),
+                            displayedRegions: mergeIntervals(
+                              subs.map(f => ({
+                                refName,
+                                start: f.get('start') - w,
+                                end: f.get('end') + w,
+                                assemblyName: view.assemblyNames[0],
+                              })),
+                              w,
+                            ),
+                          },
+                        ) as LGV
+                        await when(() => newView.initialized)
+
+                        newView.showAllRegions()
+                      },
+                    },
+                  ]
+                : []),
             ]
           : []
       },
