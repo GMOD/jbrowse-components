@@ -18,7 +18,7 @@ export async function setupPage(browser) {
 }
 
 export function buildUrl(port, region, track) {
-  return `http://localhost:${port}/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=${region}&tracks=${track}`
+  return `http://localhost/jb2/port${port}/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=${region}&tracks=${track}`
 }
 
 export async function waitForCanvas(page, timeout = 120000) {

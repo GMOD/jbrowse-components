@@ -64,12 +64,12 @@ build_repo() {
   echo ""
 }
 
-# Function to start a production server
-start_server() {
+# Function to deploy build to nginx directory
+deploy_build() {
   local repo_path=$1
   local port=$2
   local label=$3
-  local log_file="$LOG_DIR/server_${port}.log"
+  local nginx_dir="/var/www/html/jb2/port${port}"
 
   if [ ! -d "$repo_path" ]; then
     echo "⚠️  Skipping $label: Directory not found ($repo_path)"
@@ -82,62 +82,45 @@ start_server() {
     return 1
   fi
 
-  echo "Starting $label on port $port..."
-
-  # Kill any existing process on this port
-  lsof -ti:$port | xargs kill -9 2>/dev/null || true
-
-  cd "$build_dir"
-
-  # Start simple HTTP server in background
-  npx --yes http-server -p $port --silent > "$log_file" 2>&1 &
-  local pid=$!
-
-  echo "  PID: $pid"
-  echo "  Log: $log_file"
-  echo "  URL: http://localhost:$port"
-  echo ""
-
-  # Store PID for later cleanup
-  echo $pid >> "$LOG_DIR/server_pids.txt"
-}
-
-# Function to stop all servers
-stop_servers() {
-  local pid_file="$LOG_DIR/server_pids.txt"
-
-  echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "🛑 Stopping servers..."
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-  # Kill by PID file
-  if [ -f "$pid_file" ]; then
-    while read pid; do
-      if kill -0 $pid 2>/dev/null; then
-        echo "  Killing PID $pid"
-        kill $pid 2>/dev/null || kill -9 $pid 2>/dev/null
-      fi
-    done < "$pid_file"
-    rm "$pid_file"
+  local test_data_config="$repo_path/test_data/hg19mod.json"
+  if [ ! -f "$test_data_config" ]; then
+    echo "⚠️  Skipping $label: test_data/hg19mod.json not found at $test_data_config"
+    return 1
   fi
 
-  # Kill by port for all configured repositories
-  for i in "${!REPOS[@]}"; do
-    port="${PORTS[$i]}"
-    if lsof -ti:$port > /dev/null 2>&1; then
-      echo "  Killing process on port $port"
-      lsof -ti:$port | xargs kill -9 2>/dev/null || true
-    fi
-  done
+  echo "Deploying $label to $nginx_dir..."
 
-  echo "✅ All servers stopped"
+  # Remove old directory and create fresh one
+  sudo rm -rf "$nginx_dir"
+  sudo mkdir -p "$nginx_dir"
+
+  # Copy build to nginx directory
+  sudo cp -r "$build_dir"/* "$nginx_dir/"
+
+  # Copy test_data
+  echo "  Copying test_data..."
+  sudo cp -r "$repo_path/test_data" "$nginx_dir/"
+
+  echo "  URL: http://localhost/jb2/port${port}/"
+  echo ""
 }
 
-# Trap to ensure servers are stopped on exit
-trap stop_servers EXIT
+# Clear out old jb2 directory
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🧹 Clearing old benchmark deployments"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+sudo rm -rf /var/www/html/jb2
+sudo mkdir -p /var/www/html/jb2
+echo "✅ Cleanup complete"
+echo ""
 
-# Step 1: Build production bundles
+# Step 1: Setup test data
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📦 Setting up test data"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"$BENCHMARKS_DIR/setup_test_data.sh"
+
+# Step 2: Build production bundles
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔨 Building production bundles"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -146,36 +129,19 @@ for i in "${!REPOS[@]}"; do
   build_repo "${REPOS[$i]}" "${LABELS[$i]}"
 done
 
-# Step 2: Start servers
+# Step 3: Deploy builds to nginx
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🚀 Starting production servers"
+echo "📦 Deploying builds to nginx"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Clean up old PID file
-rm -f "$LOG_DIR/server_pids.txt"
-
 for i in "${!REPOS[@]}"; do
-  start_server "${REPOS[$i]}" "${PORTS[$i]}" "${LABELS[$i]}"
-done
-
-echo "⏳ Waiting 5 seconds for servers to be ready..."
-sleep 5
-
-# Check if servers are responding
-for i in "${!REPOS[@]}"; do
-  port="${PORTS[$i]}"
-  label="${LABELS[$i]}"
-  if curl -s "http://localhost:$port" > /dev/null 2>&1; then
-    echo "✅ Port $port ($label) is responding"
-  else
-    echo "⚠️  Port $port ($label) may not be ready yet"
-  fi
+  deploy_build "${REPOS[$i]}" "${PORTS[$i]}" "${LABELS[$i]}"
 done
 
 echo ""
 
-# Step 3: Run end-to-end benchmarks
+# Step 4: Run end-to-end benchmarks
 cd "$BENCHMARKS_DIR/end-to-end"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
