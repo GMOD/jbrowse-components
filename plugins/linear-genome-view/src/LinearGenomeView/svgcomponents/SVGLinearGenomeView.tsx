@@ -46,7 +46,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const displayResults = await Promise.all(
     [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
-      await when(() => !display.renderProps().notReady)
+      await when(() => !display.renderProps().notReady || display.error)
       return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )

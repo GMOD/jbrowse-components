@@ -14,7 +14,11 @@ export async function renderSvg(
   opts: ExportSvgDisplayOptions,
   superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
 ) {
-  await when(() => !!self.stats && !!self.regionCannotBeRenderedText)
+  await when(
+    () =>
+      (!!self.stats && !!self.regionCannotBeRenderedText) ||
+      !!(self as { error?: unknown }).error,
+  )
   const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
   return (
     <>

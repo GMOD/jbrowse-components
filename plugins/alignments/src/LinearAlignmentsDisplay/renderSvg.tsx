@@ -4,6 +4,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
 
 interface SubDisplay {
   height: number
+  error?: unknown
   renderSvg(opts: ExportSvgDisplayOptions): Promise<React.ReactNode>
 }
 
@@ -19,7 +20,12 @@ export async function renderSvg(
   opts: ExportSvgDisplayOptions,
 ) {
   const pileupHeight = self.height - self.SNPCoverageDisplay.height
-  await when(() => !self.notReady())
+  await when(
+    () =>
+      !self.notReady() ||
+      !!self.SNPCoverageDisplay.error ||
+      !!self.PileupDisplay.error,
+  )
   return (
     <>
       <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
