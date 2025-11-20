@@ -16,6 +16,7 @@ module.exports = function webpackConfig(config) {
   // Usage: PROFILING_BUILD=true yarn build
   if (process.env.PROFILING_BUILD === 'true') {
     console.log('🔬 PROFILING BUILD: Minification disabled for better profiling results')
+    config.optimization = config.optimization || {}
     config.optimization.minimize = false
   }
 
