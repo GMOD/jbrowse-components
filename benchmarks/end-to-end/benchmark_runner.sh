@@ -19,6 +19,7 @@ run_benchmark() {
     --runs "$HYPERFINE_RUNS"
     --export-json "$result_file"
     --export-markdown "$export_markdown"
+    --show-output
   )
 
   # Add a command for each configured repository
