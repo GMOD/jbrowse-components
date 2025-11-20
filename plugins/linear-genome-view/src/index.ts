@@ -107,12 +107,6 @@ export {
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util'
 export {
-  hasAnyError,
-  hasError,
-  whenReadyOrAnyError,
-  whenReadyOrError,
-} from './LinearGenomeView/util/svgExportUtils'
-export {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'

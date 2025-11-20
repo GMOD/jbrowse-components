@@ -1,5 +1,4 @@
 import { getContainingView } from '@jbrowse/core/util'
-import { whenReadyOrError } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import YScaleBars from './components/YScaleBars'
@@ -15,12 +14,7 @@ export async function renderSvg(
   opts: ExportSvgDisplayOptions,
   superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
 ) {
-  await when(
-    whenReadyOrError(
-      () => !!self.stats && !!self.regionCannotBeRenderedText,
-      self,
-    ),
-  )
+  await when(() => !self.renderProps().notReady || !!self.error)
   const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
   return (
     <>
