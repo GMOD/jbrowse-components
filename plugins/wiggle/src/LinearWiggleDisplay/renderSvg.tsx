@@ -1,8 +1,8 @@
 import { getContainingView } from '@jbrowse/core/util'
-import { isReadyOrHasError } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/svgExportUtil.tsx'
 import { when } from 'mobx'
 
 import YScaleBar from '../shared/YScaleBar'
+import { isReadyOrHasError } from '../svgExportUtil'
 
 import type { WiggleDisplayModel } from './model'
 import type {

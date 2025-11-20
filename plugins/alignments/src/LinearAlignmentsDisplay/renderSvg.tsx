@@ -1,5 +1,6 @@
-import { hasAnySubDisplayError } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/svgExportUtil.tsx'
 import { when } from 'mobx'
+
+import { hasAnySubDisplayError } from '../svgExportUtil'
 
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 

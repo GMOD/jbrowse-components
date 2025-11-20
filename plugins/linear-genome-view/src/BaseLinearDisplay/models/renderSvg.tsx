@@ -7,9 +7,9 @@ import {
   getViewParams,
 } from '@jbrowse/core/util'
 
-import { ErrorBox } from '../../LinearGenomeView/svgExportUtil'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 import { calculateLabelPositions, getId } from './util'
+import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { ExportSvgOptions } from '../../LinearGenomeView/types'
