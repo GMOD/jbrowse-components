@@ -14,8 +14,8 @@ import {
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
-import { colord } from './colord'
 import { coarseStripHTML } from './coarseStripHTML'
+import { colord } from './colord'
 import { checkStopToken } from './stopToken'
 import {
   isDisplayModel,
@@ -1234,7 +1234,6 @@ export function getStr(obj: unknown) {
       : JSON.stringify(obj)
     : String(obj)
 }
-
 
 // based on autolink-js, license MIT
 // https://github.com/bryanwoods/autolink-js/blob/1418049970152c56ced73d43dcc62d80b320fb71/autolink.js#L9
