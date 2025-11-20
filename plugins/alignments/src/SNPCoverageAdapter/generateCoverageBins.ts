@@ -1,7 +1,7 @@
 import { sum } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import { processDepth } from './processDepth'
+import { processDepthOptimized } from './processDepthOptimized'
 import { processMismatches } from './processMismatches'
 import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
@@ -28,6 +28,14 @@ export async function generateCoverageBins({
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
 
+  // Use optimized mosdepth-style algorithm for depth calculation
+  // This processes all features at once instead of per-feature iteration
+  processDepthOptimized({
+    features,
+    bins,
+    region,
+  })
+
   let regionSequence
   let start = performance.now()
   for (const feature of features) {
@@ -35,11 +43,6 @@ export async function generateCoverageBins({
       checkStopToken(stopToken)
       start = performance.now()
     }
-    processDepth({
-      feature,
-      bins,
-      region,
-    })
 
     if (colorBy?.type === 'modifications') {
       regionSequence ??=
