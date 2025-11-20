@@ -16,9 +16,8 @@ echo ""
 echo "Testing branches:"
 for i in "${!REPOS[@]}"; do
   idx=$((i + 1))
-  port_var="PORT${idx}"
   label_var="LABEL${idx}"
-  echo "  - ${!label_var} (port ${!port_var})"
+  echo "  - ${!label_var}"
 done
 echo ""
 echo "Configuration: ${HYPERFINE_WARMUP} warmup runs, ${HYPERFINE_RUNS} benchmark runs"

@@ -43,10 +43,14 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
+      const t0 = performance.now()
       const { subadapter } = await this.configure()
+      const t1 = performance.now()
       const features = await firstValueFrom(
         subadapter.getFeatures(region, opts).pipe(toArray()),
       )
+      const t2 = performance.now()
+      console.log(`[PERF] BAM/CRAM fetch: ${(t2 - t1).toFixed(2)}ms for ${features.length} features in region ${region.refName}:${region.start}-${region.end}`)
 
       const { bins, skipmap } = await generateCoverageBins({
         features,
@@ -54,6 +58,8 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         opts,
         fetchSequence: (region: Region) => this.fetchSequence(region),
       })
+      const t3 = performance.now()
+      console.log(`[PERF] TOTAL SNPCoverageAdapter.getFeatures: ${(t3 - t0).toFixed(2)}ms`)
 
       let index = 0
       for (const bin of bins) {

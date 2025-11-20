@@ -36,8 +36,13 @@ export function processDepthOptimized({
   const strandDelta0 = new Int32Array(regionLength)
   const strandDelta1 = new Int32Array(regionLength)
 
-  // Pass 1: Record start/end events for all reads
+  // Pass 1: Count reads active at region start and record events within region
   // This is O(N) where N = number of reads
+  let initialDepth = 0
+  let initialStrandNeg1 = 0
+  let initialStrand0 = 0
+  let initialStrand1 = 0
+
   for (const feature of features) {
     const fstart = feature.get('start')
     const fend = feature.get('end')
@@ -47,7 +52,19 @@ export function processDepthOptimized({
     const startIdx = fstart - region.start
     const endIdx = fend - region.start
 
-    // Increment at start position (read begins contributing to depth)
+    // Check if read is already active at region start (starts before region)
+    if (startIdx < 0 && endIdx > 0) {
+      initialDepth++
+      if (fstrand === -1) {
+        initialStrandNeg1++
+      } else if (fstrand === 0) {
+        initialStrand0++
+      } else {
+        initialStrand1++
+      }
+    }
+
+    // Increment at start position if read starts within region
     if (startIdx >= 0 && startIdx < regionLength) {
       depthDelta[startIdx]!++
       if (fstrand === -1) {
@@ -59,7 +76,7 @@ export function processDepthOptimized({
       }
     }
 
-    // Decrement at end position (read stops contributing to depth)
+    // Decrement at end position if read ends within region
     // Note: endIdx is exclusive, matching the original behavior where
     // the loop condition is "j < fend + 1" with "if (j !== fend)"
     if (endIdx >= 0 && endIdx < regionLength) {
@@ -76,10 +93,11 @@ export function processDepthOptimized({
 
   // Pass 2: Compute cumulative sum to get actual depth values
   // This is O(R) where R = region length
-  let depth = 0
-  let strandNeg1 = 0
-  let strand0 = 0
-  let strand1 = 0
+  // Initialize with reads that were already active at region start
+  let depth = initialDepth
+  let strandNeg1 = initialStrandNeg1
+  let strand0 = initialStrand0
+  let strand1 = initialStrand1
 
   for (let i = 0; i < regionLength; i++) {
     // Update running totals using difference array
@@ -88,25 +106,24 @@ export function processDepthOptimized({
     strand0 += strandDelta0[i]!
     strand1 += strandDelta1[i]!
 
-    // Only create bins where there's actual coverage
-    // This maintains the sparse array behavior of the original
-    if (depth > 0) {
-      bins[i] = {
-        depth,
-        readsCounted: depth,
-        ref: {
-          probabilities: [],
-          entryDepth: depth,
-          '-1': strandNeg1,
-          '0': strand0,
-          '1': strand1,
-        },
-        snps: {},
-        mods: {},
-        nonmods: {},
-        delskips: {},
-        noncov: {},
-      }
+    // Create bins for all positions (even with 0 depth)
+    // This is needed because mismatches (deletions/skips) can modify bins
+    // The original code had similar behavior - bins were created on-demand
+    bins[i] = {
+      depth,
+      readsCounted: depth,
+      ref: {
+        probabilities: [],
+        entryDepth: depth,
+        '-1': strandNeg1,
+        '0': strand0,
+        '1': strand1,
+      },
+      snps: {},
+      mods: {},
+      nonmods: {},
+      delskips: {},
+      noncov: {},
     }
   }
 }

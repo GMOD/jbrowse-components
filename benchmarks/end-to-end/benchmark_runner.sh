@@ -24,11 +24,10 @@ run_benchmark() {
   # Add a command for each configured repository
   for i in "${!REPOS[@]}"; do
     idx=$((i + 1))
-    port_var="PORT${idx}"
     label_var="LABEL${idx}"
     hyperfine_args+=(
-      --command-name "${!label_var} (port ${!port_var})"
-      "BENCHMARK_PORT=${!port_var} BENCHMARK_LABEL=${!label_var} node $benchmark_script"
+      --command-name "${!label_var}"
+      "BENCHMARK_LABEL=${!label_var} node $benchmark_script"
     )
   done
 

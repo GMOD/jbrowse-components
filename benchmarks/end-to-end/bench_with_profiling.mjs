@@ -89,7 +89,7 @@ async function runBenchmark(url, label, outputFile) {
     await new Promise(resolve => setTimeout(resolve, 3000))
 
     // Take screenshot
-    const screenshotPath = `screenshots/${label.toLowerCase().replace(/\s+/g, '_')}_${process.argv[3]}_${process.argv[2]}_success.png`
+    const screenshotPath = `screenshots/${label.toLowerCase().replace(/\s+/g, '_')}_${process.argv[2]}_${process.argv[2]}_success.png`
     await page.screenshot({ path: screenshotPath, fullPage: true })
     console.log(`  ✓ Screenshot saved to: ${screenshotPath}`)
 
@@ -188,7 +188,7 @@ async function runBenchmark(url, label, outputFile) {
 }
 
 const testType = process.argv[2] // 'longread' or 'shortread'
-const coverage = process.argv[3] || '200x'
+const coverage = process.argv[2] || '200x'
 const numRuns = parseInt(process.env.BENCHMARK_RUNS || '5', 10)
 
 // Get labels from environment or use defaults

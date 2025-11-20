@@ -6,13 +6,12 @@ const CONFIG = {
   region: 'chr22_mask:25,101..184,844',
 }
 
-const PORT = process.env.BENCHMARK_PORT || process.argv[2] || '3000'
-const LABEL = process.env.BENCHMARK_LABEL || process.argv[3] || 'test'
+const LABEL = process.env.BENCHMARK_LABEL || process.argv[2] || 'test'
 
-console.log(`Testing ${CONFIG.name} on ${LABEL} (port ${PORT})...`)
+console.log(`Testing ${CONFIG.name} on ${LABEL}...`)
 
 try {
-  const results = await runLargeRegionBenchmark(CONFIG, PORT, LABEL)
+  const results = await runLargeRegionBenchmark(CONFIG, LABEL)
   console.log(`MEMORY_MB=${results.memory.toFixed(2)}`)
   process.exit(0)
 } catch (error) {

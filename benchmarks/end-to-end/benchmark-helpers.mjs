@@ -17,8 +17,10 @@ export async function setupPage(browser) {
   return page
 }
 
-export function buildUrl(port, region, track) {
-  return `http://localhost/jb2/port${port}/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=${region}&tracks=${track}`
+export function buildUrl(branchName, region, track) {
+  // Convert branch name to URL-safe path (replace / with -)
+  const pathSegment = branchName.replace(/\//g, '-')
+  return `http://localhost/jb2/${pathSegment}/?config=test_data%2Fhg19mod.json&assembly=hg19mod&loc=${region}&tracks=${track}`
 }
 
 export async function waitForCanvas(page, timeout = 120000) {
@@ -106,12 +108,12 @@ export async function getMetrics(page) {
   }
 }
 
-export async function runSimpleBenchmark(config, port, branchName) {
+export async function runSimpleBenchmark(config, branchName) {
   const browser = await launchBrowser()
 
   try {
     const page = await setupPage(browser)
-    const url = buildUrl(port, config.region, config.track)
+    const url = buildUrl(branchName, config.region, config.track)
     console.log(`  Loading: ${url}`)
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 120000 })
@@ -140,12 +142,12 @@ export async function runSimpleBenchmark(config, port, branchName) {
   }
 }
 
-export async function runLargeRegionBenchmark(config, port, branchName) {
+export async function runLargeRegionBenchmark(config, branchName) {
   const browser = await launchBrowser()
 
   try {
     const page = await setupPage(browser)
-    const url = buildUrl(port, config.region, config.track)
+    const url = buildUrl(branchName, config.region, config.track)
     console.log(`  Loading: ${url}`)
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 120000 })

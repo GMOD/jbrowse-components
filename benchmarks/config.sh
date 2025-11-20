@@ -16,8 +16,8 @@ BENCHMARK_REPOS="${BENCHMARK_REPOS:-$DEFAULT_REPOS}"
 # Convert space-separated repos to array
 IFS=' ' read -r -a REPOS <<< "$BENCHMARK_REPOS"
 
-# Starting port (will increment for each repo)
-START_PORT=${START_PORT:-3000}
+# Nginx base path for deployments
+export NGINX_BASE_PATH="/var/www/html/jb2"
 
 # Auto-detect branch names from git
 get_branch_name() {
@@ -29,18 +29,15 @@ get_branch_name() {
   fi
 }
 
-# Build arrays of ports, branches, and labels
-PORTS=()
+# Build arrays of branches and labels
 BRANCHES=()
 LABELS=()
 
 for i in "${!REPOS[@]}"; do
   repo="${REPOS[$i]}"
-  port=$((START_PORT + i))
   branch=$(get_branch_name "$repo")
   label="${branch}"
 
-  PORTS+=("$port")
   BRANCHES+=("$branch")
   LABELS+=("$label")
 done
@@ -52,7 +49,6 @@ export REPO_COUNT=${#REPOS[@]}
 for i in "${!REPOS[@]}"; do
   idx=$((i + 1))
   export "REPO${idx}=${REPOS[$i]}"
-  export "PORT${idx}=${PORTS[$i]}"
   export "BRANCH${idx}=${BRANCHES[$i]}"
   export "LABEL${idx}=${LABELS[$i]}"
 done

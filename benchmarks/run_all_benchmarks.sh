@@ -37,9 +37,8 @@ echo ""
 echo "Comparing $REPO_COUNT repositories:"
 for i in "${!REPOS[@]}"; do
   idx=$((i + 1))
-  port_var="PORT${idx}"
   label_var="LABEL${idx}"
-  echo "   - Port ${!port_var}: ${!label_var}"
+  echo "   - ${!label_var}"
 done
 echo ""
 echo "Hyperfine configuration:"
@@ -67,9 +66,10 @@ build_repo() {
 # Function to deploy build to nginx directory
 deploy_build() {
   local repo_path=$1
-  local port=$2
-  local label=$3
-  local nginx_dir="/var/www/html/jb2/port${port}"
+  local label=$2
+  # Convert label to URL-safe directory name (replace / with -)
+  local safe_label=$(echo "$label" | tr '/' '-')
+  local nginx_dir="${NGINX_BASE_PATH}/${safe_label}"
 
   if [ ! -d "$repo_path" ]; then
     echo "⚠️  Skipping $label: Directory not found ($repo_path)"
@@ -101,7 +101,7 @@ deploy_build() {
   echo "  Copying test_data..."
   sudo cp -r "$repo_path/test_data" "$nginx_dir/"
 
-  echo "  URL: http://localhost/jb2/port${port}/"
+  echo "  URL: http://localhost/jb2/${safe_label}/"
   echo ""
 }
 
@@ -136,7 +136,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 for i in "${!REPOS[@]}"; do
-  deploy_build "${REPOS[$i]}" "${PORTS[$i]}" "${LABELS[$i]}"
+  deploy_build "${REPOS[$i]}" "${LABELS[$i]}"
 done
 
 echo ""

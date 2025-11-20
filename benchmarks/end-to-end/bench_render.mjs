@@ -2,7 +2,7 @@ import fs from 'fs'
 
 import puppeteer from 'puppeteer'
 ;(async () => {
-  const timeoutToken = `${process.argv[3]}.timeout`
+  const timeoutToken = `${process.argv[2]}.timeout`
   // if (checkFileExistsSync(timeoutToken)) {
   //   throw new Error('Timed out already')
   // }
@@ -45,12 +45,12 @@ import puppeteer from 'puppeteer'
 
     // const fps = await page.evaluate(() => JSON.stringify(window.fps))
 
-    // fs.appendFileSync(process.argv[3], fps + '\n')
+    // fs.appendFileSync(process.argv[2], fps + '\n')
     // fs.appendFileSync(
     //   process.argv[4],
     //   JSON.stringify(await page.metrics()) + '\n',
     // )
-    // await page.screenshot({ path: process.argv[3] + '.png' })
+    // await page.screenshot({ path: process.argv[2] + '.png' })
   } catch (e) {
     fs.appendFileSync(timeoutToken, '')
   }

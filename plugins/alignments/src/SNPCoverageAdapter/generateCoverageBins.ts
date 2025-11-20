@@ -22,6 +22,7 @@ export async function generateCoverageBins({
   opts: Opts
   fetchSequence: (arg: Region) => Promise<string>
 }) {
+  const t0 = performance.now()
   const { stopToken, colorBy } = opts
   const skipmap = {} as SkipMap
   const bins = [] as PreBaseCoverageBin[]
@@ -30,14 +31,18 @@ export async function generateCoverageBins({
 
   // Use optimized mosdepth-style algorithm for depth calculation
   // This processes all features at once instead of per-feature iteration
+  const t1 = performance.now()
   processDepthOptimized({
     features,
     bins,
     region,
   })
+  const t2 = performance.now()
+  console.log(`[PERF] processDepthOptimized: ${(t2 - t1).toFixed(2)}ms for ${features.length} features`)
 
   let regionSequence
   let start = performance.now()
+  const t3 = performance.now()
   for (const feature of features) {
     if (performance.now() - start > 400) {
       checkStopToken(stopToken)
@@ -76,7 +81,10 @@ export async function generateCoverageBins({
     }
     processMismatches({ feature, skipmap, bins, region })
   }
+  const t4 = performance.now()
+  console.log(`[PERF] processMismatches loop: ${(t4 - t3).toFixed(2)}ms for ${features.length} features`)
 
+  const t5 = performance.now()
   for (const bin of bins) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (bin) {
@@ -108,6 +116,10 @@ export async function generateCoverageBins({
       )
     }
   }
+  const t6 = performance.now()
+  const totalTime = t6 - t0
+  console.log(`[PERF] postProcess bins: ${(t6 - t5).toFixed(2)}ms`)
+  console.log(`[PERF] TOTAL generateCoverageBins: ${totalTime.toFixed(2)}ms`)
 
   return {
     bins,
