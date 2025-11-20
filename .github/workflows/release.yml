@@ -4,10 +4,15 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+
 jobs:
   createrelease:
     name: Create release tag and JBrowse web release artifacts
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Create Release
         id: create_release
