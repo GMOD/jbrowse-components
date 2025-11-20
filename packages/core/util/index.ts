@@ -14,6 +14,7 @@ import {
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
+import { coarseStripHTML } from './coarseStripHTML'
 import { colord } from './colord'
 import { checkStopToken } from './stopToken'
 import {
@@ -41,6 +42,7 @@ export * from './types'
 export * from './when'
 export * from './range'
 export * from './dedupe'
+export * from './coarseStripHTML'
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
@@ -1231,11 +1233,6 @@ export function getStr(obj: unknown) {
       ? getUriLink(obj)
       : JSON.stringify(obj)
     : String(obj)
-}
-
-// tries to measure grid width without HTML tags included
-export function coarseStripHTML(s: string) {
-  return s.replaceAll(/(<([^>]+)>)/gi, '')
 }
 
 // based on autolink-js, license MIT
