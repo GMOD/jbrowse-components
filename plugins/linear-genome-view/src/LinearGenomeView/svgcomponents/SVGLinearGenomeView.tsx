@@ -15,6 +15,7 @@ import SVGBackground from './SVGBackground'
 import SVGHeader from './SVGHeader'
 import SVGTracks from './SVGTracks'
 import { totalHeight } from './util'
+import { whenReadyOrError } from '../util/svgExportUtils'
 
 import type { LinearGenomeViewModel } from '..'
 import type { ExportSvgOptions } from '../types'
@@ -46,7 +47,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const displayResults = await Promise.all(
     [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
-      await when(() => !display.renderProps().notReady || display.error)
+      await when(whenReadyOrError(() => !display.renderProps().notReady, display))
       return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )

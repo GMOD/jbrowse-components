@@ -1,6 +1,7 @@
 import { when } from 'mobx'
 
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import { whenReadyOrAnyError } from '@jbrowse/plugin-linear-genome-view'
 
 interface SubDisplay {
   height: number
@@ -21,10 +22,11 @@ export async function renderSvg(
 ) {
   const pileupHeight = self.height - self.SNPCoverageDisplay.height
   await when(
-    () =>
-      !self.notReady() ||
-      !!self.SNPCoverageDisplay.error ||
-      !!self.PileupDisplay.error,
+    whenReadyOrAnyError(
+      () => !self.notReady(),
+      self.SNPCoverageDisplay,
+      self.PileupDisplay,
+    ),
   )
   return (
     <>

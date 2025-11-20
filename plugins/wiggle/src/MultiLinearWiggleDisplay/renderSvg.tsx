@@ -8,6 +8,7 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import { whenReadyOrError } from '@jbrowse/plugin-linear-genome-view'
 
 export async function renderSvg(
   self: WiggleDisplayModel,
@@ -15,9 +16,10 @@ export async function renderSvg(
   superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
 ) {
   await when(
-    () =>
-      (!!self.stats && !!self.regionCannotBeRenderedText) ||
-      !!(self as { error?: unknown }).error,
+    whenReadyOrError(
+      () => !!self.stats && !!self.regionCannotBeRenderedText,
+      self,
+    ),
   )
   const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
   return (
