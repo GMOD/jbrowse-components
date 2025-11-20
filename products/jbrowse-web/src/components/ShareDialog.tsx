@@ -111,12 +111,25 @@ const ShareDialog = observer(function ({
 
           {currentSetting === 'short' ? (
             error ? (
-              <ErrorMessage
-                error={error}
-                onReset={() => {
-                  setError(undefined)
-                }}
-              />
+              <>
+                <ErrorMessage
+                  error={error}
+                  onReset={() => {
+                    setError(undefined)
+                  }}
+                />
+                {String(error).includes(
+                  'Item size has exceeded the maximum allowed size',
+                ) ? (
+                  <DialogContentText sx={{ mt: 2 }}>
+                    This is a limitation of the URL shortener. Please use{' '}
+                    <strong>File → Export session</strong> to export the session
+                    to a file and share the file with another user, who can
+                    import the session with <strong>File → Import session</strong>
+                    .
+                  </DialogContentText>
+                ) : null}
+              </>
             ) : loading ? (
               <Typography>Generating short URL...</Typography>
             ) : (
