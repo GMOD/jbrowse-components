@@ -4375,6 +4375,59 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox_repeats_plus",
       "type": "QuantitativeTrack",
     },
+    {
+      "adapter": {
+        "bamLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sv.renamed.bam",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox-sv.renamed.bam.bai",
+          },
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox-sv.renamed-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox-sv.renamed-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox-sv.renamed-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox-sv.renamed-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox-sv.renamed-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-sv.renamed",
+      "trackId": "volvox-sv.renamed",
+      "type": "AlignmentsTrack",
+    },
   ],
 }
 `;

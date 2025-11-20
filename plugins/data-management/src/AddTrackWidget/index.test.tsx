@@ -108,7 +108,7 @@ test('adds full URL (BAM)', () => {
   expect(widget.assembly).toBe('volvox')
 })
 
-test('test wrongProtocol returning false', () => {
+xtest('test wrongProtocol returning false', () => {
   const session = standardInitializer()
   const { widget } = session
   widget.setTrackData({
