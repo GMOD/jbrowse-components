@@ -9,6 +9,7 @@ import {
 
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 import { calculateLabelPositions, getId } from './util'
+import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { ExportSvgOptions } from '../../LinearGenomeView/types'
@@ -22,6 +23,11 @@ export async function renderBaseLinearDisplaySvg(
   const { overrideHeight } = opts
   const view = getContainingView(self) as LinearGenomeViewModel
   const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
+
+  if (self.error) {
+    return <ErrorBox error={self.error} width={width} height={height} />
+  }
+
   const renderings = await Promise.all(
     roundedDynamicBlocks.map(async block => {
       const blockState = BlockState.create({

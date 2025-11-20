@@ -1,16 +1,6 @@
-import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 
-import {
-  createView,
-  doBeforeEach,
-  expectCanvasMatch,
-  generateReadBuffer,
-  hts,
-  mockConsole,
-  mockFile404,
-  setup,
-} from './util'
+import { doBeforeEach, generateReadBuffer, setup, testFileReload } from './util'
 
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
@@ -22,44 +12,24 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 30000 }
-const opts = [{}, delay]
-
 test('reloads vcf (VCF.GZ 404)', async () => {
-  await mockConsole(async () => {
-    mockFile404('volvox.filtered.vcf.gz', readBuffer)
-    const { view, findByTestId, findAllByTestId, findAllByText } =
-      await createView()
-    view.setNewView(0.05, 5000)
-    fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
-    await findAllByText(/HTTP 404/, ...opts)
-
-    // @ts-expect-error
-    fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0]!)
-
-    expectCanvasMatch(
-      (await findAllByTestId(/prerendered_canvas/, ...opts))[0]!,
-    )
+  await testFileReload({
+    failingFile: 'volvox.filtered.vcf.gz',
+    readBuffer,
+    trackId: 'volvox_filtered_vcf',
+    viewLocation: [0.05, 5000],
+    expectedCanvas: /prerendered_canvas/,
+    timeout: 30000,
   })
 }, 40000)
 
 test('reloads vcf (VCF.GZ.TBI 404)', async () => {
-  await mockConsole(async () => {
-    mockFile404('volvox.filtered.vcf.gz.tbi', readBuffer)
-    const { view, findByTestId, findAllByTestId, findAllByText } =
-      await createView()
-    view.setNewView(0.05, 5000)
-    fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
-    await findAllByText(/HTTP 404/, ...opts)
-    // @ts-expect-error
-    fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0]!)
-
-    expectCanvasMatch(
-      (await findAllByTestId(/prerendered_canvas/, ...opts))[0]!,
-    )
+  await testFileReload({
+    failingFile: 'volvox.filtered.vcf.gz.tbi',
+    readBuffer,
+    trackId: 'volvox_filtered_vcf',
+    viewLocation: [0.05, 5000],
+    expectedCanvas: /prerendered_canvas/,
+    timeout: 30000,
   })
 }, 40000)

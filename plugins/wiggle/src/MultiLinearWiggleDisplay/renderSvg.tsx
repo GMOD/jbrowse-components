@@ -1,6 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
+import { isReadyOrHasError } from '../svgExportUtil'
 import YScaleBars from './components/YScaleBars'
 
 import type { WiggleDisplayModel } from './model'
@@ -14,7 +15,7 @@ export async function renderSvg(
   opts: ExportSvgDisplayOptions,
   superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
 ) {
-  await when(() => !!self.stats && !!self.regionCannotBeRenderedText)
+  await when(() => isReadyOrHasError(self))
   const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
   return (
     <>
