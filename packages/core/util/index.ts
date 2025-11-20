@@ -15,6 +15,7 @@ import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
 import { colord } from './colord'
+import { coarseStripHTML } from './coarseStripHTML'
 import { checkStopToken } from './stopToken'
 import {
   isDisplayModel,
@@ -41,6 +42,7 @@ export * from './types'
 export * from './when'
 export * from './range'
 export * from './dedupe'
+export * from './coarseStripHTML'
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
@@ -1233,10 +1235,6 @@ export function getStr(obj: unknown) {
     : String(obj)
 }
 
-// tries to measure grid width without HTML tags included
-export function coarseStripHTML(s: string) {
-  return s.replaceAll(/(<([^>]+)>)/gi, '')
-}
 
 // based on autolink-js, license MIT
 // https://github.com/bryanwoods/autolink-js/blob/1418049970152c56ced73d43dcc62d80b320fb71/autolink.js#L9
