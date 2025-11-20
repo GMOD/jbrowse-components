@@ -7,7 +7,7 @@ export function hasError(display: DisplayWithError) {
 }
 
 export function hasAnyError(...displays: DisplayWithError[]) {
-  return displays.some(d => !!d?.error)
+  return displays.some(d => !!d.error)
 }
 
 export function whenReadyOrError(

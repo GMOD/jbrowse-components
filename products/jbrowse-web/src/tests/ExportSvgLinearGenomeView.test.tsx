@@ -1,15 +1,16 @@
-import fs from 'fs'
-import path from 'path'
+import { fireEvent } from '@testing-library/react'
 
-import { fireEvent, waitFor } from '@testing-library/react'
-import { saveAs } from 'file-saver-es'
-
-import { createView, doBeforeEach, hts, setup } from './util'
+import {
+  createView,
+  doBeforeEach,
+  exportAndVerifySvg,
+  hts,
+  setup,
+} from './util'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
 
-// mock from https://stackoverflow.com/questions/44686077
 jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
 
 setup()
@@ -30,19 +31,5 @@ test('export svg of lgv', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
 
-  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Export SVG', ...opts))
-  fireEvent.click(await findByText('Submit', ...opts))
-
-  await waitFor(() => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(saveAs).toHaveBeenCalled()
-  }, delay)
-
-  // @ts-expect-error
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const svg = saveAs.mock.calls[0][0].content[0]
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/lgv_snapshot.svg`, svg)
-  expect(svg).toMatchSnapshot()
+  await exportAndVerifySvg(findByTestId, findByText, 'lgv', delay)
 }, 45000)

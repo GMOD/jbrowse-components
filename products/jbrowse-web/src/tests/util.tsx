@@ -1,9 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
+import fs from 'fs'
+import path from 'path'
+
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
+import { saveAs } from 'file-saver-es'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
@@ -179,6 +183,64 @@ export function mockFile404(
   fetch.mockResponse(async request =>
     request.url === str ? { status: 404 } : readBuffer(request),
   )
+}
+
+export async function exportAndVerifySvg(
+  findByTestId: any,
+  findByText: any,
+  filename: string,
+  delay?: { timeout: number },
+) {
+  const actualDelay = delay || { timeout: 40000 }
+  const opts = [{}, actualDelay]
+  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
+  fireEvent.click(await findByText('Export SVG', ...opts))
+  fireEvent.click(await findByText('Submit', ...opts))
+
+  await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(saveAs).toHaveBeenCalled()
+  }, actualDelay)
+
+  // @ts-expect-error
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const svg = saveAs.mock.calls[0][0].content[0]
+  const dir = path.dirname(module.filename)
+  fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
+  expect(svg).toMatchSnapshot()
+  return svg
+}
+
+export async function testFileReload(config: {
+  failingFile: string
+  readBuffer: any
+  trackId: string
+  viewLocation: [number, number]
+  expectedCanvas: string | RegExp
+  timeout?: number
+}) {
+  const delay = { timeout: config.timeout || 30000 }
+  const opts = [{}, delay]
+
+  await mockConsole(async () => {
+    mockFile404(config.failingFile, config.readBuffer)
+    const { view, findByTestId, findAllByTestId, findAllByText } =
+      await createView()
+    view.setNewView(config.viewLocation[0], config.viewLocation[1])
+    fireEvent.click(await findByTestId(hts(config.trackId), ...opts))
+    await findAllByText(/HTTP 404/, ...opts)
+
+    // @ts-expect-error
+    fetch.mockResponse(config.readBuffer)
+    const buttons = await findAllByTestId('reload_button')
+    fireEvent.click(buttons[0]!)
+
+    const canvas =
+      typeof config.expectedCanvas === 'string'
+        ? await findByTestId(config.expectedCanvas, ...opts)
+        : (await findAllByTestId(config.expectedCanvas, ...opts))[0]!
+    expectCanvasMatch(canvas)
+  })
 }
 
 export { default as JBrowse } from './TestingJBrowse'

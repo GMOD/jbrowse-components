@@ -1,7 +1,7 @@
+import { whenReadyOrAnyError } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-import { whenReadyOrAnyError } from '@jbrowse/plugin-linear-genome-view'
 
 interface SubDisplay {
   height: number

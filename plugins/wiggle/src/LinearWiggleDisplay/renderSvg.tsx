@@ -1,4 +1,5 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { whenReadyOrError } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import YScaleBar from '../shared/YScaleBar'
@@ -8,7 +9,6 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { whenReadyOrError } from '@jbrowse/plugin-linear-genome-view'
 
 export async function renderSvg(
   self: WiggleDisplayModel,
