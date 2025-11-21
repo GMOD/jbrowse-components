@@ -134,6 +134,10 @@ export default function MultiVariantBaseModelF(
       hoveredGenotype: undefined as
         | { genotype: string; name: string }
         | undefined,
+      /**
+       * #volatile
+       */
+      clusterTree: undefined as unknown,
     }))
     .actions(self => ({
       /**
@@ -171,6 +175,13 @@ export default function MultiVariantBaseModelF(
        */
       clearLayout() {
         self.layout = []
+        self.clusterTree = undefined
+      },
+      /**
+       * #action
+       */
+      setClusterTree(tree: unknown) {
+        self.clusterTree = tree
       },
       /**
        * #action
@@ -287,6 +298,21 @@ export default function MultiVariantBaseModelF(
             })
           : undefined
       },
+      /**
+       * #getter
+       */
+      get root() {
+        const { hierarchy } = require('d3-hierarchy')
+        const { ascending } = require('d3-array')
+        console.log('root getter, clusterTree:', self.clusterTree)
+        return self.clusterTree
+          ? hierarchy(self.clusterTree, (d: any) => d.children)
+              .sum((d: any) => (d.children ? 0 : 1))
+              .sort((a: any, b: any) =>
+                ascending(a.data.height || 1, b.data.height || 1),
+              )
+          : undefined
+      },
     }))
     .views(self => {
       const {
@@ -311,6 +337,29 @@ export default function MultiVariantBaseModelF(
         get rowHeight() {
           const { sources, autoHeight, rowHeightSetting, height } = self
           return autoHeight ? height / (sources?.length || 1) : rowHeightSetting
+        },
+        /**
+         * #getter
+         */
+        get totalHeight() {
+          return self.sources ? self.sources.length * this.rowHeight : 1
+        },
+        /**
+         * #getter
+         */
+        get hierarchy() {
+          const { cluster } = require('d3-hierarchy')
+          const r = self.root
+          if (r) {
+            const treeAreaWidth = 80
+            const clust = cluster()
+              .size([this.totalHeight, treeAreaWidth])
+              .separation(() => 1)
+            clust(r)
+            return r
+          } else {
+            return undefined
+          }
         },
         /**
          * #method

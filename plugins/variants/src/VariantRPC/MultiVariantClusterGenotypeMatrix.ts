@@ -17,12 +17,18 @@ export class MultiVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersA
       pluginManager: this.pluginManager,
       args: deserializedArgs,
     })
-    return clusterData({
+    const sampleLabels = Object.keys(matrix)
+    const result = await clusterData({
       data: Object.values(matrix),
+      sampleLabels,
       stopToken: deserializedArgs.stopToken,
       onProgress: progress => {
         deserializedArgs.statusCallback(progress)
       },
     })
+    return {
+      order: result.order,
+      tree: result.tree,
+    }
   }
 }

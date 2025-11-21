@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 
 import Crosshair from './MultiVariantCrosshairs'
 import LegendBar from './MultiVariantLegendBar'
+import TreeSidebar from './TreeSidebar'
 
 import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
 
@@ -32,6 +33,7 @@ const MultiVariantBaseDisplayComponent = observer(function (props: {
       }}
     >
       <BaseLinearDisplayComponent {...props} />
+      <TreeSidebar model={model} />
       <LegendBar model={model} />
 
       {mouseX && mouseY ? (

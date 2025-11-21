@@ -88,7 +88,7 @@ const ClusterDialogAuto = observer(function ({
                       setProgress(arg)
                     },
                   },
-                )) as { order: number[] }
+                )) as { order: number[]; tree: unknown }
 
                 model.setLayout(
                   ret.order.map(idx => {
@@ -99,6 +99,7 @@ const ClusterDialogAuto = observer(function ({
                     return ret
                   }),
                 )
+                model.setClusterTree(ret.tree)
               }
               handleClose()
             } catch (e) {
