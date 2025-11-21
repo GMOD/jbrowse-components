@@ -10,8 +10,8 @@ import FilterListIcon from '@mui/icons-material/FilterList'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { ascending } from 'd3-array'
-import { cluster, hierarchy } from 'd3-hierarchy'
+import { ascending } from '@mui/x-charts-vendor/d3-array'
+import { cluster, hierarchy } from '../d3-hierarchy2'
 import deepEqual from 'fast-deep-equal'
 import { cast, types } from 'mobx-state-tree'
 
@@ -391,7 +391,8 @@ export default function MultiVariantBaseModelF(
           const r = self.root
           if (r) {
             const clust = cluster()
-              .size([this.totalHeight, self.treeAreaWidth])
+              .size([this.totalHeight, self.treeAreaWidth])!
+              // @ts-expect-error
               .separation(() => 1)
             clust(r)
             return r

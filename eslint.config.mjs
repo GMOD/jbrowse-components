@@ -26,6 +26,7 @@ export default defineConfig(
       'products/jbrowse-desktop/linux-sandbox-fix.cjs',
       'docs/*',
       'website/*',
+      'plugins/variants/src/d3-hierarchy2',
       'packages/core/util/nanoid.js',
       'packages/core/util/flatbush/index.js',
       'products/**/webpack.config.js',

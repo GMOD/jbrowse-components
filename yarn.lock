@@ -2397,7 +2397,7 @@
     prop-types "^15.8.1"
     react-is "^19.2.0"
 
-"@mui/x-charts-vendor@^8.0.0":
+"@mui/x-charts-vendor@^8.0.0", "@mui/x-charts-vendor@^8.19.0":
   version "8.19.0"
   resolved "https://registry.yarnpkg.com/@mui/x-charts-vendor/-/x-charts-vendor-8.19.0.tgz#acb72e1bc908800106ff1082f9351873b720d520"
   integrity sha512-4wzlAf/Ym4HHDMGX8Iq4M1L2DCEDCS5l4SidUxauSM+4x+FPz8o/sVkmnh0hkQ995AzT2XTffjh/Nw8xm8aBcw==
