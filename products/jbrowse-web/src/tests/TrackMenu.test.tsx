@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { beforeEach, test } from 'vitest'
 
 import { createView, doBeforeEach, hts, setup } from './util'
 

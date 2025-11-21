@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`fails because this directory is already set up 1`] = `"Error: This directory (jbrowse) has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files"`;
 

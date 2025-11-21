@@ -1,6 +1,6 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-import { test, expect } from 'vitest'
+import { expect, test } from 'vitest'
 
 import BedpeAdapter from './BedpeAdapter'
 import configSchema from './configSchema'

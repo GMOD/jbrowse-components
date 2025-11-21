@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { beforeEach, expect, test } from 'vitest'
 
 import { doBeforeEach, openSpreadsheetView, setup } from './util'
 

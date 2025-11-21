@@ -1,4 +1,5 @@
 import { LocalFile } from 'generic-filehandle2'
+import { beforeEach, test } from 'vitest'
 
 import {
   doBeforeEach,

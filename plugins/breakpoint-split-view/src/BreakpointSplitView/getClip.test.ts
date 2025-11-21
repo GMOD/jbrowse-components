@@ -1,5 +1,6 @@
+import { expect, test } from 'vitest'
+
 import { getClip } from './getClip'
-import { test, expect } from 'vitest'
 
 test('test clip', () => {
   expect(getClip('5S5M', 1)).toBe(5)

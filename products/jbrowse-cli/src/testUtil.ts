@@ -2,6 +2,8 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+import { vi } from 'vitest'
+
 import { main as nativeMain } from './index'
 
 const { mkdir, mkdtemp } = fs.promises
@@ -39,14 +41,14 @@ export async function runCommand(
   let outputReceived = false
 
   // Mock console functions using Jest spies
-  const consoleLogSpy = jest
+  const consoleLogSpy = vi
     .spyOn(console, 'log')
     .mockImplementation((...args: any[]) => {
       stdout += `${args.join(' ')}\n`
       outputReceived = true
     })
 
-  const consoleErrorSpy = jest
+  const consoleErrorSpy = vi
     .spyOn(console, 'error')
     .mockImplementation((...args: any[]) => {
       stderr += `${args.join(' ')}\n`
@@ -54,7 +56,7 @@ export async function runCommand(
     })
 
   // Mock process.stdout.write
-  const stdoutWriteSpy = jest
+  const stdoutWriteSpy = vi
     .spyOn(process.stdout, 'write')
     .mockImplementation((chunk: any) => {
       stdout += chunk.toString()
@@ -63,7 +65,7 @@ export async function runCommand(
     })
 
   // Mock process.stderr.write
-  const stderrWriteSpy = jest
+  const stderrWriteSpy = vi
     .spyOn(process.stderr, 'write')
     .mockImplementation((chunk: any) => {
       stderr += chunk.toString()
@@ -72,7 +74,7 @@ export async function runCommand(
     })
 
   // Mock process.exit
-  const processExitSpy = jest
+  const processExitSpy = vi
     .spyOn(process, 'exit')
     .mockImplementation((code?: string | number | null) => {
       if (code && code !== 0) {

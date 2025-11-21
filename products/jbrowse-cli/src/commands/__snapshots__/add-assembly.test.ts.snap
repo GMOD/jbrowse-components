@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`add-assembly no load flag 1`] = `"Error: Please specify the loading operation for this file with --load copy|symlink|move|inPlace"`;
 
@@ -528,7 +528,7 @@ exports[`fails if trying to add an assembly with a name that already exists 1`] 
 
 exports[`fails if using inline JSON sequence custom with no --name 1`] = `"Error: Must provide --name when using custom inline JSON sequence"`;
 
-exports[`fails if using invalid inline JSON 1`] = `"Error: Error: ENOENT: no such file or directory, open 'notValidJSON'"`;
+exports[`fails if using invalid inline JSON 1`] = `"Error: ENOENT: no such file or directory, open 'notValidJSON'"`;
 
 exports[`relative path 1`] = `
 {

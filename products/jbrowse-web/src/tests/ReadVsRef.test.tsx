@@ -1,4 +1,5 @@
 import { fireEvent, waitFor } from '@testing-library/react'
+import { beforeEach, expect, test } from 'vitest'
 
 import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 

@@ -1,5 +1,6 @@
+import { describe, expect, it, vi } from 'vitest'
+
 import { parseVcfBuffer } from './vcfParser'
-import { vi, describe, it, expect } from 'vitest'
 
 describe('parseVcfBuffer', () => {
   it('should parse VCF content with header and variants', () => {

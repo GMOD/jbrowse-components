@@ -2,7 +2,7 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { fireEvent, render } from '@testing-library/react'
-import { test, expect } from 'vitest'
+import { expect, test } from 'vitest'
 
 import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'

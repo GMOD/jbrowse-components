@@ -4,6 +4,7 @@ import { LocalFile } from 'generic-filehandle2'
 import { handleRequest } from './generateReadBuffer'
 import { App } from './loaderUtil'
 import { expectCanvasMatch, setup } from './util'
+import { vi, test, afterEach } from 'vitest'
 setup()
 
 const getFile = (url: string) =>
@@ -11,11 +12,9 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-
-
 const delay = { timeout: 20000 }
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+vi.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   return `${url}`.includes('jb2=true')
     ? new Response('{}')
     : handleRequest(() => getFile(`${url}`), args)
@@ -27,7 +26,7 @@ afterEach(() => {
 })
 
 // onAction listener warning
-console.warn = jest.fn()
+console.warn = vi.fn()
 
 test('horizontally flipped inverted alignment', async () => {
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(

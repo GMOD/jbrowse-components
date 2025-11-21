@@ -1,8 +1,12 @@
-import { expect, test } from 'vitest'
+/**
+ * @vitest-environment node
+ */
 
 import fs from 'fs'
 import path from 'path'
 import { gunzipSync } from 'zlib'
+
+import { expect, test } from 'vitest'
 
 import { runCommand, runInTmpDir } from '../testUtil'
 

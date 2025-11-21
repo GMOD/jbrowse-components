@@ -1,15 +1,12 @@
-/**
- * @jest-environment node
- */
-
 import fs, { mkdirSync } from 'fs'
 import path from 'path'
 
 import nock from 'nock'
+import { expect, test } from 'vitest'
 
 import { runCommand, runInTmpDir } from '../testUtil'
 
-const { stat, readdir, writeFile } = fs.promises
+const { readdir, writeFile } = fs.promises
 
 const releaseArray = [
   {
@@ -47,25 +44,25 @@ test('fails if user selects a directory that does not exist', async () => {
   expect(stderr).toMatchSnapshot()
 })
 
-xtest('upgrades a directory', async () => {
-  await runInTmpDir(async ctx => {
-    nock('https://api.github.com')
-      .get('/repos/GMOD/jbrowse-components/releases?page=1')
-      .reply(200, releaseArray)
-    nock('https://example.com')
-      .get('/JBrowse2-0.0.2.zip')
-      .replyWithFile(
-        200,
-        path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
-      )
-    await writeFile('manifest.json', '{"name":"JBrowse"}')
-    const prevStat = await stat(path.join(ctx.dir, 'manifest.json'))
-    await runCommand(['upgrade'])
-    expect(await readdir(ctx.dir)).toContain('manifest.json')
-    // upgrade successful if it updates stats of manifest json
-    expect(await stat('manifest.json')).not.toEqual(prevStat)
-  })
-})
+// xtest('upgrades a directory', async () => {
+//   await runInTmpDir(async ctx => {
+//     nock('https://api.github.com')
+//       .get('/repos/GMOD/jbrowse-components/releases?page=1')
+//       .reply(200, releaseArray)
+//     nock('https://example.com')
+//       .get('/JBrowse2-0.0.2.zip')
+//       .replyWithFile(
+//         200,
+//         path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
+//       )
+//     await writeFile('manifest.json', '{"name":"JBrowse"}')
+//     const prevStat = await stat(path.join(ctx.dir, 'manifest.json'))
+//     await runCommand(['upgrade'])
+//     expect(await readdir(ctx.dir)).toContain('manifest.json')
+//     // upgrade successful if it updates stats of manifest json
+//     expect(await stat('manifest.json')).not.toEqual(prevStat)
+//   })
+// })
 
 test('upgrades a directory with a specific version', async () => {
   await runInTmpDir(async ctx => {

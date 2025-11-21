@@ -1,7 +1,12 @@
+/**
+ * @vitest-environment node
+ */
+
 import fs from 'fs'
 import path from 'path'
 
 import { expect, test } from 'vitest'
+
 import { ctxDir, readConf, runCommand, runInTmpDir } from '../testUtil'
 
 const { writeFile, copyFile } = fs.promises

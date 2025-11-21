@@ -1,9 +1,11 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 
 import fs from 'fs'
 import path from 'path'
+
+import { expect, test } from 'vitest'
 
 import { readConf, runCommand, runInTmpDir } from '../testUtil'
 

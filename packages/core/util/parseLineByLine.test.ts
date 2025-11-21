@@ -1,5 +1,6 @@
+import { describe, expect, it, vi } from 'vitest'
+
 import { parseLineByLine } from './parseLineByLine'
-import { describe, it, vi, expect } from 'vitest'
 
 describe('parseLineByLine', () => {
   it('should call callback for each line', () => {

@@ -1,9 +1,7 @@
-/**
- * @jest-environment node
- */
-
 import fs from 'fs'
 import path from 'path'
+
+import { expect, test } from 'vitest'
 
 import fetch from '../fetchWithProxy'
 import { dataDir, readConf, runCommand, runInTmpDir } from '../testUtil'

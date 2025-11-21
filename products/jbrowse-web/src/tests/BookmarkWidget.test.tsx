@@ -1,13 +1,13 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { vi, beforeEach, test } from 'vitest'
 import { saveAs } from 'file-saver-es'
+import { beforeEach, test, vi } from 'vitest'
+
 import { createView, doBeforeEach, setup } from './util'
 
 vi.mock('file-saver-es', () => {
   return {
-    ...jest.requireActual('file-saver-es'),
-    saveAs: jest.fn(),
+    saveAs: vi.fn(),
   }
 })
 setup()

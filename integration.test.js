@@ -1,4 +1,6 @@
-const fs = require('fs')
+import fs from 'fs'
+
+import { expect, test } from 'vitest'
 
 if (process.env.BUILT_TESTS) {
   test('JBrowse Web built', () => {

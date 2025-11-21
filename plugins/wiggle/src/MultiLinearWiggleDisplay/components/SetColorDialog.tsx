@@ -1,7 +1,8 @@
+import { describe } from 'vitest'
+
 import SourcesGrid from './SourcesGrid'
 import SharedSetColorDialog from './ui/SetColorDialog'
 
-import { describe } from 'vitest'
 import type { Source } from '../../util'
 
 export default function SetColorDialog({

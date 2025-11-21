@@ -1,5 +1,6 @@
+import { describe, expect, it, vi } from 'vitest'
+
 import { parseGffBuffer } from './gffParser'
-import { describe, it, vi, expect } from 'vitest'
 
 describe('parseGffBuffer', () => {
   it('should parse GFF3 content with header and features', () => {

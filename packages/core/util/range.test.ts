@@ -1,4 +1,4 @@
-import { test, expect, describe, it } from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 
 import { intersection2 } from './range'
 

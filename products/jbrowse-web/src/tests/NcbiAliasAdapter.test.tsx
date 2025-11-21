@@ -1,3 +1,5 @@
+import { test } from 'vitest'
+
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
 import config from '../../test_data/cfam2/config.json'
 

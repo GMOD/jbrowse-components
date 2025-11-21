@@ -1,9 +1,8 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
+import { afterEach, beforeEach, expect, test } from 'vitest'
 
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
 setup()
-
-
 
 const delay = { timeout: 20000 }
 beforeEach(() => {

@@ -1,5 +1,6 @@
+import { expect, test } from 'vitest'
+
 import { parseCigar } from './index'
-import { test, expect } from 'vitest'
 
 test('handles empty string', () => {
   expect(parseCigar('')).toEqual([])

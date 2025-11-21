@@ -1,11 +1,13 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 
 import fs from 'fs'
 import path from 'path'
 
 import nock from 'nock'
+import { beforeAll, expect, test, vi } from 'vitest'
+
 
 import { readConf, runCommand, runInTmpDir } from '../testUtil'
 
@@ -29,7 +31,7 @@ async function copyConf(ctx: { dir: string }) {
   )
 }
 
-beforeAll(() => (Date.now = jest.fn(() => 1)))
+beforeAll(() => (Date.now = vi.fn(() => 1)))
 
 test('fails if no config file', async () => {
   nock('https://example.com').head('/hub.txt').reply(200)

@@ -1,4 +1,4 @@
-import { describe, expect, it, test } from 'vitest'
+import { expect, test } from 'vitest'
 
 import { cigarToMismatches } from './cigarToMismatches'
 import { getMismatches, parseCigar } from './index'

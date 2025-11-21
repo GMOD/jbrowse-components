@@ -1,11 +1,12 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 
 import fs from 'fs'
 import path from 'path'
 
 import nock from 'nock'
+import { expect, test } from 'vitest'
 
 import { dataDir, runCommand, runInTmpDir } from '../testUtil'
 

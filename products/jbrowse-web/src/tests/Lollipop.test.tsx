@@ -1,10 +1,9 @@
 import '@testing-library/jest-dom'
 
 import { fireEvent } from '@testing-library/react'
+import { beforeEach, test } from 'vitest'
 
 import { createView, doBeforeEach, hts, setup } from './util'
-
-
 
 setup()
 

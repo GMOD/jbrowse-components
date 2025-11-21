@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/react'
+import { beforeEach, test } from 'vitest'
 
 import {
   createView,

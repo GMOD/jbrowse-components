@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`creates a default config 1`] = `
 {
@@ -40,7 +40,7 @@ exports[`does not overwrite an existing config 1`] = `
 `;
 
 exports[`throws an error with a negative port 1`] = `
-"Error: TypeError [ERR_PARSE_ARGS_INVALID_OPTION_VALUE]: Option '--port' argument is ambiguous.
+"Error: Option '--port' argument is ambiguous.
 Did you forget to specify the option argument for '--port'?
 To specify an option argument starting with a dash use '--port=-XYZ'."
 `;

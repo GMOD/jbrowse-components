@@ -1,5 +1,6 @@
+import { expect, test } from 'vitest'
+
 import { moveDown, moveUp } from './sourcesGridUtils'
-import { test, expect } from 'vitest'
 
 test('moves elements up once', () => {
   let elts = [{ name: 'k1' }, { name: 'k2' }, { name: 'k3' }, { name: 'k4' }]

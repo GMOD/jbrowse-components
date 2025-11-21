@@ -27,6 +27,7 @@ import type { IAnyType } from 'mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   icon: {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     color: theme.palette.tertiary?.contrastText || '#fff',
   },
   expansionPanelDetails: {

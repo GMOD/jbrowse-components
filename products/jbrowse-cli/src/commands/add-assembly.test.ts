@@ -1,8 +1,12 @@
+/**
+ * @vitest-environment node
+ */
+
 import fs from 'fs'
 import path from 'path'
 
 import nock from 'nock'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import {
   ctxDir,
@@ -369,7 +373,7 @@ test('relative path', async () => {
     process.chdir('jbrowse')
 
     // Suppress the expected warning about file being outside JBrowse directory
-    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     await runCommand([
       'add-assembly',

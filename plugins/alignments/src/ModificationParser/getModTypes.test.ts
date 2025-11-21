@@ -1,5 +1,6 @@
+import { expect, test } from 'vitest'
+
 import { getModTypes } from './getModTypes'
-import { test, expect } from 'vitest'
 
 test('getModTypes', () => {
   expect(getModTypes('C+m,')).toMatchSnapshot()

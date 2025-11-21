@@ -84,9 +84,7 @@ const ViewHeader = observer(function ({
   // scroll the view into view when first mounted. note: this effect will run
   // only once, because of the empty array second param
   useEffect(() => {
-    if (typeof jest === 'undefined') {
-      scrollRef.current?.scrollIntoView({ block: 'center' })
-    }
+    scrollRef.current?.scrollIntoView({ block: 'center' })
   }, [])
   return (
     <div

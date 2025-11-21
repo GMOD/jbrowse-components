@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
+import { beforeEach, expect, test } from 'vitest'
 
 import {
   doBeforeEach,

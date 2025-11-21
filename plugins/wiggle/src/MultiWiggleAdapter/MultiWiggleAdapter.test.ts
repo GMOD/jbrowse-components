@@ -1,6 +1,7 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import MultiWiggleAdapter from './MultiWiggleAdapter'
 import configSchema from './configSchema'
-import { describe, beforeEach, vi, it, expect } from 'vitest'
 
 describe('MultiWiggleAdapter.getSources', () => {
   let adapter: MultiWiggleAdapter

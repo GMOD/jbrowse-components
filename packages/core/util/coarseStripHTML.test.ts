@@ -1,5 +1,6 @@
+import { expect, test } from 'vitest'
+
 import { coarseStripHTML } from './coarseStripHTML'
-import { test, expect } from 'vitest'
 
 test('removes simple HTML tags', () => {
   expect(coarseStripHTML('<p>Hello World</p>')).toBe('Hello World')

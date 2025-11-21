@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import SetColorDialog from './SetColorDialog'
-import { test, beforeEach, expect, vi, describe } from 'vitest'
 
 import type { Source } from '../../util'
 describe('SetColorDialog', () => {

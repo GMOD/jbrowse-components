@@ -1,6 +1,6 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-import { afterEach, beforeEach, describe, expect, test, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, test, vi } from 'vitest'
 
 import GtfAdapter from './GtfAdapter'
 import configSchema from './configSchema'

@@ -4,17 +4,15 @@ import path from 'path'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { saveAs } from 'file-saver-es'
-import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { expect } from 'vitest'
-import { ThemeProvider } from '@mui/material'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-import { generateReadBuffer } from './generateReadBuffer'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
@@ -59,8 +57,6 @@ export function getPluginManager(
 export function setup() {
   expect.extend({ toMatchImageSnapshot })
 }
-
-global.jest = {}
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
   // eslint-disable-next-line no-restricted-globals
