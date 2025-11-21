@@ -5,7 +5,7 @@ export function drawTree(
   totalHeight: number,
 ) {
   ctx.clearRect(0, 0, treeAreaWidth, totalHeight)
-  ctx.strokeStyle = 'black'
+  ctx.strokeStyle = '#0008'
   ctx.lineWidth = 1
 
   for (const link of hierarchy.links()) {

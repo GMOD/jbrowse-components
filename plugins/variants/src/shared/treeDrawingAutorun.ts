@@ -53,7 +53,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
 
       // Draw the tree (this draws the full tree, but only visible part shows)
       // Note: accessing totalHeight ensures we redraw when row height changes
-      ctx.strokeStyle = 'black'
+      ctx.strokeStyle = '#0008'
       ctx.lineWidth = 1
 
       for (const link of hierarchy.links()) {
