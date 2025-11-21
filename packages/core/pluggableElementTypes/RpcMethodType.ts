@@ -14,17 +14,22 @@ import type { UriLocation } from '../util/types'
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
-  constructor(public pluginManager: PluginManager) {
+  pluginManager: PluginManager
+
+  constructor(pluginManager: PluginManager) {
     super()
+    this.pluginManager = pluginManager
   }
 
   async serializeArguments(
     args: Record<string, unknown>,
     rpcDriverClassName: string,
   ): Promise<Record<string, unknown>> {
-    const blobMap = getBlobMap()
     await this.augmentLocationObjects(args, rpcDriverClassName)
-    return { ...args, blobMap }
+    return {
+      ...args,
+      blobMap: getBlobMap(),
+    }
   }
 
   async serializeNewAuthArguments(

@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@gmod/bbi": "^7.0.0",
-    "@gmod/hclust": "^1.0.3",
+    "@gmod/hclust": "^1.0.5",
     "@jbrowse/core": "^3.7.0",
     "@jbrowse/plugin-data-management": "^3.7.0",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",

@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { fromNewick, toNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
@@ -108,7 +109,7 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        clusterTree: types.frozen(),
+        clusterTree: types.maybe(types.string),
         /**
          * #property
          */
@@ -229,7 +230,7 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setClusterTree(tree: unknown) {
-        self.clusterTree = cast(tree)
+        self.clusterTree = tree ? toNewick(tree) : undefined
       },
       /**
        * #action
@@ -356,14 +357,16 @@ export default function MultiVariantBaseModelF(
        * #getter
        */
       get root() {
-        const tree = self.clusterTree
-        return tree
-          ? hierarchy(tree, (d: any) => d.children)
-              .sum((d: any) => (d.children ? 0 : 1))
-              .sort((a: any, b: any) =>
-                ascending(a.data.height || 1, b.data.height || 1),
-              )
-          : undefined
+        const newick = self.clusterTree
+        if (!newick) {
+          return undefined
+        }
+        const tree = fromNewick(newick)
+        return hierarchy(tree, (d: any) => d.children)
+          .sum((d: any) => (d.children ? 0 : 1))
+          .sort((a: any, b: any) =>
+            ascending(a.data.height || 1, b.data.height || 1),
+          )
       },
     }))
     .views(self => {
