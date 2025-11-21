@@ -1,4 +1,5 @@
 import { parseVcfBuffer } from './vcfParser'
+import { vi, describe, it, expect } from 'vitest'
 
 describe('parseVcfBuffer', () => {
   it('should parse VCF content with header and variants', () => {
@@ -130,7 +131,7 @@ ctgA	1000	.	G	A	60	PASS	DP=30
 `
 
     const buffer = new TextEncoder().encode(vcfContent)
-    const mockStatusCallback = jest.fn()
+    const mockStatusCallback = vi.fn()
 
     parseVcfBuffer(buffer, mockStatusCallback)
 
@@ -141,8 +142,8 @@ ctgA	1000	.	G	A	60	PASS	DP=30
 
   it('should handle whitespace-only lines', () => {
     const vcfContent = `##fileformat=VCFv4.1
-   
-	
+
+
 ctgA	1000	.	G	A	60	PASS	DP=30
 `
 

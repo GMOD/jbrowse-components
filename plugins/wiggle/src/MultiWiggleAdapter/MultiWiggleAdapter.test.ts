@@ -1,5 +1,6 @@
 import MultiWiggleAdapter from './MultiWiggleAdapter'
 import configSchema from './configSchema'
+import { describe, beforeEach, vi, it, expect } from 'vitest'
 
 describe('MultiWiggleAdapter.getSources', () => {
   let adapter: MultiWiggleAdapter
@@ -28,7 +29,7 @@ describe('MultiWiggleAdapter.getSources', () => {
       )
 
       // Mock getAdapters
-      adapter.getAdapters = jest.fn().mockResolvedValue([
+      adapter.getAdapters = vi.fn().mockResolvedValue([
         {
           source: 'source-1',
           type: 'BigWigAdapter',
@@ -85,7 +86,7 @@ describe('MultiWiggleAdapter.getSources', () => {
         }),
       )
 
-      adapter.getAdapters = jest.fn().mockResolvedValue([
+      adapter.getAdapters = vi.fn().mockResolvedValue([
         {
           source: 'file1-source',
           type: 'BigWigAdapter',
@@ -124,7 +125,7 @@ describe('MultiWiggleAdapter.getSources', () => {
         }),
       )
 
-      adapter.getAdapters = jest.fn().mockResolvedValue([
+      adapter.getAdapters = vi.fn().mockResolvedValue([
         {
           source: 'blob-source',
           type: 'BigWigAdapter',
@@ -162,7 +163,7 @@ describe('MultiWiggleAdapter.getSources', () => {
         }),
       )
 
-      adapter.getAdapters = jest.fn().mockResolvedValue([
+      adapter.getAdapters = vi.fn().mockResolvedValue([
         {
           source: 'auto-source',
           name: 'provided-name',
@@ -193,7 +194,7 @@ describe('MultiWiggleAdapter.getSources', () => {
         }),
       )
 
-      adapter.getAdapters = jest.fn().mockResolvedValue([
+      adapter.getAdapters = vi.fn().mockResolvedValue([
         {
           source: 'fallback-source',
           type: 'OtherAdapter',
@@ -216,7 +217,7 @@ describe('MultiWiggleAdapter.getSources', () => {
     beforeEach(() => {
       adapter = new MultiWiggleAdapter(configSchema.create({}))
 
-      adapter.getAdapters = jest.fn().mockResolvedValue([])
+      adapter.getAdapters = vi.fn().mockResolvedValue([])
     })
 
     it('should return empty array when no adapters', async () => {
@@ -243,7 +244,7 @@ describe('MultiWiggleAdapter.getSources', () => {
         }),
       )
 
-      adapter.getAdapters = jest.fn().mockResolvedValue([
+      adapter.getAdapters = vi.fn().mockResolvedValue([
         {
           source: 'test-source',
           type: 'BigWigAdapter',
@@ -279,7 +280,7 @@ describe('MultiWiggleAdapter.getSources', () => {
     beforeEach(() => {
       adapter = new MultiWiggleAdapter(configSchema.create({}))
 
-      adapter.getAdapters = jest.fn().mockResolvedValue([
+      adapter.getAdapters = vi.fn().mockResolvedValue([
         {
           source: 'test1',
           type: 'BigWigAdapter',
@@ -329,7 +330,7 @@ describe('MultiWiggleAdapter.getSources', () => {
     beforeEach(() => {
       adapter = new MultiWiggleAdapter(configSchema.create({}))
 
-      adapter.getAdapters = jest.fn().mockResolvedValue([
+      adapter.getAdapters = vi.fn().mockResolvedValue([
         {
           source: 'test-source',
           type: 'BigWigAdapter',

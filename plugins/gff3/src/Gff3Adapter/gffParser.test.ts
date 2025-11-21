@@ -1,4 +1,5 @@
 import { parseGffBuffer } from './gffParser'
+import { describe, it, vi, expect } from 'vitest'
 
 describe('parseGffBuffer', () => {
   it('should parse GFF3 content with header and features', () => {
@@ -154,7 +155,7 @@ ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN
 `
 
     const buffer = new TextEncoder().encode(gffContent)
-    const mockStatusCallback = jest.fn()
+    const mockStatusCallback = vi.fn()
 
     parseGffBuffer(buffer, mockStatusCallback)
 
@@ -177,8 +178,8 @@ ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN
 
   it('should handle whitespace-only lines', () => {
     const gffContent = `##gff-version 3
-   
-	
+
+
 ctgA	example	gene	1000	9000	.	+	.	ID=EDEN;Name=EDEN
 `
 

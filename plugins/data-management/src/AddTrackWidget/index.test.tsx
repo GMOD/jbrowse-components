@@ -109,33 +109,34 @@ test('adds full URL (BAM)', () => {
   expect(widget.assembly).toBe('volvox')
 })
 
-xtest('test wrongProtocol returning false', () => {
-  const session = standardInitializer()
-  const { widget } = session
-  widget.setTrackData({
-    uri: 'http://google.com/volvox-sorted.bam',
-    locationType: 'UriLocation',
-  })
-  setWindowLoc('http://google.com')
-
-  expect(widget.wrongProtocol).toBe(false)
-  // @ts-expect-error
-  window.location = realLocation
-})
+// broken by jest 30
+// xtest('test wrongProtocol returning false', () => {
+//   const session = standardInitializer()
+//   const { widget } = session
+//   widget.setTrackData({
+//     uri: 'http://google.com/volvox-sorted.bam',
+//     locationType: 'UriLocation',
+//   })
+//   setWindowLoc('http://google.com')
+//
+//   expect(widget.wrongProtocol).toBe(false)
+//   // @ts-expect-error
+//   window.location = realLocation
+// })
 
 // broken by jest 30
-xtest('test wrongProtocol returning true', () => {
-  const session = standardInitializer()
-  const { widget } = session
-  widget.setTrackData({
-    uri: 'http://google.com/volvox-sorted.bam',
-    locationType: 'UriLocation',
-  })
-  setWindowLoc('https://google.com')
-  expect(widget.wrongProtocol).toBe(true)
-  // @ts-expect-error
-  window.location = realLocation
-})
+// xtest('test wrongProtocol returning true', () => {
+//   const session = standardInitializer()
+//   const { widget } = session
+//   widget.setTrackData({
+//     uri: 'http://google.com/volvox-sorted.bam',
+//     locationType: 'UriLocation',
+//   })
+//   setWindowLoc('https://google.com')
+//   expect(widget.wrongProtocol).toBe(true)
+//   // @ts-expect-error
+//   window.location = realLocation
+// })
 
 test('tests on an view without view.assemblyNames', () => {
   const pluginManager = new PluginManager([new FakeViewPlugin()])
