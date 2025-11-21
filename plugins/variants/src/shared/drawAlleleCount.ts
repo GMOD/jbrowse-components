@@ -11,25 +11,29 @@ export function getColorAlleleCount(
   drawReference = true,
 ) {
   if (ref === total) {
-    // empty string is not defined, but signals no draw
     return drawReference ? '#ccc' : ''
-  } else {
-    let a1
-    if (alt) {
-      a1 = colord(`hsl(200,50%,${80 - (alt / total) * 50}%)`)
-    }
-    if (alt2) {
-      const l = `hsla(0,100%,20%,${alt2 / total})`
-      // @ts-ignore
-      a1 = a1 ? a1.mix(l) : colord(l)
-    }
-    if (uncalled) {
-      const l = `hsl(50,50%,50%,${uncalled / total})`
-      // @ts-ignore
-      a1 = a1 ? a1.mix(l) : colord(l)
-    }
-    return a1?.toHex() || 'black'
   }
+
+  if (!alt && !alt2 && !uncalled) {
+    return ''
+  }
+
+  let a1
+  if (alt) {
+    const lightness = 80 - (alt / total) * 50
+    a1 = colord(`hsl(200,50%,${lightness}%)`)
+  }
+  if (alt2) {
+    const alpha = alt2 / total
+    const l = `hsla(0,100%,20%,${alpha})`
+    a1 = a1 ? a1.mix(l) : colord(l)
+  }
+  if (uncalled) {
+    const alpha = uncalled / total
+    const l = `hsl(50,50%,50%,${alpha})`
+    a1 = a1 ? a1.mix(l) : colord(l)
+  }
+  return a1?.toHex() || 'black'
 }
 
 export function drawColorAlleleCount(

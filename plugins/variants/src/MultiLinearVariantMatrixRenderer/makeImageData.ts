@@ -36,12 +36,15 @@ export async function makeImageData({
   const { statusCallback = () => {} } = renderArgs
   const h = canvasHeight / sources.length
   checkStopToken(stopToken)
+
+  const genotypesCache = new Map<string, Record<string, string>>()
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
       stopToken,
       features: features.values(),
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
+      genotypesCache,
     }),
   )
   checkStopToken(stopToken)
@@ -122,7 +125,12 @@ export async function makeImageData({
             }
           }
         } else {
-          const samp = feature.get('genotypes') as Record<string, string>
+          const featureId = feature.id()
+          let samp = genotypesCache.get(featureId)
+          if (!samp) {
+            samp = feature.get('genotypes') as Record<string, string>
+            genotypesCache.set(featureId, samp)
+          }
           const x = (idx / mafs.length) * canvasWidth
           const sln = sources.length
           for (let j = 0; j < sln; j++) {
