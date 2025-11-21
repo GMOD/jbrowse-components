@@ -1,5 +1,6 @@
 import { hierarchicalClusterWasm } from './wasm-wrapper.js'
 import type { ClusterResult, ClusterOptions } from './types.js'
+import { checkStopToken } from './stopToken.js'
 
 export async function clusterData({
   data,
@@ -13,12 +14,16 @@ export async function clusterData({
     data,
     sampleLabels,
     statusCallback: onProgress,
-    checkCancellation: () => {
-      if (!stopToken) {
-        return false
-      }
-      return stopToken.aborted
-    },
+    checkCancellation: stopToken
+      ? () => {
+          try {
+            checkStopToken(stopToken)
+            return false
+          } catch (e) {
+            return true
+          }
+        }
+      : undefined,
   })
 
   // Build clustersGivenK from merge information
