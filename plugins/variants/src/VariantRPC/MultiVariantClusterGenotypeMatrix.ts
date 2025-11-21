@@ -1,5 +1,5 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { clusterData } from '@jbrowse/core/util/cluster'
+import { clusterData } from '@jbrowse/clustering'
 
 import { getGenotypeMatrix } from './getGenotypeMatrix'
 
