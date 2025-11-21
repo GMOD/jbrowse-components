@@ -11,7 +11,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { saveAs } from 'file-saver-es'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import { expect } from 'vitest'
+import { expect, vi } from 'vitest'
 
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
@@ -167,13 +167,13 @@ export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
 }
 
 export async function mockConsole(fn: () => Promise<void>) {
-  const consoleMock = jest.spyOn(console, 'error').mockImplementation()
+  const consoleMock = vi.spyOn(console, 'error').mockImplementation(() => {})
   await fn()
   consoleMock.mockRestore()
 }
 
 export async function mockConsoleWarn(fn: () => Promise<void>) {
-  const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
+  const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => {})
   await fn()
   consoleMock.mockRestore()
 }

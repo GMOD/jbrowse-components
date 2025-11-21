@@ -1,5 +1,3 @@
-import { describe } from 'vitest'
-
 import SourcesGrid from './SourcesGrid'
 import SharedSetColorDialog from './ui/SetColorDialog'
 

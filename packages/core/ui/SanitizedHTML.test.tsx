@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { test } from 'vitest'
 
 import Sanitize from './SanitizedHTML'
 

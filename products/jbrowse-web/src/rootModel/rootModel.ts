@@ -193,7 +193,7 @@ export default function RootModel({
       /**
        * #action
        */
-      setSessionDB(sessionDB: IDBPDatabase<SessionDB>) {
+      setSessionDB(sessionDB?: IDBPDatabase<SessionDB>) {
         self.sessionDB = sessionDB
       },
     }))
@@ -205,15 +205,16 @@ export default function RootModel({
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            if (typeof indexedDB !== 'undefined') {
-              const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
-                upgrade(db) {
-                  db.createObjectStore('metadata')
-                  db.createObjectStore('sessions')
-                },
-              })
-              self.setSessionDB(sessionDB)
-            }
+            const sessionDB =
+              typeof indexedDB !== 'undefined'
+                ? await openDB<SessionDB>('sessionsDB', 2, {
+                    upgrade(db) {
+                      db.createObjectStore('metadata')
+                      db.createObjectStore('sessions')
+                    },
+                  })
+                : undefined
+            self.setSessionDB(sessionDB)
 
             addDisposer(
               self,
@@ -228,13 +229,17 @@ export default function RootModel({
                       // step 1. update the idb data according to whatever
                       // triggered the autorun
                       if (self.sessionDB) {
-                        await sessionDB.put('sessions', getSnapshot(s), s.id)
+                        await self.sessionDB.put(
+                          'sessions',
+                          getSnapshot(s),
+                          s.id,
+                        )
                         if (!isAlive(self)) {
                           return
                         }
 
                         const ret = await self.sessionDB.get('metadata', s.id)
-                        await sessionDB.put(
+                        await self.sessionDB.put(
                           'metadata',
                           {
                             ...ret,

@@ -1,6 +1,6 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-import { describe, expect, it, test } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { BaseFeatureDataAdapter } from './BaseAdapter'
 import { ConfigurationSchema } from '../configuration/configurationSchema'

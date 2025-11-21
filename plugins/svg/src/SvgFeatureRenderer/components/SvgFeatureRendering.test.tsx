@@ -108,7 +108,7 @@ test('click on one feature, and do not re-render', () => {
       detectRerender={() => counter++}
     />,
   )
-  fireEvent.click(getAllByTestId('box-one')[0])
+  fireEvent.click(getAllByTestId('box-one')[0]!)
   expect(counter).toBe(3)
 
   expect(container).toMatchSnapshot()

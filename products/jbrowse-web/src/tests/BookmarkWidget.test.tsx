@@ -1,7 +1,7 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { saveAs } from 'file-saver-es'
-import { beforeEach, test, vi } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 
 import { createView, doBeforeEach, setup } from './util'
 
