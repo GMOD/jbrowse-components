@@ -97,6 +97,10 @@ export default function MultiVariantBaseModelF(
          * #property
          */
         referenceDrawingMode: 'skip',
+        /**
+         * #property
+         */
+        clusterTree: types.frozen(),
       }),
     )
     .volatile(() => ({
@@ -134,10 +138,6 @@ export default function MultiVariantBaseModelF(
       hoveredGenotype: undefined as
         | { genotype: string; name: string }
         | undefined,
-      /**
-       * #volatile
-       */
-      clusterTree: undefined as unknown,
     }))
     .actions(self => ({
       /**
@@ -175,13 +175,13 @@ export default function MultiVariantBaseModelF(
        */
       clearLayout() {
         self.layout = []
-        self.clusterTree = undefined
+        self.clusterTree = cast(undefined)
       },
       /**
        * #action
        */
       setClusterTree(tree: unknown) {
-        self.clusterTree = tree
+        self.clusterTree = cast(tree)
       },
       /**
        * #action
@@ -304,9 +304,9 @@ export default function MultiVariantBaseModelF(
       get root() {
         const { hierarchy } = require('d3-hierarchy')
         const { ascending } = require('d3-array')
-        console.log('root getter, clusterTree:', self.clusterTree)
-        return self.clusterTree
-          ? hierarchy(self.clusterTree, (d: any) => d.children)
+        const tree = self.clusterTree
+        return tree
+          ? hierarchy(tree, (d: any) => d.children)
               .sum((d: any) => (d.children ? 0 : 1))
               .sort((a: any, b: any) =>
                 ascending(a.data.height || 1, b.data.height || 1),
