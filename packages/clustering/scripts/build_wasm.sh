@@ -13,14 +13,15 @@ cd "$(dirname "$0")/../src/wasm"
 emcc distance.c \
   -O3 \
   -s WASM=1 \
-  -s EXPORTED_RUNTIME_METHODS='["cwrap","ccall"]' \
+  -s EXPORTED_RUNTIME_METHODS='["cwrap","ccall","getValue","setValue","HEAPF32","HEAP32"]' \
+  -s EXPORTED_FUNCTIONS='["_malloc","_free","_euclideanDistance","_computeDistanceMatrix","_averageDistance"]' \
   -s ALLOW_MEMORY_GROWTH=1 \
   -s INITIAL_MEMORY=64MB \
   -s MAXIMUM_MEMORY=2GB \
   -s MODULARIZE=1 \
   -s EXPORT_ES6=1 \
   -s EXPORT_NAME='createClusteringModule' \
-  -s ENVIRONMENT='web,node' \
+  -s ENVIRONMENT='web,worker' \
   -s SINGLE_FILE=1 \
   -o distance.js
 

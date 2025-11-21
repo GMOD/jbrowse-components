@@ -2,13 +2,16 @@ import createClusteringModule from './distance.js'
 
 type ClusteringModule = Awaited<ReturnType<typeof createClusteringModule>>
 
-let modulePromise: Promise<ClusteringModule> | null = null
+let moduleInstance: ClusteringModule | null = null
 
 async function getModule() {
-  if (!modulePromise) {
-    modulePromise = createClusteringModule() as Promise<ClusteringModule>
+  if (!moduleInstance) {
+    // Standard Emscripten approach: just await the factory function
+    // With MODULARIZE=1, createClusteringModule() returns a Promise
+    // that resolves to the fully initialized Module
+    moduleInstance = await createClusteringModule()
   }
-  return modulePromise
+  return moduleInstance
 }
 
 export async function computeDistanceMatrixWasm(

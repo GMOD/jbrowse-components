@@ -1,9 +1,29 @@
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { computeDistanceMatrixWasm, averageDistanceWasm } from './wasm-wrapper.js'
 import type { ClusterNode, ClusterResult, ClusterOptions } from './types.js'
 
 function toP(n: number) {
   return Number.parseFloat((n * 100).toFixed(1))
+}
+
+function isWebWorker() {
+  return (
+    // @ts-expect-error WorkerGlobalScope may not be defined
+    typeof WorkerGlobalScope !== 'undefined' &&
+    // @ts-expect-error WorkerGlobalScope may not be defined
+    self instanceof WorkerGlobalScope
+  )
+}
+
+function checkStopToken(stopToken: string | undefined) {
+  if (typeof jest === 'undefined' && stopToken !== undefined && isWebWorker()) {
+    const xhr = new XMLHttpRequest()
+    xhr.open('GET', stopToken, false)
+    try {
+      xhr.send(null)
+    } catch (e) {
+      throw new Error('aborted')
+    }
+  }
 }
 
 export async function clusterData({
