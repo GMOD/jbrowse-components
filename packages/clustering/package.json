@@ -1,0 +1,35 @@
+{
+  "name": "@jbrowse/clustering",
+  "version": "3.7.0",
+  "description": "High-performance hierarchical clustering with WASM",
+  "keywords": [
+    "jbrowse",
+    "clustering",
+    "wasm",
+    "hierarchical-clustering"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/clustering"
+  },
+  "author": "JBrowse Team",
+  "main": "index.js",
+  "scripts": {
+    "test": "cd ../..; jest --passWithNoTests packages/clustering",
+    "coverage": "yarn test --coverage",
+    "clean": "rimraf dist tsconfig.build.tsbuildinfo",
+    "prebuild": "yarn clean && yarn build:wasm",
+    "build:wasm": "bash scripts/build_wasm.sh",
+    "prepack": "yarn build",
+    "build": "tsc -b tsconfig.build.json && cp package.json README.md ../../LICENSE dist/ && cp -r src/wasm/*.wasm dist/wasm/ 2>/dev/null || true"
+  },
+  "dependencies": {},
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  }
+}
