@@ -4,10 +4,20 @@ import type { ClusterResult, ClusterOptions } from './types.js'
 export async function clusterData({
   data,
   onProgress,
+  stopToken,
 }: ClusterOptions): Promise<ClusterResult> {
   onProgress?.('Running hierarchical clustering in WASM...')
 
-  const result = await hierarchicalClusterWasm(data)
+  const result = await hierarchicalClusterWasm({
+    data,
+    statusCallback: onProgress,
+    checkCancellation: () => {
+      if (!stopToken) {
+        return false
+      }
+      return stopToken.aborted
+    },
+  })
 
   // Build clustersGivenK from merge information
   const numSamples = data.length

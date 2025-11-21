@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <emscripten.h>
+#include <time.h>
 
 // Cluster node structure
 typedef struct {
@@ -16,6 +17,18 @@ typedef struct {
   int leftChild;     // Index of left child (-1 if leaf)
   int rightChild;    // Index of right child (-1 if leaf)
 } Cluster;
+
+// Progress callback type
+typedef int (*ProgressCallback)(int iteration, int totalIterations);
+
+// Global progress callback
+static ProgressCallback g_progressCallback = NULL;
+
+// Register progress callback from JavaScript
+EMSCRIPTEN_KEEPALIVE
+void setProgressCallback(ProgressCallback callback) {
+  g_progressCallback = callback;
+}
 
 /**
  * Compute Euclidean distance between two vectors
@@ -67,6 +80,7 @@ static float averageDistance(
 /**
  * Perform complete hierarchical clustering algorithm
  * Returns a tree structure encoded as parallel arrays
+ * Returns -1 if cancelled, 0 on success
  *
  * @param data Flattened 2D array of sample data
  * @param numSamples Number of samples
@@ -77,7 +91,7 @@ static float averageDistance(
  * @param outOrder Output array for final sample order (length numSamples)
  */
 EMSCRIPTEN_KEEPALIVE
-void hierarchicalCluster(
+int hierarchicalCluster(
   const float* data,
   int numSamples,
   int vectorSize,
@@ -110,8 +124,29 @@ void hierarchicalCluster(
     clusters[i].rightChild = -1;
   }
 
+  int totalIterations = numSamples - 1;
+  clock_t lastCallbackTime = clock();
+  const clock_t callbackInterval = CLOCKS_PER_SEC / 2; // 500ms
+
   // Hierarchical clustering loop
-  for (int iteration = 0; iteration < numSamples - 1; iteration++) {
+  for (int iteration = 0; iteration < totalIterations; iteration++) {
+    // Check if we should call progress callback (every 500ms)
+    clock_t currentTime = clock();
+    if (g_progressCallback != NULL &&
+        (currentTime - lastCallbackTime >= callbackInterval)) {
+      int shouldContinue = g_progressCallback(iteration, totalIterations);
+      if (!shouldContinue) {
+        // Cleanup on cancellation
+        for (int i = 0; i < numClusters; i++) {
+          free(clusters[i].indexes);
+        }
+        free(clusters);
+        free(distances);
+        return -1; // Cancelled
+      }
+      lastCallbackTime = currentTime;
+    }
+
     // Find closest pair of clusters
     float minDist = INFINITY;
     int minRow = 0;
@@ -182,4 +217,6 @@ void hierarchicalCluster(
   }
   free(clusters);
   free(distances);
+
+  return 0; // Success
 }

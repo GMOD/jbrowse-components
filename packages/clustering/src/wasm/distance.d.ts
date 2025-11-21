@@ -22,7 +22,10 @@ interface ClusteringModule {
     outMergeA: number,
     outMergeB: number,
     outOrder: number,
-  ) => void
+  ) => number
+  _setProgressCallback: (callbackPtr: number) => void
+  addFunction: (fn: Function, signature: string) => number
+  removeFunction: (ptr: number) => void
 }
 
 export default function createClusteringModule(): Promise<ClusteringModule>
