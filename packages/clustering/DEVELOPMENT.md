@@ -3,17 +3,20 @@
 ## Architecture
 
 This package uses a hybrid approach:
+
 - **WASM (C)**: Distance matrix computation (40-72% faster than JS)
 - **TypeScript**: Tree building, cluster merging, output formatting
 
 ### Why This Split?
 
 **WASM handles:**
+
 - ✅ `euclideanDistance()` - Tight numeric loops
 - ✅ `computeDistanceMatrix()` - O(n²) computation bottleneck
 - ✅ `averageDistance()` - Called many times during clustering
 
 **JavaScript/TypeScript handles:**
+
 - ✅ Tree structure manipulation (dynamic objects/arrays)
 - ✅ Cluster merging logic
 - ✅ Output formatting (Newick, JSON, text)
@@ -24,12 +27,12 @@ This package uses a hybrid approach:
 From testing (see `/benchmark_wasm.js` in project root):
 
 | Samples | JS Baseline | WASM f32 | Improvement |
-|---------|------------|----------|-------------|
-| 50      | 31.64ms    | 17.30ms  | 45.33%      |
-| 100     | 30.23ms    | 16.74ms  | 44.61%      |
-| 200     | 14.87ms    | 4.13ms   | **72.24%**  |
-| 500     | 14.11ms    | 6.29ms   | 55.46%      |
-| 1000    | 18.21ms    | 10.91ms  | 40.11%      |
+| ------- | ----------- | -------- | ----------- |
+| 50      | 31.64ms     | 17.30ms  | 45.33%      |
+| 100     | 30.23ms     | 16.74ms  | 44.61%      |
+| 200     | 14.87ms     | 4.13ms   | **72.24%**  |
+| 500     | 14.11ms     | 6.29ms   | 55.46%      |
+| 1000    | 18.21ms     | 10.91ms  | 40.11%      |
 
 ## Building
 
@@ -108,6 +111,7 @@ emcc distance.c \
 ## Future Optimizations
 
 Potential improvements:
+
 - [ ] SIMD vectorization for distance calculations
 - [ ] Parallel distance matrix computation
 - [ ] Incremental clustering for very large datasets

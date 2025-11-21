@@ -16,12 +16,16 @@ async function main() {
     numSamples,
   )
 
-  console.log(`Clustering ${numSamples} samples with ${vectorSize} dimensions\n`)
+  console.log(
+    `Clustering ${numSamples} samples with ${vectorSize} dimensions\n`,
+  )
 
   // Run clustering with progress callback
   const result = await clusterData({
     data,
-    onProgress: msg => console.log(`[Progress] ${msg}`),
+    onProgress: msg => {
+      console.log(`[Progress] ${msg}`)
+    },
   })
 
   console.log('\n=== Hierarchical Tree (Text) ===')
@@ -29,12 +33,10 @@ async function main() {
 
   console.log('=== Newick Format ===')
   const newick = toNewick(result.tree, sampleLabels)
-  console.log(newick + ';\n')
+  console.log(`${newick};\n`)
 
   console.log('=== JSON Format ===')
-  console.log(
-    JSON.stringify(treeToJSON(result.tree, sampleLabels), null, 2),
-  )
+  console.log(JSON.stringify(treeToJSON(result.tree, sampleLabels), null, 2))
 
   console.log('\n=== Final Cluster Order ===')
   console.log(result.order.map(i => sampleLabels[i]).join(' -> '))

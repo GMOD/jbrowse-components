@@ -1,6 +1,7 @@
-import { hierarchicalClusterWasm } from './wasm-wrapper.js'
-import type { ClusterResult, ClusterOptions } from './types.js'
 import { checkStopToken } from './stopToken.js'
+import { hierarchicalClusterWasm } from './wasm-wrapper.js'
+
+import type { ClusterOptions, ClusterResult } from './types.js'
 
 export async function clusterData({
   data,
@@ -31,7 +32,9 @@ export async function clusterData({
   const clustersGivenK: number[][][] = [[]]
 
   // Start with each sample in its own cluster
-  const clusterSets: number[][] = Array.from({ length: numSamples }, (_, i) => [i])
+  const clusterSets: number[][] = Array.from({ length: numSamples }, (_, i) => [
+    i,
+  ])
 
   for (let i = 0; i < numSamples - 1; i++) {
     const [mergeA, mergeB] = result.merges[i]!
@@ -40,10 +43,10 @@ export async function clusterData({
     clustersGivenK.push(clusterSets.map(s => [...s]))
 
     // Merge clusters
-    const newCluster = [...clusterSets[mergeA!]!, ...clusterSets[mergeB!]!]
+    const newCluster = [...clusterSets[mergeA]!, ...clusterSets[mergeB]!]
 
-    const removeFirst = Math.max(mergeA!, mergeB!)
-    const removeSecond = Math.min(mergeA!, mergeB!)
+    const removeFirst = Math.max(mergeA, mergeB)
+    const removeSecond = Math.min(mergeA, mergeB)
 
     clusterSets.splice(removeFirst, 1)
     clusterSets.splice(removeSecond, 1)

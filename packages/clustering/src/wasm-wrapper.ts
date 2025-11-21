@@ -1,4 +1,5 @@
 import createClusteringModule from './distance.js'
+
 import type { ClusterNode } from './types.js'
 
 type ClusteringModule = Awaited<ReturnType<typeof createClusteringModule>>
@@ -16,7 +17,7 @@ export interface ClusteringResult {
   tree: ClusterNode
   order: number[]
   heights: Float32Array
-  merges: Array<[number, number]>
+  merges: [number, number][]
 }
 
 export interface ClusteringOptions {
@@ -115,7 +116,7 @@ export async function hierarchicalClusterWasm(
 
     // Rebuild tree structure from merge information
     const tree = rebuildTree(numSamples, heights, mergeA, mergeB, sampleLabels)
-    const merges: Array<[number, number]> = []
+    const merges: [number, number][] = []
     for (let i = 0; i < numSamples - 1; i++) {
       merges.push([mergeA[i]!, mergeB[i]!])
     }
