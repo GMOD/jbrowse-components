@@ -1,4 +1,4 @@
-import createClusteringModule from './wasm/distance.js'
+import createClusteringModule from './distance.js'
 
 type ClusteringModule = Awaited<ReturnType<typeof createClusteringModule>>
 

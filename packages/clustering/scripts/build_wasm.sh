@@ -9,7 +9,7 @@ source ~/emsdk/emsdk_env.sh
 # Navigate to the wasm directory
 cd "$(dirname "$0")/../src/wasm"
 
-# Compile C to WASM
+# Compile C to WASM with inline base64
 emcc distance.c \
   -O3 \
   -s WASM=1 \
@@ -21,9 +21,9 @@ emcc distance.c \
   -s EXPORT_ES6=1 \
   -s EXPORT_NAME='createClusteringModule' \
   -s ENVIRONMENT='web,node' \
+  -s SINGLE_FILE=1 \
   -o distance.js
 
 echo "WASM module built successfully!"
-echo "Output files:"
+echo "Output file (with inlined WASM):"
 echo "  - src/wasm/distance.js"
-echo "  - src/wasm/distance.wasm"
