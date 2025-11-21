@@ -21,6 +21,7 @@ export interface ClusteringResult {
 
 export interface ClusteringOptions {
   data: number[][]
+  sampleLabels?: string[]
   statusCallback?: (message: string) => void
   checkCancellation?: () => boolean
 }
@@ -28,7 +29,7 @@ export interface ClusteringOptions {
 export async function hierarchicalClusterWasm(
   options: ClusteringOptions,
 ): Promise<ClusteringResult> {
-  const { data, statusCallback, checkCancellation } = options
+  const { data, sampleLabels, statusCallback, checkCancellation } = options
   const module = await getModule()
   const numSamples = data.length
   const vectorSize = data[0]?.length ?? 0
@@ -108,7 +109,7 @@ export async function hierarchicalClusterWasm(
     order.set(module.HEAP32.subarray(orderPtr / 4, orderPtr / 4 + numSamples))
 
     // Rebuild tree structure from merge information
-    const tree = rebuildTree(numSamples, heights, mergeA, mergeB)
+    const tree = rebuildTree(numSamples, heights, mergeA, mergeB, sampleLabels)
     const merges: Array<[number, number]> = []
     for (let i = 0; i < numSamples - 1; i++) {
       merges.push([mergeA[i]!, mergeB[i]!])
@@ -140,12 +141,13 @@ function rebuildTree(
   heights: Float32Array,
   mergeA: Int32Array,
   mergeB: Int32Array,
+  sampleLabels?: string[],
 ): ClusterNode {
   // Create leaf nodes
   const nodes: ClusterNode[] = []
   for (let i = 0; i < numSamples; i++) {
     nodes.push({
-      indexes: [i],
+      name: sampleLabels?.[i] ?? `Sample ${i}`,
       height: 0,
     })
   }
@@ -155,10 +157,13 @@ function rebuildTree(
     const leftIdx = mergeA[i]!
     const rightIdx = mergeB[i]!
 
+    const leftNode = nodes[leftIdx]!
+    const rightNode = nodes[rightIdx]!
+
     const newNode: ClusterNode = {
-      indexes: [...nodes[leftIdx]!.indexes, ...nodes[rightIdx]!.indexes],
+      name: `Cluster ${i}`,
       height: heights[i]!,
-      children: [nodes[leftIdx]!, nodes[rightIdx]!],
+      children: [leftNode, rightNode],
     }
 
     // Replace the merged clusters with the new one

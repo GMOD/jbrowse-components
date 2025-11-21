@@ -1,5 +1,5 @@
 export interface ClusterNode {
-  indexes: number[]
+  name: string
   height: number
   children?: ClusterNode[]
 }
@@ -13,6 +13,7 @@ export interface ClusterResult {
 
 export interface ClusterOptions {
   data: number[][]
+  sampleLabels?: string[]
   onProgress?: (message: string) => void
   stopToken?: string
 }

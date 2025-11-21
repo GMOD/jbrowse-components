@@ -3,6 +3,7 @@ import type { ClusterResult, ClusterOptions } from './types.js'
 
 export async function clusterData({
   data,
+  sampleLabels,
   onProgress,
   stopToken,
 }: ClusterOptions): Promise<ClusterResult> {
@@ -10,6 +11,7 @@ export async function clusterData({
 
   const result = await hierarchicalClusterWasm({
     data,
+    sampleLabels,
     statusCallback: onProgress,
     checkCancellation: () => {
       if (!stopToken) {
