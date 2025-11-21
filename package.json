@@ -52,6 +52,8 @@
     "@types/cors": "^2.8.13",
     "@types/cross-spawn": "^6.0.2",
     "@types/crypto-js": "^4.0.1",
+    "@types/d3-array": "^3.2.2",
+    "@types/d3-hierarchy": "^3.1.7",
     "@types/d3-scale": "^4.0.8",
     "@types/decompress": "^4.2.4",
     "@types/deep-equal": "^1.0.1",

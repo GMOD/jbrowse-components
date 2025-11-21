@@ -112,7 +112,7 @@ export async function makeImageData(
             const { name } = sources[j]!
             const genotype = samp[name]
             if (genotype) {
-              const cacheKey = genotype + ':' + mostFrequentAlt
+              const cacheKey = `${genotype}:${mostFrequentAlt}`
               let c = colorCache[cacheKey]
               if (c === undefined) {
                 let alt = 0
@@ -178,7 +178,7 @@ export async function makeImageData(
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (items.length) {
     for (let i = 0, l = coords.length; i < l; i += 4) {
-      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2]!, coords[i + 3]!)
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
     }
   } else {
     flatbush.add(0, 0)

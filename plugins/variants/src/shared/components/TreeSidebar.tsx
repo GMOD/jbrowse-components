@@ -4,11 +4,11 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
+import type { TreeSidebarModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebarModel } from './types'
 
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
@@ -38,6 +38,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
   const [nodeIndex, setNodeIndex] = useState<Flatbush | null>(null)
   const [nodeData, setNodeData] = useState<any[]>([])
 
+  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
   const { totalHeight, hierarchy, treeAreaWidth, height, scrollTop } = model
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
@@ -61,6 +62,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
   // Build spatial index for tree nodes (branch points only) using autorun
   useEffect(() => {
     return autorun(() => {
+      // eslint-disable-next-line  @typescript-eslint/no-unused-vars
       const { hierarchy: h, treeAreaWidth: w, totalHeight: th } = model
       if (!h) {
         setNodeIndex(null)

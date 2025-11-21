@@ -12,6 +12,8 @@ import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 import { cast, types } from 'mobx-state-tree'
+import { hierarchy } from 'd3-hierarchy'
+import { ascending } from 'd3-array'
 
 import { getSources } from './getSources'
 

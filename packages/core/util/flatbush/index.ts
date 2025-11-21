@@ -85,7 +85,7 @@ export default class Flatbush {
 
     return new Flatbush(
       numItems!,
-      nodeSize!,
+      nodeSize,
       ArrayType,
       undefined,
       data,
@@ -160,8 +160,16 @@ export default class Flatbush {
       const newData = (this.data = new ArrayBufferType(
         8 + nodesByteSize + numNodes * this.IndexArrayType.BYTES_PER_ELEMENT,
       ))
-      this._boxes = new ArrayType(newData as ArrayBuffer, 8, numNodes * 4) as TypedArray
-      this._indices = new this.IndexArrayType(newData as ArrayBuffer, 8 + nodesByteSize, numNodes)
+      this._boxes = new ArrayType(
+        newData as ArrayBuffer,
+        8,
+        numNodes * 4,
+      ) as TypedArray
+      this._indices = new this.IndexArrayType(
+        newData as ArrayBuffer,
+        8 + nodesByteSize,
+        numNodes,
+      )
       this._pos = 0
       this.minX = Infinity
       this.minY = Infinity

@@ -24,7 +24,15 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
   addDisposer(
     self,
     autorun(() => {
-      const { treeCanvas, hierarchy, treeAreaWidth, height, scrollTop, totalHeight } = self
+      const {
+        treeCanvas,
+        hierarchy,
+        treeAreaWidth,
+        height,
+        scrollTop,
+        // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+        totalHeight,
+      } = self
       if (!treeCanvas || !hierarchy) {
         return
       }
@@ -77,8 +85,16 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
   addDisposer(
     self,
     autorun(() => {
-      const { mouseoverCanvas, hierarchy, rowHeight, hoveredTreeNode, height, scrollTop, totalHeight } =
-        self
+      const {
+        mouseoverCanvas,
+        hierarchy,
+        rowHeight,
+        hoveredTreeNode,
+        height,
+        scrollTop,
+        // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+        totalHeight,
+      } = self
       if (!mouseoverCanvas) {
         return
       }
