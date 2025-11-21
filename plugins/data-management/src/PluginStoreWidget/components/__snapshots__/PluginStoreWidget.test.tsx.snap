@@ -9,8 +9,8 @@ exports[`renders with the available plugins 1`] = `
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1d1r0im-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="false"
-        for="«r1»"
-        id="«r1»-label"
+        for="_r_1_"
+        id="_r_1_-label"
       >
         Filter plugins
       </label>
@@ -20,7 +20,7 @@ exports[`renders with the available plugins 1`] = `
         <input
           aria-invalid="false"
           class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-          id="«r1»"
+          id="_r_1_"
           type="text"
           value=""
         />
@@ -97,7 +97,7 @@ exports[`renders with the available plugins 1`] = `
             class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
           >
             <div
-              class="MuiAccordion-region"
+              class="MuiAccordion-region css-at4ued-MuiAccordion-region"
               role="region"
             >
               <div
@@ -1153,7 +1153,7 @@ exports[`renders with the available plugins 1`] = `
             class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
           >
             <div
-              class="MuiAccordion-region"
+              class="MuiAccordion-region css-at4ued-MuiAccordion-region"
               role="region"
             >
               <div

@@ -1,4 +1,5 @@
 import { detectSimplexModifications } from './detectSimplexModifications'
+import { describe, it, expect } from 'vitest'
 
 describe('detectSimplexModifications', () => {
   it('should identify simplex modification (C+m without G-m)', () => {

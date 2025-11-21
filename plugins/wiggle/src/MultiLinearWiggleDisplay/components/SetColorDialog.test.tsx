@@ -1,12 +1,13 @@
 import { render } from '@testing-library/react'
 
 import SetColorDialog from './SetColorDialog'
+import { test, beforeEach, expect, vi, describe } from 'vitest'
 
 import type { Source } from '../../util'
 describe('SetColorDialog', () => {
-  const mockSetLayout = jest.fn()
-  const mockClearLayout = jest.fn()
-  const mockHandleClose = jest.fn()
+  const mockSetLayout = vi.fn()
+  const mockClearLayout = vi.fn()
+  const mockHandleClose = vi.fn()
   const mockSources: Source[] = [
     {
       name: 'source1',
@@ -32,7 +33,7 @@ describe('SetColorDialog', () => {
     clearLayout: mockClearLayout,
   }
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
   test('renders without crashing', () => {
     const { container } = render(
