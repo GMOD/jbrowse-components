@@ -71,8 +71,8 @@ exports[`renders 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-113d811-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for="«r2»"
-                      id="«r2»-label"
+                      for="_r_2_"
+                      id="_r_2_-label"
                     >
                       connectionType
                     </label>
@@ -80,12 +80,12 @@ exports[`renders 1`] = `
                       class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiSelect-root css-1blp12k-MuiInputBase-root-MuiOutlinedInput-root"
                     >
                       <div
-                        aria-describedby="«r2»-helper-text"
+                        aria-describedby="_r_2_-helper-text"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                        aria-labelledby="«r2»-label «r2»"
+                        aria-labelledby="_r_2_-label _r_2_"
                         class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNativeSelect-root-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
-                        id="«r2»"
+                        id="_r_2_"
                         role="combobox"
                         tabindex="0"
                       >
@@ -124,7 +124,7 @@ exports[`renders 1`] = `
                     </div>
                     <p
                       class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-er619e-MuiFormHelperText-root"
-                      id="«r2»-helper-text"
+                      id="_r_2_-helper-text"
                     >
                       A track or assembly hub in the Track Hub format
                       <a

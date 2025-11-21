@@ -2,12 +2,11 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { fireEvent, render } from '@testing-library/react'
+import { test, expect } from 'vitest'
 
 import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 import SvgOverlay from './SvgOverlay'
-
-import '@testing-library/jest-dom'
 
 test('no features', () => {
   const { container } = render(
@@ -65,7 +64,7 @@ test('one feature', () => {
 
 test('click on one feature, and do not re-render', () => {
   let counter = 0
-  const { container, getByTestId } = render(
+  const { container, getAllByTestId } = render(
     <Rendering
       blockKey="hello"
       colorByCDS={false}
@@ -109,7 +108,7 @@ test('click on one feature, and do not re-render', () => {
       detectRerender={() => counter++}
     />,
   )
-  fireEvent.click(getByTestId('box-one'))
+  fireEvent.click(getAllByTestId('box-one')[0])
   expect(counter).toBe(3)
 
   expect(container).toMatchSnapshot()

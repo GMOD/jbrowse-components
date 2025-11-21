@@ -14,7 +14,7 @@ exports[`test getfeatures on gff plain text adapter 1`] = `
     "strand": undefined,
     "subfeatures": [],
     "type": "contig",
-    "uniqueId": "adp--751649795-offset-794328",
+    "uniqueId": "test-offset-794328",
   },
   {
     "derived_features": [],
@@ -29,7 +29,7 @@ exports[`test getfeatures on gff plain text adapter 1`] = `
     "strand": 1,
     "subfeatures": [],
     "type": "remark",
-    "uniqueId": "adp--751649795-offset-794371",
+    "uniqueId": "test-offset-794371",
   },
   {
     "derived_features": [],
@@ -44,7 +44,7 @@ exports[`test getfeatures on gff plain text adapter 1`] = `
     "strand": 1,
     "subfeatures": [],
     "type": "remark",
-    "uniqueId": "adp--751649795-offset-794440",
+    "uniqueId": "test-offset-794440",
   },
   {
     "derived_features": [],
@@ -59,7 +59,7 @@ exports[`test getfeatures on gff plain text adapter 1`] = `
     "strand": -1,
     "subfeatures": [],
     "type": "remark",
-    "uniqueId": "adp--751649795-offset-794514",
+    "uniqueId": "test-offset-794514",
   },
 ]
 `;

@@ -63,127 +63,127 @@ test('renders setup wizard', async () => {
   )
 }, 15000)
 
-xtest('renders one track, one region', async () => {
-  const session = createTestSession()
-  session.addAssemblyConf(assemblyConf)
-  session.addTrackConf({
-    trackId: 'testConfig',
-    assemblyNames: ['volMyt1'],
-    name: 'Foo Track',
-    type: 'BasicTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
-  })
-  session.addView('LinearGenomeView', {
-    type: 'LinearGenomeView',
-    id: 'lgv',
-    offsetPx: 0,
-    bpPerPx: 1,
-    tracks: [
-      {
-        id: 'foo',
-        type: 'BasicTrack',
-        height: 20,
-        configuration: 'testConfig',
-        displays: [
-          {
-            type: 'LinearBareDisplay',
-            configuration: 'testConfig-LinearBareDisplay',
-          },
-        ],
-      },
-    ],
-    displayedRegions: [
-      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
-    ],
-  })
-  const model = session.views[0]
-  model.setWidth(800)
-  const { container, queryAllByTestId, getByPlaceholderText, findByText } =
-    render(<LGV model={model} />)
-  await findByText('Foo Track')
-  // test needs to wait until it's updated to display 100 bp in the header to
-  // make snapshot pass
-  await findByText('100bp')
-
-  await waitFor(() => {
-    expect(
-      (getByPlaceholderText('Search for location') as HTMLInputElement).value,
-    ).toEqual('ctgA:1..100')
-  })
-  await waitFor(() => {
-    expect(queryAllByTestId('svgfeatures').length).toBe(1)
-  })
-  // snapshot has no features rendered
-  expect(container).toMatchSnapshot()
-})
-
-xtest('renders two tracks, two regions', async () => {
-  const session = createTestSession()
-  session.addAssemblyConf(assemblyConf)
-  session.addTrackConf({
-    trackId: 'testConfig',
-    name: 'Foo Track',
-    assemblyNames: ['volMyt1'],
-    type: 'BasicTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
-  })
-
-  session.addTrackConf({
-    trackId: 'testConfig2',
-    name: 'Bar Track',
-    assemblyNames: ['volMyt1'],
-    type: 'BasicTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
-  })
-  session.addView('LinearGenomeView', {
-    id: 'lgv',
-    offsetPx: 0,
-    bpPerPx: 1,
-    displayedRegions: [
-      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
-      {
-        assemblyName: 'volMyt1',
-        refName: 'ctgB',
-        start: 1000,
-        end: 2000,
-      },
-    ],
-    tracks: [
-      {
-        id: 'foo',
-        type: 'BasicTrack',
-        height: 20,
-        configuration: 'testConfig',
-        displays: [
-          {
-            type: 'LinearBareDisplay',
-            configuration: 'testConfig-LinearBareDisplay',
-          },
-        ],
-      },
-      {
-        id: 'bar',
-        type: 'BasicTrack',
-        height: 20,
-        configuration: 'testConfig2',
-        displays: [
-          {
-            type: 'LinearBareDisplay',
-            configuration: 'testConfig2-LinearBareDisplay',
-          },
-        ],
-      },
-    ],
-  })
-  const model = session.views[0]
-  model.setWidth(800)
-  const { container, findByDisplayValue, findByText, queryAllByTestId } =
-    render(<LGV model={model} />)
-  await findByText('Foo Track')
-  await findByText('798bp')
-  await findByDisplayValue('ctgA:1..100 ctgB:1,001..1,698')
-  await waitFor(() => {
-    expect(queryAllByTestId('svgfeatures').length).toBe(4)
-  })
-  expect(container).toMatchSnapshot()
-}, 15000)
+// xtest('renders one track, one region', async () => {
+//   const session = createTestSession()
+//   session.addAssemblyConf(assemblyConf)
+//   session.addTrackConf({
+//     trackId: 'testConfig',
+//     assemblyNames: ['volMyt1'],
+//     name: 'Foo Track',
+//     type: 'BasicTrack',
+//     adapter: { type: 'FromConfigAdapter', features: [] },
+//   })
+//   session.addView('LinearGenomeView', {
+//     type: 'LinearGenomeView',
+//     id: 'lgv',
+//     offsetPx: 0,
+//     bpPerPx: 1,
+//     tracks: [
+//       {
+//         id: 'foo',
+//         type: 'BasicTrack',
+//         height: 20,
+//         configuration: 'testConfig',
+//         displays: [
+//           {
+//             type: 'LinearBareDisplay',
+//             configuration: 'testConfig-LinearBareDisplay',
+//           },
+//         ],
+//       },
+//     ],
+//     displayedRegions: [
+//       { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
+//     ],
+//   })
+//   const model = session.views[0]
+//   model.setWidth(800)
+//   const { container, queryAllByTestId, getByPlaceholderText, findByText } =
+//     render(<LGV model={model} />)
+//   await findByText('Foo Track')
+//   // test needs to wait until it's updated to display 100 bp in the header to
+//   // make snapshot pass
+//   await findByText('100bp')
+//
+//   await waitFor(() => {
+//     expect(
+//       (getByPlaceholderText('Search for location') as HTMLInputElement).value,
+//     ).toEqual('ctgA:1..100')
+//   })
+//   await waitFor(() => {
+//     expect(queryAllByTestId('svgfeatures').length).toBe(1)
+//   })
+//   // snapshot has no features rendered
+//   expect(container).toMatchSnapshot()
+// })
+//
+// xtest('renders two tracks, two regions', async () => {
+//   const session = createTestSession()
+//   session.addAssemblyConf(assemblyConf)
+//   session.addTrackConf({
+//     trackId: 'testConfig',
+//     name: 'Foo Track',
+//     assemblyNames: ['volMyt1'],
+//     type: 'BasicTrack',
+//     adapter: { type: 'FromConfigAdapter', features: [] },
+//   })
+//
+//   session.addTrackConf({
+//     trackId: 'testConfig2',
+//     name: 'Bar Track',
+//     assemblyNames: ['volMyt1'],
+//     type: 'BasicTrack',
+//     adapter: { type: 'FromConfigAdapter', features: [] },
+//   })
+//   session.addView('LinearGenomeView', {
+//     id: 'lgv',
+//     offsetPx: 0,
+//     bpPerPx: 1,
+//     displayedRegions: [
+//       { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
+//       {
+//         assemblyName: 'volMyt1',
+//         refName: 'ctgB',
+//         start: 1000,
+//         end: 2000,
+//       },
+//     ],
+//     tracks: [
+//       {
+//         id: 'foo',
+//         type: 'BasicTrack',
+//         height: 20,
+//         configuration: 'testConfig',
+//         displays: [
+//           {
+//             type: 'LinearBareDisplay',
+//             configuration: 'testConfig-LinearBareDisplay',
+//           },
+//         ],
+//       },
+//       {
+//         id: 'bar',
+//         type: 'BasicTrack',
+//         height: 20,
+//         configuration: 'testConfig2',
+//         displays: [
+//           {
+//             type: 'LinearBareDisplay',
+//             configuration: 'testConfig2-LinearBareDisplay',
+//           },
+//         ],
+//       },
+//     ],
+//   })
+//   const model = session.views[0]
+//   model.setWidth(800)
+//   const { container, findByDisplayValue, findByText, queryAllByTestId } =
+//     render(<LGV model={model} />)
+//   await findByText('Foo Track')
+//   await findByText('798bp')
+//   await findByDisplayValue('ctgA:1..100 ctgB:1,001..1,698')
+//   await waitFor(() => {
+//     expect(queryAllByTestId('svgfeatures').length).toBe(4)
+//   })
+//   expect(container).toMatchSnapshot()
+// }, 15000)

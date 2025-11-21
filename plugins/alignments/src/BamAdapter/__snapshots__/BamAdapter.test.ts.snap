@@ -29,7 +29,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-10158054",
+    "uniqueId": "test-10158054",
   },
   {
     "CIGAR": "100M",
@@ -58,7 +58,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-10158322",
+    "uniqueId": "test-10158322",
   },
   {
     "CIGAR": "100M",
@@ -87,7 +87,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-10158581",
+    "uniqueId": "test-10158581",
   },
   {
     "CIGAR": "100M",
@@ -116,7 +116,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-10158847",
+    "uniqueId": "test-10158847",
   },
   {
     "CIGAR": "100M",
@@ -145,7 +145,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-12607066",
+    "uniqueId": "test-12607066",
   },
   {
     "CIGAR": "100M",
@@ -174,7 +174,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-12607328",
+    "uniqueId": "test-12607328",
   },
   {
     "CIGAR": "100M",
@@ -203,7 +203,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-12607590",
+    "uniqueId": "test-12607590",
   },
   {
     "CIGAR": "100M",
@@ -232,7 +232,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-12607851",
+    "uniqueId": "test-12607851",
   },
   {
     "CIGAR": "100M",
@@ -261,7 +261,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-12608107",
+    "uniqueId": "test-12608107",
   },
   {
     "CIGAR": "100M",
@@ -290,7 +290,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--1141553224-12608367",
+    "uniqueId": "test-12608367",
   },
 ]
 `;

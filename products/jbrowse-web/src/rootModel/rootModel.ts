@@ -205,13 +205,15 @@ export default function RootModel({
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
-              upgrade(db) {
-                db.createObjectStore('metadata')
-                db.createObjectStore('sessions')
-              },
-            })
-            self.setSessionDB(sessionDB)
+            if (typeof indexedDB !== 'undefined') {
+              const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
+                upgrade(db) {
+                  db.createObjectStore('metadata')
+                  db.createObjectStore('sessions')
+                },
+              })
+              self.setSessionDB(sessionDB)
+            }
 
             addDisposer(
               self,
