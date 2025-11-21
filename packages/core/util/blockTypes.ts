@@ -100,6 +100,8 @@ export class BaseBlock {
 
   public isLeftEndOfDisplayedRegion?: boolean
 
+  public isRightEndOfDisplayedRegion?: boolean
+
   /**
    * a block that should be shown as filled with data
    */

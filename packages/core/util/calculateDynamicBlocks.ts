@@ -1,15 +1,9 @@
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
-
 import { assembleLocStringFast } from '.'
-import {
-  BlockSet,
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from './blockTypes'
+import { BlockSet } from './blockTypes'
 import { intersection2 } from './range'
 
 import type { Base1DViewModel } from './calculateStaticBlocks'
+import calculateStaticBlocks from './calculateStaticBlocks'
 
 /**
  * returns a BlockSet of which the `blocks` attribute is an array of 'dynamic
@@ -35,150 +29,93 @@ export default function calculateDynamicBlocks(
   padding = true,
   elision = true,
 ) {
-  const {
-    offsetPx,
-    displayedRegions,
-    bpPerPx,
-    width,
-    minimumBlockWidth,
-    interRegionPaddingWidth,
-  } = model
+  const { offsetPx, bpPerPx, width } = model
 
   if (!width) {
     throw new Error('view has no width, cannot calculate displayed blocks')
   }
 
-  // Pre-calculate inverse to avoid repeated divisions
-  const invBpPerPx = 1 / bpPerPx
+  const staticBlocks = calculateStaticBlocks(
+    model,
+    padding,
+    elision,
+  ).getBlocks()
   const blocks = new BlockSet()
-  let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
-  for (
-    let regionNumber = 0;
-    regionNumber < displayedRegions.length;
-    regionNumber++
-  ) {
-    const region = displayedRegions[regionNumber]
-    const {
-      assemblyName,
-      refName,
-      start: regionStart,
-      end: regionEnd,
-      reversed,
-    } = region!
-    const displayedRegionRightPx =
-      displayedRegionLeftPx + (regionEnd - regionStart) * invBpPerPx
-
-    const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
-    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
-
+  for (let i = 0; i < staticBlocks.length; i++) {
+    const block = staticBlocks[i]!
+    const blockLeftPx = block.offsetPx
+    const blockRightPx = blockLeftPx + block.widthPx
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,
       windowRightPx,
-      displayedRegionLeftPx,
-      displayedRegionRightPx,
+      blockLeftPx,
+      blockRightPx,
     )
-    if (leftPx !== undefined && rightPx !== undefined) {
-      // this displayed region overlaps the view, so make a record for it
-      let start: number
-      let end: number
-      let isLeftEndOfDisplayedRegion: boolean
-      let isRightEndOfDisplayedRegion: boolean
-      let blockOffsetPx: number
-      if (reversed) {
-        start = Math.max(
-          regionStart,
-          regionEnd - (rightPx - displayedRegionLeftPx) * bpPerPx,
-        )
-        end = regionEnd - (leftPx - displayedRegionLeftPx) * bpPerPx
-        isLeftEndOfDisplayedRegion = end === regionEnd
-        isRightEndOfDisplayedRegion = start === regionStart
-        blockOffsetPx = displayedRegionLeftPx + (regionEnd - end) * invBpPerPx
-      } else {
-        start = (leftPx - displayedRegionLeftPx) * bpPerPx + regionStart
-        end = Math.min(
-          regionEnd,
-          (rightPx - displayedRegionLeftPx) * bpPerPx + regionStart,
-        )
-        isLeftEndOfDisplayedRegion = start === regionStart
-        isRightEndOfDisplayedRegion = end === regionEnd
-        blockOffsetPx =
-          displayedRegionLeftPx + (start - regionStart) * invBpPerPx
+    if (leftPx === undefined && rightPx === undefined) {
+      continue
+    }
+    if (windowLeftPx > blockLeftPx && windowLeftPx < blockRightPx) {
+      // Need to trim left
+      if (block.isLeftEndOfDisplayedRegion === true) {
+        block.isLeftEndOfDisplayedRegion = false
       }
-      const widthPx = (end - start) * invBpPerPx
-      const blockData = {
-        assemblyName,
-        refName,
-        start,
-        end,
-        reversed,
-        offsetPx: blockOffsetPx,
-        parentRegion,
-        regionNumber,
-        widthPx,
-        isLeftEndOfDisplayedRegion,
-        isRightEndOfDisplayedRegion,
-        key: `${assembleLocStringFast({
-          assemblyName,
-          refName,
-          start,
-          end,
-          reversed,
-        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
-      }
-
-      if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
-        blocks.push(
-          new InterRegionPaddingBlock({
-            key: `${blockData.key}-beforeFirstRegion`,
-            widthPx: -offsetPx,
-            offsetPx: blockData.offsetPx + offsetPx,
-            variant: 'boundary',
-          }),
-        )
-      }
-
-      if (elision && regionWidthPx < minimumBlockWidth) {
-        blocks.push(new ElidedBlock(blockData))
-      } else {
-        blocks.push(new ContentBlock(blockData))
-      }
-
-      if (padding) {
-        // insert a inter-region padding block if we are crossing a displayed region
-        if (
-          regionWidthPx >= minimumBlockWidth &&
-          blockData.isRightEndOfDisplayedRegion &&
-          regionNumber < displayedRegions.length - 1
-        ) {
-          blocks.push(
-            new InterRegionPaddingBlock({
-              key: `${blockData.key}-rightpad`,
-              widthPx: interRegionPaddingWidth,
-              offsetPx: blockData.offsetPx + blockData.widthPx,
-            }),
-          )
-          displayedRegionLeftPx += interRegionPaddingWidth
+      const offsetDiff = windowLeftPx - block.offsetPx
+      block.offsetPx += offsetDiff
+      block.widthPx -= offsetDiff
+      if (block.type === 'ContentBlock') {
+        const bpDiff = offsetDiff * bpPerPx
+        if (block.reversed) {
+          block.end -= bpDiff
+        } else {
+          block.start += bpDiff
         }
-
-        if (
-          regionNumber === displayedRegions.length - 1 &&
-          blockData.isRightEndOfDisplayedRegion
-        ) {
-          blockOffsetPx = blockData.offsetPx + blockData.widthPx
-          blocks.push(
-            new InterRegionPaddingBlock({
-              key: `${blockData.key}-afterLastRegion`,
-              widthPx: width - blockOffsetPx + offsetPx,
-              offsetPx: blockOffsetPx,
-              variant: 'boundary',
-            }),
-          )
-        }
+        block.key = `${assembleLocStringFast({
+          assemblyName: block.assemblyName,
+          refName: block.refName,
+          start: block.start,
+          end: block.end,
+          reversed: block.reversed,
+        })}-${block.regionNumber}${block.reversed ? '-reversed' : ''}`
       }
     }
-    displayedRegionLeftPx += (regionEnd - regionStart) * invBpPerPx
+    if (windowRightPx > blockLeftPx && windowRightPx < blockRightPx) {
+      // Need to trim right
+      if (block.isRightEndOfDisplayedRegion === true) {
+        block.isRightEndOfDisplayedRegion = false
+      }
+      const rightDiff = block.offsetPx + block.widthPx - windowRightPx
+      block.widthPx -= rightDiff
+      if (block.type === 'ContentBlock') {
+        const bpDiff = rightDiff * bpPerPx
+        if (block.reversed) {
+          block.start += bpDiff
+        } else {
+          block.end -= bpDiff
+        }
+        block.key = `${assembleLocStringFast({
+          assemblyName: block.assemblyName,
+          refName: block.refName,
+          start: block.start,
+          end: block.end,
+          reversed: block.reversed,
+        })}-${block.regionNumber}${block.reversed ? '-reversed' : ''}`
+      }
+    }
+
+    const previousBlock = staticBlocks[i - 1]
+    if (
+      previousBlock?.type === 'ContentBlock' &&
+      block.type === 'ContentBlock'
+    ) {
+      // Combine previous block and this block
+      previousBlock.end = block.end
+      previousBlock.widthPx += block.widthPx
+    } else {
+      blocks.push(block)
+      continue
+    }
   }
   return blocks
 }
