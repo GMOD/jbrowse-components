@@ -62,10 +62,15 @@ export async function hierarchicalClusterWasm(
           return 0 // Cancel
         }
         if (statusCallback) {
-          const progress = Math.round((iteration / totalIterations) * 100)
-          statusCallback(
-            `Clustering samples: ${progress}% (${iteration}/${totalIterations})`,
-          )
+          // Negative iteration indicates distance matrix phase
+          if (iteration < 0) {
+            const distancesDone = -iteration
+            const progress = Math.round((distancesDone / totalIterations) * 100)
+            statusCallback(`Computing distance matrix: ${progress}%`)
+          } else {
+            const progress = Math.round((iteration / totalIterations) * 100)
+            statusCallback(`Clustering samples: ${progress}%`)
+          }
         }
         return 1 // Continue
       }

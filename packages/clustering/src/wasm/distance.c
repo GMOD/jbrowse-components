@@ -103,11 +103,39 @@ int hierarchicalCluster(
   // Compute distance matrix
   float* distances = (float*)malloc(numSamples * numSamples * sizeof(float));
 
+  clock_t lastProgressTime = clock();
+  clock_t lastCancelCheckTime = clock();
+  const clock_t progressInterval = CLOCKS_PER_SEC / 10; // 100ms
+  const clock_t cancelCheckInterval = CLOCKS_PER_SEC; // 1s
+  int totalDistanceCalcs = numSamples * numSamples;
+  int distanceCalcsDone = 0;
+
   for (int i = 0; i < numSamples; i++) {
     const float* vecA = data + (i * vectorSize);
     for (int j = 0; j < numSamples; j++) {
       const float* vecB = data + (j * vectorSize);
       distances[i * numSamples + j] = euclideanDistance(vecA, vecB, vectorSize);
+      distanceCalcsDone++;
+
+      // Check for progress updates every 100ms
+      clock_t currentTime = clock();
+      if (g_progressCallback != NULL &&
+          (currentTime - lastProgressTime >= progressInterval)) {
+        // Report progress as negative to indicate distance matrix phase
+        g_progressCallback(-distanceCalcsDone, totalDistanceCalcs);
+        lastProgressTime = currentTime;
+      }
+
+      // Check for cancellation every 1s
+      if (g_progressCallback != NULL &&
+          (currentTime - lastCancelCheckTime >= cancelCheckInterval)) {
+        int shouldContinue = g_progressCallback(-distanceCalcsDone, totalDistanceCalcs);
+        if (!shouldContinue) {
+          free(distances);
+          return -1; // Cancelled
+        }
+        lastCancelCheckTime = currentTime;
+      }
     }
   }
 
@@ -125,15 +153,25 @@ int hierarchicalCluster(
   }
 
   int totalIterations = numSamples - 1;
-  clock_t lastCallbackTime = clock();
-  const clock_t callbackInterval = CLOCKS_PER_SEC / 2; // 500ms
+  // Reuse timing variables from distance matrix phase
+  lastProgressTime = clock();
+  lastCancelCheckTime = clock();
 
   // Hierarchical clustering loop
   for (int iteration = 0; iteration < totalIterations; iteration++) {
-    // Check if we should call progress callback (every 500ms)
     clock_t currentTime = clock();
+
+    // Check for progress updates every 100ms
     if (g_progressCallback != NULL &&
-        (currentTime - lastCallbackTime >= callbackInterval)) {
+        (currentTime - lastProgressTime >= progressInterval)) {
+      // Call callback but don't check return value (just for progress)
+      g_progressCallback(iteration, totalIterations);
+      lastProgressTime = currentTime;
+    }
+
+    // Check for cancellation every 1s
+    if (g_progressCallback != NULL &&
+        (currentTime - lastCancelCheckTime >= cancelCheckInterval)) {
       int shouldContinue = g_progressCallback(iteration, totalIterations);
       if (!shouldContinue) {
         // Cleanup on cancellation
@@ -144,7 +182,7 @@ int hierarchicalCluster(
         free(distances);
         return -1; // Cancelled
       }
-      lastCallbackTime = currentTime;
+      lastCancelCheckTime = currentTime;
     }
 
     // Find closest pair of clusters
