@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest'
 
-import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
+import { readFeaturesToCIGAR } from './readFeaturesToCIGAR'
+import { readFeaturesToMismatches } from './readFeaturesToMismatches'
+
 
 test('cram read features mismatches', () => {
   expect(

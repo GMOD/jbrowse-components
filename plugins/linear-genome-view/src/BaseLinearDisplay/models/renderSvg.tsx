@@ -3,28 +3,31 @@ import { Fragment } from 'react'
 import {
   ReactRendering,
   getContainingView,
+  getSession,
   getViewParams,
 } from '@jbrowse/core/util'
 
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-import { getId } from './util'
+import { calculateLabelPositions, getId } from './util'
+import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox'
 
-import type { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { ExportSvgOptions } from '../../LinearGenomeView/types'
-import type { ThemeOptions } from '@mui/material'
+import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from '../model'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
-  opts: ExportSvgOptions & {
-    overrideHeight: number
-    theme?: ThemeOptions
-  },
+  opts: ExportSvgOptions & ExportSvgDisplayOptions,
 ) {
   const { height, id } = self
   const { overrideHeight } = opts
   const view = getContainingView(self) as LinearGenomeViewModel
   const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
+
+  if (self.error) {
+    return <ErrorBox error={self.error} width={width} height={height} />
+  }
+
   const renderings = await Promise.all(
     roundedDynamicBlocks.map(async block => {
       const blockState = BlockState.create({
@@ -70,6 +73,13 @@ export async function renderBaseLinearDisplaySvg(
     }),
   )
 
+  // Calculate label positions for SVG export
+  const { assemblyManager } = getSession(self)
+  const { offsetPx } = view
+  const assemblyName = view.assemblyNames[0]
+  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+  const labelData = calculateLabelPositions(self, view, assembly, offsetPx)
+
   return (
     <>
       {renderings.map(([block, rendering], index) => {
@@ -78,7 +88,6 @@ export async function renderBaseLinearDisplaySvg(
         const clipid = getId(id, index)
 
         return (
-          /* biome-ignore lint/suspicious/noArrayIndexKey: */
           <Fragment key={`frag-${index}`}>
             <defs>
               <clipPath id={clipid}>
@@ -98,6 +107,31 @@ export async function renderBaseLinearDisplaySvg(
           </Fragment>
         )
       })}
+      {/* Render floating labels */}
+      {labelData.map(({ key, label, description, leftPos, topPos }) => (
+        <g key={`label-${key}`} transform={`translate(${leftPos}, ${topPos})`}>
+          <text
+            x={0}
+            y={11}
+            fontSize={11}
+            fill="currentColor"
+            style={{ pointerEvents: 'none' }}
+          >
+            {label}
+          </text>
+          {description ? (
+            <text
+              x={0}
+              y={25}
+              fontSize={11}
+              fill="blue"
+              style={{ pointerEvents: 'none' }}
+            >
+              {description}
+            </text>
+          ) : null}
+        </g>
+      ))}
     </>
   )
 }

@@ -29,7 +29,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-10158054",
+    "uniqueId": "adp--1141553224-10158054",
   },
   {
     "CIGAR": "100M",
@@ -58,7 +58,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-10158322",
+    "uniqueId": "adp--1141553224-10158322",
   },
   {
     "CIGAR": "100M",
@@ -87,7 +87,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-10158581",
+    "uniqueId": "adp--1141553224-10158581",
   },
   {
     "CIGAR": "100M",
@@ -116,7 +116,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-10158847",
+    "uniqueId": "adp--1141553224-10158847",
   },
   {
     "CIGAR": "100M",
@@ -145,7 +145,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-12607066",
+    "uniqueId": "adp--1141553224-12607066",
   },
   {
     "CIGAR": "100M",
@@ -174,7 +174,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-12607328",
+    "uniqueId": "adp--1141553224-12607328",
   },
   {
     "CIGAR": "100M",
@@ -203,7 +203,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-12607590",
+    "uniqueId": "adp--1141553224-12607590",
   },
   {
     "CIGAR": "100M",
@@ -232,7 +232,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-12607851",
+    "uniqueId": "adp--1141553224-12607851",
   },
   {
     "CIGAR": "100M",
@@ -261,7 +261,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-12608107",
+    "uniqueId": "adp--1141553224-12608107",
   },
   {
     "CIGAR": "100M",
@@ -290,7 +290,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     },
     "template_length": 0,
     "type": "match",
-    "uniqueId": "adp--319252106-12608367",
+    "uniqueId": "adp--1141553224-12608367",
   },
 ]
 `;
@@ -331,6 +331,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "1",
+    "insertedBases": "T",
     "length": 0,
     "start": 108,
     "type": "insertion",
@@ -349,12 +350,14 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "3",
+    "insertedBases": "AAC",
     "length": 0,
     "start": 177,
     "type": "insertion",
   },
   {
     "base": "1",
+    "insertedBases": "T",
     "length": 0,
     "start": 209,
     "type": "insertion",
@@ -434,6 +437,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "1",
+    "insertedBases": "T",
     "length": 0,
     "start": 284,
     "type": "insertion",
@@ -522,18 +526,21 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "1",
+    "insertedBases": "T",
     "length": 0,
     "start": 339,
     "type": "insertion",
   },
   {
     "base": "1",
+    "insertedBases": "T",
     "length": 0,
     "start": 345,
     "type": "insertion",
   },
   {
     "base": "2",
+    "insertedBases": "TA",
     "length": 0,
     "start": 352,
     "type": "insertion",
@@ -553,18 +560,21 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "67",
+    "insertedBases": "CCCTCACCCTCACCCTCACCCTCACCCCCACCCCCACCCCCACCCCCACCCCAACCCCAACCCTAAC",
     "length": 0,
     "start": 403,
     "type": "insertion",
   },
   {
     "base": "1",
+    "insertedBases": "C",
     "length": 0,
     "start": 427,
     "type": "insertion",
   },
   {
     "base": "1",
+    "insertedBases": "C",
     "length": 0,
     "start": 433,
     "type": "insertion",
@@ -598,12 +608,14 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "7",
+    "insertedBases": "GGCGCAG",
     "length": 0,
     "start": 626,
     "type": "insertion",
   },
   {
     "base": "1",
+    "insertedBases": "G",
     "length": 0,
     "start": 627,
     "type": "insertion",
@@ -665,6 +677,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "4",
+    "insertedBases": "CGCA",
     "length": 0,
     "start": 818,
     "type": "insertion",
@@ -678,12 +691,14 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "4",
+    "insertedBases": "CAGA",
     "length": 0,
     "start": 822,
     "type": "insertion",
   },
   {
     "base": "8",
+    "insertedBases": "CGCCGCGC",
     "length": 0,
     "start": 828,
     "type": "insertion",
@@ -704,6 +719,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "47",
+    "insertedBases": "CCAGGGGAGGAGGCGTGGCACAGGCGCAGAGACACATGCTAGCGCGC",
     "length": 0,
     "start": 889,
     "type": "insertion",
@@ -745,6 +761,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "1",
+    "insertedBases": "G",
     "length": 0,
     "start": 968,
     "type": "insertion",
@@ -779,12 +796,14 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "1",
+    "insertedBases": "G",
     "length": 0,
     "start": 1063,
     "type": "insertion",
   },
   {
     "base": "2",
+    "insertedBases": "GG",
     "length": 0,
     "start": 1068,
     "type": "insertion",
@@ -957,6 +976,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "5",
+    "insertedBases": "AAGAG",
     "length": 0,
     "start": 4455,
     "type": "insertion",
@@ -1026,6 +1046,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   },
   {
     "base": "1",
+    "insertedBases": "C",
     "length": 0,
     "start": 5903,
     "type": "insertion",

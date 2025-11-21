@@ -2,10 +2,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { doesIntersect2, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature'
-import { parseLineByLine } from '../util'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -211,7 +211,12 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions): Promise<BlastRecord[]> {
     const columns: string = readConfObject(this.config, 'columns')
-    return parseLineByLine(
+    const lines = [] as NonNullable<
+      ReturnType<ReturnType<typeof createBlastLineParser>>
+    >[]
+
+    const cb = createBlastLineParser(columns)
+    parseLineByLine(
       await fetchAndMaybeUnzip(
         openLocation(
           readConfObject(this.config, 'blastTableLocation'),
@@ -219,9 +224,16 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
         ),
         opts,
       ),
-      createBlastLineParser(columns),
-      opts,
+      line => {
+        const res = cb(line)
+        if (res) {
+          lines.push(res)
+        }
+        return true
+      },
+      opts?.statusCallback,
     )
+    return lines
   }
 
   async hasDataForRefName() {

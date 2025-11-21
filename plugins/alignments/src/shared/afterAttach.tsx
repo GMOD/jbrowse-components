@@ -1,7 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 
 import { createAutorun } from '../util'
-import { fetchChains } from './fetchChains'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { IAnyStateTreeNode } from 'mobx-state-tree'
@@ -17,14 +16,6 @@ export function doAfterAttach<T extends IAnyStateTreeNode>(
     height: number,
   ) => void,
 ) {
-  createAutorun(
-    self,
-    async () => {
-      await fetchChains(self)
-    },
-    { delay: 1000 },
-  )
-
   function draw(view: LGV) {
     const canvas = self.ref
     if (!canvas) {
@@ -40,10 +31,12 @@ export function doAfterAttach<T extends IAnyStateTreeNode>(
       return
     }
 
-    ctx.clearRect(0, 0, canvas.width, self.height * 2)
+    const height = 'layoutHeight' in self ? self.layoutHeight || 1 : self.height
     ctx.resetTransform()
+    // Clear entire canvas to avoid artifacts when content height changes on scroll
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.scale(2, 2)
-    cb(self, ctx, canvas.width, self.height)
+    cb(self, ctx, canvas.width, height)
     self.setLastDrawnOffsetPx(view.offsetPx)
     self.setLastDrawnBpPerPx(view.bpPerPx)
   }

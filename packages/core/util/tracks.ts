@@ -102,7 +102,7 @@ let counter = 0
 // calls
 export function storeBlobLocation(location: PreFileLocation) {
   if ('blob' in location) {
-    const blobId = `b${+Date.now()}-${counter++}`
+    const blobId = `b${Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
     return { name: location.blob.name, blobId, locationType: 'BlobLocation' }
   }

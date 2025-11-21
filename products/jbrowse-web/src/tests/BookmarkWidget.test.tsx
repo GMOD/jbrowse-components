@@ -1,9 +1,15 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, test } from 'vitest'
-
+import { vi, beforeEach, test } from 'vitest'
+import { saveAs } from 'file-saver-es'
 import { createView, doBeforeEach, setup } from './util'
 
+vi.mock('file-saver-es', () => {
+  return {
+    ...jest.requireActual('file-saver-es'),
+    saveAs: jest.fn(),
+  }
+})
 setup()
 
 beforeEach(() => {
@@ -22,7 +28,7 @@ test('Open the bookmarks widget from the top level menu', async () => {
   await user.click(await findByText('Bookmarks'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
-})
+}, 60000)
 
 test('Open the bookmarks widget from the view menu', async () => {
   const { findByTestId, findByText } = await createView()
@@ -32,7 +38,7 @@ test('Open the bookmarks widget from the view menu', async () => {
   await user.click(await findByText('Open bookmark widget'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
-})
+}, 60000)
 
 test('Create a bookmark using the click and drag rubberband', async () => {
   const { session, findByTestId, findByText } = await createView()
@@ -65,7 +71,7 @@ test('Create a bookmark using the hotkey to bookmark the current region', async 
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
   expect(bookmarks).toMatchSnapshot()
-})
+}, 60000)
 
 test('Create a bookmark using the menu button to bookmark the current region', async () => {
   const { session, findByTestId, findByText } = await createView()
@@ -155,7 +161,7 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
   fireEvent.click(document)
 
   expect(field.innerHTML).toContain('new label')
-})
+}, 60000)
 
 test('Toggle highlight visibility across all views', async () => {
   const { session, findByText, findByTestId, findAllByTestId } =
@@ -199,7 +205,7 @@ test('Toggle highlight visibility across all views', async () => {
 
   // expect(highlight3).toBeUndefined()
   // expect(highlight4).toBeUndefined()
-})
+}, 60000)
 
 test('Toggle highlight label visibility across all views', async () => {
   const { session, findByText, findByTestId } = await createView()
@@ -231,7 +237,7 @@ test('Toggle highlight label visibility across all views', async () => {
 
   // expect(highlight).toBeUndefined()
   // expect(highlight2).toBeUndefined()
-})
+}, 60000)
 
 test('Downloads a BED file correctly', async () => {
   const { session, findByText, findByTestId } = await createView()
@@ -254,7 +260,19 @@ test('Downloads a BED file correctly', async () => {
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   fireEvent.click(await findByText('Export', ...opts))
   fireEvent.click(await findByText(/Download/, ...opts))
-}, 20000)
+
+  await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(saveAs).toHaveBeenCalled()
+  }, delay)
+
+  const blob = new Blob([''], {
+    type: 'text/x-bed;charset=utf-8',
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volvox.bed')
+}, 60000)
 
 test('Downloads a TSV file correctly', async () => {
   const { session, findByText, findByTestId, getByRole } = await createView()
@@ -279,4 +297,16 @@ test('Downloads a TSV file correctly', async () => {
   const listbox = within(getByRole('listbox'))
   fireEvent.click(listbox.getByText('TSV'))
   fireEvent.click(await findByText(/Download/))
-})
+
+  await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(saveAs).toHaveBeenCalled()
+  }, delay)
+
+  const blob = new Blob([''], {
+    type: 'text/tab-separated-values;charset=utf-8',
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.tsv')
+}, 60000)

@@ -5,10 +5,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
 import nock from 'nock'
 
-import { runInTmpDir } from '../testUtil'
+import { runCommand, runInTmpDir } from '../testUtil'
 
 const { readdir } = fs.promises
 
@@ -34,10 +33,6 @@ function mockZip() {
       { 'Content-Type': 'application/zip' },
     )
 }
-
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
 
 test('fails if no path is provided to the command', async () => {
   await runInTmpDir(async () => {

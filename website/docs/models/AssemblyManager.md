@@ -62,6 +62,20 @@ session.temporaryAssemblies
 
 ### AssemblyManager - Methods
 
+#### method: getCanonicalAssemblyName
+
+```js
+// type signature
+getCanonicalAssemblyName: (asmName: string) => string
+```
+
+#### method: getCanonicalAssemblyName2
+
+```js
+// type signature
+getCanonicalAssemblyName2: (asmName: string) => string
+```
+
 #### method: get
 
 ```js

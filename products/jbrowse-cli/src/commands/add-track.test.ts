@@ -1,10 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
 import { expect, test } from 'vitest'
+import { ctxDir, readConf, runCommand, runInTmpDir } from '../testUtil'
 
-import { ctxDir, readConf, runInTmpDir } from '../testUtil'
 const { writeFile, copyFile } = fs.promises
 
 const exists = (p: string) => fs.existsSync(p)
@@ -38,9 +37,6 @@ function init2bit(ctx: { dir: string }) {
     path.join(ctx.dir, 'simple.2bit'),
   )
 }
-
-// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
 
 test('fails if no track is specified', async () => {
   const { error } = await runCommand(['add-track'])
@@ -146,7 +142,7 @@ test('fails if it cannot assume the assemblyname', async () => {
   })
 })
 
-test('adds a bam track with bai', async () => {
+test('adds bam track with bai', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand(['add-track', simpleBam, '--load', 'copy'])
@@ -156,7 +152,7 @@ test('adds a bam track with bai', async () => {
   })
 })
 
-test('adds a bam track with csi', async () => {
+test('adds bam track with csi', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand([
@@ -173,7 +169,7 @@ test('adds a bam track with csi', async () => {
   })
 })
 
-test('adds a bam track with load inPlace', async () => {
+test('adds bam track with load inPlace', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand([
@@ -186,7 +182,7 @@ test('adds a bam track with load inPlace', async () => {
   })
 })
 
-test('adds a bam+bai track with load inPlace', async () => {
+test('adds bam+bai track with load inPlace', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand([
@@ -201,7 +197,7 @@ test('adds a bam+bai track with load inPlace', async () => {
   })
 })
 
-test('adds a bam track with indexFile for bai', async () => {
+test('adds bam track with indexFile for bai', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand([
@@ -218,7 +214,7 @@ test('adds a bam track with indexFile for bai', async () => {
   })
 })
 
-test('adds a bam track with subDir', async () => {
+test('adds bam track with subDir', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand([
@@ -236,7 +232,7 @@ test('adds a bam track with subDir', async () => {
   })
 })
 
-test('adds a bam track with subDir and localPath protocol', async () => {
+test('adds bam track with subDir and localPath protocol', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -257,7 +253,7 @@ test('adds a bam track with subDir and localPath protocol', async () => {
   })
 })
 
-test('adds a bam track with all the custom fields', async () => {
+test('adds bam track with all the custom fields', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -286,7 +282,7 @@ test('adds a bam track with all the custom fields', async () => {
   })
 })
 
-test('adds a bam track from a url', async () => {
+test('adds bam track from a url', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -313,7 +309,7 @@ test('fails multiple assemblies exist but no assemblyNames passed', async () => 
   })
 })
 
-test('adds a track to a config with multiple assemblies', async () => {
+test('adds track to a config with multiple assemblies', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await init2bit(ctx)
@@ -332,7 +328,7 @@ test('adds a track to a config with multiple assemblies', async () => {
   })
 })
 
-test('adds a plaintext gff', async () => {
+test('adds plaintext gff', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -342,7 +338,7 @@ test('adds a plaintext gff', async () => {
   })
 })
 
-test('adds a plaintext vcf', async () => {
+test('adds plaintext vcf', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -352,7 +348,7 @@ test('adds a plaintext vcf', async () => {
   })
 })
 
-test('adds a plaintext gtf', async () => {
+test('adds plaintext gtf', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand(['add-track', simpleGtf, '--load', 'copy'])
@@ -361,7 +357,7 @@ test('adds a plaintext gtf', async () => {
   })
 })
 
-test('adds a plaintext bed', async () => {
+test('adds plaintext bed', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand(['add-track', simpleBed, '--load', 'copy'])
@@ -372,7 +368,7 @@ test('adds a plaintext bed', async () => {
   })
 })
 
-test('adds a plaintext bedpe', async () => {
+test('adds plaintext bedpe', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand(['add-track', simpleBedpe, '--load', 'copy'])
@@ -383,7 +379,7 @@ test('adds a plaintext bedpe', async () => {
   })
 })
 
-test('adds a tabix gff with tbi', async () => {
+test('adds tabix gff with tbi', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -396,7 +392,7 @@ test('adds a tabix gff with tbi', async () => {
   })
 })
 
-test('adds a tabix gff with csi', async () => {
+test('adds tabix gff with csi', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -416,7 +412,7 @@ test('adds a tabix gff with csi', async () => {
   })
 })
 
-test('adds a paf.gz file', async () => {
+test('adds paf.gz file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -434,7 +430,7 @@ test('adds a paf.gz file', async () => {
   })
 })
 
-test('adds a paf file', async () => {
+test('adds paf file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -452,7 +448,7 @@ test('adds a paf file', async () => {
   })
 })
 
-test('adds a delta file', async () => {
+test('adds delta file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand([
@@ -469,7 +465,7 @@ test('adds a delta file', async () => {
   })
 })
 
-test('adds a mashmap file', async () => {
+test('adds mashmap file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
     await runCommand([
@@ -486,7 +482,7 @@ test('adds a mashmap file', async () => {
   })
 })
 
-test('adds a mcscan simple anchors file', async () => {
+test('adds mcscan simple anchors file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -510,7 +506,7 @@ test('adds a mcscan simple anchors file', async () => {
   })
 })
 
-test('adds a mcscan anchors file', async () => {
+test('adds mcscan anchors file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -534,7 +530,7 @@ test('adds a mcscan anchors file', async () => {
   })
 })
 
-test('adds a chain file', async () => {
+test('adds chain file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 

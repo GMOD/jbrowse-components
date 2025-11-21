@@ -74,7 +74,9 @@ const BaseViewModel = types
 
 export default BaseViewModel
 
-export type IBaseViewModel = Instance<typeof BaseViewModel>
+// the base view does not have type but any derived type needs to add type, so
+// just add it here
+export type IBaseViewModel = Instance<typeof BaseViewModel> & { type: string }
 
 export const BaseViewModelWithDisplayedRegions = BaseViewModel.props({
   displayedRegions: types.array(Region),

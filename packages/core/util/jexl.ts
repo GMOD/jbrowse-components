@@ -42,6 +42,9 @@ export default function JexlF(/* config?: any*/): JexlNonBuildable {
 
   // string
   j.addFunction('split', (s: string, char: string) => s.split(char))
+  j.addFunction('join', (k: string, ...args: string[]) =>
+    [...args].filter(f => !!f).join(k),
+  )
   j.addFunction('charAt', (s: string, index: number) => s.charAt(index))
   j.addFunction('charCodeAt', (s: string, index: number) => s.charCodeAt(index))
   j.addFunction('codePointAt', (s: string, pos: number) => s.codePointAt(pos))

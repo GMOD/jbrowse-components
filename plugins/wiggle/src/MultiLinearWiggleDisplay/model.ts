@@ -377,11 +377,11 @@ export function stateModelFactory(
     })
     .views(self => ({
       get legendFontSize() {
-        return Math.min(self.rowHeight, 12)
+        return Math.min(self.rowHeight, 8)
       },
 
       get canDisplayLegendLabels() {
-        return self.rowHeight > 11
+        return self.rowHeight > 7
       },
 
       get labelWidth() {

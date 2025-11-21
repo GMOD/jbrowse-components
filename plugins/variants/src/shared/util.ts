@@ -22,15 +22,6 @@ export function fillRectCtx(
   ctx.fillRect(x, y, width, height)
 }
 
-export function randomColor(str: string) {
-  let sum = 0
-
-  for (let i = 0; i < str.length; i++) {
-    sum += str.charCodeAt(i)
-  }
-  return colorify(sum * 10)
-}
-
 export function colorify(n: number) {
   return `hsl(${n % 255}, 50%, 50%)`
 }

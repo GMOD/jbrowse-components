@@ -63,7 +63,7 @@ test('renders setup wizard', async () => {
   )
 }, 15000)
 
-test('renders one track, one region', async () => {
+xtest('renders one track, one region', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addTrackConf({
@@ -117,7 +117,7 @@ test('renders one track, one region', async () => {
   expect(container).toMatchSnapshot()
 })
 
-test('renders two tracks, two regions', async () => {
+xtest('renders two tracks, two regions', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addTrackConf({

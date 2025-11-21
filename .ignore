@@ -2,7 +2,7 @@
 test_data/many_contigs/large.chrom.sizes
 packages/core/ui/react-colorful.js
 plugins/legacy-jbrowse/test_data
-plugins/data-management/src/ucsc-trackhub/ucscAssemblies.ts
+plugins/data-management/src/UCSCTrackHubConnection/ucscAssemblies.ts
 products/jbrowse-web/src/tests/Loader.test.tsx
 test_data/yeast_synteny/
 test_data/hg38_aliases.txt

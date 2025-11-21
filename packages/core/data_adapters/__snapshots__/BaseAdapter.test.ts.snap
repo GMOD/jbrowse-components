@@ -12,16 +12,3 @@ exports[`base data adapter > retrieves features 1`] = `
 `;
 
 exports[`base data adapter > retrieves features 2`] = `[]`;
-
-exports[`retrieves features 1`] = `
-[
-  {
-    "end": 200,
-    "refName": "ctgA",
-    "start": 100,
-    "uniqueId": "testFeature",
-  },
-]
-`;
-
-exports[`retrieves features 2`] = `[]`;

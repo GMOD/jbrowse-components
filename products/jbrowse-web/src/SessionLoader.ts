@@ -176,10 +176,8 @@ const SessionLoader = types
     /**
      * #getter
      */
-    get ready() {
-      return Boolean(
-        this.isSessionLoaded && !self.configError && this.pluginsLoaded,
-      )
+    get ready(): boolean {
+      return this.isSessionLoaded && !self.configError && this.pluginsLoaded
     },
     /**
      * #getter

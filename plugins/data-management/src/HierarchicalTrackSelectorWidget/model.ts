@@ -458,7 +458,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           },
           ...connectionInstances.flatMap(c => ({
             group: getConf(c, 'name'),
-            tracks: c.tracks,
+            tracks: filterTracks(c.tracks, self),
             noCategories: false,
             menuItems: [],
           })),

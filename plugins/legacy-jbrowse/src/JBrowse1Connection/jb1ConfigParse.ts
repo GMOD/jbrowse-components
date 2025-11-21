@@ -1,8 +1,8 @@
 /* eslint no-cond-assign: ["error", "except-parens"] */
 import { objectHash } from '@jbrowse/core/util'
-import getValue from 'get-value'
 import setValue from 'set-value'
 
+import getValue from './get-value'
 import { isSource, isTrack } from './util'
 
 import type { Config, Names, Source, Store, Track } from './types'
@@ -81,7 +81,9 @@ function parse(text: string, url: string): Config {
             existing = []
           }
 
+          // @ts-expect-error
           existing.push(parsedValue)
+          // @ts-expect-error
           parsedValue = existing
         }
         if (parsedValue === 'true') {

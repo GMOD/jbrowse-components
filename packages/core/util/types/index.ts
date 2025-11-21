@@ -91,6 +91,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   selection?: unknown
   focusedViewId?: string
   themeName?: string
+  theme?: ThemeOptions
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void
@@ -220,7 +221,7 @@ export function isSessionModelWithWidgets(
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
 }
-interface SessionWithConnections {
+export interface SessionWithConnections {
   makeConnection: (arg: AnyConfigurationModel) => void
 }
 export function isSessionModelWithConnections(
@@ -229,7 +230,7 @@ export function isSessionModelWithConnections(
   return isSessionModel(thing) && 'makeConnection' in thing
 }
 
-interface SessionWithConnectionEditing {
+export interface SessionWithConnectionEditing {
   addConnectionConf: (arg: AnyConfigurationModel) => void
 }
 

@@ -38,9 +38,12 @@ Tell us what version of JBrowse 2 you are using (e.g. 2.0.3).
 If you're using the desktop version, tell us what OS are you using (e.g. MacOS
 Catalina).
 
+
 If you're using the web version, tell us what browser you are using (e.g.
 Chrome)
 -->
+
+**Whether you are using the web version or desktop version**
 
 **Additional context**
 

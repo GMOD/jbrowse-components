@@ -8,7 +8,10 @@ import { FormGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import ColorBySelector from './ColorBySelector'
 import HeaderSearchBoxes from './HeaderSearchBoxes'
+import MinLengthSlider from './MinLengthSlider'
+import OpacitySlider from './OpacitySlider'
 
 import type { LinearComparativeViewModel } from '../model'
 
@@ -24,9 +27,13 @@ const Header = observer(function ({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const { views } = model
+  const { views, levels, showDynamicControls } = model
   const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
   const [sideBySide, setSideBySide] = useState(views.length <= 3)
+
+  // Check if we have any displays to show sliders
+  const hasDisplays = levels[0]?.tracks[0]?.displays[0]
+
   return (
     <FormGroup row>
       <CascadingMenuButton
@@ -79,7 +86,6 @@ const Header = observer(function ({
               setShowSearchBoxes(!showSearchBoxes)
             },
           },
-
           {
             label: 'Orientation - Side-by-side',
             type: 'radio',
@@ -100,6 +106,14 @@ const Header = observer(function ({
       >
         <SearchIcon />
       </CascadingMenuButton>
+
+      {hasDisplays && showDynamicControls ? (
+        <>
+          <ColorBySelector model={model} />
+          <OpacitySlider model={model} />
+          <MinLengthSlider model={model} />
+        </>
+      ) : null}
 
       {showSearchBoxes ? (
         <span className={sideBySide ? classes.inline : undefined}>

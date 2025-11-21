@@ -163,3 +163,41 @@ test('null ALT', () => {
   })
   expect(f.toJSON()).toMatchSnapshot()
 })
+
+test('DEL feature with SVLEN when END not available', () => {
+  const parser = new VcfParser({
+    header:
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam',
+  })
+  const line = 'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tSVLEN=500;SVTYPE=DEL'
+
+  const variant = parser.parseLine(line)
+
+  const f = new VcfFeature({
+    parser,
+    variant,
+    id: 'myuniqueid',
+  })
+  expect(f.id()).toEqual('myuniqueid')
+  expect(f.get('start')).toEqual(99)
+  expect(f.get('end')).toEqual(599)
+})
+
+test('INS feature with SVLEN when END not available', () => {
+  const parser = new VcfParser({
+    header:
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam',
+  })
+  const line = 'chr1\t100\trs123\tR\t<INS>\t29\tPASS\tSVLEN=500;SVTYPE=INS'
+
+  const variant = parser.parseLine(line)
+
+  const f = new VcfFeature({
+    parser,
+    variant,
+    id: 'myuniqueid',
+  })
+  expect(f.id()).toEqual('myuniqueid')
+  expect(f.get('start')).toEqual(99)
+  expect(f.get('end')).toEqual(100)
+})

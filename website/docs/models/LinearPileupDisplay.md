@@ -80,6 +80,13 @@ sortedBy: types.frozen<SortedBy | undefined>()
 any[]
 ```
 
+#### getter: modificationThreshold
+
+```js
+// type
+any
+```
+
 #### getter: rendererConfig
 
 ```js
@@ -138,6 +145,13 @@ setCurrSortBpPerPx: (n: number) => void
 ```js
 // type signature
 updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
+```
+
+#### action: setSimplexModifications
+
+```js
+// type signature
+setSimplexModifications: (simplex: string[]) => void
 ```
 
 #### action: setModificationsReady

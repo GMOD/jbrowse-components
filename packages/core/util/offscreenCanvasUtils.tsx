@@ -21,7 +21,7 @@ type R<T extends Record<string, unknown> | undefined> = Omit<T, never> &
   (
     | { canvasRecordedData: Record<string, unknown> }
     | { imageData: any }
-    | { reactElement: React.ReactElement }
+    | { html: string }
   )
 
 export async function renderToAbstractCanvas<
@@ -49,38 +49,38 @@ export async function renderToAbstractCanvas<
       if (!ctx) {
         throw new Error('2d canvas rendering not supported on this platform')
       }
-      ctx.scale(s, s)
+      if (s !== 1) {
+        ctx.scale(s, s)
+      }
       const callbackResult = await cb(ctx)
 
       // two methods needed for converting canvas to PNG, one for webworker
       // offscreen canvas, one for main thread
       return {
         ...callbackResult,
-        reactElement: (
-          <image
-            width={width}
-            height={height}
-            xlinkHref={
-              'convertToBlob' in canvas
-                ? await blobToDataURL(
-                    await canvas.convertToBlob({
-                      type: 'image/png',
-                    }),
-                  )
-                : canvas.toDataURL('image/png')
-            }
-          />
-        ),
+        html: `<image width="${width}" height="${height}" href="${
+          'convertToBlob' in canvas
+            ? await blobToDataURL(
+                await canvas.convertToBlob({
+                  type: 'image/png',
+                }),
+              )
+            : canvas.toDataURL('image/png')
+        }" />`,
       }
     }
   } else {
-    const s = highResolutionScaling
-    const canvas = createCanvas(Math.ceil(width * s), height * s)
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
+    )
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('2d canvas rendering not supported on this platform')
     }
-    ctx.scale(s, s)
+    if (highResolutionScaling !== 1) {
+      ctx.scale(highResolutionScaling, highResolutionScaling)
+    }
     const callbackResult = await cb(ctx)
     return {
       ...callbackResult,

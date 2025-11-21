@@ -11,7 +11,11 @@ import { observer } from 'mobx-react'
 import type { DotplotViewModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-function f(track: AnyConfigurationModel, assembly1: string, assembly2: string) {
+function isRelevantTrack(
+  track: AnyConfigurationModel,
+  assembly1: string,
+  assembly2: string,
+) {
   const assemblyNames = readConfObject(track, 'assemblyNames')
   return (
     assemblyNames.includes(assembly1) &&
@@ -35,7 +39,9 @@ const ImportSyntenyTrackSelector = observer(function ({
     ...tracks,
     ...(sessionTracks || []),
   ] as AnyConfigurationModel[]
-  const filteredTracks = allTracks.filter(t => f(t, assembly2, assembly1))
+  const filteredTracks = allTracks.filter(t =>
+    isRelevantTrack(t, assembly2, assembly1),
+  )
   const resetTrack = filteredTracks[0]?.trackId || ''
   const [value, setValue] = useState(resetTrack)
   useEffect(() => {

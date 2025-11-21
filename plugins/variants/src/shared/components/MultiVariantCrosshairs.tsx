@@ -17,10 +17,6 @@ const useStyles = makeStyles()({
     zIndex: 800,
     position: 'absolute',
   },
-  color: {
-    width: 10,
-    height: 10,
-  },
 })
 
 const MultiVariantCrosshairs = observer(function ({

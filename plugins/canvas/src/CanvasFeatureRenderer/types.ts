@@ -1,0 +1,97 @@
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { BaseLayout } from '@jbrowse/core/util/layouts'
+import type { Theme } from '@mui/material'
+
+export interface SequenceData {
+  seq: string
+  cds: { start: number; end: number }[]
+}
+
+export interface PeptideData {
+  sequenceData: SequenceData
+  protein?: string
+}
+
+export interface FeatureLayout {
+  feature: Feature
+  x: number
+  y: number
+  width: number
+  height: number // Visual height of the feature (what gets drawn)
+  totalFeatureHeight: number // Total visual height including stacked children (without label space)
+  totalLayoutHeight: number // Total layout height including label space (for collision detection)
+  totalLayoutWidth: number // Total layout width including label width (for collision detection)
+  children: FeatureLayout[]
+}
+
+export interface LayoutRecord {
+  feature: Feature
+  layout: FeatureLayout
+  topPx: number
+}
+
+export interface DrawFeatureArgs {
+  ctx: CanvasRenderingContext2D
+  feature: Feature
+  featureLayout: FeatureLayout
+  region: Region
+  bpPerPx: number
+  config: AnyConfigurationModel
+  theme: Theme
+  reversed: boolean
+  topLevel: boolean
+  canvasWidth: number
+  peptideDataMap?: Map<string, PeptideData>
+  colorByCDS?: boolean
+  // Pre-read color configs for performance optimization
+  color1?: string
+  color3?: string
+  isColor1Callback?: boolean
+  isColor3Callback?: boolean
+}
+
+export interface DrawingResult {
+  coords: number[]
+  items: FlatbushItem[]
+}
+
+export interface FlatbushItem {
+  featureId: string
+  type: string
+  // Store rectangle in BP and pixel coordinates for highlighting
+  startBp: number
+  endBp: number
+  leftPx: number
+  rightPx: number
+  topPx: number
+  bottomPx: number
+}
+
+export interface SubfeatureInfo {
+  subfeatureId: string
+  parentFeatureId: string
+  type: string
+  name: string // User-friendly name for display (from config labels)
+}
+
+export interface RenderArgs {
+  features: Map<string, Feature>
+  layout: BaseLayout<unknown>
+  regions: Region[]
+  bpPerPx: number
+  config: AnyConfigurationModel
+  displayMode: string
+  theme: Record<string, any>
+  highResolutionScaling?: number
+  stopToken?: string
+  peptideDataMap?: Map<string, PeptideData>
+  colorByCDS?: boolean
+}
+
+export type GlyphType =
+  | 'Box'
+  | 'ProcessedTranscript'
+  | 'Segments'
+  | 'Subfeatures'
+  | 'CDS'

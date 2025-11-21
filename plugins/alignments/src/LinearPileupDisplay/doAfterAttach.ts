@@ -27,6 +27,7 @@ export function doAfterAttach(model: {
   setCurrSortBpPerPx: (arg: number) => void
   setError: (arg: unknown) => void
   updateVisibleModifications: (arg: ModificationType[]) => void
+  setSimplexModifications: (arg: string[]) => void
   setModificationsReady: (arg: boolean) => void
   setSortReady: (arg: boolean) => void
   setMessage: (arg: string) => void
@@ -98,13 +99,15 @@ export function doAfterAttach(model: {
       }
       const { adapterConfig } = model
       const { staticBlocks } = getContainingView(model) as LGV
-      const vals = await getUniqueModifications({
-        model,
-        adapterConfig,
-        blocks: staticBlocks,
-      })
+      const { modifications, simplexModifications } =
+        await getUniqueModifications({
+          model,
+          adapterConfig,
+          blocks: staticBlocks,
+        })
       if (isAlive(model)) {
-        model.updateVisibleModifications(vals)
+        model.updateVisibleModifications(modifications)
+        model.setSimplexModifications(simplexModifications)
         model.setModificationsReady(true)
       }
     },

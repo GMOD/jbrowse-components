@@ -13,14 +13,16 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
   model: MultiLinearVariantMatrixDisplayModel
 }) {
   const { model } = props
-  const { lineZoneHeight } = model
+  const { lineZoneHeight, height, setScrollTop } = model
   const ref = useRef<HTMLDivElement>(null)
   const [mouseY, setMouseY] = useState<number>()
   const [mouseX, setMouseX] = useState<number>()
+  const matrixHeight = height - lineZoneHeight
 
   return (
     <div
       ref={ref}
+      style={{ position: 'relative', height }}
       onMouseMove={event => {
         const rect = ref.current?.getBoundingClientRect()
         const top = rect?.top || 0
@@ -33,12 +35,28 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
         setMouseX(undefined)
       }}
     >
-      <div style={{ position: 'relative' }}>
+      {/* Connecting lines - fixed at top */}
+      <div data-testid="connecting-lines">
         <LinesConnectingMatrixToGenomicPosition model={model} />
-        <div style={{ position: 'absolute', top: lineZoneHeight }}>
-          <LegendBar model={model} />
-          <BaseLinearDisplayComponent {...props} />
-        </div>
+      </div>
+
+      {/* Matrix display - scrollable container */}
+      <div
+        data-testid="matrix-display"
+        style={{
+          position: 'absolute',
+          top: lineZoneHeight,
+          height: matrixHeight,
+          width: '100%',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+        }}
+        onScroll={evt => {
+          setScrollTop(evt.currentTarget.scrollTop)
+        }}
+      >
+        <LegendBar model={model} />
+        <BaseLinearDisplayComponent {...props} />
       </div>
 
       {mouseX && mouseY && mouseY > lineZoneHeight ? (

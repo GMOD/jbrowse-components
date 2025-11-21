@@ -32,9 +32,6 @@ const useStyles = makeStyles()(theme => ({
     marginTop: theme.spacing(10),
     marginBottom: theme.spacing(2),
   },
-  alertContainer: {
-    padding: `${theme.spacing(2)}px 0px ${theme.spacing(2)}px 0px`,
-  },
 }))
 
 const steps = ['Enter track data', 'Confirm track type']
@@ -89,6 +86,7 @@ const DefaultAddTrackWorkflow = observer(function ({
                   onClick={() => {
                     setActiveStep(activeStep - 1)
                   }}
+                  data-testid="addTrackBackButton"
                 >
                   Back
                 </Button>

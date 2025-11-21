@@ -82,7 +82,8 @@ export async function makeImageData({
                     ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
                   }
                 } else {
-                  let c = colorCache[genotype]
+                  const cacheKey = `${genotype}:${mostFrequentAlt}`
+                  let c = colorCache[cacheKey]
                   if (c === undefined) {
                     let alt = 0
                     let uncalled = 0
@@ -111,7 +112,7 @@ export async function makeImageData({
                       total,
                       true,
                     )
-                    colorCache[genotype] = c
+                    colorCache[cacheKey] = c
                   }
                   if (c) {
                     drawColorAlleleCount(c, ctx, x, y, w, h)
@@ -140,7 +141,8 @@ export async function makeImageData({
                   ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
                 }
               } else {
-                let c = colorCache[genotype]
+                const cacheKey = `${genotype}:${mostFrequentAlt}`
+                let c = colorCache[cacheKey]
                 if (c === undefined) {
                   let alt = 0
                   let uncalled = 0
@@ -162,7 +164,7 @@ export async function makeImageData({
                     }
                   }
                   c = getColorAlleleCount(ref, alt, alt2, uncalled, total, true)
-                  colorCache[genotype] = c
+                  colorCache[cacheKey] = c
                 }
                 if (c) {
                   drawColorAlleleCount(c, ctx, x, y, w, h)

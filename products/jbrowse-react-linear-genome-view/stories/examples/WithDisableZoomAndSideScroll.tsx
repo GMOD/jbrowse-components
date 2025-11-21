@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import Plugin from '@jbrowse/core/Plugin'
 import { types } from 'mobx-state-tree'
@@ -7,8 +7,6 @@ import { getVolvoxConfig } from './util'
 import { JBrowseLinearGenomeView, createViewState } from '../../src'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-
-type ViewState = ReturnType<typeof createViewState>
 
 class MyPlugin extends Plugin {
   name = 'MyPlugin'
@@ -32,19 +30,17 @@ class MyPlugin extends Plugin {
   configure() {}
 }
 export const WithDisableZoomAndSideScroll = () => {
-  const [state, setState] = useState<ViewState>()
-  useEffect(() => {
+  const [state] = useState(() => {
     const { assembly, tracks } = getVolvoxConfig()
-    const state = createViewState({
+    return createViewState({
       assembly,
       tracks,
       plugins: [MyPlugin],
       location: 'ctgA:1105..1221',
     })
-    setState(state)
-  }, [])
+  })
 
-  return state ? (
+  return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/WithDisableZoomAndSideScroll.tsx">
@@ -53,5 +49,5 @@ export const WithDisableZoomAndSideScroll = () => {
       (Note: This is a basic demo that was added for a user request and may not
       be a complete solution)
     </div>
-  ) : null
+  )
 }

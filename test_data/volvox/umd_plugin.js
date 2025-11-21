@@ -9,6 +9,28 @@
     install(pluginManager) {
       const React = pluginManager.jbrequire('react')
 
+      pluginManager.addToExtensionPoint(
+        'Core-handleUnrecognizedAssembly',
+        (_defaultResult, { assemblyName, session }) => {
+          const jb2asm = `jb2hub-${assemblyName}`
+          if (
+            assemblyName &&
+            !session.connections.find(f => f.connectionId === jb2asm)
+          ) {
+            console.log('getUnrecognizedAssembly', { assemblyName })
+            const conf = {
+              type: 'JB2TrackHubConnection',
+              uri: 'http://localhost:3000/test_data/volvox/config2.json',
+              name: 'my conn',
+              assemblyNames: [assemblyName],
+              connectionId: jb2asm,
+            }
+            session.addConnectionConf(conf)
+            session.makeConnection(conf)
+          }
+        },
+      )
+
       function NewAboutComponent() {
         return React.createElement(
           'div',

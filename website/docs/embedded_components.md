@@ -64,8 +64,7 @@ This component consists of a single JBrowse 2 circular view.
 Here is a table of different usages of the
 `@jbrowse/react-circular-genome-view2` using different bundlers
 
-| Syntax              | Demo                                            | Source code                                                                              | Note                                                                                         |
-| ------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| create-react-app v5 | [demo](https://jbrowse.org/demos/cgv-cra5/)     | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-cra5-demo)      | Uses CRAv5 (webpack based)                                                                   |
-| vanilla js          | [demo](https://jbrowse.org/demos/cgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, and doesn't require any transpilation or bundling |
-| nextjs              | [demo](https://jbrowse.org/demos/cgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-nextjs-demo)    | Uses next.js                                                                                 |
+| Syntax     | Demo                                            | Source code                                                                              | Note                                                                                         |
+| ---------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| vanilla js | [demo](https://jbrowse.org/demos/cgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, and doesn't require any transpilation or bundling |
+| nextjs     | [demo](https://jbrowse.org/demos/cgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-nextjs-demo)    | Uses next.js                                                                                 |

@@ -16,12 +16,9 @@ const useStyles = makeStyles()(theme => {
       position: 'absolute',
       zIndex: 830,
       textAlign: 'center',
-    },
-    rubberbandControl: {
       cursor: 'crosshair',
-      width: '100%',
-      minHeight: 8,
     },
+
     rubberbandText: {
       color: theme.palette.tertiary.contrastText,
     },

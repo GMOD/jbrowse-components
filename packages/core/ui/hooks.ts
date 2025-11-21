@@ -89,16 +89,15 @@ export function usePopupState(arg?: {
         return
       }
 
-      // Create self reference to use in setTimeout and comparison
+      // Close any existing child before setting this one as the new child
+      if (parentPopupState.childHandle) {
+        parentPopupState.childHandle.close()
+      }
 
-      parentPopupState.setChildHandle(undefined)
-
-      // Set this popup as the child of the parent
-      setTimeout(() => {
-        parentPopupState.setChildHandle({
-          popupId,
-          close,
-        })
+      // Set this popup as the child of the parent immediately
+      parentPopupState.setChildHandle({
+        popupId,
+        close,
       })
     }
 

@@ -19,9 +19,6 @@ const useStyles = makeStyles()(theme => ({
     boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
   },
-  viewControls: {
-    margin: 0,
-  },
   viewsContainer: {
     display: 'flex',
   },

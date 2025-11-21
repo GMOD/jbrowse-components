@@ -1,30 +1,37 @@
 import eslint from '@eslint/js'
+import { defineConfig } from 'eslint/config'
 import importPlugin from 'eslint-plugin-import'
 import eslintPluginReact from 'eslint-plugin-react'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
+import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [
       'packages/__mocks__/@testing-library/react.tsx',
+      'packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
+      'packages/__mocks__/generic-filehandle2.ts',
       'config/jest/*',
       '**/build/**/*',
       '**/dist/**/*',
       '**/esm/**/*',
       '**/public/**/*',
       '**/storybook-static/**',
+      'products/jbrowse-desktop/linux-sandbox-fix.cjs',
       'docs/*',
       'website/*',
       'packages/core/util/nanoid.js',
+      'packages/core/util/flatbush/index.js',
       'products/**/webpack.config.js',
+      'products/jbrowse-desktop/scripts/*',
       'plugin-development-tools/**',
       'products/jbrowse-cli/lib/**',
-      'products/jbrowse-desktop/scripts/notarize.js',
+      'products/jbrowse-cli/bundle/**',
       'auth_test_utils/**/*',
       'component_tests/**/*',
       'embedded_demos/**/*',
@@ -50,6 +57,7 @@ export default tseslint.config(
   {
     plugins: {
       'react-compiler': reactCompiler,
+      'tss-unused-classes': tssUnusedClasses,
     },
     rules: {
       'react-compiler/react-compiler': 'error',
@@ -85,6 +93,7 @@ export default tseslint.config(
           allow: ['error', 'warn'],
         },
       ],
+      'tss-unused-classes/unused-classes': 'warn',
       'no-underscore-dangle': 'off',
       curly: 'error',
       semi: ['error', 'never'],
@@ -104,6 +113,8 @@ export default tseslint.config(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
+      'unicorn/prefer-response-static-json': 'off',
+      'unicorn/text-encoding-identifier-case': 'off',
       'unicorn/prefer-global-this': 'off',
       'unicorn/prefer-structured-clone': 'off',
       'unicorn/no-new-array': 'off',
@@ -143,11 +154,13 @@ export default tseslint.config(
       'unicorn/better-regex': 'off',
       'unicorn/escape-case': 'off',
       'unicorn/prefer-number-properties': 'off',
+      'unicorn/no-array-reverse': 'off',
       'unicorn/no-process-exit': 'off',
       'unicorn/prefer-at': 'off',
       'unicorn/prefer-string-replace-all': 'off',
       'unicorn/no-array-reduce': 'off',
       'unicorn/expiring-todo-comments': 'off',
+      'unicorn/no-array-sort': 'off',
 
       'import/no-unresolved': 'off',
       'import/order': [
@@ -184,6 +197,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
@@ -222,8 +236,7 @@ export default tseslint.config(
       'products/jbrowse-img/**/*',
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-desktop/scripts/*',
-      'products/jbrowse-desktop/sign.js',
-      'products/jbrowse-desktop/linux-sandbox-fix.js',
+      'products/jbrowse-desktop/sign.cjs',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
     ],

@@ -20,6 +20,7 @@ exports[`more skip 1`] = `
   },
   {
     "base": "1",
+    "insertedBases": "C",
     "length": 0,
     "start": 31,
     "type": "insertion",

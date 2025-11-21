@@ -31,23 +31,12 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
     this.nclist = new NCListStore({
       baseUrl: '',
       urlTemplate: rootUrlTemplate.uri,
-      readFile: (url: string) => {
-        console.log(
-          'wtf1!',
-          String(
-            rootUrlTemplate.baseUri
-              ? new URL(url, rootUrlTemplate.baseUri).toString()
-              : url,
-          ),
-        )
-        return new RemoteFile(
-          String(
-            rootUrlTemplate.baseUri
-              ? new URL(url, rootUrlTemplate.baseUri).toString()
-              : url,
-          ),
-        ).readFile()
-      },
+      readFile: (url: string) =>
+        new RemoteFile(
+          rootUrlTemplate.baseUri
+            ? new URL(url, rootUrlTemplate.baseUri).toString()
+            : url,
+        ).readFile(),
     })
   }
 

@@ -37,8 +37,8 @@ function Home() {
                 The next-generation genome browser
               </Typography>
               <Typography variant="body1">
-                JBrowse is a new kind of genome browser that runs on the web, on
-                your desktop, or embedded in your app.
+                JBrowse is a genome browser that runs on the web, on your
+                desktop, or embedded in your app.
               </Typography>
             </Box>
 
@@ -71,8 +71,8 @@ function Home() {
             </Box>
             <Box sx={{ textAlign: 'center' }}>
               <Typography>
-                Also check out our{' '}
-                <a href="/jb2/blog">latest release blogpost</a>, our{' '}
+                Check out our <a href="/jb2/blog">latest release blogpost</a>,
+                our{' '}
                 <a href="/jb2/docs/embedded_components/">embedded components</a>
                 , and our{' '}
                 <a href="/jb2/download/#jbrowse-cli-tools">
@@ -115,9 +115,14 @@ function Home() {
             <Box sx={{ flex: '50%' }}>
               <ul>
                 <li>
-                  Improved <b>structural variant</b> and{' '}
-                  <b>comparative genomics visualization</b> with linear,
+                  Improved visualization of <b>structural variants</b> and{' '}
+                  <b>genome synteny</b> with tightly-integrated linear,
                   circular, dotplot, and synteny views
+                </li>
+                <li>
+                  In-browser <b>protein 3D structure displays</b> with
+                  integrated alignment and phylogenetic tree views. Mouse over a
+                  genomic variant to see where it lands on the structure!
                 </li>
                 <li>
                   <b>Support for many common data types</b> including BAM, CRAM,
@@ -125,7 +130,7 @@ function Home() {
                   specialized formats
                 </li>
                 <li>
-                  <b>Endless extensibility</b> with a plugin ecosytem which can
+                  <b>Powerful extensibility</b> with a plugin ecosytem which can
                   add additional view types, track types, data adapters, and
                   more!
                 </li>
@@ -170,8 +175,8 @@ function Home() {
             publish, please cite the most recent JBrowse paper:
           </p>
           <cite>
-            JBrowse 2: a modular genome browser with views of synteny and
-            structural variation. Genome Biology (2023).{' '}
+            Diesh <em>et al</em>, 2023. JBrowse 2: a modular genome browser with
+            views of synteny and structural variation. Genome Biology 24:74.{' '}
             <a href="https://doi.org/10.1186/s13059-023-02914-z">
               https://doi.org/10.1186/s13059-023-02914-z
             </a>
@@ -192,10 +197,10 @@ function Home() {
           <Typography variant="h4">Funding and Collaboration</Typography>
           <hr />
           <Typography variant="body1">
-            JBrowse development is supported by the US National Institutes of
-            Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
-            Institute for Cancer Research (OICR), and the University of
-            California, Berkeley.
+            JBrowse development has received support from the US National
+            Institutes of Health (U41 HG003751), The Chan Zuckerberg Initiative,
+            The Ontario Institute for Cancer Research (OICR), and the University
+            of California, Berkeley.
           </Typography>
         </Box>
       </Box>

@@ -6,6 +6,7 @@ export interface Source {
   group?: string
   HP?: number
   id?: string
+  source: string
   [key: string]: unknown
 }
 

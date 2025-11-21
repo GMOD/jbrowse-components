@@ -75,7 +75,7 @@ test('three level', async () => {
   expectCanvasMatch(canvases[1]!)
 }, 40000)
 
-test('open local', async () => {
+test('open local paf', async () => {
   const { session, findByTestId, findByRole, findAllByTestId, findByText } =
     await createView()
 
@@ -95,6 +95,40 @@ test('open local', async () => {
   fireEvent.change(await findByTestId('urlInput'), {
     target: {
       value: 'volvox_del.paf',
+    },
+  })
+
+  fireEvent.click(await findByText('Launch'))
+  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
+}, 40000)
+
+test('open local pif', async () => {
+  const { session, findByTestId, findByRole, findAllByTestId, findByText } =
+    await createView()
+
+  fireEvent.click(await findByText('File'))
+  fireEvent.click(await findByText('Add'))
+  fireEvent.click(await findByText('Linear synteny view'))
+  expect(session.views.length).toBe(2)
+
+  const r = await findAllByTestId('assembly-selector-textfield')
+  fireEvent.mouseDown(await within(r[0]!).findByText('volvox'))
+  fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
+
+  const synbuttons = await findAllByTestId('synbutton')
+  fireEvent.click(synbuttons[0]!)
+  fireEvent.click(await findByText('New track'))
+  fireEvent.click(await findByText('.pif.gz'))
+
+  const inputs = await findAllByTestId('urlInput')
+  fireEvent.change(inputs[0]!, {
+    target: {
+      value: 'volvox_del.pif.gz',
+    },
+  })
+  fireEvent.change(inputs[1]!, {
+    target: {
+      value: 'volvox_del.pif.gz.tbi',
     },
   })
 

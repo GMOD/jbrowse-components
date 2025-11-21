@@ -83,8 +83,8 @@ function preprocessConfigurationSchemaArguments(
     options = {
       ...inputOptions.baseConfiguration.jbrowseSchemaOptions,
       ...inputOptions,
+      baseConfiguration: undefined,
     }
-    options.baseConfiguration = undefined
   }
   return { schemaDefinition, options }
 }

@@ -1,4 +1,6 @@
-import { clamp, getContainingView, max, measureText } from '@jbrowse/core/util'
+import { useMemo } from 'react'
+
+import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './MultiVariantColorLegend'
@@ -51,18 +53,27 @@ export const LegendBar = observer(function (props: {
 }) {
   const { model } = props
   const { canDisplayLabels, rowHeight, sources } = model
-  const svgFontSize = clamp(rowHeight, 8, 12)
+  const svgFontSize = Math.min(rowHeight, 12)
+
+  const labelWidth = useMemo(() => {
+    if (!sources) {
+      return 0
+    }
+    let maxWidth = 0
+    for (const s of sources) {
+      const width = canDisplayLabels
+        ? measureText(s.label, svgFontSize) + 10
+        : 20
+      if (width > maxWidth) {
+        maxWidth = width
+      }
+    }
+    return maxWidth
+  }, [sources, svgFontSize, canDisplayLabels])
+
   return sources ? (
     <Wrapper {...props}>
-      <ColorLegend
-        model={model}
-        labelWidth={max(
-          sources
-            .map(s => measureText(s.label, svgFontSize) + 10)
-            .map(width => (canDisplayLabels ? width : 20)),
-          0,
-        )}
-      />
+      <ColorLegend model={model} labelWidth={labelWidth} />
     </Wrapper>
   ) : null
 })

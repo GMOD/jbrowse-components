@@ -62,6 +62,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
+        showDynamicControls: true,
+        /**
+         * #property
+         */
         levels: types.array(LinearSyntenyViewHelper),
         /**
          * #property
@@ -198,6 +202,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setLinkViews(arg: boolean) {
         self.linkViews = arg
+      },
+      /**
+       * #action
+       */
+      setShowDynamicControls(arg: boolean) {
+        self.showDynamicControls = arg
       },
       /**
        * #action

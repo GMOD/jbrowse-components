@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
+import { defaultFilterFlags } from '../shared/util'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
@@ -10,6 +12,11 @@ function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearReadCloudDisplay',
     {
+      minSubfeatureWidth: {
+        type: 'number',
+        defaultValue: 1,
+      },
+
       /**
        * #slot
        */
@@ -33,6 +40,14 @@ function configSchemaF(pluginManager: PluginManager) {
       colorBy: {
         type: 'frozen',
         defaultValue: { type: 'insertSizeAndOrientation' },
+      },
+
+      /**
+       * #slot
+       */
+      filterBy: {
+        type: 'frozen',
+        defaultValue: defaultFilterFlags,
       },
     },
     {

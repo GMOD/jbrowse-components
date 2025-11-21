@@ -34,7 +34,7 @@ test('can use a spec url for lgv', async () => {
 
   const elt = await findByPlaceholderText('Search for location', {}, delay)
   await waitFor(() => {
-    expect((elt as HTMLInputElement).value).toBe('ctgA:5,999..6,999')
+    expect((elt as HTMLInputElement).value).toBe('ctgA:6,000..7,000')
   }, delay)
   await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
 }, 40000)
@@ -47,7 +47,7 @@ test('nonexist', async () => {
 
   const elt = await findByPlaceholderText('Search for location', {}, delay)
   await waitFor(() => {
-    expect((elt as HTMLInputElement).value).toBe('ctgA:5,999..6,999')
+    expect((elt as HTMLInputElement).value).toBe('ctgA:6,000..7,000')
   }, delay)
   await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
   await findByText(/Could not resolve identifiers: nonexist/)

@@ -105,6 +105,13 @@ any
 any
 ```
 
+#### getter: modificationThreshold
+
+```js
+// type
+any
+```
+
 #### getter: rendererConfig
 
 ```js
@@ -250,6 +257,13 @@ setJexlFilters: (filters: string[]) => void
 ```js
 // type signature
 updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
+```
+
+#### action: setSimplexModifications
+
+```js
+// type signature
+setSimplexModifications: (simplex: string[]) => void
 ```
 
 #### action: setModificationsReady

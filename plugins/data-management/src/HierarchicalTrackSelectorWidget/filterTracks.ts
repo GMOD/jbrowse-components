@@ -22,20 +22,20 @@ export function filterTracks(
   if (!view) {
     return []
   }
-  const trackListAssemblies = self.assemblyNames
-    .map(a => assemblyManager.get(a))
+  const viewAssemblyNames = self.assemblyNames
+    .map(a => assemblyManager.getCanonicalAssemblyName(a))
     .filter(notEmpty)
   return tracks
     .filter(c => {
-      const trackAssemblyNames = readConfObject(c, 'assemblyNames') as
+      const trackConfigAssemblyNames = readConfObject(c, 'assemblyNames') as
         | string[]
         | undefined
-      const trackAssemblies = trackAssemblyNames
-        ?.map(name => assemblyManager.get(name))
+      const trackCanonicalAssemblyNames = trackConfigAssemblyNames
+        ?.map(name => assemblyManager.getCanonicalAssemblyName(name))
         .filter(notEmpty)
       return view.trackSelectorAnyOverlap
-        ? hasAnyOverlap(trackAssemblies, trackListAssemblies)
-        : hasAllOverlap(trackAssemblies, trackListAssemblies)
+        ? hasAnyOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
+        : hasAllOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
     })
     .filter(c => {
       const { displayTypes } = pluginManager.getViewType(view.type)!

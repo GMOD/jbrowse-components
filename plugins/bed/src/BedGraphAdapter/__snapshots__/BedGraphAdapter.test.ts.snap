@@ -8,7 +8,7 @@ exports[`basic 1`] = `
     "score": 4,
     "source": "col0",
     "start": 100,
-    "uniqueId": "adp--1893313976-chr1-0-0",
+    "uniqueId": "adp--1798491628-chr1-0-0",
   },
   {
     "end": 300,
@@ -16,7 +16,7 @@ exports[`basic 1`] = `
     "score": 5,
     "source": "col0",
     "start": 200,
-    "uniqueId": "adp--1893313976-chr1-1-0",
+    "uniqueId": "adp--1798491628-chr1-1-0",
   },
   {
     "end": 400,
@@ -24,7 +24,7 @@ exports[`basic 1`] = `
     "score": 6,
     "source": "col0",
     "start": 300,
-    "uniqueId": "adp--1893313976-chr1-2-0",
+    "uniqueId": "adp--1798491628-chr1-2-0",
   },
 ]
 `;

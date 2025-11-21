@@ -163,11 +163,17 @@ function stateModelFactory(
        * #method
        */
       renderProps() {
-        const { inverted, ticks, height } = self
+        const { inverted, ticks, height, domain } = self
         const superProps = self.adapterProps()
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const statsRegion = JSON.stringify(view.dynamicBlocks)
         return {
           ...self.adapterProps(),
-          notReady: superProps.notReady || !self.stats,
+          notReady:
+            superProps.notReady ||
+            !domain ||
+            !self.stats ||
+            self.statsRegion !== statsRegion,
           height,
           ticks,
           inverted,
@@ -191,9 +197,7 @@ function stateModelFactory(
        */
       get quantitativeStatsReady() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        return (
-          view.initialized && self.statsReadyAndRegionNotTooLarge && !self.error
-        )
+        return view.initialized && !self.regionTooLarge && !self.error
       },
     }))
     .views(self => {

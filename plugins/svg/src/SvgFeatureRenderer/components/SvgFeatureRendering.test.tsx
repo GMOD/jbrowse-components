@@ -1,18 +1,13 @@
-import React from 'react'
-
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { cleanup, fireEvent, render } from '@testing-library/react'
-import { afterEach, expect, test } from 'vitest'
+import { fireEvent, render } from '@testing-library/react'
 
 import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 import SvgOverlay from './SvgOverlay'
 
-afterEach(() => {
-  cleanup()
-})
+import '@testing-library/jest-dom'
 
 test('no features', () => {
   const { container } = render(
@@ -27,11 +22,9 @@ test('no features', () => {
         new PrecomputedLayout({
           rectangles: {},
           totalHeight: 20,
-          containsNoTransferables: true,
           maxHeightReached: false,
         })
       }
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       config={SvgRendererConfigSchema.create({})}
       bpPerPx={3}
     />,
@@ -49,7 +42,6 @@ test('one feature', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -81,7 +73,6 @@ test('click on one feature, and do not re-render', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -135,7 +126,6 @@ test('one feature (compact mode)', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -316,7 +306,6 @@ test('processed transcript (reducedRepresentation mode)', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -347,7 +336,6 @@ test('processed transcript', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -524,7 +512,6 @@ test('processed transcript (exons + impliedUTR)', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -1144,6 +1131,8 @@ test('processed transcript (exons + impliedUTR)', () => {
   )
 
   // finds that the color3 is outputted for impliedUTRs
+  expect(container).toContainHTML('#357089')
+
   expect(container).toMatchSnapshot()
 })
 
@@ -1167,6 +1156,54 @@ test('svg selected', () => {
         bpPerPx={3}
       />
     </svg>,
+  )
+
+  expect(container).toMatchSnapshot()
+})
+
+test('gene with CDS children', () => {
+  const { container } = render(
+    <Rendering
+      blockKey="hello"
+      colorByCDS={false}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
+      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      features={
+        new Map([
+          [
+            'one',
+            new SimpleFeature({
+              refName: 'zonk',
+              type: 'gene',
+              start: 5975,
+              end: 9744,
+              strand: 1,
+              uniqueId: 'one',
+              subfeatures: [
+                {
+                  refName: 'zonk',
+                  type: 'CDS',
+                  start: 6110,
+                  end: 6148,
+                  strand: 1,
+                },
+                {
+                  refName: 'zonk',
+                  type: 'CDS',
+                  start: 6615,
+                  end: 6683,
+                  strand: 1,
+                },
+              ],
+            }),
+          ],
+        ])
+      }
+      config={SvgRendererConfigSchema.create({})}
+      bpPerPx={3}
+    />,
   )
 
   expect(container).toMatchSnapshot()

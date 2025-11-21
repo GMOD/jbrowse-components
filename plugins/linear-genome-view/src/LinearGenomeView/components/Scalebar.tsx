@@ -34,14 +34,40 @@ interface ScalebarProps {
   className?: string
 }
 
+// Separate observer component for offsetPx changes to minimize re-renders
+const ScalebarPositionedContent = observer(function ScalebarPositionedContent({
+  model,
+  style,
+}: {
+  model: LGV
+  style?: React.CSSProperties
+}) {
+  const { classes } = useStyles()
+  const { staticBlocks, offsetPx } = model
+  const offsetLeft = staticBlocks.offsetPx - offsetPx
+
+  return (
+    <div
+      className={classes.scalebar}
+      style={{
+        left: offsetLeft - 1,
+        width: staticBlocks.totalWidthPx,
+        ...style,
+      }}
+    >
+      <ScalebarCoordinateLabels model={model} />
+    </div>
+  )
+})
+
 const Scalebar = observer(
   forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
     { model, style, className, ...other },
     ref,
   ) {
     const { classes, cx } = useStyles()
-    const { staticBlocks, offsetPx, scaleFactor } = model
-    const offsetLeft = staticBlocks.offsetPx - offsetPx
+    const { scaleFactor } = model
+
     return (
       <Paper
         data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
@@ -59,16 +85,7 @@ const Scalebar = observer(
             transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
           }}
         >
-          <div
-            className={classes.scalebar}
-            style={{
-              left: offsetLeft - 1,
-              width: staticBlocks.totalWidthPx,
-              ...style,
-            }}
-          >
-            <ScalebarCoordinateLabels model={model} />
-          </div>
+          <ScalebarPositionedContent model={model} style={style} />
         </div>
         <ScalebarRefNameLabels model={model} />
       </Paper>

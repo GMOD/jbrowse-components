@@ -1,13 +1,14 @@
 import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { Menu } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import LinearBlocks from './LinearBlocks'
+import MenuPage from './MenuPage'
 
-import type { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import type { Coord } from './types'
+import type { BaseLinearDisplayModel } from '../model'
 
 const useStyles = makeStyles()({
   display: {
@@ -18,8 +19,6 @@ const useStyles = makeStyles()({
     minHeight: '100%',
   },
 })
-
-type Coord = [number, number]
 
 const BaseLinearDisplay = observer(function (props: {
   model: BaseLinearDisplayModel
@@ -33,8 +32,6 @@ const BaseLinearDisplay = observer(function (props: {
   const [contextCoord, setContextCoord] = useState<Coord>()
   const { model, children } = props
   const { TooltipComponent, DisplayMessageComponent, height } = model
-  const items = model.contextMenuItems()
-  const open = Boolean(contextCoord) && items.length > 0
   return (
     <div
       ref={ref}
@@ -77,33 +74,13 @@ const BaseLinearDisplay = observer(function (props: {
           mouseCoord={offsetMouseCoord}
         />
       </Suspense>
-
-      {open ? (
-        <Menu
-          open
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setContextCoord(undefined)
-          }}
+      {contextCoord ? (
+        <MenuPage
+          contextCoord={contextCoord}
+          model={model}
           onClose={() => {
             setContextCoord(undefined)
-            model.setContextMenuFeature(undefined)
           }}
-          slotProps={{
-            transition: {
-              onExit: () => {
-                setContextCoord(undefined)
-                model.setContextMenuFeature(undefined)
-              },
-            },
-          }}
-          anchorReference="anchorPosition"
-          anchorPosition={
-            contextCoord
-              ? { top: contextCoord[1], left: contextCoord[0] }
-              : undefined
-          }
-          menuItems={items}
         />
       ) : null}
     </div>

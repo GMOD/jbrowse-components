@@ -310,7 +310,7 @@ sticky positioning
 
 ```js
 // type
-AbstractViewModel
+boolean
 ```
 
 #### getter: stickyViewHeaders

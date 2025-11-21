@@ -1,5 +1,4 @@
 import { assembleLocString, getSession } from '@jbrowse/core/util'
-import { saveAs } from 'file-saver'
 
 import type { GridBookmarkModel } from './model'
 import type { AbstractViewModel } from '@jbrowse/core/util/types'
@@ -44,7 +43,7 @@ export async function navToBookmark(
   }
 }
 
-export function downloadBookmarkFile(
+export async function downloadBookmarkFile(
   fileFormat: string,
   model: GridBookmarkModel,
 ) {
@@ -53,6 +52,9 @@ export function downloadBookmarkFile(
     selectedBookmarks.length === 0
       ? bookmarksWithValidAssemblies
       : selectedBookmarks
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const { saveAs } = await import('file-saver-es')
 
   if (fileFormat === 'BED') {
     const fileHeader = ''
@@ -74,11 +76,13 @@ export function downloadBookmarkFile(
         (a, b) => a + b,
         fileHeader,
       )
-      const blob = new Blob([fileContent || ''], {
-        type: 'text/x-bed;charset=utf-8',
-      })
-      const fileName = `jbrowse_bookmarks_${assembly}.bed`
-      saveAs(blob, fileName)
+
+      saveAs(
+        new Blob([fileContent || ''], {
+          type: 'text/x-bed;charset=utf-8',
+        }),
+        `jbrowse_bookmarks_${assembly}.bed`,
+      )
     }
   } else {
     // TSV
@@ -95,11 +99,12 @@ export function downloadBookmarkFile(
       })
       .reduce((a, b) => a + b, fileHeader)
 
-    const blob = new Blob([fileContents || ''], {
-      type: 'text/tab-separated-values;charset=utf-8',
-    })
-    const fileName = 'jbrowse_bookmarks.tsv'
-    saveAs(blob, fileName)
+    saveAs(
+      new Blob([fileContents || ''], {
+        type: 'text/tab-separated-values;charset=utf-8',
+      }),
+      'jbrowse_bookmarks.tsv',
+    )
   }
 }
 
@@ -136,9 +141,9 @@ export async function fromUrlSafeB64(b64: string) {
     b64.replaceAll('-', '+').replaceAll('_', '/'),
   )
   const { toByteArray } = await import('base64-js')
-  const { inflate } = await import('pako')
+  const { inflate } = await import('pako-esm2')
   const bytes = toByteArray(originalB64)
-  const inflated = inflate(bytes)
+  const inflated = inflate(bytes, undefined)
   return new TextDecoder().decode(inflated)
 }
 
@@ -149,9 +154,9 @@ export async function fromUrlSafeB64(b64: string) {
  */
 export async function toUrlSafeB64(str: string) {
   const bytes = new TextEncoder().encode(str)
-  const { deflate } = await import('pako')
+  const { deflate } = await import('pako-esm2')
   const { fromByteArray } = await import('base64-js')
-  const deflated = deflate(bytes)
+  const deflated = deflate(bytes, undefined)
   const encoded = fromByteArray(deflated)
   const pos = encoded.indexOf('=')
   return pos > 0

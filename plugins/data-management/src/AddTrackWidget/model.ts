@@ -97,6 +97,8 @@ export default function f(pluginManager: PluginManager) {
        */
       setTrackData(obj: FileLocation) {
         self.trackData = obj
+        // Clear adapter hint when track data changes to force re-evaluation
+        self.adapterHint = ''
       },
       /**
        * #action

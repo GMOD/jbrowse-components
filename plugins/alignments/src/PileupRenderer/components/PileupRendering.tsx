@@ -1,35 +1,40 @@
-import { useEffect, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { bpSpanPx } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
+import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
+import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 const PileupRendering = observer(function (props: {
   blockKey: string
-  displayModel?: BaseLinearDisplayModel
+  displayModel: BaseLinearDisplayModel
   width: number
   height: number
   regions: Region[]
   bpPerPx: number
-  sortedBy?: {
-    type: string
-    pos: number
-    refName: string
-  }
-  colorBy?: {
-    type: string
-    tag?: string
-  }
-  filterBy?: {
-    tagFilter?: { tag: string }
-  }
-  onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
+  sortedBy?: SortedBy
+  colorBy?: ColorBy
+  filterBy?: FilterBy
+  items: FlatbushItem[]
+  flatbush: any
+  onMouseMove?: (
+    event: React.MouseEvent,
+    featureId?: string,
+    extra?: string,
+  ) => void
+  onMouseLeave?: (event: React.MouseEvent) => void
+  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
+  onFeatureContextMenu?: (event: React.MouseEvent, featureId: string) => void
+  onContextMenu?: (event: React.MouseEvent) => void
 }) {
   const {
     onMouseMove,
+    onMouseLeave,
     blockKey,
     displayModel,
     width,
@@ -39,13 +44,15 @@ const PileupRendering = observer(function (props: {
     sortedBy,
     colorBy,
     filterBy,
+    flatbush,
+    items,
+    onFeatureClick,
+    onFeatureContextMenu,
+    onContextMenu,
   } = props
+  const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
-    displayModel || {}
-  const [firstRender, setFirstRender] = useState(false)
-  useEffect(() => {
-    setFirstRender(true)
-  }, [])
+    displayModel
 
   const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
@@ -53,15 +60,18 @@ const PileupRendering = observer(function (props: {
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const selectedRect = selectedFeatureId
-    ? displayModel?.getFeatureByID(blockKey, selectedFeatureId)
+    ? displayModel.getFeatureByID(blockKey, selectedFeatureId)
     : undefined
 
   const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
   const highlightedRect = highlightedFeature
-    ? displayModel?.getFeatureByID(blockKey, highlightedFeature)
+    ? displayModel.getFeatureByID(blockKey, highlightedFeature)
     : undefined
 
-  function makeRect(r: [number, number, number, number], offset = 2) {
+  function makeRect(
+    r: [number, number, number, number] | [number, number, number, number, any],
+    offset = 2,
+  ) {
     const [leftBp, topPx, rightBp, bottomPx] = r
     const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
     const rectTop = Math.round(topPx)
@@ -76,78 +86,7 @@ const PileupRendering = observer(function (props: {
   const selected = selectedRect ? makeRect(selectedRect) : undefined
   const highlight = highlightedRect ? makeRect(highlightedRect, 0) : undefined
 
-  function onMouseDown(event: React.MouseEvent) {
-    setMouseIsDown(true)
-    setMovedDuringLastMouseDown(false)
-    callMouseHandler('MouseDown', event)
-  }
-
-  function onMouseEnter(event: React.MouseEvent) {
-    callMouseHandler('MouseEnter', event)
-  }
-
-  function onMouseOut(event: React.MouseEvent) {
-    callMouseHandler('MouseOut', event)
-    callMouseHandler('MouseLeave', event)
-  }
-
-  function onMouseOver(event: React.MouseEvent) {
-    callMouseHandler('MouseOver', event)
-  }
-
-  function onMouseUp(event: React.MouseEvent) {
-    setMouseIsDown(false)
-    callMouseHandler('MouseUp', event)
-  }
-
-  function onClick(event: React.MouseEvent) {
-    if (!movedDuringLastMouseDown) {
-      callMouseHandler('Click', event)
-    }
-  }
-
-  function onMouseLeave(event: React.MouseEvent) {
-    callMouseHandler('MouseOut', event)
-    callMouseHandler('MouseLeave', event)
-  }
-
-  function onContextMenu(event: React.MouseEvent) {
-    callMouseHandler('ContextMenu', event)
-  }
-
-  function mouseMove(event: React.MouseEvent) {
-    if (!ref.current) {
-      return
-    }
-    if (mouseIsDown) {
-      setMovedDuringLastMouseDown(true)
-    }
-    const rect = ref.current.getBoundingClientRect()
-    const offsetX = event.clientX - rect.left
-    const offsetY = event.clientY - rect.top
-    const px = region.reversed ? width - offsetX : offsetX
-    const clientBp = region.start + bpPerPx * px
-
-    onMouseMove?.(
-      event,
-      displayModel?.getFeatureOverlapping(blockKey, clientBp, offsetY),
-    )
-  }
-
-  function callMouseHandler(handlerName: string, event: React.MouseEvent) {
-    // @ts-expect-error
-    const featureHandler = props[`onFeature${handlerName}`]
-    // @ts-expect-error
-    const canvasHandler = props[`on${handlerName}`]
-    if (featureHandler && featureIdUnderMouse) {
-      featureHandler(event, featureIdUnderMouse)
-    } else if (canvasHandler) {
-      canvasHandler(event, featureIdUnderMouse)
-    }
-  }
-
   const canvasWidth = Math.ceil(width)
-  // need to call this in render so we get the right observer behavior
   return (
     <div
       ref={ref}
@@ -161,41 +100,70 @@ const PileupRendering = observer(function (props: {
         .filter(f => !!f)
         .join('-')}
       style={{ position: 'relative', width: canvasWidth, height }}
-      onMouseDown={event => {
-        onMouseDown(event)
+      onMouseLeave={onMouseLeave}
+      onMouseDown={(_event: React.MouseEvent) => {
+        setMouseIsDown(true)
+        setMovedDuringLastMouseDown(false)
       }}
-      onMouseEnter={event => {
-        onMouseEnter(event)
-      }}
-      onMouseOut={event => {
-        onMouseOut(event)
-      }}
-      onMouseOver={event => {
-        onMouseOver(event)
-      }}
-      onMouseUp={event => {
-        onMouseUp(event)
-      }}
-      onMouseLeave={event => {
-        onMouseLeave(event)
+      onMouseUp={() => {
+        setMouseIsDown(false)
       }}
       onMouseMove={event => {
-        mouseMove(event)
+        if (!ref.current) {
+          return
+        }
+        if (mouseIsDown) {
+          setMovedDuringLastMouseDown(true)
+        }
+        const rect = ref.current.getBoundingClientRect()
+        const offsetX = event.clientX - rect.left
+        const offsetY = event.clientY - rect.top
+        const px = region.reversed ? width - offsetX : offsetX
+        const clientBp = region.start + bpPerPx * px
+        const search = flatbush2.search(
+          offsetX,
+          offsetY,
+          offsetX + 1,
+          offsetY + 1,
+        )
+        const item = search.length ? items[search[0]!] : undefined
+        const label = item
+          ? item.type === 'insertion'
+            ? `Insertion: ${item.seq}`
+            : item.type === 'deletion'
+              ? `Deletion: ${item.seq}bp`
+              : item.type === 'modification'
+                ? item.seq
+                : `Mismatch: ${item.seq}`
+          : undefined
+        onMouseMove?.(
+          event,
+          displayModel.getFeatureOverlapping(blockKey, clientBp, offsetY),
+          label,
+        )
       }}
       onClick={event => {
-        onClick(event)
+        if (
+          !movedDuringLastMouseDown &&
+          onFeatureClick &&
+          featureIdUnderMouse
+        ) {
+          onFeatureClick(event, featureIdUnderMouse)
+        }
       }}
       onContextMenu={event => {
-        onContextMenu(event)
+        if (onFeatureContextMenu && featureIdUnderMouse) {
+          onFeatureContextMenu(event, featureIdUnderMouse)
+        } else {
+          onContextMenu?.(event)
+        }
       }}
-      onFocus={() => {}}
-      onBlur={() => {}}
     >
       <PrerenderedCanvas
         {...props}
         style={{ position: 'absolute', left: 0, top: 0 }}
       />
-      {firstRender && highlight ? (
+      {highlight ? (
         <div
           style={{
             position: 'absolute',
@@ -205,7 +173,7 @@ const PileupRendering = observer(function (props: {
           }}
         />
       ) : null}
-      {firstRender && selected ? (
+      {selected ? (
         <div
           style={{
             position: 'absolute',

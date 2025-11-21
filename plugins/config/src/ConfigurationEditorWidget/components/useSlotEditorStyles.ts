@@ -1,3 +1,4 @@
+/* eslint-disable tss-unused-classes/unused-classes */
 import { makeStyles } from 'tss-react/mui'
 
 export const useSlotEditorStyles = makeStyles()(theme => ({

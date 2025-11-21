@@ -16,3 +16,5 @@
 **/*nclist*/**/*.json
 **/ensembl_genes/**/*.json
 **/storybook-static/*
+
+/.nx/workspace-data

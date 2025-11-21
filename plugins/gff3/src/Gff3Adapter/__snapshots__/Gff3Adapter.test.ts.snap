@@ -14,7 +14,7 @@ exports[`test getfeatures on gff plain text adapter 1`] = `
     "strand": undefined,
     "subfeatures": [],
     "type": "contig",
-    "uniqueId": "adp--687082780-ctgB-0",
+    "uniqueId": "adp-754406482-ctgB-0",
   },
   {
     "derived_features": [],
@@ -29,7 +29,7 @@ exports[`test getfeatures on gff plain text adapter 1`] = `
     "strand": 1,
     "subfeatures": [],
     "type": "remark",
-    "uniqueId": "adp--687082780-ctgB-1",
+    "uniqueId": "adp-754406482-ctgB-1",
   },
   {
     "derived_features": [],
@@ -44,7 +44,7 @@ exports[`test getfeatures on gff plain text adapter 1`] = `
     "strand": 1,
     "subfeatures": [],
     "type": "remark",
-    "uniqueId": "adp--687082780-ctgB-2",
+    "uniqueId": "adp-754406482-ctgB-2",
   },
   {
     "derived_features": [],
@@ -59,7 +59,7 @@ exports[`test getfeatures on gff plain text adapter 1`] = `
     "strand": -1,
     "subfeatures": [],
     "type": "remark",
-    "uniqueId": "adp--687082780-ctgB-3",
+    "uniqueId": "adp-754406482-ctgB-3",
   },
 ]
 `;

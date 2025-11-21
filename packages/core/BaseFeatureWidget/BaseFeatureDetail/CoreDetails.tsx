@@ -46,7 +46,11 @@ export default function CoreDetails(props: BaseProps) {
         .map(([key, name]) => [name, displayedDetails[key]])
         .filter(([, value]) => value != null)
         .map(([name, value]) => (
-          <SimpleField key={name} name={name} value={value} />
+          <SimpleField
+            key={name}
+            name={name}
+            value={Array.isArray(value) ? value.join(', ') : value}
+          />
         ))}
     </>
   )

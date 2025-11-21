@@ -4,6 +4,7 @@ exports[`cram read features mismatches 1`] = `
 [
   {
     "base": "1",
+    "insertedBases": "C",
     "length": 0,
     "start": 24,
     "type": "insertion",

@@ -133,7 +133,7 @@ const FeatDefined = observer(function (props: {
         }}
         formatter={(value, key) => {
           return key === 'ALT' ? (
-            <AltFormatter value={`${value}`} ref={REF as string} />
+            <AltFormatter value={`${value}`} refString={REF as string} />
           ) : (
             <Formatter value={value} />
           )

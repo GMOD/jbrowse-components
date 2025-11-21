@@ -260,10 +260,20 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           const subs = subfeatures.sort((a, b) =>
             a.uniqueId.localeCompare(b.uniqueId),
           )
+          // Check if any features in the subs array overlap with each other.
+          // This helps avoid aggregating features, like in bacterial GFF,
+          // where two genes have the same gene name but are distinct locations
+          // on the genome
+          //
+          // If they do, we'll create a single parent feature with all
+          // subfeatures (use the computed parent aggregation)
           if (
-            subs.every(s => {
-              return s.strand === (subs[0]?.strand || 1)
-            })
+            subs.some((a, i) =>
+              subs.some(
+                (b, j) =>
+                  i !== j && doesIntersect2(a.start, a.end, b.start, b.end),
+              ),
+            )
           ) {
             observer.next(
               new SimpleFeature({
@@ -279,7 +289,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                 },
               }),
             )
-          } else {
+          }
+
+          // Otherwise, we'll create individual parent features for each subfeature (remove parent aggregation)
+          else {
             for (const sub of subs) {
               observer.next(
                 new SimpleFeature({

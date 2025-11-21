@@ -21,7 +21,7 @@ exports[`five 1`] = `
     "reversed": false,
     "start": 26.05,
     "type": "ContentBlock",
-    "widthPx": 927.0000000000001,
+    "widthPx": 927.0000000000002,
   },
 ]
 `;
