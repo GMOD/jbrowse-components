@@ -1,19 +1,32 @@
-import { vi } from 'vitest'
+import { vi, afterEach, beforeAll } from 'vitest'
 import { useRef } from 'react'
+import { cleanup } from '@testing-library/react'
 
 import '@testing-library/jest-dom/vitest'
 import { LocalFile } from './packages/__mocks__/generic-filehandle2'
 import { generateReadBuffer } from './products/jbrowse-web/src/tests/generateReadBuffer'
 
+// Suppress React act() warnings - testing-library handles this internally
+const originalError = console.error
+beforeAll(() => {
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('was not wrapped in act')
+    ) {
+      return
+    }
+    originalError.call(console, ...args)
+  }
+})
+
+// Ensure cleanup runs after each test
+afterEach(() => {
+  cleanup()
+})
+
 // Mock scrollIntoView which is not implemented in jsdom
 Element.prototype.scrollIntoView = vi.fn()
-
-// Mock requestAnimationFrame to execute immediately in tests
-global.requestAnimationFrame = vi.fn(cb => {
-  cb(0)
-  return 0
-})
-global.cancelAnimationFrame = vi.fn()
 
 // Mock fetch to read from local filesystem
 const readBuffer = generateReadBuffer((url: string) => {
@@ -63,3 +76,27 @@ vi.mock('@jbrowse/core/util/useMeasure', () => ({
     return [ref, { width: 808 }] as const
   },
 }))
+
+// Mock CascadingMenu to flatten submenus for easier testing
+vi.mock('@jbrowse/core/ui/CascadingMenu', async () => {
+  const actual = await vi.importActual('@jbrowse/core/ui/Menu')
+  const React = await import('react')
+
+  return {
+    default: (props: any) => {
+      return React.createElement(actual.default, props)
+    },
+  }
+})
+
+// Mock CascadingMenuButton to flatten submenus for easier testing
+vi.mock('@jbrowse/core/ui/CascadingMenuButton', async () => {
+  const actual = await vi.importActual('@jbrowse/core/ui/MenuButton')
+  const React = await import('react')
+
+  return {
+    default: (props: any) => {
+      return React.createElement(actual.default, props)
+    },
+  }
+})

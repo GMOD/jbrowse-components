@@ -121,10 +121,8 @@ export function doBeforeEach(
   clearCache()
   clearAdapterCache()
 
-  // // @ts-expect-error
-  // fetch.resetMocks()
-  // // @ts-expect-error
-  // fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
+  // Reset fetch mock for vitest
+  vi.mocked(fetch).mockClear()
 }
 interface Results2 extends Results {
   autocomplete: HTMLElement
