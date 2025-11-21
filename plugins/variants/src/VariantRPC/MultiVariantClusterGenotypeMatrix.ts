@@ -1,4 +1,4 @@
-import { clusterData } from '@jbrowse/clustering'
+import { clusterData } from '@gmod/hclust'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import { getGenotypeMatrix } from './getGenotypeMatrix'

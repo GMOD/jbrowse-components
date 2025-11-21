@@ -1597,6 +1597,11 @@
   resolved "https://registry.yarnpkg.com/@gmod/faidx/-/faidx-2.0.0.tgz#1287fe84f11e75586b8a8a6660d778f1c3855af8"
   integrity sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==
 
+"@gmod/hclust@^1.0.0":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/hclust/-/hclust-1.0.1.tgz#b79f33cc425e24740e895a754fbec66dcd15f8f0"
+  integrity sha512-u5+wgLJpQD6ElxaLgakpzrv7dHQuxXfUir5tMWrsX5R3b1Eaz4ifwvEgcc46ye4cjeBjvqIFqy612P4EcqTfAA==
+
 "@gmod/http-range-fetcher@^5.0.0":
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-5.0.1.tgz#9591e5fdc86159d6ea0abbbe6de4a26533d26bf9"
