@@ -14,21 +14,15 @@ interface ClusteringModule {
   ) => (...args: any[]) => any
   HEAPF32: Float32Array
   HEAP32: Int32Array
-  _euclideanDistance: (aPtr: number, bPtr: number, size: number) => number
-  _computeDistanceMatrix: (
+  _hierarchicalCluster: (
     dataPtr: number,
-    distPtr: number,
     numSamples: number,
     vectorSize: number,
+    outHeights: number,
+    outMergeA: number,
+    outMergeB: number,
+    outOrder: number,
   ) => void
-  _averageDistance: (
-    setAPtr: number,
-    lenA: number,
-    setBPtr: number,
-    lenB: number,
-    distPtr: number,
-    numSamples: number,
-  ) => number
 }
 
 export default function createClusteringModule(): Promise<ClusteringModule>

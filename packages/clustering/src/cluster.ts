@@ -1,109 +1,47 @@
-import { computeDistanceMatrixWasm, averageDistanceWasm } from './wasm-wrapper.js'
-import type { ClusterNode, ClusterResult, ClusterOptions } from './types.js'
-
-function toP(n: number) {
-  return Number.parseFloat((n * 100).toFixed(1))
-}
-
-function isWebWorker() {
-  return (
-    // @ts-expect-error WorkerGlobalScope may not be defined
-    typeof WorkerGlobalScope !== 'undefined' &&
-    // @ts-expect-error WorkerGlobalScope may not be defined
-    self instanceof WorkerGlobalScope
-  )
-}
-
-function checkStopToken(stopToken: string | undefined) {
-  if (typeof jest === 'undefined' && stopToken !== undefined && isWebWorker()) {
-    const xhr = new XMLHttpRequest()
-    xhr.open('GET', stopToken, false)
-    try {
-      xhr.send(null)
-    } catch (e) {
-      throw new Error('aborted')
-    }
-  }
-}
+import { hierarchicalClusterWasm } from './wasm-wrapper.js'
+import type { ClusterResult, ClusterOptions } from './types.js'
 
 export async function clusterData({
   data,
   onProgress,
-  stopToken,
 }: ClusterOptions): Promise<ClusterResult> {
+  onProgress?.('Running hierarchical clustering in WASM...')
+
+  const result = await hierarchicalClusterWasm(data)
+
+  // Build clustersGivenK from merge information
   const numSamples = data.length
+  const clustersGivenK: number[][][] = [[]]
 
-  onProgress?.('Computing distance matrix with WASM...')
-  const distancesFlat = await computeDistanceMatrixWasm(data)
+  // Start with each sample in its own cluster
+  const clusterSets: number[][] = Array.from({ length: numSamples }, (_, i) => [i])
 
-  const clusters: ClusterNode[] = data.map((_datum, index) => ({
-    height: 0,
-    indexes: [index],
-  }))
+  for (let i = 0; i < numSamples - 1; i++) {
+    const [mergeA, mergeB] = result.merges[i]!
 
-  const clustersGivenK: number[][][] = []
+    // Record current state
+    clustersGivenK.push(clusterSets.map(s => [...s]))
 
-  let stopTokenCheckerStart = performance.now()
-  let progressStart = performance.now()
+    // Merge clusters
+    const newCluster = [...clusterSets[mergeA!]!, ...clusterSets[mergeB!]!]
 
-  for (let iteration = 0; iteration < numSamples; iteration++) {
-    const r = performance.now()
-    if (r - stopTokenCheckerStart > 400) {
-      checkStopToken(stopToken)
-      stopTokenCheckerStart = performance.now()
-    }
-    if (r - progressStart > 50) {
-      onProgress?.(`Clustering: ${toP((iteration + 1) / numSamples)}%`)
-      progressStart = performance.now()
-    }
+    const removeFirst = Math.max(mergeA!, mergeB!)
+    const removeSecond = Math.min(mergeA!, mergeB!)
 
-    clustersGivenK.push(clusters.map(cluster => cluster.indexes))
-
-    if (iteration >= numSamples - 1) {
-      break
-    }
-
-    let nearestDistance = Infinity
-    let nearestRow = 0
-    let nearestCol = 0
-
-    for (let row = 0; row < clusters.length; row++) {
-      for (let col = row + 1; col < clusters.length; col++) {
-        const distance = await averageDistanceWasm(
-          clusters[row]!.indexes,
-          clusters[col]!.indexes,
-          distancesFlat,
-          numSamples,
-        )
-
-        if (distance < nearestDistance) {
-          nearestDistance = distance
-          nearestRow = row
-          nearestCol = col
-        }
-      }
-    }
-
-    const newCluster: ClusterNode = {
-      indexes: [
-        ...clusters[nearestRow]!.indexes,
-        ...clusters[nearestCol]!.indexes,
-      ],
-      height: nearestDistance,
-      children: [clusters[nearestRow]!, clusters[nearestCol]!],
-    }
-
-    clusters.splice(Math.max(nearestRow, nearestCol), 1)
-    clusters.splice(Math.min(nearestRow, nearestCol), 1)
-    clusters.push(newCluster)
+    clusterSets.splice(removeFirst, 1)
+    clusterSets.splice(removeSecond, 1)
+    clusterSets.push(newCluster)
   }
 
-  const fullClustersGivenK = [[], ...clustersGivenK.reverse()]
+  clustersGivenK.push(clusterSets.map(s => [...s]))
+
+  // Create a dummy distance matrix (not used by caller, but part of interface)
+  const distances = new Float32Array(numSamples * numSamples)
 
   return {
-    tree: clusters[0]!,
-    distances: distancesFlat,
-    order: clusters[0]!.indexes,
-    clustersGivenK: fullClustersGivenK,
+    tree: result.tree,
+    distances,
+    order: result.order,
+    clustersGivenK: clustersGivenK.reverse(),
   }
 }

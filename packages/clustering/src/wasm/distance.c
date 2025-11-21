@@ -1,25 +1,28 @@
 /**
- * High-performance distance calculations for hierarchical clustering
+ * High-performance hierarchical clustering
  * Compiled to WebAssembly using Emscripten
  */
 
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include <emscripten.h>
+
+// Cluster node structure
+typedef struct {
+  int* indexes;      // Array of sample indexes in this cluster
+  int indexCount;    // Number of indexes
+  float height;      // Distance at which cluster was formed
+  int leftChild;     // Index of left child (-1 if leaf)
+  int rightChild;    // Index of right child (-1 if leaf)
+} Cluster;
 
 /**
  * Compute Euclidean distance between two vectors
- * Uses float (f32) for better performance and memory efficiency
- *
- * @param a Pointer to first vector
- * @param b Pointer to second vector
- * @param size Number of elements in each vector
- * @return Euclidean distance
  */
-EMSCRIPTEN_KEEPALIVE
-float euclideanDistance(const float* a, const float* b, int size) {
+static float euclideanDistance(const float* a, const float* b, int size) {
   float sum = 0.0f;
 
-  // Unroll loop by 4 for better performance
   int i = 0;
   for (; i + 3 < size; i += 4) {
     float diff0 = a[i] - b[i];
@@ -27,13 +30,9 @@ float euclideanDistance(const float* a, const float* b, int size) {
     float diff2 = a[i+2] - b[i+2];
     float diff3 = a[i+3] - b[i+3];
 
-    sum += diff0 * diff0;
-    sum += diff1 * diff1;
-    sum += diff2 * diff2;
-    sum += diff3 * diff3;
+    sum += diff0 * diff0 + diff1 * diff1 + diff2 * diff2 + diff3 * diff3;
   }
 
-  // Handle remaining elements
   for (; i < size; i++) {
     float diff = a[i] - b[i];
     sum += diff * diff;
@@ -43,63 +42,144 @@ float euclideanDistance(const float* a, const float* b, int size) {
 }
 
 /**
- * Compute full distance matrix for all samples
- * This is the main performance bottleneck - O(n^2 * m) where n=numSamples, m=vectorSize
- *
- * @param data Flattened 2D array of sample data (numSamples * vectorSize elements)
- * @param distances Output array for distance matrix (numSamples * numSamples elements)
- * @param numSamples Number of samples
- * @param vectorSize Number of dimensions per sample
+ * Compute average linkage distance between two clusters
  */
-EMSCRIPTEN_KEEPALIVE
-void computeDistanceMatrix(
-  const float* data,
-  float* distances,
-  int numSamples,
-  int vectorSize
-) {
-  for (int i = 0; i < numSamples; i++) {
-    const float* vecA = data + (i * vectorSize);
-
-    for (int j = 0; j < numSamples; j++) {
-      const float* vecB = data + (j * vectorSize);
-      float dist = euclideanDistance(vecA, vecB, vectorSize);
-      distances[i * numSamples + j] = dist;
-    }
-  }
-}
-
-/**
- * Compute average distance between two sets of sample indexes
- * Used during hierarchical clustering to determine which clusters to merge
- *
- * @param setA Array of sample indexes for first cluster
- * @param lenA Number of elements in setA
- * @param setB Array of sample indexes for second cluster
- * @param lenB Number of elements in setB
- * @param distances Pre-computed distance matrix (numSamples * numSamples)
- * @param numSamples Total number of samples (for indexing into distances)
- * @return Average distance between all pairs in setA and setB
- */
-EMSCRIPTEN_KEEPALIVE
-float averageDistance(
-  const int* setA,
-  int lenA,
-  const int* setB,
-  int lenB,
+static float averageDistance(
+  const Cluster* clusterA,
+  const Cluster* clusterB,
   const float* distances,
   int numSamples
 ) {
-  float distance = 0.0f;
+  float sum = 0.0f;
 
-  for (int i = 0; i < lenA; i++) {
-    int rowIdx = setA[i];
+  for (int i = 0; i < clusterA->indexCount; i++) {
+    int rowIdx = clusterA->indexes[i];
     const float* distRow = distances + (rowIdx * numSamples);
 
-    for (int j = 0; j < lenB; j++) {
-      distance += distRow[setB[j]];
+    for (int j = 0; j < clusterB->indexCount; j++) {
+      sum += distRow[clusterB->indexes[j]];
     }
   }
 
-  return distance / (float)(lenA * lenB);
+  return sum / (float)(clusterA->indexCount * clusterB->indexCount);
+}
+
+/**
+ * Perform complete hierarchical clustering algorithm
+ * Returns a tree structure encoded as parallel arrays
+ *
+ * @param data Flattened 2D array of sample data
+ * @param numSamples Number of samples
+ * @param vectorSize Dimensions per sample
+ * @param outHeights Output array for merge heights (length numSamples-1)
+ * @param outMergeA Output array for first cluster in each merge (length numSamples-1)
+ * @param outMergeB Output array for second cluster in each merge (length numSamples-1)
+ * @param outOrder Output array for final sample order (length numSamples)
+ */
+EMSCRIPTEN_KEEPALIVE
+void hierarchicalCluster(
+  const float* data,
+  int numSamples,
+  int vectorSize,
+  float* outHeights,
+  int* outMergeA,
+  int* outMergeB,
+  int* outOrder
+) {
+  // Compute distance matrix
+  float* distances = (float*)malloc(numSamples * numSamples * sizeof(float));
+
+  for (int i = 0; i < numSamples; i++) {
+    const float* vecA = data + (i * vectorSize);
+    for (int j = 0; j < numSamples; j++) {
+      const float* vecB = data + (j * vectorSize);
+      distances[i * numSamples + j] = euclideanDistance(vecA, vecB, vectorSize);
+    }
+  }
+
+  // Initialize clusters - start with each sample as its own cluster
+  Cluster* clusters = (Cluster*)malloc(numSamples * sizeof(Cluster));
+  int numClusters = numSamples;
+
+  for (int i = 0; i < numSamples; i++) {
+    clusters[i].indexes = (int*)malloc(sizeof(int));
+    clusters[i].indexes[0] = i;
+    clusters[i].indexCount = 1;
+    clusters[i].height = 0.0f;
+    clusters[i].leftChild = -1;
+    clusters[i].rightChild = -1;
+  }
+
+  // Hierarchical clustering loop
+  for (int iteration = 0; iteration < numSamples - 1; iteration++) {
+    // Find closest pair of clusters
+    float minDist = INFINITY;
+    int minRow = 0;
+    int minCol = 1;
+
+    for (int row = 0; row < numClusters; row++) {
+      for (int col = row + 1; col < numClusters; col++) {
+        float dist = averageDistance(&clusters[row], &clusters[col], distances, numSamples);
+        if (dist < minDist) {
+          minDist = dist;
+          minRow = row;
+          minCol = col;
+        }
+      }
+    }
+
+    // Record the merge
+    outHeights[iteration] = minDist;
+    outMergeA[iteration] = minRow;
+    outMergeB[iteration] = minCol;
+
+    // Merge clusters
+    Cluster newCluster;
+    newCluster.indexCount = clusters[minRow].indexCount + clusters[minCol].indexCount;
+    newCluster.indexes = (int*)malloc(newCluster.indexCount * sizeof(int));
+    newCluster.height = minDist;
+    newCluster.leftChild = minRow;
+    newCluster.rightChild = minCol;
+
+    // Combine indexes
+    memcpy(newCluster.indexes, clusters[minRow].indexes,
+           clusters[minRow].indexCount * sizeof(int));
+    memcpy(newCluster.indexes + clusters[minRow].indexCount, clusters[minCol].indexes,
+           clusters[minCol].indexCount * sizeof(int));
+
+    // Remove merged clusters and add new one
+    // Remove higher index first to avoid shifting issues
+    int removeFirst = minRow < minCol ? minCol : minRow;
+    int removeSecond = minRow < minCol ? minRow : minCol;
+
+    free(clusters[removeFirst].indexes);
+    free(clusters[removeSecond].indexes);
+
+    // Shift clusters down
+    for (int i = removeFirst; i < numClusters - 1; i++) {
+      clusters[i] = clusters[i + 1];
+    }
+    numClusters--;
+
+    for (int i = removeSecond; i < numClusters - 1; i++) {
+      clusters[i] = clusters[i + 1];
+    }
+    numClusters--;
+
+    // Add new cluster at end
+    clusters[numClusters] = newCluster;
+    numClusters++;
+  }
+
+  // Output final order
+  for (int i = 0; i < clusters[0].indexCount; i++) {
+    outOrder[i] = clusters[0].indexes[i];
+  }
+
+  // Cleanup
+  for (int i = 0; i < numClusters; i++) {
+    free(clusters[i].indexes);
+  }
+  free(clusters);
+  free(distances);
 }
