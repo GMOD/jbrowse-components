@@ -1,4 +1,4 @@
-import { clusterData } from '@gmod/hclust'
+import { clusterData, toNewick } from '@gmod/hclust'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import { getGenotypeMatrix } from './getGenotypeMatrix'
@@ -28,7 +28,7 @@ export class MultiVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersA
     })
     return {
       order: result.order,
-      tree: result.tree,
+      tree: toNewick(result.tree),
     }
   }
 }

@@ -1580,17 +1580,16 @@
     generic-filehandle2 "^2.0.5"
     pako-esm2 "^1.0.1"
 
-"@gmod/cram@^5.0.4":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-5.1.0.tgz#73d2bde1580e766e0a6092eef18fa14c2474f4ed"
-  integrity sha512-4XSzhVi2dxa5cn2ZObcXqwymSeqg95wj2n6NWs44T4hPV86AtmX9e8l3LUcdJWq+VXE0iC1ghv6bqhaj2xfWLQ==
+"@gmod/cram@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-6.0.0.tgz#3f0a296a8e7b6b57d1330e98ad312aa9e70dd5e3"
+  integrity sha512-iquwxV2nnHQ8dCJ0xzcmcCalw8vBgrQBB/4keOyNi6DNIExG1jA9zt3I46mAwqy6S+5Ave0X7Cm8IBP+g76Dzw==
   dependencies:
     crc "^4.3.2"
     generic-filehandle2 "^2.0.12"
     md5 "^2.2.1"
-    pako-esm2 "^1.0.1"
+    pako-esm2 "^1.0.15"
     quick-lru "^4.0.1"
-    xz-decompress "^0.2.1"
 
 "@gmod/faidx@^2.0.0":
   version "2.0.0"
@@ -11811,7 +11810,7 @@ pacote@^21.0.0, pacote@^21.0.2:
     ssri "^13.0.0"
     tar "^7.4.3"
 
-pako-esm2@^1.0.0, pako-esm2@^1.0.1, pako-esm2@^1.0.13:
+pako-esm2@^1.0.0, pako-esm2@^1.0.1, pako-esm2@^1.0.13, pako-esm2@^1.0.15:
   version "1.0.15"
   resolved "https://registry.yarnpkg.com/pako-esm2/-/pako-esm2-1.0.15.tgz#f4b2fc422d04a2ea9df1b8b49ff448fb631c041b"
   integrity sha512-u2PDjLIoasD+MJvYTTiotIcHq60620IbLH1ZpFDAX/k5fU02MWC/6UhG7sCglQCwaZLPe3NY4r0WN0LuxU2xQg==
@@ -15236,11 +15235,6 @@ xtend@^4.0.0, xtend@~4.0.1:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.2.tgz#bb72779f5fa465186b1f438f674fa347fdb5db54"
   integrity sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==
-
-xz-decompress@^0.2.1:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/xz-decompress/-/xz-decompress-0.2.3.tgz#30347af971a6130eb98152a88bf9e79116853022"
-  integrity sha512-O8v6HG8T0PrKBcpyWA13GkSYWFvncwzuzcLx5A7++l3HsE3atmoetXjIxrZ/JV/nbvSZ7WS4+3XvREZuVn+rEA==
 
 y18n@^5.0.5:
   version "5.0.8"

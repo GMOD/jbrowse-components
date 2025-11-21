@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { fromNewick, toNewick } from '@gmod/hclust'
+import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
@@ -229,8 +229,8 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setClusterTree(tree: unknown) {
-        self.clusterTree = tree ? toNewick(tree) : undefined
+      setClusterTree(tree?: string) {
+        self.clusterTree = tree
       },
       /**
        * #action
