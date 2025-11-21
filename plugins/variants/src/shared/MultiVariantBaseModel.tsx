@@ -10,11 +10,12 @@ import FilterListIcon from '@mui/icons-material/FilterList'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+// @ts-expect-error
 import { ascending } from '@mui/x-charts-vendor/d3-array'
-import { cluster, hierarchy } from '../d3-hierarchy2'
 import deepEqual from 'fast-deep-equal'
 import { cast, types } from 'mobx-state-tree'
 
+import { cluster, hierarchy } from '../d3-hierarchy2'
 import { getSources } from './getSources'
 
 import type { SampleInfo, Source } from './types'
@@ -67,6 +68,11 @@ export default function MultiVariantBaseModelF(
          * #property
          */
         showSidebarLabelsSetting: true,
+
+        /**
+         * #property
+         */
+        showTree: true,
 
         /**
          * #property
@@ -267,6 +273,12 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
+      setShowTree(arg: boolean) {
+        self.showTree = arg
+      },
+      /**
+       * #action
+       */
       setPhasedMode(arg: string) {
         self.renderingMode = arg
       },
@@ -425,6 +437,16 @@ export default function MultiVariantBaseModelF(
               checked: self.showSidebarLabelsSetting,
               onClick: () => {
                 self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
+              },
+            },
+            {
+              label: 'Show tree',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showTree,
+              disabled: !self.clusterTree,
+              onClick: () => {
+                self.setShowTree(!self.showTree)
               },
             },
 

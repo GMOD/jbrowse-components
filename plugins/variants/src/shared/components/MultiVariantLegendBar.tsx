@@ -17,6 +17,7 @@ interface LegendBarModel {
   canDisplayLabels: boolean
   rowHeight: number
   sources?: Source[]
+  showTree: boolean
 }
 
 const Wrapper = observer(function ({
@@ -28,9 +29,9 @@ const Wrapper = observer(function ({
   children: React.ReactNode
   exportSVG?: boolean
 }) {
-  const { id, scrollTop, height, hierarchy, treeAreaWidth } = model
+  const { id, scrollTop, height, hierarchy, treeAreaWidth, showTree } = model
   const clipid = `legend-${id}`
-  const leftOffset = hierarchy ? treeAreaWidth : 0
+  const leftOffset = hierarchy && showTree ? treeAreaWidth : 0
   return exportSVG ? (
     <>
       <defs>

@@ -39,7 +39,8 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
   const [nodeData, setNodeData] = useState<any[]>([])
 
   // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-  const { totalHeight, hierarchy, treeAreaWidth, height, scrollTop } = model
+  const { totalHeight, hierarchy, treeAreaWidth, height, scrollTop, showTree } =
+    model
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const treeCanvasRef = useCallback(
@@ -96,7 +97,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
     })
   }, [model])
 
-  if (!hierarchy) {
+  if (!hierarchy || !showTree) {
     return null
   }
 
