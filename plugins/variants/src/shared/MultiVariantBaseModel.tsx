@@ -101,6 +101,10 @@ export default function MultiVariantBaseModelF(
          * #property
          */
         clusterTree: types.frozen(),
+        /**
+         * #property
+         */
+        treeAreaWidth: 80,
       }),
     )
     .volatile(() => ({
@@ -138,6 +142,10 @@ export default function MultiVariantBaseModelF(
       hoveredGenotype: undefined as
         | { genotype: string; name: string }
         | undefined,
+      /**
+       * #volatile
+       */
+      hoveredTreeNode: undefined as any,
     }))
     .actions(self => ({
       /**
@@ -157,6 +165,18 @@ export default function MultiVariantBaseModelF(
        */
       setHoveredGenotype(arg?: { genotype: string; name: string }) {
         self.hoveredGenotype = arg
+      },
+      /**
+       * #action
+       */
+      setHoveredTreeNode(node: any) {
+        self.hoveredTreeNode = node
+      },
+      /**
+       * #action
+       */
+      setTreeAreaWidth(width: number) {
+        self.treeAreaWidth = width
       },
       /**
        * #action
@@ -351,9 +371,8 @@ export default function MultiVariantBaseModelF(
           const { cluster } = require('d3-hierarchy')
           const r = self.root
           if (r) {
-            const treeAreaWidth = 80
             const clust = cluster()
-              .size([this.totalHeight, treeAreaWidth])
+              .size([this.totalHeight, self.treeAreaWidth])
               .separation(() => 1)
             clust(r)
             return r
