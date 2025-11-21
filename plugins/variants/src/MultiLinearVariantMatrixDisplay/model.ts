@@ -126,9 +126,13 @@ export default function stateModelFactory(
               const { getMultiVariantFeaturesAutorun } = await import(
                 '../getMultiVariantFeaturesAutorun'
               )
+              const { setupTreeDrawingAutorun } = await import(
+                '../shared/treeDrawingAutorun'
+              )
 
               getMultiVariantSourcesAutorun(self)
               getMultiVariantFeaturesAutorun(self)
+              setupTreeDrawingAutorun(self)
             } catch (e) {
               if (isAlive(self)) {
                 console.error(e)

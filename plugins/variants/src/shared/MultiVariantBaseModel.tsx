@@ -146,6 +146,14 @@ export default function MultiVariantBaseModelF(
        * #volatile
        */
       hoveredTreeNode: undefined as any,
+      /**
+       * #volatile
+       */
+      treeCanvas: undefined as HTMLCanvasElement | undefined,
+      /**
+       * #volatile
+       */
+      mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
     }))
     .actions(self => ({
       /**
@@ -171,6 +179,18 @@ export default function MultiVariantBaseModelF(
        */
       setHoveredTreeNode(node: any) {
         self.hoveredTreeNode = node
+      },
+      /**
+       * #action
+       */
+      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
+        self.treeCanvas = ref || undefined
+      },
+      /**
+       * #action
+       */
+      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
+        self.mouseoverCanvas = ref || undefined
       },
       /**
        * #action

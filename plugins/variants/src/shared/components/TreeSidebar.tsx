@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
@@ -6,8 +6,6 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-
-import { drawTree } from './drawTree'
 
 import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -41,100 +39,68 @@ const TreeSidebar = observer(function ({
   model: Instance<ReturnType<typeof MultiVariantBaseModel>>
 }) {
   const { classes } = useStyles()
-  const { totalHeight, hierarchy, treeAreaWidth } = model as any
   const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const mouseoverCanvasRef = useRef<HTMLCanvasElement>(null)
+  const [nodeIndex, setNodeIndex] = useState<Flatbush | null>(null)
+  const [nodeData, setNodeData] = useState<any[]>([])
+
+  const { totalHeight, hierarchy, treeAreaWidth, height } = model as any
 
   if (!hierarchy) {
     return null
   }
 
-  // Build spatial index for tree nodes (branch points only)
-  const { nodeIndex, nodeData } = useMemo(() => {
-    if (!hierarchy) {
-      return { nodeIndex: null, nodeData: [] }
-    }
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const treeCanvasRef = useCallback(
+    (ref: HTMLCanvasElement | null) => {
+      ;(model as any).setTreeCanvasRef(ref)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, treeAreaWidth, height],
+  )
 
-    // Get all internal nodes (branch points) - exclude leaves
-    const nodes = [...hierarchy.descendants()].filter(
-      (node: any) => node.children && node.children.length > 0,
-    )
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const mouseoverCanvasRef = useCallback(
+    (ref: HTMLCanvasElement | null) => {
+      ;(model as any).setMouseoverCanvasRef(ref)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, viewWidth, height],
+  )
 
-    const index = new Flatbush(nodes.length)
-    const data: any[] = []
-
-    const hitRadius = 8 // Click radius around node
-
-    for (const node of nodes) {
-      const x = node.y
-      const y = node.x!
-
-      // Add bounding box for the node
-      index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
-      data.push(node)
-    }
-
-    index.finish()
-    return { nodeIndex: index, nodeData: data }
-  }, [hierarchy])
-
-  // Draw tree structure
+  // Build spatial index for tree nodes (branch points only) using autorun
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || !hierarchy) {
-      return
-    }
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
-
-    drawTree(ctx, hierarchy, treeAreaWidth, totalHeight)
-  }, [hierarchy, treeAreaWidth, totalHeight])
-
-  // Draw hover highlights
-  useEffect(() => {
-    const canvas = mouseoverCanvasRef.current
-    if (!canvas) {
-      return
-    }
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
-
     return autorun(() => {
-      const { rowHeight, hoveredTreeNode } = model as any
-      ctx.clearRect(0, 0, viewWidth, totalHeight)
-
-      if (hierarchy && hoveredTreeNode) {
-        // Draw highlight rectangles for descendant rows
-        ctx.fillStyle = 'rgba(255,165,0,0.2)'
-        for (const name of hoveredTreeNode.descendantNames) {
-          const leaf = hierarchy.leaves().find((l: any) => l.data.name === name)
-          if (leaf) {
-            const y = leaf.x!
-            ctx.fillRect(0, y - rowHeight / 2, viewWidth, rowHeight)
-          }
-        }
-
-        // Draw circle at the hovered node
-        const { node } = hoveredTreeNode
-        ctx.fillStyle = 'rgba(255,165,0,0.8)'
-        ctx.beginPath()
-        ctx.arc(node.y, node.x, 4, 0, 2 * Math.PI)
-        ctx.fill()
-
-        // Optional: add a border to the circle
-        ctx.strokeStyle = 'rgba(255,140,0,1)'
-        ctx.lineWidth = 1
-        ctx.stroke()
+      const { hierarchy: h, treeAreaWidth: w } = model as any
+      if (!h) {
+        setNodeIndex(null)
+        setNodeData([])
+        return
       }
+
+      // Get all internal nodes (branch points) - exclude leaves
+      const nodes = [...h.descendants()].filter(
+        (node: any) => node.children && node.children.length > 0,
+      )
+
+      const index = new Flatbush(nodes.length)
+      const data: any[] = []
+
+      const hitRadius = 8 // Click radius around node
+
+      for (const node of nodes) {
+        const x = node.y
+        const y = node.x!
+
+        // Add bounding box for the node
+        index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
+        data.push(node)
+      }
+
+      index.finish()
+      setNodeIndex(index)
+      setNodeData(data)
     })
-  }, [model, hierarchy, viewWidth, totalHeight])
+  }, [model])
 
   // Handle mouse events for tree interaction
   const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -142,9 +108,10 @@ const TreeSidebar = observer(function ({
       return
     }
 
+    const { scrollTop } = model as any
     const rect = event.currentTarget.getBoundingClientRect()
     const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
+    const y = event.clientY - rect.top + scrollTop // Adjust for scroll position
 
     // Use flatbush to find nearby nodes (branch points)
     const results = nodeIndex.search(x, y, x, y)
@@ -169,9 +136,9 @@ const TreeSidebar = observer(function ({
     <>
       {/* Tree structure canvas */}
       <canvas
-        ref={canvasRef}
+        ref={treeCanvasRef}
         width={treeAreaWidth}
-        height={totalHeight}
+        height={height}
         style={{
           position: 'absolute',
           top: 0,
@@ -184,7 +151,7 @@ const TreeSidebar = observer(function ({
       <canvas
         ref={mouseoverCanvasRef}
         width={viewWidth}
-        height={totalHeight}
+        height={height}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
@@ -205,7 +172,7 @@ const TreeSidebar = observer(function ({
           top: 0,
           left: 0,
           width: treeAreaWidth,
-          height: totalHeight,
+          height,
           zIndex: 102,
           cursor: 'pointer',
         }}
