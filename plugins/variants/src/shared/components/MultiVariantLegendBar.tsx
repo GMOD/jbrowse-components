@@ -5,18 +5,30 @@ import { observer } from 'mobx-react'
 
 import ColorLegend from './MultiVariantColorLegend'
 
-import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
+import type { Source } from '../types'
+
+interface LegendBarModel {
+  id: string
+  scrollTop: number
+  height: number
+  hierarchy?: any
+  treeAreaWidth: number
+  totalHeight: number
+  canDisplayLabels: boolean
+  rowHeight: number
+  sources?: Source[]
+}
 
 const Wrapper = observer(function ({
   children,
   model,
   exportSVG,
 }: {
-  model: MultiVariantBaseModel
+  model: LegendBarModel
   children: React.ReactNode
   exportSVG?: boolean
 }) {
-  const { id, scrollTop, height, hierarchy, treeAreaWidth } = model as any
+  const { id, scrollTop, height, hierarchy, treeAreaWidth } = model
   const clipid = `legend-${id}`
   const leftOffset = hierarchy ? treeAreaWidth : 0
   return exportSVG ? (
@@ -48,7 +60,7 @@ const Wrapper = observer(function ({
 })
 
 export const LegendBar = observer(function (props: {
-  model: MultiVariantBaseModel
+  model: LegendBarModel
   orientation?: string
   exportSVG?: boolean
 }) {

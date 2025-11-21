@@ -1,6 +1,30 @@
 import FlatQueue from '../flatqueue'
 
-const ARRAY_TYPES = [
+type TypedArrayConstructor =
+  | Int8ArrayConstructor
+  | Uint8ArrayConstructor
+  | Uint8ClampedArrayConstructor
+  | Int16ArrayConstructor
+  | Uint16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor
+
+type TypedArray =
+  | Int8Array
+  | Uint8Array
+  | Uint8ClampedArray
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Float32Array
+  | Float64Array
+
+type IndexArray = Uint16Array | Uint32Array
+
+const ARRAY_TYPES: TypedArrayConstructor[] = [
   Int8Array,
   Uint8Array,
   Uint8ClampedArray,
@@ -13,22 +37,32 @@ const ARRAY_TYPES = [
 ]
 const VERSION = 3 // serialized format version
 
-/** @typedef {Int8ArrayConstructor | Uint8ArrayConstructor | Uint8ClampedArrayConstructor | Int16ArrayConstructor | Uint16ArrayConstructor | Int32ArrayConstructor | Uint32ArrayConstructor | Float32ArrayConstructor | Float64ArrayConstructor} TypedArrayConstructor */
-
 export default class Flatbush {
+  numItems: number
+  nodeSize: number
+  byteOffset: number
+  ArrayType: TypedArrayConstructor
+  IndexArrayType: Uint16ArrayConstructor | Uint32ArrayConstructor
+  data: ArrayBufferLike
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+  private _levelBounds: number[]
+  private _boxes: TypedArray
+  private _indices: IndexArray
+  private _pos: number
+  private _queue: FlatQueue<number>
+
   /**
    * Recreate a Flatbush index from raw `ArrayBuffer` or `SharedArrayBuffer` data.
-   * @param {ArrayBufferLike} data
-   * @param {number} [byteOffset=0] byte offset to the start of the Flatbush buffer in the referenced ArrayBuffer.
-   * @returns {Flatbush} index
    */
-  static from(data, byteOffset = 0) {
+  static from(data: ArrayBufferLike, byteOffset = 0): Flatbush {
     if (byteOffset % 8 !== 0) {
       throw new Error('byteOffset must be 8-byte aligned.')
     }
 
-    // @ts-expect-error duck typing array buffers
-    if (data?.byteLength === undefined || data.buffer) {
+    if (!data || typeof data.byteLength !== 'number') {
       throw new Error(
         'Data must be an instance of ArrayBuffer or SharedArrayBuffer.',
       )
@@ -61,19 +95,15 @@ export default class Flatbush {
 
   /**
    * Create a Flatbush index that will hold a given number of items.
-   * @param {number} numItems
-   * @param {number} [nodeSize=16] Size of the tree node (16 by default).
-   * @param {TypedArrayConstructor} [ArrayType=Float64Array] The array type used for coordinates storage (`Float64Array` by default).
-   * @param {ArrayBufferConstructor | SharedArrayBufferConstructor} [ArrayBufferType=ArrayBuffer] The array buffer type used to store data (`ArrayBuffer` by default).
-   * @param {ArrayBufferLike} [data] (Only used internally)
-   * @param {number} [byteOffset=0] (Only used internally)
    */
   constructor(
-    numItems,
+    numItems: number,
     nodeSize = 16,
-    ArrayType = Float64Array,
-    ArrayBufferType = ArrayBuffer,
-    data,
+    ArrayType: TypedArrayConstructor = Float64Array,
+    ArrayBufferType:
+      | ArrayBufferConstructor
+      | SharedArrayBufferConstructor = ArrayBuffer,
+    data?: ArrayBufferLike,
     byteOffset = 0,
   ) {
     if (numItems === undefined) {
@@ -110,9 +140,11 @@ export default class Flatbush {
 
     if (data) {
       this.data = data
-      // @ts-expect-error TS can't handle SharedArraBuffer overloads
-      this._boxes = new ArrayType(data, byteOffset + 8, numNodes * 4)
-      // @ts-expect-error TS can't handle SharedArraBuffer overloads
+      this._boxes = new ArrayType(
+        data,
+        byteOffset + 8,
+        numNodes * 4,
+      ) as TypedArray
       this._indices = new this.IndexArrayType(
         data,
         byteOffset + 8 + nodesByteSize,
@@ -120,43 +152,36 @@ export default class Flatbush {
       )
 
       this._pos = numNodes * 4
-      this.minX = this._boxes[this._pos - 4]
-      this.minY = this._boxes[this._pos - 3]
-      this.maxX = this._boxes[this._pos - 2]
-      this.maxY = this._boxes[this._pos - 1]
+      this.minX = this._boxes[this._pos - 4]!
+      this.minY = this._boxes[this._pos - 3]!
+      this.maxX = this._boxes[this._pos - 2]!
+      this.maxY = this._boxes[this._pos - 1]!
     } else {
-      const data = (this.data = new ArrayBufferType(
+      const newData = (this.data = new ArrayBufferType(
         8 + nodesByteSize + numNodes * this.IndexArrayType.BYTES_PER_ELEMENT,
       ))
-      // @ts-expect-error TS can't handle SharedArraBuffer overloads
-      this._boxes = new ArrayType(data, 8, numNodes * 4)
-      // @ts-expect-error TS can't handle SharedArraBuffer overloads
-      this._indices = new this.IndexArrayType(data, 8 + nodesByteSize, numNodes)
+      this._boxes = new ArrayType(newData, 8, numNodes * 4) as TypedArray
+      this._indices = new this.IndexArrayType(newData, 8 + nodesByteSize, numNodes)
       this._pos = 0
       this.minX = Infinity
       this.minY = Infinity
       this.maxX = -Infinity
       this.maxY = -Infinity
 
-      new Uint8Array(data, 0, 2).set([0xfb, (VERSION << 4) + arrayTypeIndex])
-      new Uint16Array(data, 2, 1)[0] = nodeSize
-      new Uint32Array(data, 4, 1)[0] = numItems
+      new Uint8Array(newData, 0, 2).set([0xfb, (VERSION << 4) + arrayTypeIndex])
+      new Uint16Array(newData, 2, 1)[0] = nodeSize
+      new Uint32Array(newData, 4, 1)[0] = numItems
     }
 
     // a priority queue for k-nearest-neighbors queries
-    /** @type FlatQueue<number> */
     this._queue = new FlatQueue()
   }
 
   /**
    * Add a given rectangle to the index.
-   * @param {number} minX
-   * @param {number} minY
-   * @param {number} maxX
-   * @param {number} maxY
-   * @returns {number} A zero-based, incremental number that represents the newly added rectangle.
+   * @returns A zero-based, incremental number that represents the newly added rectangle.
    */
-  add(minX, minY, maxX = minX, maxY = minY) {
+  add(minX: number, minY: number, maxX = minX, maxY = minY): number {
     const index = this._pos >> 2
     const boxes = this._boxes
     this._indices[index] = index
@@ -182,7 +207,7 @@ export default class Flatbush {
   }
 
   /** Perform indexing of the added rectangles. */
-  finish() {
+  finish(): void {
     if (this._pos >> 2 !== this.numItems) {
       throw new Error(
         `Added ${this._pos >> 2} items when expected ${this.numItems}.`,
@@ -206,10 +231,10 @@ export default class Flatbush {
 
     // map item centers into Hilbert coordinate space and calculate Hilbert values
     for (let i = 0, pos = 0; i < this.numItems; i++) {
-      const minX = boxes[pos++]
-      const minY = boxes[pos++]
-      const maxX = boxes[pos++]
-      const maxY = boxes[pos++]
+      const minX = boxes[pos++]!
+      const minY = boxes[pos++]!
+      const maxX = boxes[pos++]!
+      const maxY = boxes[pos++]!
       const x = Math.floor(
         (hilbertMax * ((minX + maxX) / 2 - this.minX)) / width,
       )
@@ -231,22 +256,22 @@ export default class Flatbush {
 
     // generate nodes at each tree level, bottom-up
     for (let i = 0, pos = 0; i < this._levelBounds.length - 1; i++) {
-      const end = this._levelBounds[i]
+      const end = this._levelBounds[i]!
 
       // generate a parent node for each block of consecutive <nodeSize> nodes
       while (pos < end) {
         const nodeIndex = pos
 
         // calculate bbox for the new node
-        let nodeMinX = boxes[pos++]
-        let nodeMinY = boxes[pos++]
-        let nodeMaxX = boxes[pos++]
-        let nodeMaxY = boxes[pos++]
+        let nodeMinX = boxes[pos++]!
+        let nodeMinY = boxes[pos++]!
+        let nodeMaxX = boxes[pos++]!
+        let nodeMaxY = boxes[pos++]!
         for (let j = 1; j < this.nodeSize && pos < end; j++) {
-          nodeMinX = Math.min(nodeMinX, boxes[pos++])
-          nodeMinY = Math.min(nodeMinY, boxes[pos++])
-          nodeMaxX = Math.max(nodeMaxX, boxes[pos++])
-          nodeMaxY = Math.max(nodeMaxY, boxes[pos++])
+          nodeMinX = Math.min(nodeMinX, boxes[pos++]!)
+          nodeMinY = Math.min(nodeMinY, boxes[pos++]!)
+          nodeMaxX = Math.max(nodeMaxX, boxes[pos++]!)
+          nodeMaxY = Math.max(nodeMaxY, boxes[pos++]!)
         }
 
         // add the new node to the tree data
@@ -261,22 +286,29 @@ export default class Flatbush {
 
   /**
    * Search the index by a bounding box.
-   * @param {number} minX
-   * @param {number} minY
-   * @param {number} maxX
-   * @param {number} maxY
-   * @param {(index: number, x0: number, y0: number, x1: number, y1: number) => boolean} [filterFn] An optional function that is called on every found item; if supplied, only items for which this function returns true will be included in the results array.
-   * @returns {number[]} An array of indices of items intersecting or touching the given bounding box.
+   * @param filterFn An optional function that is called on every found item; if supplied, only items for which this function returns true will be included in the results array.
+   * @returns An array of indices of items intersecting or touching the given bounding box.
    */
-  search(minX, minY, maxX, maxY, filterFn) {
+  search(
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number,
+    filterFn?: (
+      index: number,
+      x0: number,
+      y0: number,
+      x1: number,
+      y1: number,
+    ) => boolean,
+  ): number[] {
     if (this._pos !== this._boxes.length) {
       throw new Error('Data not yet indexed - call index.finish().')
     }
 
-    /** @type number | undefined */
-    let nodeIndex = this._boxes.length - 4
-    const queue = []
-    const results = []
+    let nodeIndex: number | undefined = this._boxes.length - 4
+    const queue: number[] = []
+    const results: number[] = []
 
     while (nodeIndex !== undefined) {
       // find the end index of the node
@@ -286,26 +318,26 @@ export default class Flatbush {
       )
 
       // search through child nodes
-      for (let /** @type number */ pos = nodeIndex; pos < end; pos += 4) {
+      for (let pos = nodeIndex; pos < end; pos += 4) {
         // check if node bbox intersects with query bbox
-        const x0 = this._boxes[pos]
+        const x0 = this._boxes[pos]!
         if (maxX < x0) {
           continue
         }
-        const y0 = this._boxes[pos + 1]
+        const y0 = this._boxes[pos + 1]!
         if (maxY < y0) {
           continue
         }
-        const x1 = this._boxes[pos + 2]
+        const x1 = this._boxes[pos + 2]!
         if (minX > x1) {
           continue
         }
-        const y1 = this._boxes[pos + 3]
+        const y1 = this._boxes[pos + 3]!
         if (minY > y1) {
           continue
         }
 
-        const index = this._indices[pos >> 2] | 0
+        const index = this._indices[pos >> 2]! | 0
 
         if (nodeIndex >= this.numItems * 4) {
           queue.push(index) // node; add it to the search queue
@@ -322,22 +354,23 @@ export default class Flatbush {
 
   /**
    * Search items in order of distance from the given point.
-   * @param {number} x
-   * @param {number} y
-   * @param {number} [maxResults=Infinity]
-   * @param {number} [maxDistance=Infinity]
-   * @param {(index: number) => boolean} [filterFn] An optional function for filtering the results.
-   * @returns {number[]} An array of indices of items found.
+   * @param filterFn An optional function for filtering the results.
+   * @returns An array of indices of items found.
    */
-  neighbors(x, y, maxResults = Infinity, maxDistance = Infinity, filterFn) {
+  neighbors(
+    x: number,
+    y: number,
+    maxResults = Infinity,
+    maxDistance = Infinity,
+    filterFn?: (index: number) => boolean,
+  ): number[] {
     if (this._pos !== this._boxes.length) {
       throw new Error('Data not yet indexed - call index.finish().')
     }
 
-    /** @type number | undefined */
-    let nodeIndex = this._boxes.length - 4
+    let nodeIndex: number | undefined = this._boxes.length - 4
     const q = this._queue
-    const results = []
+    const results: number[] = []
     const maxDistSquared = maxDistance * maxDistance
 
     outer: while (nodeIndex !== undefined) {
@@ -349,11 +382,11 @@ export default class Flatbush {
 
       // add child nodes to the queue
       for (let pos = nodeIndex; pos < end; pos += 4) {
-        const index = this._indices[pos >> 2] | 0
-        const minX = this._boxes[pos]
-        const minY = this._boxes[pos + 1]
-        const maxX = this._boxes[pos + 2]
-        const maxY = this._boxes[pos + 3]
+        const index = this._indices[pos >> 2]! | 0
+        const minX = this._boxes[pos]!
+        const minY = this._boxes[pos + 1]!
+        const maxX = this._boxes[pos + 2]!
+        const maxY = this._boxes[pos + 3]!
         const dx = x < minX ? minX - x : x > maxX ? x - maxX : 0
         const dy = y < minY ? minY - y : y > maxY ? y - maxY : 0
         const dist = dx * dx + dy * dy
@@ -369,22 +402,18 @@ export default class Flatbush {
       }
 
       // pop items from the queue
-      // @ts-expect-error q.length check eliminates undefined values
-      while (q.length && q.peek() & 1) {
-        const dist = q.peekValue()
-        // @ts-expect-error
+      while (q.length && q.peek()! & 1) {
+        const dist = q.peekValue()!
         if (dist > maxDistSquared) {
           break outer
         }
-        // @ts-expect-error
-        results.push(q.pop() >> 1)
+        results.push(q.pop()! >> 1)
         if (results.length === maxResults) {
           break outer
         }
       }
 
-      // @ts-expect-error
-      nodeIndex = q.length ? q.pop() >> 1 : undefined
+      nodeIndex = q.length ? q.pop()! >> 1 : undefined
     }
 
     q.clear()
@@ -394,41 +423,40 @@ export default class Flatbush {
 
 /**
  * Binary search for the first value in the array bigger than the given.
- * @param {number} value
- * @param {number[]} arr
  */
-function upperBound(value, arr) {
+function upperBound(value: number, arr: number[]): number {
   let i = 0
   let j = arr.length - 1
   while (i < j) {
     const m = (i + j) >> 1
-    if (arr[m] > value) {
+    if (arr[m]! > value) {
       j = m
     } else {
       i = m + 1
     }
   }
-  return arr[i]
+  return arr[i]!
 }
 
 /**
  * Custom quicksort that partially sorts bbox data alongside the hilbert values.
- * @param {Uint32Array} values
- * @param {InstanceType<TypedArrayConstructor>} boxes
- * @param {Uint16Array | Uint32Array} indices
- * @param {number} left
- * @param {number} right
- * @param {number} nodeSize
  */
-function sort(values, boxes, indices, left, right, nodeSize) {
+function sort(
+  values: Uint32Array,
+  boxes: TypedArray,
+  indices: IndexArray,
+  left: number,
+  right: number,
+  nodeSize: number,
+): void {
   if (Math.floor(left / nodeSize) >= Math.floor(right / nodeSize)) {
     return
   }
 
   // apply median of three method
-  const start = values[left]
-  const mid = values[(left + right) >> 1]
-  const end = values[right]
+  const start = values[left]!
+  const mid = values[(left + right) >> 1]!
+  const end = values[right]!
 
   let pivot = end
 
@@ -447,10 +475,10 @@ function sort(values, boxes, indices, left, right, nodeSize) {
   while (true) {
     do {
       i++
-    } while (values[i] < pivot)
+    } while (values[i]! < pivot)
     do {
       j--
-    } while (values[j] > pivot)
+    } while (values[j]! > pivot)
     if (i >= j) {
       break
     }
@@ -463,45 +491,44 @@ function sort(values, boxes, indices, left, right, nodeSize) {
 
 /**
  * Swap two values and two corresponding boxes.
- * @param {Uint32Array} values
- * @param {InstanceType<TypedArrayConstructor>} boxes
- * @param {Uint16Array | Uint32Array} indices
- * @param {number} i
- * @param {number} j
  */
-function swap(values, boxes, indices, i, j) {
-  const temp = values[i]
-  values[i] = values[j]
+function swap(
+  values: Uint32Array,
+  boxes: TypedArray,
+  indices: IndexArray,
+  i: number,
+  j: number,
+): void {
+  const temp = values[i]!
+  values[i] = values[j]!
   values[j] = temp
 
   const k = 4 * i
   const m = 4 * j
 
-  const a = boxes[k]
-  const b = boxes[k + 1]
-  const c = boxes[k + 2]
-  const d = boxes[k + 3]
-  boxes[k] = boxes[m]
-  boxes[k + 1] = boxes[m + 1]
-  boxes[k + 2] = boxes[m + 2]
-  boxes[k + 3] = boxes[m + 3]
+  const a = boxes[k]!
+  const b = boxes[k + 1]!
+  const c = boxes[k + 2]!
+  const d = boxes[k + 3]!
+  boxes[k] = boxes[m]!
+  boxes[k + 1] = boxes[m + 1]!
+  boxes[k + 2] = boxes[m + 2]!
+  boxes[k + 3] = boxes[m + 3]!
   boxes[m] = a
   boxes[m + 1] = b
   boxes[m + 2] = c
   boxes[m + 3] = d
 
-  const e = indices[i]
-  indices[i] = indices[j]
+  const e = indices[i]!
+  indices[i] = indices[j]!
   indices[j] = e
 }
 
 /**
  * Fast Hilbert curve algorithm by http://threadlocalmutex.com/
  * Ported from C++ https://github.com/rawrunprotected/hilbert_curves (public domain)
- * @param {number} x
- * @param {number} y
  */
-function hilbert(x, y) {
+function hilbert(x: number, y: number): number {
   let a = x ^ y
   let b = 0xffff ^ a
   let c = 0xffff ^ (x | y)
