@@ -3,7 +3,7 @@ export interface ClusteringResult {
     tree: ClusterNode;
     order: number[];
     heights: Float32Array;
-    merges: Array<[number, number]>;
+    merges: [number, number][];
 }
 export interface ClusteringOptions {
     data: number[][];

@@ -16,6 +16,7 @@ export default defineConfig(
       'packages/__mocks__/@testing-library/react.tsx',
       'packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
       'packages/__mocks__/generic-filehandle2.ts',
+      'packages/clustering/*',
       'config/jest/*',
       '**/build/**/*',
       '**/dist/**/*',

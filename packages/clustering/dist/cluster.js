@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.clusterData = clusterData;
-const wasm_wrapper_js_1 = require("./wasm-wrapper.js");
 const stopToken_js_1 = require("./stopToken.js");
+const wasm_wrapper_js_1 = require("./wasm-wrapper.js");
 async function clusterData({ data, sampleLabels, onProgress, stopToken, }) {
     onProgress === null || onProgress === void 0 ? void 0 : onProgress('Running hierarchical clustering in WASM...');
     const result = await (0, wasm_wrapper_js_1.hierarchicalClusterWasm)({
@@ -23,7 +23,9 @@ async function clusterData({ data, sampleLabels, onProgress, stopToken, }) {
     });
     const numSamples = data.length;
     const clustersGivenK = [[]];
-    const clusterSets = Array.from({ length: numSamples }, (_, i) => [i]);
+    const clusterSets = Array.from({ length: numSamples }, (_, i) => [
+        i,
+    ]);
     for (let i = 0; i < numSamples - 1; i++) {
         const [mergeA, mergeB] = result.merges[i];
         clustersGivenK.push(clusterSets.map(s => [...s]));

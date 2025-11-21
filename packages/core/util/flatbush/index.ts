@@ -62,12 +62,6 @@ export default class Flatbush {
       throw new Error('byteOffset must be 8-byte aligned.')
     }
 
-    if (!data || typeof data.byteLength !== 'number') {
-      throw new Error(
-        'Data must be an instance of ArrayBuffer or SharedArrayBuffer.',
-      )
-    }
-
     const [magic, versionAndType] = new Uint8Array(data, byteOffset + 0, 2)
     if (magic !== 0xfb) {
       throw new Error('Data does not appear to be in a Flatbush format.')
@@ -106,9 +100,6 @@ export default class Flatbush {
     data?: ArrayBufferLike,
     byteOffset = 0,
   ) {
-    if (numItems === undefined) {
-      throw new Error('Missing required argument: numItems.')
-    }
     if (isNaN(numItems) || numItems <= 0) {
       throw new Error(`Unexpected numItems value: ${numItems}.`)
     }
@@ -480,6 +471,7 @@ function sort(
   let i = left - 1
   let j = right + 1
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
     do {
       i++

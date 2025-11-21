@@ -1,5 +1,5 @@
-import { hierarchicalClusterWasm } from './wasm-wrapper.js';
 import { checkStopToken } from './stopToken.js';
+import { hierarchicalClusterWasm } from './wasm-wrapper.js';
 export async function clusterData({ data, sampleLabels, onProgress, stopToken, }) {
     onProgress === null || onProgress === void 0 ? void 0 : onProgress('Running hierarchical clustering in WASM...');
     const result = await hierarchicalClusterWasm({
@@ -20,7 +20,9 @@ export async function clusterData({ data, sampleLabels, onProgress, stopToken, }
     });
     const numSamples = data.length;
     const clustersGivenK = [[]];
-    const clusterSets = Array.from({ length: numSamples }, (_, i) => [i]);
+    const clusterSets = Array.from({ length: numSamples }, (_, i) => [
+        i,
+    ]);
     for (let i = 0; i < numSamples - 1; i++) {
         const [mergeA, mergeB] = result.merges[i];
         clustersGivenK.push(clusterSets.map(s => [...s]));

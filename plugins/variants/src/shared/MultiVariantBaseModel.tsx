@@ -10,10 +10,10 @@ import FilterListIcon from '@mui/icons-material/FilterList'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import { ascending } from 'd3-array'
+import { cluster, hierarchy } from 'd3-hierarchy'
 import deepEqual from 'fast-deep-equal'
 import { cast, types } from 'mobx-state-tree'
-import { hierarchy } from 'd3-hierarchy'
-import { ascending } from 'd3-array'
 
 import { getSources } from './getSources'
 
@@ -217,7 +217,7 @@ export default function MultiVariantBaseModelF(
        */
       clearLayout() {
         self.layout = []
-        self.clusterTree = cast(undefined)
+        self.clusterTree = undefined
       },
       /**
        * #action
@@ -344,8 +344,6 @@ export default function MultiVariantBaseModelF(
        * #getter
        */
       get root() {
-        const { hierarchy } = require('d3-hierarchy')
-        const { ascending } = require('d3-array')
         const tree = self.clusterTree
         return tree
           ? hierarchy(tree, (d: any) => d.children)
@@ -390,7 +388,6 @@ export default function MultiVariantBaseModelF(
          * #getter
          */
         get hierarchy() {
-          const { cluster } = require('d3-hierarchy')
           const r = self.root
           if (r) {
             const clust = cluster()
