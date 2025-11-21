@@ -24,7 +24,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
   addDisposer(
     self,
     autorun(() => {
-      const { treeCanvas, hierarchy, treeAreaWidth, height, scrollTop } = self
+      const { treeCanvas, hierarchy, treeAreaWidth, height, scrollTop, totalHeight } = self
       if (!treeCanvas || !hierarchy) {
         return
       }
@@ -44,6 +44,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
       ctx.translate(0, -scrollTop)
 
       // Draw the tree (this draws the full tree, but only visible part shows)
+      // Note: accessing totalHeight ensures we redraw when row height changes
       ctx.strokeStyle = 'black'
       ctx.lineWidth = 1
 
@@ -76,7 +77,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
   addDisposer(
     self,
     autorun(() => {
-      const { mouseoverCanvas, hierarchy, rowHeight, hoveredTreeNode, height, scrollTop } =
+      const { mouseoverCanvas, hierarchy, rowHeight, hoveredTreeNode, height, scrollTop, totalHeight } =
         self
       if (!mouseoverCanvas) {
         return
@@ -100,6 +101,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         ctx.translate(0, -scrollTop)
 
         // Draw highlight rectangles for descendant rows
+        // Note: accessing totalHeight ensures we redraw when row height changes
         ctx.fillStyle = 'rgba(255,165,0,0.2)'
         for (const name of hoveredTreeNode.descendantNames) {
           const leaf = hierarchy.leaves().find((l: any) => l.data.name === name)

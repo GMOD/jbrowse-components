@@ -8,18 +8,7 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-interface TreeSidebarModel {
-  totalHeight: number
-  hierarchy?: any
-  treeAreaWidth: number
-  height: number
-  scrollTop: number
-  setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
-  setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
-  setHoveredTreeNode: (node?: { node: any; descendantNames: string[] }) => void
-  setTreeAreaWidth: (width: number) => void
-}
+import { TreeSidebarModel } from './types'
 
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
@@ -72,7 +61,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
   // Build spatial index for tree nodes (branch points only) using autorun
   useEffect(() => {
     return autorun(() => {
-      const { hierarchy: h, treeAreaWidth: w } = model
+      const { hierarchy: h, treeAreaWidth: w, totalHeight: th } = model
       if (!h) {
         setNodeIndex(null)
         setNodeData([])
@@ -80,6 +69,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
       }
 
       // Get all internal nodes (branch points) - exclude leaves
+      // Note: accessing totalHeight ensures we rebuild when row height changes
       const nodes = [...h.descendants()].filter(
         (node: any) => node.children && node.children.length > 0,
       )
@@ -103,37 +93,6 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
       setNodeData(data)
     })
   }, [model])
-
-  // Handle mouse events for tree interaction
-  const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!hierarchy || !nodeIndex) {
-      return
-    }
-
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    // Canvas is positioned at scrollTop, and we translate the drawing by -scrollTop,
-    // so we need to account for both to get the correct tree coordinate
-    const y = event.clientY - rect.top + scrollTop
-
-    // Use flatbush to find nearby nodes (branch points)
-    const results = nodeIndex.search(x, y, x, y)
-
-    if (results.length > 0) {
-      // Get the closest node
-      const node = nodeData[results[0]!]!
-      model.setHoveredTreeNode({
-        node,
-        descendantNames: getDescendantNames(node),
-      })
-    } else {
-      model.setHoveredTreeNode(undefined)
-    }
-  }
-
-  const handleMouseLeave = () => {
-    model.setHoveredTreeNode(undefined)
-  }
 
   if (!hierarchy) {
     return null
@@ -159,8 +118,34 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
         ref={mouseoverCanvasRef}
         width={viewWidth}
         height={height}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onMouseMove={(event: React.MouseEvent<HTMLCanvasElement>) => {
+          if (!hierarchy || !nodeIndex) {
+            return
+          }
+
+          const rect = event.currentTarget.getBoundingClientRect()
+          const x = event.clientX - rect.left
+          // Canvas is positioned at scrollTop, and we translate the drawing by -scrollTop,
+          // so we need to account for both to get the correct tree coordinate
+          const y = event.clientY - rect.top + scrollTop
+
+          // Use flatbush to find nearby nodes (branch points)
+          const results = nodeIndex.search(x, y, x, y)
+
+          if (results.length > 0) {
+            // Get the closest node
+            const node = nodeData[results[0]!]!
+            model.setHoveredTreeNode({
+              node,
+              descendantNames: getDescendantNames(node),
+            })
+          } else {
+            model.setHoveredTreeNode(undefined)
+          }
+        }}
+        onMouseLeave={() => {
+          model.setHoveredTreeNode(undefined)
+        }}
         style={{
           position: 'absolute',
           top: scrollTop,
@@ -172,8 +157,34 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
       />
       {/* Invisible interaction area over tree only */}
       <div
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onMouseMove={event => {
+          if (!hierarchy || !nodeIndex) {
+            return
+          }
+
+          const rect = event.currentTarget.getBoundingClientRect()
+          const x = event.clientX - rect.left
+          // Canvas is positioned at scrollTop, and we translate the drawing by -scrollTop,
+          // so we need to account for both to get the correct tree coordinate
+          const y = event.clientY - rect.top + scrollTop
+
+          // Use flatbush to find nearby nodes (branch points)
+          const results = nodeIndex.search(x, y, x, y)
+
+          if (results.length > 0) {
+            // Get the closest node
+            const node = nodeData[results[0]!]!
+            model.setHoveredTreeNode({
+              node,
+              descendantNames: getDescendantNames(node),
+            })
+          } else {
+            model.setHoveredTreeNode(undefined)
+          }
+        }}
+        onMouseLeave={() => {
+          model.setHoveredTreeNode(undefined)
+        }}
         style={{
           position: 'absolute',
           top: scrollTop,
@@ -187,6 +198,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
       <ResizeHandle
         onDrag={(distance: number) => {
           model.setTreeAreaWidth(Math.max(50, treeAreaWidth + distance))
+          return undefined
         }}
         className={classes.resizeHandle}
         style={{

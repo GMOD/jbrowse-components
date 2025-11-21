@@ -1,20 +1,14 @@
 import { drawTree } from './drawTree'
 
-import type { Instance } from 'mobx-state-tree'
-import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
+import type { TreeSidebarModel } from './types'
 
-interface TreeSvgProps {
-  model: Instance<ReturnType<typeof MultiVariantBaseModel>>
-}
-
-export default async function TreeSvg({ model }: TreeSvgProps) {
+export default async function TreeSvg({ model }: { model: TreeSidebarModel }) {
   const { hierarchy, treeAreaWidth, totalHeight } = model as any
 
   if (!hierarchy) {
     return null
   }
 
-  // @ts-expect-error
   const C2S = await import('canvas2svg')
   const ctx = new C2S.default(treeAreaWidth, totalHeight)
 

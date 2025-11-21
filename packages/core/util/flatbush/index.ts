@@ -72,11 +72,11 @@ export default class Flatbush {
     if (magic !== 0xfb) {
       throw new Error('Data does not appear to be in a Flatbush format.')
     }
-    const version = versionAndType >> 4
+    const version = versionAndType! >> 4
     if (version !== VERSION) {
       throw new Error(`Got v${version} data when expected v${VERSION}.`)
     }
-    const ArrayType = ARRAY_TYPES[versionAndType & 0x0f]
+    const ArrayType = ARRAY_TYPES[versionAndType! & 0x0f]
     if (!ArrayType) {
       throw new Error('Unrecognized array type.')
     }
@@ -84,8 +84,8 @@ export default class Flatbush {
     const [numItems] = new Uint32Array(data, byteOffset + 4, 1)
 
     return new Flatbush(
-      numItems,
-      nodeSize,
+      numItems!,
+      nodeSize!,
       ArrayType,
       undefined,
       data,
@@ -141,12 +141,12 @@ export default class Flatbush {
     if (data) {
       this.data = data
       this._boxes = new ArrayType(
-        data,
+        data as ArrayBuffer,
         byteOffset + 8,
         numNodes * 4,
       ) as TypedArray
       this._indices = new this.IndexArrayType(
-        data,
+        data as ArrayBuffer,
         byteOffset + 8 + nodesByteSize,
         numNodes,
       )
@@ -160,8 +160,8 @@ export default class Flatbush {
       const newData = (this.data = new ArrayBufferType(
         8 + nodesByteSize + numNodes * this.IndexArrayType.BYTES_PER_ELEMENT,
       ))
-      this._boxes = new ArrayType(newData, 8, numNodes * 4) as TypedArray
-      this._indices = new this.IndexArrayType(newData, 8 + nodesByteSize, numNodes)
+      this._boxes = new ArrayType(newData as ArrayBuffer, 8, numNodes * 4) as TypedArray
+      this._indices = new this.IndexArrayType(newData as ArrayBuffer, 8 + nodesByteSize, numNodes)
       this._pos = 0
       this.minX = Infinity
       this.minY = Infinity
