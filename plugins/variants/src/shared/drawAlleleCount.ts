@@ -45,20 +45,18 @@ export function drawColorAlleleCount(
 ) {
   ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
   if (featureType === 'inversion') {
-    // draw triangle pointing to the right
     if (featureStrand === 1) {
       ctx.beginPath()
-      ctx.moveTo(x - f2, y - f2) // left top
-      ctx.lineTo(x - f2, y + h + f2) // left bottom
-      ctx.lineTo(x + w + f2, y + h / 2) // right middle
+      ctx.moveTo(x - f2, y - f2)
+      ctx.lineTo(x - f2, y + h + f2)
+      ctx.lineTo(x + w + f2, y + h / 2)
       ctx.closePath()
       ctx.fill()
     } else {
-      // draw triangle pointing to the left
       ctx.beginPath()
-      ctx.moveTo(x + w + f2, y - f2) // right top
-      ctx.lineTo(x + w + f2, y + h + f2) // right bottom
-      ctx.lineTo(x - f2, y + h / 2) // left middle
+      ctx.moveTo(x + w + f2, y - f2)
+      ctx.lineTo(x + w + f2, y + h + f2)
+      ctx.lineTo(x - f2, y + h / 2)
       ctx.closePath()
       ctx.fill()
     }

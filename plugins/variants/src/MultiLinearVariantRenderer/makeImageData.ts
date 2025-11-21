@@ -49,6 +49,7 @@ export async function makeImageData(
   const coords = [] as number[]
   const items = [] as any[]
   const colorCache = {} as Record<string, string | undefined>
+  const drawRef = referenceDrawingMode === 'draw'
   await updateStatus('Drawing variants', statusCallback, () => {
     forEachWithStopTokenCheck(
       mafs,
@@ -56,9 +57,14 @@ export async function makeImageData(
       ({ mostFrequentAlt, feature }) => {
         const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
         const featureId = feature.id()
-        const bpLen = feature.get('end') - feature.get('start')
+        const start = feature.get('start')
+        const end = feature.get('end')
+        const bpLen = end - start
         const w = Math.max(Math.round(rightPx - leftPx), 2)
         const samp = feature.get('genotypes') as Record<string, string>
+        const featureType = feature.get('type')
+        const featureStrand = feature.get('strand')
+        const alpha = bpLen > 5 ? 0.75 : 1
         let y = -scrollTop
 
         const s = sources.length
@@ -82,7 +88,7 @@ export async function makeImageData(
                     h,
                     HP!,
                     undefined,
-                    referenceDrawingMode === 'draw',
+                    drawRef,
                   )
                 ) {
                   items.push({
@@ -129,28 +135,11 @@ export async function makeImageData(
                     alt2++
                   }
                 }
-                c = getColorAlleleCount(
-                  ref,
-                  alt,
-                  alt2,
-                  uncalled,
-                  total,
-                  referenceDrawingMode === 'draw',
-                )
+                c = getColorAlleleCount(ref, alt, alt2, uncalled, total, drawRef)
                 colorCache[cacheKey] = c
               }
               if (c) {
-                drawColorAlleleCount(
-                  c,
-                  ctx,
-                  x,
-                  y,
-                  w,
-                  h,
-                  feature.get('type'),
-                  feature.get('strand'),
-                  bpLen > 5 ? 0.75 : 1,
-                )
+                drawColorAlleleCount(c, ctx, x, y, w, h, featureType, featureStrand, alpha)
 
                 items.push({
                   name,
