@@ -2,6 +2,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 import LegendBar from '../shared/components/MultiVariantLegendBar'
+import TreeSvg from '../shared/components/TreeSvg'
 
 import type { MultiLinearVariantDisplayModel } from './model'
 import type {
@@ -16,11 +17,15 @@ export async function renderSvg(
 ) {
   await when(() => !!self.regionCannotBeRenderedText)
   const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
+  const { hierarchy, treeAreaWidth } = self as any
   return (
     <>
       <g>{await superRenderSvg(opts)}</g>
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-        <LegendBar model={self} orientation="left" exportSVG />
+        {hierarchy ? await TreeSvg({ model: self }) : null}
+        <g transform={`translate(${hierarchy ? treeAreaWidth : 0})`}>
+          <LegendBar model={self} orientation="left" exportSVG />
+        </g>
       </g>
     </>
   )

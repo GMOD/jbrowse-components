@@ -7,6 +7,8 @@ import { autorun } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
+import { drawTree } from './drawTree'
+
 import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from 'mobx-state-tree'
@@ -17,7 +19,7 @@ const useStyles = makeStyles()(theme => ({
     top: 0,
     height: '100%',
     width: 4,
-    zIndex: 1001,
+    zIndex: 101,
     background: 'transparent',
     '&:hover': {
       background: theme.palette.divider,
@@ -89,30 +91,7 @@ const TreeSidebar = observer(function ({
       return
     }
 
-    ctx.clearRect(0, 0, treeAreaWidth, totalHeight)
-    ctx.strokeStyle = 'black'
-    ctx.lineWidth = 1
-
-    // Draw all tree links
-    for (const link of hierarchy.links()) {
-      const { source, target } = link
-      const sy = source.x!
-      const ty = target.x!
-      const tx = target.y
-      const sx = source.y
-
-      // Vertical line
-      ctx.beginPath()
-      ctx.moveTo(sx, sy)
-      ctx.lineTo(sx, ty)
-      ctx.stroke()
-
-      // Horizontal line
-      ctx.beginPath()
-      ctx.moveTo(sx, ty)
-      ctx.lineTo(tx, ty)
-      ctx.stroke()
-    }
+    drawTree(ctx, hierarchy, treeAreaWidth, totalHeight)
   }, [hierarchy, treeAreaWidth, totalHeight])
 
   // Draw hover highlights
@@ -197,7 +176,7 @@ const TreeSidebar = observer(function ({
           position: 'absolute',
           top: 0,
           left: 0,
-          zIndex: 1000,
+          zIndex: 100,
           pointerEvents: 'none',
         }}
       />
@@ -212,7 +191,7 @@ const TreeSidebar = observer(function ({
           position: 'absolute',
           top: 0,
           left: 0,
-          zIndex: 1001,
+          zIndex: 101,
           cursor: 'pointer',
           pointerEvents: 'none',
         }}
@@ -227,7 +206,7 @@ const TreeSidebar = observer(function ({
           left: 0,
           width: treeAreaWidth,
           height: totalHeight,
-          zIndex: 1002,
+          zIndex: 102,
           cursor: 'pointer',
         }}
       />

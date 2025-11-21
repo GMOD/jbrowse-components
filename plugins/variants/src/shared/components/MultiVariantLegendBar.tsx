@@ -16,8 +16,9 @@ const Wrapper = observer(function ({
   children: React.ReactNode
   exportSVG?: boolean
 }) {
-  const { id, scrollTop, height } = model
+  const { id, scrollTop, height, hierarchy, treeAreaWidth } = model as any
   const clipid = `legend-${id}`
+  const leftOffset = hierarchy ? treeAreaWidth : 0
   return exportSVG ? (
     <>
       <defs>
@@ -34,7 +35,7 @@ const Wrapper = observer(function ({
       style={{
         position: 'absolute',
         top: 0,
-        left: 0,
+        left: leftOffset,
         zIndex: 100,
         pointerEvents: 'none',
         height: model.totalHeight,
