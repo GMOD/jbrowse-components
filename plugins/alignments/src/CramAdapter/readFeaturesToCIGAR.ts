@@ -1,16 +1,17 @@
-import type { CramRecord } from '@gmod/cram'
 import {
   CODE_B,
-  CODE_b,
   CODE_D,
   CODE_H,
-  CODE_i,
   CODE_I,
   CODE_N,
   CODE_P,
   CODE_S,
   CODE_X,
+  CODE_b,
+  CODE_i,
 } from './const'
+
+import type { CramRecord } from '@gmod/cram'
 
 type ReadFeatures = CramRecord['readFeatures']
 
@@ -27,7 +28,8 @@ export function readFeaturesToCIGAR(
   let seqLen = 0
 
   if (readFeatures !== undefined) {
-    for (const { code, refPos, data } of readFeatures) {
+    for (let i = 0, l = readFeatures.length; i < l; i++) {
+      const { code, refPos, data } = readFeatures[i]!
       const sublen = refPos - lastPos
       seqLen += sublen
       lastPos = refPos

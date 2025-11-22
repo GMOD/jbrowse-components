@@ -1,7 +1,15 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_S,
+  CIGAR_X,
+} from '../../MismatchParser'
 import { fillRect } from '../util'
-import { CIGAR_S, CIGAR_I, CIGAR_D, CIGAR_N, CIGAR_M, CIGAR_X, CIGAR_EQ } from '../../MismatchParser'
 
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'

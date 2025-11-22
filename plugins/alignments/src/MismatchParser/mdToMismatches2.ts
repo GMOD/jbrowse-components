@@ -1,5 +1,6 @@
+import { CIGAR_D, CIGAR_H, CIGAR_I, CIGAR_N, CIGAR_P, CIGAR_S } from './index'
+
 import type { Mismatch } from '../shared/types'
-import { CIGAR_S, CIGAR_I, CIGAR_D, CIGAR_P, CIGAR_N, CIGAR_H } from './index'
 
 // Optimized version that works with parseCigar2 output (numeric ops)
 export function mdToMismatches2(

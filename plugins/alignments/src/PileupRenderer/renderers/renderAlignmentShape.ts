@@ -1,12 +1,12 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
 import {
-  parseCigar2,
-  CIGAR_M,
-  CIGAR_X,
-  CIGAR_EQ,
   CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_M,
   CIGAR_N,
+  CIGAR_X,
+  parseCigar2,
 } from '../../MismatchParser'
 import { CHEVRON_WIDTH } from '../../shared/util'
 
@@ -39,7 +39,12 @@ export function renderAlignmentShape({
       for (let i = 0; i < cigarOps.length; i += 2) {
         const opLen = cigarOps[i]!
         const op = cigarOps[i + 1]!
-        if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ || op === CIGAR_D) {
+        if (
+          op === CIGAR_M ||
+          op === CIGAR_X ||
+          op === CIGAR_EQ ||
+          op === CIGAR_D
+        ) {
           drawLen += opLen
         } else if (op === CIGAR_N) {
           if (drawStart !== drawLen) {
@@ -85,7 +90,12 @@ export function renderAlignmentShape({
       for (let i = cigarOps.length - 2; i >= 0; i -= 2) {
         const opLen = cigarOps[i]!
         const op = cigarOps[i + 1]!
-        if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ || op === CIGAR_D) {
+        if (
+          op === CIGAR_M ||
+          op === CIGAR_X ||
+          op === CIGAR_EQ ||
+          op === CIGAR_D
+        ) {
           drawLen += opLen
         } else if (op === CIGAR_N) {
           if (drawLen !== 0) {

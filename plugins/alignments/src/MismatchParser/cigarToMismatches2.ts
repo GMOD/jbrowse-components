@@ -1,15 +1,16 @@
-import type { Mismatch } from '../shared/types'
 import {
-  CIGAR_M,
-  CIGAR_I,
   CIGAR_D,
+  CIGAR_E,
+  CIGAR_EQ,
+  CIGAR_H,
+  CIGAR_I,
+  CIGAR_M,
   CIGAR_N,
   CIGAR_S,
-  CIGAR_H,
   CIGAR_X,
-  CIGAR_EQ,
-  CIGAR_E,
 } from './index'
+
+import type { Mismatch } from '../shared/types'
 
 // Optimized version that works with parseCigar2 output (all numeric)
 // ops array format: [length1, opCode1, length2, opCode2, ...]

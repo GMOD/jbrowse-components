@@ -1,17 +1,17 @@
-import {
-  parseCigar,
-  parseCigar2,
-  CIGAR_M,
-  CIGAR_I,
-  CIGAR_D,
-  CIGAR_N,
-  CIGAR_S,
-  CIGAR_H,
-  CIGAR_X,
-  CIGAR_EQ,
-} from './index'
 import { cigarToMismatches } from './cigarToMismatches'
 import { cigarToMismatches2 } from './cigarToMismatches2'
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_H,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_S,
+  CIGAR_X,
+  parseCigar2,
+  parseCigar,
+} from './index'
 
 describe('parseCigar2', () => {
   test('simple CIGAR', () => {
@@ -77,7 +77,9 @@ describe('cigarToMismatches2', () => {
   test('simple deletion', () => {
     const ops = parseCigar2('56M1D45M')
     const result = cigarToMismatches2(ops, seq)
-    expect(result).toEqual([{ start: 56, type: 'deletion', base: '*', length: 1 }])
+    expect(result).toEqual([
+      { start: 56, type: 'deletion', base: '*', length: 1 },
+    ])
   })
 
   test('simple insertion', () => {
@@ -138,13 +140,13 @@ describe('cigarToMismatches2', () => {
 
     expect(result1.length).toBe(result2.length)
 
-    result1.forEach((m1, idx) => {
+    for (const [idx, m1] of result1.entries()) {
       const m2 = result2[idx]
       expect(m2).toBeDefined()
       expect(m1.start).toBe(m2!.start)
       expect(m1.type).toBe(m2!.type)
       expect(m1.length).toBe(m2!.length)
-    })
+    }
   })
 
   test('case-insensitive base matching', () => {
@@ -184,20 +186,20 @@ describe('performance characteristics', () => {
   test('parseCigar2 returns all numbers', () => {
     const result = parseCigar2('100M5I45M')
 
-    result.forEach((val, idx) => {
+    for (const [idx, val] of result.entries()) {
       expect(typeof val).toBe('number')
-    })
+    }
   })
 
   test('parseCigar returns mixed types', () => {
     const result = parseCigar('100M5I45M')
 
-    result.forEach((val, idx) => {
+    for (const [idx, val] of result.entries()) {
       if (idx % 2 === 0) {
         expect(typeof val).toBe('string')
       } else {
         expect(typeof val).toBe('string')
       }
-    })
+    }
   })
 })

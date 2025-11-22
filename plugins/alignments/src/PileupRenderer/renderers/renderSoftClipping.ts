@@ -2,15 +2,15 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx } from '@jbrowse/core/util'
 
 import {
-  parseCigar2,
-  CIGAR_S,
-  CIGAR_N,
-  CIGAR_M,
-  CIGAR_EQ,
-  CIGAR_X,
-  CIGAR_H,
   CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_H,
   CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_S,
+  CIGAR_X,
+  parseCigar2,
 } from '../../MismatchParser'
 import { fillRect, getCharWidthHeight } from '../util'
 

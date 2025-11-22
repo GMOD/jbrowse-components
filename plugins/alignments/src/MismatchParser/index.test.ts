@@ -1,6 +1,7 @@
 import { cigarToMismatches } from './cigarToMismatches'
 import { getMismatches, parseCigar } from './index'
 import { mdToMismatches } from './mdToMismatches'
+
 import type { Mismatch } from '../shared/types'
 
 const seq =
@@ -70,7 +71,7 @@ function mdToMismatchesOriginal(
       curr.start += token.length - 1
     } else {
       // mismatch
-      for (let j = 0; j < token.length; j += 1) {
+      for (const element of token) {
         curr.length = 1
 
         while (lastSkipPos < skips.length) {
@@ -85,7 +86,7 @@ function mdToMismatchesOriginal(
         const s = getTemplateCoordLocal(curr.start)
         curr.base = seq[s] || 'X'
         curr.qual = qual?.[s]
-        curr.altbase = token[j]
+        curr.altbase = element
         nextRecord()
       }
     }
@@ -321,40 +322,91 @@ test('deletion at end', () => {
 test('complex pattern with insertions, deletions, and mismatches', () => {
   // Real-world complex example
   const complexSeq = 'ACGTACGTACNNACGTACGTACGTACGTACGTAC'
-  expect(
-    getMismatches('10M2I5M3D18M', '5T4^GCA2A15', complexSeq),
-  ).toEqual([
+  expect(getMismatches('10M2I5M3D18M', '5T4^GCA2A15', complexSeq)).toEqual([
     { start: 10, type: 'insertion', base: '2', insertedBases: 'NN', length: 0 },
     { start: 15, type: 'deletion', base: '*', length: 3 },
-    { altbase: 'T', base: 'C', length: 1, start: 5, type: 'mismatch', qual: undefined },
-    { altbase: 'A', base: 'G', length: 1, start: 15, type: 'mismatch', qual: undefined },
+    {
+      altbase: 'T',
+      base: 'C',
+      length: 1,
+      start: 5,
+      type: 'mismatch',
+      qual: undefined,
+    },
+    {
+      altbase: 'A',
+      base: 'G',
+      length: 1,
+      start: 15,
+      type: 'mismatch',
+      qual: undefined,
+    },
   ])
 })
 
 test('multiple skips with mismatches', () => {
   // Multiple N operations (spliced alignment)
-  expect(
-    getMismatches('5M100N5M50N5M', '3A1C4A4', 'AAATAACCCCCAAAAA'),
-  ).toEqual([
-    { base: 'N', length: 100, start: 5, type: 'skip' },
-    { base: 'N', length: 50, start: 110, type: 'skip' },
-    { altbase: 'A', base: 'T', length: 1, start: 3, type: 'mismatch', qual: undefined },
-    { altbase: 'C', base: 'A', length: 1, start: 105, type: 'mismatch', qual: undefined },
-    { altbase: 'A', base: 'C', length: 1, start: 160, type: 'mismatch', qual: undefined },
-  ])
+  expect(getMismatches('5M100N5M50N5M', '3A1C4A4', 'AAATAACCCCCAAAAA')).toEqual(
+    [
+      { base: 'N', length: 100, start: 5, type: 'skip' },
+      { base: 'N', length: 50, start: 110, type: 'skip' },
+      {
+        altbase: 'A',
+        base: 'T',
+        length: 1,
+        start: 3,
+        type: 'mismatch',
+        qual: undefined,
+      },
+      {
+        altbase: 'C',
+        base: 'A',
+        length: 1,
+        start: 105,
+        type: 'mismatch',
+        qual: undefined,
+      },
+      {
+        altbase: 'A',
+        base: 'C',
+        length: 1,
+        start: 160,
+        type: 'mismatch',
+        qual: undefined,
+      },
+    ],
+  )
 })
 
 test('soft clipping with complex operations', () => {
   // Soft clips with various operations - MD doesn't include clip info
   expect(
-    getMismatches('5S10M2I5M3D5M5S', '5T4^ACG2A2', 'SSSSSAAAAATAAAANNAAAAACGSSSSS'),
+    getMismatches(
+      '5S10M2I5M3D5M5S',
+      '5T4^ACG2A2',
+      'SSSSSAAAAATAAAANNAAAAACGSSSSS',
+    ),
   ).toEqual([
     { cliplen: 5, base: 'S5', length: 1, start: 0, type: 'softclip' },
     { start: 10, type: 'insertion', base: '2', insertedBases: 'NN', length: 0 },
     { start: 15, type: 'deletion', base: '*', length: 3 },
     { cliplen: 5, base: 'S5', length: 1, start: 23, type: 'softclip' },
-    { altbase: 'T', base: 'T', length: 1, start: 5, type: 'mismatch', qual: undefined },
-    { altbase: 'A', base: 'A', length: 1, start: 15, type: 'mismatch', qual: undefined },
+    {
+      altbase: 'T',
+      base: 'T',
+      length: 1,
+      start: 5,
+      type: 'mismatch',
+      qual: undefined,
+    },
+    {
+      altbase: 'A',
+      base: 'A',
+      length: 1,
+      start: 15,
+      type: 'mismatch',
+      qual: undefined,
+    },
   ])
 })
 
@@ -369,7 +421,7 @@ test('edge case: empty MD string components', () => {
 
 test('large numbers in MD string', () => {
   // Test parsing of large position numbers
-  const longSeq = 'A'.repeat(1000) + 'C' + 'T'.repeat(500)
+  const longSeq = `${'A'.repeat(1000)}C${'T'.repeat(500)}`
   expect(getMismatches('1501M', '1000G500', longSeq)).toEqual([
     { altbase: 'G', base: 'C', length: 1, start: 1000, type: 'mismatch' },
   ])
@@ -494,7 +546,7 @@ describe('compatibility: new implementation vs original', () => {
     },
   ]
 
-  testCases.forEach(({ name, cigar, md, seq }) => {
+  for (const { name, cigar, md, seq } of testCases) {
     test(name, () => {
       const ops = parseCigar(cigar)
       const cigarMismatches = cigarToMismatches(ops, seq)
@@ -509,7 +561,7 @@ describe('compatibility: new implementation vs original', () => {
 
       expect(resultNew).toEqual(resultOld)
     })
-  })
+  }
 
   test('with quality scores', () => {
     const cigar = '10M'
@@ -521,7 +573,13 @@ describe('compatibility: new implementation vs original', () => {
     const cigarMismatches = cigarToMismatches(ops, testSeq)
 
     const resultNew = mdToMismatches(md, ops, cigarMismatches, testSeq, qual)
-    const resultOld = mdToMismatchesOriginal(md, ops, cigarMismatches, testSeq, qual)
+    const resultOld = mdToMismatchesOriginal(
+      md,
+      ops,
+      cigarMismatches,
+      testSeq,
+      qual,
+    )
 
     expect(resultNew).toEqual(resultOld)
   })

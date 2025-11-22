@@ -1,6 +1,7 @@
+import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
+
 import type { Mismatch } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
-import { CODE_D, CODE_H, CODE_i, CODE_I, CODE_N, CODE_S, CODE_X } from './const'
 
 type ReadFeatures = CramRecord['readFeatures']
 
@@ -71,7 +72,7 @@ export function readFeaturesToMismatches(
       mismatches[j++] = {
         start: refPos,
         type: 'softclip',
-        base: 'S' + dataLen,
+        base: `S${dataLen}`,
         cliplen: dataLen,
         length: 1,
       }
@@ -80,7 +81,7 @@ export function readFeaturesToMismatches(
       mismatches[j++] = {
         start: refPos,
         type: 'hardclip',
-        base: 'H' + data,
+        base: `H${data}`,
         cliplen: data,
         length: 1,
       }
