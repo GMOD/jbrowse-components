@@ -613,6 +613,26 @@ export default function MultiVariantBaseModelF(
       get featuresReady() {
         return !!self.featuresVolatile
       },
+      /**
+       * #method
+       */
+      getPortableSettings() {
+        return {
+          rowHeightSetting: self.rowHeightSetting,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          showSidebarLabelsSetting: self.showSidebarLabelsSetting,
+          showTree: self.showTree,
+          renderingMode: self.renderingMode,
+          autoHeight: self.autoHeight,
+          lengthCutoffFilter: self.lengthCutoffFilter,
+          jexlFilters: self.jexlFilters,
+          referenceDrawingMode: self.referenceDrawingMode,
+          clusterTree: self.clusterTree,
+          treeAreaWidth: self.treeAreaWidth,
+          layout: self.layout,
+          height: self.height,
+        }
+      },
     }))
     .views(self => ({
       /**

@@ -1,5 +1,5 @@
 import PluggableElementBase from './PluggableElementBase'
-import mapObject from '../util/map-obj'
+import mapObject, { mapObjectSkip } from '../util/map-obj'
 import { getBlobMap, setBlobMap } from '../util/tracks'
 import {
   RetryError,
@@ -111,11 +111,16 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const uris = [] as UriLocation[]
 
     // using map-obj avoids cycles, seen in circular view svg export
-    mapObject(thing, val => {
-      if (isUriLocation(val)) {
-        uris.push(val)
-      }
-    })
+    mapObject(
+      thing,
+      (val: unknown) => {
+        if (isUriLocation(val)) {
+          uris.push(val)
+        }
+        return mapObjectSkip
+      },
+      { deep: true },
+    )
     for (const uri of uris) {
       await this.serializeNewAuthArguments(uri, rpcDriverClassName)
     }

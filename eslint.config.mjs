@@ -36,6 +36,7 @@ export default defineConfig(
       'products/jbrowse-cli/bundle/**',
       'auth_test_utils/**/*',
       'component_tests/**/*',
+      'packages/core/util/map-obj.ts',
       'embedded_demos/**/*',
       '**/output-version.js',
       '**/.storybook/*',
