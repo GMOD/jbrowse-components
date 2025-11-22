@@ -11,7 +11,9 @@ import type { Region } from '@jbrowse/core/util'
 // Helper to apply alpha to color based on quality score
 function applyQualAlpha(baseColor: string, qual: number | undefined) {
   return qual !== undefined
-    ? colord(baseColor).alpha(Math.min(1, qual / 50)).toHslString()
+    ? colord(baseColor)
+        .alpha(Math.min(1, qual / 50))
+        .toHslString()
     : baseColor
 }
 
@@ -139,7 +141,11 @@ export function renderMismatches({
         const rwidth = measureText(txt, 10)
         if (widthPx >= rwidth && canRenderText) {
           ctx.fillStyle = colorContrastMap.deletion!
-          ctx.fillText(txt, (leftPx + rightPx) / 2 - rwidth / 2, topPx + heightPx)
+          ctx.fillText(
+            txt,
+            (leftPx + rightPx) / 2 - rwidth / 2,
+            topPx + heightPx,
+          )
         }
       }
     } else if (mismatch.type === 'insertion' && drawIndels) {

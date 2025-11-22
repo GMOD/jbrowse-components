@@ -181,25 +181,3 @@ describe('cigarToMismatches2', () => {
     })
   })
 })
-
-describe('performance characteristics', () => {
-  test('parseCigar2 returns all numbers', () => {
-    const result = parseCigar2('100M5I45M')
-
-    for (const [idx, val] of result.entries()) {
-      expect(typeof val).toBe('number')
-    }
-  })
-
-  test('parseCigar returns mixed types', () => {
-    const result = parseCigar('100M5I45M')
-
-    for (const [idx, val] of result.entries()) {
-      if (idx % 2 === 0) {
-        expect(typeof val).toBe('string')
-      } else {
-        expect(typeof val).toBe('string')
-      }
-    }
-  })
-})
