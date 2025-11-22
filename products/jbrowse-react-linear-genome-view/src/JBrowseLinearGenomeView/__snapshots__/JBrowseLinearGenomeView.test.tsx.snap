@@ -98,10 +98,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         class="css-den3n5-scalebarVisibleRegion"
                         style="width: 272px; left: 0px; background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
                       />
-                      <div
-                        class="css-2jeg0a-scalebarContig"
-                        style="width: 0px; left: 0px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
-                      />
                       <div>
                         <p
                           class="MuiTypography-root MuiTypography-body1 css-10gjpil-MuiTypography-root-scalebarRefName"
@@ -151,10 +147,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                           </p>
                         </div>
                       </div>
-                      <div
-                        class="css-2jeg0a-scalebarContig"
-                        style="width: 0px; left: 808px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
-                      />
                     </div>
                   </div>
                 </div>
@@ -168,7 +160,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     <polygon
                       fill="#42777f"
                       fill-opacity="0.3"
-                      points="0,48,809.0000000000001,48,272,0,0,0"
+                      points="0,48,809,48,272,0,0,0"
                       stroke="#42777f"
                       stroke-opacity="0.8"
                     />
