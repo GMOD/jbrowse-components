@@ -3,7 +3,6 @@ import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 import { getSerializedSvg, updateStatus } from '../../util'
-import { checkStopToken } from '../../util/stopToken'
 
 import type { RenderProps, RenderResults } from './RendererType'
 import type { AnyConfigurationModel } from '../../configuration'
