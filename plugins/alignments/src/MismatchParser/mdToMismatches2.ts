@@ -60,6 +60,7 @@ export function mdToMismatches2(
     } else if (char >= 65) {
       // letter (mismatch)
       const letter = mdstring[i]!
+      i++
 
       // handle skips in cigar
       if (hasSkips && cigarLength > 0) {

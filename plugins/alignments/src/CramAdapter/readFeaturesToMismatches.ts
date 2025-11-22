@@ -45,7 +45,7 @@ export function readFeaturesToMismatches(
         length: 1,
         base: sub!,
         qual: qual?.[pos - 1],
-        altbase: ref,
+        altbase: ref?.toUpperCase(),
         type: 'mismatch',
       }
     } else if (codeChar === CODE_I) {
