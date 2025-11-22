@@ -98,6 +98,7 @@ const ClusterDialogAuto = observer(function ({
                     }
                     return ret
                   }),
+                  false,
                 )
                 model.setClusterTree(ret.tree)
               }

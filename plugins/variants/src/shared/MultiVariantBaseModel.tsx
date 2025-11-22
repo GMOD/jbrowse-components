@@ -213,11 +213,21 @@ export default function MultiVariantBaseModelF(
       setFeatures(f: Feature[]) {
         self.featuresVolatile = f
       },
+
       /**
        * #action
        */
-      setLayout(layout: Source[]) {
+      setLayout(layout: Source[], clearTree = true) {
+        const orderChanged =
+          clearTree &&
+          self.clusterTree &&
+          self.layout.length === layout.length &&
+          self.layout.some((source, idx) => source.name !== layout[idx]?.name)
+
         self.layout = layout
+        if (orderChanged) {
+          self.clusterTree = undefined
+        }
       },
       /**
        * #action
@@ -512,28 +522,18 @@ export default function MultiVariantBaseModelF(
               ],
             },
             {
-              label: 'Reference mode',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label:
-                    'Fill background grey, skip reference allele mouseovers (helps with large overlapping SVs)',
-                  type: 'radio',
-                  checked: self.referenceDrawingMode === 'skip',
-                  onClick: () => {
-                    self.setReferenceDrawingMode('skip')
-                  },
-                },
-                {
-                  label:
-                    "Don't fill background grey, only draw actual reference alleles as grey",
-                  type: 'radio',
-                  checked: self.referenceDrawingMode === 'draw',
-                  onClick: () => {
-                    self.setReferenceDrawingMode('draw')
-                  },
-                },
-              ],
+              label: 'Skip drawing reference alleles',
+              helpText:
+                'When this setting is on, the background is filled with grey, and then we skip drawing reference alleles. This helps drawing with drawing overlapping SVs. When this setting is off, each reference allele is colored grey',
+              type: 'checkbox',
+              checked: self.referenceDrawingMode === 'skip',
+              onClick: () => {
+                if (self.referenceDrawingMode === 'skip') {
+                  self.setReferenceDrawingMode('draw')
+                } else {
+                  self.setReferenceDrawingMode('skip')
+                }
+              },
             },
             {
               label: 'Filter by',

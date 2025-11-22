@@ -5,6 +5,7 @@ import { useLocalStorage } from '@jbrowse/core/util'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
+import ClearTreeWarningDialog from './ClearTreeWarningDialog'
 import SetColorDialogBulkEditPanel from './SetColorDialogBulkEditPanel'
 import SetColorDialogHelpfulTips from './SetColorDialogHelpfulTips'
 import SetColorDialogRowPalettizer from './SetColorDialogRowPalettizer'
@@ -26,7 +27,11 @@ interface SetColorDialogProps {
       name: string
       [key: string]: unknown
     }[]
-    setLayout: (s: { name: string; [key: string]: unknown }[]) => void
+    clusterTree?: string
+    setLayout: (
+      s: { name: string; [key: string]: unknown }[],
+      clearTree?: boolean,
+    ) => void
     clearLayout: () => void
   }
   handleClose: () => void
@@ -55,6 +60,7 @@ export default function SetColorDialog({
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(structuredClone(sources || []))
   const [showTips, setShowTips] = useLocalStorage(showTipsStorageKey, false)
+  const [showWarning, setShowWarning] = useState(false)
 
   return (
     <DraggableDialog open onClose={handleClose} maxWidth="xl" title={title}>
@@ -137,8 +143,21 @@ export default function SetColorDialog({
               color="primary"
               type="submit"
               onClick={() => {
-                model.setLayout(currLayout)
-                handleClose()
+                const { sources, clusterTree } = model
+                const orderChanged =
+                  clusterTree &&
+                  sources &&
+                  sources.length === currLayout.length &&
+                  sources.some(
+                    (source, idx) => source.name !== currLayout[idx]?.name,
+                  )
+
+                if (orderChanged) {
+                  setShowWarning(true)
+                } else {
+                  model.setLayout(currLayout)
+                  handleClose()
+                }
               }}
             >
               Submit
@@ -146,6 +165,17 @@ export default function SetColorDialog({
           </DialogActions>
         </>
       )}
+      {showWarning ? (
+        <ClearTreeWarningDialog
+          handleClose={() => {
+            setShowWarning(false)
+          }}
+          onConfirm={() => {
+            model.setLayout(currLayout)
+            handleClose()
+          }}
+        />
+      ) : null}
     </DraggableDialog>
   )
 }

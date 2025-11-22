@@ -7,6 +7,6 @@ export interface ReducedModel {
   lengthCutoffFilter: number
   adapterConfig: AnyConfigurationModel
   setClusterTree: (arg?: string) => void
-  setLayout: (arg: Source[]) => void
+  setLayout: (arg: Source[], clearTree?: boolean) => void
   clearLayout: () => void
 }
