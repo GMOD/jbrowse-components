@@ -164,12 +164,11 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
-    const { stopToken, statusCallback = () => {} } = args
+    const { statusCallback = () => {} } = args
     const args2 = this.deserializeArgsInWorker(args)
     const results = await updateStatus('Rendering plot', statusCallback, () =>
       this.render(args2),
     )
-    checkStopToken(stopToken)
 
     return updateStatus('Serializing results', statusCallback, () =>
       this.serializeResultsInWorker(results, args2),
