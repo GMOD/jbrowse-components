@@ -26,7 +26,7 @@ export function renderMethylation({
   bpPerPx: number
   renderArgs: ProcessedRenderArgs
   canvasWidth: number
-  cigarOps: string[]
+  cigarOps: number[]
 }) {
   const { regionSequence } = renderArgs
   const { feature, topPx, heightPx } = feat

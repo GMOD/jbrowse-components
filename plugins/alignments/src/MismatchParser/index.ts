@@ -1,5 +1,7 @@
 import { cigarToMismatches } from './cigarToMismatches'
+import { cigarToMismatches2 } from './cigarToMismatches2'
 import { mdToMismatches } from './mdToMismatches'
+import { mdToMismatches2 } from './mdToMismatches2'
 
 import type { Mismatch } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
@@ -7,20 +9,47 @@ import type { Feature } from '@jbrowse/core/util'
 const startClip = new RegExp(/(\d+)[SH]$/)
 const endClip = new RegExp(/^(\d+)([SH])/)
 
+// CIGAR operation char codes for parseCigar2
+export const CIGAR_M = 77 // 'M'
+export const CIGAR_I = 73 // 'I'
+export const CIGAR_D = 68 // 'D'
+export const CIGAR_N = 78 // 'N'
+export const CIGAR_S = 83 // 'S'
+export const CIGAR_H = 72 // 'H'
+export const CIGAR_X = 88 // 'X'
+export const CIGAR_P = 80 // 'P'
+export const CIGAR_E = 69 // 'E'
+export const CIGAR_EQ = 61 // '='
+
 export function parseCigar(s = '') {
   let currLen = ''
-  let len
-  let op
   const ret = []
   for (let i = 0, l = s.length; i < l; i++) {
     const c = s[i]!
     if (c >= '0' && c <= '9') {
       currLen = currLen + c
     } else {
-      len = currLen
-      op = c
+      ret.push(currLen, c)
       currLen = ''
-      ret.push(len, op)
+    }
+  }
+  return ret
+}
+
+// Optimized version: returns all numbers [length1, opCode1, length2, opCode2, ...]
+// where opCode is the char code (M=77, I=73, etc)
+// Use CIGAR_OP constants for comparison
+export function parseCigar2(s = '') {
+  let currLen = 0
+  const ret = []
+  for (let i = 0, l = s.length; i < l; i++) {
+    const code = s.charCodeAt(i)
+    if (code >= 48 && code <= 57) {
+      // '0' to '9'
+      currLen = currLen * 10 + (code - 48)
+    } else {
+      ret.push(currLen, code)
+      currLen = 0
     }
   }
   return ret
@@ -44,6 +73,31 @@ export function getMismatches(
   if (md && seq) {
     mismatches = mismatches.concat(
       mdToMismatches(md, ops, mismatches, seq, qual),
+    )
+  }
+
+  return mismatches
+}
+
+// Optimized version using parseCigar2 and cigarToMismatches2
+export function getMismatches2(
+  cigar?: string,
+  md?: string,
+  seq?: string,
+  ref?: string,
+  qual?: Uint8Array,
+) {
+  let mismatches: Mismatch[] = []
+  const ops = parseCigar2(cigar)
+  // parse the CIGAR tag if it has one
+  if (cigar) {
+    mismatches = mismatches.concat(cigarToMismatches2(ops, seq, ref, qual))
+  }
+
+  // now let's look for CRAM or MD mismatches
+  if (md && seq) {
+    mismatches = mismatches.concat(
+      mdToMismatches2(md, ops, mismatches, seq, qual),
     )
   }
 
@@ -173,3 +227,4 @@ export function featurizeSA(
 }
 
 export { getNextRefPos } from './getNextRefPos'
+export { cigarToMismatches2 } from './cigarToMismatches2'

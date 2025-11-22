@@ -1,4 +1,4 @@
-import { getNextRefPos, parseCigar } from '../MismatchParser'
+import { getNextRefPos, parseCigar2 } from '../MismatchParser'
 import { getModPositions } from '../ModificationParser/getModPositions'
 import { getModProbabilities } from '../ModificationParser/getModProbabilities'
 import { getTagAlt } from '../util'
@@ -13,12 +13,12 @@ interface MaximumProbabilityMod {
 
 export function getMaxProbModAtEachPosition(
   feature: Feature,
-  cigarOps?: string[],
+  cigarOps?: number[],
 ) {
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined
   const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
-  const ops = cigarOps || parseCigar(feature.get('CIGAR'))
+  const ops = cigarOps || parseCigar2(feature.get('CIGAR'))
   if (seq) {
     const modifications = getModPositions(mm, seq, fstrand)
     const probabilities = getModProbabilities(feature)

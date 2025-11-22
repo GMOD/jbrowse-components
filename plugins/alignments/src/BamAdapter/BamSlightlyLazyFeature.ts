@@ -1,4 +1,4 @@
-import { getMismatches } from '../MismatchParser'
+import { getMismatches2 } from '../MismatchParser'
 import { cacheGetter } from '../shared/util'
 
 import type BamAdapter from './BamAdapter'
@@ -21,7 +21,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     return `${this.adapter.id}-${this.record.id}`
   }
   get mismatches() {
-    return getMismatches(
+    return getMismatches2(
       this.record.CIGAR,
       this.record.tags.MD as string | undefined,
       this.record.seq,

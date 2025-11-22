@@ -1,7 +1,17 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import { parseCigar } from '../../MismatchParser'
+import {
+  parseCigar2,
+  CIGAR_S,
+  CIGAR_N,
+  CIGAR_M,
+  CIGAR_EQ,
+  CIGAR_X,
+  CIGAR_H,
+  CIGAR_D,
+  CIGAR_I,
+} from '../../MismatchParser'
 import { fillRect, getCharWidthHeight } from '../util'
 
 import type { Mismatch } from '../../shared/types'
@@ -44,11 +54,11 @@ export function renderSoftClipping({
   let seqOffset = 0
   let refOffset = 0
   const CIGAR = feature.get('CIGAR')
-  const cigarOps = parseCigar(CIGAR)
+  const cigarOps = parseCigar2(CIGAR)
   for (let i = 0; i < cigarOps.length; i += 2) {
     const op = cigarOps[i + 1]!
-    const len = +cigarOps[i]!
-    if (op === 'S') {
+    const len = cigarOps[i]!
+    if (op === CIGAR_S) {
       for (let k = 0; k < len; k++) {
         const base = seq[seqOffset + k]!
         const s0 = feature.get('start') - (i === 0 ? len : 0) + refOffset + k
@@ -72,20 +82,20 @@ export function renderSoftClipping({
       }
       seqOffset += len
     }
-    if (op === 'N') {
+    if (op === CIGAR_N) {
       refOffset += len
     }
-    if (op === 'M' || op === '=' || op === 'X') {
+    if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
       refOffset += len
       seqOffset += len
     }
-    if (op === 'H') {
+    if (op === CIGAR_H) {
       // do nothing
     }
-    if (op === 'D') {
+    if (op === CIGAR_D) {
       refOffset += len
     }
-    if (op === 'I') {
+    if (op === CIGAR_I) {
       seqOffset += len
     }
   }

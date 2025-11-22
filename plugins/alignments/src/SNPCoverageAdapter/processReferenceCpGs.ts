@@ -1,6 +1,6 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
-import { parseCigar } from '../MismatchParser'
+import { parseCigar2 } from '../MismatchParser'
 import { incWithProbabilities } from './util'
 import { getMethBins } from '../ModificationParser/getMethBins'
 
@@ -26,7 +26,7 @@ export function processReferenceCpGs({
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
   const r = regionSequence.toLowerCase()
   if (seq) {
-    const cigarOps = parseCigar(feature.get('CIGAR'))
+    const cigarOps = parseCigar2(feature.get('CIGAR'))
     const { methBins, methProbs } = getMethBins(feature, cigarOps)
     const dels = mismatches.filter(f => f.type === 'deletion')
 

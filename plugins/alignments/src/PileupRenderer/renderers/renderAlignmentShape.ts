@@ -1,6 +1,13 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import { parseCigar } from '../../MismatchParser'
+import {
+  parseCigar2,
+  CIGAR_M,
+  CIGAR_X,
+  CIGAR_EQ,
+  CIGAR_D,
+  CIGAR_N,
+} from '../../MismatchParser'
 import { CHEVRON_WIDTH } from '../../shared/util'
 
 import type { ProcessedRenderArgs } from '../types'
@@ -25,16 +32,16 @@ export function renderAlignmentShape({
   const strand = feature.get('strand') * flip
   const renderChevrons = bpPerPx < 10 && heightPx > 5
   if (CIGAR?.includes('N')) {
-    const cigarOps = parseCigar(CIGAR)
+    const cigarOps = parseCigar2(CIGAR)
     if (strand === 1) {
       let drawLen = 0
       let drawStart = s
       for (let i = 0; i < cigarOps.length; i += 2) {
-        const opLen = +cigarOps[i]!
+        const opLen = cigarOps[i]!
         const op = cigarOps[i + 1]!
-        if (op === 'M' || op === 'X' || op === '=' || op === 'D') {
+        if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ || op === CIGAR_D) {
           drawLen += opLen
-        } else if (op === 'N') {
+        } else if (op === CIGAR_N) {
           if (drawStart !== drawLen) {
             const [leftPx, rightPx] = bpSpanPx(
               drawStart,
@@ -76,11 +83,11 @@ export function renderAlignmentShape({
       let drawLen = 0
       let drawStart = e
       for (let i = cigarOps.length - 2; i >= 0; i -= 2) {
-        const opLen = +cigarOps[i]!
+        const opLen = cigarOps[i]!
         const op = cigarOps[i + 1]!
-        if (op === 'M' || op === 'X' || op === '=' || op === 'D') {
+        if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ || op === CIGAR_D) {
           drawLen += opLen
-        } else if (op === 'N') {
+        } else if (op === CIGAR_N) {
           if (drawLen !== 0) {
             const [leftPx, rightPx] = bpSpanPx(
               drawStart - drawLen,
