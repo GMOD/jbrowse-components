@@ -1,5 +1,5 @@
 import PluggableElementBase from './PluggableElementBase'
-import mapObject, { mapObjectSkip } from '../util/map-obj'
+import mapObject from '../util/map-obj'
 import { getBlobMap, setBlobMap } from '../util/tracks'
 import {
   RetryError,
@@ -14,22 +14,17 @@ import type { UriLocation } from '../util/types'
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
-  pluginManager: PluginManager
-
-  constructor(pluginManager: PluginManager) {
+  constructor(public pluginManager: PluginManager) {
     super()
-    this.pluginManager = pluginManager
   }
 
   async serializeArguments(
     args: Record<string, unknown>,
     rpcDriverClassName: string,
   ): Promise<Record<string, unknown>> {
+    const blobMap = getBlobMap()
     await this.augmentLocationObjects(args, rpcDriverClassName)
-    return {
-      ...args,
-      blobMap: getBlobMap(),
-    }
+    return { ...args, blobMap }
   }
 
   async serializeNewAuthArguments(
@@ -111,16 +106,11 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const uris = [] as UriLocation[]
 
     // using map-obj avoids cycles, seen in circular view svg export
-    mapObject(
-      thing,
-      (val: unknown) => {
-        if (isUriLocation(val)) {
-          uris.push(val)
-        }
-        return mapObjectSkip
-      },
-      { deep: true },
-    )
+    mapObject(thing, val => {
+      if (isUriLocation(val)) {
+        uris.push(val)
+      }
+    })
     for (const uri of uris) {
       await this.serializeNewAuthArguments(uri, rpcDriverClassName)
     }
