@@ -3664,7 +3664,7 @@
     "@types/tough-cookie" "*"
     parse5 "^7.0.0"
 
-"@types/json-parse-better-errors@^1.0.0":
+"@types/json-parse-better-errors@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@types/json-parse-better-errors/-/json-parse-better-errors-1.0.3.tgz#3f03464a47aa116a54683efdfd1f8c1f46855a31"
   integrity sha512-wbwigqXeGQq+liQIqxYNylOV4c3ilUqB9czasOS26TSy21Ti1l2Q8c8TEjmaTnc0CgdJDBhIMFJssIbY1FanYA==
