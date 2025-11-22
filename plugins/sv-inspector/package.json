@@ -31,8 +31,8 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js",
     "prebuild": "npm run clean",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "build:esm": "tsc tsconfig.build.esm.json",
+    "build:commonjs": "tsc tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {

@@ -29,8 +29,8 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "build:esm": "tsc tsconfig.build.esm.json",
+    "build:commonjs": "tsc tsconfig.build.commonjs.json",
     "build": "npm run build:esm && npm run build:commonjs",
     "test": "cd ../..; jest --passWithNoTests packages/web-core",
     "clean": "rimraf dist esm *.tsbuildinfo",

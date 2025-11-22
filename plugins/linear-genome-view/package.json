@@ -27,8 +27,8 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "npm-run-all build:*",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "build:esm": "tsc tsconfig.build.esm.json",
+    "build:commonjs": "tsc tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "test": "cd ../..; jest --passWithNoTests plugins/linear-genome-view",
     "prepublishOnly": "yarn test",
