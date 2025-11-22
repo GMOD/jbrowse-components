@@ -15,6 +15,27 @@ import type { Region } from '@jbrowse/core/util'
 export default class PileupRenderer extends BoxRendererType {
   supportsSVG = true
 
+  async fetchSequence(renderProps: RenderArgsDeserialized, region: Region) {
+    const { sessionId, adapterConfig } = renderProps
+    const { sequenceAdapter } = adapterConfig
+    if (!sequenceAdapter) {
+      return undefined
+    }
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      sequenceAdapter,
+    )
+    return fetchSequence(
+      {
+        ...region,
+        start: Math.max(0, region.start - 1),
+        end: region.end + 1,
+      },
+      dataAdapter as BaseFeatureDataAdapter,
+    )
+  }
+
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     const { config, showSoftClip } = renderArgs
     const { start, end } = region
@@ -50,28 +71,10 @@ export default class PileupRenderer extends BoxRendererType {
       'Rendering alignments',
       statusCallback,
       async () => {
-        const { sessionId, adapterConfig } = renderProps
-        const { sequenceAdapter } = adapterConfig
-        let regionSequence: string | undefined
-        if (
-          colorBy?.type === 'methylation' &&
-          features.size &&
-          sequenceAdapter
-        ) {
-          const { dataAdapter } = await getAdapter(
-            this.pluginManager,
-            sessionId,
-            sequenceAdapter,
-          )
-          regionSequence = await fetchSequence(
-            {
-              ...region,
-              start: Math.max(0, region.start - 1),
-              end: region.end + 1,
-            },
-            dataAdapter as BaseFeatureDataAdapter,
-          )
-        }
+        const regionSequence =
+          colorBy?.type === 'methylation' && features.size
+            ? await this.fetchSequence(renderProps, region)
+            : undefined
         const { makeImageData } = await import('./makeImageData')
 
         return renderToAbstractCanvas(width, height, renderProps, ctx =>
