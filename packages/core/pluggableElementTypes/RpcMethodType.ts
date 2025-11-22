@@ -1,5 +1,5 @@
 import PluggableElementBase from './PluggableElementBase'
-import mapObject, { mapObjectSkip } from '../util/map-obj'
+import mapObject from '../util/map-obj'
 import { getBlobMap, setBlobMap } from '../util/tracks'
 import {
   RetryError,
@@ -113,7 +113,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     // using map-obj avoids cycles, seen in circular view svg export
     mapObject(
       thing,
-      (val: unknown) => {
+      (key, val: unknown) => {
         if (isUriLocation(val)) {
           uris.push(val)
         }
@@ -124,7 +124,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
             }
           }
         }
-        return mapObjectSkip
+        return [key, val]
       },
       { deep: true },
     )
