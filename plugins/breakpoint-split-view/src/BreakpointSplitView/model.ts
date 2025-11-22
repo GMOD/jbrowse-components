@@ -223,7 +223,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         for (const view of self.views) {
           const ret = getPath(view)
           if (!ret.endsWith(path)) {
-            // @ts-ignore
+            // @ts-expect-error
             view[actionName](args?.[0])
           }
         }

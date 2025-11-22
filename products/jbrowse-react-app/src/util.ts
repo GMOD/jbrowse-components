@@ -120,7 +120,6 @@ export function filterSessionInPlace(
     const { properties } = getPropertyMembers(node)
 
     for (const [pname, ptype] of Object.entries(properties)) {
-      // @ts-ignore
       filterSessionInPlace(node[pname], ptype)
     }
   }

@@ -21,3 +21,5 @@ test_data/sars-cov2/ncbi_original.gff3
 plugins/data-management/src/UCSCTrackHub/ucscAssemblies.ts
 test_data/config_demo.json
 docs/models/LinearGenomeView.md
+plugins/variants/src/d3-hierarchy2
+benchmarks

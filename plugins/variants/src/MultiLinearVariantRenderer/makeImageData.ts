@@ -36,29 +36,46 @@ export async function makeImageData(
   const region = regions[0]!
   const { statusCallback = () => {} } = props
   checkStopToken(stopToken)
+
+  const coords = [] as number[]
+  const items = [] as any[]
+  const colorCache = {} as Record<string, string | undefined>
+  const splitCache = {} as Record<string, string[]>
+  const genotypesCache = new Map<string, Record<string, string>>()
+  const drawRef = referenceDrawingMode === 'draw'
+  const h = Math.max(rowHeight, 1)
+
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
       stopToken,
       features: features.values(),
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
+      genotypesCache,
     }),
   )
   checkStopToken(stopToken)
 
-  const coords = [] as number[]
-  const items = [] as any[]
-  const colorCache = {} as Record<string, string | undefined>
   await updateStatus('Drawing variants', statusCallback, () => {
     forEachWithStopTokenCheck(
       mafs,
       stopToken,
       ({ mostFrequentAlt, feature }) => {
+        const start = feature.get('start')
+        const end = feature.get('end')
+        const bpLen = end - start
         const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
         const featureId = feature.id()
-        const bpLen = feature.get('end') - feature.get('start')
         const w = Math.max(Math.round(rightPx - leftPx), 2)
-        const samp = feature.get('genotypes') as Record<string, string>
+        let samp = genotypesCache.get(featureId)
+        if (!samp) {
+          samp = feature.get('genotypes') as Record<string, string>
+          genotypesCache.set(featureId, samp)
+        }
+        const featureType = feature.get('type')
+        const featureStrand = feature.get('strand')
+        const alpha = bpLen > 5 ? 0.75 : 1
+        const x = Math.floor(leftPx)
         let y = -scrollTop
 
         const s = sources.length
@@ -66,24 +83,14 @@ export async function makeImageData(
           for (let j = 0; j < s; j++) {
             const { name, HP } = sources[j]!
             const genotype = samp[name]
-            const x = Math.floor(leftPx)
-            const h = Math.max(rowHeight, 1)
             if (genotype) {
               const isPhased = genotype.includes('|')
               if (isPhased) {
-                const alleles = genotype.split('|')
+                const alleles =
+                  splitCache[genotype] ||
+                  (splitCache[genotype] = genotype.split('|'))
                 if (
-                  drawPhased(
-                    alleles,
-                    ctx,
-                    x,
-                    y,
-                    w,
-                    h,
-                    HP!,
-                    undefined,
-                    referenceDrawingMode === 'draw',
-                  )
+                  drawPhased(alleles, ctx, x, y, w, h, HP!, undefined, drawRef)
                 ) {
                   items.push({
                     name,
@@ -104,8 +111,6 @@ export async function makeImageData(
           for (let j = 0; j < s; j++) {
             const { name } = sources[j]!
             const genotype = samp[name]
-            const x = Math.floor(leftPx)
-            const h = Math.max(rowHeight, 1)
             if (genotype) {
               const cacheKey = `${genotype}:${mostFrequentAlt}`
               let c = colorCache[cacheKey]
@@ -114,7 +119,9 @@ export async function makeImageData(
                 let uncalled = 0
                 let alt2 = 0
                 let ref = 0
-                const alleles = genotype.split(/[/|]/)
+                const alleles =
+                  splitCache[genotype] ||
+                  (splitCache[genotype] = genotype.split(/[/|]/))
                 const total = alleles.length
 
                 for (let i = 0; i < total; i++) {
@@ -135,7 +142,7 @@ export async function makeImageData(
                   alt2,
                   uncalled,
                   total,
-                  referenceDrawingMode === 'draw',
+                  drawRef,
                 )
                 colorCache[cacheKey] = c
               }
@@ -147,9 +154,9 @@ export async function makeImageData(
                   y,
                   w,
                   h,
-                  feature.get('type'),
-                  feature.get('strand'),
-                  bpLen > 5 ? 0.75 : 1,
+                  featureType,
+                  featureStrand,
+                  alpha,
                 )
 
                 items.push({
@@ -170,28 +177,38 @@ export async function makeImageData(
 
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (items.length) {
-    for (let i = 0; i < coords.length; i += 4) {
+    for (let i = 0, l = coords.length; i < l; i += 4) {
       flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
     }
   } else {
-    // flatbush does not like 0 items
     flatbush.add(0, 0)
   }
   flatbush.finish()
+
+  const featureGenotypeMap = {} as Record<
+    string,
+    {
+      alt: unknown
+      ref: unknown
+      name: unknown
+      description: unknown
+      length: number
+    }
+  >
+  for (const { feature } of mafs) {
+    const id = feature.id()
+    featureGenotypeMap[id] = {
+      alt: feature.get('ALT'),
+      ref: feature.get('REF'),
+      name: feature.get('name'),
+      description: feature.get('description'),
+      length: feature.get('end') - feature.get('start'),
+    }
+  }
+
   return {
     flatbush: flatbush.data,
     items,
-    featureGenotypeMap: Object.fromEntries(
-      mafs.map(({ feature }) => [
-        feature.id(),
-        {
-          alt: feature.get('ALT'),
-          ref: feature.get('REF'),
-          name: feature.get('name'),
-          description: feature.get('description'),
-          length: feature.get('end') - feature.get('start'),
-        },
-      ]),
-    ),
+    featureGenotypeMap,
   }
 }

@@ -5,7 +5,8 @@ import type { Source } from '../types'
 
 interface ReducedModel {
   sources?: Source[]
-  setLayout: (s: Source[]) => void
+  clusterTree?: string
+  setLayout: (s: Source[], clearTree?: boolean) => void
   clearLayout: () => void
 }
 

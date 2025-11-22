@@ -1,5 +1,5 @@
+import { clusterData } from '@gmod/hclust'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { clusterData } from '@jbrowse/core/util/cluster'
 
 import { getScoreMatrix } from './getScoreMatrix'
 

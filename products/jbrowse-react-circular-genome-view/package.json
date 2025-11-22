@@ -23,12 +23,12 @@
     "docs"
   ],
   "scripts": {
-    "prebuild": "npm run clean",
+    "prebuild": "yarn clean",
     "build": "npm-run-all build:*",
     "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
-    "prepack": "npm run build",
-    "build:esm": "tsc -b tsconfig.build.esm.json",
-    "build:commonjs": "tsc -b tsconfig.build.commonjs.json",
+    "prepack": "yarn build",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "build:webpack": "webpack",
     "clean": "rimraf esm dist *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",

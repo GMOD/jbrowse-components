@@ -30,14 +30,14 @@
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "npm run clean",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "prebuild": "yarn clean",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
     "@gmod/bam": "^6.0.1",
-    "@gmod/cram": "^5.0.4",
+    "@gmod/cram": "^6.0.0",
     "@jbrowse/core": "^3.7.0",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@jbrowse/plugin-wiggle": "^3.7.0",

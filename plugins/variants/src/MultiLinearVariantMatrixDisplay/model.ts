@@ -72,6 +72,15 @@ export default function stateModelFactory(
       get featuresReady() {
         return !!self.featuresVolatile
       },
+
+      /**
+       * #getter
+       * positions multi-row below the tracklabel even if using overlap
+       * tracklabels
+       */
+      get prefersOffset() {
+        return true
+      },
     }))
 
     .views(self => ({
@@ -126,9 +135,13 @@ export default function stateModelFactory(
               const { getMultiVariantFeaturesAutorun } = await import(
                 '../getMultiVariantFeaturesAutorun'
               )
+              const { setupTreeDrawingAutorun } = await import(
+                '../shared/treeDrawingAutorun'
+              )
 
               getMultiVariantSourcesAutorun(self)
               getMultiVariantFeaturesAutorun(self)
+              setupTreeDrawingAutorun(self)
             } catch (e) {
               if (isAlive(self)) {
                 console.error(e)

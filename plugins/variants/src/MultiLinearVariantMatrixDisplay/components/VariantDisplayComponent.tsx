@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition'
 import Crosshair from '../../shared/components/MultiVariantCrosshairs'
 import LegendBar from '../../shared/components/MultiVariantLegendBar'
+import TreeSidebar from '../../shared/components/TreeSidebar'
 
 import type { MultiLinearVariantMatrixDisplayModel } from '../model'
 
@@ -55,6 +56,7 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
           setScrollTop(evt.currentTarget.scrollTop)
         }}
       >
+        <TreeSidebar model={model} />
         <LegendBar model={model} />
         <BaseLinearDisplayComponent {...props} />
       </div>

@@ -32,7 +32,7 @@ const DrawerHeader = observer(function ({
 }) {
   const { classes } = useStyles()
   const focusedViewId = session.focusedViewId
-  // @ts-ignore
+  // @ts-expect-error
   const viewWidgetId = session.visibleWidget?.view?.id
 
   return (

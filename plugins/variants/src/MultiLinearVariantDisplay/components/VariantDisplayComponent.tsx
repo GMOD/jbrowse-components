@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiVariantCrosshairs'
 import LegendBar from '../../shared/components/MultiVariantLegendBar'
+import TreeSidebar from '../../shared/components/TreeSidebar'
 
 import type { MultiLinearVariantDisplayModel } from '../model'
 
@@ -31,6 +32,7 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
         setMouseX(undefined)
       }}
     >
+      <TreeSidebar model={model} />
       <BaseLinearDisplayComponent {...props} />
       <LegendBar model={model} />
 

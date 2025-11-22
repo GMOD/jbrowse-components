@@ -130,7 +130,6 @@ export function filterSessionInPlace(
 
     // eslint-disable-next-line unicorn/no-array-for-each
     Object.entries(properties).forEach(([pname, ptype]) => {
-      // @ts-ignore
       filterSessionInPlace(node[pname], ptype)
     })
   }
