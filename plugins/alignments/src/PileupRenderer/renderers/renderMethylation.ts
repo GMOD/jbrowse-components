@@ -76,19 +76,22 @@ export function renderMethylation({
     return undefined
   }
 
-  const r = regionSequence.toLowerCase()
   const regionStart = region.start
   const len = fend - fstart
   const zoomedOut = bpPerPx > 2
+  const C_CHAR = 99 // 'c' char code
+  const G_CHAR = 103 // 'g' char code
 
   for (let i = 0; i < len; i++) {
     const j = i + fstart
     const rIdx = j - regionStart
 
-    const l1 = r[rIdx + 1]
-    const l2 = r[rIdx + 2]
+    // Use charCodeAt with bitwise OR for case-insensitive comparison
+    // 0x20 converts both upper and lowercase to lowercase
+    const l1 = regionSequence.charCodeAt(rIdx + 1) | 0x20
+    const l2 = regionSequence.charCodeAt(rIdx + 2) | 0x20
 
-    if (l1 === 'c' && l2 === 'g') {
+    if (l1 === C_CHAR && l2 === G_CHAR) {
       if (zoomedOut) {
         const [leftPx, rightPx] = bpSpanPx(j, j + 2, region, bpPerPx)
         const w = rightPx - leftPx + 0.5
