@@ -7,13 +7,10 @@ export function mdToMismatches(
   seq: string,
   qual?: Uint8Array,
 ) {
-  let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
-  let lastCigar = 0
-  let lastTemplateOffset = 0
-  let lastRefOffset = 0
-  let lastSkipPos = 0
   const mismatchRecords: Mismatch[] = []
   const opsLength = ops.length
+  const seqLength = seq.length
+  const hasQual = qual !== undefined
 
   // only check for skips if cigarMismatches has any
   const cigarLength = cigarMismatches.length
@@ -24,6 +21,12 @@ export function mdToMismatches(
       break
     }
   }
+
+  let currStart = 0
+  let lastCigar = 0
+  let lastTemplateOffset = 0
+  let lastRefOffset = 0
+  let lastSkipPos = 0
 
   // parse the MD string manually for better performance
   let i = 0
@@ -43,7 +46,7 @@ export function mdToMismatches(
           break
         }
       }
-      curr.start += num
+      currStart += num
     } else if (char === 94) {
       // '^' deletion
       i++
@@ -57,19 +60,17 @@ export function mdToMismatches(
           break
         }
       }
-      curr.start += delLen
+      currStart += delLen
     } else if (char >= 65 && char <= 90) {
       // letter (A-Z) - mismatch
       const letter = mdstring[i]!
       i++
 
-      curr.length = 1
-
       if (hasSkips) {
         while (lastSkipPos < cigarLength) {
           const mismatch = cigarMismatches[lastSkipPos]!
-          if (mismatch.type === 'skip' && curr.start >= mismatch.start) {
-            curr.start += mismatch.length
+          if (mismatch.type === 'skip' && currStart >= mismatch.start) {
+            currStart += mismatch.length
             lastSkipPos++
           } else if (mismatch.type === 'skip') {
             break
@@ -84,7 +85,7 @@ export function mdToMismatches(
       let refOffset = lastRefOffset
       for (
         let j = lastCigar;
-        j < opsLength && refOffset <= curr.start;
+        j < opsLength && refOffset <= currStart;
         j += 2, lastCigar = j
       ) {
         const len = +ops[j]!
@@ -101,20 +102,19 @@ export function mdToMismatches(
       }
       lastTemplateOffset = templateOffset
       lastRefOffset = refOffset
-      const s = templateOffset - (refOffset - curr.start)
+      const s = templateOffset - (refOffset - currStart)
 
-      curr.base = seq[s] || 'X'
-      curr.qual = qual?.[s]
-      curr.altbase = letter
-
-      // inlined nextRecord
-      mismatchRecords.push(curr)
-      curr = {
-        start: curr.start + curr.length,
-        length: 0,
-        base: '',
+      const base = s < seqLength ? seq[s] : 'X'
+      mismatchRecords.push({
+        start: currStart,
+        base,
+        qual: hasQual ? qual[s] : undefined,
+        altbase: letter,
+        length: 1,
         type: 'mismatch',
-      }
+      })
+
+      currStart++
     } else {
       i++
     }
