@@ -13,6 +13,44 @@ import { CHEVRON_WIDTH } from '../../shared/util'
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 
+// Helper to draw forward strand chevron
+function drawForwardChevron(
+  ctx: CanvasRenderingContext2D,
+  leftPx: number,
+  rightPx: number,
+  topPx: number,
+  heightPx: number,
+  midY: number,
+) {
+  ctx.beginPath()
+  ctx.moveTo(leftPx, topPx)
+  ctx.lineTo(leftPx, topPx + heightPx)
+  ctx.lineTo(rightPx, topPx + heightPx)
+  ctx.lineTo(rightPx + CHEVRON_WIDTH, midY)
+  ctx.lineTo(rightPx, topPx)
+  ctx.closePath()
+  ctx.fill()
+}
+
+// Helper to draw reverse strand chevron
+function drawReverseChevron(
+  ctx: CanvasRenderingContext2D,
+  leftPx: number,
+  rightPx: number,
+  topPx: number,
+  heightPx: number,
+  midY: number,
+) {
+  ctx.beginPath()
+  ctx.moveTo(leftPx - CHEVRON_WIDTH, midY)
+  ctx.lineTo(leftPx, topPx + heightPx)
+  ctx.lineTo(rightPx, topPx + heightPx)
+  ctx.lineTo(rightPx, topPx)
+  ctx.lineTo(leftPx, topPx)
+  ctx.closePath()
+  ctx.fill()
+}
+
 export function renderAlignmentShape({
   ctx,
   feat,
@@ -31,14 +69,21 @@ export function renderAlignmentShape({
   const flip = region.reversed ? -1 : 1
   const strand = feature.get('strand') * flip
   const renderChevrons = bpPerPx < 10 && heightPx > 5
-  if (CIGAR?.includes('N')) {
+  const hasSkips = CIGAR?.includes('N')
+
+  if (hasSkips) {
     const cigarOps = parseCigar2(CIGAR)
+    const midY = topPx + heightPx / 2
+
     if (strand === 1) {
       let drawLen = 0
       let drawStart = s
-      for (let i = 0; i < cigarOps.length; i += 2) {
+      const opsLen = cigarOps.length
+
+      for (let i = 0; i < opsLen; i += 2) {
         const opLen = cigarOps[i]!
         const op = cigarOps[i + 1]!
+
         if (
           op === CIGAR_M ||
           op === CIGAR_X ||
@@ -47,49 +92,42 @@ export function renderAlignmentShape({
         ) {
           drawLen += opLen
         } else if (op === CIGAR_N) {
-          if (drawStart !== drawLen) {
+          if (drawLen) {
             const [leftPx, rightPx] = bpSpanPx(
               drawStart,
               drawStart + drawLen,
               region,
               bpPerPx,
             )
-            const w = rightPx - leftPx
-            ctx.fillRect(leftPx, topPx, w, heightPx)
+            ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
           }
           drawStart += drawLen + opLen
           drawLen = 0
         }
       }
 
-      if (drawStart !== drawLen) {
+      if (drawLen) {
         const [leftPx, rightPx] = bpSpanPx(
           drawStart,
           drawStart + drawLen,
           region,
           bpPerPx,
         )
-        const w = rightPx - leftPx
 
         if (renderChevrons) {
-          ctx.beginPath()
-          ctx.moveTo(leftPx, topPx)
-          ctx.lineTo(leftPx, topPx + heightPx)
-          ctx.lineTo(rightPx, topPx + heightPx)
-          ctx.lineTo(rightPx + CHEVRON_WIDTH, topPx + heightPx / 2)
-          ctx.lineTo(rightPx, topPx)
-          ctx.closePath()
-          ctx.fill()
+          drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
         } else {
-          ctx.fillRect(leftPx, topPx, w, heightPx)
+          ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
         }
       }
     } else if (strand === -1) {
       let drawLen = 0
       let drawStart = e
+
       for (let i = cigarOps.length - 2; i >= 0; i -= 2) {
         const opLen = cigarOps[i]!
         const op = cigarOps[i + 1]!
+
         if (
           op === CIGAR_M ||
           op === CIGAR_X ||
@@ -98,7 +136,7 @@ export function renderAlignmentShape({
         ) {
           drawLen += opLen
         } else if (op === CIGAR_N) {
-          if (drawLen !== 0) {
+          if (drawLen) {
             const [leftPx, rightPx] = bpSpanPx(
               drawStart - drawLen,
               drawStart,
@@ -112,50 +150,30 @@ export function renderAlignmentShape({
         }
       }
 
-      if (drawLen !== 0) {
+      if (drawLen) {
         const [leftPx, rightPx] = bpSpanPx(
           drawStart - drawLen,
           drawStart,
           region,
           bpPerPx,
         )
-        const w = rightPx - leftPx
 
         if (renderChevrons) {
-          ctx.beginPath()
-          ctx.moveTo(leftPx - CHEVRON_WIDTH, topPx + heightPx / 2)
-          ctx.lineTo(leftPx, topPx + heightPx)
-          ctx.lineTo(rightPx, topPx + heightPx)
-          ctx.lineTo(rightPx, topPx)
-          ctx.lineTo(leftPx, topPx)
-          ctx.closePath()
-          ctx.fill()
+          drawReverseChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
         } else {
-          ctx.fillRect(leftPx, topPx, w, heightPx)
+          ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
         }
       }
     }
   } else {
     const [leftPx, rightPx] = bpSpanPx(s, e, region, bpPerPx)
-    if (bpPerPx < 10 && heightPx > 5) {
+    const midY = topPx + heightPx / 2
+
+    if (renderChevrons) {
       if (strand === -1) {
-        ctx.beginPath()
-        ctx.moveTo(leftPx - CHEVRON_WIDTH, topPx + heightPx / 2)
-        ctx.lineTo(leftPx, topPx + heightPx)
-        ctx.lineTo(rightPx, topPx + heightPx)
-        ctx.lineTo(rightPx, topPx)
-        ctx.lineTo(leftPx, topPx)
-        ctx.closePath()
-        ctx.fill()
+        drawReverseChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
       } else {
-        ctx.beginPath()
-        ctx.moveTo(leftPx, topPx)
-        ctx.lineTo(leftPx, topPx + heightPx)
-        ctx.lineTo(rightPx, topPx + heightPx)
-        ctx.lineTo(rightPx + CHEVRON_WIDTH, topPx + heightPx / 2)
-        ctx.lineTo(rightPx, topPx)
-        ctx.closePath()
-        ctx.fill()
+        drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
       }
     } else {
       ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
