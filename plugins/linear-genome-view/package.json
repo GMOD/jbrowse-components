@@ -25,10 +25,10 @@
     "esm"
   ],
   "scripts": {
-    "prebuild": "npm run clean",
+    "prebuild": "yarn clean",
     "build": "npm-run-all build:*",
-    "build:esm": "tsc tsconfig.build.esm.json",
-    "build:commonjs": "tsc tsconfig.build.commonjs.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "test": "cd ../..; jest --passWithNoTests plugins/linear-genome-view",
     "prepublishOnly": "yarn test",

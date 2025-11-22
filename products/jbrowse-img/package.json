@@ -21,7 +21,7 @@
     "build": "npm-run-all build:*",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
-    "preversion": "npm run build"
+    "preversion": "yarn build"
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",

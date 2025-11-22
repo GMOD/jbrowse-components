@@ -30,9 +30,9 @@
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "npm run clean",
-    "build:esm": "tsc tsconfig.build.esm.json",
-    "build:commonjs": "tsc tsconfig.build.commonjs.json",
+    "prebuild": "yarn clean",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "peerDependencies": {
