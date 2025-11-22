@@ -1,7 +1,5 @@
 import type { Mismatch } from '../shared/types'
 
-const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
-
 export function mdToMismatches(
   mdstring: string,
   ops: string[],
@@ -15,77 +13,110 @@ export function mdToMismatches(
   let lastRefOffset = 0
   let lastSkipPos = 0
   const mismatchRecords: Mismatch[] = []
-  const skips = cigarMismatches.filter(cigar => cigar.type === 'skip')
+  const opsLength = ops.length
 
-  // convert a position on the reference sequence to a position on the template
-  // sequence, taking into account hard and soft clipping of reads
-  function nextRecord(): void {
-    mismatchRecords.push(curr)
-
-    // get a new mismatch record ready
-    curr = {
-      start: curr.start + curr.length,
-      length: 0,
-      base: '',
-      type: 'mismatch',
+  // only check for skips if cigarMismatches has any
+  const cigarLength = cigarMismatches.length
+  let hasSkips = false
+  for (let k = 0; k < cigarLength; k++) {
+    if (cigarMismatches[k]!.type === 'skip') {
+      hasSkips = true
+      break
     }
   }
 
-  function getTemplateCoordLocal(refCoord: number): number {
-    let templateOffset = lastTemplateOffset
-    let refOffset = lastRefOffset
-    for (
-      let i = lastCigar;
-      i < ops.length && refOffset <= refCoord;
-      i += 2, lastCigar = i
-    ) {
-      const len = +ops[i]!
-      const op = ops[i + 1]!
+  // parse the MD string manually for better performance
+  let i = 0
+  const len = mdstring.length
+  while (i < len) {
+    const char = mdstring.charCodeAt(i)
 
-      if (op === 'S' || op === 'I') {
-        templateOffset += len
-      } else if (op === 'D' || op === 'P' || op === 'N') {
-        refOffset += len
-      } else if (op !== 'H') {
-        templateOffset += len
-        refOffset += len
+    if (char >= 48 && char <= 57) {
+      // digit (0-9)
+      let num = 0
+      while (i < len) {
+        const c = mdstring.charCodeAt(i)
+        if (c >= 48 && c <= 57) {
+          num = num * 10 + (c - 48)
+          i++
+        } else {
+          break
+        }
       }
-    }
-    lastTemplateOffset = templateOffset
-    lastRefOffset = refOffset
-
-    return templateOffset - (refOffset - refCoord)
-  }
-
-  // now actually parse the MD string
-  const md = mdstring.match(mdRegex) || []
-  for (const token of md) {
-    const num = +token
-    if (!Number.isNaN(num)) {
       curr.start += num
-    } else if (token.startsWith('^')) {
-      curr.start += token.length - 1
-    } else {
-      // mismatch
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let j = 0; j < token.length; j += 1) {
-        curr.length = 1
+    } else if (char === 94) {
+      // '^' deletion
+      i++
+      let delLen = 0
+      while (i < len) {
+        const c = mdstring.charCodeAt(i)
+        if (c >= 65 && c <= 90) {
+          delLen++
+          i++
+        } else {
+          break
+        }
+      }
+      curr.start += delLen
+    } else if (char >= 65 && char <= 90) {
+      // letter (A-Z) - mismatch
+      const letter = mdstring[i]!
+      i++
 
-        while (lastSkipPos < skips.length) {
-          const mismatch = skips[lastSkipPos]!
-          if (curr.start >= mismatch.start) {
+      curr.length = 1
+
+      if (hasSkips) {
+        while (lastSkipPos < cigarLength) {
+          const mismatch = cigarMismatches[lastSkipPos]!
+          if (mismatch.type === 'skip' && curr.start >= mismatch.start) {
             curr.start += mismatch.length
             lastSkipPos++
-          } else {
+          } else if (mismatch.type === 'skip') {
             break
+          } else {
+            lastSkipPos++
           }
         }
-        const s = getTemplateCoordLocal(curr.start)
-        curr.base = seq[s] || 'X'
-        curr.qual = qual?.[s]
-        curr.altbase = token
-        nextRecord()
       }
+
+      // inlined getTemplateCoordLocal for better performance
+      let templateOffset = lastTemplateOffset
+      let refOffset = lastRefOffset
+      for (
+        let j = lastCigar;
+        j < opsLength && refOffset <= curr.start;
+        j += 2, lastCigar = j
+      ) {
+        const len = +ops[j]!
+        const op = ops[j + 1]!
+
+        if (op === 'S' || op === 'I') {
+          templateOffset += len
+        } else if (op === 'D' || op === 'P' || op === 'N') {
+          refOffset += len
+        } else if (op !== 'H') {
+          templateOffset += len
+          refOffset += len
+        }
+      }
+      lastTemplateOffset = templateOffset
+      lastRefOffset = refOffset
+      const s = templateOffset - (refOffset - curr.start)
+
+      curr.base = seq[s] || 'X'
+      curr.qual = qual?.[s]
+      curr.altbase = letter
+
+      // inlined nextRecord
+      mismatchRecords.push(curr)
+      curr = {
+        start: curr.start + curr.length,
+        length: 0,
+        base: '',
+        type: 'mismatch',
+      }
+    } else {
+      i++
     }
   }
   return mismatchRecords
