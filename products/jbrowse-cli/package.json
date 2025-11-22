@@ -28,11 +28,11 @@
     "node": ">=18.3.0"
   },
   "scripts": {
-    "prebuild": "npm run clean",
-    "build": "tsc --build && webpack",
+    "prebuild": "yarn clean",
+    "build": "tsc && webpack",
     "clean": "rimraf dist bundle",
-    "prepack": "npm run clean  && npm run docs",
-    "predocs": "npm run build",
+    "prepack": "yarn clean  && yarn docs",
+    "predocs": "yarn build",
     "docs": "./generate_readme.sh > README.md"
   },
   "dependencies": {
