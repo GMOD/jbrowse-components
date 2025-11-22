@@ -1,235 +1,121 @@
-import type { Mismatch } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
+import {
+  CODE_B,
+  CODE_b,
+  CODE_D,
+  CODE_H,
+  CODE_i,
+  CODE_I,
+  CODE_N,
+  CODE_P,
+  CODE_S,
+  CODE_X,
+} from './const'
 
 type ReadFeatures = CramRecord['readFeatures']
-
-export function readFeaturesToMismatches(
-  readFeatures: ReadFeatures = [],
-  start: number,
-  qual?: number[] | null,
-) {
-  const mismatches: Mismatch[] = new Array(readFeatures.length)
-  let j = 0
-  let insLen = 0
-  let refPos = 0
-  let sublen = 0
-  let lastPos = start
-
-  for (const ret of readFeatures) {
-    const { refPos: p, code, pos, data, sub, ref } = ret
-    sublen = refPos - lastPos
-    lastPos = refPos
-
-    if (sublen && insLen > 0) {
-      mismatches[j++] = {
-        start: refPos,
-        type: 'insertion',
-        base: `${insLen}`,
-        insertedBases: data,
-        length: 0,
-      }
-      insLen = 0
-    }
-    refPos = p - 1 - start
-
-    if (code === 'X') {
-      // substitution
-      mismatches[j++] = {
-        start: refPos,
-        length: 1,
-        base: sub!,
-        qual: qual?.[pos - 1],
-        altbase: ref?.toUpperCase(),
-        type: 'mismatch',
-      }
-    } else if (code === 'I') {
-      // insertion
-      mismatches[j++] = {
-        start: refPos,
-        type: 'insertion',
-        base: `${data.length}`,
-        length: 0,
-      }
-    } else if (code === 'N') {
-      // reference skip
-      mismatches[j++] = {
-        type: 'skip',
-        length: data,
-        start: refPos,
-        base: 'N',
-      }
-    } else if (code === 'S') {
-      // soft clip
-      const len = data.length
-      mismatches[j++] = {
-        start: refPos,
-        type: 'softclip',
-        base: `S${len}`,
-        cliplen: len,
-        length: 1,
-      }
-    } else if (code === 'P') {
-      // padding
-    } else if (code === 'H') {
-      // hard clip
-      const len = data
-      mismatches[j++] = {
-        start: refPos,
-        type: 'hardclip',
-        base: `H${len}`,
-        cliplen: len,
-        length: 1,
-      }
-    } else if (code === 'D') {
-      // deletion
-      mismatches[j++] = {
-        type: 'deletion',
-        length: data,
-        start: refPos,
-        base: '*',
-      }
-    } else if (code === 'b') {
-      // stretch of bases
-    } else if (code === 'q') {
-      // stretch of qual scores
-    } else if (code === 'B') {
-      // a pair of [base, qual]
-    } else if (code === 'i') {
-      // single-base insertion, we collect these if there are multiple in a row
-      // into a single insertion entry
-      insLen++
-    } else if (code === 'Q') {
-      // single quality value
-    }
-  }
-
-  if (sublen && insLen > 0) {
-    mismatches[j++] = {
-      start: refPos,
-      type: 'insertion',
-      base: `${insLen}`,
-      length: 0,
-    }
-    insLen = 0
-  }
-
-  return mismatches.slice(0, j)
-}
 
 export function readFeaturesToCIGAR(
   readFeatures: ReadFeatures,
   alignmentStart: number,
   readLen: number,
-  refRegion?: { seq: string; start: number },
 ) {
-  let seq = ''
-  let cigar = ''
+  const cigarParts: string[] = []
   let op = 'M'
   let oplen = 0
-  if (!refRegion) {
-    return ''
-  }
-  const ref = refRegion.seq
-  const refStart = refRegion.start
   let lastPos = alignmentStart
-  let sublen = 0
   let insLen = 0
+  let seqLen = 0
+
   if (readFeatures !== undefined) {
-    for (const { code, refPos, sub, data } of readFeatures) {
-      sublen = refPos - lastPos
-      seq += ref.slice(lastPos - refStart, refPos - refStart)
+    for (const { code, refPos, data } of readFeatures) {
+      const sublen = refPos - lastPos
+      seqLen += sublen
       lastPos = refPos
 
-      if (insLen > 0 && sublen) {
-        cigar += `${insLen}I`
+      // Flush pending insertions if we have a match region
+      if (insLen && sublen) {
+        cigarParts.push(String(insLen), 'I')
         insLen = 0
       }
+      // Flush previous non-match operation
       if (oplen && op !== 'M') {
-        cigar += `${oplen}${op}`
+        cigarParts.push(String(oplen), op)
         oplen = 0
       }
+      // Accumulate match length
       if (sublen) {
         op = 'M'
         oplen += sublen
       }
 
-      if (code === 'b') {
+      const codeChar = code.charCodeAt(0)
+
+      if (codeChar === CODE_b) {
         // An array of bases stored verbatim
-        const ret = data.split(',')
-        const added = String.fromCharCode(...ret)
-        seq += added
-        lastPos += added.length
-        oplen += added.length
-      } else if (code === 'B') {
-        // Single base (+ qual score)
-        seq += sub
+        const addedLen = data.split(',').length
+        seqLen += addedLen
+        lastPos += addedLen
+        oplen += addedLen
+      } else if (codeChar === CODE_B || codeChar === CODE_X) {
+        // Single base (+ qual score) or Substitution - both increment by 1
+        seqLen++
         lastPos++
         oplen++
-      } else if (code === 'X') {
-        // Substitution
-        seq += sub
-        lastPos++
-        oplen++
-      } else if (code === 'D' || code === 'N') {
+      } else if (codeChar === CODE_D || codeChar === CODE_N) {
         // Deletion or Ref Skip
         lastPos += data
         if (oplen) {
-          cigar += `${oplen}${op}`
+          cigarParts.push(String(oplen), op)
+          oplen = 0
         }
-        cigar += data + code
-        oplen = 0
-      } else if (code === 'I' || code === 'S') {
+        cigarParts.push(String(data), code)
+      } else if (codeChar === CODE_I || codeChar === CODE_S) {
         // Insertion or soft-clip
-        seq += data
+        const dataLen = data.length
+        seqLen += dataLen
         if (oplen) {
-          cigar += `${oplen}${op}`
+          cigarParts.push(String(oplen), op)
+          oplen = 0
         }
-        cigar += data.length + code
-        oplen = 0
-      } else if (code === 'i') {
+        cigarParts.push(String(dataLen), code)
+      } else if (codeChar === CODE_i) {
         // Single base insertion
-        // seq += data
         if (oplen) {
-          cigar += `${oplen}${op}`
+          cigarParts.push(String(oplen), op)
+          oplen = 0
         }
         insLen++
-        seq += data
-        oplen = 0
-      } else if (code === 'P') {
-        // Padding
+        seqLen++
+      } else if (codeChar === CODE_P || codeChar === CODE_H) {
+        // Padding or Hard clip
         if (oplen) {
-          cigar += `${oplen}${op}`
+          cigarParts.push(String(oplen), op)
+          oplen = 0
         }
-        cigar += `${data}P`
-      } else if (code === 'H') {
-        // Hard clip
-        if (oplen) {
-          cigar += `${oplen}${op}`
-        }
-        cigar += `${data}H`
-        oplen = 0
-      } // else q or Q
+        cigarParts.push(String(data), code)
+      } // else q or Q (no-op)
     }
-  } else {
-    sublen = readLen - seq.length
   }
-  if (seq.length !== readLen) {
-    sublen = readLen - seq.length
-    seq += ref.slice(lastPos - refStart, lastPos - refStart + sublen)
 
+  // Handle remaining sequence length
+  const remaining = readLen - seqLen
+  if (remaining) {
     if (oplen && op !== 'M') {
-      cigar += `${oplen}${op}`
+      cigarParts.push(String(oplen), op)
       oplen = 0
     }
     op = 'M'
-    oplen += sublen
-  }
-  if (sublen && insLen > 0) {
-    cigar += `${insLen}I`
-  }
-  if (oplen) {
-    cigar += `${oplen}${op}`
+    oplen += remaining
   }
 
-  return cigar
+  // Flush pending insertions
+  if (remaining && insLen) {
+    cigarParts.push(String(insLen), 'I')
+  }
+  // Flush final operation
+  if (oplen) {
+    cigarParts.push(String(oplen), op)
+  }
+
+  return cigarParts.join('')
 }

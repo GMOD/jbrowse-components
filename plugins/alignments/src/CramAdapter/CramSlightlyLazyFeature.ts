@@ -95,7 +95,6 @@ export default class CramSlightlyLazyFeature implements Feature {
       this.record.readFeatures,
       this.record.alignmentStart,
       this.record.readLength,
-      this.record._refRegion,
     )
   }
 
