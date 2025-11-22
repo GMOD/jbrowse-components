@@ -8,6 +8,27 @@ import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
+// Pre-compute color objects for methylation rendering
+const RED_COLORD = colord('red')
+const BLUE_COLORD = colord('blue')
+const PINK_COLORD = colord('pink')
+const PURPLE_COLORD = colord('purple')
+
+// Helper to get methylation color with caching
+function getMethColor(prob: number, isHydroxy: boolean): string {
+  if (prob > 0.5) {
+    const alpha = (prob - 0.5) * 2
+    return isHydroxy
+      ? PINK_COLORD.alpha(alpha).toHslString()
+      : RED_COLORD.alpha(alpha).toHslString()
+  } else {
+    const alpha = 1 - prob * 2
+    return isHydroxy
+      ? PURPLE_COLORD.alpha(alpha).toHslString()
+      : BLUE_COLORD.alpha(alpha).toHslString()
+  }
+}
+
 // Color by methylation is slightly modified version of color by modifications
 // at reference CpG sites, with non-methylated CpG colored (looking only at the
 // MM tag can not tell you where reference CpG sites are)
@@ -43,34 +64,32 @@ export function renderMethylation({
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
     getMethBins(feature, cigarOps)
 
-  function getCol(k: number) {
+  function getCol(k: number): string | undefined {
     if (methBins[k]) {
       const p = methProbs[k] || 0
-      return (
-        p > 0.5
-          ? colord('red').alpha((p - 0.5) * 2)
-          : colord('blue').alpha(1 - p * 2)
-      ).toHslString()
+      return getMethColor(p, false)
     }
     if (hydroxyMethBins[k]) {
       const p = hydroxyMethProbs[k] || 0
-      return (
-        p > 0.5
-          ? colord('pink').alpha((p - 0.5) * 2)
-          : colord('purple').alpha(1 - p * 2)
-      ).toHslString()
+      return getMethColor(p, true)
     }
     return undefined
   }
-  const r = regionSequence.toLowerCase()
-  for (let i = 0; i < fend - fstart; i++) {
-    const j = i + fstart
 
-    const l1 = r[j - region.start + 1]
-    const l2 = r[j - region.start + 2]
+  const r = regionSequence.toLowerCase()
+  const regionStart = region.start
+  const len = fend - fstart
+  const zoomedOut = bpPerPx > 2
+
+  for (let i = 0; i < len; i++) {
+    const j = i + fstart
+    const rIdx = j - regionStart
+
+    const l1 = r[rIdx + 1]
+    const l2 = r[rIdx + 2]
 
     if (l1 === 'c' && l2 === 'g') {
-      if (bpPerPx > 2) {
+      if (zoomedOut) {
         const [leftPx, rightPx] = bpSpanPx(j, j + 2, region, bpPerPx)
         const w = rightPx - leftPx + 0.5
         const c = getCol(i) || getCol(i + 1) || 'blue'
