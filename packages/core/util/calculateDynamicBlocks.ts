@@ -121,7 +121,28 @@ export default function calculateDynamicBlocks(
       })}-${block.regionNumber}${block.reversed ? '-reversed' : ''}`
     }
 
-    blocks.push(block)
+    const resultBlocks = blocks.getBlocks()
+    const lastResultBlock = resultBlocks.at(-1)
+    if (
+      lastResultBlock?.type === 'ContentBlock' &&
+      block.type === 'ContentBlock' &&
+      lastResultBlock.regionNumber === block.regionNumber &&
+      lastResultBlock.refName === block.refName &&
+      lastResultBlock.assemblyName === block.assemblyName &&
+      lastResultBlock.reversed === block.reversed
+    ) {
+      lastResultBlock.end = block.end
+      lastResultBlock.widthPx += block.widthPx
+      lastResultBlock.key = `${assembleLocStringFast({
+        assemblyName: lastResultBlock.assemblyName,
+        refName: lastResultBlock.refName,
+        start: lastResultBlock.start,
+        end: lastResultBlock.end,
+        reversed: lastResultBlock.reversed,
+      })}-${lastResultBlock.regionNumber}${lastResultBlock.reversed ? '-reversed' : ''}`
+    } else {
+      blocks.push(block)
+    }
   }
   return blocks
 }

@@ -160,7 +160,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     <polygon
                       fill="#42777f"
                       fill-opacity="0.3"
-                      points="0,48,809,48,272,0,0,0"
+                      points="0,48,808,48,272,0,0,0"
                       stroke="#42777f"
                       stroke-opacity="0.8"
                     />

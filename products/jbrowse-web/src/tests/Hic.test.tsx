@@ -23,5 +23,5 @@ test('hic', async () => {
 
   view.setNewView(5000, 0)
   fireEvent.click(await findByTestId(hts('hic_test'), {}, delay))
-  expectCanvasMatch(await findByTestId(pc('{hg19}1:1..4000000-0'), {}, delay))
+  expectCanvasMatch(await findByTestId(/prerendered_canvas/, {}, delay))
 }, 25000)

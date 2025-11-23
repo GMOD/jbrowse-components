@@ -4,10 +4,10 @@ exports[`five 1`] = `
 [
   ContentBlock {
     "assemblyName": "test",
-    "end": 40,
+    "end": 72.4,
     "isLeftEndOfDisplayedRegion": false,
     "isRightEndOfDisplayedRegion": false,
-    "key": "{test}ctgA:27.05..40-0",
+    "key": "{test}ctgA:27.05..72.4-0",
     "offsetPx": 521,
     "parentRegion": {
       "assemblyName": "test",
@@ -21,28 +21,7 @@ exports[`five 1`] = `
     "reversed": false,
     "start": 26.05,
     "type": "ContentBlock",
-    "widthPx": 279,
-  },
-  ContentBlock {
-    "assemblyName": "test",
-    "end": 72.4,
-    "isLeftEndOfDisplayedRegion": false,
-    "isRightEndOfDisplayedRegion": false,
-    "key": "{test}ctgA:41..72.4-0",
-    "offsetPx": 800,
-    "parentRegion": {
-      "assemblyName": "test",
-      "end": 50000,
-      "refName": "ctgA",
-      "reversed": false,
-      "start": 0,
-    },
-    "refName": "ctgA",
-    "regionNumber": 0,
-    "reversed": false,
-    "start": 40,
-    "type": "ContentBlock",
-    "widthPx": 648,
+    "widthPx": 927,
   },
 ]
 `;

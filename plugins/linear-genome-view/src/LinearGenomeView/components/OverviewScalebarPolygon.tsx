@@ -45,10 +45,7 @@ const OverviewScalebarPolygon = observer(function ({
     cytobandOffset * multiplier
 
   const startPx = Math.max(0, -offsetPx)
-  const endPx =
-    startPx +
-    totalWidthPxWithoutBorders +
-    (contentBlocks.length * interRegionPaddingWidth) / 2
+  const endPx = startPx + totalWidthPxWithoutBorders
 
   const points = [
     [startPx, HEADER_BAR_HEIGHT],
