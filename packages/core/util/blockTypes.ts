@@ -1,7 +1,11 @@
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 export class BlockSet {
-  constructor(public blocks: BaseBlock[] = []) {}
+  blocks: BaseBlock[]
+
+  constructor(blocks: BaseBlock[] = []) {
+    this.blocks = blocks
+  }
 
   push(block: BaseBlock) {
     if (block.type === 'ElidedBlock' && this.blocks.length > 0) {

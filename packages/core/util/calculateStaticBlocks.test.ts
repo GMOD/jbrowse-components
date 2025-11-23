@@ -1,5 +1,6 @@
 import calculateBlocks from './calculateStaticBlocks'
-import { BaseBlock } from './blockTypes'
+
+import type { BaseBlock } from './blockTypes'
 
 describe('block calculation', () => {
   it('can calculate some blocks 1', () => {

@@ -1,23 +1,15 @@
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 
 import {
-  accumulateOffsetBp,
-  calculateBlockOffsetPx,
-  calculateRegionWidthPx,
-  generateBlockKey,
-  shouldAddInterRegionPadding,
-  shouldElideRegion,
-  type BlockData,
-} from './blockCalculationHelpers'
-import {
   BlockSet,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-} from './blockTypes'
+} from './blockTypes.ts'
 
+import type { BlockData } from './blockCalculationHelpers.ts'
 import type { Region } from './types'
-import type { Region as RegionModel } from './types/mst'
+import type { Region as RegionModel } from './types/mst.ts'
 import type { Instance } from 'mobx-state-tree'
 
 export interface Base1DViewModel {
@@ -45,17 +37,23 @@ export default function calculateStaticBlocks(
     width: modelWidth,
   } = model
 
+  // Define the visible window in base pairs
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + modelWidth) * bpPerPx
+
+  // Define block size for static blocks
   const blockSizePx = width
   const blockSizeBp = Math.ceil(blockSizePx * bpPerPx)
 
   // Pre-calculate inverse values to avoid repeated divisions
   const invBpPerPx = 1 / bpPerPx
   const invBlockSizeBp = 1 / blockSizeBp
-  // for each displayed region
+
+  // Track cumulative position across all displayed regions (in base pairs)
   let regionBpOffset = 0
   const blocks = new BlockSet()
+
+  // Process each displayed region
   for (
     let regionNumber = 0, l = displayedRegions.length;
     regionNumber < l;
@@ -70,11 +68,7 @@ export default function calculateStaticBlocks(
       reversed,
     } = region
 
-    const regionWidthPx = calculateRegionWidthPx(
-      regionStart,
-      regionEnd,
-      invBpPerPx,
-    )
+    const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
     const regionBlockCount = Math.ceil(
       (regionEnd - regionStart) * invBlockSizeBp,
     )
@@ -94,6 +88,7 @@ export default function calculateStaticBlocks(
 
     let lastBlockData: BlockData | null = null
 
+    // Create multiple fixed-size blocks for this region
     for (
       let blockNum = windowLeftBlockNum;
       blockNum <= windowRightBlockNum;
@@ -121,24 +116,14 @@ export default function calculateStaticBlocks(
         start,
         end,
         reversed,
-        offsetPx: calculateBlockOffsetPx(
-          regionBpOffset * invBpPerPx,
-          blockNum * blockSizeBp,
-          invBpPerPx,
-        ),
+        offsetPx:
+          regionBpOffset * invBpPerPx + blockNum * blockSizeBp * invBpPerPx,
         parentRegion,
         regionNumber,
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
-        key: generateBlockKey(
-          assemblyName,
-          refName,
-          start,
-          end,
-          reversed,
-          regionNumber,
-        ),
+        key: `{${assemblyName}}${refName}:${start + 1}${start + 1 === end ? '' : `..${end}`}${reversed ? '[rev]' : ''}-${regionNumber}${reversed ? '-reversed' : ''}`,
       }
 
       if (padding && regionNumber === 0 && blockNum === 0) {
@@ -152,7 +137,7 @@ export default function calculateStaticBlocks(
         )
       }
 
-      if (elision && shouldElideRegion(regionWidthPx, minimumBlockWidth)) {
+      if (elision && regionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
@@ -164,12 +149,8 @@ export default function calculateStaticBlocks(
     // After the block loop, add padding blocks if the last block ended at the region boundary
     if (padding && lastBlockData) {
       if (
-        shouldAddInterRegionPadding(
-          regionWidthPx,
-          minimumBlockWidth,
-          regionNumber,
-          displayedRegions.length,
-        ) &&
+        regionWidthPx >= minimumBlockWidth &&
+        regionNumber < displayedRegions.length - 1 &&
         lastBlockData.isRightEndOfDisplayedRegion
       ) {
         blocks.push(
@@ -195,25 +176,16 @@ export default function calculateStaticBlocks(
       }
     }
 
-    // Use shared accumulation function
+    // Accumulate offset for next region
     const shouldPad =
       padding &&
       !!lastBlockData?.isRightEndOfDisplayedRegion &&
-      shouldAddInterRegionPadding(
-        regionWidthPx,
-        minimumBlockWidth,
-        regionNumber,
-        displayedRegions.length,
-      )
+      regionWidthPx >= minimumBlockWidth &&
+      regionNumber < displayedRegions.length - 1
 
-    regionBpOffset = accumulateOffsetBp(
-      regionBpOffset,
-      regionStart,
-      regionEnd,
-      shouldPad,
-      interRegionPaddingWidth,
-      bpPerPx,
-    )
+    const regionOffsetBp = regionEnd - regionStart
+    const paddingOffsetBp = shouldPad ? interRegionPaddingWidth * bpPerPx : 0
+    regionBpOffset = regionBpOffset + regionOffsetBp + paddingOffsetBp
   }
   return blocks
 }

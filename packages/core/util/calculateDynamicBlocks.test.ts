@@ -1,6 +1,7 @@
-import { BaseBlock } from './blockTypes'
 import calculateVisibleRegions from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
+
+import type { BaseBlock } from './blockTypes'
 
 const ctgA = { assemblyName: 'test', refName: 'ctgA', start: 0, end: 50000 }
 
@@ -269,7 +270,7 @@ describe('dynamic and static blocks match with multiple chromosomes', () => {
   it('have matching offsetPx across all viewport positions', () => {
     const testOffsets = [0, 250, 502, 750, 1004, 1250, 1506]
 
-    testOffsets.forEach(offsetPx => {
+    for (const offsetPx of testOffsets) {
       const view = { ...baseView, offsetPx }
       const dynamicBlocks = calculateVisibleRegions(view).getBlocks()
       const staticBlocks = calculateStaticBlocks(
@@ -318,6 +319,6 @@ describe('dynamic and static blocks match with multiple chromosomes', () => {
         expect(dynamicChr5.offsetPx).toEqual(staticChr5.offsetPx)
         expect(staticChr5.offsetPx).toEqual(2008)
       }
-    })
+    }
   })
 })
