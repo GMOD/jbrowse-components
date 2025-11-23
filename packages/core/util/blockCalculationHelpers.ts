@@ -54,3 +54,29 @@ export function shouldElideRegion(
 ) {
   return regionWidthPx < minimumBlockWidth
 }
+
+export function accumulateOffset(
+  currentOffset: number,
+  regionStart: number,
+  regionEnd: number,
+  invBpPerPx: number,
+  shouldAddPadding: boolean,
+  paddingWidth: number,
+) {
+  const regionOffset = (regionEnd - regionStart) * invBpPerPx
+  const paddingOffset = shouldAddPadding ? paddingWidth : 0
+  return currentOffset + regionOffset + paddingOffset
+}
+
+export function accumulateOffsetBp(
+  currentOffsetBp: number,
+  regionStart: number,
+  regionEnd: number,
+  shouldAddPadding: boolean,
+  paddingWidth: number,
+  bpPerPx: number,
+) {
+  const regionOffsetBp = regionEnd - regionStart
+  const paddingOffsetBp = shouldAddPadding ? paddingWidth * bpPerPx : 0
+  return currentOffsetBp + regionOffsetBp + paddingOffsetBp
+}

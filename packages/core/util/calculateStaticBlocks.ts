@@ -5,6 +5,7 @@ import {
   InterRegionPaddingBlock,
 } from './blockTypes'
 import {
+  accumulateOffsetBp,
   calculateRegionWidthPx,
   generateBlockKey,
   getParentRegion,

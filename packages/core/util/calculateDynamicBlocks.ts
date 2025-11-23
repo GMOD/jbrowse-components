@@ -5,6 +5,7 @@ import {
   InterRegionPaddingBlock,
 } from './blockTypes'
 import {
+  accumulateOffset,
   calculateRegionWidthPx,
   generateBlockKey,
   getParentRegion,
@@ -192,11 +193,9 @@ export default function calculateDynamicBlocks(
       }
     }
 
-    displayedRegionLeftPx += (regionEnd - regionStart) * invBpPerPx
-
     // Add inter-region padding to offset calculation for all regions that end
     // before or at the right edge of the window, even if completely offscreen
-    if (
+    const shouldPad =
       padding &&
       regionEndsAtRightEdge &&
       shouldAddInterRegionPadding(
@@ -205,9 +204,15 @@ export default function calculateDynamicBlocks(
         regionNumber,
         displayedRegions.length,
       )
-    ) {
-      displayedRegionLeftPx += interRegionPaddingWidth
-    }
+
+    displayedRegionLeftPx = accumulateOffset(
+      displayedRegionLeftPx,
+      regionStart,
+      regionEnd,
+      invBpPerPx,
+      shouldPad,
+      interRegionPaddingWidth,
+    )
   }
   return blocks
 }
