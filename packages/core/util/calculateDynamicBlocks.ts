@@ -44,9 +44,9 @@ export default function calculateDynamicBlocks(
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
   for (let i = 0; i < staticBlocks.length; i++) {
-    const block = staticBlocks[i]!
-    const blockLeftPx = block.offsetPx
-    const blockRightPx = blockLeftPx + block.widthPx
+    const originalBlock = staticBlocks[i]!
+    const blockLeftPx = originalBlock.offsetPx
+    const blockRightPx = blockLeftPx + originalBlock.widthPx
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,
       windowRightPx,
@@ -56,66 +56,72 @@ export default function calculateDynamicBlocks(
     if (leftPx === undefined && rightPx === undefined) {
       continue
     }
+
+    const block =
+      originalBlock.type === 'ContentBlock'
+        ? new originalBlock.constructor(originalBlock)
+        : new originalBlock.constructor({ ...originalBlock })
+
+    let trimmedLeft = false
+    let trimmedRight = false
+
     if (windowLeftPx > blockLeftPx && windowLeftPx < blockRightPx) {
-      // Need to trim left
+      trimmedLeft = true
       if (block.isLeftEndOfDisplayedRegion === true) {
         block.isLeftEndOfDisplayedRegion = false
       }
-      const offsetDiff = windowLeftPx - block.offsetPx
-      block.offsetPx += offsetDiff
-      block.widthPx -= offsetDiff
+      const offsetDiff = windowLeftPx - blockLeftPx
+      block.offsetPx = windowLeftPx
+      block.widthPx = originalBlock.widthPx - offsetDiff
       if (block.type === 'ContentBlock') {
         const bpDiff = offsetDiff * bpPerPx
         if (block.reversed) {
-          block.end -= bpDiff
+          block.end = originalBlock.end - bpDiff
         } else {
-          block.start += bpDiff
+          block.start = originalBlock.start + bpDiff
         }
-        block.key = `${assembleLocStringFast({
-          assemblyName: block.assemblyName,
-          refName: block.refName,
-          start: block.start,
-          end: block.end,
-          reversed: block.reversed,
-        })}-${block.regionNumber}${block.reversed ? '-reversed' : ''}`
       }
     }
     if (windowRightPx > blockLeftPx && windowRightPx < blockRightPx) {
-      // Need to trim right
+      trimmedRight = true
       if (block.isRightEndOfDisplayedRegion === true) {
         block.isRightEndOfDisplayedRegion = false
       }
-      const rightDiff = block.offsetPx + block.widthPx - windowRightPx
-      block.widthPx -= rightDiff
+      const rightDiff = blockRightPx - windowRightPx
+      if (trimmedLeft) {
+        block.widthPx -= rightDiff
+      } else {
+        block.widthPx = originalBlock.widthPx - rightDiff
+      }
       if (block.type === 'ContentBlock') {
         const bpDiff = rightDiff * bpPerPx
         if (block.reversed) {
-          block.start += bpDiff
+          if (trimmedLeft) {
+            block.start = block.end - block.widthPx * bpPerPx
+          } else {
+            block.start = originalBlock.start + bpDiff
+          }
         } else {
-          block.end -= bpDiff
+          if (trimmedLeft) {
+            block.end = block.start + block.widthPx * bpPerPx
+          } else {
+            block.end = originalBlock.end - bpDiff
+          }
         }
-        block.key = `${assembleLocStringFast({
-          assemblyName: block.assemblyName,
-          refName: block.refName,
-          start: block.start,
-          end: block.end,
-          reversed: block.reversed,
-        })}-${block.regionNumber}${block.reversed ? '-reversed' : ''}`
       }
     }
 
-    const previousBlock = staticBlocks[i - 1]
-    if (
-      previousBlock?.type === 'ContentBlock' &&
-      block.type === 'ContentBlock'
-    ) {
-      // Combine previous block and this block
-      previousBlock.end = block.end
-      previousBlock.widthPx += block.widthPx
-    } else {
-      blocks.push(block)
-      continue
+    if (block.type === 'ContentBlock' && (trimmedLeft || trimmedRight)) {
+      block.key = `${assembleLocStringFast({
+        assemblyName: block.assemblyName,
+        refName: block.refName,
+        start: block.start,
+        end: block.end,
+        reversed: block.reversed,
+      })}-${block.regionNumber}${block.reversed ? '-reversed' : ''}`
     }
+
+    blocks.push(block)
   }
   return blocks
 }
