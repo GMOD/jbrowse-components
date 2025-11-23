@@ -1,8 +1,10 @@
+import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+
 import {
   accumulateOffsetBp,
+  calculateBlockOffsetPx,
   calculateRegionWidthPx,
   generateBlockKey,
-  getParentRegion,
   shouldAddInterRegionPadding,
   shouldElideRegion,
   type BlockData,
@@ -55,8 +57,8 @@ export default function calculateStaticBlocks(
   let regionBpOffset = 0
   const blocks = new BlockSet()
   for (
-    let regionNumber = 0;
-    regionNumber < displayedRegions.length;
+    let regionNumber = 0, l = displayedRegions.length;
+    regionNumber < l;
     regionNumber++
   ) {
     const region = displayedRegions[regionNumber]!
@@ -76,7 +78,7 @@ export default function calculateStaticBlocks(
     const regionBlockCount = Math.ceil(
       (regionEnd - regionStart) * invBlockSizeBp,
     )
-    const parentRegion = getParentRegion(region)
+    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     let windowRightBlockNum =
       Math.floor((windowRightBp - regionBpOffset) * invBlockSizeBp) + extra
@@ -119,7 +121,11 @@ export default function calculateStaticBlocks(
         start,
         end,
         reversed,
-        offsetPx: (regionBpOffset + blockNum * blockSizeBp) * invBpPerPx,
+        offsetPx: calculateBlockOffsetPx(
+          regionBpOffset * invBpPerPx,
+          blockNum * blockSizeBp,
+          invBpPerPx,
+        ),
         parentRegion,
         regionNumber,
         widthPx,
@@ -192,7 +198,7 @@ export default function calculateStaticBlocks(
     // Use shared accumulation function
     const shouldPad =
       padding &&
-      lastBlockData?.isRightEndOfDisplayedRegion &&
+      !!lastBlockData?.isRightEndOfDisplayedRegion &&
       shouldAddInterRegionPadding(
         regionWidthPx,
         minimumBlockWidth,

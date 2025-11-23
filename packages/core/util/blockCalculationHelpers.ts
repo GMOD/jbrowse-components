@@ -1,10 +1,6 @@
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
-
 import { assembleLocStringFast } from '.'
 
 import type { Region } from './types'
-import type { Region as RegionModel } from './types/mst'
-import type { Instance } from 'mobx-state-tree'
 
 export interface BlockData {
   assemblyName: string
@@ -19,10 +15,6 @@ export interface BlockData {
   isLeftEndOfDisplayedRegion: boolean
   isRightEndOfDisplayedRegion: boolean
   key: string
-}
-
-export function getParentRegion(region: Region | Instance<typeof RegionModel>) {
-  return isStateTreeNode(region) ? getSnapshot(region) : region
 }
 
 export function calculateRegionWidthPx(
@@ -90,4 +82,12 @@ export function accumulateOffsetBp(
   const regionOffsetBp = regionEnd - regionStart
   const paddingOffsetBp = shouldAddPadding ? paddingWidthPx * bpPerPx : 0
   return currentOffsetBp + regionOffsetBp + paddingOffsetBp
+}
+
+export function calculateBlockOffsetPx(
+  cumulativeOffsetPx: number,
+  positionInRegionBp: number,
+  invBpPerPx: number,
+) {
+  return cumulativeOffsetPx + positionInRegionBp * invBpPerPx
 }

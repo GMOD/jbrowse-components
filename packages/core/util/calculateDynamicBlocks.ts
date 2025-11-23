@@ -1,8 +1,10 @@
+import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+
 import {
   accumulateOffset,
+  calculateBlockOffsetPx,
   calculateRegionWidthPx,
   generateBlockKey,
-  getParentRegion,
   shouldAddInterRegionPadding,
   shouldElideRegion,
 } from './blockCalculationHelpers'
@@ -60,8 +62,8 @@ export default function calculateDynamicBlocks(
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
   for (
-    let regionNumber = 0;
-    regionNumber < displayedRegions.length;
+    let regionNumber = 0, l = displayedRegions.length;
+    regionNumber < l;
     regionNumber++
   ) {
     const region = displayedRegions[regionNumber]
@@ -78,7 +80,7 @@ export default function calculateDynamicBlocks(
       invBpPerPx,
     )
     const displayedRegionRightPx = displayedRegionLeftPx + regionWidthPx
-    const parentRegion = getParentRegion(region)
+    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,
@@ -104,7 +106,11 @@ export default function calculateDynamicBlocks(
         end = regionEnd - (leftPx - displayedRegionLeftPx) * bpPerPx
         isLeftEndOfDisplayedRegion = end === regionEnd
         isRightEndOfDisplayedRegion = start === regionStart
-        blockOffsetPx = displayedRegionLeftPx + (regionEnd - end) * invBpPerPx
+        blockOffsetPx = calculateBlockOffsetPx(
+          displayedRegionLeftPx,
+          regionEnd - end,
+          invBpPerPx,
+        )
       } else {
         start = (leftPx - displayedRegionLeftPx) * bpPerPx + regionStart
         end = Math.min(
@@ -113,8 +119,11 @@ export default function calculateDynamicBlocks(
         )
         isLeftEndOfDisplayedRegion = start === regionStart
         isRightEndOfDisplayedRegion = end === regionEnd
-        blockOffsetPx =
-          displayedRegionLeftPx + (start - regionStart) * invBpPerPx
+        blockOffsetPx = calculateBlockOffsetPx(
+          displayedRegionLeftPx,
+          start - regionStart,
+          invBpPerPx,
+        )
       }
       const widthPx = (end - start) * invBpPerPx
       const blockData = {
