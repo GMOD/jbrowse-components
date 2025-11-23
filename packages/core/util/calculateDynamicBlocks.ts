@@ -79,6 +79,9 @@ export default function calculateDynamicBlocks(
       displayedRegionLeftPx,
       displayedRegionRightPx,
     )
+    // Track whether this region ends at its right edge (even if offscreen)
+    const regionEndsAtRightEdge = displayedRegionRightPx <= windowRightPx
+
     if (leftPx !== undefined && rightPx !== undefined) {
       // this displayed region overlaps the view, so make a record for it
       let start: number
@@ -146,7 +149,7 @@ export default function calculateDynamicBlocks(
       }
 
       if (padding) {
-        // insert a inter-region padding block if we are crossing a displayed region
+        // Add inter-region padding block if we're at the end of a visible region
         if (
           regionWidthPx >= minimumBlockWidth &&
           blockData.isRightEndOfDisplayedRegion &&
@@ -159,7 +162,6 @@ export default function calculateDynamicBlocks(
               offsetPx: blockData.offsetPx + blockData.widthPx,
             }),
           )
-          displayedRegionLeftPx += interRegionPaddingWidth
         }
 
         if (
@@ -178,7 +180,19 @@ export default function calculateDynamicBlocks(
         }
       }
     }
+
     displayedRegionLeftPx += (regionEnd - regionStart) * invBpPerPx
+
+    // Add inter-region padding to offset calculation for all regions that end
+    // before or at the right edge of the window, even if completely offscreen
+    if (
+      padding &&
+      regionWidthPx >= minimumBlockWidth &&
+      regionEndsAtRightEdge &&
+      regionNumber < displayedRegions.length - 1
+    ) {
+      displayedRegionLeftPx += interRegionPaddingWidth
+    }
   }
   return blocks
 }
