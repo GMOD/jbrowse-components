@@ -1,10 +1,4 @@
 import {
-  BlockSet,
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from './blockTypes'
-import {
   accumulateOffset,
   calculateRegionWidthPx,
   generateBlockKey,
@@ -12,6 +6,12 @@ import {
   shouldAddInterRegionPadding,
   shouldElideRegion,
 } from './blockCalculationHelpers'
+import {
+  BlockSet,
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
+} from './blockTypes'
 import { intersection2 } from './range'
 
 import type { Base1DViewModel } from './calculateStaticBlocks'

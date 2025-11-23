@@ -1,17 +1,18 @@
 import {
-  BlockSet,
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from './blockTypes'
-import {
   accumulateOffsetBp,
   calculateRegionWidthPx,
   generateBlockKey,
   getParentRegion,
   shouldAddInterRegionPadding,
   shouldElideRegion,
+  type BlockData,
 } from './blockCalculationHelpers'
+import {
+  BlockSet,
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
+} from './blockTypes'
 
 import type { Region } from './types'
 import type { Region as RegionModel } from './types/mst'
@@ -89,6 +90,8 @@ export default function calculateStaticBlocks(
       windowLeftBlockNum = 0
     }
 
+    let lastBlockData: BlockData | null = null
+
     for (
       let blockNum = windowLeftBlockNum;
       blockNum <= windowRightBlockNum;
@@ -149,43 +152,62 @@ export default function calculateStaticBlocks(
         blocks.push(new ContentBlock(blockData))
       }
 
-      if (padding) {
-        // insert a inter-region padding block if we are crossing a displayed region
-        if (
-          shouldAddInterRegionPadding(
-            regionWidthPx,
-            minimumBlockWidth,
-            regionNumber,
-            displayedRegions.length,
-          ) &&
-          blockData.isRightEndOfDisplayedRegion
-        ) {
-          regionBpOffset += interRegionPaddingWidth * bpPerPx
-          blocks.push(
-            new InterRegionPaddingBlock({
-              key: `${blockData.key}-rightpad`,
-              widthPx: interRegionPaddingWidth,
-              offsetPx: blockData.offsetPx + blockData.widthPx,
-            }),
-          )
-        }
-        if (
-          regionNumber === displayedRegions.length - 1 &&
-          blockData.isRightEndOfDisplayedRegion
-        ) {
-          regionBpOffset += interRegionPaddingWidth * bpPerPx
-          blocks.push(
-            new InterRegionPaddingBlock({
-              key: `${blockData.key}-afterLastRegion`,
-              widthPx: width,
-              offsetPx: blockData.offsetPx + blockData.widthPx,
-              variant: 'boundary',
-            }),
-          )
-        }
+      lastBlockData = blockData
+    }
+
+    // After the block loop, add padding blocks if the last block ended at the region boundary
+    if (padding && lastBlockData) {
+      if (
+        shouldAddInterRegionPadding(
+          regionWidthPx,
+          minimumBlockWidth,
+          regionNumber,
+          displayedRegions.length,
+        ) &&
+        lastBlockData.isRightEndOfDisplayedRegion
+      ) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${lastBlockData.key}-rightpad`,
+            widthPx: interRegionPaddingWidth,
+            offsetPx: lastBlockData.offsetPx + lastBlockData.widthPx,
+          }),
+        )
+      }
+      if (
+        regionNumber === displayedRegions.length - 1 &&
+        lastBlockData.isRightEndOfDisplayedRegion
+      ) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${lastBlockData.key}-afterLastRegion`,
+            widthPx: width,
+            offsetPx: lastBlockData.offsetPx + lastBlockData.widthPx,
+            variant: 'boundary',
+          }),
+        )
       }
     }
-    regionBpOffset += regionEnd - regionStart
+
+    // Use shared accumulation function
+    const shouldPad =
+      padding &&
+      lastBlockData?.isRightEndOfDisplayedRegion &&
+      shouldAddInterRegionPadding(
+        regionWidthPx,
+        minimumBlockWidth,
+        regionNumber,
+        displayedRegions.length,
+      )
+
+    regionBpOffset = accumulateOffsetBp(
+      regionBpOffset,
+      regionStart,
+      regionEnd,
+      shouldPad,
+      interRegionPaddingWidth,
+      bpPerPx,
+    )
   }
   return blocks
 }

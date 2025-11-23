@@ -6,9 +6,22 @@ import type { Region } from './types'
 import type { Region as RegionModel } from './types/mst'
 import type { Instance } from 'mobx-state-tree'
 
-export function getParentRegion(
-  region: Region | Instance<typeof RegionModel>,
-) {
+export interface BlockData {
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+  reversed: boolean | undefined
+  offsetPx: number
+  parentRegion: Region
+  regionNumber: number
+  widthPx: number
+  isLeftEndOfDisplayedRegion: boolean
+  isRightEndOfDisplayedRegion: boolean
+  key: string
+}
+
+export function getParentRegion(region: Region | Instance<typeof RegionModel>) {
   return isStateTreeNode(region) ? getSnapshot(region) : region
 }
 
@@ -26,9 +39,7 @@ export function shouldAddInterRegionPadding(
   regionNumber: number,
   totalRegions: number,
 ) {
-  return (
-    regionWidthPx >= minimumBlockWidth && regionNumber < totalRegions - 1
-  )
+  return regionWidthPx >= minimumBlockWidth && regionNumber < totalRegions - 1
 }
 
 export function generateBlockKey(
@@ -73,10 +84,10 @@ export function accumulateOffsetBp(
   regionStart: number,
   regionEnd: number,
   shouldAddPadding: boolean,
-  paddingWidth: number,
+  paddingWidthPx: number,
   bpPerPx: number,
 ) {
   const regionOffsetBp = regionEnd - regionStart
-  const paddingOffsetBp = shouldAddPadding ? paddingWidth * bpPerPx : 0
+  const paddingOffsetBp = shouldAddPadding ? paddingWidthPx * bpPerPx : 0
   return currentOffsetBp + regionOffsetBp + paddingOffsetBp
 }
