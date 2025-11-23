@@ -1,12 +1,16 @@
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
-
-import { assembleLocStringFast } from '.'
 import {
   BlockSet,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
+import {
+  calculateRegionWidthPx,
+  generateBlockKey,
+  getParentRegion,
+  shouldAddInterRegionPadding,
+  shouldElideRegion,
+} from './blockCalculationHelpers'
 
 import type { Region } from './types'
 import type { Region as RegionModel } from './types/mst'
@@ -62,10 +66,15 @@ export default function calculateStaticBlocks(
       reversed,
     } = region
 
+    const regionWidthPx = calculateRegionWidthPx(
+      regionStart,
+      regionEnd,
+      invBpPerPx,
+    )
     const regionBlockCount = Math.ceil(
       (regionEnd - regionStart) * invBlockSizeBp,
     )
-    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
+    const parentRegion = getParentRegion(region)
 
     let windowRightBlockNum =
       Math.floor((windowRightBp - regionBpOffset) * invBlockSizeBp) + extra
@@ -78,8 +87,6 @@ export default function calculateStaticBlocks(
     if (windowLeftBlockNum < 0) {
       windowLeftBlockNum = 0
     }
-
-    const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
 
     for (
       let blockNum = windowLeftBlockNum;
@@ -114,13 +121,14 @@ export default function calculateStaticBlocks(
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
-        key: `${assembleLocStringFast({
+        key: generateBlockKey(
           assemblyName,
           refName,
           start,
           end,
           reversed,
-        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
+          regionNumber,
+        ),
       }
 
       if (padding && regionNumber === 0 && blockNum === 0) {
@@ -134,7 +142,7 @@ export default function calculateStaticBlocks(
         )
       }
 
-      if (elision && regionWidthPx < minimumBlockWidth) {
+      if (elision && shouldElideRegion(regionWidthPx, minimumBlockWidth)) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
@@ -143,9 +151,13 @@ export default function calculateStaticBlocks(
       if (padding) {
         // insert a inter-region padding block if we are crossing a displayed region
         if (
-          regionWidthPx >= minimumBlockWidth &&
-          blockData.isRightEndOfDisplayedRegion &&
-          regionNumber < displayedRegions.length - 1
+          shouldAddInterRegionPadding(
+            regionWidthPx,
+            minimumBlockWidth,
+            regionNumber,
+            displayedRegions.length,
+          ) &&
+          blockData.isRightEndOfDisplayedRegion
         ) {
           regionBpOffset += interRegionPaddingWidth * bpPerPx
           blocks.push(

@@ -1,12 +1,16 @@
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
-
-import { assembleLocStringFast } from '.'
 import {
   BlockSet,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
+import {
+  calculateRegionWidthPx,
+  generateBlockKey,
+  getParentRegion,
+  shouldAddInterRegionPadding,
+  shouldElideRegion,
+} from './blockCalculationHelpers'
 import { intersection2 } from './range'
 
 import type { Base1DViewModel } from './calculateStaticBlocks'
@@ -67,11 +71,13 @@ export default function calculateDynamicBlocks(
       end: regionEnd,
       reversed,
     } = region!
-    const displayedRegionRightPx =
-      displayedRegionLeftPx + (regionEnd - regionStart) * invBpPerPx
-
-    const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
-    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
+    const regionWidthPx = calculateRegionWidthPx(
+      regionStart,
+      regionEnd,
+      invBpPerPx,
+    )
+    const displayedRegionRightPx = displayedRegionLeftPx + regionWidthPx
+    const parentRegion = getParentRegion(region)
 
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,
@@ -122,13 +128,14 @@ export default function calculateDynamicBlocks(
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
-        key: `${assembleLocStringFast({
+        key: generateBlockKey(
           assemblyName,
           refName,
           start,
           end,
           reversed,
-        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
+          regionNumber,
+        ),
       }
 
       if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
@@ -142,7 +149,7 @@ export default function calculateDynamicBlocks(
         )
       }
 
-      if (elision && regionWidthPx < minimumBlockWidth) {
+      if (elision && shouldElideRegion(regionWidthPx, minimumBlockWidth)) {
         blocks.push(new ElidedBlock(blockData))
       } else {
         blocks.push(new ContentBlock(blockData))
@@ -151,9 +158,13 @@ export default function calculateDynamicBlocks(
       if (padding) {
         // Add inter-region padding block if we're at the end of a visible region
         if (
-          regionWidthPx >= minimumBlockWidth &&
-          blockData.isRightEndOfDisplayedRegion &&
-          regionNumber < displayedRegions.length - 1
+          shouldAddInterRegionPadding(
+            regionWidthPx,
+            minimumBlockWidth,
+            regionNumber,
+            displayedRegions.length,
+          ) &&
+          blockData.isRightEndOfDisplayedRegion
         ) {
           blocks.push(
             new InterRegionPaddingBlock({
@@ -187,9 +198,13 @@ export default function calculateDynamicBlocks(
     // before or at the right edge of the window, even if completely offscreen
     if (
       padding &&
-      regionWidthPx >= minimumBlockWidth &&
       regionEndsAtRightEdge &&
-      regionNumber < displayedRegions.length - 1
+      shouldAddInterRegionPadding(
+        regionWidthPx,
+        minimumBlockWidth,
+        regionNumber,
+        displayedRegions.length,
+      )
     ) {
       displayedRegionLeftPx += interRegionPaddingWidth
     }
