@@ -9,7 +9,7 @@ import {
   CIGAR_S,
   CIGAR_X,
 } from '../../MismatchParser'
-import { fillRect } from '../util'
+import { fillRectCtx } from '../util'
 
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
@@ -50,7 +50,7 @@ export function renderPerBaseQuality({
         const start0 = start + roffset + m
         const leftPx = bpSpanPx(start0, start0 + 1, region, bpPerPx)[0]
         const c = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
-        fillRect(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
+        fillRectCtx(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
       }
       soffset += len
       roffset += len

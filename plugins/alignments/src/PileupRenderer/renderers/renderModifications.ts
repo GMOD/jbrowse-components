@@ -7,7 +7,7 @@ import { getModProbabilities } from '../../ModificationParser/getModProbabilitie
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
 import { getModificationName } from '../../shared/modificationData'
 import { getTagAlt } from '../../util'
-import { fillRect } from '../util'
+import { fillRectCtx } from '../util'
 
 import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
@@ -110,10 +110,10 @@ export function renderModifications({
       const maxProb = max(allProbs)
       if (twoColor && s > maxProb) {
         const c = BLUE_COLORD.alpha(s).toHslString()
-        fillRect(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth, c)
+        fillRectCtx(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth, c)
       } else {
         const c = alphaColor(col, prob)
-        fillRect(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth, c)
+        fillRectCtx(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth, c)
       }
 
       // Add to flatbush for mouseover with strand-specific info showing all modifications

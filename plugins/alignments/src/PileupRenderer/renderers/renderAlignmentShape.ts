@@ -9,6 +9,7 @@ import {
   parseCigar2,
 } from '../../MismatchParser'
 import { CHEVRON_WIDTH } from '../../shared/util'
+import { fillRectCtx } from '../util'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
@@ -55,10 +56,12 @@ export function renderAlignmentShape({
   ctx,
   feat,
   renderArgs,
+  canvasWidth,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   renderArgs: ProcessedRenderArgs
+  canvasWidth: number
 }) {
   const { regions, bpPerPx } = renderArgs
   const { heightPx, topPx, feature } = feat
@@ -99,7 +102,14 @@ export function renderAlignmentShape({
               region,
               bpPerPx,
             )
-            ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
+            fillRectCtx(
+              ctx,
+              leftPx,
+              topPx,
+              rightPx - leftPx,
+              heightPx,
+              canvasWidth,
+            )
           }
           drawStart += drawLen + opLen
           drawLen = 0
@@ -117,7 +127,14 @@ export function renderAlignmentShape({
         if (renderChevrons) {
           drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
         } else {
-          ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
+          fillRectCtx(
+            ctx,
+            leftPx,
+            topPx,
+            rightPx - leftPx,
+            heightPx,
+            canvasWidth,
+          )
         }
       }
     } else if (strand === -1) {
@@ -143,7 +160,14 @@ export function renderAlignmentShape({
               region,
               bpPerPx,
             )
-            ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
+            fillRectCtx(
+              ctx,
+              leftPx,
+              topPx,
+              rightPx - leftPx,
+              heightPx,
+              canvasWidth,
+            )
           }
           drawStart -= drawLen + opLen
           drawLen = 0
@@ -161,7 +185,14 @@ export function renderAlignmentShape({
         if (renderChevrons) {
           drawReverseChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
         } else {
-          ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
+          fillRectCtx(
+            ctx,
+            leftPx,
+            topPx,
+            rightPx - leftPx,
+            heightPx,
+            canvasWidth,
+          )
         }
       }
     }
@@ -176,7 +207,7 @@ export function renderAlignmentShape({
         drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
       }
     } else {
-      ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
+      fillRectCtx(ctx, leftPx, topPx, rightPx - leftPx, heightPx, canvasWidth)
     }
   }
 }

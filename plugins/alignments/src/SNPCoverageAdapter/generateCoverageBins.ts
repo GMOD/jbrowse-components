@@ -1,4 +1,3 @@
-import { sum } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { processDepth } from './processDepth'
@@ -79,12 +78,13 @@ export async function generateCoverageBins({
     if (bin) {
       bin.mods = Object.fromEntries(
         Object.entries(bin.mods).map(([key, val]) => {
+          const { probabilityTotal, probabilityCount, ...rest } = val
           return [
             key,
             {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
+              ...rest,
+              avgProbability: probabilityCount
+                ? probabilityTotal! / probabilityCount
                 : undefined,
             },
           ] as const
@@ -92,12 +92,13 @@ export async function generateCoverageBins({
       )
       bin.nonmods = Object.fromEntries(
         Object.entries(bin.nonmods).map(([key, val]) => {
+          const { probabilityTotal, probabilityCount, ...rest } = val
           return [
             key,
             {
-              ...val,
-              avgProbability: val.probabilities.length
-                ? sum(val.probabilities) / val.probabilities.length
+              ...rest,
+              avgProbability: probabilityCount
+                ? probabilityTotal! / probabilityCount
                 : undefined,
             },
           ] as const
