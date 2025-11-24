@@ -228,18 +228,18 @@ export default class Flatbush {
     const hilbertValues = new Uint32Array(this.numItems)
     const hilbertMax = (1 << 16) - 1
 
-    // map item centers into Hilbert coordinate space and calculate Hilbert values
+    const scaleX = hilbertMax / width
+    const scaleY = hilbertMax / height
+    const offsetX = this.minX
+    const offsetY = this.minY
+
     for (let i = 0, pos = 0; i < this.numItems; i++) {
       const minX = boxes[pos++]!
       const minY = boxes[pos++]!
       const maxX = boxes[pos++]!
       const maxY = boxes[pos++]!
-      const x = Math.floor(
-        (hilbertMax * ((minX + maxX) / 2 - this.minX)) / width,
-      )
-      const y = Math.floor(
-        (hilbertMax * ((minY + maxY) / 2 - this.minY)) / height,
-      )
+      const x = Math.floor(((minX + maxX) * 0.5 - offsetX) * scaleX)
+      const y = Math.floor(((minY + maxY) * 0.5 - offsetY) * scaleY)
       hilbertValues[i] = hilbert(x, y)
     }
 
@@ -261,16 +261,19 @@ export default class Flatbush {
       while (pos < end) {
         const nodeIndex = pos
 
-        // calculate bbox for the new node
         let nodeMinX = boxes[pos++]!
         let nodeMinY = boxes[pos++]!
         let nodeMaxX = boxes[pos++]!
         let nodeMaxY = boxes[pos++]!
         for (let j = 1; j < this.nodeSize && pos < end; j++) {
-          nodeMinX = Math.min(nodeMinX, boxes[pos++]!)
-          nodeMinY = Math.min(nodeMinY, boxes[pos++]!)
-          nodeMaxX = Math.max(nodeMaxX, boxes[pos++]!)
-          nodeMaxY = Math.max(nodeMaxY, boxes[pos++]!)
+          const x0 = boxes[pos++]!
+          const y0 = boxes[pos++]!
+          const x1 = boxes[pos++]!
+          const y1 = boxes[pos++]!
+          if (x0 < nodeMinX) nodeMinX = x0
+          if (y0 < nodeMinY) nodeMinY = y0
+          if (x1 > nodeMaxX) nodeMaxX = x1
+          if (y1 > nodeMaxY) nodeMaxY = y1
         }
 
         // add the new node to the tree data
@@ -448,14 +451,18 @@ function sort(
   right: number,
   nodeSize: number,
 ): void {
-  const stack: number[] = []
-  stack.push(left, right)
+  const stack: number[] = [ left, right]
 
   while (stack.length > 0) {
     const r = stack.pop()!
     const l = stack.pop()!
 
     if (Math.floor(l / nodeSize) >= Math.floor(r / nodeSize)) {
+      continue
+    }
+
+    if (r - l < 10) {
+      insertionSort(values, boxes, indices, l, r)
       continue
     }
 
@@ -491,8 +498,46 @@ function sort(
       swap(values, boxes, indices, i, j)
     }
 
-    stack.push(l, j)
-    stack.push(j + 1, r)
+    stack.push(l, j, j + 1, r)
+  }
+}
+
+function insertionSort(
+  values: Uint32Array,
+  boxes: TypedArray,
+  indices: IndexArray,
+  left: number,
+  right: number,
+): void {
+  for (let i = left + 1; i <= right; i++) {
+    const tempVal = values[i]!
+    const tempIdx = indices[i]!
+    const k = i * 4
+    const tempA = boxes[k]!
+    const tempB = boxes[k + 1]!
+    const tempC = boxes[k + 2]!
+    const tempD = boxes[k + 3]!
+
+    let j = i - 1
+    while (j >= left && values[j]! > tempVal) {
+      values[j + 1] = values[j]!
+      indices[j + 1] = indices[j]!
+      const src = j * 4
+      const dst = (j + 1) * 4
+      boxes[dst] = boxes[src]!
+      boxes[dst + 1] = boxes[src + 1]!
+      boxes[dst + 2] = boxes[src + 2]!
+      boxes[dst + 3] = boxes[src + 3]!
+      j--
+    }
+
+    values[j + 1] = tempVal
+    indices[j + 1] = tempIdx
+    const dst = (j + 1) * 4
+    boxes[dst] = tempA
+    boxes[dst + 1] = tempB
+    boxes[dst + 2] = tempC
+    boxes[dst + 3] = tempD
   }
 }
 
