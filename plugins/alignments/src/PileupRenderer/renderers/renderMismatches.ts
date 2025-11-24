@@ -70,12 +70,15 @@ export function renderMismatches({
     const mbase = mismatch.base
     const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
+    const w = rightPx - leftPx
     if (mismatch.type === 'mismatch') {
-      items.push({
-        type: 'mismatch',
-        seq: mismatch.base,
-      })
-      coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+      if (w >= 0.2) {
+        items.push({
+          type: 'mismatch',
+          seq: mismatch.base,
+        })
+        coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+      }
 
       if (!drawSNPsMuted) {
         const baseColor = colorMap[mismatch.base] || '#888'
@@ -126,11 +129,13 @@ export function renderMismatches({
           canvasWidth,
           colorMap.deletion,
         )
-        items.push({
-          type: 'deletion',
-          seq: `${mismatch.length}`,
-        })
-        coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+        if (bpPerPx < 3) {
+          items.push({
+            type: 'deletion',
+            seq: `${mismatch.length}`,
+          })
+          coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+        }
         const txt = `${mismatch.length}`
         const rwidth = measureText(txt, 10)
         if (widthPx >= rwidth && heightPx >= heightLim) {
@@ -158,16 +163,17 @@ export function renderMismatches({
             colorMap.insertion,
           )
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
+            const l = Math.round(pos - insW)
+            fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
+            fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
+            ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
+          }
+          if (bpPerPx < 3) {
             items.push({
               type: 'insertion',
               seq: mismatch.insertedBases || 'unknown',
             })
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, topPx + heightPx)
-
-            const l = Math.round(pos - insW)
-            fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
-            fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
-            ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
           }
         }
       }
