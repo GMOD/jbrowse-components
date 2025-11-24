@@ -592,7 +592,7 @@ export function bpToPx(
   }: { start?: number; end?: number; reversed?: boolean },
   bpPerPx: number,
 ) {
-  return (reversed ? end - bp : bp - start) / bpPerPx
+  return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
 }
 
 const oneEightyOverPi = 180 / Math.PI
