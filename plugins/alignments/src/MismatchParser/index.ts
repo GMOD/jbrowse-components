@@ -79,25 +79,24 @@ export function getMismatches(
   return mismatches
 }
 
-// Optimized version using parseCigar2 and cigarToMismatches2
+// Optimized version using packed NUMERIC_CIGAR from @gmod/bam
 export function getMismatches2(
-  cigar?: string,
+  cigar?: Uint32Array,
   md?: string,
   seq?: string,
   ref?: string,
   qual?: Uint8Array,
 ) {
   let mismatches: Mismatch[] = []
-  const ops = parseCigar2(cigar)
   // parse the CIGAR tag if it has one
-  if (cigar) {
-    mismatches = mismatches.concat(cigarToMismatches2(ops, seq, ref, qual))
+  if (cigar && cigar.length > 0) {
+    mismatches = mismatches.concat(cigarToMismatches2(cigar, seq, ref, qual))
   }
 
   // now let's look for CRAM or MD mismatches
-  if (md && seq) {
+  if (md && seq && cigar) {
     mismatches = mismatches.concat(
-      mdToMismatches2(md, ops, mismatches, seq, qual),
+      mdToMismatches2(md, cigar, mismatches, seq, qual),
     )
   }
 

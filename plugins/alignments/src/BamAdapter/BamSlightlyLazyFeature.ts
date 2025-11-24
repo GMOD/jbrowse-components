@@ -22,7 +22,7 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
   get mismatches() {
     return getMismatches2(
-      this.record.CIGAR,
+      this.record.NUMERIC_CIGAR,
       this.record.tags.MD as string | undefined,
       this.record.seq,
       this.ref,

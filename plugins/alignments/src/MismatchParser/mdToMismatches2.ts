@@ -1,15 +1,27 @@
-import { CIGAR_D, CIGAR_H, CIGAR_I, CIGAR_N, CIGAR_P, CIGAR_S } from './index'
-
 import type { Mismatch } from '../shared/types'
 
-// Optimized version that works with parseCigar2 output (numeric ops)
+// CIGAR operation indices (from BAM spec)
+const CIGAR_I = 1
+const CIGAR_D = 2
+const CIGAR_N = 3
+const CIGAR_S = 4
+const CIGAR_H = 5
+const CIGAR_P = 6
+
+// Handles packed NUMERIC_CIGAR format from @gmod/bam
+// Format: Uint32Array where each value is (length << 4) | opIndex
+// opIndex is 0-8: M=0, I=1, D=2, N=3, S=4, H=5, P=6, ==7, X=8
 export function mdToMismatches2(
   mdstring: string,
-  ops: number[],
+  ops: Uint32Array | undefined,
   cigarMismatches: Mismatch[],
   seq: string,
   qual?: Uint8Array,
 ) {
+  if (!ops) {
+    return []
+  }
+
   const mismatchRecords: Mismatch[] = []
   const opsLength = ops.length
   const seqLength = seq.length
@@ -77,13 +89,16 @@ export function mdToMismatches2(
       // find position in read that corresponds to currStart
       let templateOffset = lastTemplateOffset
       let refOffset = lastRefOffset
+
+      // Packed format: each element is (length << 4) | opIndex
       for (
         let j = lastCigar;
         j < opsLength && refOffset <= currStart;
-        j += 2, lastCigar = j
+        j++, lastCigar = j
       ) {
-        const len = ops[j]!
-        const op = ops[j + 1]!
+        const packed = ops[j]!
+        const len = packed >> 4
+        const op = packed & 0xf
 
         if (op === CIGAR_S || op === CIGAR_I) {
           templateOffset += len
@@ -94,6 +109,7 @@ export function mdToMismatches2(
           refOffset += len
         }
       }
+
       lastTemplateOffset = templateOffset
       lastRefOffset = refOffset
       const s = templateOffset - (refOffset - currStart)
