@@ -1,11 +1,11 @@
 import { bpSpanPx, max, sum } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
 
 import { getNextRefPos } from '../../MismatchParser'
 import { getModPositions } from '../../ModificationParser/getModPositions'
 import { getModProbabilities } from '../../ModificationParser/getModProbabilities'
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
 import { getModificationName } from '../../shared/modificationData'
+import { alphaColor } from '../../shared/util'
 import { getTagAlt } from '../../util'
 import { fillRect } from '../util'
 
@@ -14,12 +14,7 @@ import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
 // Pre-compute colord object for blue color (used in two-color mode)
-const BLUE_COLORD = colord('blue')
-
-// Helper to apply alpha to color
-function alphaColor(color: string, alpha: number): string {
-  return colord(color).alpha(alpha).toHslString()
-}
+const BLUE_COLORD = 'blue'
 
 // render modifications stored in MM tag in BAM
 export function renderModifications({
@@ -109,7 +104,7 @@ export function renderModifications({
       const s = 1 - sum(allProbs)
       const maxProb = max(allProbs)
       if (twoColor && s > maxProb) {
-        const c = BLUE_COLORD.alpha(s).toHslString()
+        const c = alphaColor(BLUE_COLORD, s)
         fillRect(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth, c)
       } else {
         const c = alphaColor(col, prob)
@@ -118,29 +113,20 @@ export function renderModifications({
 
       // Add to flatbush for mouseover with strand-specific info showing all modifications
       const modsAtPos = modsByPosition.get(pos)
-      if (modsAtPos) {
-        const strandInfo = modsAtPos
-          .map(
-            m =>
-              `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
-          )
-          .join('<br/>')
-
+      if (rightPx - leftPx >= 0.2 && modsAtPos) {
         items.push({
           type: 'modification',
-          seq: strandInfo,
+          seq: modsAtPos
+            .map(
+              m =>
+                `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
+            )
+            .join('<br/>'),
           modType: type,
           probability: prob,
         })
-      } else {
-        items.push({
-          type: 'modification',
-          seq: mod.base,
-          modType: type,
-          probability: prob,
-        })
+        coords.push(leftPx, topPx, rightPx, bottomPx)
       }
-      coords.push(leftPx, topPx, rightPx, bottomPx)
 
       pos++
     },

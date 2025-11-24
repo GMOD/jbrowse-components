@@ -82,12 +82,15 @@ export function renderMismatches({
     const mbase = mismatch.base
     const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
+    const w = rightPx - leftPx
     if (mismatch.type === 'mismatch') {
-      items.push({
-        type: 'mismatch',
-        seq: mismatch.base,
-      })
-      coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+      if (w >= 0.2) {
+        items.push({
+          type: 'mismatch',
+          seq: mismatch.base,
+        })
+        coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+      }
 
       if (!drawSNPsMuted) {
         const baseColor = colorMap[mismatch.base] || '#888'
@@ -132,11 +135,13 @@ export function renderMismatches({
           canvasWidth,
           colorMap.deletion,
         )
-        items.push({
-          type: 'deletion',
-          seq: `${mismatch.length}`,
-        })
-        coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+        if (bpPerPx < 3) {
+          items.push({
+            type: 'deletion',
+            seq: `${mismatch.length}`,
+          })
+          coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+        }
         const txt = String(len)
         const rwidth = measureText(txt, 10)
         if (widthPx >= rwidth && canRenderText) {
@@ -164,17 +169,18 @@ export function renderMismatches({
             colorMap.insertion,
           )
           if (invBpPerPx >= charWidth && canRenderText) {
-            items.push({
-              type: 'insertion',
-              seq: mismatch.insertedBases || 'unknown',
-            })
-            coords.push(leftPx - 2, topPx, leftPx + insW + 2, topPx + heightPx)
-
             const l = Math.round(pos - insW)
             const insW3 = insW * 3
             fillRect(ctx, l, topPx, insW3, 1, canvasWidth)
             fillRect(ctx, l, topPx + heightPx - 1, insW3, 1, canvasWidth)
             ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
+          }
+          if (bpPerPx < 3) {
+            items.push({
+              type: 'insertion',
+              seq: mismatch.insertedBases || 'unknown',
+            })
+            coords.push(leftPx - 2, topPx, leftPx + insW + 2, topPx + heightPx)
           }
         }
       }
@@ -191,18 +197,16 @@ export function renderMismatches({
         ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
       }
     } else if (mismatch.type === 'skip') {
-      // fix to avoid bad rendering note that this was also related to chrome
-      // bug https://bugs.chromium.org/p/chromium/issues/detail?id=1131528
-      //
-      // also affected firefox ref #1236 #2750
-      if (leftPx + widthPx > 0) {
-        // make small exons more visible when zoomed far out
-        const adjustPx = widthPx - (bpPerPx > 10 ? 1.5 : 0)
-        const l = Math.max(0, leftPx)
-        const t = topPx + heightPx / 2 - 1
-        const w = adjustPx + Math.min(leftPx, 0)
-        fillRect(ctx, l, t, w, 1, canvasWidth, colorMap.skip)
-      }
+      const t = topPx + heightPx / 2 - 1
+      fillRect(
+        ctx,
+        leftPx,
+        t,
+        Math.max(widthPx, 1.5),
+        1,
+        canvasWidth,
+        colorMap.skip,
+      )
     }
   }
 
