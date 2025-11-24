@@ -1,5 +1,5 @@
-import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
 import { readFeaturesToMismatches } from './readFeaturesToMismatches'
+import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
 import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
@@ -88,6 +88,8 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get seq() {
+    // CRAM stores sequences as strings, not packed like BAM
+    // So we return the string directly without encoding/decoding
     return this.record.getReadBases()
   }
 

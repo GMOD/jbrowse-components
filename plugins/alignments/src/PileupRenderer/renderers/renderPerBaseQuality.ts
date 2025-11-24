@@ -39,8 +39,8 @@ export function renderPerBaseQuality({
   let roffset = 0 // reference offset
 
   const ops = getCigarOps(cigarOps)
-  for (let i = 0; i < ops.length; i++) {
-    const packed = ops[i]!
+  for (const op of ops) {
+    const packed = op
     const len = packed >> 4
     const opIdx = packed & 0xf
     if (opIdx === CIGAR_S_IDX || opIdx === CIGAR_I_IDX) {

@@ -50,15 +50,19 @@ export function renderPerBaseLettering({
     return
   }
   const ops = getCigarOps(cigarOps)
-  for (let i = 0; i < ops.length; i++) {
-    const packed = ops[i]!
+  for (const op_ of ops) {
+    const packed = op_
     const len = packed >> 4
     const op = packed & 0xf
     if (op === CIGAR_S_IDX || op === CIGAR_I_IDX) {
       soffset += len
     } else if (op === CIGAR_D_IDX || op === CIGAR_N_IDX) {
       roffset += len
-    } else if (op === CIGAR_M_IDX || op === CIGAR_X_IDX || op === CIGAR_EQ_IDX) {
+    } else if (
+      op === CIGAR_M_IDX ||
+      op === CIGAR_X_IDX ||
+      op === CIGAR_EQ_IDX
+    ) {
       for (let m = 0; m < len; m++) {
         const letter = seq[soffset + m]!
         const r = start + roffset + m

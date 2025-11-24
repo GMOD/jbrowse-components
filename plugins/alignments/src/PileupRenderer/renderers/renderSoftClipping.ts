@@ -55,9 +55,9 @@ export function renderSoftClipping({
   let refOffset = 0
   const CIGAR =
     feature.get('NUMERIC_CIGAR') || (feature.get('CIGAR') as string | undefined)
-  const cigarOps = getCigarOps(CIGAR!)
-  for (let i = 0; i < cigarOps.length; i++) {
-    const packed = cigarOps[i]!
+  const cigarOps = getCigarOps(CIGAR)
+  for (const [i, cigarOp] of cigarOps.entries()) {
+    const packed = cigarOp
     const len = packed >> 4
     const op = packed & 0xf
     if (op === CIGAR_S_IDX) {

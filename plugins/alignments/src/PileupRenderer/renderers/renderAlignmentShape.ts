@@ -1,6 +1,5 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import { CHEVRON_WIDTH } from '../../shared/util'
 import {
   CIGAR_D_IDX,
   CIGAR_EQ_IDX,
@@ -9,6 +8,7 @@ import {
   CIGAR_X_IDX,
   getCigarOps,
 } from './cigarUtil'
+import { CHEVRON_WIDTH } from '../../shared/util'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
@@ -77,8 +77,8 @@ export function renderAlignmentShape({
     if (typeof CIGAR === 'string') {
       hasSkips = CIGAR.includes('N')
     } else {
-      for (let i = 0; i < CIGAR.length; i++) {
-        if ((CIGAR[i]! & 0xf) === CIGAR_N_IDX) {
+      for (const element of CIGAR) {
+        if ((element! & 0xf) === CIGAR_N_IDX) {
           hasSkips = true
           break
         }
@@ -87,7 +87,7 @@ export function renderAlignmentShape({
   }
 
   if (hasSkips) {
-    const cigarOps = getCigarOps(CIGAR!)
+    const cigarOps = getCigarOps(CIGAR)
     const midY = topPx + heightPx / 2
 
     if (strand === 1) {

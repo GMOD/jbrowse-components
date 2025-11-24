@@ -51,7 +51,11 @@ export function getNextRefPos(
       } else if (op === CIGAR_D_IDX || op === CIGAR_N_IDX) {
         // 'D' or 'N'
         refPos += len
-      } else if (op === CIGAR_M_IDX || op === CIGAR_X_IDX || op === CIGAR_EQ_IDX) {
+      } else if (
+        op === CIGAR_M_IDX ||
+        op === CIGAR_X_IDX ||
+        op === CIGAR_EQ_IDX
+      ) {
         // 'M' or 'X' or '='
         for (let i = 0; i < len && currPos < positions.length; i++) {
           if (positions[currPos] === readPos + i) {

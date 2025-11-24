@@ -135,7 +135,7 @@ export function findParentThat(
   if (!hasParent(node)) {
     throw new Error('node does not have parent')
   }
-  let currentNode: IAnyStateTreeNode | undefined = getParent<any>(node)
+  let currentNode = getParent<IAnyStateTreeNode>(node)
   while (currentNode && isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode
@@ -233,8 +233,8 @@ export function springAnimate(
 export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
   predicate: T,
-): TypeTestedByPredicate<T> {
-  return findParentThat(node, predicate)
+) {
+  return findParentThat(node, predicate) as TypeTestedByPredicate<T>
 }
 
 /**
