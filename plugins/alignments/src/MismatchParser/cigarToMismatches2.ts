@@ -25,8 +25,8 @@ export function cigarToMismatches2(
   const mismatches: Mismatch[] = []
   const hasRefAndSeq = ref && seq
 
-  for (const op_ of ops) {
-    const packed = op_
+  for (let i = 0, l = ops.length; i < l; i++) {
+    const packed = ops[i]!
     const len = packed >> 4
     const op = packed & 0xf
 

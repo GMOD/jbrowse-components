@@ -1572,9 +1572,9 @@
   integrity sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==
 
 "@gmod/bgzf-filehandle@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-5.0.1.tgz#f8bb824709af89790e831c7fcf79db7580b3dad2"
-  integrity sha512-YUkgHqKYAQMsPqxYrgmpKVNKVZwJlhY7dPm5Z3zC7rdTY4EUpGyPatiyPb52MKaptUgZX7pwisvt1HSBQk1bbw==
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-5.0.2.tgz#58c6cd335a7374e2af312f72041c1b0f04fd8645"
+  integrity sha512-MUlq381hj9eah251JKGuCpUSLoeq+2Mbf/AAIk77LD2cHJhfAYAbELnnWb3Jq2DA6+ISF2NXZ8zWzdHSHx4xbw==
   dependencies:
     generic-filehandle2 "^2.0.5"
     pako-esm2 "^1.0.1"
