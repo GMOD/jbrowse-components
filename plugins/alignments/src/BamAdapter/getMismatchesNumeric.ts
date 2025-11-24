@@ -38,19 +38,9 @@ export function getMismatchesNumeric(
     qual,
   )
 
-  // Parse MD tag if available - push directly to avoid concat allocation
+  // Parse MD tag if available
   if (md) {
-    const mdMismatches = mdToMismatchesNumeric(
-      md,
-      cigar,
-      mismatches,
-      numericSeq,
-      seqLength,
-      qual,
-    )
-    for (let i = 0; i < mdMismatches.length; i++) {
-      mismatches.push(mdMismatches[i]!)
-    }
+    mdToMismatchesNumeric(md, cigar, mismatches, numericSeq, seqLength, qual)
   }
 
   return mismatches
@@ -83,7 +73,7 @@ function getSeqSlice(
   end: number,
   seqLength: number,
 ) {
-  const actualEnd = end < seqLength ? end : seqLength
+  const actualEnd = Math.min(end, seqLength)
   const len = actualEnd - start
   if (len <= 0) {
     return ''
@@ -205,20 +195,19 @@ function cigarToMismatchesNumeric(
 function mdToMismatchesNumeric(
   mdstring: string,
   ops: Uint32Array,
-  cigarMismatches: Mismatch[],
+  mismatches: Mismatch[],
   numericSeq: Uint8Array,
   seqLength: number,
   qual?: Uint8Array,
-): Mismatch[] {
-  const mismatchRecords: Mismatch[] = []
+) {
   const opsLength = ops.length
   const hasQual = qual !== undefined
 
-  // Check for skips
-  const cigarLength = cigarMismatches.length
+  // Check for skips in existing mismatches from CIGAR
+  const cigarLength = mismatches.length
   let hasSkips = false
   for (let k = 0; k < cigarLength; k++) {
-    if (cigarMismatches[k]!.type === 'skip') {
+    if (mismatches[k]!.type === 'skip') {
       hasSkips = true
       break
     }
@@ -264,9 +253,9 @@ function mdToMismatchesNumeric(
       // Handle skips
       if (hasSkips && cigarLength > 0) {
         for (let k = lastSkipPos; k < cigarLength; k++) {
-          const mismatch = cigarMismatches[k]!
-          if (mismatch.type === 'skip' && currStart >= mismatch.start) {
-            currStart += mismatch.length
+          const m = mismatches[k]!
+          if (m.type === 'skip' && currStart >= m.start) {
+            currStart += m.length
             lastSkipPos = k
           }
         }
@@ -299,7 +288,7 @@ function mdToMismatchesNumeric(
       const s = templateOffset - (refOffset - currStart)
 
       const base = getSeqBase(numericSeq, s, seqLength)
-      mismatchRecords.push({
+      mismatches.push({
         start: currStart,
         base,
         qual: hasQual ? qual[s] : undefined,
@@ -313,5 +302,4 @@ function mdToMismatchesNumeric(
       i++
     }
   }
-  return mismatchRecords
 }
