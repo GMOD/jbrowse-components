@@ -12,7 +12,7 @@ import {
   CIGAR_X,
   parseCigar2,
 } from '../../MismatchParser'
-import { fillRect, getCharWidthHeight } from '../util'
+import { fillRectCtx, fillTextCtx, getCharWidthHeight } from '../util'
 
 import type { Mismatch } from '../../shared/types'
 import type { ProcessedRenderArgs } from '../types'
@@ -69,14 +69,16 @@ export function renderSoftClipping({
         // show in soft clipping
         const baseColor = colorMap[base] || '#000000'
         ctx.fillStyle = baseColor
-        fillRect(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth)
+        fillRectCtx(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth)
 
         if (widthPx >= charWidth && heightPx >= heightLim) {
           ctx.fillStyle = theme.palette.getContrastText(baseColor)
-          ctx.fillText(
+          fillTextCtx(
+            ctx,
             base,
             leftPx + (widthPx - charWidth) / 2 + 1,
             topPx + heightPx,
+            canvasWidth,
           )
         }
       }

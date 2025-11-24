@@ -25,18 +25,20 @@ export function inc(
   type: keyof PreBaseCoverageBinSubtypes,
   field: string,
 ) {
-  let thisBin = bin[type][field]
-  if (thisBin === undefined) {
-    thisBin = bin[type][field] = {
-      entryDepth: 0,
-      probabilities: [],
+  const typeObj = bin[type]
+  let thisBin = typeObj[field]
+  if (!thisBin) {
+    thisBin = typeObj[field] = {
+      entryDepth: 1,
       '-1': 0,
       '0': 0,
       '1': 0,
     }
+    thisBin[strand] = 1
+  } else {
+    thisBin.entryDepth++
+    thisBin[strand]++
   }
-  thisBin.entryDepth++
-  thisBin[strand]++
 }
 
 export function incWithProbabilities(
@@ -46,17 +48,22 @@ export function incWithProbabilities(
   field: string,
   probability: number,
 ) {
-  let thisBin = bin[type][field]
-  if (thisBin === undefined) {
-    thisBin = bin[type][field] = {
-      entryDepth: 0,
-      probabilities: [],
+  const typeObj = bin[type]
+  let thisBin = typeObj[field]
+  if (!thisBin) {
+    thisBin = typeObj[field] = {
+      entryDepth: 1,
+      probabilityTotal: probability,
+      probabilityCount: 1,
       '-1': 0,
       '0': 0,
       '1': 0,
     }
+    thisBin[strand] = 1
+  } else {
+    thisBin.entryDepth++
+    thisBin.probabilityTotal = (thisBin.probabilityTotal || 0) + probability
+    thisBin.probabilityCount = (thisBin.probabilityCount || 0) + 1
+    thisBin[strand]++
   }
-  thisBin.entryDepth++
-  thisBin.probabilities.push(probability)
-  thisBin[strand]++
 }

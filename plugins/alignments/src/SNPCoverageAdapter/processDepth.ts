@@ -23,7 +23,6 @@ export function processDepth({
           depth: 0,
           readsCounted: 0,
           ref: {
-            probabilities: [],
             entryDepth: 0,
             '-1': 0,
             0: 0,
@@ -37,10 +36,11 @@ export function processDepth({
         }
       }
       if (j !== fend) {
-        bins[i].depth++
-        bins[i].readsCounted++
-        bins[i].ref.entryDepth++
-        bins[i].ref[fstrand]++
+        const bin = bins[i]
+        bin.depth++
+        bin.readsCounted++
+        bin.ref.entryDepth++
+        bin.ref[fstrand]++
       }
     }
   }

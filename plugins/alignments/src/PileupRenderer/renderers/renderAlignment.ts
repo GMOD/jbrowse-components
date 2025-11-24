@@ -46,7 +46,7 @@ export function renderAlignment({
     colorTagMap,
   })
 
-  renderAlignmentShape({ ctx, feat, renderArgs })
+  renderAlignmentShape({ ctx, feat, renderArgs, canvasWidth })
 
   // second pass for color types that render per-base things that go over the
   // existing drawing

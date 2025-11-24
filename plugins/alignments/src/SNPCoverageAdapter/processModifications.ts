@@ -58,7 +58,6 @@ export function processModifications({
             readsCounted: 0,
             snps: {},
             ref: {
-              probabilities: [],
               entryDepth: 0,
               '-1': 0,
               0: 0,

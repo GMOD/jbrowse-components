@@ -9,7 +9,7 @@ import {
   CIGAR_S,
   CIGAR_X,
 } from '../../MismatchParser'
-import { fillRect } from '../util'
+import { fillRectCtx, fillTextCtx } from '../util'
 
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
@@ -61,15 +61,16 @@ export function renderPerBaseLettering({
         const r = start + roffset + m
         const [leftPx] = bpSpanPx(r, r + 1, region, bpPerPx)
         const c = colorMap[letter]
-        fillRect(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
+        fillRectCtx(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
 
         if (w >= charWidth && heightPx >= heightLim) {
-          // normal SNP coloring
           ctx.fillStyle = colorContrastMap[letter]!
-          ctx.fillText(
+          fillTextCtx(
+            ctx,
             letter,
             leftPx + (w - charWidth) / 2 + 1,
             topPx + heightPx,
+            canvasWidth,
           )
         }
       }
