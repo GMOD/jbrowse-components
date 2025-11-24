@@ -30,53 +30,50 @@ export function getMismatchesNumeric(
   ref?: string,
   qual?: Uint8Array,
 ): Mismatch[] {
-  let mismatches: Mismatch[] = []
-
-  // Parse CIGAR operations
-  mismatches = mismatches.concat(
-    cigarToMismatchesNumeric(cigar, numericSeq, seqLength, ref, qual),
+  const mismatches = cigarToMismatchesNumeric(
+    cigar,
+    numericSeq,
+    seqLength,
+    ref,
+    qual,
   )
 
-  // Parse MD tag if available
+  // Parse MD tag if available - push directly to avoid concat allocation
   if (md) {
-    mismatches = mismatches.concat(
-      mdToMismatchesNumeric(md, cigar, mismatches, numericSeq, seqLength, qual),
+    const mdMismatches = mdToMismatchesNumeric(
+      md,
+      cigar,
+      mismatches,
+      numericSeq,
+      seqLength,
+      qual,
     )
+    for (let i = 0; i < mdMismatches.length; i++) {
+      mismatches.push(mdMismatches[i]!)
+    }
   }
 
   return mismatches
 }
 
 // Helper to get base from NUMERIC_SEQ at position (returns string)
-function getSeqBase(
-  numericSeq: Uint8Array,
-  idx: number,
-  seqLength: number,
-): string {
+function getSeqBase(numericSeq: Uint8Array, idx: number, seqLength: number) {
   if (idx < seqLength) {
-    const byteIndex = idx >> 1
-    const sb = numericSeq[byteIndex]!
-    return idx % 2 === 0
-      ? SEQRET_STRING_DECODER[(sb & 0xf0) >> 4]!
-      : SEQRET_STRING_DECODER[sb & 0x0f]!
+    const sb = numericSeq[idx >> 1]!
+    // Use bitwise: (idx & 1) is 0 for even, 1 for odd
+    // even: shift right 4, odd: no shift. Then mask with 0xf
+    const nibble = (sb >> ((1 - (idx & 1)) << 2)) & 0xf
+    return SEQRET_STRING_DECODER[nibble]!
   }
   return 'X'
 }
 
 // Helper to get base char code from NUMERIC_SEQ at position (returns lowercase char code)
-function getSeqBaseNumeric(
-  numericSeq: Uint8Array,
-  idx: number,
-  seqLength: number,
-): number {
-  if (idx < seqLength) {
-    const byteIndex = idx >> 1
-    const sb = numericSeq[byteIndex]!
-    return idx % 2 === 0
-      ? SEQRET_NUMERIC_DECODER[(sb & 0xf0) >> 4]!
-      : SEQRET_NUMERIC_DECODER[sb & 0x0f]!
-  }
-  return 88 // 'X'
+// Inlined version without bounds check for hot loops where bounds are known
+function getSeqBaseNumericUnchecked(numericSeq: Uint8Array, idx: number) {
+  const sb = numericSeq[idx >> 1]!
+  const nibble = (sb >> ((1 - (idx & 1)) << 2)) & 0xf
+  return SEQRET_NUMERIC_DECODER[nibble]!
 }
 
 // Helper to get sequence slice from NUMERIC_SEQ
@@ -85,12 +82,19 @@ function getSeqSlice(
   start: number,
   end: number,
   seqLength: number,
-): string {
-  const buf: string[] = []
-  for (let i = start; i < end && i < seqLength; i++) {
-    buf.push(getSeqBase(numericSeq, i, seqLength))
+) {
+  const actualEnd = end < seqLength ? end : seqLength
+  const len = actualEnd - start
+  if (len <= 0) {
+    return ''
   }
-  return buf.join('')
+  let result = ''
+  for (let i = start; i < actualEnd; i++) {
+    const sb = numericSeq[i >> 1]!
+    const nibble = (sb >> ((1 - (i & 1)) << 2)) & 0xf
+    result += SEQRET_STRING_DECODER[nibble]!
+  }
+  return result
 }
 
 function cigarToMismatchesNumeric(
@@ -111,18 +115,19 @@ function cigarToMismatchesNumeric(
 
     if (op === CIGAR_M || op === CIGAR_EQ) {
       if (hasRef) {
-        for (let j = 0; j < len; j++) {
-          const seqBaseCode = getSeqBaseNumeric(
-            numericSeq,
-            soffset + j,
-            seqLength,
-          )
+        const endIdx = soffset + len
+        const safeEnd = endIdx <= seqLength ? len : seqLength - soffset
+        for (let j = 0; j < safeEnd; j++) {
+          const seqIdx = soffset + j
+          const seqBaseCode = getSeqBaseNumericUnchecked(numericSeq, seqIdx)
           const refBaseCode = ref.charCodeAt(roffset + j) | 0x20
           if (seqBaseCode !== refBaseCode) {
+            const sb = numericSeq[seqIdx >> 1]!
+            const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
             mismatches.push({
               start: roffset + j,
               type: 'mismatch',
-              base: getSeqBase(numericSeq, soffset + j, seqLength),
+              base: SEQRET_STRING_DECODER[nibble]!,
               altbase: ref[roffset + j]!,
               length: 1,
             })
