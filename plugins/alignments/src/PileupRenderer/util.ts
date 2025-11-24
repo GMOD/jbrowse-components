@@ -27,9 +27,13 @@ export function fillTextCtx(
   x: number,
   y: number,
   cw: number,
+  color?: string,
 ) {
   if (x < 0 || x > cw) {
     return
+  }
+  if (color) {
+    ctx.fillStyle = color
   }
   ctx.fillText(text, x, y)
 }

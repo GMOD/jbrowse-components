@@ -68,17 +68,24 @@ export function renderSoftClipping({
         // Black accounts for IUPAC ambiguity code bases such as N that
         // show in soft clipping
         const baseColor = colorMap[base] || '#000000'
-        ctx.fillStyle = baseColor
-        fillRectCtx(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth)
+        fillRectCtx(
+          ctx,
+          leftPx,
+          topPx,
+          widthPx,
+          heightPx,
+          canvasWidth,
+          baseColor,
+        )
 
         if (widthPx >= charWidth && heightPx >= heightLim) {
-          ctx.fillStyle = theme.palette.getContrastText(baseColor)
           fillTextCtx(
             ctx,
             base,
             leftPx + (widthPx - charWidth) / 2 + 1,
             topPx + heightPx,
             canvasWidth,
+            theme.palette.getContrastText(baseColor),
           )
         }
       }

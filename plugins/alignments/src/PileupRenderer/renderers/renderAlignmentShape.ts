@@ -57,11 +57,13 @@ export function renderAlignmentShape({
   feat,
   renderArgs,
   canvasWidth,
+  color,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   renderArgs: ProcessedRenderArgs
   canvasWidth: number
+  color: string
 }) {
   const { regions, bpPerPx } = renderArgs
   const { heightPx, topPx, feature } = feat
@@ -73,6 +75,8 @@ export function renderAlignmentShape({
   const strand = feature.get('strand') * flip
   const renderChevrons = bpPerPx < 10 && heightPx > 5
   const hasSkips = CIGAR?.includes('N')
+
+  ctx.fillStyle = color
 
   if (hasSkips) {
     const cigarOps = parseCigar2(CIGAR)
@@ -207,7 +211,14 @@ export function renderAlignmentShape({
         drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
       }
     } else {
-      fillRectCtx(ctx, leftPx, topPx, rightPx - leftPx, heightPx, canvasWidth)
+      fillRectCtx(
+        ctx,
+        leftPx,
+        topPx,
+        rightPx - leftPx,
+        heightPx,
+        canvasWidth,
+      )
     }
   }
 }

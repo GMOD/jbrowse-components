@@ -64,13 +64,13 @@ export function renderPerBaseLettering({
         fillRectCtx(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
 
         if (w >= charWidth && heightPx >= heightLim) {
-          ctx.fillStyle = colorContrastMap[letter]!
           fillTextCtx(
             ctx,
             letter,
             leftPx + (w - charWidth) / 2 + 1,
             topPx + heightPx,
             canvasWidth,
+            colorContrastMap[letter],
           )
         }
       }

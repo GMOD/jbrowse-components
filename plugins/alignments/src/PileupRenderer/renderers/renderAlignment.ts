@@ -37,7 +37,7 @@ export function renderAlignment({
   const { feature } = feat
   const region = regions[0]!
 
-  ctx.fillStyle = getAlignmentShapeColor({
+  const alignmentColor = getAlignmentShapeColor({
     feature,
     config,
     tag,
@@ -46,7 +46,13 @@ export function renderAlignment({
     colorTagMap,
   })
 
-  renderAlignmentShape({ ctx, feat, renderArgs, canvasWidth })
+  renderAlignmentShape({
+    ctx,
+    feat,
+    renderArgs,
+    canvasWidth,
+    color: alignmentColor,
+  })
 
   // second pass for color types that render per-base things that go over the
   // existing drawing

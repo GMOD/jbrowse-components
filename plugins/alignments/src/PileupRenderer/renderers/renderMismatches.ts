@@ -114,7 +114,7 @@ export function renderMismatches({
         const contrastColor = drawSNPsMuted
           ? 'black'
           : colorContrastMap[mismatch.base] || 'black'
-        ctx.fillStyle = useAlpha
+        const textColor = useAlpha
           ? applyQualAlpha(contrastColor, mismatch.qual)
           : contrastColor
         fillTextCtx(
@@ -123,6 +123,7 @@ export function renderMismatches({
           leftPx + (widthPx - charWidth) / 2 + 1,
           topPx + heightPx,
           canvasWidth,
+          textColor,
         )
       }
     } else if (mismatch.type === 'deletion' && drawIndels) {
@@ -147,13 +148,13 @@ export function renderMismatches({
         const txt = String(len)
         const rwidth = measureText(txt, 10)
         if (widthPx >= rwidth && canRenderText) {
-          ctx.fillStyle = colorContrastMap.deletion!
           fillTextCtx(
             ctx,
             txt,
             (leftPx + rightPx) / 2 - rwidth / 2,
             topPx + heightPx,
             canvasWidth,
+            colorContrastMap.deletion,
           )
         }
       }
@@ -175,14 +176,31 @@ export function renderMismatches({
           if (invBpPerPx >= charWidth && canRenderText) {
             const l = Math.round(pos - insW)
             const insW3 = insW * 3
-            fillRectCtx(ctx, l, topPx, insW3, 1, canvasWidth)
-            fillRectCtx(ctx, l, topPx + heightPx - 1, insW3, 1, canvasWidth)
+            fillRectCtx(
+              ctx,
+              l,
+              topPx,
+              insW3,
+              1,
+              canvasWidth,
+              colorMap.insertion,
+            )
+            fillRectCtx(
+              ctx,
+              l,
+              topPx + heightPx - 1,
+              insW3,
+              1,
+              canvasWidth,
+              colorMap.insertion,
+            )
             fillTextCtx(
               ctx,
               `(${mismatch.base})`,
               pos + 3,
               topPx + heightPx,
               canvasWidth,
+              colorContrastMap.insertion,
             )
           }
           if (bpPerPx < 3) {
@@ -202,14 +220,15 @@ export function renderMismatches({
       if (invBpPerPx >= charWidth && canRenderText) {
         const l = pos - clipW
         const clipW3 = clipW * 3
-        fillRectCtx(ctx, l, topPx, clipW3, 1, canvasWidth)
-        fillRectCtx(ctx, l, topPx + heightPx - 1, clipW3, 1, canvasWidth)
+        fillRectCtx(ctx, l, topPx, clipW3, 1, canvasWidth, c)
+        fillRectCtx(ctx, l, topPx + heightPx - 1, clipW3, 1, canvasWidth, c)
         fillTextCtx(
           ctx,
           `(${mismatch.base})`,
           pos + 3,
           topPx + heightPx,
           canvasWidth,
+          colorContrastMap[mismatch.type],
         )
       }
     } else if (mismatch.type === 'skip') {
@@ -262,13 +281,13 @@ export function renderMismatches({
             canvasWidth,
             'purple',
           )
-          ctx.fillStyle = colorContrastMap.insertion!
           fillTextCtx(
             ctx,
             txt,
             leftPx - rwidth / 2,
             topPx + heightPx,
             canvasWidth,
+            colorContrastMap.insertion,
           )
         } else {
           const padding = 2

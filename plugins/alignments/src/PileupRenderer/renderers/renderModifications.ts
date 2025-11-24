@@ -1,4 +1,5 @@
 import { bpSpanPx, max, sum } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 
 import { getNextRefPos } from '../../MismatchParser'
 import { getModPositions } from '../../ModificationParser/getModPositions'
@@ -14,7 +15,7 @@ import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
 // Pre-compute colord object for blue color (used in two-color mode)
-const BLUE_COLORD = 'blue'
+const BLUE_COLORD = colord('blue')
 
 // render modifications stored in MM tag in BAM
 export function renderModifications({
