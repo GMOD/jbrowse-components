@@ -1,18 +1,18 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_H,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_S,
-  CIGAR_X,
-  parseCigar2,
-} from '../../MismatchParser'
 import { fillRect, getCharWidthHeight } from '../util'
+import {
+  CIGAR_D_IDX,
+  CIGAR_EQ_IDX,
+  CIGAR_H_IDX,
+  CIGAR_I_IDX,
+  CIGAR_M_IDX,
+  CIGAR_N_IDX,
+  CIGAR_S_IDX,
+  CIGAR_X_IDX,
+  getCigarOps,
+} from './cigarUtil'
 
 import type { Mismatch } from '../../shared/types'
 import type { ProcessedRenderArgs } from '../types'
@@ -53,12 +53,14 @@ export function renderSoftClipping({
   const heightLim = charHeight - 2
   let seqOffset = 0
   let refOffset = 0
-  const CIGAR = feature.get('CIGAR')
-  const cigarOps = parseCigar2(CIGAR)
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const op = cigarOps[i + 1]!
-    const len = cigarOps[i]!
-    if (op === CIGAR_S) {
+  const CIGAR =
+    feature.get('NUMERIC_CIGAR') || (feature.get('CIGAR') as string | undefined)
+  const cigarOps = getCigarOps(CIGAR!)
+  for (let i = 0; i < cigarOps.length; i++) {
+    const packed = cigarOps[i]!
+    const len = packed >> 4
+    const op = packed & 0xf
+    if (op === CIGAR_S_IDX) {
       for (let k = 0; k < len; k++) {
         const base = seq[seqOffset + k]!
         const s0 = feature.get('start') - (i === 0 ? len : 0) + refOffset + k
@@ -82,20 +84,20 @@ export function renderSoftClipping({
       }
       seqOffset += len
     }
-    if (op === CIGAR_N) {
+    if (op === CIGAR_N_IDX) {
       refOffset += len
     }
-    if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
+    if (op === CIGAR_M_IDX || op === CIGAR_EQ_IDX || op === CIGAR_X_IDX) {
       refOffset += len
       seqOffset += len
     }
-    if (op === CIGAR_H) {
+    if (op === CIGAR_H_IDX) {
       // do nothing
     }
-    if (op === CIGAR_D) {
+    if (op === CIGAR_D_IDX) {
       refOffset += len
     }
-    if (op === CIGAR_I) {
+    if (op === CIGAR_I_IDX) {
       seqOffset += len
     }
   }

@@ -32,7 +32,7 @@
   "dependencies": {
     "@floating-ui/react": "^0.27.0",
     "@gmod/abortable-promise-cache": "^3.0.1",
-    "@gmod/bgzf-filehandle": "^4.0.0",
+    "@gmod/bgzf-filehandle": "^5.0.0",
     "@gmod/http-range-fetcher": "^5.0.0",
     "@leeoniya/ufuzzy": "^1.0.18",
     "@mui/icons-material": "^7.0.0",

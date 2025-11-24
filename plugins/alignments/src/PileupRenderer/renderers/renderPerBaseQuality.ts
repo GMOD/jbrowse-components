@@ -1,15 +1,16 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_S,
-  CIGAR_X,
-} from '../../MismatchParser'
 import { fillRect } from '../util'
+import {
+  CIGAR_D_IDX,
+  CIGAR_EQ_IDX,
+  CIGAR_I_IDX,
+  CIGAR_M_IDX,
+  CIGAR_N_IDX,
+  CIGAR_S_IDX,
+  CIGAR_X_IDX,
+  getCigarOps,
+} from './cigarUtil'
 
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
@@ -27,7 +28,7 @@ export function renderPerBaseQuality({
   region: Region
   bpPerPx: number
   canvasWidth: number
-  cigarOps: number[]
+  cigarOps: Uint32Array | string
 }) {
   const { feature, topPx, heightPx } = feat
   const qual: string = feature.get('qual') || ''
@@ -37,14 +38,20 @@ export function renderPerBaseQuality({
   let soffset = 0 // sequence offset
   let roffset = 0 // reference offset
 
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = cigarOps[i]!
-    const op = cigarOps[i + 1]!
-    if (op === CIGAR_S || op === CIGAR_I) {
+  const ops = getCigarOps(cigarOps)
+  for (let i = 0; i < ops.length; i++) {
+    const packed = ops[i]!
+    const len = packed >> 4
+    const opIdx = packed & 0xf
+    if (opIdx === CIGAR_S_IDX || opIdx === CIGAR_I_IDX) {
       soffset += len
-    } else if (op === CIGAR_D || op === CIGAR_N) {
+    } else if (opIdx === CIGAR_D_IDX || opIdx === CIGAR_N_IDX) {
       roffset += len
-    } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
+    } else if (
+      opIdx === CIGAR_M_IDX ||
+      opIdx === CIGAR_X_IDX ||
+      opIdx === CIGAR_EQ_IDX
+    ) {
       for (let m = 0; m < len; m++) {
         const score = scores[soffset + m]!
         const start0 = start + roffset + m

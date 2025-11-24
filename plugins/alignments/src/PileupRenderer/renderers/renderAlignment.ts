@@ -4,7 +4,6 @@ import { renderMethylation } from './renderMethylation'
 import { renderModifications } from './renderModifications'
 import { renderPerBaseLettering } from './renderPerBaseLettering'
 import { renderPerBaseQuality } from './renderPerBaseQuality'
-import { parseCigar2 } from '../../MismatchParser'
 
 import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
@@ -52,7 +51,7 @@ export function renderAlignment({
   // existing drawing
   switch (colorType) {
     case 'perBaseQuality': {
-      const cigarOps = parseCigar2(feature.get('CIGAR'))
+      const cigarOps = feature.get('NUMERIC_CIGAR') || feature.get('CIGAR')
       renderPerBaseQuality({
         ctx,
         feat,
@@ -65,7 +64,7 @@ export function renderAlignment({
     }
 
     case 'perBaseLettering': {
-      const cigarOps = parseCigar2(feature.get('CIGAR'))
+      const cigarOps = feature.get('NUMERIC_CIGAR') || feature.get('CIGAR')
       renderPerBaseLettering({
         ctx,
         feat,
@@ -82,7 +81,7 @@ export function renderAlignment({
     }
 
     case 'modifications': {
-      const cigarOps = parseCigar2(feature.get('CIGAR'))
+      const cigarOps = feature.get('NUMERIC_CIGAR') || feature.get('CIGAR')
       const ret = renderModifications({
         ctx,
         feat,
@@ -102,7 +101,7 @@ export function renderAlignment({
     }
 
     case 'methylation': {
-      const cigarOps = parseCigar2(feature.get('CIGAR'))
+      const cigarOps = feature.get('NUMERIC_CIGAR') || feature.get('CIGAR')
       renderMethylation({
         ctx,
         feat,

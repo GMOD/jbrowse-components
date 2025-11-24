@@ -1,14 +1,14 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_X,
-  parseCigar2,
-} from '../../MismatchParser'
 import { CHEVRON_WIDTH } from '../../shared/util'
+import {
+  CIGAR_D_IDX,
+  CIGAR_EQ_IDX,
+  CIGAR_M_IDX,
+  CIGAR_N_IDX,
+  CIGAR_X_IDX,
+  getCigarOps,
+} from './cigarUtil'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
@@ -65,14 +65,29 @@ export function renderAlignmentShape({
   const region = regions[0]!
   const s = feature.get('start')
   const e = feature.get('end')
-  const CIGAR = feature.get('CIGAR') as string | undefined
+  const CIGAR =
+    feature.get('NUMERIC_CIGAR') || (feature.get('CIGAR') as string | undefined)
   const flip = region.reversed ? -1 : 1
   const strand = feature.get('strand') * flip
   const renderChevrons = bpPerPx < 10 && heightPx > 5
-  const hasSkips = CIGAR?.includes('N')
+
+  // Check for skips (N operations)
+  let hasSkips = false
+  if (CIGAR) {
+    if (typeof CIGAR === 'string') {
+      hasSkips = CIGAR.includes('N')
+    } else {
+      for (let i = 0; i < CIGAR.length; i++) {
+        if ((CIGAR[i]! & 0xf) === CIGAR_N_IDX) {
+          hasSkips = true
+          break
+        }
+      }
+    }
+  }
 
   if (hasSkips) {
-    const cigarOps = parseCigar2(CIGAR)
+    const cigarOps = getCigarOps(CIGAR!)
     const midY = topPx + heightPx / 2
 
     if (strand === 1) {
@@ -80,18 +95,19 @@ export function renderAlignmentShape({
       let drawStart = s
       const opsLen = cigarOps.length
 
-      for (let i = 0; i < opsLen; i += 2) {
-        const opLen = cigarOps[i]!
-        const op = cigarOps[i + 1]!
+      for (let i = 0; i < opsLen; i++) {
+        const packed = cigarOps[i]!
+        const opLen = packed >> 4
+        const op = packed & 0xf
 
         if (
-          op === CIGAR_M ||
-          op === CIGAR_X ||
-          op === CIGAR_EQ ||
-          op === CIGAR_D
+          op === CIGAR_M_IDX ||
+          op === CIGAR_X_IDX ||
+          op === CIGAR_EQ_IDX ||
+          op === CIGAR_D_IDX
         ) {
           drawLen += opLen
-        } else if (op === CIGAR_N) {
+        } else if (op === CIGAR_N_IDX) {
           if (drawLen) {
             const [leftPx, rightPx] = bpSpanPx(
               drawStart,
@@ -124,18 +140,19 @@ export function renderAlignmentShape({
       let drawLen = 0
       let drawStart = e
 
-      for (let i = cigarOps.length - 2; i >= 0; i -= 2) {
-        const opLen = cigarOps[i]!
-        const op = cigarOps[i + 1]!
+      for (let i = cigarOps.length - 1; i >= 0; i--) {
+        const packed = cigarOps[i]!
+        const opLen = packed >> 4
+        const op = packed & 0xf
 
         if (
-          op === CIGAR_M ||
-          op === CIGAR_X ||
-          op === CIGAR_EQ ||
-          op === CIGAR_D
+          op === CIGAR_M_IDX ||
+          op === CIGAR_X_IDX ||
+          op === CIGAR_EQ_IDX ||
+          op === CIGAR_D_IDX
         ) {
           drawLen += opLen
-        } else if (op === CIGAR_N) {
+        } else if (op === CIGAR_N_IDX) {
           if (drawLen) {
             const [leftPx, rightPx] = bpSpanPx(
               drawStart - drawLen,

@@ -1545,13 +1545,12 @@
   resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.4.tgz#5ecb44e40cf128e9f44f7c25e1406facdcaede9b"
   integrity sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==
 
-"@gmod/bam@^6.0.1":
-  version "6.1.1"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-6.1.1.tgz#a7e80fbeb09d22382cd39f816f4d47419911ade0"
-  integrity sha512-2p0j6P+0n2XFc4NBPJCVEEprwYWDFgvWThONPe7a0ra2+UD+DCLwL3BKfseZ7MyzRwptlYV6ektYODXSqilFKA==
+"@gmod/bam@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-7.0.0.tgz#aeafa77dfa5e5db02ef19e00c432aa7cdb48072c"
+  integrity sha512-ulXhCv2i+jtQk4vL336UTyid2FUlBD6AqMgwslnHX3WCXwAbpBeqOyPcutsvhZh486XwUBjvPOUkIn8qRYdKgQ==
   dependencies:
-    "@gmod/abortable-promise-cache" "^3.0.1"
-    "@gmod/bgzf-filehandle" "^4.0.0"
+    "@gmod/bgzf-filehandle" "^4.2.1"
     crc "^4.3.2"
     generic-filehandle2 "^2.0.1"
     quick-lru "^4.0.0"
@@ -1572,10 +1571,18 @@
   resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.1.7.tgz#e533ae0ac72e6fa957ea3a5a946654735f875b7c"
   integrity sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==
 
-"@gmod/bgzf-filehandle@^4.0.0":
+"@gmod/bgzf-filehandle@^4.0.0", "@gmod/bgzf-filehandle@^4.2.1":
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-4.2.1.tgz#0f460d1d01226fe2ac0143a33878bbc10cf77687"
   integrity sha512-R3p7cN2FuzBNpH+/rd1T2GOpSH4m+t4EUZo4nen9CaSN2jz4eU5szmLxLMP7/VENhWqun+nhdzFklpQz5k4nUA==
+  dependencies:
+    generic-filehandle2 "^2.0.5"
+    pako-esm2 "^1.0.1"
+
+"@gmod/bgzf-filehandle@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-5.0.0.tgz#3c26b71e8d3d6333492043f3fa989a4167c6da3a"
+  integrity sha512-Wa4Q9XhiX8GE11yGD1ZPlR8PXeU1Zs71DrD5KVqy3NDqpJHVEYdA6ej5qwY9W4sA9PlLW/cTFj4cMBvwJaau5A==
   dependencies:
     generic-filehandle2 "^2.0.5"
     pako-esm2 "^1.0.1"

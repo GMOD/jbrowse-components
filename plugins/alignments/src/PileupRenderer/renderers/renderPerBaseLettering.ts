@@ -1,15 +1,16 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_S,
-  CIGAR_X,
-} from '../../MismatchParser'
 import { fillRect } from '../util'
+import {
+  CIGAR_D_IDX,
+  CIGAR_EQ_IDX,
+  CIGAR_I_IDX,
+  CIGAR_M_IDX,
+  CIGAR_N_IDX,
+  CIGAR_S_IDX,
+  CIGAR_X_IDX,
+  getCigarOps,
+} from './cigarUtil'
 
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
@@ -35,7 +36,7 @@ export function renderPerBaseLettering({
   charWidth: number
   charHeight: number
   canvasWidth: number
-  cigarOps: number[]
+  cigarOps: Uint32Array | string
 }) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat
@@ -48,14 +49,16 @@ export function renderPerBaseLettering({
   if (!seq) {
     return
   }
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = cigarOps[i]!
-    const op = cigarOps[i + 1]!
-    if (op === CIGAR_S || op === CIGAR_I) {
+  const ops = getCigarOps(cigarOps)
+  for (let i = 0; i < ops.length; i++) {
+    const packed = ops[i]!
+    const len = packed >> 4
+    const op = packed & 0xf
+    if (op === CIGAR_S_IDX || op === CIGAR_I_IDX) {
       soffset += len
-    } else if (op === CIGAR_D || op === CIGAR_N) {
+    } else if (op === CIGAR_D_IDX || op === CIGAR_N_IDX) {
       roffset += len
-    } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
+    } else if (op === CIGAR_M_IDX || op === CIGAR_X_IDX || op === CIGAR_EQ_IDX) {
       for (let m = 0; m < len; m++) {
         const letter = seq[soffset + m]!
         const r = start + roffset + m

@@ -39,7 +39,7 @@
     "@flatten-js/interval-tree": "^2.0.0",
     "@gmod/bbi": "^7.0.0",
     "@gmod/bed": "^2.1.2",
-    "@gmod/bgzf-filehandle": "^4.0.0",
+    "@gmod/bgzf-filehandle": "^5.0.0",
     "@gmod/tabix": "^3.0.1",
     "@jbrowse/core": "^3.7.0",
     "mobx": "^6.0.0",
