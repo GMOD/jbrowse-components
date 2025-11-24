@@ -1545,12 +1545,12 @@
   resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.4.tgz#5ecb44e40cf128e9f44f7c25e1406facdcaede9b"
   integrity sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==
 
-"@gmod/bam@^7.0.2":
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-7.0.2.tgz#f74c40f01123f297d90669f9f3676e60e790292c"
-  integrity sha512-L4SEUi+tjFUafF+mLIlicYX4QTc2mOTvigwVj3tCvpF0gJhDpD9QltOAqgZxSKxY0pZQnWU1qEiU9ulnB/Dvyg==
+"@gmod/bam@^7.0.4":
+  version "7.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-7.0.4.tgz#1c674ad5ad20d5921dc1edfeace109cc512f78da"
+  integrity sha512-UXHfU/aGCZ51P5D1xPqHuKy1ZZSspg4D03J3bshVPqUhJpQUulm4t/BdPPIF2iDihCm9LLySdrbtdMFXFwTdGA==
   dependencies:
-    "@gmod/bgzf-filehandle" "^4.2.1"
+    "@gmod/bgzf-filehandle" "^5.0.1"
     crc "^4.3.2"
     generic-filehandle2 "^2.0.1"
     quick-lru "^4.0.0"
@@ -1571,18 +1571,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.1.7.tgz#e533ae0ac72e6fa957ea3a5a946654735f875b7c"
   integrity sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==
 
-"@gmod/bgzf-filehandle@^4.0.0", "@gmod/bgzf-filehandle@^4.2.1":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-4.2.1.tgz#0f460d1d01226fe2ac0143a33878bbc10cf77687"
-  integrity sha512-R3p7cN2FuzBNpH+/rd1T2GOpSH4m+t4EUZo4nen9CaSN2jz4eU5szmLxLMP7/VENhWqun+nhdzFklpQz5k4nUA==
-  dependencies:
-    generic-filehandle2 "^2.0.5"
-    pako-esm2 "^1.0.1"
-
-"@gmod/bgzf-filehandle@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-5.0.0.tgz#3c26b71e8d3d6333492043f3fa989a4167c6da3a"
-  integrity sha512-Wa4Q9XhiX8GE11yGD1ZPlR8PXeU1Zs71DrD5KVqy3NDqpJHVEYdA6ej5qwY9W4sA9PlLW/cTFj4cMBvwJaau5A==
+"@gmod/bgzf-filehandle@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-5.0.1.tgz#f8bb824709af89790e831c7fcf79db7580b3dad2"
+  integrity sha512-YUkgHqKYAQMsPqxYrgmpKVNKVZwJlhY7dPm5Z3zC7rdTY4EUpGyPatiyPb52MKaptUgZX7pwisvt1HSBQk1bbw==
   dependencies:
     generic-filehandle2 "^2.0.5"
     pako-esm2 "^1.0.1"
@@ -1615,12 +1607,12 @@
   dependencies:
     quick-lru "^4.0.0"
 
-"@gmod/indexedfasta@^4.0.0":
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-4.0.6.tgz#1f393b91eb17e27d58a7993ff4bca1f2308dbaa9"
-  integrity sha512-tiLHXBrRcG9geR6gc9yJzZdL9mWPsZ3ju32Fc7ckSyhHMpPh9MBo4djdNbqDuyTtW7vDXxs3/TksaPJzolBVQg==
+"@gmod/indexedfasta@^4.0.7":
+  version "4.0.7"
+  resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-4.0.7.tgz#5525cf620af512bc2495e147a77204835623ec39"
+  integrity sha512-WN1wDI73icrLn/OJPfBTkXsnLui9Kcz3mWtbpcOm8oRAgFVgV/qUSNtgyQnCdbfMWnAfQzRLat1C8iyNg8kVcw==
   dependencies:
-    "@gmod/bgzf-filehandle" "^4.0.0"
+    "@gmod/bgzf-filehandle" "^5.0.1"
     generic-filehandle2 "^2.0.1"
 
 "@gmod/nclist@^3.0.0":
@@ -1632,13 +1624,13 @@
     "@jridgewell/resolve-uri" "^3.1.2"
     quick-lru "^4.0.0"
 
-"@gmod/tabix@^3.0.1":
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.1.1.tgz#4e19569fa6d9ba7d60ea8d9ab36f1ba90c976828"
-  integrity sha512-ySCEnvdephNr84YEit0mlNjT9QMuyzt3+I1fWaRKq4kjMVDrFn/tCBLI/xfX5pkA79PK9BZgq0XWkswB/GTjdw==
+"@gmod/tabix@^3.1.2":
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.1.2.tgz#ef29efd6cd2b1bdf5374aa35b484b3057600dd9c"
+  integrity sha512-1/kKXWJt8UNhGoAY4jyQSZWtPBR/U133I5SBR8dVoISq4TejM+lb6ru5d7JcJyhh88xEVMsdKWZm89Roe+mP0g==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
-    "@gmod/bgzf-filehandle" "^4.0.0"
+    "@gmod/bgzf-filehandle" "^5.0.1"
     generic-filehandle2 "^2.0.1"
     quick-lru "^4.0.0"
 
