@@ -228,18 +228,18 @@ export default class Flatbush {
     const hilbertValues = new Uint32Array(this.numItems)
     const hilbertMax = (1 << 16) - 1
 
-    // map item centers into Hilbert coordinate space and calculate Hilbert values
+    const scaleX = hilbertMax / width
+    const scaleY = hilbertMax / height
+    const offsetX = this.minX
+    const offsetY = this.minY
+
     for (let i = 0, pos = 0; i < this.numItems; i++) {
       const minX = boxes[pos++]!
       const minY = boxes[pos++]!
       const maxX = boxes[pos++]!
       const maxY = boxes[pos++]!
-      const x = Math.floor(
-        (hilbertMax * ((minX + maxX) / 2 - this.minX)) / width,
-      )
-      const y = Math.floor(
-        (hilbertMax * ((minY + maxY) / 2 - this.minY)) / height,
-      )
+      const x = Math.floor(((minX + maxX) * 0.5 - offsetX) * scaleX)
+      const y = Math.floor(((minY + maxY) * 0.5 - offsetY) * scaleY)
       hilbertValues[i] = hilbert(x, y)
     }
 
@@ -261,16 +261,27 @@ export default class Flatbush {
       while (pos < end) {
         const nodeIndex = pos
 
-        // calculate bbox for the new node
         let nodeMinX = boxes[pos++]!
         let nodeMinY = boxes[pos++]!
         let nodeMaxX = boxes[pos++]!
         let nodeMaxY = boxes[pos++]!
         for (let j = 1; j < this.nodeSize && pos < end; j++) {
-          nodeMinX = Math.min(nodeMinX, boxes[pos++]!)
-          nodeMinY = Math.min(nodeMinY, boxes[pos++]!)
-          nodeMaxX = Math.max(nodeMaxX, boxes[pos++]!)
-          nodeMaxY = Math.max(nodeMaxY, boxes[pos++]!)
+          const x0 = boxes[pos++]!
+          const y0 = boxes[pos++]!
+          const x1 = boxes[pos++]!
+          const y1 = boxes[pos++]!
+          if (x0 < nodeMinX) {
+            nodeMinX = x0
+          }
+          if (y0 < nodeMinY) {
+            nodeMinY = y0
+          }
+          if (x1 > nodeMaxX) {
+            nodeMaxX = x1
+          }
+          if (y1 > nodeMaxY) {
+            nodeMaxY = y1
+          }
         }
 
         // add the new node to the tree data
@@ -448,45 +459,94 @@ function sort(
   right: number,
   nodeSize: number,
 ): void {
-  if (Math.floor(left / nodeSize) >= Math.floor(right / nodeSize)) {
-    return
-  }
+  const stack: number[] = [left, right]
 
-  // apply median of three method
-  const start = values[left]!
-  const mid = values[(left + right) >> 1]!
-  const end = values[right]!
+  while (stack.length > 0) {
+    const r = stack.pop()!
+    const l = stack.pop()!
 
-  let pivot = end
-
-  const x = Math.max(start, mid)
-  if (end > x) {
-    pivot = x
-  } else if (x === start) {
-    pivot = Math.max(mid, end)
-  } else if (x === mid) {
-    pivot = Math.max(start, end)
-  }
-
-  let i = left - 1
-  let j = right + 1
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  while (true) {
-    do {
-      i++
-    } while (values[i]! < pivot)
-    do {
-      j--
-    } while (values[j]! > pivot)
-    if (i >= j) {
-      break
+    if (Math.floor(l / nodeSize) >= Math.floor(r / nodeSize)) {
+      continue
     }
-    swap(values, boxes, indices, i, j)
-  }
 
-  sort(values, boxes, indices, left, j, nodeSize)
-  sort(values, boxes, indices, j + 1, right, nodeSize)
+    if (r - l < 10) {
+      insertionSort(values, boxes, indices, l, r)
+      continue
+    }
+
+    const start = values[l]!
+    const mid = values[(l + r) >> 1]!
+    const end = values[r]!
+
+    let pivot = end
+
+    const x = Math.max(start, mid)
+    if (end > x) {
+      pivot = x
+    } else if (x === start) {
+      pivot = Math.max(mid, end)
+    } else if (x === mid) {
+      pivot = Math.max(start, end)
+    }
+
+    let i = l - 1
+    let j = r + 1
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    while (true) {
+      do {
+        i++
+      } while (values[i]! < pivot)
+      do {
+        j--
+      } while (values[j]! > pivot)
+      if (i >= j) {
+        break
+      }
+      swap(values, boxes, indices, i, j)
+    }
+
+    stack.push(l, j, j + 1, r)
+  }
+}
+
+function insertionSort(
+  values: Uint32Array,
+  boxes: TypedArray,
+  indices: IndexArray,
+  left: number,
+  right: number,
+): void {
+  for (let i = left + 1; i <= right; i++) {
+    const tempVal = values[i]!
+    const tempIdx = indices[i]!
+    const k = i * 4
+    const tempA = boxes[k]!
+    const tempB = boxes[k + 1]!
+    const tempC = boxes[k + 2]!
+    const tempD = boxes[k + 3]!
+
+    let j = i - 1
+    while (j >= left && values[j]! > tempVal) {
+      values[j + 1] = values[j]!
+      indices[j + 1] = indices[j]!
+      const src = j * 4
+      const dst = (j + 1) * 4
+      boxes[dst] = boxes[src]!
+      boxes[dst + 1] = boxes[src + 1]!
+      boxes[dst + 2] = boxes[src + 2]!
+      boxes[dst + 3] = boxes[src + 3]!
+      j--
+    }
+
+    values[j + 1] = tempVal
+    indices[j + 1] = tempIdx
+    const dst = (j + 1) * 4
+    boxes[dst] = tempA
+    boxes[dst + 1] = tempB
+    boxes[dst + 2] = tempC
+    boxes[dst + 3] = tempD
+  }
 }
 
 /**
