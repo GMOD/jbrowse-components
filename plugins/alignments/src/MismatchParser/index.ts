@@ -9,18 +9,6 @@ import type { Feature } from '@jbrowse/core/util'
 const startClip = new RegExp(/(\d+)[SH]$/)
 const endClip = new RegExp(/^(\d+)([SH])/)
 
-// CIGAR operation char codes for parseCigar2
-export const CIGAR_M = 77 // 'M'
-export const CIGAR_I = 73 // 'I'
-export const CIGAR_D = 68 // 'D'
-export const CIGAR_N = 78 // 'N'
-export const CIGAR_S = 83 // 'S'
-export const CIGAR_H = 72 // 'H'
-export const CIGAR_X = 88 // 'X'
-export const CIGAR_P = 80 // 'P'
-export const CIGAR_E = 69 // 'E'
-export const CIGAR_EQ = 61 // '='
-
 export function parseCigar(s = '') {
   let currLen = ''
   const ret = []

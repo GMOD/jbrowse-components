@@ -1,3 +1,4 @@
+import { getCigarOps } from './cigarUtil'
 import { getAlignmentShapeColor } from './getAlignmentShapeColor'
 import { renderAlignmentShape } from './renderAlignmentShape'
 import { renderMethylation } from './renderMethylation'
@@ -70,7 +71,9 @@ export function renderAlignment({
     }
 
     case 'perBaseLettering': {
-      const cigarOps = feature.get('NUMERIC_CIGAR') || feature.get('CIGAR')
+      const cigarOps = getCigarOps(
+        feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
+      )
       renderPerBaseLettering({
         ctx,
         feat,
@@ -87,7 +90,9 @@ export function renderAlignment({
     }
 
     case 'modifications': {
-      const cigarOps = feature.get('NUMERIC_CIGAR') || feature.get('CIGAR')
+      const cigarOps = getCigarOps(
+        feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
+      )
       const ret = renderModifications({
         ctx,
         feat,
@@ -107,7 +112,9 @@ export function renderAlignment({
     }
 
     case 'methylation': {
-      const cigarOps = feature.get('NUMERIC_CIGAR') || feature.get('CIGAR')
+      const cigarOps = getCigarOps(
+        feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
+      )
       renderMethylation({
         ctx,
         feat,

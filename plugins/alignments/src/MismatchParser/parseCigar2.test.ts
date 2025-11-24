@@ -1,5 +1,6 @@
 import { cigarToMismatches } from './cigarToMismatches'
 import { cigarToMismatches2 } from './cigarToMismatches2'
+import { parseCigar2, parseCigar } from './index'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -9,64 +10,45 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-  parseCigar2,
-  parseCigar,
-} from './index'
+} from '../PileupRenderer/renderers/cigarUtil'
 
-describe('parseCigar2', () => {
+const ml = (currLen: number, opIndex: number) => (currLen << 4) | opIndex
+const parseCigar3 = (args: string) => [...parseCigar2(args)]
+
+describe('parseCigar3', () => {
   test('simple CIGAR', () => {
-    const result = parseCigar2('100M')
-    expect(result).toEqual([100, CIGAR_M])
+    const result = parseCigar3('100M')
+    expect(result).toEqual([ml(100, CIGAR_M)])
   })
 
   test('medium CIGAR', () => {
-    const result = parseCigar2('50M5I45M')
-    expect(result).toEqual([50, CIGAR_M, 5, CIGAR_I, 45, CIGAR_M])
+    const result = parseCigar3('50M5I45M')
+    expect(result).toEqual([ml(50, CIGAR_M), ml(5, CIGAR_I), ml(45, CIGAR_M)])
   })
 
   test('complex CIGAR with all operations', () => {
-    const result = parseCigar2('10M1I5M1D20M100N5M10S5H')
+    const result = parseCigar3('5H10M1I5M1D20M100N5M10S')
     expect(result).toEqual([
-      10,
-      CIGAR_M,
-      1,
-      CIGAR_I,
-      5,
-      CIGAR_M,
-      1,
-      CIGAR_D,
-      20,
-      CIGAR_M,
-      100,
-      CIGAR_N,
-      5,
-      CIGAR_M,
-      10,
-      CIGAR_S,
-      5,
-      CIGAR_H,
+      ml(5, CIGAR_H),
+      ml(10, CIGAR_M),
+      ml(1, CIGAR_I),
+      ml(5, CIGAR_M),
+      ml(1, CIGAR_D),
+      ml(20, CIGAR_M),
+      ml(100, CIGAR_N),
+      ml(5, CIGAR_M),
+      ml(10, CIGAR_S),
     ])
   })
 
   test('large numbers', () => {
-    const result = parseCigar2('10000M5678I')
-    expect(result).toEqual([10000, CIGAR_M, 5678, CIGAR_I])
+    const result = parseCigar3('10000M5678I')
+    expect(result).toEqual([ml(10000, CIGAR_M), ml(5678, CIGAR_I)])
   })
 
   test('with = and X operations', () => {
-    const result = parseCigar2('50=5X45M')
-    expect(result).toEqual([50, CIGAR_EQ, 5, CIGAR_X, 45, CIGAR_M])
-  })
-
-  test('CIGAR constants have correct values', () => {
-    expect(CIGAR_M).toBe(77) // 'M'.charCodeAt(0)
-    expect(CIGAR_I).toBe(73) // 'I'.charCodeAt(0)
-    expect(CIGAR_D).toBe(68) // 'D'.charCodeAt(0)
-    expect(CIGAR_N).toBe(78) // 'N'.charCodeAt(0)
-    expect(CIGAR_S).toBe(83) // 'S'.charCodeAt(0)
-    expect(CIGAR_H).toBe(72) // 'H'.charCodeAt(0)
-    expect(CIGAR_X).toBe(88) // 'X'.charCodeAt(0)
-    expect(CIGAR_EQ).toBe(61) // '='.charCodeAt(0)
+    const result = parseCigar3('50=5X45M')
+    expect(result).toEqual([ml(50, CIGAR_EQ), ml(5, CIGAR_X), ml(45, CIGAR_M)])
   })
 })
 
@@ -130,7 +112,7 @@ describe('cigarToMismatches2', () => {
     })
   })
 
-  test('compatibility: parseCigar vs parseCigar2', () => {
+  test('compatibility: parseCigar vs parseCigar3', () => {
     const cigar = '50M5I45M10D40M'
     const ops1 = parseCigar(cigar)
     const ops2 = parseCigar2(cigar)

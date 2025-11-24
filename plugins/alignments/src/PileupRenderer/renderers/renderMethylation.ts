@@ -8,27 +8,6 @@ import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
-// Pre-compute color objects for methylation rendering
-const RED_COLORD = colord('red')
-const BLUE_COLORD = colord('blue')
-const PINK_COLORD = colord('pink')
-const PURPLE_COLORD = colord('purple')
-
-// Helper to get methylation color with caching
-function getMethColor(prob: number, isHydroxy: boolean): string {
-  if (prob > 0.5) {
-    const alpha = (prob - 0.5) * 2
-    return isHydroxy
-      ? PINK_COLORD.alpha(alpha).toHslString()
-      : RED_COLORD.alpha(alpha).toHslString()
-  } else {
-    const alpha = 1 - prob * 2
-    return isHydroxy
-      ? PURPLE_COLORD.alpha(alpha).toHslString()
-      : BLUE_COLORD.alpha(alpha).toHslString()
-  }
-}
-
 // Color by methylation is slightly modified version of color by modifications
 // at reference CpG sites, with non-methylated CpG colored (looking only at the
 // MM tag can not tell you where reference CpG sites are)
@@ -47,7 +26,7 @@ export function renderMethylation({
   bpPerPx: number
   renderArgs: ProcessedRenderArgs
   canvasWidth: number
-  cigarOps: number[]
+  cigarOps: Uint32Array | number[]
 }) {
   const { regionSequence } = renderArgs
   const { feature, topPx, heightPx } = feat
@@ -64,35 +43,34 @@ export function renderMethylation({
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
     getMethBins(feature, cigarOps)
 
-  function getCol(k: number): string | undefined {
+  function getCol(k: number) {
     if (methBins[k]) {
       const p = methProbs[k] || 0
-      return getMethColor(p, false)
+      return (
+        p > 0.5
+          ? colord('red').alpha((p - 0.5) * 2)
+          : colord('blue').alpha(1 - p * 2)
+      ).toHslString()
     }
     if (hydroxyMethBins[k]) {
       const p = hydroxyMethProbs[k] || 0
-      return getMethColor(p, true)
+      return (
+        p > 0.5
+          ? colord('pink').alpha((p - 0.5) * 2)
+          : colord('purple').alpha(1 - p * 2)
+      ).toHslString()
     }
     return undefined
   }
-
-  const regionStart = region.start
-  const len = fend - fstart
-  const zoomedOut = bpPerPx > 2
-  const C_CHAR = 99 // 'c' char code
-  const G_CHAR = 103 // 'g' char code
-
-  for (let i = 0; i < len; i++) {
+  const r = regionSequence.toLowerCase()
+  for (let i = 0; i < fend - fstart; i++) {
     const j = i + fstart
-    const rIdx = j - regionStart
 
-    // Use charCodeAt with bitwise OR for case-insensitive comparison
-    // 0x20 converts both upper and lowercase to lowercase
-    const l1 = regionSequence.charCodeAt(rIdx + 1) | 0x20
-    const l2 = regionSequence.charCodeAt(rIdx + 2) | 0x20
+    const l1 = r[j - region.start + 1]
+    const l2 = r[j - region.start + 2]
 
-    if (l1 === C_CHAR && l2 === G_CHAR) {
-      if (zoomedOut) {
+    if (l1 === 'c' && l2 === 'g') {
+      if (bpPerPx > 2) {
         const [leftPx, rightPx] = bpSpanPx(j, j + 2, region, bpPerPx)
         const w = rightPx - leftPx + 0.5
         const c = getCol(i) || getCol(i + 1) || 'blue'

@@ -9,7 +9,6 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-  getCigarOps,
 } from './cigarUtil'
 
 import type { LayoutFeature } from '../util'
@@ -36,7 +35,7 @@ export function renderPerBaseLettering({
   charWidth: number
   charHeight: number
   canvasWidth: number
-  cigarOps: Uint32Array | string
+  cigarOps: Uint32Array | number[]
 }) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat
@@ -49,9 +48,8 @@ export function renderPerBaseLettering({
   if (!seq) {
     return
   }
-  const ops = getCigarOps(cigarOps)
-  for (let i = 0, l = ops.length; i < l; i++) {
-    const packed = ops[i]!
+  for (let i = 0, l = cigarOps.length; i < l; i++) {
+    const packed = cigarOps[i]!
     const len = packed >> 4
     const op = packed & 0xf
     if (op === CIGAR_S || op === CIGAR_I) {

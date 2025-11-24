@@ -80,7 +80,7 @@ export default class BamSlightlyLazyFeature implements Feature {
       tags: r.tags,
       refName: a.refIdToName(r.ref_id)!,
       CIGAR: r.CIGAR,
-      // seq is decoded on-demand, not stored in fields
+      seq: r.seq,
       type: 'match',
       pair_orientation: r.pair_orientation,
       next_ref: p ? a.refIdToName(r.next_refid) : undefined,

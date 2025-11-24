@@ -33,7 +33,7 @@ export function renderModifications({
   bpPerPx: number
   renderArgs: ProcessedRenderArgs
   canvasWidth: number
-  cigarOps: number[]
+  cigarOps: Uint32Array | number[]
 }) {
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
