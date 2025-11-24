@@ -76,7 +76,8 @@ export function renderMismatches({
 
   // two pass rendering: first pass, draw all the mismatches except wide
   // insertion markers
-  for (const mismatch of mismatches) {
+  for (let i = 0, l = mismatches.length; i < l; i++) {
+    const mismatch = mismatches[i]!
     const mstart = start + mismatch.start
     const mlen = mismatch.length
     const mbase = mismatch.base
@@ -247,7 +248,8 @@ export function renderMismatches({
 
   // second pass, draw wide insertion markers on top
   if (drawIndels) {
-    for (const mismatch of mismatches) {
+    for (let i = 0, l = mismatches.length; i < l; i++) {
+      const mismatch = mismatches[i]!
       const mstart = start + mismatch.start
       const mlen = mismatch.length
       const len = +mismatch.base || mismatch.length

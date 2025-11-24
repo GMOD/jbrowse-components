@@ -1,22 +1,21 @@
-import {
-  CIGAR_D,
-  CIGAR_E,
-  CIGAR_EQ,
-  CIGAR_H,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_S,
-  CIGAR_X,
-} from './index'
-
 import type { Mismatch } from '../shared/types'
 
-// Optimized version that works with parseCigar2 output (all numeric)
-// ops array format: [length1, opCode1, length2, opCode2, ...]
-// where opCode is char code (M=77, I=73, etc)
+// CIGAR operation indices (from BAM spec)
+const CIGAR_M = 0
+const CIGAR_I = 1
+const CIGAR_D = 2
+const CIGAR_N = 3
+const CIGAR_S = 4
+const CIGAR_H = 5
+const CIGAR_P = 6
+const CIGAR_EQ = 7
+const CIGAR_X = 8
+
+// Handles packed NUMERIC_CIGAR format from @gmod/bam
+// Format: Uint32Array where each value is (length << 4) | opIndex
+// opIndex is 0-8: M=0, I=1, D=2, N=3, S=4, H=5, P=6, ==7, X=8
 export function cigarToMismatches2(
-  ops: number[],
+  ops: Uint32Array,
   seq?: string,
   ref?: string,
   qual?: Uint8Array,
@@ -26,11 +25,12 @@ export function cigarToMismatches2(
   const mismatches: Mismatch[] = []
   const hasRefAndSeq = ref && seq
 
-  for (let i = 0; i < ops.length; i += 2) {
-    const len = ops[i]!
-    const op = ops[i + 1]!
+  for (const op_ of ops) {
+    const packed = op_
+    const len = packed >> 4
+    const op = packed & 0xf
 
-    if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_E) {
+    if (op === CIGAR_M || op === CIGAR_EQ) {
       if (hasRefAndSeq) {
         for (let j = 0; j < len; j++) {
           if (

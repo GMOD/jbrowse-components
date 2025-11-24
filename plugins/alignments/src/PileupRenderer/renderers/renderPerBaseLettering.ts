@@ -1,5 +1,6 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
+import { fillRectCtx, fillTextCtx } from '../util'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -8,8 +9,8 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../../MismatchParser'
-import { fillRectCtx, fillTextCtx } from '../util'
+  getCigarOps,
+} from './cigarUtil'
 
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
@@ -35,7 +36,7 @@ export function renderPerBaseLettering({
   charWidth: number
   charHeight: number
   canvasWidth: number
-  cigarOps: number[]
+  cigarOps: Uint32Array | string
 }) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat
@@ -48,9 +49,11 @@ export function renderPerBaseLettering({
   if (!seq) {
     return
   }
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = cigarOps[i]!
-    const op = cigarOps[i + 1]!
+  const ops = getCigarOps(cigarOps)
+  for (let i = 0; i < ops.length; i++) {
+    const packed = ops[i]!
+    const len = packed >> 4
+    const op = packed & 0xf
     if (op === CIGAR_S || op === CIGAR_I) {
       soffset += len
     } else if (op === CIGAR_D || op === CIGAR_N) {

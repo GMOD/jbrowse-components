@@ -36,23 +36,36 @@ export function parseCigar(s = '') {
   return ret
 }
 
-// Optimized version: returns all numbers [length1, opCode1, length2, opCode2, ...]
-// where opCode is the char code (M=77, I=73, etc)
-// Use CIGAR_OP constants for comparison
-export function parseCigar2(s = '') {
+// CIGAR operation char codes to indices (from BAM spec)
+const CIGAR_CODE_TO_INDEX: Record<number, number> = {
+  77: 0, // M
+  73: 1, // I
+  68: 2, // D
+  78: 3, // N
+  83: 4, // S
+  72: 5, // H
+  80: 6, // P
+  61: 7, // =
+  88: 8, // X
+}
+
+// Parses CIGAR string to packed Uint32Array format
+// Returns Uint32Array where each value is (length << 4) | opIndex
+export function parseCigar2(s = ''): Uint32Array {
   let currLen = 0
-  const ret = []
+  const ret: number[] = []
   for (let i = 0, l = s.length; i < l; i++) {
     const code = s.charCodeAt(i)
     if (code >= 48 && code <= 57) {
       // '0' to '9'
       currLen = currLen * 10 + (code - 48)
     } else {
-      ret.push(currLen, code)
+      const opIndex = CIGAR_CODE_TO_INDEX[code]!
+      ret.push((currLen << 4) | opIndex)
       currLen = 0
     }
   }
-  return ret
+  return new Uint32Array(ret)
 }
 
 export function getMismatches(
@@ -79,25 +92,24 @@ export function getMismatches(
   return mismatches
 }
 
-// Optimized version using parseCigar2 and cigarToMismatches2
+// Optimized version using packed NUMERIC_CIGAR from @gmod/bam
 export function getMismatches2(
-  cigar?: string,
+  cigar?: Uint32Array,
   md?: string,
   seq?: string,
   ref?: string,
   qual?: Uint8Array,
 ) {
   let mismatches: Mismatch[] = []
-  const ops = parseCigar2(cigar)
   // parse the CIGAR tag if it has one
-  if (cigar) {
-    mismatches = mismatches.concat(cigarToMismatches2(ops, seq, ref, qual))
+  if (cigar && cigar.length > 0) {
+    mismatches = mismatches.concat(cigarToMismatches2(cigar, seq, ref, qual))
   }
 
   // now let's look for CRAM or MD mismatches
-  if (md && seq) {
+  if (md && seq && cigar) {
     mismatches = mismatches.concat(
-      mdToMismatches2(md, ops, mismatches, seq, qual),
+      mdToMismatches2(md, cigar, mismatches, seq, qual),
     )
   }
 

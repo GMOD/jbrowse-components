@@ -15,13 +15,27 @@ import type { CramRecord } from '@gmod/cram'
 
 type ReadFeatures = CramRecord['readFeatures']
 
-export function readFeaturesToCIGAR(
+// CIGAR operation char codes to indices (from BAM spec)
+const CIGAR_CODE_TO_INDEX: Record<number, number> = {
+  77: 0, // M
+  73: 1, // I
+  68: 2, // D
+  78: 3, // N
+  83: 4, // S
+  72: 5, // H
+  80: 6, // P
+  61: 7, // =
+  88: 8, // X
+}
+
+// Generates packed NUMERIC_CIGAR format: Uint32Array where each value is (length << 4) | opIndex
+export function readFeaturesToNumericCIGAR(
   readFeatures: ReadFeatures,
   alignmentStart: number,
   readLen: number,
-) {
-  const cigarParts: string[] = []
-  let op = 'M'
+): Uint32Array {
+  const cigarParts: number[] = []
+  let op = 77 // 'M'
   let oplen = 0
   let lastPos = alignmentStart
   let insLen = 0
@@ -36,17 +50,19 @@ export function readFeaturesToCIGAR(
 
       // Flush pending insertions if we have a match region
       if (insLen && sublen) {
-        cigarParts.push(String(insLen), 'I')
+        const opIndex = CIGAR_CODE_TO_INDEX[73]! // I
+        cigarParts.push((insLen << 4) | opIndex)
         insLen = 0
       }
       // Flush previous non-match operation
-      if (oplen && op !== 'M') {
-        cigarParts.push(String(oplen), op)
+      if (oplen && op !== 77) {
+        const opIndex = CIGAR_CODE_TO_INDEX[op]!
+        cigarParts.push((oplen << 4) | opIndex)
         oplen = 0
       }
       // Accumulate match length
       if (sublen) {
-        op = 'M'
+        op = 77 // 'M'
         oplen += sublen
       }
 
@@ -67,23 +83,28 @@ export function readFeaturesToCIGAR(
         // Deletion or Ref Skip
         lastPos += data
         if (oplen) {
-          cigarParts.push(String(oplen), op)
+          const opIndex = CIGAR_CODE_TO_INDEX[op]!
+          cigarParts.push((oplen << 4) | opIndex)
           oplen = 0
         }
-        cigarParts.push(String(data), code)
+        const opIndex = CIGAR_CODE_TO_INDEX[codeChar]!
+        cigarParts.push((data << 4) | opIndex)
       } else if (codeChar === CODE_I || codeChar === CODE_S) {
         // Insertion or soft-clip
         const dataLen = data.length
         seqLen += dataLen
         if (oplen) {
-          cigarParts.push(String(oplen), op)
+          const opIndex = CIGAR_CODE_TO_INDEX[op]!
+          cigarParts.push((oplen << 4) | opIndex)
           oplen = 0
         }
-        cigarParts.push(String(dataLen), code)
+        const opIndex = CIGAR_CODE_TO_INDEX[codeChar]!
+        cigarParts.push((dataLen << 4) | opIndex)
       } else if (codeChar === CODE_i) {
         // Single base insertion
         if (oplen) {
-          cigarParts.push(String(oplen), op)
+          const opIndex = CIGAR_CODE_TO_INDEX[op]!
+          cigarParts.push((oplen << 4) | opIndex)
           oplen = 0
         }
         insLen++
@@ -91,10 +112,12 @@ export function readFeaturesToCIGAR(
       } else if (codeChar === CODE_P || codeChar === CODE_H) {
         // Padding or Hard clip
         if (oplen) {
-          cigarParts.push(String(oplen), op)
+          const opIndex = CIGAR_CODE_TO_INDEX[op]!
+          cigarParts.push((oplen << 4) | opIndex)
           oplen = 0
         }
-        cigarParts.push(String(data), code)
+        const opIndex = CIGAR_CODE_TO_INDEX[codeChar]!
+        cigarParts.push((data << 4) | opIndex)
       } // else q or Q (no-op)
     }
   }
@@ -102,22 +125,25 @@ export function readFeaturesToCIGAR(
   // Handle remaining sequence length
   const remaining = readLen - seqLen
   if (remaining) {
-    if (oplen && op !== 'M') {
-      cigarParts.push(String(oplen), op)
+    if (oplen && op !== 77) {
+      const opIndex = CIGAR_CODE_TO_INDEX[op]!
+      cigarParts.push((oplen << 4) | opIndex)
       oplen = 0
     }
-    op = 'M'
+    op = 77 // 'M'
     oplen += remaining
   }
 
   // Flush pending insertions
   if (remaining && insLen) {
-    cigarParts.push(String(insLen), 'I')
+    const opIndex = CIGAR_CODE_TO_INDEX[73]! // I
+    cigarParts.push((insLen << 4) | opIndex)
   }
   // Flush final operation
   if (oplen) {
-    cigarParts.push(String(oplen), op)
+    const opIndex = CIGAR_CODE_TO_INDEX[op]!
+    cigarParts.push((oplen << 4) | opIndex)
   }
 
-  return cigarParts.join('')
+  return new Uint32Array(cigarParts)
 }

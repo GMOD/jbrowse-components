@@ -13,7 +13,7 @@ interface MaximumProbabilityMod {
 
 export function getMaxProbModAtEachPosition(
   feature: Feature,
-  cigarOps?: number[],
+  cigarOps?: Uint32Array | number[],
 ) {
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined

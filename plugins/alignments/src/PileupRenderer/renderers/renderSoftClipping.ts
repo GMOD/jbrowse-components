@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpSpanPx } from '@jbrowse/core/util'
 
+import { fillRectCtx, fillTextCtx, getCharWidthHeight } from '../util'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -10,9 +11,8 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-  parseCigar2,
-} from '../../MismatchParser'
-import { fillRectCtx, fillTextCtx, getCharWidthHeight } from '../util'
+  getCigarOps,
+} from './cigarUtil'
 
 import type { Mismatch } from '../../shared/types'
 import type { ProcessedRenderArgs } from '../types'
@@ -53,11 +53,13 @@ export function renderSoftClipping({
   const heightLim = charHeight - 2
   let seqOffset = 0
   let refOffset = 0
-  const CIGAR = feature.get('CIGAR')
-  const cigarOps = parseCigar2(CIGAR)
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const op = cigarOps[i + 1]!
-    const len = cigarOps[i]!
+  const CIGAR =
+    feature.get('NUMERIC_CIGAR') || (feature.get('CIGAR') as string | undefined)
+  const ops = getCigarOps(CIGAR)
+  for (let i = 0, l = ops.length; i < l; i++) {
+    const packed = ops[i]!
+    const len = packed >> 4
+    const op = packed & 0xf
     if (op === CIGAR_S) {
       for (let k = 0; k < len; k++) {
         const base = seq[seqOffset + k]!
