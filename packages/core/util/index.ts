@@ -136,6 +136,7 @@ export function findParentThat(
     throw new Error('node does not have parent')
   }
   let currentNode = getParent<IAnyStateTreeNode>(node)
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (currentNode && isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode

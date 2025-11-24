@@ -78,71 +78,104 @@ export function renderAlignmentShape({
   const renderChevrons = bpPerPx < 10 && heightPx > 5
 
   ctx.fillStyle = color
+  let hasSkips = false
+  const cigarOps = CIGAR ? getCigarOps(CIGAR) : []
+  for (let i = 0, l = cigarOps.length; i < l; i++) {
+    if ((cigarOps[i]! & 0xf) === CIGAR_N) {
+      hasSkips = true
+      break
+    }
+  }
 
   // Check for skips (N operations)
-  let hasSkips = false
-  if (CIGAR) {
-    const cigarOps = getCigarOps(CIGAR)
-    for (let i = 0, l = cigarOps.length; i < l; i++) {
-      if ((cigarOps[i]! & 0xf) === CIGAR_N) {
-        hasSkips = true
-        break
+
+  if (hasSkips) {
+    const midY = topPx + heightPx / 2
+
+    if (strand === 1) {
+      let drawLen = 0
+      let drawStart = s
+      const opsLen = cigarOps.length
+
+      for (let i = 0; i < opsLen; i++) {
+        const packed = cigarOps[i]!
+        const opLen = packed >> 4
+        const op = packed & 0xf
+
+        if (
+          op === CIGAR_M ||
+          op === CIGAR_X ||
+          op === CIGAR_EQ ||
+          op === CIGAR_D
+        ) {
+          drawLen += opLen
+        } else if (op === CIGAR_N) {
+          if (drawLen) {
+            const [leftPx, rightPx] = bpSpanPx(
+              drawStart,
+              drawStart + drawLen,
+              region,
+              bpPerPx,
+            )
+            fillRectCtx(
+              ctx,
+              leftPx,
+              topPx,
+              rightPx - leftPx,
+              heightPx,
+              canvasWidth,
+            )
+          }
+          drawStart += drawLen + opLen
+          drawLen = 0
+        }
       }
-    }
 
-    if (hasSkips) {
-      const midY = topPx + heightPx / 2
+      if (drawLen) {
+        const [leftPx, rightPx] = bpSpanPx(
+          drawStart,
+          drawStart + drawLen,
+          region,
+          bpPerPx,
+        )
 
-      if (strand === 1) {
-        let drawLen = 0
-        let drawStart = s
-        const opsLen = cigarOps.length
-
-        for (let i = 0; i < opsLen; i++) {
-          const packed = cigarOps[i]!
-          const opLen = packed >> 4
-          const op = packed & 0xf
-
-          if (
-            op === CIGAR_M ||
-            op === CIGAR_X ||
-            op === CIGAR_EQ ||
-            op === CIGAR_D
-          ) {
-            drawLen += opLen
-          } else if (op === CIGAR_N) {
-            if (drawLen) {
-              const [leftPx, rightPx] = bpSpanPx(
-                drawStart,
-                drawStart + drawLen,
-                region,
-                bpPerPx,
-              )
-              fillRectCtx(
-                ctx,
-                leftPx,
-                topPx,
-                rightPx - leftPx,
-                heightPx,
-                canvasWidth,
-              )
-            }
-            drawStart += drawLen + opLen
-            drawLen = 0
-          }
-        }
-
-        if (drawLen) {
-          const [leftPx, rightPx] = bpSpanPx(
-            drawStart,
-            drawStart + drawLen,
-            region,
-            bpPerPx,
+        if (renderChevrons) {
+          drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
+        } else {
+          fillRectCtx(
+            ctx,
+            leftPx,
+            topPx,
+            rightPx - leftPx,
+            heightPx,
+            canvasWidth,
           )
+        }
+      }
+    } else if (strand === -1) {
+      let drawLen = 0
+      let drawStart = e
 
-          if (renderChevrons) {
-            drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
-          } else {
+      for (let i = cigarOps.length - 1; i >= 0; i--) {
+        const packed = cigarOps[i]!
+        const opLen = packed >> 4
+        const op = packed & 0xf
+
+        if (
+          op === CIGAR_M ||
+          op === CIGAR_X ||
+          op === CIGAR_EQ ||
+          op === CIGAR_D
+        ) {
+          drawLen += opLen
+        } else if (op === CIGAR_N) {
+          if (drawLen) {
+            const [leftPx, rightPx] = bpSpanPx(
+              drawStart - drawLen,
+              drawStart,
+              region,
+              bpPerPx,
+            )
             fillRectCtx(
               ctx,
               leftPx,
@@ -152,65 +185,30 @@ export function renderAlignmentShape({
               canvasWidth,
             )
           }
+          drawStart -= drawLen + opLen
+          drawLen = 0
         }
-      } else if (strand === -1) {
-        let drawLen = 0
-        let drawStart = e
+      }
 
-        for (let i = cigarOps.length - 1; i >= 0; i--) {
-          const packed = cigarOps[i]!
-          const opLen = packed >> 4
-          const op = packed & 0xf
+      if (drawLen) {
+        const [leftPx, rightPx] = bpSpanPx(
+          drawStart - drawLen,
+          drawStart,
+          region,
+          bpPerPx,
+        )
 
-          if (
-            op === CIGAR_M ||
-            op === CIGAR_X ||
-            op === CIGAR_EQ ||
-            op === CIGAR_D
-          ) {
-            drawLen += opLen
-          } else if (op === CIGAR_N) {
-            if (drawLen) {
-              const [leftPx, rightPx] = bpSpanPx(
-                drawStart - drawLen,
-                drawStart,
-                region,
-                bpPerPx,
-              )
-              fillRectCtx(
-                ctx,
-                leftPx,
-                topPx,
-                rightPx - leftPx,
-                heightPx,
-                canvasWidth,
-              )
-            }
-            drawStart -= drawLen + opLen
-            drawLen = 0
-          }
-        }
-
-        if (drawLen) {
-          const [leftPx, rightPx] = bpSpanPx(
-            drawStart - drawLen,
-            drawStart,
-            region,
-            bpPerPx,
+        if (renderChevrons) {
+          drawReverseChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
+        } else {
+          fillRectCtx(
+            ctx,
+            leftPx,
+            topPx,
+            rightPx - leftPx,
+            heightPx,
+            canvasWidth,
           )
-
-          if (renderChevrons) {
-            drawReverseChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
-          } else {
-            fillRectCtx(
-              ctx,
-              leftPx,
-              topPx,
-              rightPx - leftPx,
-              heightPx,
-              canvasWidth,
-            )
-          }
         }
       }
     }

@@ -7,7 +7,7 @@ const CIGAR_D = 2
 const CIGAR_N = 3
 const CIGAR_S = 4
 const CIGAR_H = 5
-const CIGAR_P = 6
+// const CIGAR_P = 6
 const CIGAR_EQ = 7
 const CIGAR_X = 8
 

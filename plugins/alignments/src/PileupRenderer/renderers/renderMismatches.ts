@@ -165,43 +165,19 @@ export function renderMismatches({
       const insW = Math.max(0, Math.min(1.2, invBpPerPx))
       if (len < 10) {
         if (!hideSmallIndels) {
-          fillRectCtx(
-            ctx,
-            pos,
-            topPx,
-            insW,
-            heightPx,
-            canvasWidth,
-            colorMap.insertion,
-          )
+          ctx.fillStyle = colorMap.insertion!
+          fillRectCtx(ctx, pos, topPx, insW, heightPx, canvasWidth)
           if (invBpPerPx >= charWidth && canRenderText) {
             const l = Math.round(pos - insW)
             const insW3 = insW * 3
-            fillRectCtx(
-              ctx,
-              l,
-              topPx,
-              insW3,
-              1,
-              canvasWidth,
-              colorMap.insertion,
-            )
-            fillRectCtx(
-              ctx,
-              l,
-              topPx + heightPx - 1,
-              insW3,
-              1,
-              canvasWidth,
-              colorMap.insertion,
-            )
+            fillRectCtx(ctx, l, topPx, insW3, 1, canvasWidth)
+            fillRectCtx(ctx, l, topPx + heightPx - 1, insW3, 1, canvasWidth)
             fillTextCtx(
               ctx,
               `(${mismatch.base})`,
               pos + 3,
               topPx + heightPx,
               canvasWidth,
-              colorContrastMap.insertion,
             )
           }
           if (bpPerPx < 3) {

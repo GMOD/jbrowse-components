@@ -1,5 +1,3 @@
-import { seqAt } from '../shared/decodeSeq'
-
 import type { Mismatch } from '../shared/types'
 
 // CIGAR operation indices (from BAM spec)
@@ -12,8 +10,15 @@ const CIGAR_H = 5
 const CIGAR_EQ = 7
 const CIGAR_X = 8
 
-// Sequence decoder matching @gmod/bam format
-const SEQRET_DECODER = '=ACMGRSVTWYHKDBN'.split('')
+// Sequence decoder matching @gmod/bam format - returns strings
+const SEQRET_STRING_DECODER = '=ACMGRSVTWYHKDBN'.split('')
+
+// Numeric decoder - returns char codes directly (lowercase for case-insensitive comparison)
+// '=' = 61, 'a' = 97, 'c' = 99, 'm' = 109, 'g' = 103, 'r' = 114, 's' = 115, 'v' = 118,
+// 't' = 116, 'w' = 119, 'y' = 121, 'h' = 104, 'k' = 107, 'd' = 100, 'b' = 98, 'n' = 110
+const SEQRET_NUMERIC_DECODER = new Uint8Array([
+  61, 97, 99, 109, 103, 114, 115, 118, 116, 119, 121, 104, 107, 100, 98, 110,
+])
 
 // Optimized getMismatches that works directly with NUMERIC_SEQ and NUMERIC_CIGAR
 // Avoids decoding the entire sequence string
@@ -33,7 +38,7 @@ export function getMismatchesNumeric(
   )
 
   // Parse MD tag if available
-  if (md && ref) {
+  if (md) {
     mismatches = mismatches.concat(
       mdToMismatchesNumeric(md, cigar, mismatches, numericSeq, seqLength, qual),
     )
@@ -42,7 +47,7 @@ export function getMismatchesNumeric(
   return mismatches
 }
 
-// Helper to get base from NUMERIC_SEQ at position
+// Helper to get base from NUMERIC_SEQ at position (returns string)
 function getSeqBase(
   numericSeq: Uint8Array,
   idx: number,
@@ -52,10 +57,26 @@ function getSeqBase(
     const byteIndex = idx >> 1
     const sb = numericSeq[byteIndex]!
     return idx % 2 === 0
-      ? SEQRET_DECODER[(sb & 0xf0) >> 4]!
-      : SEQRET_DECODER[sb & 0x0f]!
+      ? SEQRET_STRING_DECODER[(sb & 0xf0) >> 4]!
+      : SEQRET_STRING_DECODER[sb & 0x0f]!
   }
   return 'X'
+}
+
+// Helper to get base char code from NUMERIC_SEQ at position (returns lowercase char code)
+function getSeqBaseNumeric(
+  numericSeq: Uint8Array,
+  idx: number,
+  seqLength: number,
+): number {
+  if (idx < seqLength) {
+    const byteIndex = idx >> 1
+    const sb = numericSeq[byteIndex]!
+    return idx % 2 === 0
+      ? SEQRET_NUMERIC_DECODER[(sb & 0xf0) >> 4]!
+      : SEQRET_NUMERIC_DECODER[sb & 0x0f]!
+  }
+  return 88 // 'X'
 }
 
 // Helper to get sequence slice from NUMERIC_SEQ
@@ -83,26 +104,26 @@ function cigarToMismatchesNumeric(
   let soffset = 0
   const mismatches: Mismatch[] = []
   const hasRef = !!ref
-
-  for (const op_ of ops) {
-    const packed = op_
+  for (let i = 0, l = ops.length; i < l; i++) {
+    const packed = ops[i]!
     const len = packed >> 4
     const op = packed & 0xf
 
     if (op === CIGAR_M || op === CIGAR_EQ) {
       if (hasRef) {
         for (let j = 0; j < len; j++) {
-          const seqBase = getSeqBase(numericSeq, soffset + j, seqLength)
-          const refBase = ref[roffset + j]!
-          if (
-            (seqBase.charCodeAt(0) | 0x20) !==
-            (refBase.charCodeAt(0) | 0x20)
-          ) {
+          const seqBaseCode = getSeqBaseNumeric(
+            numericSeq,
+            soffset + j,
+            seqLength,
+          )
+          const refBaseCode = ref.charCodeAt(roffset + j) | 0x20
+          if (seqBaseCode !== refBaseCode) {
             mismatches.push({
               start: roffset + j,
               type: 'mismatch',
-              base: seqBase,
-              altbase: refBase,
+              base: getSeqBase(numericSeq, soffset + j, seqLength),
+              altbase: ref[roffset + j]!,
               length: 1,
             })
           }

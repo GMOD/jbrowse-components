@@ -50,7 +50,7 @@ export function renderPerBaseLettering({
     return
   }
   const ops = getCigarOps(cigarOps)
-  for (let i = 0; i < ops.length; i++) {
+  for (let i = 0, l = ops.length; i < l; i++) {
     const packed = ops[i]!
     const len = packed >> 4
     const op = packed & 0xf
