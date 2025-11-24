@@ -448,45 +448,52 @@ function sort(
   right: number,
   nodeSize: number,
 ): void {
-  if (Math.floor(left / nodeSize) >= Math.floor(right / nodeSize)) {
-    return
-  }
+  const stack: number[] = []
+  stack.push(left, right)
 
-  // apply median of three method
-  const start = values[left]!
-  const mid = values[(left + right) >> 1]!
-  const end = values[right]!
+  while (stack.length > 0) {
+    const r = stack.pop()!
+    const l = stack.pop()!
 
-  let pivot = end
-
-  const x = Math.max(start, mid)
-  if (end > x) {
-    pivot = x
-  } else if (x === start) {
-    pivot = Math.max(mid, end)
-  } else if (x === mid) {
-    pivot = Math.max(start, end)
-  }
-
-  let i = left - 1
-  let j = right + 1
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  while (true) {
-    do {
-      i++
-    } while (values[i]! < pivot)
-    do {
-      j--
-    } while (values[j]! > pivot)
-    if (i >= j) {
-      break
+    if (Math.floor(l / nodeSize) >= Math.floor(r / nodeSize)) {
+      continue
     }
-    swap(values, boxes, indices, i, j)
-  }
 
-  sort(values, boxes, indices, left, j, nodeSize)
-  sort(values, boxes, indices, j + 1, right, nodeSize)
+    const start = values[l]!
+    const mid = values[(l + r) >> 1]!
+    const end = values[r]!
+
+    let pivot = end
+
+    const x = Math.max(start, mid)
+    if (end > x) {
+      pivot = x
+    } else if (x === start) {
+      pivot = Math.max(mid, end)
+    } else if (x === mid) {
+      pivot = Math.max(start, end)
+    }
+
+    let i = l - 1
+    let j = r + 1
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    while (true) {
+      do {
+        i++
+      } while (values[i]! < pivot)
+      do {
+        j--
+      } while (values[j]! > pivot)
+      if (i >= j) {
+        break
+      }
+      swap(values, boxes, indices, i, j)
+    }
+
+    stack.push(l, j)
+    stack.push(j + 1, r)
+  }
 }
 
 /**
