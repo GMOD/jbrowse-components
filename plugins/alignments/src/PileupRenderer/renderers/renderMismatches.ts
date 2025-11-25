@@ -182,6 +182,11 @@ export function renderMismatches({
       const c = colorMap[mismatch.type]
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       fillRect(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
+      items.push({
+        type: mismatch.type,
+        seq: mismatch.base,
+      })
+      coords.push(pos - clipW, topPx, pos + clipW * 2, topPx + heightPx)
       if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
         const l = pos - clipW
         fillRect(ctx, l, topPx, clipW * 3, 1, canvasWidth)
@@ -218,8 +223,8 @@ export function renderMismatches({
           type: 'insertion',
           seq: mismatch.insertedBases || 'unknown',
         })
-        coords.push(leftPx - 3, topPx, leftPx + 4, topPx + heightPx)
         if (bpPerPx > largeInsertionIndicatorScale) {
+          coords.push(leftPx - 1, topPx, leftPx + 1, topPx + heightPx)
           fillRect(
             ctx,
             leftPx - 1,
@@ -232,6 +237,12 @@ export function renderMismatches({
         } else if (heightPx > charHeight) {
           const rwidth = measureText(txt)
           const padding = 5
+          coords.push(
+            leftPx - rwidth / 2 - padding,
+            topPx,
+            leftPx + rwidth / 2 + padding,
+            topPx + heightPx,
+          )
           fillRect(
             ctx,
             leftPx - rwidth / 2 - padding,
@@ -245,6 +256,12 @@ export function renderMismatches({
           ctx.fillText(txt, leftPx - rwidth / 2, topPx + heightPx)
         } else {
           const padding = 2
+          coords.push(
+            leftPx - padding,
+            topPx,
+            leftPx + padding,
+            topPx + heightPx,
+          )
           fillRect(
             ctx,
             leftPx - padding,
