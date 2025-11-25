@@ -670,13 +670,11 @@ export function calculateLayoutBounds(
   const featureWidthBp = featureEnd - featureStart
   const labelOverhangBp = Math.max(0, layoutWidthBp - featureWidthBp)
 
-  if (reversed) {
-    // Extend towards lower genomic coords (visual right when reversed)
-    return [featureStart - labelOverhangBp, featureEnd]
-  } else {
-    // Extend towards higher genomic coords (visual right when normal)
-    return [featureStart, featureStart + layoutWidthBp]
-  }
+  // When reversed, extend towards lower genomic coords (visual right when reversed)
+  // When normal, extend towards higher genomic coords (visual right when normal)
+  return reversed
+    ? [featureStart - labelOverhangBp, featureEnd]
+    : [featureStart, featureStart + layoutWidthBp]
 }
 
 // do an array map of an iterable

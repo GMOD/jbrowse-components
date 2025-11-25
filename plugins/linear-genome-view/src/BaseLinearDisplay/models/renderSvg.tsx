@@ -7,17 +7,16 @@ import {
   getViewParams,
 } from '@jbrowse/core/util'
 
-import BlockState, { renderBlockData } from './models/serverSideRenderedBlock'
-import { calculateLabelPositions, getId } from './models/util'
-import { ErrorBox } from '../LinearGenomeView/SVGErrorBox'
+import BlockState, { renderBlockData } from './serverSideRenderedBlock'
+import { calculateLabelPositions, getId } from './util'
+import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox'
 
-import type { LinearGenomeViewModel } from '../LinearGenomeView'
-import type { ExportSvgOptions } from '../LinearGenomeView/types'
-import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from './model'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from '../model'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
-  opts: ExportSvgOptions & ExportSvgDisplayOptions,
+  opts: ExportSvgDisplayOptions,
 ) {
   const { height, id } = self
   const { overrideHeight } = opts
@@ -118,7 +117,10 @@ export async function renderBaseLinearDisplaySvg(
       </defs>
       <g clipPath={`url(#${labelsClipId})`}>
         {labelData.map(({ key, label, description, leftPos, topPos }) => (
-          <g key={`label-${key}`} transform={`translate(${leftPos}, ${topPos})`}>
+          <g
+            key={`label-${key}`}
+            transform={`translate(${leftPos}, ${topPos})`}
+          >
             <text
               x={0}
               y={11}

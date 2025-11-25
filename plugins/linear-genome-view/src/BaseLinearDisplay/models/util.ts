@@ -38,7 +38,7 @@ export function getDisplayStr(totalBytes: number) {
 }
 
 // stabilize clipid under test for snapshot
-export function getId(id: string, index: number) {
+export function getId(id: string, index: string | number) {
   const notJest = typeof jest === 'undefined'
   return ['clip', notJest ? id : 'jest', index, notJest ? Math.random() : '']
     .filter(f => !!f)

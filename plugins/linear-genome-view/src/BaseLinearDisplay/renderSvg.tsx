@@ -12,12 +12,11 @@ import { calculateLabelPositions, getId } from './models/util'
 import { ErrorBox } from '../LinearGenomeView/SVGErrorBox'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
-import type { ExportSvgOptions } from '../LinearGenomeView/types'
 import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from './model'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
-  opts: ExportSvgOptions & ExportSvgDisplayOptions,
+  opts: ExportSvgDisplayOptions,
 ) {
   const { height, id } = self
   const { overrideHeight } = opts
@@ -118,24 +117,15 @@ export async function renderBaseLinearDisplaySvg(
       </defs>
       <g clipPath={`url(#${labelsClipId})`}>
         {labelData.map(({ key, label, description, leftPos, topPos }) => (
-          <g key={`label-${key}`} transform={`translate(${leftPos}, ${topPos})`}>
-            <text
-              x={0}
-              y={11}
-              fontSize={11}
-              fill="currentColor"
-              style={{ pointerEvents: 'none' }}
-            >
+          <g
+            key={`label-${key}`}
+            transform={`translate(${leftPos}, ${topPos})`}
+          >
+            <text x={0} y={11} fontSize={11} fill="currentColor">
               {label}
             </text>
             {description ? (
-              <text
-                x={0}
-                y={25}
-                fontSize={11}
-                fill="blue"
-                style={{ pointerEvents: 'none' }}
-              >
+              <text x={0} y={25} fontSize={11} fill="blue">
                 {description}
               </text>
             ) : null}
