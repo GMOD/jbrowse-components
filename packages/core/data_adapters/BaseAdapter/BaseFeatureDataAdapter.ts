@@ -1,4 +1,4 @@
-import { firstValueFrom, merge } from 'rxjs'
+import { firstValueFrom, merge, type Observable } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { BaseAdapter } from './BaseAdapter'
@@ -10,7 +10,63 @@ import type { BaseOptions } from './BaseOptions'
 import type { FeatureDensityStats } from './types'
 import type { Feature } from '../../util/simpleFeature'
 import type { AugmentedRegion as Region } from '../../util/types'
-import type { Observable } from 'rxjs'
+
+function sampleFeaturesForInterval(
+  region: Region,
+  interval: number,
+  getFeatures: (region: Region, opts?: BaseOptions) => Observable<Feature>,
+  opts?: BaseOptions,
+) {
+  const { start, end } = region
+  const sampleCenter = start * 0.75 + end * 0.25
+  return firstValueFrom(
+    getFeatures(
+      {
+        ...region,
+        start: Math.max(0, Math.round(sampleCenter - interval / 2)),
+        end: Math.min(Math.round(sampleCenter + interval / 2), end),
+      },
+      opts,
+    ).pipe(toArray()),
+  )
+}
+
+async function calculateFeatureDensityStats(
+  region: Region,
+  getFeatures: (region: Region, opts?: BaseOptions) => Observable<Feature>,
+  opts?: BaseOptions,
+): Promise<FeatureDensityStats> {
+  const refLen = region.end - region.start
+  let interval = 1000
+  let expansionTime = 0
+  let lastTime = performance.now()
+
+  while (true) {
+    const features = await sampleFeaturesForInterval(
+      region,
+      interval,
+      getFeatures,
+      opts,
+    )
+    const featureCount = features.length
+
+    if (featureCount >= 70 || interval * 2 > refLen) {
+      return { featureDensity: featureCount / interval }
+    }
+
+    if (expansionTime > 5000) {
+      console.warn(
+        "Stats estimation reached timeout, or didn't get enough features",
+      )
+      return { featureDensity: Number.POSITIVE_INFINITY }
+    }
+
+    const currTime = performance.now()
+    expansionTime += currTime - lastTime
+    lastTime = currTime
+    interval *= 2
+  }
+}
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
@@ -181,60 +237,11 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * is)
    */
   getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
-    let lastTime = performance.now()
-    const statsFromInterval = async (length: number, expansionTime: number) => {
-      const { start, end } = region
-      const sampleCenter = start * 0.75 + end * 0.25
-
-      const features = await firstValueFrom(
-        this.getFeatures(
-          {
-            ...region,
-            start: Math.max(0, Math.round(sampleCenter - length / 2)),
-            end: Math.min(Math.round(sampleCenter + length / 2), end),
-          },
-          opts,
-        ).pipe(toArray()),
-      )
-
-      return maybeRecordStats({
-        interval: length,
-        statsSampleFeatures: features.length,
-        expansionTime,
-        stats: {
-          featureDensity: features.length / length,
-        },
-      })
-    }
-
-    const maybeRecordStats = async ({
-      interval,
-      stats,
-      statsSampleFeatures,
-      expansionTime,
-    }: {
-      interval: number
-      stats: FeatureDensityStats
-      statsSampleFeatures: number
-      expansionTime: number
-    }): Promise<FeatureDensityStats> => {
-      const refLen = region.end - region.start
-      if (statsSampleFeatures >= 70 || interval * 2 > refLen) {
-        return stats
-      } else if (expansionTime <= 5000) {
-        const currTime = performance.now()
-        expansionTime += currTime - lastTime
-        lastTime = currTime
-        return statsFromInterval(interval * 2, expansionTime)
-      } else {
-        console.warn(
-          "Stats estimation reached timeout, or didn't get enough features",
-        )
-        return { featureDensity: Number.POSITIVE_INFINITY }
-      }
-    }
-
-    return statsFromInterval(1000, 0)
+    return calculateFeatureDensityStats(
+      region,
+      (r, o) => this.getFeatures(r, o),
+      opts,
+    )
   }
 
   /**
