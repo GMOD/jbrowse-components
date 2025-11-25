@@ -1,8 +1,11 @@
 import { createEmptyBin } from './processDepth'
-import { inc, incSNP, isInterbase, mismatchLen } from './util'
+import { inc, isInterbase, mismatchLen } from './util'
 import {
   CAT_DELSKIP,
   CAT_NONCOV,
+  ENTRY_DEPTH,
+  ENTRY_NEG,
+  ENTRY_POS,
   MISMATCH_TYPE_DELETION,
   MISMATCH_TYPE_DELSKIP_MASK,
   MISMATCH_TYPE_HARDCLIP,
@@ -63,7 +66,15 @@ export function processMismatches({
           inc(bin, fstrand, CAT_DELSKIP + MISMATCH_TYPE_NAMES[type]!)
           bin.depth--
         } else if (!interbase) {
-          incSNP(bin, fstrand, base as 'A' | 'G' | 'C' | 'T')
+          const snpBase = base as 'A' | 'G' | 'C' | 'T'
+          let entry = bin[snpBase]
+          if (!entry) {
+            entry = new Uint32Array(3)
+            bin[snpBase] = entry
+          }
+          entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
+          entry[fstrand === 1 ? ENTRY_POS : ENTRY_NEG] =
+            (entry[fstrand === 1 ? ENTRY_POS : ENTRY_NEG] || 0) + 1
           bin.refDepth--
           bin[strandRef]--
           bin.refbase = altbase

@@ -68,19 +68,3 @@ export function getAvgProbability(entry: Uint32Array) {
   const count = entry[ENTRY_PROB_COUNT] || 0
   return count ? (entry[ENTRY_PROB_TOTAL] || 0) / count / 1000000 : 0
 }
-
-// Helper to increment SNP base entry at root of bin
-export function incSNP(
-  bin: FlatBaseCoverageBin,
-  strand: -1 | 1,
-  base: 'A' | 'G' | 'C' | 'T',
-) {
-  let entry = bin[base]
-  if (!entry) {
-    entry = new Uint32Array(3)
-    bin[base] = entry
-  }
-  entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
-  entry[STRAND_TO_ENTRY_IDX[strand]] =
-    (entry[STRAND_TO_ENTRY_IDX[strand]] || 0) + 1
-}
