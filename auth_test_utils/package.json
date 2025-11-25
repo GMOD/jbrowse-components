@@ -5,6 +5,6 @@
     "basicauth": "node --experimental-strip-types HTTPBasicAuthServer/app.ts"
   },
   "dependencies": {
-    "body-parser": "^2.2.0"
+    "body-parser": "^2.2.1"
   }
 }
