@@ -60,6 +60,7 @@ export function makeImageData({
     config,
     'showSubfeatureLabels',
   ) as boolean
+  const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
 
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
     const { feature, layout: featureLayout, topPx: recordTopPx } = record
@@ -108,11 +109,7 @@ export function makeImageData({
     const isGene = featureType === 'gene'
     const hasTranscriptChildren = adjustedLayout.children.some(child => {
       const childType = child.feature?.get('type')
-      return (
-        childType === 'mRNA' ||
-        childType === 'transcript' ||
-        childType === 'protein_coding_primary_transcript'
-      )
+      return transcriptTypes.includes(childType)
     })
 
     // Always add the feature's bounding box to the primary flatbush
@@ -147,6 +144,7 @@ export function makeImageData({
         subfeatureInfos,
         config,
         showSubfeatureLabels,
+        transcriptTypes,
       )
     } else if (adjustedLayout.children.length > 0) {
       // Still need to add children to layout for data storage (not flatbush)
@@ -187,6 +185,7 @@ export function makeImageData({
     subfeatureInfos: SubfeatureInfo[],
     config: any,
     showSubfeatureLabels: boolean,
+    transcriptTypes: string[],
   ) {
     // Add transcript children (e.g., mRNA, transcript) of a gene to secondary flatbush
     // This provides extra info (transcript ID) when hovering over transcripts
@@ -198,10 +197,7 @@ export function makeImageData({
       }
 
       const childType = childFeature.get('type')
-      const isTranscript =
-        childType === 'mRNA' ||
-        childType === 'transcript' ||
-        childType === 'protein_coding_primary_transcript'
+      const isTranscript = transcriptTypes.includes(childType)
 
       // Only add transcript-type children to secondary flatbush
       if (!isTranscript) {

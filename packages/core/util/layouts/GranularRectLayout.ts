@@ -292,6 +292,13 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     // if we have already laid it out, return its layout
     const storedRec = this.rectangles.get(id)
     if (storedRec) {
+      // Update serializableData even if rect already exists
+      // This is needed when config changes (e.g., showSubfeatureLabels toggle)
+      // cause the same rect to be added with different metadata
+      if (serializableData !== undefined) {
+        storedRec.serializableData = serializableData
+      }
+
       if (storedRec.top === null) {
         return null
       }
