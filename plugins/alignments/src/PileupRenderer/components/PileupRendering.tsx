@@ -7,14 +7,44 @@ import { observer } from 'mobx-react'
 
 import {
   MISMATCH_TYPE_DELETION,
+  MISMATCH_TYPE_HARDCLIP,
   MISMATCH_TYPE_INSERTION,
+  MISMATCH_TYPE_MISMATCH,
   MISMATCH_TYPE_MODIFICATION,
+  MISMATCH_TYPE_SOFTCLIP,
 } from '../../shared/types'
 
 import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
+
+const LARGE_INSERTION_THRESHOLD = 10
+
+function getItemLabel(item: FlatbushItem | undefined): string | undefined {
+  if (!item) {
+    return undefined
+  }
+
+  switch (item.type) {
+    case MISMATCH_TYPE_INSERTION:
+      return item.seq.length > LARGE_INSERTION_THRESHOLD
+        ? `${item.seq.length}bp insertion (click to see)`
+        : `Insertion: ${item.seq}`
+    case MISMATCH_TYPE_DELETION:
+      return `Deletion: ${item.seq}bp`
+    case MISMATCH_TYPE_SOFTCLIP:
+      return `Soft clip: ${item.seq}bp`
+    case MISMATCH_TYPE_HARDCLIP:
+      return `Hard clip: ${item.seq}bp`
+    case MISMATCH_TYPE_MODIFICATION:
+      return item.seq
+    case MISMATCH_TYPE_MISMATCH:
+      return `Mismatch: ${item.seq}`
+    default:
+      return undefined
+  }
+}
 
 const PileupRendering = observer(function (props: {
   blockKey: string
@@ -37,6 +67,11 @@ const PileupRendering = observer(function (props: {
   onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
   onFeatureContextMenu?: (event: React.MouseEvent, featureId: string) => void
   onContextMenu?: (event: React.MouseEvent) => void
+  onMismatchClick?: (
+    event: React.MouseEvent,
+    item: FlatbushItem,
+    featureId?: string,
+  ) => void
 }) {
   const {
     onMouseMove,
@@ -55,6 +90,7 @@ const PileupRendering = observer(function (props: {
     onFeatureClick,
     onFeatureContextMenu,
     onContextMenu,
+    onMismatchClick,
   } = props
   const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
@@ -65,6 +101,7 @@ const PileupRendering = observer(function (props: {
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
+  const [itemUnderMouse, setItemUnderMouse] = useState<FlatbushItem>()
   const selectedRect = selectedFeatureId
     ? displayModel.getFeatureByID(blockKey, selectedFeatureId)
     : undefined
@@ -93,6 +130,7 @@ const PileupRendering = observer(function (props: {
   const highlight = highlightedRect ? makeRect(highlightedRect, 0) : undefined
 
   const canvasWidth = Math.ceil(width)
+  const isClickable = itemUnderMouse || featureIdUnderMouse
   return (
     <div
       ref={ref}
@@ -105,7 +143,12 @@ const PileupRendering = observer(function (props: {
       ]
         .filter(f => !!f)
         .join('-')}
-      style={{ position: 'relative', width: canvasWidth, height }}
+      style={{
+        position: 'relative',
+        width: canvasWidth,
+        height,
+        cursor: isClickable ? 'pointer' : 'default',
+      }}
       onMouseLeave={onMouseLeave}
       onMouseDown={(_event: React.MouseEvent) => {
         setMouseIsDown(true)
@@ -133,15 +176,8 @@ const PileupRendering = observer(function (props: {
           offsetY + 1,
         )
         const item = search.length ? items[search[0]!] : undefined
-        const label = item
-          ? item.type === MISMATCH_TYPE_INSERTION
-            ? `Insertion: ${item.seq}`
-            : item.type === MISMATCH_TYPE_DELETION
-              ? `Deletion: ${item.seq}bp`
-              : item.type === MISMATCH_TYPE_MODIFICATION
-                ? item.seq
-                : `Mismatch: ${item.seq}`
-          : undefined
+        setItemUnderMouse(item)
+        const label = getItemLabel(item)
         onMouseMove?.(
           event,
           displayModel.getFeatureOverlapping(blockKey, clientBp, offsetY),
@@ -149,12 +185,12 @@ const PileupRendering = observer(function (props: {
         )
       }}
       onClick={event => {
-        if (
-          !movedDuringLastMouseDown &&
-          onFeatureClick &&
-          featureIdUnderMouse
-        ) {
-          onFeatureClick(event, featureIdUnderMouse)
+        if (!movedDuringLastMouseDown) {
+          if (itemUnderMouse && onMismatchClick) {
+            onMismatchClick(event, itemUnderMouse, featureIdUnderMouse)
+          } else if (onFeatureClick && featureIdUnderMouse) {
+            onFeatureClick(event, featureIdUnderMouse)
+          }
         }
       }}
       onContextMenu={event => {
