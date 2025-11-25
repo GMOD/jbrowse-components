@@ -28,6 +28,7 @@ export function layoutFeature(args: {
   showLabels?: boolean
   showDescriptions?: boolean
   showSubfeatureLabels?: boolean
+  subfeatureLabelPosition?: string
   fontHeight?: number
   labelAllowed?: boolean
   isTranscriptChild?: boolean
@@ -46,6 +47,7 @@ export function layoutFeature(args: {
     showLabels: showLabelsArg,
     showDescriptions: showDescriptionsArg,
     showSubfeatureLabels: showSubfeatureLabelsArg,
+    subfeatureLabelPosition: subfeatureLabelPositionArg,
     fontHeight: fontHeightArg,
     labelAllowed: labelAllowedArg,
     isTranscriptChild = false,
@@ -61,6 +63,9 @@ export function layoutFeature(args: {
   const showSubfeatureLabels =
     showSubfeatureLabelsArg ??
     (readConfObject(config, 'showSubfeatureLabels') as boolean)
+  const subfeatureLabelPosition =
+    subfeatureLabelPositionArg ??
+    (readConfObject(config, 'subfeatureLabelPosition') as string)
 
   const glyphType = chooseGlyphType({
     feature,
@@ -121,16 +126,20 @@ export function layoutFeature(args: {
           transcriptTypes,
           containerTypes,
           showSubfeatureLabels,
+          subfeatureLabelPosition,
           // Mark transcript children so they can have labels
           isTranscriptChild: isChildTranscript,
         })
         layout.children.push(childLayout)
-        // When subfeature labels are enabled, use totalLayoutHeight (includes label space)
-        // Otherwise use visual height only
-        const heightForStacking =
-          showSubfeatureLabels && isChildTranscript
-            ? childLayout.totalLayoutHeight
-            : childLayout.height
+        // When subfeature labels are enabled with 'below' position, use totalLayoutHeight (includes label space)
+        // For 'overlay' position or when labels are disabled, use visual height only
+        const useExtraHeightForLabels =
+          showSubfeatureLabels &&
+          isChildTranscript &&
+          subfeatureLabelPosition === 'below'
+        const heightForStacking = useExtraHeightForLabels
+          ? childLayout.totalLayoutHeight
+          : childLayout.height
         currentY += heightForStacking
         // Add padding between transcripts (but not after the last one)
         if (i < subfeatures.length - 1) {
@@ -230,7 +239,11 @@ export function layoutFeature(args: {
 
     // totalFeatureHeight stays as visual height (without labels)
     // Add label height to totalLayoutHeight for vertical collision detection
-    layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
+    // For transcript children with 'overlay' position, don't reserve extra space
+    const isOverlayMode = isTranscriptChild && subfeatureLabelPosition === 'overlay'
+    if (!isOverlayMode) {
+      layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
+    }
 
     // IMPORTANT: totalLayoutWidth is the MAX of feature width or label width, not the sum.
     // Labels are displayed below the feature, horizontally aligned with the feature start

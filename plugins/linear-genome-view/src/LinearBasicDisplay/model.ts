@@ -78,6 +78,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        trackSubfeatureLabelPosition: types.maybe(types.string),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
@@ -154,6 +158,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           getConf(self, ['renderer', 'showSubfeatureLabels'])
         )
       },
+
+      /**
+       * #getter
+       */
+      get subfeatureLabelPosition() {
+        return (
+          self.trackSubfeatureLabelPosition ??
+          getConf(self, ['renderer', 'subfeatureLabelPosition'])
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -169,6 +183,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             showLabels: self.showLabels,
             showDescriptions: self.showDescriptions,
             showSubfeatureLabels: self.showSubfeatureLabels,
+            subfeatureLabelPosition: self.subfeatureLabelPosition,
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
           },
@@ -207,6 +222,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       toggleShowSubfeatureLabels() {
         self.trackShowSubfeatureLabels = !self.showSubfeatureLabels
+      },
+      /**
+       * #action
+       */
+      setSubfeatureLabelPosition(val: string) {
+        self.trackSubfeatureLabelPosition = val
       },
       /**
        * #action
@@ -367,6 +388,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               onClick: () => {
                 self.toggleShowSubfeatureLabels()
               },
+            },
+            {
+              label: 'Subfeature label position',
+              icon: VisibilityIcon,
+              subMenu: ['below', 'overlay'].map(val => ({
+                label: val,
+                type: 'radio' as const,
+                checked: self.subfeatureLabelPosition === val,
+                onClick: () => {
+                  self.setSubfeatureLabelPosition(val)
+                },
+              })),
             },
             {
               label: 'Display mode',

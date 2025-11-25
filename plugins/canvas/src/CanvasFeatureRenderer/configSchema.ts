@@ -83,6 +83,17 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       defaultValue: false,
     },
 
+    /**
+     * #slot
+     */
+    subfeatureLabelPosition: {
+      type: 'stringEnum',
+      model: types.enumeration('subfeatureLabelPosition', ['below', 'overlay']),
+      description:
+        'position of subfeature labels: "below" reserves extra space, "overlay" draws on top of feature',
+      defaultValue: 'below',
+    },
+
     labels: ConfigurationSchema('CanvasFeatureLabels', {
       /**
        * #slot labels.name

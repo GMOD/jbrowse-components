@@ -60,13 +60,11 @@ export function makeImageData({
     config,
     'showSubfeatureLabels',
   ) as boolean
+  const subfeatureLabelPosition = readConfObject(
+    config,
+    'subfeatureLabelPosition',
+  ) as string
   const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
-
-  // DEBUG: Log config values
-  console.log('[DEBUG makeImageData] config:', {
-    showSubfeatureLabels,
-    transcriptTypes,
-  })
 
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
     const { feature, layout: featureLayout, topPx: recordTopPx } = record
@@ -238,25 +236,24 @@ export function makeImageData({
       })
 
       // Create floatingLabels for transcript when showSubfeatureLabels is enabled
-      const floatingLabels: { text: string; relativeY: number; color: string }[] =
-        []
+      const floatingLabels: {
+        text: string
+        relativeY: number
+        color: string
+      }[] = []
       if (showSubfeatureLabels && transcriptName) {
+        // For 'overlay' mode, position label at top of feature (negative relativeY)
+        // For 'below' mode, position label at bottom of feature (relativeY = 0)
+        // The label Y formula is: featureTop + totalFeatureHeight + relativeY
+        // For overlay: we want featureTop + 2, so relativeY = 2 - totalFeatureHeight
+        const relativeY =
+          subfeatureLabelPosition === 'overlay' ? 2 - child.height : 0
         floatingLabels.push({
           text: transcriptName,
-          relativeY: 0,
-          color: 'black',
+          relativeY,
+          color: theme.palette.text.primary,
         })
       }
-
-      // DEBUG: Log subfeature label creation
-      console.log('[DEBUG makeImageData] transcript:', {
-        id: childFeature.id(),
-        transcriptName,
-        showSubfeatureLabels,
-        floatingLabelsLength: floatingLabels.length,
-        childHeight: child.height,
-        childTotalLayoutWidth: child.totalLayoutWidth,
-      })
 
       // Store child feature using addRect so CoreGetFeatureDetails can access it
       // When showSubfeatureLabels is enabled, pass floatingLabels for rendering

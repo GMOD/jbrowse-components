@@ -51,6 +51,10 @@ export function computeLayouts({
     config,
     'showSubfeatureLabels',
   ) as boolean
+  const subfeatureLabelPosition = readConfObject(
+    config,
+    'subfeatureLabelPosition',
+  ) as string
   const labelAllowed = displayMode !== 'collapsed'
 
   // Note: fontHeight can be feature-dependent, so we read it once without feature context
@@ -73,6 +77,7 @@ export function computeLayouts({
       showLabels,
       showDescriptions,
       showSubfeatureLabels,
+      subfeatureLabelPosition,
       fontHeight,
       labelAllowed,
     })
