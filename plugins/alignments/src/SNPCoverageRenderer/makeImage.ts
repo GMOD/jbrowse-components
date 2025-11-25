@@ -29,7 +29,7 @@ import type { FlatBaseCoverageBin } from '../shared/types'
 const INTERBASE_INDICATOR_WIDTH = 7
 const INTERBASE_INDICATOR_HEIGHT = 4.5
 
-// minimum read depth to draw the insertion indicators, below this the
+// Minimum read depth to draw the insertion indicators, below this the
 // 'statistical significance' is low
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
@@ -138,12 +138,11 @@ export async function makeImage(
   const showArcs = readConfObject(cfg, 'showArcs')
   const showInterbaseIndicators = readConfObject(cfg, 'showInterbaseIndicators')
 
-  // get the y coordinate that we are plotting at, this can be log scale
+  // Get the y coordinate that we are plotting at, this can be log scale
   const toY = (n: number) => height - (viewScale(n) || 0) + offset
-  // toHeight simplified: toY(origin) - toY(n) = viewScale(n) - viewScale(origin)
+  // Simplified: toY(origin) - toY(n) = viewScale(n) - viewScale(origin)
   const toHeight = (n: number) => (viewScale(n) || 0) - originYScaled
   // used specifically for indicator
-  const toY2 = (n: number) => height - (indicatorViewScale(n) || 0) + offset
   const toHeight2 = (n: number) =>
     (indicatorViewScale(n) || 0) - originLinearScaled
 

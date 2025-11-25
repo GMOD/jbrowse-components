@@ -57,6 +57,7 @@ async function calculateFeatureDensityStats(
   let expansionTime = 0
   let lastTime = performance.now()
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
     const features = await sampleFeaturesForInterval(
       region,
@@ -235,30 +236,16 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * data is)
    */
   getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
-    console.log('wtf', 'single')
     return calculateFeatureDensityStats(
       region,
-      (r, o) => this.getFeatures(r, o),
+      (region2, opts2) => this.getFeatures(region2, opts2),
       opts,
     )
   }
 
   /**
-   * Calculates the "feature density" of a set of regions. The primary purpose
-   * of this API is to alert the user if they are going to be downloading too
-   * much information, and give them a hint to zoom in to see more. The default
-   * implementation samples from the regions, downloads feature data with
-   * getFeatures, and returns an object with the form \{featureDensity:number\}
-   *
-   * Derived classes can override this to return:
-   *
-   * 1. alternative calculations for featureDensity
-   * 2. they can also return an object containing a byte size calculation with
-   * the format \{bytes:number, fetchSizeLimit:number\}
-   *
-   * In 2. the fetchSizeLimit is the adapter-defined limit for what it thinks
-   * is 'too much data' (e.g. CRAM and BAM may vary on what they think too much
-   * data is)
+   * Calculates the "feature density" of a set of regions. Note: Currently only
+   * fetches from the first region because it is a heuristic
    */
   public async getMultiRegionFeatureDensityStats(
     regions: Region[],
@@ -267,7 +254,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       throw new Error('No regions supplied')
     }
-    console.log('base getMultiRegionFeatureDensityStats')
     return this.getRegionFeatureDensityStats(regions[0]!, opts)
   }
 

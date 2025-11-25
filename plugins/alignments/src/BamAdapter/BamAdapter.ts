@@ -136,7 +136,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     if (!refName) {
       return undefined
     }
-    console.log('seqFetch')
 
     const features = refSeqStore.getFeatures({
       refName,
@@ -178,7 +177,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       filterBy: FilterBy
     },
   ) {
-    console.log('getFeatures')
     const { refName, start, end, originalRefName } = region
     const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
@@ -237,7 +235,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
               observer.next(elt)
             }
           } else {
-            console.log('tf')
             observer.next(new BamSlightlyLazyFeature(record, this, ref))
           }
         }
@@ -250,10 +247,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     regions: Region[],
     opts?: BaseOptions,
   ) {
-    console.log('DERIV')
     const { bam } = await this.configure()
     // This is a method to avoid calling on htsget adapters
-    console.log({ hasIndex: !!bam.index })
     if (bam.index) {
       const bytes = await bytesForRegions(regions, bam)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')

@@ -1061,6 +1061,7 @@ export function objectHash(obj: Record<string, any>) {
 interface VirtualOffset {
   blockPosition: number
 }
+
 interface Block {
   minv: VirtualOffset
   maxv: VirtualOffset
@@ -1076,11 +1077,9 @@ export async function bytesForRegions(
     ) => Promise<Block[]>
   },
 ) {
-  console.log('bytesForRegions')
   const blockResults = await Promise.all(
     regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
   )
-  console.log('bytesForRegions2')
 
   return sum(
     blockResults
@@ -1107,7 +1106,7 @@ export interface ViewSnap {
   })[]
 }
 
-// supported adapter types by text indexer ensure that this matches the method
+// Supported adapter types by text indexer ensure that this matches the method
 // found in @jbrowse/text-indexing/util
 export function isSupportedIndexingAdapter(type = '') {
   return [
