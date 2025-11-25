@@ -3,11 +3,7 @@ import { doesIntersect2 } from '@jbrowse/core/util'
 import { parseCigar2 } from '../MismatchParser'
 import { incWithProbabilities } from './util'
 import { getMethBins } from '../ModificationParser/getMethBins'
-import {
-  CAT_MOD,
-  CAT_NONMOD,
-  MISMATCH_TYPE_DELETION,
-} from '../shared/types'
+import { CAT_MOD, CAT_NONMOD, MISMATCH_TYPE_DELETION } from '../shared/types'
 
 import type { FlatBaseCoverageBin, Mismatch } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
@@ -59,12 +55,12 @@ export function processReferenceCpGs({
           (b1 && (p1 !== undefined ? p1 > 0.5 : true))
         ) {
           if (bin0) {
-            incWithProbabilities(bin0, fstrand, CAT_MOD + 'cpg_meth', p0 || 0)
+            incWithProbabilities(bin0, fstrand, `${CAT_MOD}cpg_meth`, p0 || 0)
             bin0.refDepth--
             bin0[strandRef]--
           }
           if (bin1) {
-            incWithProbabilities(bin1, fstrand, CAT_MOD + 'cpg_meth', p1 || 0)
+            incWithProbabilities(bin1, fstrand, `${CAT_MOD}cpg_meth`, p1 || 0)
             bin1.refDepth--
             bin1[strandRef]--
           }
@@ -83,7 +79,7 @@ export function processReferenceCpGs({
               incWithProbabilities(
                 bin0,
                 fstrand,
-                CAT_NONMOD + 'cpg_unmeth',
+                `${CAT_NONMOD}cpg_unmeth`,
                 1 - (p0 || 0),
               )
               bin0.refDepth--
@@ -104,7 +100,7 @@ export function processReferenceCpGs({
               incWithProbabilities(
                 bin1,
                 fstrand,
-                CAT_NONMOD + 'cpg_unmeth',
+                `${CAT_NONMOD}cpg_unmeth`,
                 1 - (p1 || 0),
               )
               bin1.refDepth--

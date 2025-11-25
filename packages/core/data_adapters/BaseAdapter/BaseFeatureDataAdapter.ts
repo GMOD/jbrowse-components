@@ -1,4 +1,4 @@
-import { firstValueFrom, merge, type Observable } from 'rxjs'
+import { type Observable, firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { BaseAdapter } from './BaseAdapter'

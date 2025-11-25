@@ -11,7 +11,6 @@ import {
   getScale,
 } from '@jbrowse/plugin-wiggle'
 
-import { alphaColor } from '../shared/util'
 import { getAvgProbability } from '../SNPCoverageAdapter/util'
 import {
   CAT_MOD,
@@ -22,6 +21,7 @@ import {
   ENTRY_NEG,
   ENTRY_POS,
 } from '../shared/types'
+import { alphaColor } from '../shared/util'
 
 import type { RenderArgsDeserializedWithFeatures } from './types'
 import type { FlatBaseCoverageBin } from '../shared/types'
@@ -76,8 +76,7 @@ function calculateModificationCounts({
 
   // Calculate total reads for base and complement
   const baseCount =
-    (baseEntry?.[ENTRY_DEPTH] || 0) +
-    (refbase === base ? snpinfo.refDepth : 0)
+    (baseEntry?.[ENTRY_DEPTH] || 0) + (refbase === base ? snpinfo.refDepth : 0)
   const complCount =
     (cmpEntry?.[ENTRY_DEPTH] || 0) + (refbase === cmp ? snpinfo.refDepth : 0)
 
@@ -147,7 +146,8 @@ export async function makeImage(
   const toHeight = (n: number) => (viewScale(n) || 0) - originYScaled
   // used specifically for indicator
   const toY2 = (n: number) => height - (indicatorViewScale(n) || 0) + offset
-  const toHeight2 = (n: number) => (indicatorViewScale(n) || 0) - originLinearScaled
+  const toHeight2 = (n: number) =>
+    (indicatorViewScale(n) || 0) - originLinearScaled
 
   const { bases, softclip, hardclip, insertion } = theme.palette
   const colorMap: Record<string, string> = {

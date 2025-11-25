@@ -1,7 +1,6 @@
 import { bpSpanPx, measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { fillRectCtx, fillTextCtx } from '../util'
 import {
   MISMATCH_TYPE_CLIP_MASK,
   MISMATCH_TYPE_DELETION,
@@ -11,6 +10,7 @@ import {
   MISMATCH_TYPE_SKIP,
   MISMATCH_TYPE_SOFTCLIP,
 } from '../../shared/types'
+import { fillRectCtx, fillTextCtx } from '../util'
 
 import type { Mismatch } from '../../shared/types'
 import type { FlatbushItem } from '../types'

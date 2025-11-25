@@ -31,11 +31,7 @@ const STRAND_TO_ENTRY_IDX: Record<-1 | 0 | 1, number> = {
   [1]: ENTRY_POS,
 }
 
-export function inc(
-  bin: FlatBaseCoverageBin,
-  strand: -1 | 0 | 1,
-  key: string,
-) {
+export function inc(bin: FlatBaseCoverageBin, strand: -1 | 0 | 1, key: string) {
   const strandIdx = STRAND_TO_ENTRY_IDX[strand]
   let entry = bin.entries.get(key)
   if (!entry) {
@@ -60,7 +56,8 @@ export function incWithProbabilities(
   }
   entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
   entry[strandIdx] = (entry[strandIdx] || 0) + 1
-  entry[ENTRY_PROB_TOTAL] = (entry[ENTRY_PROB_TOTAL] || 0) + Math.round(probability * 1000000)
+  entry[ENTRY_PROB_TOTAL] =
+    (entry[ENTRY_PROB_TOTAL] || 0) + Math.round(probability * 1000000)
   entry[ENTRY_PROB_COUNT] = (entry[ENTRY_PROB_COUNT] || 0) + 1
 }
 

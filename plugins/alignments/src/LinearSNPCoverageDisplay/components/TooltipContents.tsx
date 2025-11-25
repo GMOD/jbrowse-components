@@ -3,8 +3,8 @@ import { forwardRef } from 'react'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
 
-import { getModificationName } from '../../shared/modificationData'
 import { getAvgProbability } from '../../SNPCoverageAdapter/util'
+import { getModificationName } from '../../shared/modificationData'
 import {
   CAT_DELSKIP,
   CAT_MOD,
@@ -419,9 +419,9 @@ function flatBinToInfo(
     if (key.startsWith(CAT_SNP)) {
       info.snps![key.slice(CAT_SNP.length)] = counts
     } else if (key.startsWith(CAT_MOD)) {
-      info.mods!['mod_' + key.slice(CAT_MOD.length)] = counts
+      info.mods![`mod_${key.slice(CAT_MOD.length)}`] = counts
     } else if (key.startsWith(CAT_NONMOD)) {
-      info.nonmods!['nonmod_' + key.slice(CAT_NONMOD.length)] = counts
+      info.nonmods![`nonmod_${key.slice(CAT_NONMOD.length)}`] = counts
     } else if (key.startsWith(CAT_DELSKIP)) {
       info.delskips![key.slice(CAT_DELSKIP.length)] = counts
     } else if (key.startsWith(CAT_NONCOV)) {

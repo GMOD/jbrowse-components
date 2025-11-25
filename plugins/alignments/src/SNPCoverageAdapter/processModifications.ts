@@ -1,7 +1,7 @@
 import { max, sum } from '@jbrowse/core/util'
 
-import { incWithProbabilities } from './util'
 import { createEmptyBin } from './processDepth'
+import { incWithProbabilities } from './util'
 import { parseCigar2 } from '../MismatchParser'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 import { CAT_MOD, CAT_NONMOD } from '../shared/types'

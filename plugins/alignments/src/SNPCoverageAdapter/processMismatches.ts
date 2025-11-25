@@ -1,11 +1,11 @@
-import { inc, isInterbase, mismatchLen } from './util'
 import { createEmptyBin } from './processDepth'
+import { inc, isInterbase, mismatchLen } from './util'
 import {
   CAT_DELSKIP,
   CAT_NONCOV,
   CAT_SNP,
-  MISMATCH_TYPE_DELSKIP_MASK,
   MISMATCH_TYPE_DELETION,
+  MISMATCH_TYPE_DELSKIP_MASK,
   MISMATCH_TYPE_HARDCLIP,
   MISMATCH_TYPE_INSERTION,
   MISMATCH_TYPE_SKIP,
