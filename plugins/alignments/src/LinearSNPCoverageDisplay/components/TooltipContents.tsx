@@ -63,9 +63,9 @@ interface MutableStrandCounts {
 
 function entryToStrandCounts(entry: Uint32Array): StrandCounts {
   return {
-    entryDepth: entry[ENTRY_DEPTH]!,
-    '1': entry[ENTRY_POS]!,
-    '-1': entry[ENTRY_NEG]!,
+    entryDepth: entry[ENTRY_DEPTH] || 0,
+    '1': entry[ENTRY_POS] || 0,
+    '-1': entry[ENTRY_NEG] || 0,
     avgProbability: entry.length > 4 ? getAvgProbability(entry) : undefined,
   }
 }

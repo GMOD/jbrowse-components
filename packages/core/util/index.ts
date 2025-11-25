@@ -175,7 +175,7 @@ export function springAnimate(
   let animationFrameId: number
 
   function update(animation: Animation) {
-    const time = Date.now()
+    const time = performance.now()
     let position = animation.lastPosition
     let lastTime = animation.lastTime || time
     let velocity = animation.lastVelocity || 0

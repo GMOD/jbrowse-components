@@ -173,7 +173,7 @@ export async function makeImage(
     }
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = rightPx - leftPx + fudgeFactor
-    const score = feature.get('score') as number
+    const score = feature.get('score')
     ctx.fillRect(leftPx, toY(score), w, toHeight(score))
   })
 

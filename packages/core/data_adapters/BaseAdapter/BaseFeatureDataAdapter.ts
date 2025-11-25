@@ -181,7 +181,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * is)
    */
   getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
-    let lastTime = Date.now()
+    let lastTime = performance.now()
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
       const sampleCenter = start * 0.75 + end * 0.25
@@ -222,7 +222,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       if (statsSampleFeatures >= 70 || interval * 2 > refLen) {
         return stats
       } else if (expansionTime <= 5000) {
-        const currTime = Date.now()
+        const currTime = performance.now()
         expansionTime += currTime - lastTime
         lastTime = currTime
         return statsFromInterval(interval * 2, expansionTime)

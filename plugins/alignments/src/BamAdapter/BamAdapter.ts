@@ -198,7 +198,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           readName,
         } = filterBy || {}
 
-        for (const record of records) {
+        for (let i = 0, l = records.length; i < l; i++) {
+          const record = records[i]!
           let ref: string | undefined
           if (!record.tags.MD) {
             ref = await this.seqFetch(

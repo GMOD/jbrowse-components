@@ -42,7 +42,7 @@ export default class QuickLRU extends Map {
   }
 
   _deleteIfExpired(key, item) {
-    if (typeof item.expiry === 'number' && item.expiry <= Date.now()) {
+    if (typeof item.expiry === 'number' && item.expiry <= performance.now()) {
       if (typeof this.onEviction === 'function') {
         this.onEviction(key, item.value)
       }
@@ -126,7 +126,7 @@ export default class QuickLRU extends Map {
   set(key, value, { maxAge = this.maxAge } = {}) {
     const expiry =
       typeof maxAge === 'number' && maxAge !== Number.POSITIVE_INFINITY
-        ? Date.now() + maxAge
+        ? performance.now() + maxAge
         : undefined
     if (this.cache.has(key)) {
       this.cache.set(key, {

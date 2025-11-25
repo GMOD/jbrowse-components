@@ -42,8 +42,8 @@ export function inc(
     entry = new Uint32Array(4)
     bin.entries.set(key, entry)
   }
-  ;(entry[ENTRY_DEPTH] as number)++
-  ;(entry[strandIdx] as number)++
+  entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
+  entry[strandIdx] = (entry[strandIdx] || 0) + 1
 }
 
 export function incWithProbabilities(
@@ -58,14 +58,14 @@ export function incWithProbabilities(
     entry = new Uint32Array(6)
     bin.entries.set(key, entry)
   }
-  ;(entry[ENTRY_DEPTH] as number)++
-  ;(entry[strandIdx] as number)++
-  ;(entry[ENTRY_PROB_TOTAL] as number) += Math.round(probability * 1000000)
-  ;(entry[ENTRY_PROB_COUNT] as number)++
+  entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
+  entry[strandIdx] = (entry[strandIdx] || 0) + 1
+  entry[ENTRY_PROB_TOTAL] = (entry[ENTRY_PROB_TOTAL] || 0) + Math.round(probability * 1000000)
+  entry[ENTRY_PROB_COUNT] = (entry[ENTRY_PROB_COUNT] || 0) + 1
 }
 
 // Helper to get average probability from entry (returns 0-1 range)
 export function getAvgProbability(entry: Uint32Array) {
-  const count = entry[ENTRY_PROB_COUNT]
-  return count ? entry[ENTRY_PROB_TOTAL]! / count / 1000000 : 0
+  const count = entry[ENTRY_PROB_COUNT] || 0
+  return count ? (entry[ENTRY_PROB_TOTAL] || 0) / count / 1000000 : 0
 }
