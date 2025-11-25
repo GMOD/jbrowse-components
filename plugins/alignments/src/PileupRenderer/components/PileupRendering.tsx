@@ -5,6 +5,12 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
+import {
+  MISMATCH_TYPE_DELETION,
+  MISMATCH_TYPE_INSERTION,
+  MISMATCH_TYPE_MODIFICATION,
+} from '../../shared/types'
+
 import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
@@ -128,11 +134,11 @@ const PileupRendering = observer(function (props: {
         )
         const item = search.length ? items[search[0]!] : undefined
         const label = item
-          ? item.type === 'insertion'
+          ? item.type === MISMATCH_TYPE_INSERTION
             ? `Insertion: ${item.seq}`
-            : item.type === 'deletion'
+            : item.type === MISMATCH_TYPE_DELETION
               ? `Deletion: ${item.seq}bp`
-              : item.type === 'modification'
+              : item.type === MISMATCH_TYPE_MODIFICATION
                 ? item.seq
                 : `Mismatch: ${item.seq}`
           : undefined

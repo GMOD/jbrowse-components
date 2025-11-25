@@ -12,9 +12,19 @@ import {
 } from '@jbrowse/plugin-wiggle'
 
 import { alphaColor } from '../shared/util'
+import { getAvgProbability } from '../SNPCoverageAdapter/util'
+import {
+  CAT_MOD,
+  CAT_NONCOV,
+  CAT_NONMOD,
+  CAT_SNP,
+  ENTRY_DEPTH,
+  ENTRY_NEG,
+  ENTRY_POS,
+} from '../shared/types'
 
 import type { RenderArgsDeserializedWithFeatures } from './types'
-import type { BaseCoverageBin } from '../shared/types'
+import type { FlatBaseCoverageBin } from '../shared/types'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
@@ -33,19 +43,11 @@ const complementBase = {
 
 const fudgeFactor = 0.6
 
-interface StrandCounts {
-  readonly entryDepth: number
-  readonly '1': number
-  readonly '-1': number
-  readonly '0': number
-}
-
 interface ModificationCountsParams {
   readonly base: string
   readonly isSimplex: boolean
   readonly refbase: string | undefined
-  readonly snps: Readonly<Record<string, Partial<StrandCounts>>>
-  readonly ref: StrandCounts
+  readonly snpinfo: FlatBaseCoverageBin
   readonly score0: number
 }
 
@@ -54,52 +56,38 @@ interface ModificationCountsResult {
   readonly detectable: number
 }
 
-/**
- * Calculate modifiable and detectable counts for a modification following IGV's algorithm.
- *
- * @param params.base - The canonical base (e.g., 'A' for A+a modification)
- * @param params.isSimplex - Whether this modification is simplex (only on one strand)
- * @param params.refbase - The reference base at this position
- * @param params.snps - SNP counts at this position
- * @param params.ref - Reference match counts at this position
- * @param params.score0 - Total coverage at this position
- * @returns Object with modifiable and detectable counts
- */
 function calculateModificationCounts({
   base,
   isSimplex,
   refbase,
-  snps,
-  ref,
+  snpinfo,
   score0,
 }: ModificationCountsParams): ModificationCountsResult {
-  // Handle N base (all bases are modifiable/detectable)
   if (base === 'N') {
     return { modifiable: score0, detectable: score0 }
   }
 
   const cmp = complementBase[base as keyof typeof complementBase]
+  const entries = snpinfo.entries
+
+  // Get SNP entry for base and complement
+  const baseEntry = entries.get(CAT_SNP + base)
+  const cmpEntry = entries.get(CAT_SNP + cmp)
 
   // Calculate total reads for base and complement
-  // IGV: getCount(pos, base) = reads matching that base (from SNPs or ref)
   const baseCount =
-    (snps[base]?.entryDepth || 0) + (refbase === base ? ref.entryDepth : 0)
+    (baseEntry?.[ENTRY_DEPTH] || 0) +
+    (refbase === base ? snpinfo.refDepth : 0)
   const complCount =
-    (snps[cmp]?.entryDepth || 0) + (refbase === cmp ? ref.entryDepth : 0)
+    (cmpEntry?.[ENTRY_DEPTH] || 0) + (refbase === cmp ? snpinfo.refDepth : 0)
 
-  // Modifiable: reads that COULD have this modification (base or complement)
-  // IGV: modifiable = getCount(pos, base) + getCount(pos, compl)
   const modifiable = baseCount + complCount
 
-  // Detectable: reads where we can DETECT this modification
-  // For simplex: only specific strands (+ for base, - for complement)
-  // For duplex: all reads (same as modifiable)
-  // IGV: detectable = simplex ? getPosCount(base) + getNegCount(compl) : modifiable
   const detectable = isSimplex
-    ? (snps[base]?.['1'] || 0) +
-      (snps[cmp]?.['-1'] || 0) +
-      (refbase === base ? ref['1'] : 0) +
-      (refbase === cmp ? ref['-1'] : 0)
+    ? (baseEntry?.[ENTRY_POS] || 0) +
+      (cmpEntry?.[ENTRY_NEG] || 0) +
+      (refbase === base ? snpinfo.refPos : 0) +
+      (refbase === cmp ? snpinfo.refNeg : 0)
     : modifiable
 
   return { modifiable, detectable }
@@ -216,58 +204,32 @@ export async function makeImage(
       return
     }
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-    const snpinfo = feature.get('snpinfo') as BaseCoverageBin
+    const snpinfo = feature.get('snpinfo') as FlatBaseCoverageBin
     const w = Math.max(rightPx - leftPx, 1)
     const score0 = feature.get('score')
+    const entries = snpinfo.entries
+
     if (drawingModifications) {
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
-      const { nonmods, mods, snps, ref } = snpinfo
-      // Sort keys once outside the loop
-      const nonmodKeys = Object.keys(nonmods).sort().reverse()
-      for (const m of nonmodKeys) {
-        // Remove prefix once for lookup
-        const modKey = m.replace(/^(nonmod_|mod_)/, '')
-        const mod = visibleModifications[modKey]
-        if (!mod) {
-          console.warn(`${m} not known yet`)
-          continue
-        }
-        if (isolatedModification && mod.type !== isolatedModification) {
-          continue
-        }
-        const { modifiable, detectable } = calculateModificationCounts({
-          base: mod.base,
-          isSimplex: simplexSet.has(mod.type),
-          refbase,
-          snps,
-          ref,
-          score0,
-        })
 
-        const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
-        const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const nonModColor = 'blue'
-        const c = alphaColor(nonModColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
-
-        ctx.fillStyle = c
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - (curr + modFraction * height),
-          w,
-          modFraction * height,
-        )
-        curr += modFraction * height
+      // Get nonmod entries (keys starting with CAT_NONMOD)
+      const nonmodEntries: [string, Uint32Array][] = []
+      const modEntries: [string, Uint32Array][] = []
+      for (const [key, entry] of entries) {
+        if (key.startsWith(CAT_NONMOD)) {
+          nonmodEntries.push([key.slice(CAT_NONMOD.length), entry])
+        } else if (key.startsWith(CAT_MOD)) {
+          modEntries.push([key.slice(CAT_MOD.length), entry])
+        }
       }
-      // Sort keys once outside the loop
-      const modKeys = Object.keys(mods).sort().reverse()
-      for (const m of modKeys) {
-        const modKey = m.replace('mod_', '')
-        const mod = visibleModifications[modKey]
+      nonmodEntries.sort((a, b) => b[0].localeCompare(a[0]))
+      modEntries.sort((a, b) => b[0].localeCompare(a[0]))
+
+      for (const [modType, entry] of nonmodEntries) {
+        const mod = visibleModifications[modType]
         if (!mod) {
-          console.warn(`${m} not known yet`)
+          console.warn(`${modType} not known yet`)
           continue
         }
         if (isolatedModification && mod.type !== isolatedModification) {
@@ -277,80 +239,143 @@ export async function makeImage(
           base: mod.base,
           isSimplex: simplexSet.has(mod.type),
           refbase,
-          snps,
-          ref,
+          snpinfo,
           score0,
         })
 
-        const { entryDepth, avgProbability = 0 } = mods[m]!
+        const entryDepth = entry[ENTRY_DEPTH]!
+        const avgProbability = getAvgProbability(entry)
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const baseColor = mod.color || 'black'
-        const c = alphaColor(baseColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const c = alphaColor('blue', avgProbability)
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
 
         ctx.fillStyle = c
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - (curr + modFraction * height),
+          bottom - (curr + modFraction * h),
           w,
-          modFraction * height,
+          modFraction * h,
         )
-        curr += modFraction * height
+        curr += modFraction * h
+      }
+
+      for (const [modType, entry] of modEntries) {
+        const mod = visibleModifications[modType]
+        if (!mod) {
+          console.warn(`${modType} not known yet`)
+          continue
+        }
+        if (isolatedModification && mod.type !== isolatedModification) {
+          continue
+        }
+        const { modifiable, detectable } = calculateModificationCounts({
+          base: mod.base,
+          isSimplex: simplexSet.has(mod.type),
+          refbase,
+          snpinfo,
+          score0,
+        })
+
+        const entryDepth = entry[ENTRY_DEPTH]!
+        const avgProbability = getAvgProbability(entry)
+        const modFraction = (modifiable / score0) * (entryDepth / detectable)
+        const c = alphaColor(mod.color || 'black', avgProbability)
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
+
+        ctx.fillStyle = c
+        ctx.fillRect(
+          Math.round(leftPx),
+          bottom - (curr + modFraction * h),
+          w,
+          modFraction * h,
+        )
+        curr += modFraction * h
       }
     } else if (drawingMethylation) {
-      const { depth, nonmods, mods } = snpinfo
+      const depth = snpinfo.depth
       let curr = 0
 
-      for (const base of Object.keys(mods).sort().reverse()) {
-        const { entryDepth } = mods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+      // Get mod and nonmod entries
+      const modEntries: [string, Uint32Array][] = []
+      const nonmodEntries: [string, Uint32Array][] = []
+      for (const [key, entry] of entries) {
+        if (key.startsWith(CAT_MOD)) {
+          modEntries.push([key.slice(CAT_MOD.length), entry])
+        } else if (key.startsWith(CAT_NONMOD)) {
+          nonmodEntries.push([key.slice(CAT_NONMOD.length), entry])
+        }
+      }
+      modEntries.sort((a, b) => b[0].localeCompare(a[0]))
+      nonmodEntries.sort((a, b) => b[0].localeCompare(a[0]))
+
+      for (const [base, entry] of modEntries) {
+        const entryDepth = entry[ENTRY_DEPTH]!
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
-      for (const base of Object.keys(nonmods).sort().reverse()) {
-        const { entryDepth } = nonmods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+      for (const [base, entry] of nonmodEntries) {
+        const entryDepth = entry[ENTRY_DEPTH]!
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
     } else {
-      const { depth, snps } = snpinfo
+      const depth = snpinfo.depth
       let curr = 0
-      for (const base of Object.keys(snps).sort().reverse()) {
-        const { entryDepth } = snps[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+
+      // Get SNP entries
+      const snpEntries: [string, Uint32Array][] = []
+      for (const [key, entry] of entries) {
+        if (key.startsWith(CAT_SNP)) {
+          snpEntries.push([key.slice(CAT_SNP.length), entry])
+        }
+      }
+      snpEntries.sort((a, b) => b[0].localeCompare(a[0]))
+
+      for (const [base, entry] of snpEntries) {
+        const entryDepth = entry[ENTRY_DEPTH]!
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
     }
 
-    const interbaseEvents = Object.keys(snpinfo.noncov)
+    // Get noncov entries for interbase indicators
+    const noncovEntries: [string, Uint32Array][] = []
+    for (const [key, entry] of entries) {
+      if (key.startsWith(CAT_NONCOV)) {
+        noncovEntries.push([key.slice(CAT_NONCOV.length), entry])
+      }
+    }
+
     if (showInterbaseCounts) {
       let curr = 0
-      for (const base of interbaseEvents) {
-        const { entryDepth } = snpinfo.noncov[base]!
+      for (const [base, entry] of noncovEntries) {
+        const entryDepth = entry[ENTRY_DEPTH]!
         const r = 0.6
         ctx.fillStyle = colorMap[base]!
         ctx.fillRect(
@@ -367,8 +392,8 @@ export async function makeImage(
       let accum = 0
       let max = 0
       let maxBase = ''
-      for (const base of interbaseEvents) {
-        const { entryDepth } = snpinfo.noncov[base]!
+      for (const [base, entry] of noncovEntries) {
+        const entryDepth = entry[ENTRY_DEPTH]!
         accum += entryDepth
         if (entryDepth > max) {
           max = entryDepth
@@ -376,8 +401,6 @@ export async function makeImage(
         }
       }
 
-      // avoid drawing a bunch of indicators if coverage is very low. note:
-      // also uses the prev total in the case of the "cliff"
       const indicatorComparatorScore = Math.max(score0, prevTotal)
       if (
         accum > indicatorComparatorScore * indicatorThreshold &&

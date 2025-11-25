@@ -6,6 +6,7 @@ import { getModPositions } from '../../ModificationParser/getModPositions'
 import { getModProbabilities } from '../../ModificationParser/getModProbabilities'
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
 import { getModificationName } from '../../shared/modificationData'
+import { MISMATCH_TYPE_MODIFICATION } from '../../shared/types'
 import { alphaColor } from '../../shared/util'
 import { getTagAlt } from '../../util'
 import { fillRectCtx } from '../util'
@@ -116,7 +117,7 @@ export function renderModifications({
       const modsAtPos = modsByPosition.get(pos)
       if (rightPx - leftPx >= 0.2 && modsAtPos) {
         items.push({
-          type: 'modification',
+          type: MISMATCH_TYPE_MODIFICATION,
           seq: modsAtPos
             .map(
               m =>

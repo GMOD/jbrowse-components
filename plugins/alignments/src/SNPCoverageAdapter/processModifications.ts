@@ -1,10 +1,12 @@
 import { max, sum } from '@jbrowse/core/util'
 
 import { incWithProbabilities } from './util'
+import { createEmptyBin } from './processDepth'
 import { parseCigar2 } from '../MismatchParser'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
+import { CAT_MOD, CAT_NONMOD } from '../shared/types'
 
-import type { ColorBy, PreBaseCoverageBin } from '../shared/types'
+import type { ColorBy, FlatBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
@@ -15,7 +17,7 @@ export function processModifications({
   bins,
   regionSequence,
 }: {
-  bins: PreBaseCoverageBin[]
+  bins: FlatBaseCoverageBin[]
   feature: Feature
   region: Region
   colorBy?: ColorBy
@@ -36,8 +38,6 @@ export function processModifications({
 
   const cigarOps = parseCigar2(feature.get('CIGAR'))
 
-  // Get only the maximum probability modification at each position
-  // this is a hole-y array, does not work with normal for loop
   // eslint-disable-next-line unicorn/no-array-for-each
   getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
     ({ allProbs, prob, type }, pos) => {
@@ -45,7 +45,6 @@ export function processModifications({
         return
       }
 
-      // Check if modification probability exceeds threshold
       if (prob < thresholdFraction) {
         return
       }
@@ -53,21 +52,7 @@ export function processModifications({
       const epos = pos + fstart - region.start
       if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
         if (bins[epos] === undefined) {
-          bins[epos] = {
-            depth: 0,
-            readsCounted: 0,
-            snps: {},
-            ref: {
-              entryDepth: 0,
-              '-1': 0,
-              0: 0,
-              1: 0,
-            },
-            mods: {},
-            nonmods: {},
-            delskips: {},
-            noncov: {},
-          }
+          bins[epos] = createEmptyBin()
         }
 
         const bin = bins[epos]
@@ -75,9 +60,9 @@ export function processModifications({
 
         const s = 1 - sum(allProbs)
         if (twoColor && s > max(allProbs)) {
-          incWithProbabilities(bin, fstrand, 'nonmods', `nonmod_${type}`, s)
+          incWithProbabilities(bin, fstrand, CAT_NONMOD + type, s)
         } else {
-          incWithProbabilities(bin, fstrand, 'mods', `mod_${type}`, prob)
+          incWithProbabilities(bin, fstrand, CAT_MOD + type, prob)
         }
       }
     },

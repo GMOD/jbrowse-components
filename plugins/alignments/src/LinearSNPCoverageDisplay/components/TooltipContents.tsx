@@ -4,8 +4,19 @@ import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
 
 import { getModificationName } from '../../shared/modificationData'
+import { getAvgProbability } from '../../SNPCoverageAdapter/util'
+import {
+  CAT_DELSKIP,
+  CAT_MOD,
+  CAT_NONCOV,
+  CAT_NONMOD,
+  CAT_SNP,
+  ENTRY_DEPTH,
+  ENTRY_NEG,
+  ENTRY_POS,
+} from '../../shared/types'
 
-import type { BaseCoverageBin } from '../../shared/types'
+import type { FlatBaseCoverageBin } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(() => ({
@@ -48,6 +59,15 @@ interface MutableStrandCounts {
   '1': number
   '-1': number
   avgProbability?: number
+}
+
+function entryToStrandCounts(entry: Uint32Array): StrandCounts {
+  return {
+    entryDepth: entry[ENTRY_DEPTH]!,
+    '1': entry[ENTRY_POS]!,
+    '-1': entry[ENTRY_NEG]!,
+    avgProbability: entry.length > 4 ? getAvgProbability(entry) : undefined,
+  }
 }
 
 function getModificationColor(base: string, model: Model): string | undefined {
@@ -382,6 +402,36 @@ function ModificationRows({
   )
 }
 
+// Convert flat bin entries to grouped format for ModificationRows
+function flatBinToInfo(
+  entries: Map<string, Uint32Array>,
+): Record<string, Record<string, StrandCounts>> {
+  const info: Record<string, Record<string, StrandCounts>> = {
+    snps: {},
+    mods: {},
+    nonmods: {},
+    delskips: {},
+    noncov: {},
+  }
+
+  for (const [key, entry] of entries) {
+    const counts = entryToStrandCounts(entry)
+    if (key.startsWith(CAT_SNP)) {
+      info.snps![key.slice(CAT_SNP.length)] = counts
+    } else if (key.startsWith(CAT_MOD)) {
+      info.mods!['mod_' + key.slice(CAT_MOD.length)] = counts
+    } else if (key.startsWith(CAT_NONMOD)) {
+      info.nonmods!['nonmod_' + key.slice(CAT_NONMOD.length)] = counts
+    } else if (key.startsWith(CAT_DELSKIP)) {
+      info.delskips![key.slice(CAT_DELSKIP.length)] = counts
+    } else if (key.startsWith(CAT_NONCOV)) {
+      info.noncov![key.slice(CAT_NONCOV.length)] = counts
+    }
+  }
+
+  return info
+}
+
 const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2(props, reactRef) {
     const { feature, model } = props
@@ -389,13 +439,18 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
     const start = feature.get('start') + 1
     const end = feature.get('end')
     const name = feature.get('refName')
-    const {
-      refbase: referenceBase,
-      readsCounted,
-      depth,
-      ref: reference,
-      ...info
-    } = feature.get('snpinfo') as BaseCoverageBin
+    const snpinfo = feature.get('snpinfo') as FlatBaseCoverageBin
+    const { refbase: referenceBase, readsCounted, entries } = snpinfo
+
+    // Build reference StrandCounts from flat fields
+    const reference: StrandCounts = {
+      entryDepth: snpinfo.refDepth,
+      '1': snpinfo.refPos,
+      '-1': snpinfo.refNeg,
+    }
+
+    // Convert flat entries to grouped format
+    const info = flatBinToInfo(entries)
 
     return (
       <div ref={reactRef}>

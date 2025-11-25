@@ -6,7 +6,7 @@ import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
 
 import type { Opts } from './util'
-import type { PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type { FlatBaseCoverageBin, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
@@ -19,26 +19,22 @@ export async function generateCoverageBins({
   features: Feature[]
   region: Region
   opts: Opts
-  fetchSequence: (arg: Region) => Promise<string>
+  fetchSequence: (arg: Region) => Promise<string | undefined>
 }) {
   const { stopToken, colorBy } = opts
   const skipmap = {} as SkipMap
-  const bins = [] as PreBaseCoverageBin[]
+  const bins = [] as FlatBaseCoverageBin[]
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
 
-  let regionSequence
+  let regionSequence: string | undefined
   let start = performance.now()
   for (const feature of features) {
     if (performance.now() - start > 400) {
       checkStopToken(stopToken)
       start = performance.now()
     }
-    processDepth({
-      feature,
-      bins,
-      region,
-    })
+    processDepth({ feature, bins, region })
 
     if (colorBy?.type === 'modifications') {
       regionSequence ??=
@@ -73,42 +69,5 @@ export async function generateCoverageBins({
     processMismatches({ feature, skipmap, bins, region })
   }
 
-  for (const bin of bins) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (bin) {
-      bin.mods = Object.fromEntries(
-        Object.entries(bin.mods).map(([key, val]) => {
-          const { probabilityTotal, probabilityCount, ...rest } = val
-          return [
-            key,
-            {
-              ...rest,
-              avgProbability: probabilityCount
-                ? probabilityTotal! / probabilityCount
-                : undefined,
-            },
-          ] as const
-        }),
-      )
-      bin.nonmods = Object.fromEntries(
-        Object.entries(bin.nonmods).map(([key, val]) => {
-          const { probabilityTotal, probabilityCount, ...rest } = val
-          return [
-            key,
-            {
-              ...rest,
-              avgProbability: probabilityCount
-                ? probabilityTotal! / probabilityCount
-                : undefined,
-            },
-          ] as const
-        }),
-      )
-    }
-  }
-
-  return {
-    bins,
-    skipmap,
-  }
+  return { bins, skipmap }
 }

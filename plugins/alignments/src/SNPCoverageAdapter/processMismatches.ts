@@ -1,5 +1,9 @@
 import { inc, isInterbase, mismatchLen } from './util'
+import { createEmptyBin } from './processDepth'
 import {
+  CAT_DELSKIP,
+  CAT_NONCOV,
+  CAT_SNP,
   MISMATCH_TYPE_DELSKIP_MASK,
   MISMATCH_TYPE_DELETION,
   MISMATCH_TYPE_HARDCLIP,
@@ -8,7 +12,9 @@ import {
   MISMATCH_TYPE_SOFTCLIP,
 } from '../shared/types'
 
-import type { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type { FlatBaseCoverageBin, Mismatch, SkipMap } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
+import type { AugmentedRegion } from '@jbrowse/core/util/types'
 
 const MISMATCH_TYPE_NAMES: Record<number, string> = {
   [MISMATCH_TYPE_INSERTION]: 'insertion',
@@ -17,8 +23,13 @@ const MISMATCH_TYPE_NAMES: Record<number, string> = {
   [MISMATCH_TYPE_SOFTCLIP]: 'softclip',
   [MISMATCH_TYPE_HARDCLIP]: 'hardclip',
 }
-import type { Feature } from '@jbrowse/core/util'
-import type { AugmentedRegion } from '@jbrowse/core/util/types'
+
+// Strand to flat ref key
+const STRAND_TO_REF: Record<-1 | 0 | 1, 'refNeg' | 'refZero' | 'refPos'> = {
+  [-1]: 'refNeg',
+  [0]: 'refZero',
+  [1]: 'refPos',
+}
 
 export function processMismatches({
   feature,
@@ -27,15 +38,15 @@ export function processMismatches({
   skipmap,
 }: {
   region: AugmentedRegion
-  bins: PreBaseCoverageBin[]
+  bins: FlatBaseCoverageBin[]
   feature: Feature
   skipmap: SkipMap
 }) {
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
+  const strandRef = STRAND_TO_REF[fstrand]
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
 
-  // normal SNP based coloring
   for (const mismatch of mismatches) {
     const mstart = fstart + mismatch.start
     const mlen = mismatchLen(mismatch)
@@ -43,20 +54,23 @@ export function processMismatches({
     for (let j = mstart; j < mstart + mlen; j++) {
       const epos = j - region.start
       if (epos >= 0 && epos < bins.length) {
-        const bin = bins[epos]!
+        let bin = bins[epos]
+        if (!bin) {
+          bin = bins[epos] = createEmptyBin()
+        }
         const { base, altbase, type } = mismatch
         const interbase = isInterbase(type)
 
         if ((type & MISMATCH_TYPE_DELSKIP_MASK) !== 0) {
-          inc(bin, fstrand, 'delskips', MISMATCH_TYPE_NAMES[type]!)
+          inc(bin, fstrand, CAT_DELSKIP + MISMATCH_TYPE_NAMES[type]!)
           bin.depth--
         } else if (!interbase) {
-          inc(bin, fstrand, 'snps', base)
-          bin.ref.entryDepth--
-          bin.ref[fstrand]--
+          inc(bin, fstrand, CAT_SNP + base)
+          bin.refDepth--
+          bin[strandRef]--
           bin.refbase = altbase
         } else {
-          inc(bin, fstrand, 'noncov', MISMATCH_TYPE_NAMES[type]!)
+          inc(bin, fstrand, CAT_NONCOV + MISMATCH_TYPE_NAMES[type]!)
         }
       }
     }
