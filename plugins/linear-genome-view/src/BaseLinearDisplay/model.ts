@@ -69,6 +69,7 @@ export type LayoutRecord =
         floatingLabels?: FloatingLabelData[]
         totalFeatureHeight?: number
         totalLayoutWidth?: number
+        featureWidth?: number
       },
     ]
 
