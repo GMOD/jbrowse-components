@@ -9,7 +9,23 @@ import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
 import type { BaseOptions } from './BaseOptions'
 import type { FeatureDensityStats } from './types'
 import type { Feature } from '../../util/simpleFeature'
+import type { QuantitativeStats } from '../../util/stats'
 import type { AugmentedRegion as Region } from '../../util/types'
+
+const DENSITY_SAMPLE_INITIAL_INTERVAL = 1000
+const DENSITY_SAMPLE_MIN_FEATURES = 70
+const DENSITY_SAMPLE_TIMEOUT_MS = 5000
+
+function aggregateQuantitativeStats(stats: QuantitativeStats[]) {
+  return rectifyStats({
+    scoreMax: max(stats.map(s => s.scoreMax)),
+    scoreMin: min(stats.map(s => s.scoreMin)),
+    scoreSum: sum(stats.map(s => s.scoreSum)),
+    scoreSumSquares: sum(stats.map(s => s.scoreSumSquares)),
+    featureCount: sum(stats.map(s => s.featureCount)),
+    basesCovered: sum(stats.map(s => s.basesCovered)),
+  })
+}
 
 function sampleFeaturesForInterval(
   region: Region,
@@ -37,7 +53,7 @@ async function calculateFeatureDensityStats(
   opts?: BaseOptions,
 ): Promise<FeatureDensityStats> {
   const refLen = region.end - region.start
-  let interval = 1000
+  let interval = DENSITY_SAMPLE_INITIAL_INTERVAL
   let expansionTime = 0
   let lastTime = performance.now()
 
@@ -50,11 +66,11 @@ async function calculateFeatureDensityStats(
     )
     const featureCount = features.length
 
-    if (featureCount >= 70 || interval * 2 > refLen) {
+    if (featureCount >= DENSITY_SAMPLE_MIN_FEATURES || interval * 2 > refLen) {
       return { featureDensity: featureCount / interval }
     }
 
-    if (expansionTime > 5000) {
+    if (expansionTime > DENSITY_SAMPLE_TIMEOUT_MS) {
       console.warn(
         "Stats estimation reached timeout, or didn't get enough features",
       )
@@ -155,10 +171,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * are frequently called on multiple regions simultaneously may want to
    * implement a more efficient custom version of this method.
    *
-   * Currently this just calls getFeatureInRegion for each region. Adapters that
-   * are frequently called on multiple regions simultaneously may want to
-   * implement a more efficient custom version of this method.
-   *
    * @param regions - Regions
    * @param opts - Feature adapter options
    * @returns Observable of Feature objects in the regions
@@ -201,25 +213,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       return blankStats()
     }
-    const feats = await Promise.all(
+    const stats = await Promise.all(
       regions.map(region => this.getRegionQuantitativeStats(region, opts)),
     )
-
-    const scoreMax = max(feats.map(a => a.scoreMax))
-    const scoreMin = min(feats.map(a => a.scoreMin))
-    const scoreSum = sum(feats.map(a => a.scoreSum))
-    const scoreSumSquares = sum(feats.map(a => a.scoreSumSquares))
-    const featureCount = sum(feats.map(a => a.featureCount))
-    const basesCovered = sum(feats.map(a => a.basesCovered))
-
-    return rectifyStats({
-      scoreMin,
-      scoreMax,
-      featureCount,
-      basesCovered,
-      scoreSumSquares,
-      scoreSum,
-    })
+    return aggregateQuantitativeStats(stats)
   }
 
   /**

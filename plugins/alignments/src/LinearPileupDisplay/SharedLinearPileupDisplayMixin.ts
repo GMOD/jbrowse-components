@@ -451,7 +451,7 @@ export function SharedLinearPileupDisplayMixin(
             async onMismatchClick(
               _: unknown,
               item: {
-                type: string
+                type: number
                 seq: string
                 modType?: string
                 probability?: number
