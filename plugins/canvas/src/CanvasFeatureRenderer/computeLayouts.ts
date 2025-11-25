@@ -143,18 +143,32 @@ export function computeLayouts({
     // Note: layoutWidthBp scales with zoom (same pixel width = different bp at different zooms)
     // This is correct behavior - labels need more genomic space when zoomed in
     //
-    // When reversed, the feature's visual left is at featureEnd, and labels extend
-    // towards visual left (higher genomic coords). So we anchor at featureEnd.
-    // When normal, the feature's visual left is at featureStart, and labels extend
-    // towards visual right (higher genomic coords). So we anchor at featureStart.
+    // When reversed, extend the layout to the LEFT in genomic coords (lower coords).
+    // This reserves space for labels on the visual right side of the feature.
+    // When normal, extend to the RIGHT in genomic coords (higher coords).
+    // This reserves space for labels on the visual right side of the feature.
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
-    const layoutAnchor = reversed ? featureEnd : featureStart
+    const featureWidthBp = featureEnd - featureStart
     const layoutWidthBp = totalLayoutWidth * bpPerPx
+    const labelOverhangBp = Math.max(0, layoutWidthBp - featureWidthBp)
+
+    let layoutStart: number
+    let layoutEnd: number
+    if (reversed) {
+      // Extend to lower genomic coords (visual right when reversed)
+      layoutStart = featureStart - labelOverhangBp
+      layoutEnd = featureEnd
+    } else {
+      // Extend to higher genomic coords (visual right when normal)
+      layoutStart = featureStart
+      layoutEnd = featureStart + layoutWidthBp
+    }
+
     const topPx = layout.addRect(
       feature.id(),
-      layoutAnchor,
-      layoutAnchor + layoutWidthBp,
+      layoutStart,
+      layoutEnd,
       totalLayoutHeight + yPadding,
       feature,
       {

@@ -43,7 +43,6 @@ function calculateClampedLabelPosition(
 interface PixelPositions {
   leftPx: number
   rightPx: number
-  reversed: boolean
 }
 
 function calculateFeaturePixelPositions(
@@ -78,25 +77,21 @@ function calculateFeaturePixelPositions(
     const px2 =
       rightBpPx !== undefined ? rightBpPx : px1 + (right - left) / bpPerPx
 
-    // When region is reversed, genomic left maps to visual right (px1 > px2)
     // Normalize so leftPx is always visual left and rightPx is visual right
-    const reversed = px1 > px2
+    // When region is reversed, genomic coords map to opposite pixel positions
     return {
       leftPx: Math.min(px1, px2),
       rightPx: Math.max(px1, px2),
-      reversed,
     }
   } else if (rightBpPx !== undefined) {
     // Right edge is visible but left is not (feature starts in collapsed region)
     const px2 = rightBpPx
     const px1 = px2 - (right - left) / bpPerPx
 
-    // When region is reversed, genomic left maps to visual right (px1 > px2)
-    const reversed = px1 > px2
+    // Normalize so leftPx is always visual left and rightPx is visual right
     return {
       leftPx: Math.min(px1, px2),
       rightPx: Math.max(px1, px2),
-      reversed,
     }
   } else {
     // Neither edge is visible
@@ -111,8 +106,6 @@ interface FeatureLabelData {
   totalFeatureHeight: number
   floatingLabels: FloatingLabelData[]
   totalLayoutWidth?: number
-  featureWidth?: number
-  reversed: boolean
 }
 
 function deduplicateFeatureLabels(
@@ -137,7 +130,6 @@ function deduplicateFeatureLabels(
       floatingLabels,
       totalFeatureHeight,
       totalLayoutWidth,
-      featureWidth,
     } = feature
 
     // Skip if no floating labels
@@ -157,7 +149,7 @@ function deduplicateFeatureLabels(
       continue
     }
 
-    const { leftPx, rightPx, reversed } = positions
+    const { leftPx, rightPx } = positions
 
     // De-duplicate: keep the left-most position for each feature
     const existing = featureLabels.get(key)
@@ -169,8 +161,6 @@ function deduplicateFeatureLabels(
         totalFeatureHeight,
         floatingLabels,
         totalLayoutWidth,
-        featureWidth,
-        reversed,
       })
     }
   }
@@ -219,8 +209,6 @@ const FloatingLabels = observer(function FloatingLabels({
         totalFeatureHeight,
         floatingLabels,
         totalLayoutWidth,
-        featureWidth,
-        reversed,
       },
     ] of featureLabels.entries()) {
       // Calculate the bottom of the visual feature (not including label space)
@@ -241,12 +229,11 @@ const FloatingLabels = observer(function FloatingLabels({
           continue
         }
 
-        // Calculate the feature's visual left position
-        // When reversed, the feature is at the right side of the layout rect
-        // (because the layout extends towards visual left for label space)
-        const featureVisualLeftPx = reversed
-          ? rightPx - (featureWidth ?? layoutWidth)
-          : leftPx
+        // leftPx is always the feature's visual left because:
+        // - When normal: layout extends right, so leftPx = feature's visual left
+        // - When reversed: layout extends left in genomic coords, which after
+        //   pixel conversion means leftPx = feature's visual left (featureEnd in genomic)
+        const featureVisualLeftPx = leftPx
 
         // Calculate clamped horizontal position
         // Use totalLayoutWidth if available to determine the right edge for clamping
