@@ -18,6 +18,7 @@ interface LabelItem {
   x: number
   y: number
   color: string
+  isOverlay?: boolean
 }
 
 function calculateLabelWidth(text: string, fontSize: number) {
@@ -222,7 +223,7 @@ const FloatingLabels = observer(function FloatingLabels({
       // Process each floating label
       for (const [i, floatingLabel] of floatingLabels.entries()) {
         const labelItem = floatingLabel
-        const { text, relativeY, color } = labelItem
+        const { text, relativeY, color, isOverlay } = labelItem
 
         // Calculate label width for this specific text
         const labelWidth = calculateLabelWidth(text, fontSize)
@@ -262,6 +263,7 @@ const FloatingLabels = observer(function FloatingLabels({
           x,
           y,
           color,
+          isOverlay,
         })
       }
     }
@@ -279,7 +281,7 @@ const FloatingLabels = observer(function FloatingLabels({
     const domElements = domElementsRef.current
     const newKeys = new Set<string>()
 
-    for (const { key, text, x, y, color } of labelData) {
+    for (const { key, text, x, y, color, isOverlay } of labelData) {
       newKeys.add(key)
       let element = domElements.get(key)
 
@@ -298,6 +300,15 @@ const FloatingLabels = observer(function FloatingLabels({
       }
       if (element.style.color !== color) {
         element.style.color = color
+      }
+      // Add semi-transparent background for overlay labels to improve readability
+      const bgColor = isOverlay ? 'rgba(255, 255, 255, 0.8)' : ''
+      if (element.style.backgroundColor !== bgColor) {
+        element.style.backgroundColor = bgColor
+      }
+      const lineHeight = isOverlay ? '1' : ''
+      if (element.style.lineHeight !== lineHeight) {
+        element.style.lineHeight = lineHeight
       }
       element.style.transform = `translate(${x}px, ${y}px)`
     }

@@ -8,6 +8,7 @@ export interface FloatingLabelData {
   text: string
   relativeY: number
   color: string
+  isOverlay?: boolean
 }
 
 /**
@@ -108,11 +109,13 @@ export function createTranscriptFloatingLabel({
   // For 'below' mode, position label at bottom of feature (relativeY = 0)
   // The label Y formula is: featureTop + totalFeatureHeight + relativeY
   // For overlay: we want featureTop + 2, so relativeY = 2 - totalFeatureHeight
-  const relativeY = subfeatureLabelPosition === 'overlay' ? 2 - featureHeight : 0
+  const isOverlay = subfeatureLabelPosition === 'overlay'
+  const relativeY = isOverlay ? 2 - featureHeight : 0
 
   return {
     text: transcriptName,
     relativeY,
     color,
+    isOverlay,
   }
 }

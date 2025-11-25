@@ -157,9 +157,16 @@ export function addNestedSubfeaturesToLayout({
       const childStart = childFeature.get('start')
       const childEnd = childFeature.get('end')
 
-      layout.addRect(childFeature.id(), childStart, childEnd, child.height, childFeature, {
-        refName: childFeature.get('refName'),
-      })
+      layout.addRect(
+        childFeature.id(),
+        childStart,
+        childEnd,
+        child.height,
+        childFeature,
+        {
+          refName: childFeature.get('refName'),
+        },
+      )
 
       if (child.children.length > 0) {
         addNestedSubfeaturesToLayout({ layout, featureLayout: child, config })

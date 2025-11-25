@@ -363,43 +363,45 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show labels',
+              label: 'Show...',
               icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showLabels,
-              onClick: () => {
-                self.toggleShowLabels()
-              },
-            },
-            {
-              label: 'Show descriptions',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showDescriptions,
-              onClick: () => {
-                self.toggleShowDescriptions()
-              },
-            },
-            {
-              label: 'Show subfeature labels',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showSubfeatureLabels,
-              onClick: () => {
-                self.toggleShowSubfeatureLabels()
-              },
-            },
-            {
-              label: 'Subfeature label position',
-              icon: VisibilityIcon,
-              subMenu: ['below', 'overlay'].map(val => ({
-                label: val,
-                type: 'radio' as const,
-                checked: self.subfeatureLabelPosition === val,
-                onClick: () => {
-                  self.setSubfeatureLabelPosition(val)
+              subMenu: [
+                {
+                  label: 'Show labels',
+                  type: 'checkbox',
+                  checked: self.showLabels,
+                  onClick: () => {
+                    self.toggleShowLabels()
+                  },
                 },
-              })),
+                {
+                  label: 'Show descriptions',
+                  type: 'checkbox',
+                  checked: self.showDescriptions,
+                  onClick: () => {
+                    self.toggleShowDescriptions()
+                  },
+                },
+                {
+                  label: 'Show subfeature labels',
+                  type: 'checkbox',
+                  checked: self.showSubfeatureLabels,
+                  onClick: () => {
+                    self.toggleShowSubfeatureLabels()
+                  },
+                },
+                {
+                  label: 'Subfeature label position',
+                  subMenu: ['below', 'overlay'].map(val => ({
+                    label: val,
+                    type: 'radio' as const,
+                    checked: self.subfeatureLabelPosition === val,
+                    onClick: () => {
+                      self.setSubfeatureLabelPosition(val)
+                    },
+                  })),
+                },
+              ],
             },
             {
               label: 'Display mode',

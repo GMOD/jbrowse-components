@@ -240,7 +240,8 @@ export function layoutFeature(args: {
     // totalFeatureHeight stays as visual height (without labels)
     // Add label height to totalLayoutHeight for vertical collision detection
     // For transcript children with 'overlay' position, don't reserve extra space
-    const isOverlayMode = isTranscriptChild && subfeatureLabelPosition === 'overlay'
+    const isOverlayMode =
+      isTranscriptChild && subfeatureLabelPosition === 'overlay'
     if (!isOverlayMode) {
       layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
     }

@@ -111,21 +111,5 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
     result.items.push(...arrowResult.items)
   }
 
-  // Draw bounding box for debugging (shows totalLayoutWidth and totalLayoutHeight)
-  // if (topLevel) {
-  //   const { ctx, featureLayout } = args
-  //   ctx.save()
-  //   ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)' // Semi-transparent red
-  //   ctx.lineWidth = 1
-  //   ctx.setLineDash([2, 2]) // Dashed line
-  //   ctx.strokeRect(
-  //     featureLayout.x,
-  //     featureLayout.y,
-  //     featureLayout.totalLayoutWidth,
-  //     featureLayout.totalLayoutHeight,
-  //   )
-  //   ctx.restore()
-  // }
-
   return result
 }

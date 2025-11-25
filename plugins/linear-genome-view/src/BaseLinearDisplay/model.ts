@@ -53,6 +53,7 @@ export interface FloatingLabelData {
   text: string
   relativeY: number
   color: string
+  isOverlay?: boolean
 }
 
 export type LayoutRecord =
