@@ -1,3 +1,5 @@
+import { MISMATCH_TYPE_MISMATCH, MISMATCH_TYPE_SKIP } from '../shared/types'
+
 import type { Mismatch } from '../shared/types'
 
 export function mdToMismatches(
@@ -16,7 +18,7 @@ export function mdToMismatches(
   const cigarLength = cigarMismatches.length
   let hasSkips = false
   for (let k = 0; k < cigarLength; k++) {
-    if (cigarMismatches[k]!.type === 'skip') {
+    if (cigarMismatches[k]!.type === MISMATCH_TYPE_SKIP) {
       hasSkips = true
       break
     }
@@ -69,10 +71,10 @@ export function mdToMismatches(
       if (hasSkips) {
         while (lastSkipPos < cigarLength) {
           const mismatch = cigarMismatches[lastSkipPos]!
-          if (mismatch.type === 'skip' && currStart >= mismatch.start) {
+          if (mismatch.type === MISMATCH_TYPE_SKIP && currStart >= mismatch.start) {
             currStart += mismatch.length
             lastSkipPos++
-          } else if (mismatch.type === 'skip') {
+          } else if (mismatch.type === MISMATCH_TYPE_SKIP) {
             break
           } else {
             lastSkipPos++
@@ -111,7 +113,7 @@ export function mdToMismatches(
         qual: hasQual ? qual[s] : undefined,
         altbase: letter,
         length: 1,
-        type: 'mismatch',
+        type: MISMATCH_TYPE_MISMATCH,
       })
 
       currStart++

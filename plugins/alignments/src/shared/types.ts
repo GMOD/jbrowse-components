@@ -111,12 +111,28 @@ export interface SortedBy {
   tag?: string
 }
 
+// Mismatch type constants (bitwise flags for performance)
+export const MISMATCH_TYPE_MISMATCH = 1
+export const MISMATCH_TYPE_INSERTION = 2
+export const MISMATCH_TYPE_DELETION = 4
+export const MISMATCH_TYPE_SKIP = 8
+export const MISMATCH_TYPE_SOFTCLIP = 16
+export const MISMATCH_TYPE_HARDCLIP = 32
+
+// Bitwise masks for common type groupings
+export const MISMATCH_TYPE_INTERBASE_MASK =
+  MISMATCH_TYPE_INSERTION | MISMATCH_TYPE_SOFTCLIP | MISMATCH_TYPE_HARDCLIP
+export const MISMATCH_TYPE_CLIP_MASK =
+  MISMATCH_TYPE_SOFTCLIP | MISMATCH_TYPE_HARDCLIP
+export const MISMATCH_TYPE_DELSKIP_MASK =
+  MISMATCH_TYPE_DELETION | MISMATCH_TYPE_SKIP
+
 export interface Mismatch {
   qual?: number
   start: number
   length: number
   insertedBases?: string
-  type: string
+  type: number
   base: string
   altbase?: string
   seq?: string

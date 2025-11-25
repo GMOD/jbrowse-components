@@ -14,7 +14,7 @@ export interface LayoutFeature {
 }
 
 export interface FlatbushItem {
-  type: 'insertion' | 'deletion' | 'mismatch' | 'modification'
+  type: number
   seq: string
   modType?: string
   probability?: number

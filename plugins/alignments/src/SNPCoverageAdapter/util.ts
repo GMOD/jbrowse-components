@@ -1,3 +1,5 @@
+import { MISMATCH_TYPE_INTERBASE_MASK } from '../shared/types'
+
 import type {
   ColorBy,
   Mismatch,
@@ -15,8 +17,8 @@ export function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1
 }
 
-export function isInterbase(type: string) {
-  return type === 'softclip' || type === 'hardclip' || type === 'insertion'
+export function isInterbase(type: number) {
+  return (type & MISMATCH_TYPE_INTERBASE_MASK) !== 0
 }
 
 export function inc(

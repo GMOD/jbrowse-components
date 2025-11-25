@@ -1,6 +1,22 @@
 import { inc, isInterbase, mismatchLen } from './util'
+import {
+  MISMATCH_TYPE_DELSKIP_MASK,
+  MISMATCH_TYPE_DELETION,
+  MISMATCH_TYPE_HARDCLIP,
+  MISMATCH_TYPE_INSERTION,
+  MISMATCH_TYPE_SKIP,
+  MISMATCH_TYPE_SOFTCLIP,
+} from '../shared/types'
 
 import type { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
+
+const MISMATCH_TYPE_NAMES: Record<number, string> = {
+  [MISMATCH_TYPE_INSERTION]: 'insertion',
+  [MISMATCH_TYPE_DELETION]: 'deletion',
+  [MISMATCH_TYPE_SKIP]: 'skip',
+  [MISMATCH_TYPE_SOFTCLIP]: 'softclip',
+  [MISMATCH_TYPE_HARDCLIP]: 'hardclip',
+}
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
 
@@ -31,8 +47,8 @@ export function processMismatches({
         const { base, altbase, type } = mismatch
         const interbase = isInterbase(type)
 
-        if (type === 'deletion' || type === 'skip') {
-          inc(bin, fstrand, 'delskips', type)
+        if ((type & MISMATCH_TYPE_DELSKIP_MASK) !== 0) {
+          inc(bin, fstrand, 'delskips', MISMATCH_TYPE_NAMES[type]!)
           bin.depth--
         } else if (!interbase) {
           inc(bin, fstrand, 'snps', base)
@@ -40,12 +56,12 @@ export function processMismatches({
           bin.ref[fstrand]--
           bin.refbase = altbase
         } else {
-          inc(bin, fstrand, 'noncov', type)
+          inc(bin, fstrand, 'noncov', MISMATCH_TYPE_NAMES[type]!)
         }
       }
     }
 
-    if (mismatch.type === 'skip') {
+    if (mismatch.type === MISMATCH_TYPE_SKIP) {
       // for upper case XS and TS: reports the literal strand of the genomic
       // transcript
       const tags = feature.get('tags')

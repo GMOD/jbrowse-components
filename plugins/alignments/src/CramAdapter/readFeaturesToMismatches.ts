@@ -1,4 +1,12 @@
 import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
+import {
+  MISMATCH_TYPE_DELETION,
+  MISMATCH_TYPE_HARDCLIP,
+  MISMATCH_TYPE_INSERTION,
+  MISMATCH_TYPE_MISMATCH,
+  MISMATCH_TYPE_SKIP,
+  MISMATCH_TYPE_SOFTCLIP,
+} from '../shared/types'
 
 import type { Mismatch } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
@@ -27,7 +35,7 @@ export function readFeaturesToMismatches(
     if (sublen && insertedBasesLen > 0) {
       mismatches[j++] = {
         start: refPos,
-        type: 'insertion',
+        type: MISMATCH_TYPE_INSERTION,
         base: String(insertedBasesLen),
         insertedBases,
         length: 0,
@@ -47,13 +55,13 @@ export function readFeaturesToMismatches(
         base: sub!,
         qual: qual?.[pos - 1],
         altbase: ref?.toUpperCase(),
-        type: 'mismatch',
+        type: MISMATCH_TYPE_MISMATCH,
       }
     } else if (codeChar === CODE_I) {
       // insertion
       mismatches[j++] = {
         start: refPos,
-        type: 'insertion',
+        type: MISMATCH_TYPE_INSERTION,
         base: String(data.length),
         insertedBases: data,
         length: 0,
@@ -61,7 +69,7 @@ export function readFeaturesToMismatches(
     } else if (codeChar === CODE_N) {
       // reference skip
       mismatches[j++] = {
-        type: 'skip',
+        type: MISMATCH_TYPE_SKIP,
         length: data,
         start: refPos,
         base: 'N',
@@ -71,7 +79,7 @@ export function readFeaturesToMismatches(
       const dataLen = data.length
       mismatches[j++] = {
         start: refPos,
-        type: 'softclip',
+        type: MISMATCH_TYPE_SOFTCLIP,
         base: `S${dataLen}`,
         cliplen: dataLen,
         length: 1,
@@ -80,7 +88,7 @@ export function readFeaturesToMismatches(
       // hard clip
       mismatches[j++] = {
         start: refPos,
-        type: 'hardclip',
+        type: MISMATCH_TYPE_HARDCLIP,
         base: `H${data}`,
         cliplen: data,
         length: 1,
@@ -88,7 +96,7 @@ export function readFeaturesToMismatches(
     } else if (codeChar === CODE_D) {
       // deletion
       mismatches[j++] = {
-        type: 'deletion',
+        type: MISMATCH_TYPE_DELETION,
         length: data,
         start: refPos,
         base: '*',
@@ -105,7 +113,7 @@ export function readFeaturesToMismatches(
   if (sublen && insertedBasesLen > 0) {
     mismatches[j++] = {
       start: refPos,
-      type: 'insertion',
+      type: MISMATCH_TYPE_INSERTION,
       base: String(insertedBasesLen),
       insertedBases,
       length: 0,

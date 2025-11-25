@@ -143,8 +143,10 @@ export async function makeImage(
     range: [0, height / 2],
     scaleType: 'linear',
   })
-  const originY = getOrigin(scaleOpts.scaleType)
-  const originLinear = getOrigin('linear')
+
+  // Precompute origin scaled values to avoid redundant calls in toHeight/toHeight2
+  const originYScaled = viewScale(getOrigin(scaleOpts.scaleType)) || 0
+  const originLinearScaled = indicatorViewScale(getOrigin('linear')) || 0
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
@@ -153,10 +155,11 @@ export async function makeImage(
 
   // get the y coordinate that we are plotting at, this can be log scale
   const toY = (n: number) => height - (viewScale(n) || 0) + offset
-  const toHeight = (n: number) => toY(originY) - toY(n)
+  // toHeight simplified: toY(origin) - toY(n) = viewScale(n) - viewScale(origin)
+  const toHeight = (n: number) => (viewScale(n) || 0) - originYScaled
   // used specifically for indicator
   const toY2 = (n: number) => height - (indicatorViewScale(n) || 0) + offset
-  const toHeight2 = (n: number) => toY2(originLinear) - toY2(n)
+  const toHeight2 = (n: number) => (indicatorViewScale(n) || 0) - originLinearScaled
 
   const { bases, softclip, hardclip, insertion } = theme.palette
   const colorMap: Record<string, string> = {
