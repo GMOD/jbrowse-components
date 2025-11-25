@@ -88,7 +88,7 @@ addView: (typeName: string, initialState?: {}) => any
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; } & NonEmptyObject & { width: number; } & { menuItems(): MenuItem[]; } & { setDisplayName(name: string): void; setWidth(newWidth: number): void; setMinimized(flag: boolean): void; } & IStateTreeNode<...>) => void
+removeView: (view: IBaseViewModel) => void
 ```
 
 #### action: setStickyViewHeaders

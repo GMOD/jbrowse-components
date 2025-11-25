@@ -80,6 +80,15 @@ false
 interactiveOverlay: false
 ```
 
+#### property: showDynamicControls
+
+```js
+// type signature
+true
+// code
+showDynamicControls: true
+```
+
 #### property: levels
 
 ```js
@@ -201,6 +210,13 @@ setLevelHeight: (newHeight: number, level?: number) => number
 ```js
 // type signature
 setLinkViews: (arg: boolean) => void
+```
+
+#### action: setShowDynamicControls
+
+```js
+// type signature
+setShowDynamicControls: (arg: boolean) => void
 ```
 
 #### action: activateTrackSelector

@@ -155,7 +155,7 @@ CompositeMap<string, LayoutRecord>
 
 ```js
 // type signature
-copyInfoToClipboard: (feature: Feature) => void
+copyInfoToClipboard: (feature: Feature) => Promise<void>
 ```
 
 #### method: trackMenuItems

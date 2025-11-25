@@ -40,6 +40,17 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
+#### property: colorBy
+
+color by setting that overrides the config setting
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+colorBy: types.optional(types.string, 'default')
+```
+
 ### DotplotDisplay - Getters
 
 #### getter: rendererTypeName
@@ -93,4 +104,25 @@ setRendered: (args?: { data: any; reactElement: ReactElement<unknown, string | J
 ```js
 // type signature
 setError: (error: unknown) => void
+```
+
+#### action: setAlpha
+
+```js
+// type signature
+setAlpha: (value: number) => void
+```
+
+#### action: setMinAlignmentLength
+
+```js
+// type signature
+setMinAlignmentLength: (value: number) => void
+```
+
+#### action: setColorBy
+
+```js
+// type signature
+setColorBy: (value: string) => void
 ```

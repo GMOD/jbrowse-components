@@ -1076,17 +1076,19 @@ export async function bytesForRegions(
     ) => Promise<Block[]>
   },
 ) {
+  console.log('bytesForRegions')
   const blockResults = await Promise.all(
     regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
   )
+  console.log('bytesForRegions2')
 
-  return blockResults
-    .flat()
-    .map(block => ({
-      start: block.minv.blockPosition,
-      end: block.maxv.blockPosition + 65535,
-    }))
-    .reduce((a, b) => a + b.end - b.start, 0)
+  return sum(
+    blockResults
+      .flat()
+      .map(
+        block => block.maxv.blockPosition + 65535 - block.minv.blockPosition,
+      ),
+  )
 }
 
 export interface ViewSnap {

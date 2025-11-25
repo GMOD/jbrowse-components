@@ -225,15 +225,17 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * information, and give them a hint to zoom in to see more. The default
    * implementation samples from the regions, downloads feature data with
    * getFeatures, and returns an object with the form \{featureDensity:number\}
+
+   * 1. alternative calculations for featureDensity
+   * 2. they can also return an object containing a byte size calculation with
+   * the format \{bytes:number, fetchSizeLimit:number\}
    *
-   * Derived classes can override this to return alternative calculations for
-   * featureDensity, or they can also return an object containing a byte size
-   * calculation with the format \{bytes:number, fetchSizeLimit:number\} where
-   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too
-   * much data' (e.g. CRAM and BAM may vary on what they think too much data
-   * is)
+   * In 2. the fetchSizeLimit is the adapter-defined limit for what it thinks
+   * is 'too much data' (e.g. CRAM and BAM may vary on what they think too much
+   * data is)
    */
   getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
+    console.log('wtf', 'single')
     return calculateFeatureDensityStats(
       region,
       (r, o) => this.getFeatures(r, o),
@@ -248,12 +250,15 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * implementation samples from the regions, downloads feature data with
    * getFeatures, and returns an object with the form \{featureDensity:number\}
    *
-   * Derived classes can override this to return alternative calculations for
-   * featureDensity, or they can also return an object containing a byte size
-   * calculation with the format \{bytes:number, fetchSizeLimit:number\} where
-   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too
-   * much data' (e.g. CRAM and BAM may vary on what they think too much data
-   * is)
+   * Derived classes can override this to return:
+   *
+   * 1. alternative calculations for featureDensity
+   * 2. they can also return an object containing a byte size calculation with
+   * the format \{bytes:number, fetchSizeLimit:number\}
+   *
+   * In 2. the fetchSizeLimit is the adapter-defined limit for what it thinks
+   * is 'too much data' (e.g. CRAM and BAM may vary on what they think too much
+   * data is)
    */
   public async getMultiRegionFeatureDensityStats(
     regions: Region[],
@@ -262,6 +267,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       throw new Error('No regions supplied')
     }
+    console.log('base getMultiRegionFeatureDensityStats')
     return this.getRegionFeatureDensityStats(regions[0]!, opts)
   }
 
