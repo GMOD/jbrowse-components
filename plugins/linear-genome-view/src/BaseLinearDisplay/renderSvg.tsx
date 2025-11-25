@@ -7,12 +7,12 @@ import {
   getViewParams,
 } from '@jbrowse/core/util'
 
-import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-import { calculateLabelPositions, getId } from './util'
-import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox'
+import BlockState, { renderBlockData } from './models/serverSideRenderedBlock'
+import { calculateLabelPositions, getId } from './models/util'
+import { ErrorBox } from '../LinearGenomeView/SVGErrorBox'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from '../model'
+import type { LinearGenomeViewModel } from '../LinearGenomeView'
+import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from './model'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
@@ -121,23 +121,11 @@ export async function renderBaseLinearDisplaySvg(
             key={`label-${key}`}
             transform={`translate(${leftPos}, ${topPos})`}
           >
-            <text
-              x={0}
-              y={11}
-              fontSize={11}
-              fill="currentColor"
-              style={{ pointerEvents: 'none' }}
-            >
+            <text x={0} y={11} fontSize={11} fill="currentColor">
               {label}
             </text>
             {description ? (
-              <text
-                x={0}
-                y={25}
-                fontSize={11}
-                fill="blue"
-                style={{ pointerEvents: 'none' }}
-              >
+              <text x={0} y={25} fontSize={11} fill="blue">
                 {description}
               </text>
             ) : null}

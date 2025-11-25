@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { bpToPx, measureText } from '@jbrowse/core/util'
+import { bpToPx, calculateLayoutBounds, measureText } from '@jbrowse/core/util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 import { observer } from 'mobx-react'
 
@@ -117,15 +117,25 @@ function RenderedFeatureGlyph(props: {
     }
   }
 
+  // Use calculateLayoutBounds to handle reversed regions correctly
+  const layoutWidthBp = rootLayout.width * bpPerPx + xPadding * bpPerPx
+  const [layoutStart, layoutEnd] = calculateLayoutBounds(
+    feature.get('start'),
+    feature.get('end'),
+    layoutWidthBp,
+    reversed,
+  )
   const topPx = layout.addRect(
     feature.id(),
-    feature.get('start'),
-    feature.get('start') + rootLayout.width * bpPerPx + xPadding * bpPerPx,
+    layoutStart,
+    layoutEnd,
     rootLayout.height + yPadding,
+    feature,
     {
       label: feature.get('name') || feature.get('id'),
       description: feature.get('description') || feature.get('note'),
       refName: feature.get('refName'),
+      totalLayoutWidth: rootLayout.width + xPadding,
     },
   )
   if (topPx === null) {

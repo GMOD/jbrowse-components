@@ -73,15 +73,26 @@ function calculateFeaturePixelPositions(
   // - If neither is visible, return undefined
   if (leftBpPx !== undefined) {
     // Left edge is visible
-    const leftPx = leftBpPx
-    const rightPx =
-      rightBpPx !== undefined ? rightBpPx : leftPx + (right - left) / bpPerPx
-    return { leftPx, rightPx }
+    const px1 = leftBpPx
+    const px2 =
+      rightBpPx !== undefined ? rightBpPx : px1 + (right - left) / bpPerPx
+
+    // Normalize so leftPx is always visual left and rightPx is visual right
+    // When region is reversed, genomic coords map to opposite pixel positions
+    return {
+      leftPx: Math.min(px1, px2),
+      rightPx: Math.max(px1, px2),
+    }
   } else if (rightBpPx !== undefined) {
     // Right edge is visible but left is not (feature starts in collapsed region)
-    const rightPx = rightBpPx
-    const leftPx = rightPx - (right - left) / bpPerPx
-    return { leftPx, rightPx }
+    const px2 = rightBpPx
+    const px1 = px2 - (right - left) / bpPerPx
+
+    // Normalize so leftPx is always visual left and rightPx is visual right
+    return {
+      leftPx: Math.min(px1, px2),
+      rightPx: Math.max(px1, px2),
+    }
   } else {
     // Neither edge is visible
     return undefined
@@ -218,12 +229,20 @@ const FloatingLabels = observer(function FloatingLabels({
           continue
         }
 
+        // leftPx is always the feature's visual left because:
+        // - When normal: layout extends right, so leftPx = feature's visual left
+        // - When reversed: layout extends left in genomic coords, which after
+        //   pixel conversion means leftPx = feature's visual left (featureEnd in genomic)
+        const featureVisualLeftPx = leftPx
+
         // Calculate clamped horizontal position
         // Use totalLayoutWidth if available to determine the right edge for clamping
         const effectiveRightPx =
-          totalLayoutWidth !== undefined ? leftPx + totalLayoutWidth : rightPx
+          totalLayoutWidth !== undefined
+            ? featureVisualLeftPx + totalLayoutWidth
+            : rightPx
         const x = calculateClampedLabelPosition(
-          leftPx,
+          featureVisualLeftPx,
           effectiveRightPx,
           offsetPx,
           labelWidth,
