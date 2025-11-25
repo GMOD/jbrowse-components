@@ -127,35 +127,43 @@ export function calculateLabelPositions(
     }
 
     const [left, , right, bottom, feature] = val
-    const { refName = '', description, label } = feature
+    const { refName = '', description, label, totalLayoutWidth } = feature
 
     if (!label) {
       continue
     }
 
     const r0 = assembly.getCanonicalRefName(refName) || refName
-    const r = view.bpToPx({
+    const px1 = view.bpToPx({
       refName: r0,
       coord: left,
     })?.offsetPx
-    const r2 = view.bpToPx({
+    const px2 = view.bpToPx({
       refName: r0,
       coord: right,
     })?.offsetPx
 
-    if (r === undefined) {
+    if (px1 === undefined) {
       continue
     }
+
+    // Normalize pixel positions: leftPx is always visual left, rightPx is visual right
+    // When region is reversed, genomic left maps to visual right (px1 > px2)
+    const leftPx = px2 !== undefined ? Math.min(px1, px2) : px1
+    const rightPx = px2 !== undefined ? Math.max(px1, px2) : px1
 
     // Cache text measurement
     const labelWidth = getCachedMeasureText(label, fontSize)
 
     // Calculate clamped position - this is the "floating" behavior
     // Labels stick to the left edge (0) when features scroll off-screen
+    // Use totalLayoutWidth if available to determine the effective right edge
+    const effectiveRightPx =
+      totalLayoutWidth !== undefined ? leftPx + totalLayoutWidth : rightPx
     const leftPos = clamp(
       0,
-      r - offsetPx,
-      r2 !== undefined ? r2 - offsetPx - labelWidth : Number.POSITIVE_INFINITY,
+      leftPx - offsetPx,
+      effectiveRightPx - offsetPx - labelWidth,
     )
 
     const topPos = bottom - 14 * (+!!description + +!!label)

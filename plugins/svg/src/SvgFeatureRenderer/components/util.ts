@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { measureText } from '@jbrowse/core/util'
+import { calculateLayoutBounds, measureText } from '@jbrowse/core/util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 import Box from './Box'
@@ -285,10 +285,18 @@ export function layoutFeatures({
 
     // Perform collision detection and positioning
     // This populates the layout object with the feature's positioning
+    // Use calculateLayoutBounds to handle reversed regions correctly
+    const layoutWidthBp = rootLayout.width * bpPerPx + xPadding * bpPerPx
+    const [layoutStart, layoutEnd] = calculateLayoutBounds(
+      feature.get('start'),
+      feature.get('end'),
+      layoutWidthBp,
+      reversed,
+    )
     layout.addRect(
       feature.id(),
-      feature.get('start'),
-      feature.get('start') + rootLayout.width * bpPerPx + xPadding * bpPerPx,
+      layoutStart,
+      layoutEnd,
       rootLayout.height + yPadding,
       feature,
       {

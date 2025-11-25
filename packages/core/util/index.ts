@@ -646,6 +646,39 @@ export function bpSpanPx(
   return region.reversed ? ([end, start] as const) : ([start, end] as const)
 }
 
+/**
+ * Calculate layout bounds for a feature, accounting for reversed regions.
+ *
+ * When labels are wider than features, the layout needs extra space:
+ * - Normal: extend towards higher genomic coords (visual right)
+ * - Reversed: extend towards lower genomic coords (visual right when reversed)
+ *
+ * This ensures labels always extend towards visual right of the feature.
+ *
+ * @param featureStart - Feature's genomic start coordinate
+ * @param featureEnd - Feature's genomic end coordinate
+ * @param layoutWidthBp - Total layout width in base pairs (may include label space)
+ * @param reversed - Whether the region is reversed
+ * @returns [layoutStart, layoutEnd] in genomic coordinates
+ */
+export function calculateLayoutBounds(
+  featureStart: number,
+  featureEnd: number,
+  layoutWidthBp: number,
+  reversed?: boolean,
+): [number, number] {
+  const featureWidthBp = featureEnd - featureStart
+  const labelOverhangBp = Math.max(0, layoutWidthBp - featureWidthBp)
+
+  if (reversed) {
+    // Extend towards lower genomic coords (visual right when reversed)
+    return [featureStart - labelOverhangBp, featureEnd]
+  } else {
+    // Extend towards higher genomic coords (visual right when normal)
+    return [featureStart, featureStart + layoutWidthBp]
+  }
+}
+
 // do an array map of an iterable
 export function iterMap<T, U>(
   iter: Iterable<T>,

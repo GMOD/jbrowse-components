@@ -538,9 +538,7 @@ function stateModelFactory() {
        * #method
        */
       async renderSvg(opts: ExportSvgDisplayOptions) {
-        const { renderBaseLinearDisplaySvg } = await import(
-          './models/renderSvg'
-        )
+        const { renderBaseLinearDisplaySvg } = await import('./renderSvg')
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
       afterAttach() {
