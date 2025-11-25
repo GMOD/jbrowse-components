@@ -55,6 +55,12 @@ export function makeImageData({
   const color1 = isColor1Callback ? undefined : readConfObject(config, 'color1')
   const color3 = isColor3Callback ? undefined : readConfObject(config, 'color3')
 
+  // Read showSubfeatureLabels for transcript label rendering
+  const showSubfeatureLabels = readConfObject(
+    config,
+    'showSubfeatureLabels',
+  ) as boolean
+
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
     const { feature, layout: featureLayout, topPx: recordTopPx } = record
 
@@ -140,6 +146,7 @@ export function makeImageData({
         subfeatureCoords,
         subfeatureInfos,
         config,
+        showSubfeatureLabels,
       )
     } else if (adjustedLayout.children.length > 0) {
       // Still need to add children to layout for data storage (not flatbush)
@@ -179,6 +186,7 @@ export function makeImageData({
     subfeatureCoords: number[],
     subfeatureInfos: SubfeatureInfo[],
     config: any,
+    showSubfeatureLabels: boolean,
   ) {
     // Add transcript children (e.g., mRNA, transcript) of a gene to secondary flatbush
     // This provides extra info (transcript ID) when hovering over transcripts
@@ -227,8 +235,19 @@ export function makeImageData({
         name: transcriptName,
       })
 
+      // Create floatingLabels for transcript when showSubfeatureLabels is enabled
+      const floatingLabels: { text: string; relativeY: number; color: string }[] =
+        []
+      if (showSubfeatureLabels && transcriptName) {
+        floatingLabels.push({
+          text: transcriptName,
+          relativeY: 0,
+          color: 'black',
+        })
+      }
+
       // Store child feature using addRect so CoreGetFeatureDetails can access it
-      // Don't pass label/description to prevent FloatingLabels from rendering subfeature labels
+      // When showSubfeatureLabels is enabled, pass floatingLabels for rendering
       layout.addRect(
         childFeature.id(),
         childStart,
@@ -237,6 +256,13 @@ export function makeImageData({
         childFeature,
         {
           refName: childFeature.get('refName'),
+          ...(showSubfeatureLabels && floatingLabels.length > 0
+            ? {
+                floatingLabels,
+                totalFeatureHeight: child.height,
+                totalLayoutWidth: child.totalLayoutWidth,
+              }
+            : {}),
         },
       )
 

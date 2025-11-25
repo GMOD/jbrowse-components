@@ -73,6 +73,16 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       defaultValue: true,
     },
 
+    /**
+     * #slot
+     */
+    showSubfeatureLabels: {
+      type: 'boolean',
+      description:
+        'show labels on transcript subfeatures (mRNA, transcript) within gene glyphs',
+      defaultValue: false,
+    },
+
     labels: ConfigurationSchema('CanvasFeatureLabels', {
       /**
        * #slot labels.name

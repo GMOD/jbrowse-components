@@ -27,8 +27,10 @@ export function layoutFeature(args: {
   containerTypes?: string[]
   showLabels?: boolean
   showDescriptions?: boolean
+  showSubfeatureLabels?: boolean
   fontHeight?: number
   labelAllowed?: boolean
+  isTranscriptChild?: boolean
 }): FeatureLayout {
   const {
     feature,
@@ -43,8 +45,10 @@ export function layoutFeature(args: {
     containerTypes: containerTypesArg,
     showLabels: showLabelsArg,
     showDescriptions: showDescriptionsArg,
+    showSubfeatureLabels: showSubfeatureLabelsArg,
     fontHeight: fontHeightArg,
     labelAllowed: labelAllowedArg,
+    isTranscriptChild = false,
   } = args
 
   // Pre-read config values once (use provided args to avoid repeated readConfObject calls)
@@ -54,6 +58,9 @@ export function layoutFeature(args: {
     transcriptTypesArg ?? readConfObject(config, 'transcriptTypes')
   const containerTypes =
     containerTypesArg ?? readConfObject(config, 'containerTypes')
+  const showSubfeatureLabels =
+    showSubfeatureLabelsArg ??
+    (readConfObject(config, 'showSubfeatureLabels') as boolean)
 
   const glyphType = chooseGlyphType({
     feature,
@@ -99,6 +106,9 @@ export function layoutFeature(args: {
       let currentY = parentY
       for (let i = 0; i < subfeatures.length; i++) {
         const subfeature = subfeatures[i]!
+        // Check if this child is a transcript type
+        const childType = subfeature.get('type')
+        const isChildTranscript = transcriptTypes.includes(childType)
         const childLayout = layoutFeature({
           feature: subfeature,
           bpPerPx,
@@ -110,10 +120,18 @@ export function layoutFeature(args: {
           displayMode,
           transcriptTypes,
           containerTypes,
+          showSubfeatureLabels,
+          // Mark transcript children so they can have labels
+          isTranscriptChild: isChildTranscript,
         })
         layout.children.push(childLayout)
-        // Use visual height for stacking (not totalHeight with label space)
-        currentY += childLayout.height
+        // When subfeature labels are enabled, use totalLayoutHeight (includes label space)
+        // Otherwise use visual height only
+        const heightForStacking =
+          showSubfeatureLabels && isChildTranscript
+            ? childLayout.totalLayoutHeight
+            : childLayout.height
+        currentY += heightForStacking
         // Add padding between transcripts (but not after the last one)
         if (i < subfeatures.length - 1) {
           currentY += TRANSCRIPT_PADDING
@@ -165,12 +183,21 @@ export function layoutFeature(args: {
   // Add extra height and width for labels (name and description)
   // Labels are drawn by floating label system, but we need to reserve space
   const labelAllowed = labelAllowedArg ?? displayMode !== 'collapsed'
-  if (labelAllowed && !isNested) {
-    // Only add label space for top-level features (not nested subfeatures)
+  // Allow labels for:
+  // 1. Top-level features (not nested) - always when labelAllowed
+  // 2. Transcript children - when showSubfeatureLabels is enabled
+  const shouldCalculateLabels =
+    labelAllowed && (!isNested || (isTranscriptChild && showSubfeatureLabels))
+
+  if (shouldCalculateLabels) {
     // Use pre-read values if provided to avoid repeated readConfObject calls
-    const showLabels = showLabelsArg ?? readConfObject(config, 'showLabels')
-    const showDescriptions =
-      showDescriptionsArg ?? readConfObject(config, 'showDescriptions')
+    // For transcript children, only show name (not description) to keep labels compact
+    const showLabels = isTranscriptChild
+      ? true
+      : (showLabelsArg ?? readConfObject(config, 'showLabels'))
+    const showDescriptions = isTranscriptChild
+      ? false
+      : (showDescriptionsArg ?? readConfObject(config, 'showDescriptions'))
     const fontHeight =
       fontHeightArg ??
       (readConfObject(config, ['labels', 'fontSize'], {

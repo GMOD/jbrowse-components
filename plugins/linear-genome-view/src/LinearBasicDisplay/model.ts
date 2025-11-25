@@ -74,6 +74,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        trackShowSubfeatureLabels: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
@@ -140,6 +144,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
         )
       },
+
+      /**
+       * #getter
+       */
+      get showSubfeatureLabels() {
+        return (
+          self.trackShowSubfeatureLabels ??
+          getConf(self, ['renderer', 'showSubfeatureLabels'])
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -154,6 +168,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...config,
             showLabels: self.showLabels,
             showDescriptions: self.showDescriptions,
+            showSubfeatureLabels: self.showSubfeatureLabels,
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
           },
@@ -186,6 +201,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       toggleShowDescriptions() {
         self.trackShowDescriptions = !self.showDescriptions
+      },
+      /**
+       * #action
+       */
+      toggleShowSubfeatureLabels() {
+        self.trackShowSubfeatureLabels = !self.showSubfeatureLabels
       },
       /**
        * #action
@@ -336,6 +357,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               checked: self.showDescriptions,
               onClick: () => {
                 self.toggleShowDescriptions()
+              },
+            },
+            {
+              label: 'Show subfeature labels',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showSubfeatureLabels,
+              onClick: () => {
+                self.toggleShowSubfeatureLabels()
               },
             },
             {

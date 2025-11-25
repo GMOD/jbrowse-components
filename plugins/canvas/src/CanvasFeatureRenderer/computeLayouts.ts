@@ -47,6 +47,10 @@ export function computeLayouts({
   const containerTypes = readConfObject(config, 'containerTypes') as string[]
   const showLabels = readConfObject(config, 'showLabels') as boolean
   const showDescriptions = readConfObject(config, 'showDescriptions') as boolean
+  const showSubfeatureLabels = readConfObject(
+    config,
+    'showSubfeatureLabels',
+  ) as boolean
   const labelAllowed = displayMode !== 'collapsed'
 
   // Note: fontHeight can be feature-dependent, so we read it once without feature context
@@ -68,6 +72,7 @@ export function computeLayouts({
       containerTypes,
       showLabels,
       showDescriptions,
+      showSubfeatureLabels,
       fontHeight,
       labelAllowed,
     })
