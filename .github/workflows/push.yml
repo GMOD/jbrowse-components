@@ -165,12 +165,10 @@ jobs:
         uses: crate-ci/typos@80c8a4945eec0f6d464eaf9e65ed98ef085283d1
       - name: Lint code
         run: yarn lint
-      - name: Run tests
-        run: yarn test-ci
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
       - name: Typecheck code
         run: yarn typecheck
+      - name: Run tests
+        run: yarn test-ci
       - name: Build codebase
         run: yarn build
       - name: Test build

@@ -62,6 +62,12 @@ export function makeImageData({
   ) as boolean
   const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
 
+  // DEBUG: Log config values
+  console.log('[DEBUG makeImageData] config:', {
+    showSubfeatureLabels,
+    transcriptTypes,
+  })
+
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
     const { feature, layout: featureLayout, topPx: recordTopPx } = record
 
@@ -242,8 +248,21 @@ export function makeImageData({
         })
       }
 
+      // DEBUG: Log subfeature label creation
+      console.log('[DEBUG makeImageData] transcript:', {
+        id: childFeature.id(),
+        transcriptName,
+        showSubfeatureLabels,
+        floatingLabelsLength: floatingLabels.length,
+        childHeight: child.height,
+        childTotalLayoutWidth: child.totalLayoutWidth,
+      })
+
       // Store child feature using addRect so CoreGetFeatureDetails can access it
       // When showSubfeatureLabels is enabled, pass floatingLabels for rendering
+      // Note: We store the actual visual Y position (topPx) in serializableData because
+      // the layout's collision detection places rects at different positions than
+      // where they're visually rendered within the parent gene glyph
       layout.addRect(
         childFeature.id(),
         childStart,
@@ -257,6 +276,8 @@ export function makeImageData({
                 floatingLabels,
                 totalFeatureHeight: child.height,
                 totalLayoutWidth: child.totalLayoutWidth,
+                // Store actual visual Y position for correct label placement
+                actualTopPx: topPx,
               }
             : {}),
         },

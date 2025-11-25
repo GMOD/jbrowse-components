@@ -130,10 +130,25 @@ function deduplicateFeatureLabels(
       floatingLabels,
       totalFeatureHeight,
       totalLayoutWidth,
+      actualTopPx,
     } = feature
+
+    // Use actualTopPx if available (for subfeatures whose visual position
+    // differs from their layout collision detection position)
+    const effectiveTopPx = actualTopPx ?? topPx
 
     // Skip if no floating labels
     if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
+      // DEBUG: Log why feature was skipped
+      if (floatingLabels) {
+        console.log('[DEBUG deduplicateFeatureLabels] skipped feature:', {
+          key,
+          hasFloatingLabels: !!floatingLabels,
+          floatingLabelsLength: floatingLabels?.length,
+          totalFeatureHeight,
+          reason: !floatingLabels ? 'no floatingLabels' : floatingLabels.length === 0 ? 'empty floatingLabels' : 'no totalFeatureHeight',
+        })
+      }
       continue
     }
 
@@ -157,7 +172,7 @@ function deduplicateFeatureLabels(
       featureLabels.set(key, {
         leftPx,
         rightPx,
-        topPx,
+        topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
         totalLayoutWidth,
@@ -191,6 +206,20 @@ const FloatingLabels = observer(function FloatingLabels({
 
     const fontSize = 11
     const result: LabelItem[] = []
+
+    // DEBUG: Log all layout features
+    console.log('[DEBUG FloatingLabels] layoutFeatures count:', layoutFeatures.size)
+    for (const [key, val] of layoutFeatures.entries()) {
+      if (val?.[4]?.floatingLabels) {
+        console.log('[DEBUG FloatingLabels] feature with floatingLabels:', {
+          key,
+          floatingLabels: val[4].floatingLabels,
+          totalFeatureHeight: val[4].totalFeatureHeight,
+          totalLayoutWidth: val[4].totalLayoutWidth,
+          refName: val[4].refName,
+        })
+      }
+    }
 
     // First pass: de-duplicate features and get left-most positions
     const featureLabels = deduplicateFeatureLabels(
