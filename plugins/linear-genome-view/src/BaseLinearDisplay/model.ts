@@ -218,8 +218,10 @@ function stateModelFactory() {
       get layoutFeatures() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block.layout) {
-            featureMaps.push(block.layout.rectangles)
+          if (block.layout?.getRectangles) {
+            // Use getRectangles() to get consistent tuple format [left, top, right, bottom, data]
+            // This works for both GranularRectLayout (raw) and PrecomputedLayout (serialized)
+            featureMaps.push(block.layout.getRectangles())
           }
         }
         return new CompositeMap<string, LayoutRecord>(featureMaps)

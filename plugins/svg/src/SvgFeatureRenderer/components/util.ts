@@ -303,6 +303,7 @@ export function layoutFeatures({
         label: feature.get('name') || feature.get('id'),
         description: feature.get('description') || feature.get('note'),
         refName: feature.get('refName'),
+        totalLayoutWidth: rootLayout.width + xPadding,
       },
     )
   }

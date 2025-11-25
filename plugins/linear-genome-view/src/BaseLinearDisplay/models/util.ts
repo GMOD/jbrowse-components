@@ -133,7 +133,7 @@ export function calculateLabelPositions(
       continue
     }
 
-    const r0 = assembly.getCanonicalRefName(refName) || refName
+    const r0 = assembly.getCanonicalRefName2(refName)
     const px1 = view.bpToPx({
       refName: r0,
       coord: left,
