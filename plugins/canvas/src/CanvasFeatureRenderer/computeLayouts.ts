@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { calculateLayoutBounds } from '@jbrowse/core/util'
 
 import { layoutFeature } from './simpleLayout'
 
@@ -142,12 +143,24 @@ export function computeLayouts({
     //
     // Note: layoutWidthBp scales with zoom (same pixel width = different bp at different zooms)
     // This is correct behavior - labels need more genomic space when zoomed in
+    //
+    // Use calculateLayoutBounds to handle reversed regions correctly:
+    // - Normal: extend towards higher genomic coords (visual right)
+    // - Reversed: extend towards lower genomic coords (visual right when reversed)
     const featureStart = feature.get('start')
+    const featureEnd = feature.get('end')
     const layoutWidthBp = totalLayoutWidth * bpPerPx
+    const [layoutStart, layoutEnd] = calculateLayoutBounds(
+      featureStart,
+      featureEnd,
+      layoutWidthBp,
+      reversed,
+    )
+
     const topPx = layout.addRect(
       feature.id(),
-      featureStart,
-      featureStart + layoutWidthBp,
+      layoutStart,
+      layoutEnd,
       totalLayoutHeight + yPadding,
       feature,
       {
@@ -157,6 +170,7 @@ export function computeLayouts({
         floatingLabels,
         totalFeatureHeight,
         totalLayoutWidth, // Pass layout width in pixels for label rendering
+        featureWidth: featureLayout.width, // Pass feature width for reversed region label positioning
       },
     )
 
