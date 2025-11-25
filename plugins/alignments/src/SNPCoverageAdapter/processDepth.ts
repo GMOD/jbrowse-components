@@ -2,8 +2,11 @@ import type { FlatBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
 
-// Strand to flat index: -1 -> 1 (refNeg), 0 -> 2 (refZero), 1 -> 3 (refPos)
-const STRAND_TO_IDX = { '-1': 'refNeg', '0': 'refZero', '1': 'refPos' } as const
+// Strand to flat index: -1 -> refNeg, 1 -> refPos
+const STRAND_TO_IDX: Record<-1 | 1, 'refNeg' | 'refPos'> = {
+  [-1]: 'refNeg',
+  [1]: 'refPos',
+}
 
 export function createEmptyBin(): FlatBaseCoverageBin {
   return {
@@ -11,7 +14,6 @@ export function createEmptyBin(): FlatBaseCoverageBin {
     readsCounted: 0,
     refDepth: 0,
     refNeg: 0,
-    refZero: 0,
     refPos: 0,
     entries: new Map(),
   }
@@ -28,7 +30,7 @@ export function processDepth({
 }) {
   const fstart = feature.get('start')
   const fend = feature.get('end')
-  const fstrand = feature.get('strand') as -1 | 0 | 1
+  const fstrand = feature.get('strand') as -1 | 1
   const strandKey = STRAND_TO_IDX[fstrand]
   const regionLength = region.end - region.start
   for (let j = fstart; j < fend + 1; j++) {

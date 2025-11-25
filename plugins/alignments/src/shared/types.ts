@@ -12,24 +12,25 @@ export type SkipMap = Record<
   }
 >
 
-// Entry array indices for strand counts
+// Entry array indices for strand counts (no strand 0 tracking)
 export const ENTRY_DEPTH = 0
 export const ENTRY_NEG = 1 // strand -1
-export const ENTRY_ZERO = 2 // strand 0
-export const ENTRY_POS = 3 // strand 1
-export const ENTRY_PROB_TOTAL = 4
-export const ENTRY_PROB_COUNT = 5
+export const ENTRY_POS = 2 // strand 1
+export const ENTRY_PROB_TOTAL = 3
+export const ENTRY_PROB_COUNT = 4
 
 // Entry category prefixes for flat map keys
-export const CAT_SNP = 's:' // e.g., 's:A', 's:C'
 export const CAT_MOD = 'm:' // e.g., 'm:h' for mod_h
 export const CAT_NONMOD = 'n:' // e.g., 'n:h' for nonmod_h
 export const CAT_DELSKIP = 'd:' // e.g., 'd:deletion'
 export const CAT_NONCOV = 'c:' // e.g., 'c:insertion'
 
-// Flat entry: [entryDepth, negCount, zeroCount, posCount]
-// For mods with probability: [entryDepth, neg, zero, pos, probTotal, probCount]
+// Flat entry: [entryDepth, negCount, posCount]
+// For mods with probability: [entryDepth, neg, pos, probTotal, probCount]
 export type FlatEntry = Uint32Array
+
+// SNP entry type: [depth, neg, pos]
+export type SNPEntry = Uint32Array
 
 // Flat bin structure for performance
 export interface FlatBaseCoverageBin {
@@ -39,10 +40,13 @@ export interface FlatBaseCoverageBin {
   // ref counts flattened
   refDepth: number
   refNeg: number
-  refZero: number
   refPos: number
-  // All variable entries in a single map with coded keys
-  // Key format: 'category:field' (e.g., 's:A', 'm:h', 'c:insertion')
+  // SNP bases at root for fast access
+  A?: SNPEntry
+  G?: SNPEntry
+  C?: SNPEntry
+  T?: SNPEntry
+  // Other variable entries (mods, delskip, noncov)
   entries: Map<string, FlatEntry>
 }
 

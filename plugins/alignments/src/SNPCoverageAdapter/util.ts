@@ -4,7 +4,6 @@ import {
   ENTRY_POS,
   ENTRY_PROB_COUNT,
   ENTRY_PROB_TOTAL,
-  ENTRY_ZERO,
   MISMATCH_TYPE_INTERBASE_MASK,
 } from '../shared/types'
 
@@ -24,22 +23,23 @@ export function isInterbase(type: number) {
   return (type & MISMATCH_TYPE_INTERBASE_MASK) !== 0
 }
 
-// Strand to entry array index: -1 -> ENTRY_NEG (1), 0 -> ENTRY_ZERO (2), 1 -> ENTRY_POS (3)
-const STRAND_TO_ENTRY_IDX: Record<-1 | 0 | 1, number> = {
+// Strand to entry array index: -1 -> ENTRY_NEG (1), 1 -> ENTRY_POS (2)
+const STRAND_TO_ENTRY_IDX: Record<-1 | 1, number> = {
   [-1]: ENTRY_NEG,
-  [0]: ENTRY_ZERO,
   [1]: ENTRY_POS,
 }
 
 export function inc(bin: FlatBaseCoverageBin, strand: -1 | 0 | 1, key: string) {
-  const strandIdx = STRAND_TO_ENTRY_IDX[strand]
   let entry = bin.entries.get(key)
   if (!entry) {
-    entry = new Uint32Array(4)
+    entry = new Uint32Array(3)
     bin.entries.set(key, entry)
   }
   entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
-  entry[strandIdx] = (entry[strandIdx] || 0) + 1
+  if (strand !== 0) {
+    const strandIdx = STRAND_TO_ENTRY_IDX[strand]
+    entry[strandIdx] = (entry[strandIdx] || 0) + 1
+  }
 }
 
 export function incWithProbabilities(
@@ -48,14 +48,16 @@ export function incWithProbabilities(
   key: string,
   probability: number,
 ) {
-  const strandIdx = STRAND_TO_ENTRY_IDX[strand]
   let entry = bin.entries.get(key)
   if (!entry) {
-    entry = new Uint32Array(6)
+    entry = new Uint32Array(5)
     bin.entries.set(key, entry)
   }
   entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
-  entry[strandIdx] = (entry[strandIdx] || 0) + 1
+  if (strand !== 0) {
+    const strandIdx = STRAND_TO_ENTRY_IDX[strand]
+    entry[strandIdx] = (entry[strandIdx] || 0) + 1
+  }
   entry[ENTRY_PROB_TOTAL] =
     (entry[ENTRY_PROB_TOTAL] || 0) + Math.round(probability * 1000000)
   entry[ENTRY_PROB_COUNT] = (entry[ENTRY_PROB_COUNT] || 0) + 1
@@ -65,4 +67,20 @@ export function incWithProbabilities(
 export function getAvgProbability(entry: Uint32Array) {
   const count = entry[ENTRY_PROB_COUNT] || 0
   return count ? (entry[ENTRY_PROB_TOTAL] || 0) / count / 1000000 : 0
+}
+
+// Helper to increment SNP base entry at root of bin
+export function incSNP(
+  bin: FlatBaseCoverageBin,
+  strand: -1 | 1,
+  base: 'A' | 'G' | 'C' | 'T',
+) {
+  let entry = bin[base]
+  if (!entry) {
+    entry = new Uint32Array(3)
+    bin[base] = entry
+  }
+  entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
+  entry[STRAND_TO_ENTRY_IDX[strand]] =
+    (entry[STRAND_TO_ENTRY_IDX[strand]] || 0) + 1
 }

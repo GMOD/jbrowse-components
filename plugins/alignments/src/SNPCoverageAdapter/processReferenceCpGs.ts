@@ -9,9 +9,8 @@ import type { FlatBaseCoverageBin, Mismatch } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
-const STRAND_TO_REF: Record<-1 | 0 | 1, 'refNeg' | 'refZero' | 'refPos'> = {
+const STRAND_TO_REF: Record<-1 | 1, 'refNeg' | 'refPos'> = {
   [-1]: 'refNeg',
-  [0]: 'refZero',
   [1]: 'refPos',
 }
 
@@ -28,7 +27,7 @@ export function processReferenceCpGs({
 }) {
   const fstart = feature.get('start')
   const fend = feature.get('end')
-  const fstrand = feature.get('strand') as -1 | 0 | 1
+  const fstrand = feature.get('strand') as -1 | 1
   const strandRef = STRAND_TO_REF[fstrand]
   const seq = feature.get('seq') as string | undefined
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []

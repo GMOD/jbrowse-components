@@ -1,9 +1,8 @@
 import { createEmptyBin } from './processDepth'
-import { inc, isInterbase, mismatchLen } from './util'
+import { inc, incSNP, isInterbase, mismatchLen } from './util'
 import {
   CAT_DELSKIP,
   CAT_NONCOV,
-  CAT_SNP,
   MISMATCH_TYPE_DELETION,
   MISMATCH_TYPE_DELSKIP_MASK,
   MISMATCH_TYPE_HARDCLIP,
@@ -25,9 +24,8 @@ const MISMATCH_TYPE_NAMES: Record<number, string> = {
 }
 
 // Strand to flat ref key
-const STRAND_TO_REF: Record<-1 | 0 | 1, 'refNeg' | 'refZero' | 'refPos'> = {
+const STRAND_TO_REF: Record<-1 | 1, 'refNeg' | 'refPos'> = {
   [-1]: 'refNeg',
-  [0]: 'refZero',
   [1]: 'refPos',
 }
 
@@ -43,7 +41,7 @@ export function processMismatches({
   skipmap: SkipMap
 }) {
   const fstart = feature.get('start')
-  const fstrand = feature.get('strand') as -1 | 0 | 1
+  const fstrand = feature.get('strand') as -1 | 1
   const strandRef = STRAND_TO_REF[fstrand]
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
 
@@ -65,7 +63,7 @@ export function processMismatches({
           inc(bin, fstrand, CAT_DELSKIP + MISMATCH_TYPE_NAMES[type]!)
           bin.depth--
         } else if (!interbase) {
-          inc(bin, fstrand, CAT_SNP + base)
+          incSNP(bin, fstrand, base as 'A' | 'G' | 'C' | 'T')
           bin.refDepth--
           bin[strandRef]--
           bin.refbase = altbase

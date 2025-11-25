@@ -16,7 +16,6 @@ import {
   CAT_MOD,
   CAT_NONCOV,
   CAT_NONMOD,
-  CAT_SNP,
   ENTRY_DEPTH,
   ENTRY_NEG,
   ENTRY_POS,
@@ -68,11 +67,10 @@ function calculateModificationCounts({
   }
 
   const cmp = complementBase[base as keyof typeof complementBase]
-  const entries = snpinfo.entries
 
-  // Get SNP entry for base and complement
-  const baseEntry = entries.get(CAT_SNP + base)
-  const cmpEntry = entries.get(CAT_SNP + cmp)
+  // Get SNP entry for base and complement from root fields
+  const baseEntry = snpinfo[base as 'A' | 'G' | 'C' | 'T']
+  const cmpEntry = snpinfo[cmp]
 
   // Calculate total reads for base and complement
   const baseCount =
@@ -339,28 +337,25 @@ export async function makeImage(
     } else {
       const depth = snpinfo.depth
       let curr = 0
+      const h = toHeight(score0)
+      const bottom = toY(score0) + h
 
-      // Get SNP entries
-      const snpEntries: [string, Uint32Array][] = []
-      for (const [key, entry] of entries) {
-        if (key.startsWith(CAT_SNP)) {
-          snpEntries.push([key.slice(CAT_SNP.length), entry])
+      // Draw SNP bases from root fields (T, G, C, A order for consistent stacking)
+      for (const base of ['T', 'G', 'C', 'A'] as const) {
+        const entry = snpinfo[base]
+        if (entry) {
+          const entryDepth = entry[ENTRY_DEPTH] || 0
+          if (entryDepth > 0) {
+            ctx.fillStyle = colorMap[base]!
+            ctx.fillRect(
+              Math.round(leftPx),
+              bottom - ((entryDepth + curr) / depth) * h,
+              w,
+              (entryDepth / depth) * h,
+            )
+            curr += entryDepth
+          }
         }
-      }
-      snpEntries.sort((a, b) => b[0].localeCompare(a[0]))
-
-      for (const [base, entry] of snpEntries) {
-        const entryDepth = entry[ENTRY_DEPTH]!
-        const h = toHeight(score0)
-        const bottom = toY(score0) + h
-        ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * h,
-          w,
-          (entryDepth / depth) * h,
-        )
-        curr += entryDepth
       }
     }
 

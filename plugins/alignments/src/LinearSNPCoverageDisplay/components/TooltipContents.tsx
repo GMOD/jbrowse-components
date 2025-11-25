@@ -10,7 +10,6 @@ import {
   CAT_MOD,
   CAT_NONCOV,
   CAT_NONMOD,
-  CAT_SNP,
   ENTRY_DEPTH,
   ENTRY_NEG,
   ENTRY_POS,
@@ -402,9 +401,9 @@ function ModificationRows({
   )
 }
 
-// Convert flat bin entries to grouped format for ModificationRows
+// Convert flat bin to grouped format for ModificationRows
 function flatBinToInfo(
-  entries: Map<string, Uint32Array>,
+  snpinfo: FlatBaseCoverageBin,
 ): Record<string, Record<string, StrandCounts>> {
   const info: Record<string, Record<string, StrandCounts>> = {
     snps: {},
@@ -414,11 +413,18 @@ function flatBinToInfo(
     noncov: {},
   }
 
-  for (const [key, entry] of entries) {
+  // Get SNPs from root fields
+  for (const base of ['A', 'G', 'C', 'T'] as const) {
+    const entry = snpinfo[base]
+    if (entry) {
+      info.snps![base] = entryToStrandCounts(entry)
+    }
+  }
+
+  // Get other entries from map
+  for (const [key, entry] of snpinfo.entries) {
     const counts = entryToStrandCounts(entry)
-    if (key.startsWith(CAT_SNP)) {
-      info.snps![key.slice(CAT_SNP.length)] = counts
-    } else if (key.startsWith(CAT_MOD)) {
+    if (key.startsWith(CAT_MOD)) {
       info.mods![`mod_${key.slice(CAT_MOD.length)}`] = counts
     } else if (key.startsWith(CAT_NONMOD)) {
       info.nonmods![`nonmod_${key.slice(CAT_NONMOD.length)}`] = counts
@@ -440,7 +446,7 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
     const end = feature.get('end')
     const name = feature.get('refName')
     const snpinfo = feature.get('snpinfo') as FlatBaseCoverageBin
-    const { refbase: referenceBase, readsCounted, entries } = snpinfo
+    const { refbase: referenceBase, readsCounted } = snpinfo
 
     // Build reference StrandCounts from flat fields
     const reference: StrandCounts = {
@@ -449,8 +455,8 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
       '-1': snpinfo.refNeg,
     }
 
-    // Convert flat entries to grouped format
-    const info = flatBinToInfo(entries)
+    // Convert flat bin to grouped format
+    const info = flatBinToInfo(snpinfo)
 
     return (
       <div ref={reactRef}>
