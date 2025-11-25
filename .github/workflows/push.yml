@@ -64,42 +64,6 @@ jobs:
         with:
           args: website/testing/ --check-anchors
 
-  # Conditionally run the buildwholerepo job
-  buildwholerepo:
-    name: Build and test full repository
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-        with:
-          node-version: '22'
-          cache: 'yarn'
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-      - name: Build codebase
-        run: yarn build
-      - name: Test build
-        run: BUILT_TESTS=1 yarn built-test-ci
-      - name: Test embedded LGV component
-        run: |
-          yarn install --frozen-lockfile
-          yarn e2e
-        working-directory: component_tests/lgv-vite
-      - name: Test embedded CGV component
-        run: |
-          yarn install --frozen-lockfile
-          yarn e2e
-        working-directory: component_tests/cgv-vite
-      - name: Test embedded React app component
-        run: |
-          yarn install --frozen-lockfile
-          yarn e2e
-        working-directory: component_tests/app-vite
-
   # Conditionally run the buildjbrowseweb job
   buildjbrowseweb:
     name: Deploy jbrowse-web and storybooks to S3
@@ -207,3 +171,22 @@ jobs:
         uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
       - name: Typecheck code
         run: yarn typecheck
+      - name: Build codebase
+        run: yarn build
+      - name: Test build
+        run: BUILT_TESTS=1 yarn built-test-ci
+      - name: Test embedded LGV component
+        run: |
+          yarn install --frozen-lockfile
+          yarn e2e
+        working-directory: component_tests/lgv-vite
+      - name: Test embedded CGV component
+        run: |
+          yarn install --frozen-lockfile
+          yarn e2e
+        working-directory: component_tests/cgv-vite
+      - name: Test embedded React app component
+        run: |
+          yarn install --frozen-lockfile
+          yarn e2e
+        working-directory: component_tests/app-vite
