@@ -12,24 +12,10 @@ import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FloatingLabelData, LayoutRecord } from '../model'
 
-function calculateLabelWidth(text: string, fontSize: number) {
+const fontSize = 11
+
+function calculateLabelWidth(text: string) {
   return measureText(text, fontSize)
-}
-
-function calculateClampedLabelPosition(
-  layoutLeftPx: number,
-  layoutRightPx: number | undefined,
-  viewOffsetPx: number,
-  labelWidth: number,
-) {
-  const minPosition = 0
-  const naturalPosition = layoutLeftPx - viewOffsetPx
-  const maxPosition =
-    layoutRightPx !== undefined
-      ? layoutRightPx - viewOffsetPx - labelWidth
-      : Number.POSITIVE_INFINITY
-
-  return clamp(minPosition, naturalPosition, maxPosition)
 }
 
 interface PixelPositions {
@@ -59,34 +45,24 @@ function calculateFeaturePixelPositions(
     coord: right,
   })?.offsetPx
 
-  // Handle partially visible features in multi-region views:
-  // - If left is visible, use it; if right is in collapsed region, calculate it
-  // - If left is in collapsed region but right is visible, calculate left from right
-  // - If neither is visible, return undefined
   if (leftBpPx !== undefined) {
-    // Left edge is visible
     const px1 = leftBpPx
     const px2 =
       rightBpPx !== undefined ? rightBpPx : px1 + (right - left) / bpPerPx
 
-    // Normalize so leftPx is always visual left and rightPx is visual right
-    // When region is reversed, genomic coords map to opposite pixel positions
     return {
       leftPx: Math.min(px1, px2),
       rightPx: Math.max(px1, px2),
     }
   } else if (rightBpPx !== undefined) {
-    // Right edge is visible but left is not (feature starts in collapsed region)
     const px2 = rightBpPx
     const px1 = px2 - (right - left) / bpPerPx
 
-    // Normalize so leftPx is always visual left and rightPx is visual right
     return {
       leftPx: Math.min(px1, px2),
       rightPx: Math.max(px1, px2),
     }
   } else {
-    // Neither edge is visible
     return undefined
   }
 }
@@ -125,11 +101,8 @@ function deduplicateFeatureLabels(
       actualTopPx,
     } = feature
 
-    // Use actualTopPx if available (for subfeatures whose visual position
-    // differs from their layout collision detection position)
     const effectiveTopPx = actualTopPx ?? topPx
 
-    // Skip if no floating labels
     if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
       continue
     }
@@ -148,7 +121,6 @@ function deduplicateFeatureLabels(
 
     const { leftPx, rightPx } = positions
 
-    // De-duplicate: keep the left-most position for each feature
     const existing = featureLabels.get(key)
     if (!existing || leftPx < existing.leftPx) {
       featureLabels.set(key, {
@@ -165,6 +137,14 @@ function deduplicateFeatureLabels(
   return featureLabels
 }
 
+// Data stored per label element for fast offset updates
+interface LabelPositionData {
+  featureLeftPx: number
+  effectiveRightPx: number
+  labelWidth: number
+  y: number
+}
+
 function FloatingLabels({
   model,
 }: {
@@ -177,7 +157,9 @@ function FloatingLabels({
 
   const containerRef = useRef<HTMLDivElement>(null)
   const domElementsRef = useRef<Map<string, HTMLDivElement>>(new Map())
+  const labelPositionsRef = useRef<Map<string, LabelPositionData>>(new Map())
 
+  // Autorun 1: Rebuild DOM elements when layoutFeatures changes
   useEffect(() => {
     if (!assembly) {
       return
@@ -190,19 +172,16 @@ function FloatingLabels({
       }
 
       const { layoutFeatures } = model
-      const { offsetPx } = view
-      const fontSize = 11
       const domElements = domElementsRef.current
+      const labelPositions = labelPositionsRef.current
       const newKeys = new Set<string>()
 
-      // First pass: de-duplicate features and get left-most positions
       const featureLabels = deduplicateFeatureLabels(
         layoutFeatures,
         view,
         assembly,
       )
 
-      // Second pass: create label items and update DOM
       for (const [
         key,
         {
@@ -214,47 +193,34 @@ function FloatingLabels({
           totalLayoutWidth,
         },
       ] of featureLabels.entries()) {
-        // Calculate the bottom of the visual feature (not including label space)
         const featureVisualBottom = topPx + totalFeatureHeight
 
-        // Process each floating label
         for (const [i, floatingLabel] of floatingLabels.entries()) {
           const { text, relativeY, color, isOverlay } = floatingLabel
 
-          // Calculate label width for this specific text
-          const labelWidth = calculateLabelWidth(text, fontSize)
-
-          // Only show labels that fit within the layout bounds
-          // Use totalLayoutWidth if available (includes label space), otherwise fall back to rect width
+          const labelWidth = calculateLabelWidth(text)
           const layoutWidth = totalLayoutWidth ?? rightPx - leftPx
           if (labelWidth > layoutWidth) {
             continue
           }
 
-          // leftPx is always the feature's visual left because:
-          // - When normal: layout extends right, so leftPx = feature's visual left
-          // - When reversed: layout extends left in genomic coords, which after
-          //   pixel conversion means leftPx = feature's visual left (featureEnd in genomic)
           const featureVisualLeftPx = leftPx
-
-          // Calculate clamped horizontal position
-          // Use totalLayoutWidth if available to determine the right edge for clamping
           const effectiveRightPx =
             totalLayoutWidth !== undefined
               ? featureVisualLeftPx + totalLayoutWidth
               : rightPx
-          const x = calculateClampedLabelPosition(
-            featureVisualLeftPx,
-            effectiveRightPx,
-            offsetPx,
-            labelWidth,
-          )
-
-          // Convert relative Y to absolute Y
           const y = featureVisualBottom + relativeY
 
           const labelKey = `${key}-${i}`
           newKeys.add(labelKey)
+
+          // Store position data for fast offset updates
+          labelPositions.set(labelKey, {
+            featureLeftPx: featureVisualLeftPx,
+            effectiveRightPx,
+            labelWidth,
+            y,
+          })
 
           let element = domElements.get(labelKey)
 
@@ -274,7 +240,6 @@ function FloatingLabels({
           if (element.style.color !== color) {
             element.style.color = color
           }
-          // Add semi-transparent background for overlay labels to improve readability
           const bgColor = isOverlay ? 'rgba(255, 255, 255, 0.8)' : ''
           if (element.style.backgroundColor !== bgColor) {
             element.style.backgroundColor = bgColor
@@ -283,19 +248,42 @@ function FloatingLabels({
           if (element.style.lineHeight !== lineHeight) {
             element.style.lineHeight = lineHeight
           }
-          element.style.transform = `translate(${x}px, ${y}px)`
         }
       }
 
-      // Remove elements that are no longer needed
+      // Remove stale elements
       for (const [key, element] of domElements.entries()) {
         if (!newKeys.has(key)) {
           element.remove()
           domElements.delete(key)
+          labelPositions.delete(key)
         }
       }
     })
   }, [assembly, model, view])
+
+  // Autorun 2: Update transforms when offsetPx changes (fast path)
+  useEffect(() => {
+    return autorun(() => {
+      const { offsetPx } = view
+      const domElements = domElementsRef.current
+      const labelPositions = labelPositionsRef.current
+
+      for (const [key, element] of domElements.entries()) {
+        const pos = labelPositions.get(key)
+        if (!pos) {
+          continue
+        }
+
+        const { featureLeftPx, effectiveRightPx, labelWidth, y } = pos
+        const naturalX = featureLeftPx - offsetPx
+        const maxX = effectiveRightPx - offsetPx - labelWidth
+        const x = clamp(0, naturalX, maxX)
+
+        element.style.transform = `translate(${x}px, ${y}px)`
+      }
+    })
+  }, [view])
 
   return (
     <div
