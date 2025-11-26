@@ -13,16 +13,6 @@ import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FloatingLabelData, LayoutRecord } from '../model'
 
 const fontSize = 11
-const labelWidthCache = new Map<string, number>()
-
-function calculateLabelWidth(text: string) {
-  let width = labelWidthCache.get(text)
-  if (width === undefined) {
-    width = measureText(text, fontSize)
-    labelWidthCache.set(text, width)
-  }
-  return width
-}
 
 interface PixelPositions {
   leftPx: number
@@ -202,10 +192,11 @@ function FloatingLabels({
       ] of featureLabels.entries()) {
         const featureVisualBottom = topPx + totalFeatureHeight
 
-        for (const [i, floatingLabel] of floatingLabels.entries()) {
+        for (let i = 0, l = floatingLabels.length; i < l; i++) {
+          const floatingLabel = floatingLabels[i]!
           const { text, relativeY, color, isOverlay } = floatingLabel
 
-          const labelWidth = calculateLabelWidth(text)
+          const labelWidth = measureText(text, fontSize)
           const layoutWidth = totalLayoutWidth ?? rightPx - leftPx
           if (labelWidth > layoutWidth) {
             continue
