@@ -16,11 +16,11 @@ const JBrowse = observer(function ({
 }: {
   pluginManager: PluginManager
 }) {
-  const { adminKey, adminServer, config: configPath } = readQueryParams([
-    'adminKey',
-    'adminServer',
-    'config',
-  ])
+  const {
+    adminKey,
+    adminServer,
+    config: configPath,
+  } = readQueryParams(['adminKey', 'adminServer', 'config'])
   const { rootModel } = pluginManager
   const { error, jbrowse, session: s } = rootModel!
   const session = s as WebSessionModel

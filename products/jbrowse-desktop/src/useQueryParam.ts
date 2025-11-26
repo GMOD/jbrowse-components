@@ -6,7 +6,9 @@ function getSearchParams() {
 
 function subscribe(callback: () => void) {
   window.addEventListener('popstate', callback)
-  return () => window.removeEventListener('popstate', callback)
+  return () => {
+    window.removeEventListener('popstate', callback)
+  }
 }
 
 function updateUrl(params: URLSearchParams) {
@@ -36,7 +38,7 @@ export function useQueryParam(key: string) {
   const setValue = useCallback(
     (newValue: string | undefined) => {
       const params = getSearchParams()
-      if (newValue === undefined || newValue === null) {
+      if (newValue === undefined) {
         params.delete(key)
       } else {
         params.set(key, newValue)
@@ -60,7 +62,7 @@ export function deleteQueryParams(keys: string[]) {
 export function setQueryParams(values: Record<string, string | undefined>) {
   const params = getSearchParams()
   for (const [key, value] of Object.entries(values)) {
-    if (value === undefined || value === null) {
+    if (value === undefined) {
       params.delete(key)
     } else {
       params.set(key, value)
