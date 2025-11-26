@@ -12,7 +12,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
   const innerRef = useRef<HTMLDivElement>(null)
   const pinnedRef = useRef<HTMLSpanElement | null>(null)
 
-  // Handle offsetPx changes - update container translateX and pinned label content
+  // Handle offsetPx changes - update container position and pinned label
   useEffect(() => {
     return autorun(() => {
       const { staticBlocks, offsetPx, scaleBarDisplayPrefix } = model
@@ -22,8 +22,8 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
         return
       }
 
-      const offsetLeft = staticBlocks.offsetPx - offsetPx
-      inner.style.transform = `translateX(${offsetLeft}px)`
+      // Translate container to account for scroll position
+      inner.style.transform = `translateX(${-offsetPx}px)`
 
       // Find which block should be pinned
       let lastLeftBlock = 0
@@ -41,7 +41,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
       const pinnedBlock = staticBlocks.blocks[lastLeftBlock]
       if (pinned && pinnedBlock?.type === 'ContentBlock') {
         const val = scaleBarDisplayPrefix()
-        pinned.style.transform = `translateX(${-offsetLeft + Math.max(0, -offsetPx)}px)`
+        pinned.style.transform = `translateX(${Math.max(0, offsetPx)}px)`
         pinned.textContent = (val ? `${val}:` : '') + pinnedBlock.refName
       }
     })
@@ -85,7 +85,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
             span.dataset.labelKey = key
             span.dataset.testid = `refLabel-${refName}`
           }
-          span.style.left = `${blockOffsetPx - staticBlocks.offsetPx - 1}px`
+          span.style.left = `${blockOffsetPx - 1}px`
           span.style.paddingLeft = '1px'
           span.textContent = refName
           fragment.append(span)

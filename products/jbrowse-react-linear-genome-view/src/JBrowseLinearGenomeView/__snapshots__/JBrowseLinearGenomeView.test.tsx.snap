@@ -115,37 +115,37 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         >
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 134.66666666666669px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 134.66666666666669px; color: rgb(153, 102, 0);"
                           >
                             20
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 269.33333333333337px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 269.33333333333337px; color: rgb(153, 102, 0);"
                           >
                             40
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 404px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 404px; color: rgb(153, 102, 0);"
                           >
                             60
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 538.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 538.6666666666667px; color: rgb(153, 102, 0);"
                           >
                             80
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 673.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 673.3333333333334px; color: rgb(153, 102, 0);"
                           >
                             100
                           </p>
                           <p
                             class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 808px; pointer-events: none; color: rgb(153, 102, 0);"
+                            style="left: 808px; color: rgb(153, 102, 0);"
                           >
                             120
                           </p>
@@ -166,9 +166,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     height="48"
                   >
                     <polygon
-                      fill="rgba(66, 119, 127, 0.3)"
+                      fill="#42777f"
+                      fill-opacity="0.3"
                       points="0,48,809.0000000000001,48,272,0,0,0"
-                      stroke="rgba(66, 119, 127, 0.8)"
+                      stroke="#42777f"
+                      stroke-opacity="0.8"
                     />
                   </svg>
                   <div
@@ -1996,12 +1998,12 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <div
-                    style="position: absolute; transform: translateX(-800px);"
+                    style="position: absolute; transform: translateX(0px);"
                   >
                     <span
                       data-label-key="refLabel-{volvox}ctgA:1..40-0-1"
                       data-testid="refLabel-ctgA"
-                      style="font-size: 11px; position: absolute; left: 799px; top: -1px; font-weight: bold; line-height: normal; z-index: 1; background: rgb(255, 255, 255); padding-left: 1px;"
+                      style="font-size: 11px; position: absolute; left: -1px; top: -1px; font-weight: bold; line-height: normal; z-index: 1; background: rgb(255, 255, 255); padding-left: 1px;"
                     >
                       ctgA
                     </span>
