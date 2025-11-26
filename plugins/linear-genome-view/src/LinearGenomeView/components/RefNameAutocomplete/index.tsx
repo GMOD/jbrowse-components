@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import BaseResult, {
@@ -39,6 +39,7 @@ interface MemoizedAutocompleteProps {
   searchOptions: Option[] | undefined
   inputRef: RefObject<HTMLInputElement | null>
   inputValue: string
+  value: string
   TextFieldProps: TFP
   onOpen: () => void
   onClose: () => void
@@ -48,7 +49,7 @@ interface MemoizedAutocompleteProps {
   setInputValue: (val: string) => void
 }
 
-const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
+const MemoizedAutocomplete = function MemoizedAutocomplete({
   assembly,
   assemblyName,
   style,
@@ -57,6 +58,7 @@ const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
   searchOptions,
   inputRef,
   inputValue,
+  value,
   TextFieldProps,
   onOpen,
   onClose,
@@ -94,8 +96,9 @@ const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
       } else {
         onSelect?.(selectedOption.result)
       }
+      inputRef.current?.blur()
     },
-    [assemblyName, onSelect],
+    [assemblyName, inputRef, onSelect],
   )
 
   const handleInputChange = useCallback(
@@ -131,6 +134,7 @@ const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
       loading={!loaded}
       loadingText="loading results"
       open={open}
+      value={value}
       inputValue={inputValue}
       onOpen={onOpen}
       onClose={onClose}
@@ -143,7 +147,7 @@ const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
       getOptionLabel={getOptionLabel}
     />
   )
-})
+}
 
 const RefNameAutocomplete = observer(function ({
   model,
@@ -253,6 +257,7 @@ const RefNameAutocomplete = observer(function ({
         searchOptions={searchOptions}
         inputRef={inputRef}
         inputValue={inputValue}
+        value={inputBoxVal}
         TextFieldProps={TextFieldProps}
         onOpen={handleOpen}
         onClose={handleClose}
