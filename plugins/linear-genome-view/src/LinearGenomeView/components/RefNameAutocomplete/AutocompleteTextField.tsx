@@ -18,22 +18,32 @@ export default function AutocompleteTextField({
   params: AutocompleteRenderInputParams
   setCurrentSearch: (arg: string) => void
 }) {
-  const { helperText, slotProps = {} } = TextFieldProps
-  // Remove value from inputProps to make input uncontrolled, allowing imperative updates
-  const { inputProps: { value: _value, ...inputProps } = {}, ...restParams } =
-    params
+  const {
+    variant,
+    className,
+    style,
+    helperText,
+    slotProps = {},
+  } = TextFieldProps
+  const { InputProps, inputProps, fullWidth } = params
+
+  // Remove 'value' from inputProps to keep input uncontrolled,
+  // allowing imperative updates via inputRef
+  const { value: _value, ...inputPropsWithoutValue } = inputProps
+
   return (
     <TextField
+      variant={variant}
+      className={className}
+      style={style}
+      fullWidth={fullWidth}
       inputRef={inputRef}
-      {...restParams}
-      inputProps={inputProps}
-      {...TextFieldProps}
+      inputProps={inputPropsWithoutValue}
       size="small"
       helperText={helperText}
       slotProps={{
         input: {
-          ...params.InputProps,
-          // eslint-disable-next-line @typescript-eslint/no-misused-spread
+          ...InputProps,
           ...slotProps.input,
         },
       }}
