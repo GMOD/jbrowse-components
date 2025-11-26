@@ -1,6 +1,7 @@
 import VcfParser from '@gmod/vcf'
 
 import VcfFeature from './index'
+import { getSOAndDescFromAltDefs } from './util'
 
 test('test usage of the VcfFeature', () => {
   const parser = new VcfParser({
@@ -199,4 +200,55 @@ test('INS feature with SVLEN when END not available', () => {
   expect(f.id()).toEqual('myuniqueid')
   expect(f.get('start')).toEqual(99)
   expect(f.get('end')).toEqual(100)
+})
+
+test('getSOAndDescFromAltDefs returns correct SO term for symbolic alleles', () => {
+  const parser = new VcfParser({
+    header:
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam',
+  })
+  // The altTypeToSO lookup should match <DEL> to 'deletion'
+  expect(getSOAndDescFromAltDefs('<DEL>', parser)).toEqual([
+    'deletion',
+    '<DEL>',
+  ])
+  expect(getSOAndDescFromAltDefs('<INS>', parser)).toEqual([
+    'insertion',
+    '<INS>',
+  ])
+  expect(getSOAndDescFromAltDefs('<DUP>', parser)).toEqual([
+    'duplication',
+    '<DUP>',
+  ])
+  expect(getSOAndDescFromAltDefs('<INV>', parser)).toEqual([
+    'inversion',
+    '<INV>',
+  ])
+  expect(getSOAndDescFromAltDefs('<CNV>', parser)).toEqual([
+    'copy_number_variation',
+    '<CNV>',
+  ])
+  expect(getSOAndDescFromAltDefs('<TRA>', parser)).toEqual([
+    'translocation',
+    '<TRA>',
+  ])
+  // Test hierarchical lookup - <DUP:TANDEM> should match directly
+  expect(getSOAndDescFromAltDefs('<DUP:TANDEM>', parser)).toEqual([
+    'tandem_duplication',
+    '<DUP:TANDEM>',
+  ])
+  // Test fallback to parent - <INS:ME> finds 'insertion' from <INS>
+  expect(getSOAndDescFromAltDefs('<INS:ME>', parser)).toEqual([
+    'insertion',
+    '<INS:ME>',
+  ])
+  // Unknown symbolic allele returns 'variant' type
+  expect(getSOAndDescFromAltDefs('<UNKNOWN>', parser)).toEqual([
+    'variant',
+    '<UNKNOWN>',
+  ])
+  expect(getSOAndDescFromAltDefs('<UNKNOWN:FOO>', parser)).toEqual([
+    'variant',
+    '<UNKNOWN:FOO>',
+  ])
 })

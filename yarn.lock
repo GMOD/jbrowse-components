@@ -1624,7 +1624,7 @@
     "@jridgewell/resolve-uri" "^3.1.2"
     quick-lru "^4.0.0"
 
-"@gmod/tabix@^3.1.2":
+"@gmod/tabix@^3.0.1", "@gmod/tabix@^3.1.2":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.1.2.tgz#ef29efd6cd2b1bdf5374aa35b484b3057600dd9c"
   integrity sha512-1/kKXWJt8UNhGoAY4jyQSZWtPBR/U133I5SBR8dVoISq4TejM+lb6ru5d7JcJyhh88xEVMsdKWZm89Roe+mP0g==
@@ -1651,10 +1651,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-2.0.3.tgz#7fddc1431351681cec4ac45954dcd24f19fdbcaf"
   integrity sha512-w0qs1J2rjxt/ytxYH0VhxcFW+03Uh6R216skpbc5Q4to73lmXbaatJz6cZ+M4vgBkTQXoOpvaULAha0g7nxjWA==
 
-"@gmod/vcf@^6.0.8":
-  version "6.0.9"
-  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-6.0.9.tgz#b485ef51f095114a7eb850d34168db8d49112421"
-  integrity sha512-POXCZ5/6HL/Jbywc6uondLqqepcOTbVQZEOxY0G3Y6c7Q/3dP+tRl8sD5YUgk/2yppu9wG4c9Ek9fOnPw+OWPw==
+"@gmod/vcf@^6.1.0":
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-6.1.0.tgz#7833af2149d7031b86614643a189228fbf502a42"
+  integrity sha512-5hvxb504iOFjYiqvOVuG7x/AffbCax6o8CIsA+oXqMzSwvC/sX6LTPm4FA8Fw9JGRtsQR5RL/eJbOagc3qDkgQ==
 
 "@humanfs/core@^0.19.1":
   version "0.19.1"
@@ -13139,11 +13139,6 @@ serialize-javascript@^6.0.2:
   dependencies:
     randombytes "^2.1.0"
 
-serialize-query-params@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/serialize-query-params/-/serialize-query-params-2.0.3.tgz#1bbc9d5353a3a90c782129549e0ec34a9575f0a0"
-  integrity sha512-PyDK5dkxtWa9jo9qJDy19x/haAcTQnUfIGsCXIv53HlgTCH5pC2KHIqrtM+VOruqRmH2XwYZZyn7BNHN0W58EQ==
-
 serve-index@^1.9.1:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/serve-index/-/serve-index-1.9.1.tgz#d3768d69b1e7d82e5ce050fff5b453bea12a9239"
@@ -14657,13 +14652,6 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
-
-use-query-params@^2.0.0:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/use-query-params/-/use-query-params-2.2.2.tgz#a029b00b24a680ceffea1e3ae0ce8ac9c5c77645"
-  integrity sha512-OwGab8u8/x2xZp9uSyBsx0kXlkR9IR436zbygsYVGikPYY3OJosvve6IJVGwIJPcfyb/YHwvPrUNu65/JR++Kw==
-  dependencies:
-    serialize-query-params "^2.0.3"
 
 use-sync-external-store@^1.4.0, use-sync-external-store@^1.6.0:
   version "1.6.0"

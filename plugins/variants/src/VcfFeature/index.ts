@@ -23,9 +23,18 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
 }
 function getEnd(variant: Variant) {
   const { POS, REF = '', ALT = [] } = variant
-  const isTRA = ALT.includes('<TRA>')
   const start = POS - 1
-  const isSymbolic = ALT.some(f => f.includes('<'))
+  let isTRA = false
+  let isSymbolic = false
+  for (const a of ALT) {
+    if (a.includes('<')) {
+      isSymbolic = true
+      if (a === '<TRA>') {
+        isTRA = true
+        break
+      }
+    }
+  }
   if (isSymbolic) {
     const info = variant.INFO
     if (info.END && !isTRA) {
