@@ -1,15 +1,14 @@
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 
-import { assembleLocStringFast } from '.'
 import {
   BlockSet,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-} from './blockTypes'
-import { intersection2 } from './range'
+} from './blockTypes.ts'
+import { intersection2 } from './range.ts'
 
-import type { Base1DViewModel } from './calculateStaticBlocks'
+import type { Base1DViewModel } from './calculateStaticBlocks.ts'
 
 /**
  * returns a BlockSet of which the `blocks` attribute is an array of 'dynamic
@@ -51,12 +50,18 @@ export default function calculateDynamicBlocks(
   // Pre-calculate inverse to avoid repeated divisions
   const invBpPerPx = 1 / bpPerPx
   const blocks = new BlockSet()
+
+  // Track cumulative position across all displayed regions
   let displayedRegionLeftPx = 0
+
+  // Define the visible window
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
+
+  // Process each displayed region
   for (
-    let regionNumber = 0;
-    regionNumber < displayedRegions.length;
+    let regionNumber = 0, l = displayedRegions.length;
+    regionNumber < l;
     regionNumber++
   ) {
     const region = displayedRegions[regionNumber]
@@ -67,10 +72,8 @@ export default function calculateDynamicBlocks(
       end: regionEnd,
       reversed,
     } = region!
-    const displayedRegionRightPx =
-      displayedRegionLeftPx + (regionEnd - regionStart) * invBpPerPx
-
     const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
+    const displayedRegionRightPx = displayedRegionLeftPx + regionWidthPx
     const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     const [leftPx, rightPx] = intersection2(
@@ -79,8 +82,11 @@ export default function calculateDynamicBlocks(
       displayedRegionLeftPx,
       displayedRegionRightPx,
     )
+    // Track whether this region ends at its right edge (even if offscreen)
+    const regionEndsAtRightEdge = displayedRegionRightPx <= windowRightPx
+
     if (leftPx !== undefined && rightPx !== undefined) {
-      // this displayed region overlaps the view, so make a record for it
+      // This displayed region overlaps the view, create one block for the visible portion
       let start: number
       let end: number
       let isLeftEndOfDisplayedRegion: boolean
@@ -119,13 +125,7 @@ export default function calculateDynamicBlocks(
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
-        key: `${assembleLocStringFast({
-          assemblyName,
-          refName,
-          start,
-          end,
-          reversed,
-        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
+        key: `{${assemblyName}}${refName}:${start + 1}${start + 1 === end ? '' : `..${end}`}${reversed ? '[rev]' : ''}-${regionNumber}${reversed ? '-reversed' : ''}`,
       }
 
       if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
@@ -146,11 +146,11 @@ export default function calculateDynamicBlocks(
       }
 
       if (padding) {
-        // insert a inter-region padding block if we are crossing a displayed region
+        // Add inter-region padding block if we're at the end of a visible region
         if (
           regionWidthPx >= minimumBlockWidth &&
-          blockData.isRightEndOfDisplayedRegion &&
-          regionNumber < displayedRegions.length - 1
+          regionNumber < displayedRegions.length - 1 &&
+          blockData.isRightEndOfDisplayedRegion
         ) {
           blocks.push(
             new InterRegionPaddingBlock({
@@ -159,26 +159,36 @@ export default function calculateDynamicBlocks(
               offsetPx: blockData.offsetPx + blockData.widthPx,
             }),
           )
-          displayedRegionLeftPx += interRegionPaddingWidth
         }
 
         if (
           regionNumber === displayedRegions.length - 1 &&
           blockData.isRightEndOfDisplayedRegion
         ) {
-          blockOffsetPx = blockData.offsetPx + blockData.widthPx
+          const finalOffsetPx = blockData.offsetPx + blockData.widthPx
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-afterLastRegion`,
-              widthPx: width - blockOffsetPx + offsetPx,
-              offsetPx: blockOffsetPx,
+              widthPx: width - finalOffsetPx + offsetPx,
+              offsetPx: finalOffsetPx,
               variant: 'boundary',
             }),
           )
         }
       }
     }
-    displayedRegionLeftPx += (regionEnd - regionStart) * invBpPerPx
+
+    // Add inter-region padding to offset calculation for all regions that end
+    // before or at the right edge of the window, even if completely offscreen
+    const shouldPad =
+      padding &&
+      regionEndsAtRightEdge &&
+      regionWidthPx >= minimumBlockWidth &&
+      regionNumber < displayedRegions.length - 1
+
+    const regionOffset = (regionEnd - regionStart) * invBpPerPx
+    const paddingOffset = shouldPad ? interRegionPaddingWidth : 0
+    displayedRegionLeftPx = displayedRegionLeftPx + regionOffset + paddingOffset
   }
   return blocks
 }

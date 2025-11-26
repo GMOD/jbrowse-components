@@ -1,15 +1,15 @@
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 
-import { assembleLocStringFast } from '.'
 import {
   BlockSet,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-} from './blockTypes'
+} from './blockTypes.ts'
 
+import type { BlockData } from './blockCalculationHelpers.ts'
 import type { Region } from './types'
-import type { Region as RegionModel } from './types/mst'
+import type { Region as RegionModel } from './types/mst.ts'
 import type { Instance } from 'mobx-state-tree'
 
 export interface Base1DViewModel {
@@ -37,20 +37,26 @@ export default function calculateStaticBlocks(
     width: modelWidth,
   } = model
 
+  // Define the visible window in base pairs
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + modelWidth) * bpPerPx
+
+  // Define block size for static blocks
   const blockSizePx = width
   const blockSizeBp = Math.ceil(blockSizePx * bpPerPx)
 
   // Pre-calculate inverse values to avoid repeated divisions
   const invBpPerPx = 1 / bpPerPx
   const invBlockSizeBp = 1 / blockSizeBp
-  // for each displayed region
+
+  // Track cumulative position across all displayed regions (in base pairs)
   let regionBpOffset = 0
   const blocks = new BlockSet()
+
+  // Process each displayed region
   for (
-    let regionNumber = 0;
-    regionNumber < displayedRegions.length;
+    let regionNumber = 0, l = displayedRegions.length;
+    regionNumber < l;
     regionNumber++
   ) {
     const region = displayedRegions[regionNumber]!
@@ -62,6 +68,7 @@ export default function calculateStaticBlocks(
       reversed,
     } = region
 
+    const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
     const regionBlockCount = Math.ceil(
       (regionEnd - regionStart) * invBlockSizeBp,
     )
@@ -79,8 +86,9 @@ export default function calculateStaticBlocks(
       windowLeftBlockNum = 0
     }
 
-    const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
+    let lastBlockData: BlockData | null = null
 
+    // Create multiple fixed-size blocks for this region
     for (
       let blockNum = windowLeftBlockNum;
       blockNum <= windowRightBlockNum;
@@ -108,19 +116,14 @@ export default function calculateStaticBlocks(
         start,
         end,
         reversed,
-        offsetPx: (regionBpOffset + blockNum * blockSizeBp) * invBpPerPx,
+        offsetPx:
+          regionBpOffset * invBpPerPx + blockNum * blockSizeBp * invBpPerPx,
         parentRegion,
         regionNumber,
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
-        key: `${assembleLocStringFast({
-          assemblyName,
-          refName,
-          start,
-          end,
-          reversed,
-        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
+        key: `{${assemblyName}}${refName}:${start + 1}${start + 1 === end ? '' : `..${end}`}${reversed ? '[rev]' : ''}-${regionNumber}${reversed ? '-reversed' : ''}`,
       }
 
       if (padding && regionNumber === 0 && blockNum === 0) {
@@ -140,39 +143,49 @@ export default function calculateStaticBlocks(
         blocks.push(new ContentBlock(blockData))
       }
 
-      if (padding) {
-        // insert a inter-region padding block if we are crossing a displayed region
-        if (
-          regionWidthPx >= minimumBlockWidth &&
-          blockData.isRightEndOfDisplayedRegion &&
-          regionNumber < displayedRegions.length - 1
-        ) {
-          regionBpOffset += interRegionPaddingWidth * bpPerPx
-          blocks.push(
-            new InterRegionPaddingBlock({
-              key: `${blockData.key}-rightpad`,
-              widthPx: interRegionPaddingWidth,
-              offsetPx: blockData.offsetPx + blockData.widthPx,
-            }),
-          )
-        }
-        if (
-          regionNumber === displayedRegions.length - 1 &&
-          blockData.isRightEndOfDisplayedRegion
-        ) {
-          regionBpOffset += interRegionPaddingWidth * bpPerPx
-          blocks.push(
-            new InterRegionPaddingBlock({
-              key: `${blockData.key}-afterLastRegion`,
-              widthPx: width,
-              offsetPx: blockData.offsetPx + blockData.widthPx,
-              variant: 'boundary',
-            }),
-          )
-        }
+      lastBlockData = blockData
+    }
+
+    // After the block loop, add padding blocks if the last block ended at the region boundary
+    if (padding && lastBlockData) {
+      if (
+        regionWidthPx >= minimumBlockWidth &&
+        regionNumber < displayedRegions.length - 1 &&
+        lastBlockData.isRightEndOfDisplayedRegion
+      ) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${lastBlockData.key}-rightpad`,
+            widthPx: interRegionPaddingWidth,
+            offsetPx: lastBlockData.offsetPx + lastBlockData.widthPx,
+          }),
+        )
+      }
+      if (
+        regionNumber === displayedRegions.length - 1 &&
+        lastBlockData.isRightEndOfDisplayedRegion
+      ) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${lastBlockData.key}-afterLastRegion`,
+            widthPx: width,
+            offsetPx: lastBlockData.offsetPx + lastBlockData.widthPx,
+            variant: 'boundary',
+          }),
+        )
       }
     }
-    regionBpOffset += regionEnd - regionStart
+
+    // Accumulate offset for next region
+    const shouldPad =
+      padding &&
+      !!lastBlockData?.isRightEndOfDisplayedRegion &&
+      regionWidthPx >= minimumBlockWidth &&
+      regionNumber < displayedRegions.length - 1
+
+    const regionOffsetBp = regionEnd - regionStart
+    const paddingOffsetBp = shouldPad ? interRegionPaddingWidth * bpPerPx : 0
+    regionBpOffset = regionBpOffset + regionOffsetBp + paddingOffsetBp
   }
   return blocks
 }

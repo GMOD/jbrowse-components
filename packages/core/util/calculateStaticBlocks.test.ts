@@ -1,5 +1,7 @@
 import calculateBlocks from './calculateStaticBlocks'
 
+import type { BaseBlock } from './blockTypes'
+
 describe('block calculation', () => {
   it('can calculate some blocks 1', () => {
     const blocks1 = calculateBlocks({
@@ -245,5 +247,88 @@ describe('reversed displayed regions', () => {
       800,
     )
     expect(blocks).toMatchSnapshot()
+  })
+})
+
+// ai generated test
+describe('static blocks have consistent offsetPx across different viewports', () => {
+  const baseView = {
+    width: 980,
+    displayedRegions: [
+      { assemblyName: 'test', refName: 'ctgA', start: 0, end: 1000 },
+      { assemblyName: 'test', refName: 'ctgA', start: 2000, end: 3000 },
+      { assemblyName: 'test', refName: 'ctgA', start: 4000, end: 5000 },
+      { assemblyName: 'test', refName: 'ctgA', start: 6000, end: 7000 },
+      { assemblyName: 'test', refName: 'ctgA', start: 8000, end: 9000 },
+    ],
+    minimumBlockWidth: 3,
+    interRegionPaddingWidth: 2,
+    bpPerPx: 2,
+  }
+
+  function findMatchingBlock(blocks: BaseBlock[], start: number, end: number) {
+    return blocks.find(
+      b => b.start === start && b.end === end && b.type === 'ContentBlock',
+    )
+  }
+
+  it('blocks have same offsetPx when scrolled to show first region', () => {
+    const view1 = { ...baseView, offsetPx: 0 }
+    const blocks1 = calculateBlocks(view1).getBlocks()
+
+    const block0_1000 = findMatchingBlock(blocks1, 0, 1000)
+    const block2000_3000 = findMatchingBlock(blocks1, 2000, 3000)
+
+    expect(block0_1000?.offsetPx).toBe(0)
+    expect(block2000_3000?.offsetPx).toBe(502)
+  })
+
+  it('blocks have same offsetPx when scrolled to show middle regions', () => {
+    const view2 = { ...baseView, offsetPx: 502 }
+    const blocks2 = calculateBlocks(view2).getBlocks()
+
+    const block2000_3000 = findMatchingBlock(blocks2, 2000, 3000)
+    const block4000_5000 = findMatchingBlock(blocks2, 4000, 5000)
+
+    expect(block2000_3000?.offsetPx).toBe(502)
+    expect(block4000_5000?.offsetPx).toBe(1004)
+  })
+
+  it('blocks have same offsetPx regardless of viewport position', () => {
+    const view1 = { ...baseView, offsetPx: 0 }
+    const view2 = { ...baseView, offsetPx: 502 }
+    const view3 = { ...baseView, offsetPx: 1004 }
+
+    const blocks1 = calculateBlocks(view1, true, true, 1).getBlocks()
+    const blocks2 = calculateBlocks(view2, true, true, 1).getBlocks()
+    const blocks3 = calculateBlocks(view3, true, true, 1).getBlocks()
+
+    const block2000_3000_v1 = findMatchingBlock(blocks1, 2000, 3000)
+    const block2000_3000_v2 = findMatchingBlock(blocks2, 2000, 3000)
+
+    expect(block2000_3000_v1?.offsetPx).toBe(502)
+    expect(block2000_3000_v2?.offsetPx).toBe(502)
+
+    const block4000_5000_v1 = findMatchingBlock(blocks1, 4000, 5000)
+    const block4000_5000_v2 = findMatchingBlock(blocks2, 4000, 5000)
+    const block4000_5000_v3 = findMatchingBlock(blocks3, 4000, 5000)
+
+    expect(block4000_5000_v1?.offsetPx).toBe(1004)
+    expect(block4000_5000_v2?.offsetPx).toBe(1004)
+    expect(block4000_5000_v3?.offsetPx).toBe(1004)
+
+    const block6000_7000_v3 = findMatchingBlock(blocks3, 6000, 7000)
+    expect(block6000_7000_v3?.offsetPx).toBe(1506)
+  })
+
+  it('blocks for later regions have correct offsetPx with multiple offscreen regions', () => {
+    const view = { ...baseView, offsetPx: 1506 }
+    const blocks = calculateBlocks(view, true, true, 1).getBlocks()
+
+    const block6000_7000 = findMatchingBlock(blocks, 6000, 7000)
+    const block8000_9000 = findMatchingBlock(blocks, 8000, 9000)
+
+    expect(block6000_7000?.offsetPx).toBe(1506)
+    expect(block8000_9000?.offsetPx).toBe(2008)
   })
 })

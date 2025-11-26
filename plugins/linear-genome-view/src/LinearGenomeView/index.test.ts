@@ -799,7 +799,7 @@ describe('get sequence for selected displayed regions', () => {
     expect(overlapping[1]!.start).toEqual(0)
     expect(overlapping[1]!.end).toEqual(3000)
     expect(overlapping[2]!.start).toEqual(0)
-    expect(overlapping[2]!.end).toEqual(110)
+    expect(overlapping[2]!.end).toEqual(101)
   })
 
   it('can select over two regions in diff reference sequence', () => {
