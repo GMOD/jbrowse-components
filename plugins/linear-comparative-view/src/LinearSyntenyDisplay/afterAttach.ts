@@ -1,19 +1,15 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
-import { parseNumericCigar } from '../cigarUtils'
-import {
-  drawCigarClickMap,
-  drawMouseoverClickMap,
-  drawRef,
-} from './drawSynteny'
+import { parseCigar } from '../cigarUtils'
+import { drawMouseoverClickMap, drawSynteny } from './drawSynteny'
 
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import type { Feature } from '@jbrowse/core/util'
+import { drawCigarClickMap } from './drawCigarClickMap'
 
 interface Pos {
   offsetPx: number
@@ -35,10 +31,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(() => {
       const view = getContainingView(self) as LinearSyntenyViewModel
-      if (
-        !view.initialized ||
-        !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
-      ) {
+      if (!view.viewsInitialized) {
         return
       }
 
@@ -56,8 +49,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       ctx1.clearRect(0, 0, width, height)
 
       // Draw main canvas immediately
-      drawRef(self, ctx1)
-
+      drawSynteny(self, ctx1)
       drawCigarClickMap(self, ctx3)
     }),
   )
@@ -66,10 +58,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(() => {
       const view = getContainingView(self) as LinearSyntenyViewModel
-      if (
-        !view.initialized ||
-        !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
-      ) {
+      if (!view.viewsInitialized) {
         return
       }
       // Access reactive properties so autorun is triggered when they change
@@ -123,7 +112,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const map = [] as FeatPos[]
         const feats = self.features || []
 
-        for (const f of feats) {
+        for (let i = 0, l = feats.length; i < l; i++) {
+          const f = feats[i]!
           const mate = f.get('mate')
           let f1s = f.get('start')
           let f1e = f.get('end')
@@ -135,10 +125,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           }
           const a1 = assemblyManager.get(f.get('assemblyName'))
           const a2 = assemblyManager.get(mate.assemblyName)
+          if (!a1 || !a2) {
+            throw new Error('assembly not found')
+          }
           const r1 = f.get('refName')
           const r2 = mate.refName
-          const ref1 = a1?.getCanonicalRefName(r1) || r1
-          const ref2 = a2?.getCanonicalRefName(r2) || r2
+          const ref1 = a1.getCanonicalRefName2(r1)
+          const ref2 = a2.getCanonicalRefName2(r2)
           const v1 = viewSnaps[level]!
           const v2 = viewSnaps[level + 1]!
           const p11 = bpToPx({ self: v1, refName: ref1, coord: f1s })
@@ -147,23 +140,21 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           const p22 = bpToPx({ self: v2, refName: ref2, coord: f2e })
 
           if (
-            p11 === undefined ||
-            p12 === undefined ||
-            p21 === undefined ||
-            p22 === undefined
+            p11 !== undefined &&
+            p12 !== undefined &&
+            p21 !== undefined &&
+            p22 !== undefined
           ) {
-            continue
+            const cigar = f.get('CIGAR') as string | undefined
+            map.push({
+              p11,
+              p12,
+              p21,
+              p22,
+              f,
+              cigar: parseCigar(cigar),
+            })
           }
-
-          const cigar = f.get('CIGAR') as string | undefined
-          map.push({
-            p11,
-            p12,
-            p21,
-            p22,
-            f,
-            cigar: parseNumericCigar(MismatchParser.parseCigar(cigar)),
-          })
         }
 
         self.setFeatPositions(map)

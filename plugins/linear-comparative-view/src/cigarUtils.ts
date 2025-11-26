@@ -17,28 +17,39 @@ export const CIGAR_DEL_MASK = (1 << CIGAR_D) | (1 << CIGAR_N) // 12
 // I(1), D(2), N(3) - insertion/deletion ops
 export const CIGAR_INDEL_MASK = (1 << CIGAR_I) | (1 << CIGAR_D) | (1 << CIGAR_N) // 14
 
-const cigarCharToCode: Record<string, number> = {
-  M: CIGAR_M,
-  I: CIGAR_I,
-  D: CIGAR_D,
-  N: CIGAR_N,
-  S: CIGAR_S,
-  H: CIGAR_H,
-  P: CIGAR_P,
-  '=': CIGAR_EQ,
-  X: CIGAR_X,
-}
+// Lookup table for CIGAR op char codes (ASCII) to numeric codes
+// Using array indexed by char code for fast lookup
+const cigarCharCodeToOp: number[] = []
+cigarCharCodeToOp[77] = CIGAR_M // 'M'
+cigarCharCodeToOp[73] = CIGAR_I // 'I'
+cigarCharCodeToOp[68] = CIGAR_D // 'D'
+cigarCharCodeToOp[78] = CIGAR_N // 'N'
+cigarCharCodeToOp[83] = CIGAR_S // 'S'
+cigarCharCodeToOp[72] = CIGAR_H // 'H'
+cigarCharCodeToOp[80] = CIGAR_P // 'P'
+cigarCharCodeToOp[61] = CIGAR_EQ // '='
+cigarCharCodeToOp[88] = CIGAR_X // 'X'
 
 export const cigarCodeToChar = ['M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X']
 
-// Parse string[] cigar (alternating len/op) into number[] with packed values
-// Each value is (len << 4) | op, matching BAM CIGAR encoding
-export function parseNumericCigar(cigar: string[]) {
+// Parse CIGAR string directly to packed number[] format
+// Each value is (len << 4) | op
+export function parseCigar(cigar?: string) {
+  if (!cigar) {
+    return []
+  }
   const result: number[] = []
-  for (let i = 0; i < cigar.length; i += 2) {
-    const len = +cigar[i]! | 0
-    const op = cigarCharToCode[cigar[i + 1]!] ?? 0
-    result.push((len << 4) | op)
+  let len = 0
+  for (let i = 0; i < cigar.length; i++) {
+    const c = cigar.charCodeAt(i)
+    // ASCII digits are 48-57
+    if (c >= 48 && c <= 57) {
+      len = len * 10 + c - 48
+    } else {
+      const op = cigarCharCodeToOp[c] ?? 0
+      result.push((len << 4) | op)
+      len = 0
+    }
   }
   return result
 }

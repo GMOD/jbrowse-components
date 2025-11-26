@@ -5,10 +5,10 @@ import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import { cigarCodeToChar } from '../../cigarUtils'
-import { getId, MAX_COLOR_RANGE } from '../../colorUtils'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
+import { cigarCodeToChar } from '../../cigarUtils'
+import { MAX_COLOR_RANGE, getId } from '../../colorUtils'
 
 import type { ClickCoord } from './util'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'

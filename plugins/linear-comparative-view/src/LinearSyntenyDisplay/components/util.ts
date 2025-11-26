@@ -10,7 +10,7 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 
-import { getId, MAX_COLOR_RANGE } from '../../colorUtils'
+import { MAX_COLOR_RANGE, getId } from '../../colorUtils'
 
 import type { LinearSyntenyDisplayModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'
