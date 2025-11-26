@@ -13,7 +13,15 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { cast, getEnv, getParent, isAlive, types } from 'mobx-state-tree'
+import { autorun } from 'mobx'
+import {
+  addDisposer,
+  cast,
+  getEnv,
+  getParent,
+  isAlive,
+  types,
+} from 'mobx-state-tree'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
@@ -22,7 +30,7 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Instance } from 'mobx-state-tree'
 
 const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
@@ -66,6 +74,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        trackShowSubfeatureLabels: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        trackSubfeatureLabelPosition: types.maybe(types.string),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
@@ -73,6 +89,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         jexlFilters: types.maybe(types.array(types.string)),
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       * Stores the feature under the mouse cursor, fetched asynchronously
+       * via CoreGetFeatureDetails RPC to avoid serializing all features
+       */
+      featureUnderMouseVolatile: undefined as Feature | undefined,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -124,6 +148,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
         )
       },
+
+      /**
+       * #getter
+       */
+      get showSubfeatureLabels() {
+        return (
+          self.trackShowSubfeatureLabels ??
+          getConf(self, ['renderer', 'showSubfeatureLabels'])
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get subfeatureLabelPosition() {
+        return (
+          self.trackSubfeatureLabelPosition ??
+          getConf(self, ['renderer', 'subfeatureLabelPosition'])
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -138,6 +182,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...config,
             showLabels: self.showLabels,
             showDescriptions: self.showDescriptions,
+            showSubfeatureLabels: self.showSubfeatureLabels,
+            subfeatureLabelPosition: self.subfeatureLabelPosition,
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
           },
@@ -156,6 +202,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setFeatureUnderMouse(feat?: Feature) {
+        self.featureUnderMouseVolatile = feat
+      },
+      /**
+       * #action
+       */
       toggleShowLabels() {
         self.trackShowLabels = !self.showLabels
       },
@@ -168,6 +220,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      toggleShowSubfeatureLabels() {
+        self.trackShowSubfeatureLabels = !self.showSubfeatureLabels
+      },
+      /**
+       * #action
+       */
+      setSubfeatureLabelPosition(val: string) {
+        self.trackSubfeatureLabelPosition = val
+      },
+      /**
+       * #action
+       */
       setDisplayMode(val: string) {
         self.trackDisplayMode = val
       },
@@ -176,6 +240,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMaxHeight(val?: number) {
         self.trackMaxHeight = val
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Override featureUnderMouse to return the volatile feature
+       * which is fetched asynchronously via CoreGetFeatureDetails
+       */
+      get featureUnderMouse() {
+        return self.featureUnderMouseVolatile
       },
     }))
     .views(self => {
@@ -289,22 +363,45 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show labels',
+              label: 'Show...',
               icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showLabels,
-              onClick: () => {
-                self.toggleShowLabels()
-              },
-            },
-            {
-              label: 'Show descriptions',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showDescriptions,
-              onClick: () => {
-                self.toggleShowDescriptions()
-              },
+              subMenu: [
+                {
+                  label: 'Show labels',
+                  type: 'checkbox',
+                  checked: self.showLabels,
+                  onClick: () => {
+                    self.toggleShowLabels()
+                  },
+                },
+                {
+                  label: 'Show descriptions',
+                  type: 'checkbox',
+                  checked: self.showDescriptions,
+                  onClick: () => {
+                    self.toggleShowDescriptions()
+                  },
+                },
+                {
+                  label: 'Show subfeature labels',
+                  type: 'checkbox',
+                  checked: self.showSubfeatureLabels,
+                  onClick: () => {
+                    self.toggleShowSubfeatureLabels()
+                  },
+                },
+                {
+                  label: 'Subfeature label position',
+                  subMenu: ['below', 'overlay'].map(val => ({
+                    label: val,
+                    type: 'radio' as const,
+                    checked: self.subfeatureLabelPosition === val,
+                    onClick: () => {
+                      self.setSubfeatureLabelPosition(val)
+                    },
+                  })),
+                },
+              ],
             },
             {
               label: 'Display mode',
@@ -349,6 +446,53 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      afterAttach() {
+        // Autorun synchronizes featureUnderMouse with featureIdUnderMouse
+        // asynchronously. This is needed because we don't serialize all
+        // features from the renderer over RPC to avoid overhead
+        addDisposer(
+          self,
+          autorun(async () => {
+            const session = getSession(self)
+            try {
+              const featureId = self.featureIdUnderMouse
+              if (self.featureUnderMouse?.id() !== featureId) {
+                if (!featureId) {
+                  self.setFeatureUnderMouse(undefined)
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await session.rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId,
+                      sessionId,
+                      layoutId: getContainingTrack(self).id,
+                      rendererType: self.rendererTypeName,
+                    },
+                  )) as { feature: SimpleFeatureSerialized | undefined }
+
+                  // Check featureIdUnderMouse is still the same as the
+                  // feature.id that was returned e.g. that the user hasn't
+                  // moused over to a new position during the async operation
+                  if (
+                    isAlive(self) &&
+                    feature &&
+                    self.featureIdUnderMouse === feature.uniqueId
+                  ) {
+                    self.setFeatureUnderMouse(new SimpleFeature(feature))
+                  }
+                }
+              }
+            } catch (e) {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            }
+          }),
+        )
+      },
+    }))
 }
 
 export type FeatureTrackStateModel = ReturnType<typeof stateModelFactory>

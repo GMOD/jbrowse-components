@@ -1,5 +1,17 @@
 import type { GFF3FeatureLineWithRefs } from 'gff-nostream'
 
+// Module-level constant to avoid recreating Set on every featureData() call
+const DEFAULT_FIELDS = new Set([
+  'start',
+  'end',
+  'seq_id',
+  'score',
+  'type',
+  'source',
+  'phase',
+  'strand',
+])
+
 interface GFF3Feature {
   start: number
   end: number
@@ -38,21 +50,11 @@ export function featureData(data: GFF3FeatureLineWithRefs): GFF3Feature {
     strand2 = 0
   }
 
-  const defaultFields = new Set([
-    'start',
-    'end',
-    'seq_id',
-    'score',
-    'type',
-    'source',
-    'phase',
-    'strand',
-  ])
   const dataAttributes = attributes || {}
   const resultAttributes = {} as Record<string, unknown>
   for (const a of Object.keys(dataAttributes)) {
     let b = a.toLowerCase()
-    if (defaultFields.has(b)) {
+    if (DEFAULT_FIELDS.has(b)) {
       // add "suffix" to tag name if it already exists
       // reproduces behavior of NCList
       b += '2'
