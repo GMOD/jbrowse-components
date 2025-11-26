@@ -31,33 +31,28 @@ function createBlockElement(
       if (type === 'major') {
         const x =
           (block.reversed ? block.end - base : base - block.start) / bpPerPx
-        const baseNumber = base + 1
-        if (baseNumber) {
-          const tickDiv = document.createElement('div')
-          tickDiv.style.position = 'absolute'
-          tickDiv.style.width = '0'
-          tickDiv.style.display = 'flex'
-          tickDiv.style.justifyContent = 'center'
-          tickDiv.style.pointerEvents = 'none'
-          tickDiv.style.left = `${x}px`
+        const tickDiv = document.createElement('div')
+        tickDiv.style.position = 'absolute'
+        tickDiv.style.width = '0'
+        tickDiv.style.display = 'flex'
+        tickDiv.style.justifyContent = 'center'
+        tickDiv.style.pointerEvents = 'none'
+        tickDiv.style.left = `${x}px`
 
-          const labelDiv = document.createElement('div')
-          labelDiv.style.fontSize = '11px'
-          labelDiv.style.zIndex = '1'
-          labelDiv.style.background = bgColor
-          labelDiv.style.lineHeight = 'normal'
-          labelDiv.style.pointerEvents = 'none'
-          labelDiv.textContent = getTickDisplayStr(baseNumber, bpPerPx)
+        const labelDiv = document.createElement('div')
+        labelDiv.style.fontSize = '11px'
+        labelDiv.style.zIndex = '1'
+        labelDiv.style.background = bgColor
+        labelDiv.style.lineHeight = 'normal'
+        labelDiv.style.pointerEvents = 'none'
+        labelDiv.textContent = getTickDisplayStr(base + 1, bpPerPx)
 
-          tickDiv.append(labelDiv)
-          fragment.append(tickDiv)
-        }
+        tickDiv.append(labelDiv)
+        fragment.append(tickDiv)
       }
     }
     div.append(fragment)
   } else if (block.type === 'ElidedBlock') {
-    div.style.minHeight = '100%'
-    div.style.boxSizing = 'border-box'
     div.style.backgroundColor = '#999'
     div.style.backgroundImage =
       'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)'

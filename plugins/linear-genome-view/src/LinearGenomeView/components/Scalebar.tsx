@@ -34,9 +34,23 @@ interface ScalebarProps {
   className?: string
 }
 
-function ScalebarPositionedContent({ model }: { model: LGV }) {
-  const { classes } = useStyles()
+const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
+  { model, style, className, ...other },
+  ref,
+) {
+  const { classes, cx } = useStyles()
+  const zoomRef = useRef<HTMLDivElement>(null)
   const scalebarRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    return autorun(() => {
+      const { scaleFactor } = model
+      const zoom = zoomRef.current
+      if (zoom) {
+        zoom.style.transform = scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
+      }
+    })
+  }, [model])
 
   useEffect(() => {
     return autorun(() => {
@@ -51,30 +65,6 @@ function ScalebarPositionedContent({ model }: { model: LGV }) {
   }, [model])
 
   return (
-    <div ref={scalebarRef} className={classes.scalebar}>
-      <ScalebarCoordinateLabels model={model} />
-    </div>
-  )
-}
-
-const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
-  { model, style, className, ...other },
-  ref,
-) {
-  const { classes, cx } = useStyles()
-  const zoomRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    return autorun(() => {
-      const { scaleFactor } = model
-      const zoom = zoomRef.current
-      if (zoom) {
-        zoom.style.transform = scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
-      }
-    })
-  }, [model])
-
-  return (
     <Paper
       data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
       className={cx(classes.container, className)}
@@ -83,10 +73,12 @@ const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
       style={style}
       {...other}
     >
-      {/* offset 1px since for left track border */}
+      {/* offset 1px for left track border */}
       <Gridlines model={model} offset={1} />
       <div ref={zoomRef} className={classes.zoomContainer}>
-        <ScalebarPositionedContent model={model} />
+        <div ref={scalebarRef} className={classes.scalebar}>
+          <ScalebarCoordinateLabels model={model} />
+        </div>
       </div>
       <ScalebarRefNameLabels model={model} />
     </Paper>
