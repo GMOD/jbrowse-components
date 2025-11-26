@@ -4,8 +4,24 @@ module.exports = {
   roots: ['.', 'packages/', 'products/', 'plugins/'],
   moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
 
+  // Use SWC instead of babel-jest for faster transforms (10-20x faster)
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.js',
+    '^.+\\.(ts|tsx|js|jsx)$': [
+      '@swc/jest',
+      {
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+            tsx: true,
+          },
+          transform: {
+            react: {
+              runtime: 'automatic',
+            },
+          },
+        },
+      },
+    ],
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
   },
   transformIgnorePatterns: [
@@ -40,4 +56,13 @@ module.exports = {
   testEnvironmentOptions: { url: 'http://localhost' },
   testTimeout: 15000,
   testEnvironment: 'jsdom',
+
+  // Persistent cache directory (survives /tmp cleanup)
+  cacheDirectory: '<rootDir>/node_modules/.cache/jest',
+
+  // Use 50% of CPUs to reduce thrashing
+  maxWorkers: '50%',
+
+  // Faster module resolution
+  moduleDirectories: ['node_modules'],
 }
