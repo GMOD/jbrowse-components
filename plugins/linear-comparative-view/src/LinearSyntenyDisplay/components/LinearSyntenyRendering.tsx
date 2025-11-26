@@ -193,14 +193,14 @@ const LinearSyntenyRendering = observer(function ({
             setCurrY(clientY)
             const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
             const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
-            const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
+            const unitMultiplier = (MAX_COLOR_RANGE / model.numFeats) | 0
             const id = getId(r1!, g1!, b1!, unitMultiplier)
             model.setMouseoverId(model.featPositions[id]?.f.id())
             if (id === -1) {
               setTooltip('')
             } else if (model.featPositions[id]) {
               const { f, cigar } = model.featPositions[id]
-              const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+              const unitMultiplier2 = (MAX_COLOR_RANGE / cigar.length) | 0
               const cigarIdx = getId(r2!, g2!, b2!, unitMultiplier2)
               // Check that the CIGAR pixel data is not all zeros (no CIGAR data drawn)
               if (r2 !== 0 || g2 !== 0 || b2 !== 0) {

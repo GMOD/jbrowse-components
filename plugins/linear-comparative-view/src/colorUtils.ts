@@ -1,12 +1,14 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
-export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
+// Use 256-based encoding for bitwise operations (2^24 = 16777216)
+export const MAX_COLOR_RANGE = 256 * 256 * 256
 
 export function makeColor(idx: number) {
-  const r = Math.floor(idx / (255 * 255)) % 255
-  const g = Math.floor(idx / 255) % 255
-  const b = idx % 255
+  // Bitwise extraction: much faster than division
+  const r = (idx >> 16) & 0xff
+  const g = (idx >> 8) & 0xff
+  const b = idx & 0xff
   return `rgb(${r},${g},${b})`
 }
 
@@ -14,11 +16,10 @@ export function makeColor(idx: number) {
 function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash & hash // Convert to 32bit integer
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
   }
-  return Math.abs(hash)
+  // Convert to positive using unsigned right shift
+  return hash >>> 0
 }
 
 // Generate a color from a query name using the category10 color palette
@@ -80,5 +81,6 @@ export function applyAlpha(color: string, alpha: number) {
 }
 
 export function getId(r: number, g: number, b: number, unitMultiplier: number) {
-  return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
+  // Bitwise reconstruction matching makeColor's 256-based encoding
+  return (((r << 16) | (g << 8) | b) - 1) / unitMultiplier | 0
 }

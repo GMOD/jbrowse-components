@@ -1,12 +1,11 @@
 import { getContainingView } from '@jbrowse/core/util'
 
 import {
-  CIGAR_D,
-  CIGAR_EQ,
+  CIGAR_DEL_MASK,
   CIGAR_I,
+  CIGAR_INDEL_MASK,
   CIGAR_M,
-  CIGAR_N,
-  CIGAR_X,
+  CIGAR_MATCH_MASK,
 } from '../cigarUtils'
 import {
   applyAlpha,
@@ -111,15 +110,17 @@ export function drawCigarClickMap(
       continue
     }
 
-    const s1 = f.get('strand')
-    const k1 = s1 === -1 ? x12 : x11
-    const k2 = s1 === -1 ? x11 : x12
+    const s1 = f.get('strand') as number
+    // Use sign bit: s1 < 0 for negative strand check
+    const negStrand = s1 < 0
+    const k1 = negStrand ? x12 : x11
+    const k2 = negStrand ? x11 : x12
 
     const rev1 = k1 < k2 ? 1 : -1
     const rev2 = (x21 < x22 ? 1 : -1) * s1
 
     let cx1 = k1
-    let cx2 = s1 === -1 ? x22 : x21
+    let cx2 = negStrand ? x22 : x21
     let continuingFlag = false
     let px1 = 0
     let px2 = 0
@@ -139,10 +140,10 @@ export function drawCigarClickMap(
       const d1 = len * bpPerPxInv0
       const d2 = len * bpPerPxInv1
 
-      if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
+      if ((1 << op) & CIGAR_MATCH_MASK) {
         cx1 += d1 * rev1
         cx2 += d2 * rev2
-      } else if (op === CIGAR_D || op === CIGAR_N) {
+      } else if ((1 << op) & CIGAR_DEL_MASK) {
         cx1 += d1 * rev1
       } else if (op === CIGAR_I) {
         cx2 += d2 * rev2
@@ -164,9 +165,7 @@ export function drawCigarClickMap(
         continuingFlag = false
         const shouldDraw =
           !drawCIGARMatchesOnly ||
-          ((op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) &&
-            absDx1 > 1 &&
-            absDx2 > 1)
+          ((1 << op) & CIGAR_MATCH_MASK && absDx1 > 1 && absDx2 > 1)
 
         if (shouldDraw) {
           const idx = j * unitMultiplier2 + 1
@@ -324,7 +323,7 @@ export function drawRef(
     if (isThin) {
       let colorKey = 'default'
       if (useStrandColor) {
-        colorKey = strand === -1 ? 'neg' : 'pos'
+        colorKey = strand < 0 ? 'neg' : 'pos'
       } else if (useQueryColor) {
         colorKey = refName
       }
@@ -338,7 +337,7 @@ export function drawRef(
     }
   }
 
-  // Draw thin lines batched by color
+  // Draw thin lines by color, each line individually for proper alpha blending
   for (const [colorKey, lines] of thinLinesByColor) {
     if (colorKey === 'pos') {
       mainCanvas.strokeStyle = posColorWithAlpha
@@ -350,21 +349,23 @@ export function drawRef(
       mainCanvas.strokeStyle = defaultColor
     }
 
-    mainCanvas.beginPath()
     if (drawCurves) {
       for (let i = 0; i < lines.length; i++) {
         const { x11, x21 } = lines[i]!
+        mainCanvas.beginPath()
         mainCanvas.moveTo(x11, y1)
         mainCanvas.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+        mainCanvas.stroke()
       }
     } else {
       for (let i = 0; i < lines.length; i++) {
         const { x11, x21 } = lines[i]!
+        mainCanvas.beginPath()
         mainCanvas.moveTo(x11, y1)
         mainCanvas.lineTo(x21, y2)
+        mainCanvas.stroke()
       }
     }
-    mainCanvas.stroke()
   }
 
   // Cache bpPerPx values and reciprocals
@@ -387,15 +388,15 @@ export function drawRef(
     }
 
     const { cigar } = feat
-    const s1 = strand
-    const k1 = s1 === -1 ? x12 : x11
-    const k2 = s1 === -1 ? x11 : x12
+    const negStrand = strand < 0
+    const k1 = negStrand ? x12 : x11
+    const k2 = negStrand ? x11 : x12
 
     const rev1 = k1 < k2 ? 1 : -1
-    const rev2 = (x21 < x22 ? 1 : -1) * s1
+    const rev2 = (x21 < x22 ? 1 : -1) * strand
 
     let cx1 = k1
-    let cx2 = s1 === -1 ? x22 : x21
+    let cx2 = negStrand ? x22 : x21
     const cigarLen = cigar.length
 
     if (cigarLen && drawCIGAR) {
@@ -417,10 +418,10 @@ export function drawRef(
         const d1 = len * bpPerPxInv0
         const d2 = len * bpPerPxInv1
 
-        if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
+        if ((1 << op) & CIGAR_MATCH_MASK) {
           cx1 += d1 * rev1
           cx2 += d2 * rev2
-        } else if (op === CIGAR_D || op === CIGAR_N) {
+        } else if ((1 << op) & CIGAR_DEL_MASK) {
           cx1 += d1 * rev1
         } else if (op === CIGAR_I) {
           cx2 += d2 * rev2
@@ -442,14 +443,13 @@ export function drawRef(
           const opCode = (continuingFlag && d1 > 1) || d2 > 1 ? op : CIGAR_M
           continuingFlag = false
 
-          const isInsertionOrDeletion =
-            opCode === CIGAR_I || opCode === CIGAR_D || opCode === CIGAR_N
+          const isInsertionOrDeletion = ((1 << opCode) & CIGAR_INDEL_MASK) !== 0
 
           // Determine fill color, minimize fillStyle changes
           let targetFillStyle: string
           if (useStrandColor && !isInsertionOrDeletion) {
             targetFillStyle =
-              strand === -1 ? negColorWithAlpha : posColorWithAlpha
+              strand < 0 ? negColorWithAlpha : posColorWithAlpha
           } else if (useQueryColor && !isInsertionOrDeletion) {
             targetFillStyle = getQueryColorWithAlpha(refName)
           } else {
@@ -462,7 +462,7 @@ export function drawRef(
           }
 
           if (drawCIGARMatchesOnly) {
-            if (opCode === CIGAR_M || opCode === CIGAR_EQ || opCode === CIGAR_X) {
+            if ((1 << opCode) & CIGAR_MATCH_MASK) {
               draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
               mainCanvas.fill()
               if (drawLocationMarkersEnabled) {
@@ -507,7 +507,7 @@ export function drawRef(
       let targetFillStyle: string
       if (useStrandColor) {
         targetFillStyle =
-          strand === -1 ? negColorWithAlpha : posColorWithAlpha
+          strand < 0 ? negColorWithAlpha : posColorWithAlpha
       } else if (useQueryColor) {
         targetFillStyle = getQueryColorWithAlpha(refName)
       } else {
