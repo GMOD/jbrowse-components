@@ -37,8 +37,12 @@ export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
       isColor1Callback,
       isColor3Callback,
     })
-    result.coords.push(...subResult.coords)
-    result.items.push(...subResult.items)
+    for (const c of subResult.coords) {
+      result.coords.push(c)
+    }
+    for (const item of subResult.items) {
+      result.items.push(item)
+    }
   }
 
   return result
@@ -71,8 +75,12 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
           peptideDataMap: args.peptideDataMap,
           colorByCDS: args.colorByCDS,
         })
-        result.coords.push(...subResult.coords)
-        result.items.push(...subResult.items)
+        for (const c of subResult.coords) {
+          result.coords.push(c)
+        }
+        for (const item of subResult.items) {
+          result.items.push(item)
+        }
       }
       break
     }
@@ -93,8 +101,12 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
           peptideDataMap: args.peptideDataMap,
           colorByCDS: args.colorByCDS,
         })
-        coords.push(...subResult.coords)
-        items.push(...subResult.items)
+        for (const c of subResult.coords) {
+          coords.push(c)
+        }
+        for (const item of subResult.items) {
+          items.push(item)
+        }
       }
       result = { coords, items }
       break
@@ -104,28 +116,16 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
       break
   }
 
-  // Draw arrow for top-level features
-  if (topLevel) {
+  // Draw arrow for top-level features (but not for containers like genes)
+  if (topLevel && glyphType !== 'Subfeatures') {
     const arrowResult = drawArrow(args)
-    result.coords.push(...arrowResult.coords)
-    result.items.push(...arrowResult.items)
+    for (const c of arrowResult.coords) {
+      result.coords.push(c)
+    }
+    for (const item of arrowResult.items) {
+      result.items.push(item)
+    }
   }
-
-  // Draw bounding box for debugging (shows totalLayoutWidth and totalLayoutHeight)
-  // if (topLevel) {
-  //   const { ctx, featureLayout } = args
-  //   ctx.save()
-  //   ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)' // Semi-transparent red
-  //   ctx.lineWidth = 1
-  //   ctx.setLineDash([2, 2]) // Dashed line
-  //   ctx.strokeRect(
-  //     featureLayout.x,
-  //     featureLayout.y,
-  //     featureLayout.totalLayoutWidth,
-  //     featureLayout.totalLayoutHeight,
-  //   )
-  //   ctx.restore()
-  // }
 
   return result
 }

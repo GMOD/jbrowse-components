@@ -8188,10 +8188,10 @@ get-symbol-description@^1.1.0:
     es-errors "^1.3.0"
     get-intrinsic "^1.2.6"
 
-gff-nostream@^1.3.3:
-  version "1.3.9"
-  resolved "https://registry.yarnpkg.com/gff-nostream/-/gff-nostream-1.3.9.tgz#3d009dbcbbc6c10322a2c6949a3c54fd9ba722c1"
-  integrity sha512-L5BNDHgcGGqksiXSk7IJkiZrcUioz/WwTW4sno/yReR8wtwMKbP4pJ7lUjKw9la6iMAJP1+7SrjB58y6c6Q/Qw==
+gff-nostream@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/gff-nostream/-/gff-nostream-2.0.0.tgz#865d58d5c4489eef1fd2182d81accd81feefb727"
+  integrity sha512-EBME2PgZxGoAkw5xq6//6zY2NVueNv/nCAsyHsurGnvaqs++/W1dSzqlDNNFVfcLs2fl+FVv5NXoA2RK/00jUg==
 
 git-raw-commits@^3.0.0:
   version "3.0.0"

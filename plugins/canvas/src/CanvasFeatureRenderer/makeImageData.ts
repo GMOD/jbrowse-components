@@ -4,6 +4,11 @@ import { bpToPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { drawFeature } from './drawFeature'
+import {
+  addNestedSubfeaturesToLayout,
+  addSubfeaturesToLayoutAndFlatbush,
+  adjustChildPositions,
+} from './layoutUtils'
 
 import type {
   FlatbushItem,
@@ -55,6 +60,17 @@ export function makeImageData({
   const color1 = isColor1Callback ? undefined : readConfObject(config, 'color1')
   const color3 = isColor3Callback ? undefined : readConfObject(config, 'color3')
 
+  // Read showSubfeatureLabels for transcript label rendering
+  const showSubfeatureLabels = readConfObject(
+    config,
+    'showSubfeatureLabels',
+  ) as boolean
+  const subfeatureLabelPosition = readConfObject(
+    config,
+    'subfeatureLabelPosition',
+  ) as string
+  const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
+
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
     const { feature, layout: featureLayout, topPx: recordTopPx } = record
 
@@ -101,12 +117,8 @@ export function makeImageData({
     const featureType = feature.get('type')
     const isGene = featureType === 'gene'
     const hasTranscriptChildren = adjustedLayout.children.some(child => {
-      const childType = child.feature?.get('type')
-      return (
-        childType === 'mRNA' ||
-        childType === 'transcript' ||
-        childType === 'protein_coding_primary_transcript'
-      )
+      const childType = child.feature.get('type')
+      return transcriptTypes.includes(childType)
     })
 
     // Always add the feature's bounding box to the primary flatbush
@@ -131,166 +143,27 @@ export function makeImageData({
 
     // If it's a gene with transcript children, also add subfeature info to secondary flatbush
     if (isGene && hasTranscriptChildren) {
-      addSubfeaturesToLayoutAndFlatbush(
+      addSubfeaturesToLayoutAndFlatbush({
         layout,
-        adjustedLayout,
-        feature.id(),
-        region,
-        bpPerPx,
+        featureLayout: adjustedLayout,
+        parentFeatureId: feature.id(),
         subfeatureCoords,
         subfeatureInfos,
         config,
-      )
+        showSubfeatureLabels,
+        subfeatureLabelPosition,
+        transcriptTypes,
+        labelColor: theme.palette.text.primary,
+      })
     } else if (adjustedLayout.children.length > 0) {
       // Still need to add children to layout for data storage (not flatbush)
-      addNestedSubfeaturesToLayout(
+      addNestedSubfeaturesToLayout({
         layout,
-        adjustedLayout,
-        region,
-        bpPerPx,
+        featureLayout: adjustedLayout,
         config,
-      )
+      })
     }
   })
-
-  function adjustChildPositions(
-    children: any[],
-    xOffset: number,
-    yOffset: number,
-  ): any[] {
-    return children.map(child => ({
-      ...child,
-      x: child.x + xOffset,
-      y: child.y + yOffset,
-      height: child.height, // Keep original visual height
-      totalFeatureHeight: child.totalFeatureHeight, // Keep total visual height with stacked children
-      totalLayoutHeight: child.totalLayoutHeight, // Keep total height with labels
-      totalLayoutWidth: child.totalLayoutWidth, // Keep total width with labels
-      children: adjustChildPositions(child.children, xOffset, yOffset),
-    }))
-  }
-
-  function addSubfeaturesToLayoutAndFlatbush(
-    layout: any,
-    featureLayout: any,
-    parentFeatureId: string,
-    region: any,
-    bpPerPx: number,
-    subfeatureCoords: number[],
-    subfeatureInfos: SubfeatureInfo[],
-    config: any,
-  ) {
-    // Add transcript children (e.g., mRNA, transcript) of a gene to secondary flatbush
-    // This provides extra info (transcript ID) when hovering over transcripts
-    // The parent gene's bounding box is already in the primary flatbush for highlighting
-    for (const child of featureLayout.children) {
-      const childFeature = child.feature
-      if (!childFeature) {
-        continue
-      }
-
-      const childType = childFeature.get('type')
-      const isTranscript =
-        childType === 'mRNA' ||
-        childType === 'transcript' ||
-        childType === 'protein_coding_primary_transcript'
-
-      // Only add transcript-type children to secondary flatbush
-      if (!isTranscript) {
-        // Non-transcript children just get stored in layout
-        addNestedSubfeaturesToLayout(layout, child, region, bpPerPx, config)
-        continue
-      }
-
-      const childStart = childFeature.get('start')
-      const childEnd = childFeature.get('end')
-
-      // Add the transcript's bounding box to secondary flatbush
-      // This allows us to detect when hovering over a specific transcript and provide extra info
-      // Use totalLayoutWidth and totalLayoutHeight to include label extent
-      const childLeftPx = child.x
-      const childRightPx = child.x + child.totalLayoutWidth
-      const topPx = child.y
-      const bottomPx = child.y + child.totalLayoutHeight // Use totalLayoutHeight to include labels
-      subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
-
-      // Get name for subfeature info (for tooltips/details)
-      const transcriptName = String(
-        readConfObject(config, ['labels', 'name'], { feature: childFeature }) ||
-          '',
-      )
-
-      subfeatureInfos.push({
-        subfeatureId: childFeature.id(),
-        parentFeatureId,
-        type: childType,
-        name: transcriptName,
-      })
-
-      // Store child feature using addRect so CoreGetFeatureDetails can access it
-      // Don't pass label/description to prevent FloatingLabels from rendering subfeature labels
-      layout.addRect(
-        childFeature.id(),
-        childStart,
-        childEnd,
-        bottomPx - topPx,
-        childFeature,
-        {
-          refName: childFeature.get('refName'),
-        },
-      )
-
-      // Debug: Draw blue bounding box for transcript subfeatures only
-      // (includes totalLayoutWidth and totalLayoutHeight with label extent)
-      // ctx.save()
-      // ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)' // Blue for transcripts
-      // ctx.lineWidth = 1
-      // ctx.setLineDash([2, 2])
-      // ctx.strokeRect(childLeftPx, topPx, childRightPx - childLeftPx, child.totalLayoutHeight)
-      // ctx.restore()
-
-      // Store layout/feature data for nested children (CDS, UTR, exons) but don't add them to flatbush
-      // This allows clicking on them to get details, but mouseover targets the parent transcript
-      if (child.children.length > 0) {
-        addNestedSubfeaturesToLayout(layout, child, region, bpPerPx, config)
-      }
-    }
-  }
-
-  function addNestedSubfeaturesToLayout(
-    layout: any,
-    featureLayout: any,
-    region: any,
-    bpPerPx: number,
-    config: any,
-  ) {
-    // Recursively add deeply nested children (CDS, UTR, exons) to layout only
-    // They won't be separate mouseover targets, but their data is available
-    for (const child of featureLayout.children) {
-      const childFeature = child.feature
-      if (childFeature) {
-        const childStart = childFeature.get('start')
-        const childEnd = childFeature.get('end')
-
-        // Store nested child feature using addRect so CoreGetFeatureDetails can access it
-        // Don't pass label/description to prevent FloatingLabels from rendering subfeature labels
-        layout.addRect(
-          childFeature.id(),
-          childStart,
-          childEnd,
-          child.height,
-          childFeature,
-          {
-            refName: childFeature.get('refName'),
-          },
-        )
-
-        if (child.children.length > 0) {
-          addNestedSubfeaturesToLayout(layout, child, region, bpPerPx, config)
-        }
-      }
-    }
-  }
 
   // Create primary spatial index (for highlighting)
   const flatbush = new Flatbush(Math.max(items.length, 1))

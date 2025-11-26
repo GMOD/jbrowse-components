@@ -1,10 +1,14 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { calculateLayoutBounds } from '@jbrowse/core/util'
 
+import { createFeatureFloatingLabels } from './floatingLabels'
+import { createRenderConfigContext } from './renderConfig'
 import { layoutFeature } from './simpleLayout'
 
 import type { LayoutRecord } from './types'
-import type { Feature } from '@jbrowse/core/util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 const yPadding = 5
 
@@ -33,28 +37,27 @@ export function computeLayouts({
 }: {
   features: Map<string, Feature>
   bpPerPx: number
-  region: any
-  config: any
-  layout: any
+  region: Region
+  config: AnyConfigurationModel
+  layout: BaseLayout<unknown>
 }): LayoutRecord[] {
   const reversed = region.reversed || false
   const layoutRecords: LayoutRecord[] = []
 
   // Pre-read config values once to avoid repeated readConfObject calls in hot path
-  // This is a significant performance optimization for large feature sets
-  const displayMode = readConfObject(config, 'displayMode') as string
-  const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
-  const containerTypes = readConfObject(config, 'containerTypes') as string[]
-  const showLabels = readConfObject(config, 'showLabels') as boolean
-  const showDescriptions = readConfObject(config, 'showDescriptions') as boolean
-  const labelAllowed = displayMode !== 'collapsed'
-
-  // Note: fontHeight can be feature-dependent, so we read it once without feature context
-  // If it's a callback, layoutFeature will re-read it with feature context
-  const fontHeightConfig = config.labels?.fontSize
-  const fontHeight = fontHeightConfig?.isCallback
-    ? undefined
-    : (readConfObject(config, ['labels', 'fontSize']) as number)
+  // Reading config via readConfObject is expensive due to potential JEXL evaluation
+  const configContext = createRenderConfigContext(config)
+  const {
+    displayMode,
+    transcriptTypes,
+    containerTypes,
+    showLabels,
+    showDescriptions,
+    showSubfeatureLabels,
+    subfeatureLabelPosition,
+    fontHeight,
+    labelAllowed,
+  } = configContext
 
   for (const feature of features.values()) {
     // Create simple layout for feature and its subfeatures
@@ -68,6 +71,8 @@ export function computeLayouts({
       containerTypes,
       showLabels,
       showDescriptions,
+      showSubfeatureLabels,
+      subfeatureLabelPosition,
       fontHeight,
       labelAllowed,
     })
@@ -88,50 +93,14 @@ export function computeLayouts({
       readConfObject(config, ['labels', 'description'], { feature }) || '',
     )
 
-    // Calculate floating labels with relative Y positions (positive = below feature)
-    // Use pre-read showLabels, showDescriptions, fontHeight from top of function
-    // Only re-read fontHeight if it's a callback (feature-dependent)
-    const actualFontHeight =
-      fontHeight ??
-      (readConfObject(config, ['labels', 'fontSize'], {
-        feature,
-      }) as number)
-
-    const shouldShowLabel = /\S/.test(name) && showLabels
-    const shouldShowDescription = /\S/.test(description) && showDescriptions
-
-    const floatingLabels: {
-      text: string
-      relativeY: number
-      color: string
-    }[] = []
-
-    if (shouldShowLabel && shouldShowDescription) {
-      floatingLabels.push(
-        {
-          text: name,
-          relativeY: 0,
-          color: 'black',
-        },
-        {
-          text: description,
-          relativeY: actualFontHeight,
-          color: 'blue',
-        },
-      )
-    } else if (shouldShowLabel) {
-      floatingLabels.push({
-        text: name,
-        relativeY: 0,
-        color: 'black',
-      })
-    } else if (shouldShowDescription) {
-      floatingLabels.push({
-        text: description,
-        relativeY: 0,
-        color: 'blue',
-      })
-    }
+    // Create floating labels using the extracted helper
+    const floatingLabels = createFeatureFloatingLabels({
+      feature,
+      config,
+      configContext,
+      nameColor: 'black',
+      descriptionColor: 'blue',
+    })
 
     // Add rect to layout for collision detection
     // COLLISION DETECTION STRATEGY:

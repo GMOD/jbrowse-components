@@ -53,6 +53,7 @@ export interface FloatingLabelData {
   text: string
   relativeY: number
   color: string
+  isOverlay?: boolean
 }
 
 export type LayoutRecord =
@@ -70,6 +71,7 @@ export type LayoutRecord =
         totalFeatureHeight?: number
         totalLayoutWidth?: number
         featureWidth?: number
+        actualTopPx?: number
       },
     ]
 
