@@ -7,7 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 import { makeTicks } from '../util'
 
 import type { LinearGenomeViewModel } from '..'
-import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
@@ -21,41 +21,19 @@ const useStyles = makeStyles()({
   },
   verticalGuidesContainer: {
     position: 'absolute',
+    display: 'flex',
     height: '100%',
     pointerEvents: 'none',
   },
 })
 
-function renderBlockSvgLines(
-  svg: SVGSVGElement,
-  block: ContentBlock,
+function createBlockElement(
+  block: BaseBlock,
   bpPerPx: number,
   majorColor: string,
   minorColor: string,
 ) {
-  console.log('renderBlockSvgLines')
-  const ticks = makeTicks(block.start, block.end, bpPerPx)
-  const fragment = document.createDocumentFragment()
-  for (const { type, base } of ticks) {
-    const x = (block.reversed ? block.end - base : base - block.start) / bpPerPx
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-    line.setAttribute('x1', String(x))
-    line.setAttribute('y1', '0')
-    line.setAttribute('x2', String(x))
-    line.setAttribute('y2', '100%')
-    line.setAttribute(
-      'stroke',
-      type === 'major' || type === 'labeledMajor' ? majorColor : minorColor,
-    )
-    line.setAttribute('stroke-width', '1')
-    fragment.append(line)
-  }
-  svg.replaceChildren(fragment)
-}
-
-function createBlockElement(block: BaseBlock): HTMLDivElement {
   const div = document.createElement('div')
-  console.log('createBlockElements')
   div.style.height = '100%'
   div.style.flexShrink = '0'
   div.style.position = 'relative'
@@ -69,8 +47,29 @@ function createBlockElement(block: BaseBlock): HTMLDivElement {
     svg.style.width = '100%'
     svg.style.height = '100%'
     svg.style.pointerEvents = 'none'
-    svg.setAttribute('data-block-key', block.key)
     div.appendChild(svg)
+
+    const ticks = makeTicks(block.start, block.end, bpPerPx)
+    const fragment = document.createDocumentFragment()
+    for (const { type, base } of ticks) {
+      const x =
+        (block.reversed ? block.end - base : base - block.start) / bpPerPx
+      const line = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'line',
+      )
+      line.setAttribute('x1', String(x))
+      line.setAttribute('y1', '0')
+      line.setAttribute('x2', String(x))
+      line.setAttribute('y2', '100%')
+      line.setAttribute(
+        'stroke',
+        type === 'major' || type === 'labeledMajor' ? majorColor : minorColor,
+      )
+      line.setAttribute('stroke-width', '1')
+      fragment.append(line)
+    }
+    svg.appendChild(fragment)
   }
 
   return div
@@ -128,27 +127,14 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
       }
 
       const fragment = document.createDocumentFragment()
-      const newKeys = new Set<string>()
 
       for (const block of staticBlocks) {
         const key = block.key
-        newKeys.add(key)
-
         let div = existingKeys.get(key)
         if (!div) {
-          div = createBlockElement(block)
+          div = createBlockElement(block, bpPerPx, majorColor, minorColor)
           div.dataset.blockKey = key
-        } else {
-          div.style.width = `${block.widthPx}px`
         }
-
-        if (block.type === 'ContentBlock') {
-          const svg = div.querySelector('svg')
-          if (svg) {
-            renderBlockSvgLines(svg, block, bpPerPx, majorColor, minorColor)
-          }
-        }
-
         fragment.appendChild(div)
       }
 
@@ -158,11 +144,7 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
 
   return (
     <div ref={containerRef} className={classes.verticalGuidesZoomContainer}>
-      <div
-        ref={innerRef}
-        className={classes.verticalGuidesContainer}
-        style={{ display: 'flex' }}
-      />
+      <div ref={innerRef} className={classes.verticalGuidesContainer} />
     </div>
   )
 }
