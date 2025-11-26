@@ -5,7 +5,8 @@ import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import { MAX_COLOR_RANGE, getId, cigarCodeToChar } from '../drawSynteny'
+import { cigarCodeToChar } from '../../cigarUtils'
+import { getId, MAX_COLOR_RANGE } from '../../colorUtils'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
 

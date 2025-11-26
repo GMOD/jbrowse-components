@@ -1,143 +1,29 @@
-import { category10 } from '@jbrowse/core/ui/colors'
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
 
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_X,
+} from '../cigarUtils'
+import {
+  applyAlpha,
+  colorSchemes,
+  getQueryColor,
+  makeColor,
+  MAX_COLOR_RANGE,
+} from '../colorUtils'
 import { draw, drawLocationMarkers, drawMatchSimple } from './components/util'
 
+import type { ColorScheme } from '../colorUtils'
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
-
-export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
-
-// Numeric CIGAR operation codes (matches BAM spec)
-export const CIGAR_M = 0
-export const CIGAR_I = 1
-export const CIGAR_D = 2
-export const CIGAR_N = 3
-export const CIGAR_S = 4
-export const CIGAR_H = 5
-export const CIGAR_P = 6
-export const CIGAR_EQ = 7
-export const CIGAR_X = 8
-
-const cigarCharToCode: Record<string, number> = {
-  M: CIGAR_M,
-  I: CIGAR_I,
-  D: CIGAR_D,
-  N: CIGAR_N,
-  S: CIGAR_S,
-  H: CIGAR_H,
-  P: CIGAR_P,
-  '=': CIGAR_EQ,
-  X: CIGAR_X,
-}
-
-export const cigarCodeToChar = ['M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X']
-
-// Parse string[] cigar (alternating len/op) into number[] with packed values
-// Each value is (len << 4) | op, matching BAM CIGAR encoding
-export function parseNumericCigar(cigar: string[]) {
-  const result: number[] = []
-  for (let i = 0; i < cigar.length; i += 2) {
-    const len = +cigar[i]! | 0
-    const op = cigarCharToCode[cigar[i + 1]!] ?? 0
-    result.push((len << 4) | op)
-  }
-  return result
-}
-
-// Extract length from packed CIGAR value
-export function cigarLen(packed: number) {
-  return packed >> 4
-}
-
-// Extract op from packed CIGAR value
-export function cigarOp(packed: number) {
-  return packed & 0xf
-}
-
-function makeColor(idx: number) {
-  const r = Math.floor(idx / (255 * 255)) % 255
-  const g = Math.floor(idx / 255) % 255
-  const b = idx % 255
-  return `rgb(${r},${g},${b})`
-}
-
-// Simple hash function to generate consistent colors for query names
-function hashString(str: string) {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash & hash // Convert to 32bit integer
-  }
-  return Math.abs(hash)
-}
-
-// Generate a color from a query name using the category10 color palette
-function getQueryColor(queryName: string) {
-  const hash = hashString(queryName)
-  return category10[hash % category10.length]!
-}
-// Default CIGAR operation colors indexed by numeric code
-// Index: M=0, I=1, D=2, N=3, S=4, H=5, P=6, ==7, X=8
-const defaultCigarColors = [
-  '#f003', // M
-  '#ff03', // I
-  '#00f3', // D
-  '#0a03', // N
-  '#f003', // S (unused)
-  '#f003', // H (unused)
-  '#f003', // P (unused)
-  '#f003', // =
-  'brown', // X
-]
-
-// Strand-specific CIGAR operation colors (purple deletion instead of blue)
-const strandCigarColors = [
-  '#f003', // M
-  '#ff03', // I
-  '#a020f0', // D - Purple for deletion
-  '#a020f0', // N - Purple for deletion
-  '#f003', // S (unused)
-  '#f003', // H (unused)
-  '#f003', // P (unused)
-  '#f003', // =
-  'brown', // X
-]
-
-// Color scheme configuration
-const colorSchemes = {
-  default: {
-    cigarColors: defaultCigarColors,
-  },
-  strand: {
-    posColor: 'red',
-    negColor: 'blue',
-    cigarColors: strandCigarColors,
-  },
-  query: {
-    cigarColors: defaultCigarColors,
-  },
-}
-
-type ColorScheme = keyof typeof colorSchemes
-
-function applyAlpha(color: string, alpha: number) {
-  // Skip colord processing if alpha is 1 (optimization)
-  if (alpha === 1) {
-    return color
-  }
-  return colord(color).alpha(alpha).toHex()
-}
 
 const lineLimit = 3
 
 const oobLimit = 1600
-
-export function getId(r: number, g: number, b: number, unitMultiplier: number) {
-  return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
-}
 
 export function drawCigarClickMap(
   model: LinearSyntenyDisplayModel,

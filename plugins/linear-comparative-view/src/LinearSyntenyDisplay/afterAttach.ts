@@ -4,11 +4,11 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
+import { parseNumericCigar } from '../cigarUtils'
 import {
   drawCigarClickMap,
   drawMouseoverClickMap,
   drawRef,
-  parseNumericCigar,
 } from './drawSynteny'
 
 import type { LinearSyntenyDisplayModel } from './model'
