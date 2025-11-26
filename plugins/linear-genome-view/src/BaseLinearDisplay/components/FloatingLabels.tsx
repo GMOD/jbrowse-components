@@ -6,7 +6,7 @@ import {
   getSession,
   measureText,
 } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -248,6 +248,14 @@ function FloatingLabels({
           if (element.style.lineHeight !== lineHeight) {
             element.style.lineHeight = lineHeight
           }
+
+          // Set initial transform (offset autorun will update x on scroll)
+          // Use untracked to avoid this autorun re-running on offsetPx changes
+          const offsetPx = untracked(() => view.offsetPx)
+          const naturalX = featureVisualLeftPx - offsetPx
+          const maxX = effectiveRightPx - offsetPx - labelWidth
+          const x = clamp(0, naturalX, maxX)
+          element.style.transform = `translate(${x}px, ${y}px)`
         }
       }
 
