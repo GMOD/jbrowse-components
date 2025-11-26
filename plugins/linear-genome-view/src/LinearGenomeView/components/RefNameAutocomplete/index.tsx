@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import BaseResult, {
@@ -38,18 +38,15 @@ interface MemoizedAutocompleteProps {
   open: boolean
   searchOptions: Option[] | undefined
   inputRef: RefObject<HTMLInputElement | null>
-  inputValue: string
-  value: string
   TextFieldProps: TFP
   onOpen: () => void
   onClose: () => void
   onSelect: ((region: BaseResult) => void) | undefined
   onChange: ((val: string) => void) | undefined
   setCurrentSearch: (val: string) => void
-  setInputValue: (val: string) => void
 }
 
-const MemoizedAutocomplete = function MemoizedAutocomplete({
+const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
   assembly,
   assemblyName,
   style,
@@ -57,15 +54,12 @@ const MemoizedAutocomplete = function MemoizedAutocomplete({
   open,
   searchOptions,
   inputRef,
-  inputValue,
-  value,
   TextFieldProps,
   onOpen,
   onClose,
   onSelect,
   onChange,
   setCurrentSearch,
-  setInputValue,
 }: MemoizedAutocompleteProps) {
   const regions = assembly?.regions
   const regionOptions = useMemo(
@@ -103,10 +97,9 @@ const MemoizedAutocomplete = function MemoizedAutocomplete({
 
   const handleInputChange = useCallback(
     (_event: unknown, newInputValue: string) => {
-      setInputValue(newInputValue)
       onChange?.(newInputValue)
     },
-    [onChange, setInputValue],
+    [onChange],
   )
 
   const renderInput = useCallback(
@@ -134,8 +127,6 @@ const MemoizedAutocomplete = function MemoizedAutocomplete({
       loading={!loaded}
       loadingText="loading results"
       open={open}
-      value={value}
-      inputValue={inputValue}
       onOpen={onOpen}
       onClose={onClose}
       onChange={handleChange}
@@ -147,7 +138,7 @@ const MemoizedAutocomplete = function MemoizedAutocomplete({
       getOptionLabel={getOptionLabel}
     />
   )
-}
+})
 
 const RefNameAutocomplete = observer(function ({
   model,
@@ -182,7 +173,6 @@ const RefNameAutocomplete = observer(function ({
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
   const inputRef = useRef<HTMLInputElement>(null)
-  const [inputValue, setInputValue] = useState('')
 
   useEffect(() => {
     const isCurrent = { cancelled: false }
@@ -217,13 +207,14 @@ const RefNameAutocomplete = observer(function ({
   }, [assemblyName, fetchResults, debouncedSearch, session])
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
-  const debouncedInputBoxVal = useDebounce(inputBoxVal, 300)
 
-  // Sync inputValue with coarseVisibleLocStrings, debounced to avoid
-  // re-render cascade during rapid scrolling
+  // Imperatively update input value without re-rendering the Autocomplete
+  // Only update when input is not focused to avoid interfering with user typing
   useEffect(() => {
-    setInputValue(debouncedInputBoxVal)
-  }, [debouncedInputBoxVal])
+    if (inputRef.current && document.activeElement !== inputRef.current) {
+      inputRef.current.value = inputBoxVal
+    }
+  }, [inputBoxVal])
 
   const handleOpen = useCallback(() => {
     setOpen(true)
@@ -256,15 +247,12 @@ const RefNameAutocomplete = observer(function ({
         open={open}
         searchOptions={searchOptions}
         inputRef={inputRef}
-        inputValue={inputValue}
-        value={inputBoxVal}
         TextFieldProps={TextFieldProps}
         onOpen={handleOpen}
         onClose={handleClose}
         onSelect={onSelect}
         onChange={onChange}
         setCurrentSearch={setCurrentSearch}
-        setInputValue={setInputValue}
       />
     </div>
   )
