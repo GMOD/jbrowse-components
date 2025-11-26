@@ -18,9 +18,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import { StringParam, useQueryParam } from 'use-query-params'
 
 import { shareSessionToDynamo } from '../sessionSharing'
+import { setQueryParams } from '../useQueryParam'
 import { toUrlSafeB64 } from '../util'
 import ShareDialogLinkField from './ShareDialogLinkField'
 
@@ -42,8 +42,6 @@ const ShareDialog = observer(function ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
-  const [, setPassword] = useQueryParam('password', StringParam)
-  const [, setSession] = useQueryParam('session', StringParam)
 
   const url = session.shareURL
   const currentSetting =
@@ -132,8 +130,10 @@ const ShareDialog = observer(function ({
             disabled={disabled}
             onClick={event => {
               event.preventDefault()
-              setPassword(passwordParam, 'replaceIn')
-              setSession(sessionParam, 'replaceIn')
+              setQueryParams({
+                password: passwordParam,
+                session: sessionParam,
+              })
               alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
             }}
           >

@@ -67,8 +67,7 @@
     "resolve": "^1.20.0",
     "rxjs": "^7.0.0",
     "semver": "^7.3.5",
-    "tss-react": "^4.4.1",
-    "use-query-params": "^2.0.0"
+    "tss-react": "^4.4.1"
   },
   "browserslist": {
     "production": [

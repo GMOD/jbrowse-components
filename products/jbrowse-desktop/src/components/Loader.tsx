@@ -5,9 +5,9 @@ import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
-import { StringParam, useQueryParam } from 'use-query-params'
 
 import JBrowse from './JBrowse'
+import { useQueryParam } from '../useQueryParam'
 import StartScreen from './StartScreen/StartScreen'
 import { loadPluginManager } from './StartScreen/util'
 
@@ -15,7 +15,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 const Loader = observer(() => {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
-  const [config, setConfig] = useQueryParam('config', StringParam)
+  const [config, setConfig] = useQueryParam('config')
   const [error, setError] = useState<unknown>()
 
   const handleSetPluginManager = useCallback(
