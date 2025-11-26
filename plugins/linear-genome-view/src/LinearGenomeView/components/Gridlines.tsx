@@ -1,18 +1,13 @@
 import { useEffect, useRef } from 'react'
 
 import { useTheme } from '@mui/material'
-import { observer } from 'mobx-react'
+import { autorun } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
 
-import {
-  ContentBlock as ContentBlockComponent,
-  ElidedBlock as ElidedBlockComponent,
-  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
-} from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
 
 import type { LinearGenomeViewModel } from '..'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
@@ -26,47 +21,39 @@ const useStyles = makeStyles()({
   },
   verticalGuidesContainer: {
     position: 'absolute',
-    height: '100%',
-    pointerEvents: 'none',
     display: 'flex',
-  },
-  svgOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
     height: '100%',
     pointerEvents: 'none',
-    // Reduce layout shift by containing layout/paint changes
-    contain: 'layout style paint',
   },
 })
 
-function RenderedBlockLines({
-  block,
-  bpPerPx,
-  majorColor,
-  minorColor,
-}: {
-  block: ContentBlock
-  bpPerPx: number
-  majorColor: string
-  minorColor: string
-}) {
-  const { classes } = useStyles()
-  const svgRef = useRef<SVGSVGElement>(null)
+function createBlockElement(
+  block: BaseBlock,
+  bpPerPx: number,
+  colors: {
+    major: string
+    minor: string
+    interRegionPadding: string
+    boundaryPadding: string
+  },
+) {
+  const div = document.createElement('div')
+  div.style.height = '100%'
+  div.style.flexShrink = '0'
+  div.style.position = 'relative'
+  div.style.width = `${block.widthPx}px`
 
-  // Update SVG lines directly using appendChild when dependencies change
-  // Proper useEffect dependency array ensures MobX synchronization
-  useEffect(() => {
-    const svg = svgRef.current
-    if (!svg) {
-      return
-    }
+  if (block.type === 'ContentBlock') {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.style.position = 'absolute'
+    svg.style.top = '0'
+    svg.style.left = '0'
+    svg.style.width = '100%'
+    svg.style.height = '100%'
+    svg.style.pointerEvents = 'none'
+    div.append(svg)
 
     const ticks = makeTicks(block.start, block.end, bpPerPx)
-
-    // Create lines directly in SVG using appendChild
     const fragment = document.createDocumentFragment()
     for (const { type, base } of ticks) {
       const x =
@@ -81,83 +68,100 @@ function RenderedBlockLines({
       line.setAttribute('y2', '100%')
       line.setAttribute(
         'stroke',
-        type === 'major' || type === 'labeledMajor' ? majorColor : minorColor,
+        type === 'major' || type === 'labeledMajor'
+          ? colors.major
+          : colors.minor,
       )
       line.setAttribute('stroke-width', '1')
       fragment.append(line)
     }
-    // Use replaceChildren for atomic update - reduces layout shift vs innerHTML='' + append
-    svg.replaceChildren(fragment)
-  }, [block.start, block.end, block.reversed, bpPerPx, majorColor, minorColor])
+    svg.append(fragment)
+  } else if (block.type === 'ElidedBlock') {
+    div.style.backgroundColor = '#999'
+    div.style.backgroundImage =
+      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)'
+  } else if (block.type === 'InterRegionPaddingBlock') {
+    div.style.backgroundColor =
+      block.variant === 'boundary'
+        ? colors.boundaryPadding
+        : colors.interRegionPadding
+  }
+
+  return div
+}
+function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
+  const { classes } = useStyles()
+  const theme = useTheme()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    return autorun(() => {
+      const { scaleFactor } = model
+      const container = containerRef.current
+      if (container) {
+        container.style.transform =
+          scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
+      }
+    })
+  }, [model])
+
+  useEffect(() => {
+    return autorun(() => {
+      const { staticBlocks, offsetPx } = model
+      const inner = innerRef.current
+      if (inner) {
+        const offsetLeft = staticBlocks.offsetPx - offsetPx
+        inner.style.transform = `translateX(${offsetLeft - offset}px)`
+        inner.style.width = `${staticBlocks.totalWidthPx}px`
+      }
+    })
+  }, [model, offset])
+
+  useEffect(() => {
+    const colors = {
+      major: theme.palette.action.disabled,
+      minor: theme.palette.divider,
+      interRegionPadding: theme.palette.text.disabled,
+      boundaryPadding: theme.palette.action.disabledBackground,
+    }
+
+    return autorun(() => {
+      const { staticBlocks, bpPerPx } = model
+      const inner = innerRef.current
+      if (!inner) {
+        return
+      }
+
+      const existingKeys = new Map<string, HTMLDivElement>()
+      for (const child of inner.children) {
+        const key = (child as HTMLElement).dataset.blockKey
+        if (key) {
+          existingKeys.set(key, child as HTMLDivElement)
+        }
+      }
+
+      const fragment = document.createDocumentFragment()
+
+      for (const block of staticBlocks) {
+        const key = block.key
+        let div = existingKeys.get(key)
+        if (!div) {
+          div = createBlockElement(block, bpPerPx, colors)
+          div.dataset.blockKey = key
+        }
+        fragment.append(div)
+      }
+
+      inner.replaceChildren(fragment)
+    })
+  }, [model, theme])
 
   return (
-    <ContentBlockComponent block={block}>
-      <svg ref={svgRef} className={classes.svgOverlay} />
-    </ContentBlockComponent>
-  )
-}
-const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
-  const { staticBlocks, bpPerPx } = model
-  const theme = useTheme()
-  return (
-    <>
-      {staticBlocks.map((block, index) => {
-        const k = `${block.key}-${index}`
-        if (block.type === 'ContentBlock') {
-          return (
-            <RenderedBlockLines
-              key={k}
-              block={block}
-              bpPerPx={bpPerPx}
-              majorColor={theme.palette.action.disabled}
-              minorColor={theme.palette.divider}
-            />
-          )
-        } else if (block.type === 'ElidedBlock') {
-          return <ElidedBlockComponent key={k} width={block.widthPx} />
-        } else if (block.type === 'InterRegionPaddingBlock') {
-          return (
-            <InterRegionPaddingBlockComponent
-              key={k}
-              width={block.widthPx}
-              boundary={block.variant === 'boundary'}
-            />
-          )
-        }
-        return null
-      })}
-    </>
-  )
-})
-const Gridlines = observer(function ({
-  model,
-  offset = 0,
-}: {
-  model: LGV
-  offset?: number
-}) {
-  const { classes } = useStyles()
-  // find the block that needs pinning to the left side for context
-  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
-  return (
-    <div
-      className={classes.verticalGuidesZoomContainer}
-      style={{
-        transform:
-          model.scaleFactor !== 1 ? `scaleX(${model.scaleFactor})` : undefined,
-      }}
-    >
-      <div
-        className={classes.verticalGuidesContainer}
-        style={{
-          left: offsetLeft - offset,
-          width: model.staticBlocks.totalWidthPx,
-        }}
-      >
-        <RenderedVerticalGuides model={model} />
-      </div>
+    <div ref={containerRef} className={classes.verticalGuidesZoomContainer}>
+      <div ref={innerRef} className={classes.verticalGuidesContainer} />
     </div>
   )
-})
+}
 
 export default Gridlines

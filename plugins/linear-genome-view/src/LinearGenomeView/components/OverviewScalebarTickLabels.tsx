@@ -51,7 +51,6 @@ const OverviewScalebarTickLabels = observer(function ({
       variant="body2"
       style={{
         left: ((labelIdx + 1) * majorPitch) / scale,
-        pointerEvents: 'none',
         color: refNameColor,
       }}
     >
