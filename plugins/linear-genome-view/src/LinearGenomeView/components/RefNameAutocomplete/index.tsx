@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import type { RefObject } from 'react'
 
 import BaseResult, {
   RefSequenceResult,
@@ -22,7 +23,6 @@ import type { Option } from './util'
 import type { LinearGenomeViewModel } from '../../model'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { TextFieldProps as TFP } from '@mui/material'
-import type { RefObject } from 'react'
 
 const emptyObj = {} as const
 
@@ -135,7 +135,13 @@ const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
       onOpen={onOpen}
       onClose={onClose}
       onChange={handleChange}
-      onInputChange={onChange ? (_e, val) => onChange(val) : undefined}
+      onInputChange={
+        onChange
+          ? (_e, val) => {
+              onChange(val)
+            }
+          : undefined
+      }
       options={searchOptions?.length ? searchOptions : regionOptions}
       getOptionDisabled={getOptionDisabled}
       filterOptions={filterOptions}
