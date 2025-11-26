@@ -17,7 +17,7 @@
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "test-ci": "NODE_OPTIONS='--max-old-space-size=7000' jest --ci --coverage",
+    "test-ci": "NODE_OPTIONS='--max-old-space-size=7000' jest --ci",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
     "configdocs": "rm -rf website/docs/config && mkdir website/docs/config && node --experimental-strip-types docs/generateConfigDocs.ts",
