@@ -40,7 +40,7 @@
     "@gmod/bgzf-filehandle": "^4.0.0",
     "@gmod/hclust": "^1.0.7",
     "@gmod/tabix": "^3.0.1",
-    "@gmod/vcf": "^6.0.8",
+    "@gmod/vcf": "^6.1.0",
     "@jbrowse/core": "^3.7.0",
     "@jbrowse/plugin-circular-view": "^3.7.0",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",
