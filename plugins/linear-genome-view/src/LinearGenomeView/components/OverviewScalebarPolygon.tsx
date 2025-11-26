@@ -1,13 +1,15 @@
+import { useEffect, useRef } from 'react'
+
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
-import { observer } from 'mobx-react'
+import { autorun } from 'mobx'
 
 import { HEADER_BAR_HEIGHT } from '../consts'
 
 import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
-const OverviewScalebarPolygon = observer(function ({
+function OverviewScalebarPolygon({
   model,
   overview,
   useOffset = true,
@@ -17,53 +19,62 @@ const OverviewScalebarPolygon = observer(function ({
   useOffset?: boolean
 }) {
   const theme = useTheme()
-  const multiplier = Number(useOffset)
-  const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
-    model
-  const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+  const polygonRef = useRef<SVGPolygonElement>(null)
   const polygonColor = theme.palette.tertiary.light
+  const multiplier = Number(useOffset)
 
-  // catches possible null from at's below
-  if (!contentBlocks.length) {
-    return null
-  }
-  const first = contentBlocks.at(0)!
-  const last = contentBlocks.at(-1)!
-  const topLeft =
-    (overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...first,
-      coord: first.reversed ? first.end : first.start,
-    }) || 0) +
-    cytobandOffset * multiplier
-  const topRight =
-    (overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...last,
-      coord: last.reversed ? last.start : last.end,
-    }) || 0) +
-    cytobandOffset * multiplier
+  useEffect(() => {
+    return autorun(() => {
+      const {
+        interRegionPaddingWidth,
+        offsetPx,
+        dynamicBlocks,
+        cytobandOffset,
+      } = model
+      const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+      const polygon = polygonRef.current
+      if (!polygon || !contentBlocks.length) {
+        return
+      }
 
-  const startPx = Math.max(0, -offsetPx)
-  const endPx =
-    startPx +
-    totalWidthPxWithoutBorders +
-    (contentBlocks.length * interRegionPaddingWidth) / 2
+      const first = contentBlocks.at(0)!
+      const last = contentBlocks.at(-1)!
+      const topLeft =
+        (overview.bpToPx({
+          ...first,
+          coord: first.reversed ? first.end : first.start,
+        }) || 0) +
+        cytobandOffset * multiplier
+      const topRight =
+        (overview.bpToPx({
+          ...last,
+          coord: last.reversed ? last.start : last.end,
+        }) || 0) +
+        cytobandOffset * multiplier
 
-  const points = [
-    [startPx, HEADER_BAR_HEIGHT],
-    [endPx, HEADER_BAR_HEIGHT],
-    [topRight, 0],
-    [topLeft, 0],
-  ]
+      const startPx = Math.max(0, -offsetPx)
+      const endPx =
+        startPx +
+        totalWidthPxWithoutBorders +
+        (contentBlocks.length * interRegionPaddingWidth) / 2
+
+      const points = [
+        [startPx, HEADER_BAR_HEIGHT],
+        [endPx, HEADER_BAR_HEIGHT],
+        [topRight, 0],
+        [topLeft, 0],
+      ]
+      polygon.setAttribute('points', points.toString())
+    })
+  }, [model, overview, multiplier])
 
   return (
     <polygon
-      points={points.toString()}
+      ref={polygonRef}
       {...getFillProps(alpha(polygonColor, 0.3))}
       {...getStrokeProps(alpha(polygonColor, 0.8))}
     />
   )
-})
+}
 
 export default OverviewScalebarPolygon

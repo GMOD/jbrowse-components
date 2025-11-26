@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 // core
 import { getEnv, getSession } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { Typography, alpha, useTheme } from '@mui/material'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -139,6 +140,54 @@ const OverviewBox = observer(function ({
   )
 })
 
+function VisibleRegionBox({
+  model,
+  overview,
+  className,
+}: {
+  model: LGV
+  overview: Base1DViewModel
+  className: string
+}) {
+  const theme = useTheme()
+  const boxRef = useRef<HTMLDivElement>(null)
+  const scalebarColor = theme.palette.tertiary.light
+
+  useEffect(() => {
+    return autorun(() => {
+      const { dynamicBlocks, showCytobands, cytobandOffset } = model
+      const visibleRegions = dynamicBlocks.contentBlocks
+      const box = boxRef.current
+      if (!box || !visibleRegions.length) {
+        return
+      }
+
+      const first = visibleRegions.at(0)!
+      const last = visibleRegions.at(-1)!
+      const firstOverviewPx =
+        overview.bpToPx({
+          ...first,
+          coord: first.reversed ? first.end : first.start,
+        }) || 0
+      const lastOverviewPx =
+        overview.bpToPx({
+          ...last,
+          coord: last.reversed ? last.start : last.end,
+        }) || 0
+
+      const color = showCytobands ? '#f00' : scalebarColor
+      const transparency = showCytobands ? 0.1 : 0.3
+
+      box.style.width = `${lastOverviewPx - firstOverviewPx}px`
+      box.style.left = `${firstOverviewPx + cytobandOffset}px`
+      box.style.background = alpha(color, transparency)
+      box.style.borderColor = color
+    })
+  }, [model, overview, scalebarColor])
+
+  return <div ref={boxRef} className={className} />
+}
+
 const Scalebar = observer(function ({
   model,
   scale,
@@ -149,36 +198,8 @@ const Scalebar = observer(function ({
   scale: number
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
-  const { dynamicBlocks, showCytobands, cytobandOffset } = model
   const { pluginManager } = getEnv(model)
-  const visibleRegions = dynamicBlocks.contentBlocks
   const overviewVisibleRegions = overview.dynamicBlocks
-  const scalebarColor = theme.palette.tertiary.light
-  // catches possible null from at's below
-  if (!visibleRegions.length) {
-    return null
-  }
-
-  const first = visibleRegions.at(0)!
-  const last = visibleRegions.at(-1)!
-
-  const firstOverviewPx =
-    overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...first,
-      coord: first.reversed ? first.end : first.start,
-    }) || 0
-
-  const lastOverviewPx =
-    overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...last,
-      coord: last.reversed ? last.start : last.end,
-    }) || 0
-
-  const color = showCytobands ? '#f00' : scalebarColor
-  const transparency = showCytobands ? 0.1 : 0.3
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-OverviewScalebarComponent',
@@ -188,14 +209,10 @@ const Scalebar = observer(function ({
 
   return (
     <div className={classes.scalebar}>
-      <div
+      <VisibleRegionBox
+        model={model}
+        overview={overview}
         className={classes.scalebarVisibleRegion}
-        style={{
-          width: lastOverviewPx - firstOverviewPx,
-          left: firstOverviewPx + cytobandOffset,
-          background: alpha(color, transparency),
-          borderColor: color,
-        }}
       />
       {/* this is the entire scale bar */}
       {overviewVisibleRegions.map((block, idx) => {

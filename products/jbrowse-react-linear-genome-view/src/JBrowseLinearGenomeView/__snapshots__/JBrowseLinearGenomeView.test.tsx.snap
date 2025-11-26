@@ -166,11 +166,9 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     height="48"
                   >
                     <polygon
-                      fill="#42777f"
-                      fill-opacity="0.3"
+                      fill="rgba(66, 119, 127, 0.3)"
                       points="0,48,809.0000000000001,48,272,0,0,0"
-                      stroke="#42777f"
-                      stroke-opacity="0.8"
+                      stroke="rgba(66, 119, 127, 0.8)"
                     />
                   </svg>
                   <div
@@ -436,19 +434,19 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 class="css-n6mj5o-verticalGuidesZoomContainer"
               >
                 <div
-                  class="css-14511yq-verticalGuidesContainer"
-                  style="left: -800px; width: 2400px;"
+                  class="css-19dulcv-verticalGuidesContainer"
+                  style="transform: translateX(-800px); width: 2400px;"
                 >
                   <div
-                    class="css-a9ifge-boundaryPaddingBlock"
-                    style="width: 800px;"
+                    data-block-key="{volvox}ctgA:1..40-0-beforeFirstRegion"
+                    style="height: 100%; flex-shrink: 0; position: relative; width: 800px; background-color: rgba(0, 0, 0, 0.12);"
                   />
                   <div
-                    class="css-1dmfa10-contentBlock"
-                    style="width: 800px;"
+                    data-block-key="{volvox}ctgA:1..40-0"
+                    style="height: 100%; flex-shrink: 0; position: relative; width: 800px;"
                   >
                     <svg
-                      class="css-6m1lch-svgOverlay"
+                      style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
                     >
                       <line
                         stroke="rgba(0, 0, 0, 0.26)"
@@ -797,11 +795,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </svg>
                   </div>
                   <div
-                    class="css-1dmfa10-contentBlock"
-                    style="width: 800px;"
+                    data-block-key="{volvox}ctgA:41..80-0"
+                    style="height: 100%; flex-shrink: 0; position: relative; width: 800px;"
                   >
                     <svg
-                      class="css-6m1lch-svgOverlay"
+                      style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
                     >
                       <line
                         stroke="rgba(0, 0, 0, 0.26)"
@@ -1165,19 +1163,19 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     class="css-n6mj5o-verticalGuidesZoomContainer"
                   >
                     <div
-                      class="css-14511yq-verticalGuidesContainer"
-                      style="left: -801px; width: 2400px;"
+                      class="css-19dulcv-verticalGuidesContainer"
+                      style="transform: translateX(-801px); width: 2400px;"
                     >
                       <div
-                        class="css-a9ifge-boundaryPaddingBlock"
-                        style="width: 800px;"
+                        data-block-key="{volvox}ctgA:1..40-0-beforeFirstRegion"
+                        style="height: 100%; flex-shrink: 0; position: relative; width: 800px; background-color: rgba(0, 0, 0, 0.12);"
                       />
                       <div
-                        class="css-1dmfa10-contentBlock"
-                        style="width: 800px;"
+                        data-block-key="{volvox}ctgA:1..40-0"
+                        style="height: 100%; flex-shrink: 0; position: relative; width: 800px;"
                       >
                         <svg
-                          class="css-6m1lch-svgOverlay"
+                          style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
                         >
                           <line
                             stroke="rgba(0, 0, 0, 0.26)"
@@ -1526,11 +1524,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         </svg>
                       </div>
                       <div
-                        class="css-1dmfa10-contentBlock"
-                        style="width: 800px;"
+                        data-block-key="{volvox}ctgA:41..80-0"
+                        style="height: 100%; flex-shrink: 0; position: relative; width: 800px;"
                       >
                         <svg
-                          class="css-6m1lch-svgOverlay"
+                          style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
                         >
                           <line
                             stroke="rgba(0, 0, 0, 0.26)"
@@ -1885,110 +1883,133 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     <div
                       class="css-y3821b-scalebar"
-                      style="left: -801px; width: 2400px; height: 17px; box-sizing: border-box;"
+                      style="transform: translateX(-801px); width: 2400px;"
                     >
                       <div
-                        class="css-a9ifge-boundaryPaddingBlock"
-                        style="background: none; width: 800px;"
-                      />
-                      <div
-                        style="width: 800px; position: relative; min-height: 100%; contain: layout style paint;"
+                        style="display: flex;"
                       >
                         <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
+                          data-block-key="{volvox}ctgA:1..40-0-beforeFirstRegion"
+                          style="width: 800px; position: relative; flex-shrink: 0; overflow: hidden; height: 13px;"
+                        />
+                        <div
+                          data-block-key="{volvox}ctgA:1..40-0"
+                          style="width: 800px; position: relative; flex-shrink: 0; overflow: hidden; height: 13px;"
                         >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: -20px;"
                           >
-                            10
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              0
+                            </div>
+                          </div>
+                          <div
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
+                          >
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              10
+                            </div>
+                          </div>
+                          <div
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
+                          >
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              20
+                            </div>
+                          </div>
+                          <div
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
+                          >
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              30
+                            </div>
+                          </div>
+                          <div
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
+                          >
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              40
+                            </div>
                           </div>
                         </div>
                         <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
+                          data-block-key="{volvox}ctgA:41..80-0"
+                          style="width: 800px; position: relative; flex-shrink: 0; overflow: hidden; height: 13px;"
                         >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: -20px;"
                           >
-                            20
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              40
+                            </div>
                           </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
-                        >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
                           >
-                            30
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              50
+                            </div>
                           </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
-                        >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
                           >
-                            40
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              60
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <div
-                        style="width: 800px; position: relative; min-height: 100%; contain: layout style paint;"
-                      >
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: -20px;"
-                        >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
                           >
-                            40
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              70
+                            </div>
                           </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
-                        >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
                           >
-                            50
-                          </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
-                        >
-                          <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
-                          >
-                            60
-                          </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
-                        >
-                          <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
-                          >
-                            70
-                          </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
-                        >
-                          <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
-                          >
-                            80
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              80
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-4lhiy8-MuiTypography-root-refLabel"
-                    data-testid="refLabel-ctgA"
-                    style="left: -1px; padding-left: 1px;"
+                  <div
+                    style="position: absolute; transform: translateX(-800px);"
                   >
-                    ctgA
-                  </p>
+                    <span
+                      data-label-key="refLabel-{volvox}ctgA:1..40-0-1"
+                      data-testid="refLabel-ctgA"
+                      style="font-size: 11px; position: absolute; left: 799px; top: -1px; font-weight: bold; line-height: normal; z-index: 1; background: rgb(255, 255, 255); padding-left: 1px;"
+                    >
+                      ctgA
+                    </span>
+                    <span
+                      data-label-key="pinned-label"
+                      style="font-size: 11px; position: absolute; left: 0px; top: -1px; font-weight: bold; line-height: normal; z-index: 2; background: rgb(255, 255, 255); padding-left: 0px;"
+                    />
+                  </div>
                 </div>
               </div>
               <div
