@@ -93,10 +93,15 @@ export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
 }
 
 export function getSOAndDescByExamination(ref: string, alt: string) {
-  const bnd = parseBreakend(alt)
-  if (bnd) {
-    return ['breakend', alt]
-  } else if (ref.length === 1 && alt.length === 1) {
+  // Check for breakends early - they contain [ or ] and need special handling
+  if (alt.includes('[') || alt.includes(']')) {
+    const bnd = parseBreakend(alt)
+    if (bnd) {
+      return ['breakend', alt]
+    }
+  }
+  // Check simple/common patterns
+  if (ref.length === 1 && alt.length === 1) {
     // note: SNV is used instead of SNP because SO definition of SNP says
     // abundance must be at least 1% in population
     return ['SNV', makeDescriptionString('SNV', ref, alt)]
@@ -117,14 +122,16 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   } else if (ref.length === alt.length) {
     const lenRef = ref.length
     const lenAlt = alt.length
+    const refReversed = ref.split('').reverse().join('')
+    const isInversion = refReversed === alt
     if (lenRef > 5 || lenAlt > 5) {
       const lena = getBpDisplayStr(lenRef)
       const lenb = getBpDisplayStr(lenAlt)
-      return ref.split('').reverse().join('') === alt
-        ? ['inverson', makeDescriptionString('inv', lena, lenb)]
+      return isInversion
+        ? ['inversion', makeDescriptionString('inv', lena, lenb)]
         : ['substitution', makeDescriptionString('substitution', lena, lenb)]
     } else {
-      return ref.split('').reverse().join('') === alt
+      return isInversion
         ? ['inversion', makeDescriptionString('inv', ref, alt)]
         : ['substitution', makeDescriptionString('substitution', ref, alt)]
     }
@@ -139,7 +146,7 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
         ? `${lena} INS`
         : makeDescriptionString('insertion', len > 5 ? lena : ref, alt),
     ]
-  } else if (ref.length > alt.length) {
+  } else {
     const lenRef = ref.length
     const lenAlt = alt.length
     const lena = getBpDisplayStr(lenRef - lenAlt)
@@ -149,44 +156,35 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
         ? `${lena} DEL`
         : makeDescriptionString('deletion', ref, alt),
     ]
-  } else {
-    return ['indel', makeDescriptionString('indel', ref, alt)]
   }
 }
 
 export function getMinimalDesc(ref: string, alt: string) {
-  const bnd = parseBreakend(alt)
-  if (bnd) {
-    return alt
-  } else if (ref.length === 1 && alt.length === 1) {
-    // note: SNV is used instead of SNP because SO definition of SNP says
-    // abundance must be at least 1% in population
-    return alt
-  } else if (alt === '<INS>') {
-    return alt
-  } else if (alt === '<DEL>') {
-    return alt
-  } else if (alt === '<DUP>') {
-    return alt
-  } else if (alt === '<CNV>') {
-    return alt
-  } else if (alt === '<INV>') {
-    return alt
-  } else if (alt === '<TRA>') {
+  // Check for breakends early - they contain [ or ] and need special handling
+  if (alt.includes('[') || alt.includes(']')) {
+    const bnd = parseBreakend(alt)
+    if (bnd) {
+      return alt
+    }
+  }
+  // Check simple/common patterns
+  if (ref.length === 1 && alt.length === 1) {
     return alt
   } else if (alt.includes('<')) {
     return alt
   } else if (ref.length === alt.length) {
     const lenRef = ref.length
     const lenAlt = alt.length
+    const refReversed = ref.split('').reverse().join('')
+    const isInversion = refReversed === alt
     if (lenRef > 5 || lenAlt > 5) {
       const lena = getBpDisplayStr(lenRef)
       const lenb = getBpDisplayStr(lenAlt)
-      return ref.split('').reverse().join('') === alt
+      return isInversion
         ? makeDescriptionString('inv', lena, lenb)
         : makeDescriptionString('substitution', lena, lenb)
     } else {
-      return ref.split('').reverse().join('') === alt
+      return isInversion
         ? makeDescriptionString('inv', ref, alt)
         : makeDescriptionString('substitution', ref, alt)
     }
@@ -198,15 +196,13 @@ export function getMinimalDesc(ref: string, alt: string) {
     return lenRef > 5 || lenAlt > 5
       ? `${lena} INS`
       : makeDescriptionString('insertion', len > 5 ? lena : ref, alt)
-  } else if (ref.length > alt.length) {
+  } else {
     const lenRef = ref.length
     const lenAlt = alt.length
     const lena = getBpDisplayStr(lenRef - lenAlt)
     return lenRef > 5 || lenAlt > 5
       ? `${lena} DEL`
       : makeDescriptionString('deletion', ref, alt)
-  } else {
-    return makeDescriptionString('indel', ref, alt)
   }
 }
 
