@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import {
   clamp,
@@ -6,20 +6,11 @@ import {
   getSession,
   measureText,
 } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
+import { autorun } from 'mobx'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FloatingLabelData, LayoutRecord } from '../model'
-
-interface LabelItem {
-  key: string
-  text: string
-  x: number
-  y: number
-  color: string
-  isOverlay?: boolean
-}
 
 function calculateLabelWidth(text: string, fontSize: number) {
   return measureText(text, fontSize)
@@ -174,166 +165,139 @@ function deduplicateFeatureLabels(
   return featureLabels
 }
 
-const FloatingLabels = observer(function FloatingLabels({
+function FloatingLabels({
   model,
 }: {
   model: FeatureTrackModel
-}): React.ReactElement | null {
+}): React.ReactElement {
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)
-  const { offsetPx } = view
   const assemblyName = view.assemblyNames[0]
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
   const containerRef = useRef<HTMLDivElement>(null)
   const domElementsRef = useRef<Map<string, HTMLDivElement>>(new Map())
-  const { layoutFeatures } = model
 
-  // Memoize the processed label data to avoid recalculating positions
-  const labelData = useMemo(() => {
-    if (!assembly) {
-      return []
-    }
-
-    const fontSize = 11
-    const result: LabelItem[] = []
-
-    // First pass: de-duplicate features and get left-most positions
-    const featureLabels = deduplicateFeatureLabels(
-      layoutFeatures,
-      view,
-      assembly,
-    )
-
-    // Second pass: create label items from de-duplicated features
-    for (const [
-      key,
-      {
-        leftPx,
-        rightPx,
-        topPx,
-        totalFeatureHeight,
-        floatingLabels,
-        totalLayoutWidth,
-      },
-    ] of featureLabels.entries()) {
-      // Calculate the bottom of the visual feature (not including label space)
-      const featureVisualBottom = topPx + totalFeatureHeight
-
-      // Process each floating label
-      for (const [i, floatingLabel] of floatingLabels.entries()) {
-        const labelItem = floatingLabel
-        const { text, relativeY, color, isOverlay } = labelItem
-
-        // Calculate label width for this specific text
-        const labelWidth = calculateLabelWidth(text, fontSize)
-
-        // Only show labels that fit within the layout bounds
-        // Use totalLayoutWidth if available (includes label space), otherwise fall back to rect width
-        const layoutWidth = totalLayoutWidth ?? rightPx - leftPx
-        if (labelWidth > layoutWidth) {
-          continue
-        }
-
-        // leftPx is always the feature's visual left because:
-        // - When normal: layout extends right, so leftPx = feature's visual left
-        // - When reversed: layout extends left in genomic coords, which after
-        //   pixel conversion means leftPx = feature's visual left (featureEnd in genomic)
-        const featureVisualLeftPx = leftPx
-
-        // Calculate clamped horizontal position
-        // Use totalLayoutWidth if available to determine the right edge for clamping
-        const effectiveRightPx =
-          totalLayoutWidth !== undefined
-            ? featureVisualLeftPx + totalLayoutWidth
-            : rightPx
-        const x = calculateClampedLabelPosition(
-          featureVisualLeftPx,
-          effectiveRightPx,
-          offsetPx,
-          labelWidth,
-        )
-
-        // Convert relative Y to absolute Y
-        const y = featureVisualBottom + relativeY
-
-        result.push({
-          key: `${key}-${i}`,
-          text,
-          x,
-          y,
-          color,
-          isOverlay,
-        })
-      }
-    }
-
-    return result
-  }, [layoutFeatures, view, assembly, offsetPx])
-
-  // Render labels with minimal DOM manipulation
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) {
+    if (!assembly) {
       return
     }
 
-    const domElements = domElementsRef.current
-    const newKeys = new Set<string>()
-
-    for (const { key, text, x, y, color, isOverlay } of labelData) {
-      newKeys.add(key)
-      let element = domElements.get(key)
-
-      if (!element) {
-        element = document.createElement('div')
-        element.style.position = 'absolute'
-        element.style.fontSize = '11px'
-        element.style.pointerEvents = 'none'
-        element.style.willChange = 'transform'
-        container.append(element)
-        domElements.set(key, element)
+    return autorun(() => {
+      const container = containerRef.current
+      if (!container) {
+        return
       }
 
-      if (element.textContent !== text) {
-        element.textContent = text
-      }
-      if (element.style.color !== color) {
-        element.style.color = color
-      }
-      // Add semi-transparent background for overlay labels to improve readability
-      const bgColor = isOverlay ? 'rgba(255, 255, 255, 0.8)' : ''
-      if (element.style.backgroundColor !== bgColor) {
-        element.style.backgroundColor = bgColor
-      }
-      const lineHeight = isOverlay ? '1' : ''
-      if (element.style.lineHeight !== lineHeight) {
-        element.style.lineHeight = lineHeight
-      }
-      element.style.transform = `translate(${x}px, ${y}px)`
-    }
+      const { layoutFeatures } = model
+      const { offsetPx } = view
+      const fontSize = 11
+      const domElements = domElementsRef.current
+      const newKeys = new Set<string>()
 
-    // Remove elements that are no longer needed
-    for (const [key, element] of domElements.entries()) {
-      if (!newKeys.has(key)) {
-        if (element.parentNode === container) {
-          element.remove()
+      // First pass: de-duplicate features and get left-most positions
+      const featureLabels = deduplicateFeatureLabels(
+        layoutFeatures,
+        view,
+        assembly,
+      )
+
+      // Second pass: create label items and update DOM
+      for (const [
+        key,
+        {
+          leftPx,
+          rightPx,
+          topPx,
+          totalFeatureHeight,
+          floatingLabels,
+          totalLayoutWidth,
+        },
+      ] of featureLabels.entries()) {
+        // Calculate the bottom of the visual feature (not including label space)
+        const featureVisualBottom = topPx + totalFeatureHeight
+
+        // Process each floating label
+        for (const [i, floatingLabel] of floatingLabels.entries()) {
+          const { text, relativeY, color, isOverlay } = floatingLabel
+
+          // Calculate label width for this specific text
+          const labelWidth = calculateLabelWidth(text, fontSize)
+
+          // Only show labels that fit within the layout bounds
+          // Use totalLayoutWidth if available (includes label space), otherwise fall back to rect width
+          const layoutWidth = totalLayoutWidth ?? rightPx - leftPx
+          if (labelWidth > layoutWidth) {
+            continue
+          }
+
+          // leftPx is always the feature's visual left because:
+          // - When normal: layout extends right, so leftPx = feature's visual left
+          // - When reversed: layout extends left in genomic coords, which after
+          //   pixel conversion means leftPx = feature's visual left (featureEnd in genomic)
+          const featureVisualLeftPx = leftPx
+
+          // Calculate clamped horizontal position
+          // Use totalLayoutWidth if available to determine the right edge for clamping
+          const effectiveRightPx =
+            totalLayoutWidth !== undefined
+              ? featureVisualLeftPx + totalLayoutWidth
+              : rightPx
+          const x = calculateClampedLabelPosition(
+            featureVisualLeftPx,
+            effectiveRightPx,
+            offsetPx,
+            labelWidth,
+          )
+
+          // Convert relative Y to absolute Y
+          const y = featureVisualBottom + relativeY
+
+          const labelKey = `${key}-${i}`
+          newKeys.add(labelKey)
+
+          let element = domElements.get(labelKey)
+
+          if (!element) {
+            element = document.createElement('div')
+            element.style.position = 'absolute'
+            element.style.fontSize = '11px'
+            element.style.pointerEvents = 'none'
+            element.style.willChange = 'transform'
+            container.append(element)
+            domElements.set(labelKey, element)
+          }
+
+          if (element.textContent !== text) {
+            element.textContent = text
+          }
+          if (element.style.color !== color) {
+            element.style.color = color
+          }
+          // Add semi-transparent background for overlay labels to improve readability
+          const bgColor = isOverlay ? 'rgba(255, 255, 255, 0.8)' : ''
+          if (element.style.backgroundColor !== bgColor) {
+            element.style.backgroundColor = bgColor
+          }
+          const lineHeight = isOverlay ? '1' : ''
+          if (element.style.lineHeight !== lineHeight) {
+            element.style.lineHeight = lineHeight
+          }
+          element.style.transform = `translate(${x}px, ${y}px)`
         }
-        domElements.delete(key)
       }
-    }
 
-    return () => {
+      // Remove elements that are no longer needed
       for (const [key, element] of domElements.entries()) {
-        if (element.parentNode === container) {
+        if (!newKeys.has(key)) {
           element.remove()
+          domElements.delete(key)
         }
-        domElements.delete(key)
       }
-    }
-  }, [labelData])
+    })
+  }, [assembly, model, view])
 
-  return labelData.length > 0 ? (
+  return (
     <div
       ref={containerRef}
       style={{
@@ -345,7 +309,7 @@ const FloatingLabels = observer(function FloatingLabels({
         pointerEvents: 'none',
       }}
     />
-  ) : null
-})
+  )
+}
 
 export default FloatingLabels
