@@ -30,8 +30,12 @@ const useStyles = makeStyles()({
 function createBlockElement(
   block: BaseBlock,
   bpPerPx: number,
-  majorColor: string,
-  minorColor: string,
+  colors: {
+    major: string
+    minor: string
+    interRegionPadding: string
+    boundaryPadding: string
+  },
 ) {
   const div = document.createElement('div')
   div.style.height = '100%'
@@ -47,7 +51,7 @@ function createBlockElement(
     svg.style.width = '100%'
     svg.style.height = '100%'
     svg.style.pointerEvents = 'none'
-    div.appendChild(svg)
+    div.append(svg)
 
     const ticks = makeTicks(block.start, block.end, bpPerPx)
     const fragment = document.createDocumentFragment()
@@ -64,12 +68,23 @@ function createBlockElement(
       line.setAttribute('y2', '100%')
       line.setAttribute(
         'stroke',
-        type === 'major' || type === 'labeledMajor' ? majorColor : minorColor,
+        type === 'major' || type === 'labeledMajor'
+          ? colors.major
+          : colors.minor,
       )
       line.setAttribute('stroke-width', '1')
       fragment.append(line)
     }
-    svg.appendChild(fragment)
+    svg.append(fragment)
+  } else if (block.type === 'ElidedBlock') {
+    div.style.backgroundColor = '#999'
+    div.style.backgroundImage =
+      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)'
+  } else if (block.type === 'InterRegionPaddingBlock') {
+    div.style.backgroundColor =
+      block.variant === 'boundary'
+        ? colors.boundaryPadding
+        : colors.interRegionPadding
   }
 
   return div
@@ -77,14 +92,12 @@ function createBlockElement(
 function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
   const { classes } = useStyles()
   const theme = useTheme()
-  console.log('Gridlines')
   const containerRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     return autorun(() => {
       const { scaleFactor } = model
-      console.log('Gridlines autorun (scaleFactor)')
       const container = containerRef.current
       if (container) {
         container.style.transform =
@@ -96,7 +109,6 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
   useEffect(() => {
     return autorun(() => {
       const { staticBlocks, offsetPx } = model
-      console.log('Gridlines autorun (offsetPx)')
       const inner = innerRef.current
       if (inner) {
         const offsetLeft = staticBlocks.offsetPx - offsetPx
@@ -107,12 +119,15 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
   }, [model, offset])
 
   useEffect(() => {
-    const majorColor = theme.palette.action.disabled
-    const minorColor = theme.palette.divider
+    const colors = {
+      major: theme.palette.action.disabled,
+      minor: theme.palette.divider,
+      interRegionPadding: theme.palette.text.disabled,
+      boundaryPadding: theme.palette.action.disabledBackground,
+    }
 
     return autorun(() => {
       const { staticBlocks, bpPerPx } = model
-      console.log('Gridlines autorun (staticBlocks)')
       const inner = innerRef.current
       if (!inner) {
         return
@@ -132,10 +147,10 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
         const key = block.key
         let div = existingKeys.get(key)
         if (!div) {
-          div = createBlockElement(block, bpPerPx, majorColor, minorColor)
+          div = createBlockElement(block, bpPerPx, colors)
           div.dataset.blockKey = key
         }
-        fragment.appendChild(div)
+        fragment.append(div)
       }
 
       inner.replaceChildren(fragment)
