@@ -9,6 +9,7 @@ import {
   assembleLocString,
   clamp,
   findLast,
+  getBpDisplayStr,
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
@@ -1477,6 +1478,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         get coarseVisibleLocStrings() {
           return calculateVisibleLocStrings(self.coarseDynamicBlocks)
+        },
+
+        /**
+         * #getter
+         */
+        get coarseTotalBpDisplayStr() {
+          return getBpDisplayStr(self.coarseTotalBp)
         },
       }
     })
