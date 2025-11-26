@@ -19,10 +19,14 @@ export default function AutocompleteTextField({
   setCurrentSearch: (arg: string) => void
 }) {
   const { helperText, slotProps = {} } = TextFieldProps
+  // Remove value from inputProps to make input uncontrolled, allowing imperative updates
+  const { inputProps: { value: _value, ...inputProps } = {}, ...restParams } =
+    params
   return (
     <TextField
       inputRef={inputRef}
-      {...params}
+      {...restParams}
+      inputProps={inputProps}
       {...TextFieldProps}
       size="small"
       helperText={helperText}

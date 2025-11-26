@@ -1,5 +1,12 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { RefObject } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import BaseResult, {
   RefSequenceResult,
@@ -37,7 +44,7 @@ interface MemoizedAutocompleteProps {
   loaded: boolean
   open: boolean
   searchOptions: Option[] | undefined
-  inputRef: RefObject<HTMLInputElement | null>
+  inputRef: React.RefObject<HTMLInputElement | null>
   TextFieldProps: TFP
   onOpen: () => void
   onClose: () => void
@@ -92,7 +99,7 @@ const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
       }
       inputRef.current?.blur()
     },
-    [assemblyName, inputRef, onSelect],
+    [assemblyName, onSelect],
   )
 
   const handleInputChange = useCallback(
@@ -111,7 +118,7 @@ const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
         setCurrentSearch={setCurrentSearch}
       />
     ),
-    [inputRef, TextFieldProps, setCurrentSearch],
+    [TextFieldProps, setCurrentSearch],
   )
 
   return (
@@ -210,7 +217,8 @@ const RefNameAutocomplete = observer(function ({
 
   // Imperatively update input value without re-rendering the Autocomplete
   // Only update when input is not focused to avoid interfering with user typing
-  useEffect(() => {
+  // useLayoutEffect ensures value is set before browser paint
+  useLayoutEffect(() => {
     if (inputRef.current && document.activeElement !== inputRef.current) {
       inputRef.current.value = inputBoxVal
     }
