@@ -39,7 +39,6 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       tbiFilehandle:
         indexType !== 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
-      renameRefSeqs: (n: string) => n,
     })
 
     return {
@@ -106,6 +105,9 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           },
         ),
       )
+      // Convert to Set for O(1) lookup instead of O(n) array.includes()
+      const dontRedispatchSet = new Set(dontRedispatch)
+
       if (allowRedispatch && lines.length) {
         let minStart = Number.POSITIVE_INFINITY
         let maxEnd = Number.NEGATIVE_INFINITY
@@ -113,7 +115,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           const featureType = line.fields[2]!
           // only expand redispatch range if feature is not a "dontRedispatch"
           // type skips large regions like chromosome,region
-          if (!dontRedispatch.includes(featureType)) {
+          if (!dontRedispatchSet.has(featureType)) {
             const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
               minStart = start
@@ -138,35 +140,38 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      const gff3 = lines
-        .map(lineRecord => {
-          if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
-            if (!lineRecord.fields[8].includes('_lineHash')) {
-              lineRecord.fields[8] += `;_lineHash=${lineRecord.lineHash}`
-            }
-          } else {
-            lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
+      // Build GFF3 string efficiently - avoid += string concatenation in loop
+      const gff3Lines: string[] = []
+      for (const lineRecord of lines) {
+        const attrs = lineRecord.fields[8]
+        const lineHash = `_lineHash=${lineRecord.lineHash}`
+        if (attrs && attrs !== '.') {
+          if (!attrs.includes('_lineHash')) {
+            lineRecord.fields[8] = `${attrs};${lineHash}`
           }
-          return lineRecord.fields.join('\t')
-        })
-        .join('\n')
+        } else {
+          lineRecord.fields[8] = lineHash
+        }
+        gff3Lines.push(lineRecord.fields.join('\t'))
+      }
+      const gff3 = gff3Lines.join('\n')
 
       for (const featureLocs of parseStringSync(gff3)) {
         for (const featureLoc of featureLocs) {
+          // Check intersection before creating SimpleFeature to avoid unnecessary allocations
+          // GFF3 coordinates are 1-based, so subtract 1 from start for 0-based
+          const start = featureLoc.start! - 1
+          const end = featureLoc.end!
+          if (
+            !doesIntersect2(start, end, originalQuery.start, originalQuery.end)
+          ) {
+            continue
+          }
           const f = new SimpleFeature({
             data: featureData(featureLoc),
             id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
           })
-          if (
-            doesIntersect2(
-              f.get('start'),
-              f.get('end'),
-              originalQuery.start,
-              originalQuery.end,
-            )
-          ) {
-            observer.next(f)
-          }
+          observer.next(f)
         }
       }
       observer.complete()
