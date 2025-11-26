@@ -26,19 +26,6 @@ export type PluggableElementType =
   | TextSearchAdapterType
   | AddTrackWorkflowType
 
-export type PluggableElementMember =
-  | keyof AdapterType
-  | keyof ConnectionType
-  | keyof RendererType
-  | keyof WidgetType
-  | keyof TrackType
-  | keyof DisplayType
-  | keyof ViewType
-  | keyof RpcMethodType
-  | keyof InternetAccountType
-  | keyof TextSearchAdapterType
-  | keyof AddTrackWorkflowType
-
 export { default as AdapterType } from './AdapterType'
 export { default as RendererType } from './renderers/RendererType'
 export { default as ConnectionType } from './ConnectionType'

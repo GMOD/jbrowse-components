@@ -37,7 +37,7 @@ export function computeLayouts({
 }: {
   features: Map<string, Feature>
   bpPerPx: number
-  region: Region & { reversed?: boolean }
+  region: Region
   config: AnyConfigurationModel
   layout: BaseLayout<unknown>
 }): LayoutRecord[] {

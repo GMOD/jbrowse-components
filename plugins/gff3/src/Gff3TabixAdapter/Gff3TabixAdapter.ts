@@ -31,7 +31,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     const gffGzLocation = this.getConf('gffGzLocation')
     const indexType = this.getConf(['index', 'indexType'])
     const loc = this.getConf(['index', 'location'])
-    const dontRedispatch = this.getConf('dontRedispatch')
+    const dontRedispatch = this.getConf('dontRedispatch') as string[]
     const gff = new TabixIndexedFile({
       filehandle: openLocation(gffGzLocation, this.pluginManager),
       csiFilehandle:

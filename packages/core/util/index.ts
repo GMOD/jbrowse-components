@@ -135,7 +135,8 @@ export function findParentThat(
   if (!hasParent(node)) {
     throw new Error('node does not have parent')
   }
-  let currentNode: IAnyStateTreeNode | undefined = getParent<any>(node)
+  let currentNode = getParent<IAnyStateTreeNode>(node)
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (currentNode && isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode
@@ -174,7 +175,7 @@ export function springAnimate(
   let animationFrameId: number
 
   function update(animation: Animation) {
-    const time = Date.now()
+    const time = performance.now()
     let position = animation.lastPosition
     let lastTime = animation.lastTime || time
     let velocity = animation.lastVelocity || 0
@@ -233,8 +234,8 @@ export function springAnimate(
 export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
   predicate: T,
-): TypeTestedByPredicate<T> {
-  return findParentThat(node, predicate)
+) {
+  return findParentThat(node, predicate) as TypeTestedByPredicate<T>
 }
 
 /**
@@ -1091,6 +1092,7 @@ export function objectHash(obj: Record<string, any>) {
 interface VirtualOffset {
   blockPosition: number
 }
+
 interface Block {
   minv: VirtualOffset
   maxv: VirtualOffset
@@ -1110,13 +1112,13 @@ export async function bytesForRegions(
     regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
   )
 
-  return blockResults
-    .flat()
-    .map(block => ({
-      start: block.minv.blockPosition,
-      end: block.maxv.blockPosition + 65535,
-    }))
-    .reduce((a, b) => a + b.end - b.start, 0)
+  return sum(
+    blockResults
+      .flat()
+      .map(
+        block => block.maxv.blockPosition + 65535 - block.minv.blockPosition,
+      ),
+  )
 }
 
 export interface ViewSnap {
@@ -1135,7 +1137,7 @@ export interface ViewSnap {
   })[]
 }
 
-// supported adapter types by text indexer ensure that this matches the method
+// Supported adapter types by text indexer ensure that this matches the method
 // found in @jbrowse/text-indexing/util
 export function isSupportedIndexingAdapter(type = '') {
   return [
@@ -1520,15 +1522,18 @@ export function forEachWithStopTokenCheck<T>(
   stopToken: string | undefined,
   arg: (arg: T, idx: number) => void,
   durationMs = 400,
+  iters = 100,
 ) {
   let start = performance.now()
   let i = 0
   for (const t of iter) {
-    if (performance.now() - start > durationMs) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
     arg(t, i++)
+    if (iters % i === 0) {
+      if (performance.now() - start > durationMs) {
+        checkStopToken(stopToken)
+        start = performance.now()
+      }
+    }
   }
 }
 
