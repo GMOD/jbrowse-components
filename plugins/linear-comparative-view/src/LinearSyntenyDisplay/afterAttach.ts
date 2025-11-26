@@ -8,6 +8,7 @@ import {
   drawCigarClickMap,
   drawMouseoverClickMap,
   drawRef,
+  parseNumericCigar,
 } from './drawSynteny'
 
 import type { LinearSyntenyDisplayModel } from './model'
@@ -24,7 +25,7 @@ interface FeatPos {
   p21: Pos
   p22: Pos
   f: Feature
-  cigar: string[]
+  cigar: number[]
 }
 
 type LSV = LinearSyntenyViewModel
@@ -161,7 +162,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             p21,
             p22,
             f,
-            cigar: MismatchParser.parseCigar(cigar),
+            cigar: parseNumericCigar(MismatchParser.parseCigar(cigar)),
           })
         }
 

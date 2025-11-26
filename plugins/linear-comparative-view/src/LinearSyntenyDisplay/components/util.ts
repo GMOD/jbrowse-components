@@ -31,7 +31,7 @@ interface FeatPos {
   p21: Pos
   p22: Pos
   f: Feature
-  cigar: string[]
+  cigar: number[]
 }
 
 export function drawMatchSimple({

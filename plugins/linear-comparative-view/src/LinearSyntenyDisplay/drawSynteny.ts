@@ -9,6 +9,53 @@ import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 
+// Numeric CIGAR operation codes (matches BAM spec)
+export const CIGAR_M = 0
+export const CIGAR_I = 1
+export const CIGAR_D = 2
+export const CIGAR_N = 3
+export const CIGAR_S = 4
+export const CIGAR_H = 5
+export const CIGAR_P = 6
+export const CIGAR_EQ = 7
+export const CIGAR_X = 8
+
+const cigarCharToCode: Record<string, number> = {
+  M: CIGAR_M,
+  I: CIGAR_I,
+  D: CIGAR_D,
+  N: CIGAR_N,
+  S: CIGAR_S,
+  H: CIGAR_H,
+  P: CIGAR_P,
+  '=': CIGAR_EQ,
+  X: CIGAR_X,
+}
+
+export const cigarCodeToChar = ['M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X']
+
+// Parse string[] cigar (alternating len/op) into number[] with packed values
+// Each value is (len << 4) | op, matching BAM CIGAR encoding
+export function parseNumericCigar(cigar: string[]) {
+  const result: number[] = []
+  for (let i = 0; i < cigar.length; i += 2) {
+    const len = +cigar[i]! | 0
+    const op = cigarCharToCode[cigar[i + 1]!] ?? 0
+    result.push((len << 4) | op)
+  }
+  return result
+}
+
+// Extract length from packed CIGAR value
+export function cigarLen(packed: number) {
+  return packed >> 4
+}
+
+// Extract op from packed CIGAR value
+export function cigarOp(packed: number) {
+  return packed & 0xf
+}
+
 function makeColor(idx: number) {
   const r = Math.floor(idx / (255 * 255)) % 255
   const g = Math.floor(idx / 255) % 255
@@ -32,25 +79,32 @@ function getQueryColor(queryName: string) {
   const hash = hashString(queryName)
   return category10[hash % category10.length]!
 }
-// Default CIGAR operation colors
-const defaultCigarColors = {
-  I: '#ff03',
-  N: '#0a03',
-  D: '#00f3',
-  X: 'brown',
-  M: '#f003',
-  '=': '#f003',
-}
+// Default CIGAR operation colors indexed by numeric code
+// Index: M=0, I=1, D=2, N=3, S=4, H=5, P=6, ==7, X=8
+const defaultCigarColors = [
+  '#f003', // M
+  '#ff03', // I
+  '#00f3', // D
+  '#0a03', // N
+  '#f003', // S (unused)
+  '#f003', // H (unused)
+  '#f003', // P (unused)
+  '#f003', // =
+  'brown', // X
+]
 
 // Strand-specific CIGAR operation colors (purple deletion instead of blue)
-const strandCigarColors = {
-  I: '#ff03',
-  N: '#a020f0', // Purple for deletion
-  D: '#a020f0', // Purple for deletion
-  X: 'brown',
-  M: '#f003',
-  '=': '#f003',
-}
+const strandCigarColors = [
+  '#f003', // M
+  '#ff03', // I
+  '#a020f0', // D - Purple for deletion
+  '#a020f0', // N - Purple for deletion
+  '#f003', // S (unused)
+  '#f003', // H (unused)
+  '#f003', // P (unused)
+  '#f003', // =
+  'brown', // X
+]
 
 // Color scheme configuration
 const colorSchemes = {
@@ -138,9 +192,10 @@ export function drawCigarClickMap(
         let px2 = 0
         const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
 
-        for (let j = 0; j < cigar.length; j += 2) {
-          const len = +cigar[j]!
-          const op = cigar[j + 1] as keyof typeof defaultCigarColors
+        for (let j = 0; j < cigar.length; j++) {
+          const packed = cigar[j]!
+          const len = packed >> 4
+          const op = packed & 0xf
 
           if (!continuingFlag) {
             px1 = cx1
@@ -150,14 +205,12 @@ export function drawCigarClickMap(
           const d1 = len * bpPerPxInv0
           const d2 = len * bpPerPxInv1
 
-          if (op === 'M' || op === '=' || op === 'X') {
+          if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
             cx1 += d1 * rev1
             cx2 += d2 * rev2
-          } else if (op === 'D' || op === 'N') {
+          } else if (op === CIGAR_D || op === CIGAR_N) {
             cx1 += d1 * rev1
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          else if (op === 'I') {
+          } else if (op === CIGAR_I) {
             cx2 += d2 * rev2
           }
 
@@ -167,7 +220,7 @@ export function drawCigarClickMap(
               Math.min(px1, px2, cx1, cx2) > width
             )
           ) {
-            const isNotLast = j < cigar.length - 2
+            const isNotLast = j < cigar.length - 1
             if (
               Math.abs(cx1 - px1) <= 1 &&
               Math.abs(cx2 - px2) <= 1 &&
@@ -181,7 +234,7 @@ export function drawCigarClickMap(
               // Also skip very thin rectangles which tend to be glitchy
               const shouldDraw =
                 !drawCIGARMatchesOnly ||
-                ((op === 'M' || op === '=' || op === 'X') &&
+                ((op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) &&
                   Math.abs(cx1 - px1) > 1 &&
                   Math.abs(cx2 - px2) > 1)
 
@@ -246,14 +299,8 @@ export function drawRef(
   const negColor = colorBy === 'strand' ? colorSchemes.strand.negColor : 'blue'
 
   // Precalculate colors with alpha applied to avoid repeated calls
-  const colorMapWithAlpha = {
-    I: applyAlpha(activeColorMap.I, alpha),
-    N: applyAlpha(activeColorMap.N, alpha),
-    D: applyAlpha(activeColorMap.D, alpha),
-    X: applyAlpha(activeColorMap.X, alpha),
-    M: applyAlpha(activeColorMap.M, alpha),
-    '=': applyAlpha(activeColorMap['='], alpha),
-  }
+  // Indexed by numeric CIGAR op code
+  const colorMapWithAlpha = activeColorMap.map(color => applyAlpha(color, alpha))
 
   // Precalculate strand colors with alpha
   const posColorWithAlpha = applyAlpha(posColor, alpha)
@@ -283,8 +330,8 @@ export function drawRef(
   const useStrandColorThin = colorBy === 'strand'
   const useQueryColorThin = colorBy === 'query'
 
-  mainCanvas.fillStyle = colorMapWithAlpha.M
-  mainCanvas.strokeStyle = colorMapWithAlpha.M
+  mainCanvas.fillStyle = colorMapWithAlpha[CIGAR_M]!
+  mainCanvas.strokeStyle = colorMapWithAlpha[CIGAR_M]!
 
   // Group features by color to batch state changes
   const thinLinesByColor = new Map<
@@ -343,7 +390,7 @@ export function drawRef(
     } else if (colorKey !== 'default') {
       mainCanvas.strokeStyle = getQueryColorWithAlpha(colorKey)
     } else {
-      mainCanvas.strokeStyle = colorMapWithAlpha.M
+      mainCanvas.strokeStyle = colorMapWithAlpha[CIGAR_M]!
     }
 
     // Create single path for all lines with same color
@@ -372,8 +419,8 @@ export function drawRef(
   const useStrandColor = colorBy === 'strand'
   const useQueryColor = colorBy === 'query'
 
-  mainCanvas.fillStyle = colorMapWithAlpha.M
-  mainCanvas.strokeStyle = colorMapWithAlpha.M
+  mainCanvas.fillStyle = colorMapWithAlpha[CIGAR_M]!
+  mainCanvas.strokeStyle = colorMapWithAlpha[CIGAR_M]!
   for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
     // Cache feature properties at loop start
     const strand = f.get('strand')
@@ -421,9 +468,10 @@ export function drawRef(
         let px1 = 0
         let px2 = 0
 
-        for (let j = 0; j < cigar.length; j += 2) {
-          const len = +cigar[j]!
-          const op = cigar[j + 1] as keyof typeof defaultCigarColors
+        for (let j = 0; j < cigar.length; j++) {
+          const packed = cigar[j]!
+          const len = packed >> 4
+          const op = packed & 0xf
 
           if (!continuingFlag) {
             px1 = cx1
@@ -433,14 +481,12 @@ export function drawRef(
           const d1 = len * bpPerPxInv0
           const d2 = len * bpPerPxInv1
 
-          if (op === 'M' || op === '=' || op === 'X') {
+          if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
             cx1 += d1 * rev1
             cx2 += d2 * rev2
-          } else if (op === 'D' || op === 'N') {
+          } else if (op === CIGAR_D || op === CIGAR_N) {
             cx1 += d1 * rev1
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          else if (op === 'I') {
+          } else if (op === CIGAR_I) {
             cx2 += d2 * rev2
           }
 
@@ -455,7 +501,7 @@ export function drawRef(
             // if it is a small feature and not the last element of the
             // CIGAR (which could skip rendering it entire if we did turn
             // it on), then turn on continuing flag
-            const isNotLast = j < cigar.length - 2
+            const isNotLast = j < cigar.length - 1
             if (
               Math.abs(cx1 - px1) <= 1 &&
               Math.abs(cx2 - px2) <= 1 &&
@@ -466,25 +512,25 @@ export function drawRef(
               // allow rendering the dominant color when using continuing
               // flag if the last element of continuing was a large
               // feature, else just use match
-              const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
+              const opCode = (continuingFlag && d1 > 1) || d2 > 1 ? op : CIGAR_M
 
               // Use custom coloring based on colorBy setting
               // Always keep yellow/blue for insertions/deletions regardless of colorBy
               const isInsertionOrDeletion =
-                letter === 'I' || letter === 'D' || letter === 'N'
+                opCode === CIGAR_I || opCode === CIGAR_D || opCode === CIGAR_N
               if (useStrandColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle =
                   strand === -1 ? negColorWithAlpha : posColorWithAlpha
               } else if (useQueryColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
               } else {
-                mainCanvas.fillStyle = colorMapWithAlpha[letter]
+                mainCanvas.fillStyle = colorMapWithAlpha[opCode]!
               }
 
               continuingFlag = false
 
               if (drawCIGARMatchesOnly) {
-                if (letter === 'M') {
+                if (opCode === CIGAR_M) {
                   draw(mainCanvas, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
                   mainCanvas.fill()
                   if (drawLocationMarkersEnabled) {
@@ -539,7 +585,7 @@ export function drawRef(
 
         // Reset to default color if needed
         if (useStrandColor || useQueryColor) {
-          mainCanvas.fillStyle = colorMapWithAlpha.M
+          mainCanvas.fillStyle = colorMapWithAlpha[CIGAR_M]!
         }
       }
     }
