@@ -1,7 +1,5 @@
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { createRoot } from 'react-dom/client'
-import { QueryParamProvider } from 'use-query-params'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import '@fontsource/roboto'
 
 import Loader from './components/Loader'
@@ -19,8 +17,6 @@ const root = createRoot(document.getElementById('root')!)
 
 root.render(
   <ErrorBoundary FallbackComponent={PlatformSpecificErrorDialog}>
-    <QueryParamProvider adapter={WindowHistoryAdapter}>
-      <Loader />
-    </QueryParamProvider>
+    <Loader />
   </ErrorBoundary>,
 )
