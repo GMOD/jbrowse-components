@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { useTheme } from '@mui/material'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -96,7 +97,7 @@ function RenderedBlockLines({
     </ContentBlockComponent>
   )
 }
-const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
+const RenderedVerticalGuides = observer(function ({ model }: { model: LGV }) {
   const { staticBlocks, bpPerPx } = model
   const theme = useTheme()
   return (
@@ -129,35 +130,41 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
     </>
   )
 })
-const Gridlines = observer(function ({
-  model,
-  offset = 0,
-}: {
-  model: LGV
-  offset?: number
-}) {
+function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
   const { classes } = useStyles()
-  // find the block that needs pinning to the left side for context
-  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
+  const containerRef = useRef<HTMLDivElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    return autorun(() => {
+      const { scaleFactor } = model
+      const container = containerRef.current
+      if (container) {
+        container.style.transform =
+          scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
+      }
+    })
+  }, [model])
+
+  useEffect(() => {
+    return autorun(() => {
+      const { staticBlocks, offsetPx } = model
+      const inner = innerRef.current
+      if (inner) {
+        const offsetLeft = staticBlocks.offsetPx - offsetPx
+        inner.style.transform = `translateX(${offsetLeft - offset}px)`
+        inner.style.width = `${staticBlocks.totalWidthPx}px`
+      }
+    })
+  }, [model, offset])
+
   return (
-    <div
-      className={classes.verticalGuidesZoomContainer}
-      style={{
-        transform:
-          model.scaleFactor !== 1 ? `scaleX(${model.scaleFactor})` : undefined,
-      }}
-    >
-      <div
-        className={classes.verticalGuidesContainer}
-        style={{
-          left: offsetLeft - offset,
-          width: model.staticBlocks.totalWidthPx,
-        }}
-      >
+    <div ref={containerRef} className={classes.verticalGuidesZoomContainer}>
+      <div ref={innerRef} className={classes.verticalGuidesContainer}>
         <RenderedVerticalGuides model={model} />
       </div>
     </div>
   )
-})
+}
 
 export default Gridlines
