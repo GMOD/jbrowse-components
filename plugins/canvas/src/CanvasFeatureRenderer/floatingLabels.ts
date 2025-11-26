@@ -30,8 +30,7 @@ export function createFeatureFloatingLabels({
   nameColor: string
   descriptionColor: string
 }): FloatingLabelData[] {
-  const { showLabels, showDescriptions, fontHeight, isFontHeightCallback } =
-    configContext
+  const { showLabels, showDescriptions, fontHeight } = configContext
 
   const name = String(
     readConfObject(config, ['labels', 'name'], { feature }) || '',

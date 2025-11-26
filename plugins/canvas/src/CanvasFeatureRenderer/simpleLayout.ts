@@ -11,6 +11,24 @@ import type { Feature } from '@jbrowse/core/util'
 // Padding between transcripts in pixels
 const TRANSCRIPT_PADDING = 2
 
+// Types that indicate a coding transcript
+const CODING_TYPES = new Set(['CDS', 'cds'])
+
+function hasCodingSubfeature(feature: Feature): boolean {
+  const subfeatures = feature.get('subfeatures') || []
+  for (const sub of subfeatures) {
+    const type = sub.get('type')
+    if (CODING_TYPES.has(type)) {
+      return true
+    }
+    // Check nested subfeatures (e.g., CDS inside exon)
+    if (hasCodingSubfeature(sub)) {
+      return true
+    }
+  }
+  return false
+}
+
 /**
  * Create layout for a feature and its subfeatures using simple coordinate tracking
  */
@@ -107,10 +125,23 @@ export function layoutFeature(args: {
   const subfeatures = feature.get('subfeatures') || []
   if (subfeatures.length > 0 && displayMode !== 'reducedRepresentation') {
     if (glyphType === 'Subfeatures') {
+      // Sort transcripts so coding transcripts (with CDS) appear first
+      const sortedSubfeatures = [...subfeatures].sort((a, b) => {
+        const aHasCDS = hasCodingSubfeature(a)
+        const bHasCDS = hasCodingSubfeature(b)
+        if (aHasCDS && !bHasCDS) {
+          return -1
+        }
+        if (!aHasCDS && bHasCDS) {
+          return 1
+        }
+        return 0
+      })
+
       // Stack subfeatures vertically (for genes with multiple transcripts)
       let currentY = parentY
-      for (let i = 0; i < subfeatures.length; i++) {
-        const subfeature = subfeatures[i]!
+      for (let i = 0; i < sortedSubfeatures.length; i++) {
+        const subfeature = sortedSubfeatures[i]!
         // Check if this child is a transcript type
         const childType = subfeature.get('type')
         const isChildTranscript = transcriptTypes.includes(childType)
@@ -142,7 +173,7 @@ export function layoutFeature(args: {
           : childLayout.height
         currentY += heightForStacking
         // Add padding between transcripts (but not after the last one)
-        if (i < subfeatures.length - 1) {
+        if (i < sortedSubfeatures.length - 1) {
           currentY += TRANSCRIPT_PADDING
         }
       }

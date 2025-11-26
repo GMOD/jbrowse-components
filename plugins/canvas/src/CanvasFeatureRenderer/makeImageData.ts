@@ -117,7 +117,7 @@ export function makeImageData({
     const featureType = feature.get('type')
     const isGene = featureType === 'gene'
     const hasTranscriptChildren = adjustedLayout.children.some(child => {
-      const childType = child.feature?.get('type')
+      const childType = child.feature.get('type')
       return transcriptTypes.includes(childType)
     })
 

@@ -33,8 +33,12 @@ export function drawSegments(args: DrawFeatureArgs): DrawingResult {
 
   // Draw arrow
   const arrowResult = drawArrow(args)
-  coords.push(...arrowResult.coords)
-  items.push(...arrowResult.items)
+  for (const c of arrowResult.coords) {
+    coords.push(c)
+  }
+  for (const item of arrowResult.items) {
+    items.push(item)
+  }
 
   return { coords, items }
 }

@@ -54,10 +54,6 @@ export function addSubfeaturesToLayoutAndFlatbush({
 }) {
   for (const child of featureLayout.children) {
     const childFeature = child.feature
-    if (!childFeature) {
-      continue
-    }
-
     const childType = childFeature.get('type')
     const isTranscript = transcriptTypes.includes(childType)
 
@@ -153,24 +149,22 @@ export function addNestedSubfeaturesToLayout({
 }) {
   for (const child of featureLayout.children) {
     const childFeature = child.feature
-    if (childFeature) {
-      const childStart = childFeature.get('start')
-      const childEnd = childFeature.get('end')
+    const childStart = childFeature.get('start')
+    const childEnd = childFeature.get('end')
 
-      layout.addRect(
-        childFeature.id(),
-        childStart,
-        childEnd,
-        child.height,
-        childFeature,
-        {
-          refName: childFeature.get('refName'),
-        },
-      )
+    layout.addRect(
+      childFeature.id(),
+      childStart,
+      childEnd,
+      child.height,
+      childFeature,
+      {
+        refName: childFeature.get('refName'),
+      },
+    )
 
-      if (child.children.length > 0) {
-        addNestedSubfeaturesToLayout({ layout, featureLayout: child, config })
-      }
+    if (child.children.length > 0) {
+      addNestedSubfeaturesToLayout({ layout, featureLayout: child, config })
     }
   }
 }

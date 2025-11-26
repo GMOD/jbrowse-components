@@ -37,8 +37,12 @@ export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
       isColor1Callback,
       isColor3Callback,
     })
-    result.coords.push(...subResult.coords)
-    result.items.push(...subResult.items)
+    for (const c of subResult.coords) {
+      result.coords.push(c)
+    }
+    for (const item of subResult.items) {
+      result.items.push(item)
+    }
   }
 
   return result
@@ -71,8 +75,12 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
           peptideDataMap: args.peptideDataMap,
           colorByCDS: args.colorByCDS,
         })
-        result.coords.push(...subResult.coords)
-        result.items.push(...subResult.items)
+        for (const c of subResult.coords) {
+          result.coords.push(c)
+        }
+        for (const item of subResult.items) {
+          result.items.push(item)
+        }
       }
       break
     }
@@ -93,8 +101,12 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
           peptideDataMap: args.peptideDataMap,
           colorByCDS: args.colorByCDS,
         })
-        coords.push(...subResult.coords)
-        items.push(...subResult.items)
+        for (const c of subResult.coords) {
+          coords.push(c)
+        }
+        for (const item of subResult.items) {
+          items.push(item)
+        }
       }
       result = { coords, items }
       break
@@ -104,11 +116,15 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
       break
   }
 
-  // Draw arrow for top-level features
-  if (topLevel) {
+  // Draw arrow for top-level features (but not for containers like genes)
+  if (topLevel && glyphType !== 'Subfeatures') {
     const arrowResult = drawArrow(args)
-    result.coords.push(...arrowResult.coords)
-    result.items.push(...arrowResult.items)
+    for (const c of arrowResult.coords) {
+      result.coords.push(c)
+    }
+    for (const item of arrowResult.items) {
+      result.items.push(item)
+    }
   }
 
   return result
