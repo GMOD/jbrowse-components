@@ -1,3 +1,5 @@
+import type { RefObject } from 'react'
+
 import { TextField } from '@mui/material'
 
 import type {
@@ -7,26 +9,31 @@ import type {
 
 export default function AutocompleteTextField({
   TextFieldProps,
-  inputBoxVal,
+  inputBoxValRef,
+  inputRef,
   params,
-  setInputValue,
   setCurrentSearch,
 }: {
   TextFieldProps: TFP
-  inputBoxVal: string
+  inputBoxValRef: RefObject<string>
+  inputRef: RefObject<HTMLInputElement | null>
   params: AutocompleteRenderInputParams
-  setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
 }) {
   const { helperText, slotProps = {} } = TextFieldProps
+  // MUI Autocomplete passes inputProps.value to control the input. We extract
+  // it and override with value:undefined to make the input uncontrolled, then
+  // use defaultValue for initial render. The parent updates via ref directly.
+  const { inputProps, ...restParams } = params
   return (
     <TextField
+      inputRef={inputRef}
       onBlur={() => {
-        // this is used to restore a refName or the non-user-typed input to the
-        // box on blurring
-        setInputValue(inputBoxVal)
+        if (inputRef.current) {
+          inputRef.current.value = inputBoxValRef.current
+        }
       }}
-      {...params}
+      {...restParams}
       {...TextFieldProps}
       size="small"
       helperText={helperText}
@@ -35,6 +42,11 @@ export default function AutocompleteTextField({
           ...params.InputProps,
           // eslint-disable-next-line @typescript-eslint/no-misused-spread
           ...slotProps.input,
+        },
+        htmlInput: {
+          ...inputProps,
+          value: undefined,
+          defaultValue: inputBoxValRef.current,
         },
       }}
       placeholder="Search for location"

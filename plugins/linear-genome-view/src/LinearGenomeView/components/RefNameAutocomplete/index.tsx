@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import BaseResult, {
   RefSequenceResult,
@@ -12,7 +20,130 @@ import { getDeduplicatedResult, getFiltered } from './util'
 
 import type { Option } from './util'
 import type { LinearGenomeViewModel } from '../../model'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { TextFieldProps as TFP } from '@mui/material'
+import type { RefObject } from 'react'
+
+const emptyObj = {} as const
+
+function getOptionLabel(opt: Option | string) {
+  return typeof opt === 'string' ? opt : opt.result.getDisplayString()
+}
+
+function filterOptions(opts: Option[], state: { inputValue: string }) {
+  return getFiltered(opts, state.inputValue)
+}
+
+function getOptionDisabled(option: Option) {
+  return option.group === 'limitOption'
+}
+
+interface MemoizedAutocompleteProps {
+  assembly: Assembly | undefined
+  assemblyName: string | undefined
+  style: React.CSSProperties | undefined
+  loaded: boolean
+  open: boolean
+  searchOptions: Option[] | undefined
+  inputRef: RefObject<HTMLInputElement | null>
+  inputBoxValRef: RefObject<string>
+  TextFieldProps: TFP
+  onOpen: () => void
+  onClose: () => void
+  onSelect: ((region: BaseResult) => void) | undefined
+  onChange: ((val: string) => void) | undefined
+  setCurrentSearch: (val: string) => void
+}
+
+// Memoized to avoid re-rendering when coarseVisibleLocStrings changes.
+// The parent observer updates the input value directly via ref instead.
+const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
+  assembly,
+  assemblyName,
+  style,
+  loaded,
+  open,
+  searchOptions,
+  inputRef,
+  inputBoxValRef,
+  TextFieldProps,
+  onOpen,
+  onClose,
+  onSelect,
+  onChange,
+  setCurrentSearch,
+}: MemoizedAutocompleteProps) {
+  const regions = assembly?.regions
+  const regionOptions = useMemo(
+    () =>
+      regions?.map(region => ({
+        result: new RefSequenceResult({
+          refName: region.refName,
+          label: region.refName,
+          displayString: region.refName,
+          matchedAttribute: 'refName',
+        }),
+      })) || [],
+    [regions],
+  )
+
+  const handleChange = useCallback(
+    (_event: unknown, selectedOption: Option | string | null) => {
+      if (!selectedOption || !assemblyName) {
+        return
+      }
+
+      if (typeof selectedOption === 'string') {
+        onSelect?.(
+          new BaseResult({
+            label: selectedOption,
+          }),
+        )
+      } else {
+        onSelect?.(selectedOption.result)
+      }
+    },
+    [assemblyName, onSelect],
+  )
+
+  const renderInput = useCallback(
+    (params: Parameters<typeof AutocompleteTextField>[0]['params']) => (
+      <AutocompleteTextField
+        params={params}
+        inputRef={inputRef}
+        inputBoxValRef={inputBoxValRef}
+        TextFieldProps={TextFieldProps}
+        setCurrentSearch={setCurrentSearch}
+      />
+    ),
+    [inputRef, inputBoxValRef, TextFieldProps, setCurrentSearch],
+  )
+
+  return (
+    <Autocomplete
+      data-testid="autocomplete"
+      disableListWrap
+      disableClearable
+      disabled={!assemblyName}
+      freeSolo
+      includeInputInList
+      selectOnFocus
+      style={style}
+      loading={!loaded}
+      loadingText="loading results"
+      open={open}
+      onOpen={onOpen}
+      onClose={onClose}
+      onChange={handleChange}
+      onInputChange={onChange ? (_e, val) => onChange(val) : undefined}
+      options={searchOptions?.length ? searchOptions : regionOptions}
+      getOptionDisabled={getOptionDisabled}
+      filterOptions={filterOptions}
+      renderInput={renderInput}
+      getOptionLabel={getOptionLabel}
+    />
+  )
+})
 
 const RefNameAutocomplete = observer(function ({
   model,
@@ -24,7 +155,7 @@ const RefNameAutocomplete = observer(function ({
   value,
   minWidth = 200,
   maxWidth = 550,
-  TextFieldProps = {},
+  TextFieldProps = emptyObj as TFP,
 }: {
   model: LinearGenomeViewModel
   onSelect?: (region: BaseResult) => void
@@ -42,13 +173,13 @@ const RefNameAutocomplete = observer(function ({
   const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState(true)
   const [currentSearch, setCurrentSearch] = useState('')
-  const [inputValue, setInputValue] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>()
   const debouncedSearch = useDebounce(currentSearch, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
+  const inputRef = useRef<HTMLInputElement>(null)
+  const inputBoxValRef = useRef('')
 
-  // this callback runs an async search. the typescript code claims that
   useEffect(() => {
     const isCurrent = { cancelled: false }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -80,93 +211,60 @@ const RefNameAutocomplete = observer(function ({
       isCurrent.cancelled = true
     }
   }, [assemblyName, fetchResults, debouncedSearch, session])
+
   const inputBoxVal = coarseVisibleLocStrings || value || ''
+  // Set during render (not in effect) so children see it immediately on mount
+  inputBoxValRef.current = inputBoxVal
 
-  const regions = assembly?.regions
-  const regionOptions = useMemo(
-    () =>
-      regions?.map(region => ({
-        result: new RefSequenceResult({
-          refName: region.refName,
-          label: region.refName,
-          displayString: region.refName,
-          matchedAttribute: 'refName',
-        }),
-      })) || [],
-    [regions],
-  )
+  // Update input DOM directly to avoid MUI Autocomplete's re-render cascade.
+  // Skip if focused so we don't interfere with user typing.
+  useLayoutEffect(() => {
+    const input = inputRef.current
+    if (input && document.activeElement !== input) {
+      input.value = inputBoxVal
+    }
+  }, [inputBoxVal])
 
-  // notes on implementation:
-  // The selectOnFocus setting helps highlight the field when clicked
+  const handleOpen = useCallback(() => {
+    setOpen(true)
+  }, [])
+
+  const handleClose = useCallback(() => {
+    setOpen(false)
+    setLoaded(true)
+    if (hasDisplayedRegions) {
+      setCurrentSearch('')
+      setSearchOptions(undefined)
+    }
+  }, [hasDisplayedRegions])
+
+  // Wrapper div handles dynamic width without re-rendering MemoizedAutocomplete
   return (
-    <Autocomplete
-      data-testid="autocomplete"
-      disableListWrap
-      disableClearable
-      disabled={!assemblyName}
-      freeSolo
-      includeInputInList
-      selectOnFocus
+    <div
       style={{
-        ...style,
         width: Math.min(
           Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
           maxWidth,
         ),
       }}
-      value={inputBoxVal}
-      loading={!loaded}
-      inputValue={inputValue}
-      onInputChange={(_event, newInputValue) => {
-        setInputValue(newInputValue)
-        onChange?.(newInputValue)
-      }}
-      loadingText="loading results"
-      open={open}
-      onOpen={() => {
-        setOpen(true)
-      }}
-      onClose={() => {
-        setOpen(false)
-        setLoaded(true)
-        if (hasDisplayedRegions) {
-          setCurrentSearch('')
-          setSearchOptions(undefined)
-        }
-      }}
-      onChange={(_event, selectedOption) => {
-        if (!selectedOption || !assemblyName) {
-          return
-        }
-
-        if (typeof selectedOption === 'string') {
-          // handles string inputs on keyPress enter
-          onSelect?.(
-            new BaseResult({
-              label: selectedOption,
-            }),
-          )
-        } else {
-          onSelect?.(selectedOption.result)
-        }
-        setInputValue(inputBoxVal)
-      }}
-      options={searchOptions?.length ? searchOptions : regionOptions}
-      getOptionDisabled={option => option.group === 'limitOption'}
-      filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
-      renderInput={params => (
-        <AutocompleteTextField
-          params={params}
-          inputBoxVal={inputBoxVal}
-          TextFieldProps={TextFieldProps}
-          setCurrentSearch={setCurrentSearch}
-          setInputValue={setInputValue}
-        />
-      )}
-      getOptionLabel={opt =>
-        typeof opt === 'string' ? opt : opt.result.getDisplayString()
-      }
-    />
+    >
+      <MemoizedAutocomplete
+        assembly={assembly}
+        assemblyName={assemblyName}
+        style={style}
+        loaded={loaded}
+        open={open}
+        searchOptions={searchOptions}
+        inputRef={inputRef}
+        inputBoxValRef={inputBoxValRef}
+        TextFieldProps={TextFieldProps}
+        onOpen={handleOpen}
+        onClose={handleClose}
+        onSelect={onSelect}
+        onChange={onChange}
+        setCurrentSearch={setCurrentSearch}
+      />
+    </div>
   )
 })
 
