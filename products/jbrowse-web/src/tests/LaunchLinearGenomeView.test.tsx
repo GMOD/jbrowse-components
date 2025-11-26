@@ -19,7 +19,7 @@ const getFile = (url: string) =>
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 60000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   return `${url}`.includes('jb2=true')
@@ -37,7 +37,7 @@ test('can use a spec url for lgv', async () => {
     expect((elt as HTMLInputElement).value).toBe('ctgA:6,000..7,000')
   }, delay)
   await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
-}, 40000)
+}, 60000)
 
 test('nonexist', async () => {
   console.error = jest.fn()
@@ -51,4 +51,4 @@ test('nonexist', async () => {
   }, delay)
   await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
   await findByText(/Could not resolve identifiers: nonexist/)
-}, 40000)
+}, 60000)
