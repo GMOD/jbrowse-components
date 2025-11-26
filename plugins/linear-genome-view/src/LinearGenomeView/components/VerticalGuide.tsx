@@ -13,12 +13,16 @@ const useStyles = makeStyles()({
     height: '100%',
     width: 1,
     position: 'absolute',
+    left: 0,
     background: 'red',
     zIndex: 1001,
+    willChange: 'transform',
   },
   tooltipTarget: {
     position: 'sticky',
+    left: 0,
     width: 1,
+    willChange: 'transform',
   },
 })
 
@@ -43,13 +47,13 @@ const VerticalGuide = observer(function VerticalGuide({
         <div
           className={classes.tooltipTarget}
           style={{
-            left: coordX + 6,
+            transform: `translateX(${coordX + 6}px)`,
             top: rubberbandTop,
             position: stickyViewHeaders ? 'sticky' : undefined,
           }}
         />
       </Tooltip>
-      <div className={classes.guide} style={{ left: coordX }} />
+      <div className={classes.guide} style={{ transform: `translateX(${coordX}px)` }} />
     </>
   )
 })

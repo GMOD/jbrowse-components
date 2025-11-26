@@ -110,7 +110,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
     })
   }, [model, theme])
 
-  return <div ref={innerRef} style={{ position: 'absolute' }} />
+  return <div ref={innerRef} style={{ position: 'absolute', willChange: 'transform' }} />
 }
 
 function createLabelElement(bgColor: string) {

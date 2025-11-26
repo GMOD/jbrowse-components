@@ -15,9 +15,11 @@ const useStyles = makeStyles()({
   scalebarLabel: {
     height: HEADER_OVERVIEW_HEIGHT,
     position: 'absolute',
+    left: 0,
     display: 'flex',
     justifyContent: 'center',
     pointerEvents: 'none',
+    willChange: 'transform',
   },
 })
 
@@ -50,7 +52,7 @@ const OverviewScalebarTickLabels = observer(function ({
       className={classes.scalebarLabel}
       variant="body2"
       style={{
-        left: ((labelIdx + 1) * majorPitch) / scale,
+        transform: `translateX(${((labelIdx + 1) * majorPitch) / scale}px)`,
         color: refNameColor,
       }}
     >

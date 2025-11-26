@@ -14,6 +14,8 @@ const useStyles = makeStyles()({
     height: '100%',
     width: 1,
     position: 'absolute',
+    left: 0,
+    willChange: 'transform',
   },
 })
 
@@ -50,7 +52,7 @@ const OverviewRubberbandHoverTooltip = observer(function ({
       )}
       arrow
     >
-      <div className={classes.guide} style={{ left: guideX }} />
+      <div className={classes.guide} style={{ transform: `translateX(${guideX}px)` }} />
     </Tooltip>
   )
 })

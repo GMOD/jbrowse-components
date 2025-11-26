@@ -12,8 +12,10 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     position: 'absolute',
+    left: 0,
     minHeight: '100%',
     display: 'flex',
+    willChange: 'transform',
   },
 })
 
@@ -25,11 +27,12 @@ const LinearBlocks = observer(function ({
   const { classes } = useStyles()
   const { blockDefinitions } = model
   const viewModel = getContainingView(model) as LinearGenomeViewModel
+  const offsetLeft = blockDefinitions.offsetPx - viewModel.offsetPx
   return (
     <div
       className={classes.linearBlocks}
       style={{
-        left: blockDefinitions.offsetPx - viewModel.offsetPx,
+        transform: `translateX(${offsetLeft}px)`,
       }}
     >
       <RenderedBlocks model={model} />
