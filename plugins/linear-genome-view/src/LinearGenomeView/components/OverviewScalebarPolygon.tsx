@@ -41,13 +41,13 @@ function OverviewScalebarPolygon({
       const last = contentBlocks.at(-1)!
       const topLeft =
         (overview.bpToPx({
-          ...first,
+          refName: first.refName,
           coord: first.reversed ? first.end : first.start,
         }) || 0) +
         cytobandOffset * multiplier
       const topRight =
         (overview.bpToPx({
-          ...last,
+          refName: last.refName,
           coord: last.reversed ? last.start : last.end,
         }) || 0) +
         cytobandOffset * multiplier

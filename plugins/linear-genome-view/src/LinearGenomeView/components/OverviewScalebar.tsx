@@ -166,12 +166,12 @@ function VisibleRegionBox({
       const last = visibleRegions.at(-1)!
       const firstOverviewPx =
         overview.bpToPx({
-          ...first,
+          refName: first.refName,
           coord: first.reversed ? first.end : first.start,
         }) || 0
       const lastOverviewPx =
         overview.bpToPx({
-          ...last,
+          refName: last.refName,
           coord: last.reversed ? last.start : last.end,
         }) || 0
 
