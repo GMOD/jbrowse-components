@@ -26,6 +26,7 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
+    contain: 'strict',
   },
 })
 
