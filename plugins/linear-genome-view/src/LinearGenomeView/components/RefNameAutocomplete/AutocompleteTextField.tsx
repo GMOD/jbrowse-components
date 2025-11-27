@@ -31,6 +31,10 @@ export default function AutocompleteTextField({
   // allowing imperative updates via inputRef
   const { value: _value, ...inputPropsWithoutValue } = inputProps
 
+  // slotProps.input could be a function in MUI, only spread if it's an object
+  const inputSlotProps =
+    typeof slotProps.input === 'object' ? slotProps.input : undefined
+
   return (
     <TextField
       variant={variant}
@@ -38,14 +42,14 @@ export default function AutocompleteTextField({
       style={style}
       fullWidth={fullWidth}
       inputRef={inputRef}
-      inputProps={inputPropsWithoutValue}
       size="small"
       helperText={helperText}
       slotProps={{
         input: {
           ...InputProps,
-          ...slotProps.input,
+          ...inputSlotProps,
         },
+        htmlInput: inputPropsWithoutValue,
       }}
       placeholder="Search for location"
       onChange={e => {

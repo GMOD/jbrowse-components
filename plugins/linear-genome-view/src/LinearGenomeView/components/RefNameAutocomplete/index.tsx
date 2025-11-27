@@ -99,7 +99,7 @@ const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
       }
       inputRef.current?.blur()
     },
-    [assemblyName, onSelect],
+    [assemblyName, inputRef, onSelect],
   )
 
   const handleInputChange = useCallback(
@@ -118,7 +118,7 @@ const MemoizedAutocomplete = memo(function MemoizedAutocomplete({
         setCurrentSearch={setCurrentSearch}
       />
     ),
-    [TextFieldProps, setCurrentSearch],
+    [TextFieldProps, inputRef, setCurrentSearch],
   )
 
   return (
