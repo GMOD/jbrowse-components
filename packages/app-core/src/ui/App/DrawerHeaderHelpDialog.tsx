@@ -1,6 +1,5 @@
-import { DialogContent } from '@mui/material'
-
 import Dialog from '@jbrowse/core/ui/Dialog'
+import { DialogContent } from '@mui/material'
 
 export default function DrawerHeaderHelpDialog({
   onClose,

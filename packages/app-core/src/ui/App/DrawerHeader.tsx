@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react'
+import { lazy } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import HelpOutline from '@mui/icons-material/HelpOutline'
@@ -12,7 +12,7 @@ import DrawerWidgetSelector from './DrawerWidgetSelector'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
-const SimpleHelpDialog = lazy(() => import('@jbrowse/core/ui/SimpleHelpDialog'))
+const DrawerHeaderHelpDialog = lazy(() => import('./DrawerHeaderHelpDialog'))
 
 const useStyles = makeStyles()(theme => ({
   spacer: {
@@ -37,7 +37,6 @@ const DrawerHeader = observer(function ({
   onPopoutDrawer: () => void
 }) {
   const { classes } = useStyles()
-  const [helpDialogOpen, setHelpDialogOpen] = useState(false)
   const focusedViewId = session.focusedViewId
   const { visibleWidget } = session
   // @ts-expect-error
@@ -74,7 +73,18 @@ const DrawerHeader = observer(function ({
         </Tooltip>
         {helpText ? (
           <Tooltip title="Help">
-            <IconButton color="inherit" onClick={() => setHelpDialogOpen(true)}>
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                session.queueDialog(handleClose => [
+                  DrawerHeaderHelpDialog,
+                  {
+                    onClose: handleClose,
+                    helpText,
+                  },
+                ])
+              }}
+            >
               <HelpOutline />
             </IconButton>
           </Tooltip>
@@ -82,14 +92,6 @@ const DrawerHeader = observer(function ({
         <div className={classes.spacer} />
         <DrawerControls session={session} />
       </Toolbar>
-      {helpDialogOpen ? (
-        <Suspense fallback={null}>
-          <CascadingMenuHelpDialog
-            helpText={helpText}
-            onClose={() => setHelpDialogOpen(false)}
-          />
-        </Suspense>
-      ) : null}
     </AppBar>
   )
 })
