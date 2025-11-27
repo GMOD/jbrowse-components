@@ -17,6 +17,7 @@ export default defineConfig(
       'packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
       'packages/__mocks__/generic-filehandle2.ts',
       'packages/core/util/map-obj/*',
+      'scripts/analyze_cpuprof.ts',
       'config/jest/*',
       'benchmarks/*',
       '**/build/**/*',

@@ -1,6 +1,8 @@
+//@ts-nocheck
 import fs from 'fs'
 
-const profileFile = process.argv[2] || fs.readdirSync('.').find(f => f.endsWith('.cpuprofile'))
+const profileFile =
+  process.argv[2] || fs.readdirSync('.').find(f => f.endsWith('.cpuprofile'))
 
 if (!profileFile) {
   console.error('No .cpuprofile file found')
@@ -35,7 +37,9 @@ function getFunctionName(node) {
   const funcName = node.callFrame.functionName || '(anonymous)'
   const url = node.callFrame.url || ''
   const fileName = url.split('/').pop() || url
-  const location = fileName ? `${fileName}:${node.callFrame.lineNumber}` : 'native'
+  const location = fileName
+    ? `${fileName}:${node.callFrame.lineNumber}`
+    : 'native'
   return `${funcName} [${location}]`
 }
 
@@ -53,7 +57,7 @@ for (const [nodeId, time] of selfTime.entries()) {
   summary.push({
     name: funcName,
     selfTime: time,
-    percentage: (time / profile.samples.length) * 100
+    percentage: (time / profile.samples.length) * 100,
   })
 }
 
@@ -68,7 +72,7 @@ const top30 = summary.slice(0, 30)
 for (let i = 0; i < top30.length; i++) {
   const item = top30[i]
   console.log(
-    `${String(i + 1).padStart(4)} | ${String(item.selfTime).padStart(9)} | ${item.percentage.toFixed(2).padStart(6)}% | ${item.name}`
+    `${String(i + 1).padStart(4)} | ${String(item.selfTime).padStart(9)} | ${item.percentage.toFixed(2).padStart(6)}% | ${item.name}`,
   )
 }
 
