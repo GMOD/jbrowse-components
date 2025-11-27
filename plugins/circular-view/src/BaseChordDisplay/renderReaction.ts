@@ -12,7 +12,9 @@ export function renderReactionData(self: any) {
     rendererType,
     rpcManager,
     renderProps: self.renderProps(),
-    renderingProps: self.renderingProps?.() as Record<string, unknown> | undefined,
+    renderingProps: self.renderingProps?.() as
+      | Record<string, unknown>
+      | undefined,
     renderArgs: {
       assemblyName: view.displayedRegions[0]!.assemblyName,
       adapterConfig: structuredClone(self.adapterConfig),
