@@ -1,3 +1,5 @@
+import { useMemo, useRef } from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -30,11 +32,21 @@ const MultiVariantCrosshairs = observer(function ({
 }) {
   const { classes } = useStyles()
   const theme = useTheme()
+  const ref = useRef<HTMLDivElement>(null)
   const { hoveredGenotype, height, sourceMap } = model
   const { width } = getContainingView(model) as LinearGenomeViewModel
-  const source = hoveredGenotype ? sourceMap?.[hoveredGenotype.name] : undefined
+
+  const source = useMemo(
+    () => (hoveredGenotype ? sourceMap?.[hoveredGenotype.name] : undefined),
+    [hoveredGenotype, sourceMap],
+  )
+
+  const rect = ref.current?.getBoundingClientRect()
+  const absX = (rect?.left ?? 0) + mouseX
+  const absY = (rect?.top ?? 0) + mouseY
+
   return (
-    <div className={classes.rel}>
+    <div ref={ref} className={classes.rel}>
       <svg
         className={classes.cursor}
         width={width}
@@ -65,6 +77,8 @@ const MultiVariantCrosshairs = observer(function ({
             ...source,
             ...hoveredGenotype,
           }}
+          x={absX}
+          y={absY}
         />
       ) : null}
     </div>
