@@ -41,6 +41,7 @@ export async function makeImageData(
   const splitCache = {} as Record<string, string[]>
   const genotypesCache = new Map<string, Record<string, string>>()
   const drawRef = referenceDrawingMode === 'draw'
+  // Use at least 1px row height for rendering to avoid insanely small subpixel rendering
   const h = Math.max(rowHeight, 1)
   const sln = sources.length
   const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0

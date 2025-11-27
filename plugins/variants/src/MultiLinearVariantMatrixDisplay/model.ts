@@ -25,11 +25,6 @@ export default function stateModelFactory(
          * #property
          */
         type: types.literal('LinearVariantMatrixDisplay'),
-
-        /**
-         * #property
-         */
-        rowHeightSetting: types.optional(types.number, 1),
         /**
          * #property
          */

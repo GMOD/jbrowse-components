@@ -5,7 +5,7 @@ import path from 'path'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Image, createCanvas } from 'canvas'
 import { saveAs } from 'file-saver-es'
@@ -315,6 +315,46 @@ export async function openViewWithFileInput({
 
   fireEvent.click(await findByTestId('open_spreadsheet'))
   return result
+}
+
+export async function testOpenTrack({
+  bpPerPx,
+  start,
+  trackId,
+  canvasLoc,
+  timeout = 20000,
+}: {
+  bpPerPx: number
+  start: number
+  trackId: string
+  canvasLoc: string
+  timeout?: number
+}) {
+  const { view, findByTestId } = await createView()
+  view.setNewView(bpPerPx, start)
+  fireEvent.click(await findByTestId(hts(trackId), {}, { timeout }))
+  expectCanvasMatch(await findByTestId(pv(canvasLoc), {}, { timeout }))
+}
+
+export async function testAlignmentModificationsDisplay({
+  testDataDir,
+  config,
+  canvasTestId,
+  timeout = 50000,
+}: {
+  testDataDir: string
+  config: any
+  canvasTestId: string
+  timeout?: number
+}) {
+  const opts = [{}, { timeout }] as const
+  const { findByTestId } = await createView(config)
+
+  const f1 = within(await findByTestId('Blockset-pileup'))
+  const f2 = within(await findByTestId('Blockset-snpcoverage'))
+
+  expectCanvasMatch(await f1.findByTestId(canvasTestId, ...opts))
+  expectCanvasMatch(await f2.findByTestId(canvasTestId, ...opts))
 }
 
 export async function waitForPileupDraw(view: any, timeout = 60000) {

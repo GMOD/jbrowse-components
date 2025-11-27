@@ -82,15 +82,13 @@ export default function MultiVariantBaseModelF(
 
         /**
          * #property
-         * used only if autoHeight is false
+         * Controls row height: 'auto' calculates from available height,
+         * or a number specifies manual pixel height per row
          */
-        rowHeightSetting: types.optional(types.number, 8),
-
-        /**
-         * #property
-         * used only if autoHeight is false
-         */
-        autoHeight: types.optional(types.boolean, true),
+        rowHeightMode: types.optional(
+          types.union(types.literal('auto'), types.number),
+          'auto',
+        ),
 
         /**
          * #property
@@ -182,8 +180,8 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setRowHeight(arg: number) {
-        self.rowHeightSetting = arg
+      setRowHeight(arg: number | 'auto') {
+        self.rowHeightMode = arg
       },
       /**
        * #action
@@ -303,9 +301,10 @@ export default function MultiVariantBaseModelF(
       },
       /**
        * #action
+       * Toggle auto height mode. When turning off, uses default of 10px per row.
        */
-      setAutoHeight(arg: boolean) {
-        self.autoHeight = arg
+      setAutoHeight(auto: boolean) {
+        self.rowHeightMode = auto ? 'auto' : 10
       },
       /**
        * #action
@@ -421,19 +420,24 @@ export default function MultiVariantBaseModelF(
         /**
          * #getter
          */
+        get autoHeight() {
+          return self.rowHeightMode === 'auto'
+        },
+        /**
+         * #getter
+         */
         get rowHeight() {
-          const { autoHeight, rowHeightSetting } = self
-          return autoHeight
+          return self.rowHeightMode === 'auto'
             ? this.availableHeight / this.nrow
-            : rowHeightSetting
+            : self.rowHeightMode
         },
         /**
          * #getter
          */
         get totalHeight() {
-          return self.autoHeight
+          return self.rowHeightMode === 'auto'
             ? this.availableHeight
-            : this.nrow * self.rowHeightSetting
+            : this.nrow * self.rowHeightMode
         },
         /**
          * #getter
@@ -652,13 +656,13 @@ export default function MultiVariantBaseModelF(
        * #method
        */
       getPortableSettings() {
+        // Note: rowHeightMode is intentionally excluded because Matrix and
+        // Regular displays have different defaults
         return {
-          rowHeightSetting: self.rowHeightSetting,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           showSidebarLabelsSetting: self.showSidebarLabelsSetting,
           showTree: self.showTree,
           renderingMode: self.renderingMode,
-          autoHeight: self.autoHeight,
           lengthCutoffFilter: self.lengthCutoffFilter,
           jexlFilters: self.jexlFilters,
           referenceDrawingMode: self.referenceDrawingMode,

@@ -25,9 +25,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         type: types.literal('MultiLinearVariantDisplay'),
         /**
          * #property
-         * used only if autoHeight is false
+         * Regular display defaults to manual 11px row height (not auto)
          */
-        rowHeightSetting: types.optional(types.number, 11),
+        rowHeightMode: types.optional(
+          types.union(types.literal('auto'), types.number),
+          11,
+        ),
         /**
          * #property
          */
