@@ -43,14 +43,8 @@ const MultiVariantRendering = observer(function (props: {
   onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
   onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
 }) {
-  const {
-    flatbush,
-    items,
-    displayModel,
-    featureGenotypeMap,
-    totalHeight,
-    scrollTop,
-  } = props
+  const { flatbush, items, displayModel, featureGenotypeMap, totalHeight } =
+    props
   const ref = useRef<HTMLDivElement>(null)
   const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
 
@@ -62,7 +56,7 @@ const MultiVariantRendering = observer(function (props: {
     }
     const rect = ref.current.getBoundingClientRect()
     offsetX = eventClientX - rect.left
-    offsetY = eventClientY - rect.top - (displayModel?.scrollTop || 0)
+    offsetY = eventClientY - rect.top
 
     const x = flatbush2.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
     if (x.length) {
@@ -119,7 +113,7 @@ const MultiVariantRendering = observer(function (props: {
         style={{
           position: 'absolute',
           left: 0,
-          top: scrollTop,
+          top: 0,
         }}
       />
     </div>

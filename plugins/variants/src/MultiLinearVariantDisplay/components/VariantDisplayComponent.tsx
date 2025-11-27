@@ -13,7 +13,6 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
   model: MultiLinearVariantDisplayModel
 }) {
   const { model } = props
-  const { scrollTop, autoHeight } = model
   const ref = useRef<HTMLDivElement>(null)
   const [mouseY, setMouseY] = useState<number>()
   const [mouseX, setMouseX] = useState<number>()
@@ -37,7 +36,7 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
       <div
         style={{
           position: 'absolute',
-          top: autoHeight ? 0 : scrollTop,
+          top: 0,
           left: 0,
           width: '100%',
         }}
