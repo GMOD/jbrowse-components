@@ -20,13 +20,20 @@ async function wait(view: any, findByTestId: any) {
   await waitFor(
     () => {
       const display = view.tracks[0]?.displays[0]?.PileupDisplay
-      console.log('DEBUG: PileupDisplay exists:', !!display, 'drawn:', display?.drawn)
+      console.log(
+        'DEBUG: PileupDisplay exists:',
+        !!display,
+        'drawn:',
+        display?.drawn,
+      )
       const drawn = display?.drawn
       expect(drawn).toBe(true)
     },
     { timeout },
   )
-  console.log('DEBUG: PileupDisplay.drawn is true, now waiting for stack-canvas')
+  console.log(
+    'DEBUG: PileupDisplay.drawn is true, now waiting for stack-canvas',
+  )
 
   // Wait for the stack-canvas element to appear and be rendered
   await findByTestId('stack-canvas', {}, { timeout })

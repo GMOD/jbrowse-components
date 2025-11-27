@@ -2,7 +2,6 @@ import React, { Suspense, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
