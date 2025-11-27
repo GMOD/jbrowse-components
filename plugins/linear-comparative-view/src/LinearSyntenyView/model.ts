@@ -62,6 +62,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       importFormSyntenyTrackSelections:
         observable.array<ImportFormSyntenyTrack>(),
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * all subviews must have displayedRegions
+       */
+      get viewsInitialized() {
+        return (
+          self.initialized &&
+          self.views.every(a => a.displayedRegions.length > 0)
+        )
+      },
+    }))
     .actions(self => ({
       /**
        * #action

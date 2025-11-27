@@ -45,6 +45,8 @@ bigWigLocation: {
 
 #### slot: source
 
+added as feature.get('source') on all features
+
 ```js
 source: {
       type: 'string',

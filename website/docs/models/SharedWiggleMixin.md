@@ -154,6 +154,15 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
+#### property: statsRegion
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+statsRegion: types.maybe(types.string)
+```
+
 ### SharedWiggleMixin - Getters
 
 #### getter: adapterTypeName
@@ -292,7 +301,7 @@ scoreTrackMenuItems: () => ({ label: string; subMenu: { label: string; onClick: 
 
 ```js
 // type signature
-updateQuantitativeStats: (stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }) => void
+updateQuantitativeStats: (stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }, statsRegion?: string) => void
 ```
 
 #### action: setColor
@@ -321,6 +330,13 @@ setNegColor: (color?: string) => void
 ```js
 // type signature
 setStatsLoading: (arg?: string) => void
+```
+
+#### action: setStatsRegion
+
+```js
+// type signature
+setStatsRegion: (statsRegion: string) => void
 ```
 
 #### action: selectFeature

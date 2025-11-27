@@ -44,6 +44,17 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
+#### property: colorBy
+
+color scheme to use for rendering synteny features
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+colorBy: types.optional(types.string, 'default')
+```
+
 ### LinearSyntenyDisplay - Getters
 
 #### getter: adapterConfig
@@ -139,4 +150,25 @@ setCigarMouseoverId: (arg: number) => void
 ```js
 // type signature
 setClickId: (arg?: string) => void
+```
+
+#### action: setAlpha
+
+```js
+// type signature
+setAlpha: (value: number) => void
+```
+
+#### action: setMinAlignmentLength
+
+```js
+// type signature
+setMinAlignmentLength: (value: number) => void
+```
+
+#### action: setColorBy
+
+```js
+// type signature
+setColorBy: (value: string) => void
 ```

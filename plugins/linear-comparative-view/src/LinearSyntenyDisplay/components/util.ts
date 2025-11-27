@@ -10,7 +10,7 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 
-import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
+import { MAX_COLOR_RANGE, getId } from '../../colorUtils'
 
 import type { LinearSyntenyDisplayModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'
@@ -31,7 +31,7 @@ interface FeatPos {
   p21: Pos
   p22: Pos
   f: Feature
-  cigar: string[]
+  cigar: number[]
 }
 
 export function drawMatchSimple({
@@ -142,7 +142,7 @@ export function drawLocationMarkers(
   const targetPixelSpacing = 20
   const numMarkers = Math.max(
     2,
-    Math.floor(averageWidth / targetPixelSpacing) + 1,
+    ((averageWidth / targetPixelSpacing) | 0) + 1,
   )
 
   const prevStrokeStyle = ctx.strokeStyle
@@ -248,7 +248,7 @@ export function onSynClick(
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
   const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
+  const unitMultiplier = (MAX_COLOR_RANGE / numFeats) | 0
   const id = getId(r1!, g1!, b1!, unitMultiplier)
   const feat = featPositions[id]
   if (feat) {
@@ -290,7 +290,7 @@ export function onSynContextClick(
   const x = clientX - rect.left
   const y = clientY - rect.top
   const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
+  const unitMultiplier = (MAX_COLOR_RANGE / model.numFeats) | 0
   const id = getId(r1!, g1!, b1!, unitMultiplier)
   const f = model.featPositions[id]
   if (f) {

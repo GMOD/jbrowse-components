@@ -1,5 +1,7 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
+import { MISMATCH_TYPE_SOFTCLIP } from '../shared/types'
+
 import type { Mismatch } from '../shared/types'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -38,7 +40,7 @@ export function layoutFeature({
     const seq = feature.get('seq') as string
     if (seq) {
       for (const { type, start, cliplen = 0 } of mismatches) {
-        if (type === 'softclip') {
+        if (type === MISMATCH_TYPE_SOFTCLIP) {
           if (start === 0) {
             expansionBefore = cliplen
           } else {

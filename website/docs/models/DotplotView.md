@@ -428,6 +428,18 @@ zooms into clicked and dragged region
 zoomInToMouseCoords: (mousedown: Coord, mouseup: Coord) => void
 ```
 
+#### action: calculateBorders
+
+Calculate borders synchronously for a given zoom level
+
+```js
+// type signature
+calculateBorders: () => {
+  borderX: number
+  borderY: number
+}
+```
+
 #### action: showAllRegions
 
 ```js

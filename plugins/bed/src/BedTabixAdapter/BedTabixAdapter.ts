@@ -111,7 +111,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       await updateStatus('Downloading features', statusCallback, () =>
         this.bed.getLines(query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
-            if (performance.now() - start > 200) {
+            if (performance.now() - start > 500) {
               checkStopToken(stopToken)
               start = performance.now()
             }

@@ -20,7 +20,7 @@ export function getMultiVariantFeaturesAutorun(self: {
   sources?: Source[]
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
-  statsReadyAndRegionNotTooLarge: boolean
+  featureDensityStatsReadyAndRegionNotTooLarge: boolean
   adapterProps: () => Record<string, unknown>
   setError: (error: unknown) => void
   setFeatures: (f: Feature[]) => void
@@ -35,7 +35,10 @@ export function getMultiVariantFeaturesAutorun(self: {
       async () => {
         try {
           const view = getContainingView(self) as LinearGenomeViewModel
-          if (!view.initialized || !self.statsReadyAndRegionNotTooLarge) {
+          if (
+            !view.initialized ||
+            !self.featureDensityStatsReadyAndRegionNotTooLarge
+          ) {
             return
           }
 

@@ -113,7 +113,7 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearReadCloudDisplay - Actions
@@ -164,4 +164,31 @@ selectFeature: (chain: ReducedFeature[]) => void
 ```js
 // type signature
 setDrawCloud: (b: boolean) => void
+```
+
+#### action: setRenderingImageData
+
+Set the rendering imageData from RPC
+
+```js
+// type signature
+setRenderingImageData: (imageData: ImageBitmap) => void
+```
+
+#### action: setSelectedFeatureId
+
+Set the ID of the selected feature for persistent highlighting
+
+```js
+// type signature
+setSelectedFeatureId: (id: string) => void
+```
+
+#### action: setRenderingStopToken
+
+Set the rendering stop token
+
+```js
+// type signature
+setRenderingStopToken: (token: string) => void
 ```

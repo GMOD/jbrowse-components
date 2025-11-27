@@ -40,7 +40,11 @@ export async function fetchChains(self: LinearArcDisplayModel) {
   const { rpcManager } = getSession(self)
   const view = getContainingView(self) as LGV
 
-  if (!view.initialized || self.error || !self.statsReadyAndRegionNotTooLarge) {
+  if (
+    !view.initialized ||
+    self.error ||
+    !self.featureDensityStatsReadyAndRegionNotTooLarge
+  ) {
     return
   }
 

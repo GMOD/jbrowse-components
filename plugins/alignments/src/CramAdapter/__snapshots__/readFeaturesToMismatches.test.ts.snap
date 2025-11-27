@@ -7,9 +7,7 @@ exports[`cram read features mismatches 1`] = `
     "insertedBases": "C",
     "length": 0,
     "start": 24,
-    "type": "insertion",
+    "type": 2,
   },
 ]
 `;
-
-exports[`cram read features to CIGAR 1`] = `"24M1I75M"`;

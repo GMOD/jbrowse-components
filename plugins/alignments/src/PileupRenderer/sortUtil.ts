@@ -1,12 +1,20 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
+import {
+  MISMATCH_TYPE_INSERTION,
+  MISMATCH_TYPE_SOFTCLIP,
+} from '../shared/types'
+
+const MISMATCH_TYPE_CONSUMING_MASK =
+  MISMATCH_TYPE_INSERTION | MISMATCH_TYPE_SOFTCLIP
+
 import type { Mismatch, SortedBy } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 
-export const sortFeature = (
+export function sortFeature(
   features: Map<string, Feature>,
   sortedBy: SortedBy,
-) => {
+) {
   const featureArray = Array.from(features.values())
   const featuresInCenterLine: Feature[] = []
   const featuresOutsideCenter: Feature[] = []
@@ -59,7 +67,7 @@ export const sortFeature = (
         for (const m of mismatches) {
           const start = feature.get('start')
           const offset = start + m.start + 1
-          const consuming = m.type === 'insertion' || m.type === 'softclip'
+          const consuming = (m.type & MISMATCH_TYPE_CONSUMING_MASK) !== 0
           const len = consuming ? 0 : m.length
           if (pos >= offset && pos < offset + len) {
             baseSortArray.push([feature.id(), m])

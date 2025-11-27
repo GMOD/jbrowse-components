@@ -90,6 +90,15 @@ number
 boolean
 ```
 
+#### getter: prefersOffset
+
+positions multi-row below the tracklabel even if using overlap tracklabels
+
+```js
+// type
+boolean
+```
+
 #### getter: canDisplayLabels
 
 ```js

@@ -149,7 +149,7 @@ any
 
 ```js
 // type signature
-renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; filters: SerializableFilterChain; }
+renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; filters: SerializableFilterChain; sequenceAdapter: any; onFeatureClick(_: ...
 ```
 
 #### method: trackMenuItems

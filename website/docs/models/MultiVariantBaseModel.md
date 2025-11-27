@@ -71,6 +71,15 @@ true
 showSidebarLabelsSetting: true
 ```
 
+#### property: showTree
+
+```js
+// type signature
+true
+// code
+showTree: true
+```
+
 #### property: renderingMode
 
 ```js
@@ -129,6 +138,24 @@ string
 referenceDrawingMode: 'skip'
 ```
 
+#### property: clusterTree
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+clusterTree: types.maybe(types.string)
+```
+
+#### property: treeAreaWidth
+
+```js
+// type signature
+number
+// code
+treeAreaWidth: 80
+```
+
 ### MultiVariantBaseModel - Getters
 
 #### getter: activeFilters
@@ -152,6 +179,13 @@ Source[]
 any[]
 ```
 
+#### getter: root
+
+```js
+// type
+any
+```
+
 #### getter: sourceMap
 
 ```js
@@ -164,6 +198,20 @@ any
 ```js
 // type
 number
+```
+
+#### getter: totalHeight
+
+```js
+// type
+number
+```
+
+#### getter: hierarchy
+
+```js
+// type
+any
 ```
 
 #### getter: canDisplayLabels
@@ -200,7 +248,14 @@ adapterProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 5 more ... | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 6 more ... | { ...; })[]
+```
+
+#### method: getPortableSettings
+
+```js
+// type signature
+getPortableSettings: () => { rowHeightSetting: number; minorAlleleFrequencyFilter: number; showSidebarLabelsSetting: boolean; showTree: boolean; renderingMode: string; autoHeight: boolean; lengthCutoffFilter: number; ... 5 more ...; height: number; }
 ```
 
 #### method: renderProps
@@ -233,6 +288,34 @@ setRowHeight: (arg: number) => void
 setHoveredGenotype: (arg?: { genotype: string; name: string; }) => void
 ```
 
+#### action: setHoveredTreeNode
+
+```js
+// type signature
+setHoveredTreeNode: (node: any) => void
+```
+
+#### action: setTreeCanvasRef
+
+```js
+// type signature
+setTreeCanvasRef: (ref: HTMLCanvasElement) => void
+```
+
+#### action: setMouseoverCanvasRef
+
+```js
+// type signature
+setMouseoverCanvasRef: (ref: HTMLCanvasElement) => void
+```
+
+#### action: setTreeAreaWidth
+
+```js
+// type signature
+setTreeAreaWidth: (width: number) => void
+```
+
 #### action: setFeatures
 
 ```js
@@ -244,7 +327,7 @@ setFeatures: (f: Feature[]) => void
 
 ```js
 // type signature
-setLayout: (layout: Source[]) => void
+setLayout: (layout: Source[], clearTree?: boolean) => void
 ```
 
 #### action: clearLayout
@@ -252,6 +335,13 @@ setLayout: (layout: Source[]) => void
 ```js
 // type signature
 clearLayout: () => void
+```
+
+#### action: setClusterTree
+
+```js
+// type signature
+setClusterTree: (tree?: string) => void
 ```
 
 #### action: setSourcesLoading
@@ -287,6 +377,13 @@ setMafFilter: (arg: number) => void
 ```js
 // type signature
 setShowSidebarLabels: (arg: boolean) => void
+```
+
+#### action: setShowTree
+
+```js
+// type signature
+setShowTree: (arg: boolean) => void
 ```
 
 #### action: setPhasedMode

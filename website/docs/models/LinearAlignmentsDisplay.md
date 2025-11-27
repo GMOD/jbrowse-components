@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearAlignmentsDisplay.md)
 
@@ -175,5 +175,5 @@ resizeHeight: (distance: number) => number
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<Element>
 ```

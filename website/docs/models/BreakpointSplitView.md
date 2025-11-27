@@ -84,9 +84,9 @@ interactiveOverlay: true
 
 ```js
 // type signature
-true
+false
 // code
-showHeader: true
+showHeader: false
 ```
 
 #### property: views

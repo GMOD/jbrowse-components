@@ -143,7 +143,7 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearReadArcsDisplay - Actions
@@ -190,4 +190,22 @@ better evidence when e.g. 100 long reads map to same x position
 ```js
 // type signature
 setJitter: (n: number) => void
+```
+
+#### action: setRenderingImageData
+
+Set the rendering imageData from RPC
+
+```js
+// type signature
+setRenderingImageData: (imageData: ImageBitmap) => void
+```
+
+#### action: setRenderingStopToken
+
+Set the rendering stop token
+
+```js
+// type signature
+setRenderingStopToken: (token: string) => void
 ```

@@ -201,7 +201,7 @@ uses copy-to-clipboard and generates notification
 
 ```js
 // type signature
-copyFeatureToClipboard: (feature: Feature) => void
+copyFeatureToClipboard: (feature: Feature) => Promise<void>
 ```
 
 #### method: contextMenuItems
