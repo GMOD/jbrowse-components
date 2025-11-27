@@ -13,7 +13,7 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
 }) {
   const { arr, width, height, displayModel } = props
   const ref = useRef<HTMLDivElement>(null)
-  const lastHoveredRef = useRef<string>()
+  const lastHoveredRef = useRef<string | undefined>(undefined)
 
   const getFeatureUnderMouse = useCallback(
     (eventClientX: number, eventClientY: number) => {

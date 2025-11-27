@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
@@ -24,7 +24,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Get all descendant leaf names for a node
 function getDescendantNames(node: any): string[] {
   if (!node.children || node.children.length === 0) {
     return [node.data.name]
@@ -32,15 +31,24 @@ function getDescendantNames(node: any): string[] {
   return node.children.flatMap((child: any) => getDescendantNames(child))
 }
 
+/**
+ * TreeSidebar renders a hierarchical cluster tree alongside the variant display.
+ *
+ * Architecture:
+ * - treeCanvas: Draws the tree structure lines (via treeDrawingAutorun)
+ * - mouseoverCanvas: Draws hover highlights spanning full width (via treeDrawingAutorun)
+ * - interaction div: Captures mouse events over the tree area
+ *
+ * The sticky container keeps the tree visible when the parent scrolls.
+ * The tree drawing uses translate(-scrollTop) to show the correct portion.
+ */
 const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
   const { classes } = useStyles()
   const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
   const [nodeIndex, setNodeIndex] = useState<Flatbush | null>(null)
   const [nodeData, setNodeData] = useState<any[]>([])
 
-  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-  const { totalHeight, hierarchy, treeAreaWidth, height, scrollTop, showTree } =
-    model
+  const { hierarchy, treeAreaWidth, height, scrollTop, showTree } = model
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const treeCanvasRef = useCallback(
@@ -60,34 +68,31 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
     [model, viewWidth, height],
   )
 
-  // Build spatial index for tree nodes (branch points only) using autorun
+  // Build spatial index for tree branch nodes to enable hover detection
   useEffect(() => {
     return autorun(
       function treeSpatialIndexAutorun() {
-        // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-        const { hierarchy: h, treeAreaWidth: w, totalHeight: th } = model
+        // it is required to access treeAreaWidth here for the autorun to respond
+        const { treeAreaWidth: _t, hierarchy: h, totalHeight: th } = model
+        // Access totalHeight to rebuild index when row height changes
+        void th
         if (!h) {
           setNodeIndex(null)
           setNodeData([])
           return
         }
 
-        // Get all internal nodes (branch points) - exclude leaves
-        // Note: accessing totalHeight ensures we rebuild when row height changes
         const nodes = [...h.descendants()].filter(
           (node: any) => node.children && node.children.length > 0,
         )
 
         const index = new Flatbush(nodes.length)
         const data: any[] = []
-
-        const hitRadius = 8 // Click radius around node
+        const hitRadius = 8
 
         for (const node of nodes) {
           const x = node.y
           const y = node.x!
-
-          // Add bounding box for the node
           index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
           data.push(node)
         }
@@ -100,23 +105,44 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
     )
   }, [model])
 
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      if (!hierarchy || !nodeIndex) {
+        return
+      }
+      const rect = event.currentTarget.getBoundingClientRect()
+      const x = event.clientX - rect.left
+      const y = event.clientY - rect.top + scrollTop
+
+      const results = nodeIndex.search(x, y, x, y)
+      if (results.length > 0) {
+        const node = nodeData[results[0]!]!
+        model.setHoveredTreeNode({
+          node,
+          descendantNames: getDescendantNames(node),
+        })
+      } else {
+        model.setHoveredTreeNode(undefined)
+      }
+    },
+    [hierarchy, nodeIndex, nodeData, scrollTop, model],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    model.setHoveredTreeNode(undefined)
+  }, [model])
+
   if (!hierarchy || !showTree) {
     return null
   }
 
   return (
     <>
-      {/* Sticky container keeps tree visible when scrolling */}
+      {/* Sticky container keeps tree visible when parent scrolls */}
       <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          left: 0,
-          height: 0,
-          zIndex: 100,
-        }}
+        style={{ position: 'sticky', top: 0, left: 0, height: 0, zIndex: 100 }}
       >
-        {/* Tree structure canvas */}
+        {/* Tree structure canvas - draws lines via treeDrawingAutorun */}
         <canvas
           ref={treeCanvasRef}
           width={treeAreaWidth}
@@ -128,70 +154,23 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
             pointerEvents: 'none',
           }}
         />
-        {/* Mouseover interaction canvas - spans full width for highlighting */}
+        {/* Highlight canvas - draws hover highlights via treeDrawingAutorun */}
         <canvas
           ref={mouseoverCanvasRef}
           width={viewWidth}
           height={height}
-          onMouseMove={(event: React.MouseEvent<HTMLCanvasElement>) => {
-            if (!hierarchy || !nodeIndex) {
-              return
-            }
-
-            const rect = event.currentTarget.getBoundingClientRect()
-            const x = event.clientX - rect.left
-            const y = event.clientY - rect.top + scrollTop
-
-            const results = nodeIndex.search(x, y, x, y)
-
-            if (results.length > 0) {
-              const node = nodeData[results[0]!]!
-              model.setHoveredTreeNode({
-                node,
-                descendantNames: getDescendantNames(node),
-              })
-            } else {
-              model.setHoveredTreeNode(undefined)
-            }
-          }}
-          onMouseLeave={() => {
-            model.setHoveredTreeNode(undefined)
-          }}
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             zIndex: 1,
-            cursor: 'pointer',
             pointerEvents: 'none',
           }}
         />
-        {/* Invisible interaction area over tree only */}
+        {/* Interaction area - captures mouse events over tree */}
         <div
-          onMouseMove={event => {
-            if (!hierarchy || !nodeIndex) {
-              return
-            }
-
-            const rect = event.currentTarget.getBoundingClientRect()
-            const x = event.clientX - rect.left
-            const y = event.clientY - rect.top + scrollTop
-
-            const results = nodeIndex.search(x, y, x, y)
-
-            if (results.length > 0) {
-              const node = nodeData[results[0]!]!
-              model.setHoveredTreeNode({
-                node,
-                descendantNames: getDescendantNames(node),
-              })
-            } else {
-              model.setHoveredTreeNode(undefined)
-            }
-          }}
-          onMouseLeave={() => {
-            model.setHoveredTreeNode(undefined)
-          }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
           style={{
             position: 'absolute',
             top: 0,
@@ -204,7 +183,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
         />
       </div>
       <ResizeHandle
-        onDrag={(distance: number) => {
+        onDrag={distance => {
           model.setTreeAreaWidth(Math.max(50, treeAreaWidth + distance))
           return undefined
         }}

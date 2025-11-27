@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
@@ -7,51 +7,17 @@ import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGen
 import Crosshair from '../../shared/components/MultiVariantCrosshairs'
 import LegendBar from '../../shared/components/MultiVariantLegendBar'
 import TreeSidebar from '../../shared/components/TreeSidebar'
+import { useMouseTracking } from '../../shared/hooks/useMouseTracking'
 
 import type { MultiLinearVariantMatrixDisplayModel } from '../model'
-
-interface MouseState {
-  x: number
-  y: number
-  offsetX: number
-  offsetY: number
-}
 
 const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
   model: MultiLinearVariantMatrixDisplayModel
 }) {
   const { model } = props
-  const { lineZoneHeight, height, setScrollTop, autoHeight, scrollTop } = model
+  const { lineZoneHeight, height, setScrollTop, autoHeight, scrollTop, availableHeight } = model
   const ref = useRef<HTMLDivElement>(null)
-  const rafRef = useRef<number>()
-  const [mouseState, setMouseState] = useState<MouseState>()
-  const matrixHeight = height - lineZoneHeight
-
-  const handleMouseMove = useCallback((event: React.MouseEvent) => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current)
-    }
-    const clientX = event.clientX
-    const clientY = event.clientY
-    rafRef.current = requestAnimationFrame(() => {
-      const rect = ref.current?.getBoundingClientRect()
-      if (rect) {
-        setMouseState({
-          x: clientX - rect.left,
-          y: clientY - rect.top,
-          offsetX: rect.left,
-          offsetY: rect.top,
-        })
-      }
-    })
-  }, [])
-
-  const handleMouseLeave = useCallback(() => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current)
-    }
-    setMouseState(undefined)
-  }, [])
+  const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(ref)
 
   return (
     <div
@@ -71,7 +37,7 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
         style={{
           position: 'absolute',
           top: lineZoneHeight,
-          height: matrixHeight,
+          height: availableHeight,
           width: '100%',
           overflowY: autoHeight ? 'hidden' : 'auto',
           overflowX: 'hidden',

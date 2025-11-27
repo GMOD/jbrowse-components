@@ -68,12 +68,12 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        showSidebarLabelsSetting: true,
+        showSidebarLabelsSetting: types.optional(types.boolean, true),
 
         /**
          * #property
          */
-        showTree: true,
+        showTree: types.optional(types.boolean, true),
 
         /**
          * #property
@@ -90,12 +90,12 @@ export default function MultiVariantBaseModelF(
          * #property
          * used only if autoHeight is false
          */
-        autoHeight: true,
+        autoHeight: types.optional(types.boolean, true),
 
         /**
          * #property
          */
-        lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
+        lengthCutoffFilter: types.optional(types.number, Number.MAX_SAFE_INTEGER),
 
         /**
          * #property
@@ -105,7 +105,7 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        referenceDrawingMode: 'skip',
+        referenceDrawingMode: types.optional(types.string, 'skip'),
         /**
          * #property
          */
@@ -113,7 +113,12 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        treeAreaWidth: 80,
+        treeAreaWidth: types.optional(types.number, 80),
+        /**
+         * #property
+         * Height reserved for elements above the main display (e.g., connecting lines in matrix view)
+         */
+        lineZoneHeight: types.optional(types.number, 0),
       }),
     )
     .volatile(() => ({
@@ -399,16 +404,33 @@ export default function MultiVariantBaseModelF(
         },
         /**
          * #getter
+         * Available height for rows (total height minus lineZoneHeight)
+         */
+        get availableHeight() {
+          return self.height - self.lineZoneHeight
+        },
+        /**
+         * #getter
+         */
+        get nrow() {
+          return self.sources?.length || 1
+        },
+        /**
+         * #getter
          */
         get rowHeight() {
-          const { sources, autoHeight, rowHeightSetting, height } = self
-          return autoHeight ? height / (sources?.length || 1) : rowHeightSetting
+          const { autoHeight, rowHeightSetting } = self
+          return autoHeight
+            ? this.availableHeight / this.nrow
+            : rowHeightSetting
         },
         /**
          * #getter
          */
         get totalHeight() {
-          return self.sources ? self.sources.length * this.rowHeight : 1
+          return self.autoHeight
+            ? this.availableHeight
+            : this.nrow * self.rowHeightSetting
         },
         /**
          * #getter

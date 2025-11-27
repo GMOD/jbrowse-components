@@ -13,6 +13,7 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
 interface Item {
+  name: string
   genotype: string
   featureId: string
   bpLen: number
@@ -46,7 +47,7 @@ const MultiVariantRendering = observer(function (props: {
   const { flatbush, items, displayModel, featureGenotypeMap, totalHeight } =
     props
   const ref = useRef<HTMLDivElement>(null)
-  const lastHoveredRef = useRef<string>()
+  const lastHoveredRef = useRef<string | undefined>(undefined)
   const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
 
   const getFeatureUnderMouse = useCallback(
