@@ -1,5 +1,5 @@
-import { clamp, getSession } from '@jbrowse/core/util'
-import { isAlive, types } from 'mobx-state-tree'
+import { clamp } from '@jbrowse/core/util'
+import { types } from 'mobx-state-tree'
 
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
 
@@ -24,53 +24,18 @@ export default function stateModelFactory(
          * #property
          */
         type: types.literal('LinearVariantMatrixDisplay'),
-
         /**
          * #property
          */
-        rowHeightSetting: types.optional(types.number, 1),
-        /**
-         * #property
-         */
-        lineZoneHeight: 20,
+        lineZoneHeight: types.optional(types.number, 20),
       }),
     )
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get nrow() {
-        return self.sources?.length || 1
-      },
+    .views(() => ({
       /**
        * #getter
        */
       get blockType() {
         return 'dynamicBlocks'
-      },
-      /**
-       * #getter
-       */
-      get totalHeight() {
-        return self.autoHeight
-          ? self.height - self.lineZoneHeight
-          : this.nrow * self.rowHeightSetting
-      },
-
-      /**
-       * #getter
-       */
-      get rowHeight() {
-        return self.autoHeight
-          ? self.totalHeight / this.nrow
-          : self.rowHeightSetting
-      },
-
-      /**
-       * #getter
-       */
-      get featuresReady() {
-        return !!self.featuresVolatile
       },
 
       /**
@@ -82,10 +47,10 @@ export default function stateModelFactory(
         return true
       },
     }))
-
     .views(self => ({
       /**
        * #method
+       * Override renderProps to pass the correct height for the matrix renderer
        */
       renderProps() {
         const superProps = self.adapterProps()
@@ -95,15 +60,12 @@ export default function stateModelFactory(
           renderingMode: self.renderingMode,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           lengthCutoffFilter: self.lengthCutoffFilter,
-          height: self.totalHeight,
+          height: self.autoHeight ? self.totalHeight : self.availableHeight,
+          totalHeight: self.totalHeight,
+          rowHeight: self.rowHeight,
+          scrollTop: self.scrollTop,
           sources: self.sources,
         }
-      },
-      /**
-       * #getter
-       */
-      get canDisplayLabels() {
-        return self.rowHeight >= 6 && self.showSidebarLabelsSetting
       },
     }))
     .actions(self => ({
@@ -118,39 +80,6 @@ export default function stateModelFactory(
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
       return {
-        /**
-         * #action
-         */
-        setLineZoneHeight(n: number) {
-          self.lineZoneHeight = clamp(n, 10, 1000)
-          return self.lineZoneHeight
-        },
-        afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const { getMultiVariantSourcesAutorun } = await import(
-                '../getMultiVariantSourcesAutorun'
-              )
-              const { getMultiVariantFeaturesAutorun } = await import(
-                '../getMultiVariantFeaturesAutorun'
-              )
-              const { setupTreeDrawingAutorun } = await import(
-                '../shared/treeDrawingAutorun'
-              )
-
-              getMultiVariantSourcesAutorun(self)
-              getMultiVariantFeaturesAutorun(self)
-              setupTreeDrawingAutorun(self)
-            } catch (e) {
-              if (isAlive(self)) {
-                console.error(e)
-                getSession(self).notifyError(`${e}`, e)
-              }
-            }
-          })()
-        },
-
         /**
          * #action
          */

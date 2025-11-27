@@ -14,7 +14,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 // @ts-expect-error
 import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
-import { cast, types } from 'mobx-state-tree'
+import { cast, isAlive, types } from 'mobx-state-tree'
 
 import { cluster, hierarchy } from '../d3-hierarchy2'
 import { getSources } from './getSources'
@@ -68,12 +68,12 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        showSidebarLabelsSetting: true,
+        showSidebarLabelsSetting: types.optional(types.boolean, true),
 
         /**
          * #property
          */
-        showTree: true,
+        showTree: types.optional(types.boolean, true),
 
         /**
          * #property
@@ -82,20 +82,21 @@ export default function MultiVariantBaseModelF(
 
         /**
          * #property
-         * used only if autoHeight is false
+         * Controls row height: 'auto' calculates from available height,
+         * or a number specifies manual pixel height per row
          */
-        rowHeightSetting: types.optional(types.number, 8),
+        rowHeightMode: types.optional(
+          types.union(types.literal('auto'), types.number),
+          'auto',
+        ),
 
         /**
          * #property
-         * used only if autoHeight is false
          */
-        autoHeight: true,
-
-        /**
-         * #property
-         */
-        lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
+        lengthCutoffFilter: types.optional(
+          types.number,
+          Number.MAX_SAFE_INTEGER,
+        ),
 
         /**
          * #property
@@ -105,7 +106,7 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        referenceDrawingMode: 'skip',
+        referenceDrawingMode: types.optional(types.string, 'skip'),
         /**
          * #property
          */
@@ -113,7 +114,12 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        treeAreaWidth: 80,
+        treeAreaWidth: types.optional(types.number, 80),
+        /**
+         * #property
+         * Height reserved for elements above the main display (e.g., connecting lines in matrix view)
+         */
+        lineZoneHeight: types.optional(types.number, 0),
       }),
     )
     .volatile(() => ({
@@ -174,8 +180,8 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setRowHeight(arg: number) {
-        self.rowHeightSetting = arg
+      setRowHeight(arg: number | 'auto') {
+        self.rowHeightMode = arg
       },
       /**
        * #action
@@ -295,9 +301,10 @@ export default function MultiVariantBaseModelF(
       },
       /**
        * #action
+       * Toggle auto height mode. When turning off, uses default of 10px per row.
        */
-      setAutoHeight(arg: boolean) {
-        self.autoHeight = arg
+      setAutoHeight(auto: boolean) {
+        self.rowHeightMode = auto ? 'auto' : 10
       },
       /**
        * #action
@@ -321,6 +328,13 @@ export default function MultiVariantBaseModelF(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get autoHeight() {
+        return self.rowHeightMode === 'auto'
+      },
+
       /**
        * #getter
        */
@@ -381,7 +395,6 @@ export default function MultiVariantBaseModelF(
     }))
     .views(self => {
       const {
-        trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
         renderingProps: superRenderingProps,
       } = self
@@ -399,16 +412,33 @@ export default function MultiVariantBaseModelF(
         },
         /**
          * #getter
+         * Available height for rows (total height minus lineZoneHeight)
          */
-        get rowHeight() {
-          const { sources, autoHeight, rowHeightSetting, height } = self
-          return autoHeight ? height / (sources?.length || 1) : rowHeightSetting
+        get availableHeight() {
+          return self.height - self.lineZoneHeight
         },
         /**
          * #getter
          */
+        get nrow() {
+          return self.sources?.length || 1
+        },
+
+        /**
+         * #getter
+         */
         get totalHeight() {
-          return self.sources ? self.sources.length * this.rowHeight : 1
+          return self.rowHeightMode === 'auto'
+            ? this.availableHeight
+            : this.nrow * self.rowHeightMode
+        },
+        /**
+         * #getter
+         */
+        get rowHeight() {
+          return self.rowHeightMode === 'auto'
+            ? this.availableHeight / this.nrow
+            : self.rowHeightMode
         },
         /**
          * #getter
@@ -447,6 +477,12 @@ export default function MultiVariantBaseModelF(
             ...superRenderingProps(),
           }
         },
+      }
+    })
+    .views(self => {
+      const { trackMenuItems: superTrackMenuItems } = self
+
+      return {
         /**
          * #method
          */
@@ -627,13 +663,13 @@ export default function MultiVariantBaseModelF(
        * #method
        */
       getPortableSettings() {
+        // Note: rowHeightMode is intentionally excluded because Matrix and
+        // Regular displays have different defaults
         return {
-          rowHeightSetting: self.rowHeightSetting,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           showSidebarLabelsSetting: self.showSidebarLabelsSetting,
           showTree: self.showTree,
           renderingMode: self.renderingMode,
-          autoHeight: self.autoHeight,
           lengthCutoffFilter: self.lengthCutoffFilter,
           jexlFilters: self.jexlFilters,
           referenceDrawingMode: self.referenceDrawingMode,
@@ -666,6 +702,24 @@ export default function MultiVariantBaseModelF(
             filters: self.activeFilters,
           }),
         }
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { setupMultiVariantAutoruns } = await import(
+              './setupMultiVariantAutoruns'
+            )
+            setupMultiVariantAutoruns(self)
+          } catch (e) {
+            if (isAlive(self)) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+          }
+        })()
       },
     }))
 }

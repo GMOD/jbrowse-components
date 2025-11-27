@@ -2,10 +2,7 @@ import { forEachWithStopTokenCheck, updateStatus } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
-import {
-  drawColorAlleleCount,
-  getColorAlleleCount,
-} from '../shared/drawAlleleCount'
+import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
@@ -31,10 +28,15 @@ export async function makeImageData({
     features,
     stopToken,
     lengthCutoffFilter,
+    rowHeight,
+    scrollTop,
   } = renderArgs
 
   const { statusCallback = () => {} } = renderArgs
-  const h = canvasHeight / sources.length
+  const sln = sources.length
+  const h = rowHeight
+  const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
+  const endRow = Math.min(sln, Math.ceil((scrollTop + canvasHeight) / h))
   checkStopToken(stopToken)
 
   const genotypesCache = new Map<string, Record<string, string>>()
@@ -54,6 +56,7 @@ export async function makeImageData({
 
   await updateStatus('Drawing variant matrix', statusCallback, () => {
     const colorCache = {} as Record<string, string | undefined>
+    const splitCache = {} as Record<string, string[]>
     forEachWithStopTokenCheck(
       mafs,
       stopToken,
@@ -65,9 +68,8 @@ export async function makeImageData({
         if (hasPhaseSet) {
           const samp = feature.get('samples') as Record<string, SampleGenotype>
           const x = (idx / mafs.length) * canvasWidth
-          const sln = sources.length
-          for (let j = 0; j < sln; j++) {
-            const y = (j / sln) * canvasHeight
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name, HP } = sources[j]!
             const s = samp[name]
             if (s) {
@@ -85,38 +87,13 @@ export async function makeImageData({
                     ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
                   }
                 } else {
-                  const cacheKey = `${genotype}:${mostFrequentAlt}`
-                  let c = colorCache[cacheKey]
-                  if (c === undefined) {
-                    let alt = 0
-                    let uncalled = 0
-                    let alt2 = 0
-                    let ref = 0
-                    const alleles = genotype.split(/[/|]/)
-                    const total = alleles.length
-
-                    for (let i = 0; i < total; i++) {
-                      const allele = alleles[i]!
-                      if (allele === mostFrequentAlt) {
-                        alt++
-                      } else if (allele === '0') {
-                        ref++
-                      } else if (allele === '.') {
-                        uncalled++
-                      } else {
-                        alt2++
-                      }
-                    }
-                    c = getColorAlleleCount(
-                      ref,
-                      alt,
-                      alt2,
-                      uncalled,
-                      total,
-                      true,
-                    )
-                    colorCache[cacheKey] = c
-                  }
+                  const c = getAlleleColor(
+                    genotype,
+                    mostFrequentAlt,
+                    colorCache,
+                    splitCache,
+                    true,
+                  )
                   if (c) {
                     drawColorAlleleCount(c, ctx, x, y, w, h)
                   }
@@ -132,9 +109,8 @@ export async function makeImageData({
             genotypesCache.set(featureId, samp)
           }
           const x = (idx / mafs.length) * canvasWidth
-          const sln = sources.length
-          for (let j = 0; j < sln; j++) {
-            const y = (j / sln) * canvasHeight
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name, HP } = sources[j]!
             const genotype = samp[name]
             if (genotype) {
@@ -149,31 +125,13 @@ export async function makeImageData({
                   ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
                 }
               } else {
-                const cacheKey = `${genotype}:${mostFrequentAlt}`
-                let c = colorCache[cacheKey]
-                if (c === undefined) {
-                  let alt = 0
-                  let uncalled = 0
-                  let alt2 = 0
-                  let ref = 0
-                  const alleles = genotype.split(/[/|]/)
-                  const total = alleles.length
-
-                  for (let i = 0; i < total; i++) {
-                    const allele = alleles[i]!
-                    if (allele === mostFrequentAlt) {
-                      alt++
-                    } else if (allele === '0') {
-                      ref++
-                    } else if (allele === '.') {
-                      uncalled++
-                    } else {
-                      alt2++
-                    }
-                  }
-                  c = getColorAlleleCount(ref, alt, alt2, uncalled, total, true)
-                  colorCache[cacheKey] = c
-                }
+                const c = getAlleleColor(
+                  genotype,
+                  mostFrequentAlt,
+                  colorCache,
+                  splitCache,
+                  true,
+                )
                 if (c) {
                   drawColorAlleleCount(c, ctx, x, y, w, h)
                 }
@@ -185,8 +143,17 @@ export async function makeImageData({
       },
     )
   })
+  const featureData = mafs.map(({ feature }) => ({
+    alt: feature.get('ALT') as string[],
+    ref: feature.get('REF') as string,
+    name: feature.get('name') as string,
+    description: feature.get('description') as string,
+    length: feature.get('end') - feature.get('start'),
+  }))
+
   return {
     mafs,
     arr,
+    featureData,
   }
 }

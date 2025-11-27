@@ -9,7 +9,8 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
 
   async render(renderProps: MultiRenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { height, referenceDrawingMode, regions, bpPerPx } = renderProps
+    const { height, referenceDrawingMode, regions, bpPerPx, scrollTop } =
+      renderProps
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
@@ -45,6 +46,7 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
       features: new Map<string, Feature>(),
       height,
       width,
+      origScrollTop: scrollTop,
       containsNoTransferables: true,
     }
   }

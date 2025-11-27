@@ -7,10 +7,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
-import {
-  drawColorAlleleCount,
-  getColorAlleleCount,
-} from '../shared/drawAlleleCount'
+import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
@@ -25,6 +22,7 @@ export async function makeImageData(
     minorAlleleFrequencyFilter,
     sources,
     rowHeight,
+    height: canvasHeight,
     features,
     regions,
     bpPerPx,
@@ -43,7 +41,12 @@ export async function makeImageData(
   const splitCache = {} as Record<string, string[]>
   const genotypesCache = new Map<string, Record<string, string>>()
   const drawRef = referenceDrawingMode === 'draw'
-  const h = Math.max(rowHeight, 1)
+  const h = rowHeight
+  // Use at least 1px for drawing operations to avoid insanely small subpixel rendering
+  const drawH = Math.max(rowHeight, 1)
+  const sln = sources.length
+  const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
+  const endRow = Math.min(sln, Math.ceil((scrollTop + canvasHeight) / h))
 
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
@@ -76,11 +79,10 @@ export async function makeImageData(
         const featureStrand = feature.get('strand')
         const alpha = bpLen > 5 ? 0.75 : 1
         const x = Math.floor(leftPx)
-        let y = -scrollTop
 
-        const s = sources.length
         if (renderingMode === 'phased') {
-          for (let j = 0; j < s; j++) {
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name, HP } = sources[j]!
             const genotype = samp[name]
             if (genotype) {
@@ -90,7 +92,17 @@ export async function makeImageData(
                   splitCache[genotype] ||
                   (splitCache[genotype] = genotype.split('|'))
                 if (
-                  drawPhased(alleles, ctx, x, y, w, h, HP!, undefined, drawRef)
+                  drawPhased(
+                    alleles,
+                    ctx,
+                    x,
+                    y,
+                    w,
+                    drawH,
+                    HP!,
+                    undefined,
+                    drawRef,
+                  )
                 ) {
                   items.push({
                     name,
@@ -98,54 +110,27 @@ export async function makeImageData(
                     featureId,
                     bpLen,
                   })
-                  coords.push(x, y, x + w, y + h)
+                  coords.push(x, y, x + w, y + drawH)
                 }
               } else {
                 ctx.fillStyle = 'black'
-                ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+                ctx.fillRect(x - f2, y - f2, w + f2, drawH + f2)
               }
             }
-            y += rowHeight
           }
         } else {
-          for (let j = 0; j < s; j++) {
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name } = sources[j]!
             const genotype = samp[name]
             if (genotype) {
-              const cacheKey = `${genotype}:${mostFrequentAlt}`
-              let c = colorCache[cacheKey]
-              if (c === undefined) {
-                let alt = 0
-                let uncalled = 0
-                let alt2 = 0
-                let ref = 0
-                const alleles =
-                  splitCache[genotype] ||
-                  (splitCache[genotype] = genotype.split(/[/|]/))
-                const total = alleles.length
-
-                for (let i = 0; i < total; i++) {
-                  const allele = alleles[i]!
-                  if (allele === mostFrequentAlt) {
-                    alt++
-                  } else if (allele === '0') {
-                    ref++
-                  } else if (allele === '.') {
-                    uncalled++
-                  } else {
-                    alt2++
-                  }
-                }
-                c = getColorAlleleCount(
-                  ref,
-                  alt,
-                  alt2,
-                  uncalled,
-                  total,
-                  drawRef,
-                )
-                colorCache[cacheKey] = c
-              }
+              const c = getAlleleColor(
+                genotype,
+                mostFrequentAlt,
+                colorCache,
+                splitCache,
+                drawRef,
+              )
               if (c) {
                 drawColorAlleleCount(
                   c,
@@ -153,7 +138,7 @@ export async function makeImageData(
                   x,
                   y,
                   w,
-                  h,
+                  drawH,
                   featureType,
                   featureStrand,
                   alpha,
@@ -165,10 +150,9 @@ export async function makeImageData(
                   featureId,
                   bpLen,
                 })
-                coords.push(x, y, x + w, y + h)
+                coords.push(x, y, x + w, y + drawH)
               }
             }
-            y += rowHeight
           }
         }
       },
