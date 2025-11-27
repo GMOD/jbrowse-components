@@ -25,7 +25,10 @@ const useStyles = makeStyles()(theme => ({
     },
   },
   trackName: {
+    margin: '0 auto',
+    width: '90%',
     fontSize: '0.8rem',
+    pointerEvents: 'none',
   },
   iconButton: {
     padding: theme.spacing(1),
@@ -74,10 +77,6 @@ const TrackLabel = observer(
           variant="body1"
           component="span"
           className={classes.trackName}
-          onMouseDown={event => {
-            // avoid becoming a click-and-drag action on the lgv
-            event.stopPropagation()
-          }}
         >
           <SanitizedHTML
             html={[trackName, minimized ? '(minimized)' : '']
