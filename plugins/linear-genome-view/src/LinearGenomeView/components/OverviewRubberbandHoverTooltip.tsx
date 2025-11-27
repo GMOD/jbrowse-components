@@ -52,7 +52,10 @@ const OverviewRubberbandHoverTooltip = observer(function ({
       )}
       arrow
     >
-      <div className={classes.guide} style={{ transform: `translateX(${guideX}px)` }} />
+      <div
+        className={classes.guide}
+        style={{ transform: `translateX(${guideX}px)` }}
+      />
     </Tooltip>
   )
 })

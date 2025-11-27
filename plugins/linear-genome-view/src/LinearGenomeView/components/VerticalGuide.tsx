@@ -53,7 +53,10 @@ const VerticalGuide = observer(function VerticalGuide({
           }}
         />
       </Tooltip>
-      <div className={classes.guide} style={{ transform: `translateX(${coordX}px)` }} />
+      <div
+        className={classes.guide}
+        style={{ transform: `translateX(${coordX}px)` }}
+      />
     </>
   )
 })

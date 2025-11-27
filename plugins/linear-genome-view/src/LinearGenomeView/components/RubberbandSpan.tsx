@@ -68,7 +68,10 @@ export default function RubberbandSpan({
           />
         </>
       ) : null}
-      <div className={classes.rubberband} style={{ transform: `translateX(${left}px)`, width }}>
+      <div
+        className={classes.rubberband}
+        style={{ transform: `translateX(${left}px)`, width }}
+      >
         {numOfBpSelected ? (
           <Typography
             ref={el => {
