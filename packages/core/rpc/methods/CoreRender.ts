@@ -21,9 +21,6 @@ export default class CoreRender extends RpcMethodType {
       renamedArgs,
       rpcDriver,
     )) as RenderArgs
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      return superArgs
-    }
 
     return validateRendererType(
       args.rendererType,
@@ -35,27 +32,16 @@ export default class CoreRender extends RpcMethodType {
     args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
-    let deserializedArgs = args
-    if (rpcDriver !== 'MainThreadRpcDriver') {
-      deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    }
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { sessionId, rendererType } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
-    const RendererType = validateRendererType(
+    return validateRendererType(
       rendererType,
       this.pluginManager.getRendererType(rendererType),
-    )
-
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      // for MainThread, render and serialize results so deserializeResultsInClient
-      // receives consistent data format regardless of RPC driver
-      const results = await RendererType.render(deserializedArgs)
-      return RendererType.serializeResultsInWorker(results, deserializedArgs)
-    }
-    return RendererType.renderInWorker(deserializedArgs)
+    ).renderInWorker(deserializedArgs)
   }
 
   async deserializeReturn(

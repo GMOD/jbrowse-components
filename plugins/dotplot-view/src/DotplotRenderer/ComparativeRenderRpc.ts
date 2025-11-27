@@ -42,19 +42,14 @@ export default class ComparativeRender extends RpcMethodType {
     const n = (await super.serializeArguments(args, rpcDriver)) as RenderArgs
     const result = await this.renameRegionsIfNeeded(n, renderer)
 
-    return rpcDriver === 'MainThreadRpcDriver'
-      ? result
-      : renderer.serializeArgsInClient(result)
+    return renderer.serializeArgsInClient(result)
   }
 
   async execute(
     args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
-    let deserializedArgs = args
-    if (rpcDriver !== 'MainThreadRpcDriver') {
-      deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    }
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { sessionId, rendererType, stopToken } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
@@ -63,9 +58,7 @@ export default class ComparativeRender extends RpcMethodType {
     checkStopToken(stopToken)
 
     const renderer = this.getRenderer(rendererType)
-    return rpcDriver === 'MainThreadRpcDriver'
-      ? renderer.render(deserializedArgs)
-      : renderer.renderInWorker(deserializedArgs)
+    return renderer.renderInWorker(deserializedArgs)
   }
 
   async deserializeReturn(
@@ -78,9 +71,6 @@ export default class ComparativeRender extends RpcMethodType {
       args,
       rpcDriver,
     )) as ResultsSerialized
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      return ret
-    }
 
     const renderer = this.getRenderer(args.rendererType)
     return renderer.deserializeResultsInClient(ret, args)
