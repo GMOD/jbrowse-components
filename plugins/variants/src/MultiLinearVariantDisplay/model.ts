@@ -1,5 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
-import { isAlive, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
 
@@ -22,10 +21,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         type: types.literal('MultiLinearVariantDisplay'),
-        /**
-         * #property
-         */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0),
       }),
     )
     .views(() => ({
@@ -39,23 +34,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
       return {
-        afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const { setupMultiVariantAutoruns } = await import(
-                '../shared/setupMultiVariantAutoruns'
-              )
-              setupMultiVariantAutoruns(self)
-            } catch (e) {
-              if (isAlive(self)) {
-                console.error(e)
-                getSession(self).notifyError(`${e}`, e)
-              }
-            }
-          })()
-        },
-
         /**
          * #action
          */

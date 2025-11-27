@@ -1,5 +1,5 @@
-import { clamp, getSession } from '@jbrowse/core/util'
-import { isAlive, types } from 'mobx-state-tree'
+import { clamp } from '@jbrowse/core/util'
+import { types } from 'mobx-state-tree'
 
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
 
@@ -30,19 +30,12 @@ export default function stateModelFactory(
         lineZoneHeight: types.optional(types.number, 20),
       }),
     )
-    .views(self => ({
+    .views(() => ({
       /**
        * #getter
        */
       get blockType() {
         return 'dynamicBlocks'
-      },
-
-      /**
-       * #getter
-       */
-      get featuresReady() {
-        return !!self.featuresVolatile
       },
 
       /**
@@ -54,7 +47,6 @@ export default function stateModelFactory(
         return true
       },
     }))
-
     .views(self => ({
       /**
        * #method
@@ -75,12 +67,6 @@ export default function stateModelFactory(
           sources: self.sources,
         }
       },
-      /**
-       * #getter
-       */
-      get canDisplayLabels() {
-        return self.rowHeight >= 6 && self.showSidebarLabelsSetting
-      },
     }))
     .actions(self => ({
       /**
@@ -89,23 +75,6 @@ export default function stateModelFactory(
       setLineZoneHeight(n: number) {
         self.lineZoneHeight = clamp(n, 10, 1000)
         return self.lineZoneHeight
-      },
-
-      afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { setupMultiVariantAutoruns } = await import(
-              '../shared/setupMultiVariantAutoruns'
-            )
-            setupMultiVariantAutoruns(self)
-          } catch (e) {
-            if (isAlive(self)) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            }
-          }
-        })()
       },
     }))
     .actions(self => {

@@ -14,7 +14,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 // @ts-expect-error
 import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
-import { cast, types } from 'mobx-state-tree'
+import { cast, isAlive, types } from 'mobx-state-tree'
 
 import { cluster, hierarchy } from '../d3-hierarchy2'
 import { getSources } from './getSources'
@@ -325,6 +325,23 @@ export default function MultiVariantBaseModelF(
        */
       setReferenceDrawingMode(arg: string) {
         self.referenceDrawingMode = arg
+      },
+
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { setupMultiVariantAutoruns } = await import(
+              './setupMultiVariantAutoruns'
+            )
+            setupMultiVariantAutoruns(self)
+          } catch (e) {
+            if (isAlive(self)) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+          }
+        })()
       },
     }))
     .views(self => ({
