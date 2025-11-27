@@ -326,23 +326,6 @@ export default function MultiVariantBaseModelF(
       setReferenceDrawingMode(arg: string) {
         self.referenceDrawingMode = arg
       },
-
-      afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { setupMultiVariantAutoruns } = await import(
-              './setupMultiVariantAutoruns'
-            )
-            setupMultiVariantAutoruns(self)
-          } catch (e) {
-            if (isAlive(self)) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            }
-          }
-        })()
-      },
     }))
     .views(self => ({
       /**
@@ -719,6 +702,24 @@ export default function MultiVariantBaseModelF(
             filters: self.activeFilters,
           }),
         }
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { setupMultiVariantAutoruns } = await import(
+              './setupMultiVariantAutoruns'
+            )
+            setupMultiVariantAutoruns(self)
+          } catch (e) {
+            if (isAlive(self)) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+          }
+        })()
       },
     }))
 }

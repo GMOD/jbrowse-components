@@ -54,7 +54,7 @@ function PrerenderedCanvas(props: {
       ref={featureCanvas}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}
-      style={{ width, height, background: '#f003', ...style }}
+      style={{ width, height, ...style }}
     />
   )
 }
