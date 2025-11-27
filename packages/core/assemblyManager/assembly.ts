@@ -524,15 +524,18 @@ export default function assemblyFactory(
       afterCreate() {
         addDisposer(
           self,
-          autorun(() => {
-            // force getter not to go stale. helps with very fragmented
-            // assemblies e.g. 1,000,000 scaffolds to avoid recomputing
-            //
-            // xref solution https://github.com/mobxjs/mobx/issues/266#issuecomment-222007278
-            // xref problem https://github.com/GMOD/react-msaview/issues/75
-            // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
-            self.allRefNamesWithLowerCase
-          }),
+          autorun(
+            function assemblyRefNamesAutorun() {
+              // force getter not to go stale. helps with very fragmented
+              // assemblies e.g. 1,000,000 scaffolds to avoid recomputing
+              //
+              // xref solution https://github.com/mobxjs/mobx/issues/266#issuecomment-222007278
+              // xref problem https://github.com/GMOD/react-msaview/issues/75
+              // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
+              self.allRefNamesWithLowerCase
+            },
+            { name: 'AssemblyRefNames' },
+          ),
         )
       },
     }))

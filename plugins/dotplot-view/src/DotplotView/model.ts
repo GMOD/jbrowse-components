@@ -655,20 +655,26 @@ export default function stateModelFactory(pm: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const s = (s: unknown) => JSON.stringify(s)
-            const { showPanButtons, wheelMode, cursorMode } = self
-            if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('dotplot-showPanbuttons', s(showPanButtons))
-              localStorage.setItem('dotplot-cursorMode', cursorMode)
-              localStorage.setItem('dotplot-wheelMode', wheelMode)
-            }
-          }),
+          autorun(
+            function dotplotLocalStorageAutorun() {
+              const s = (s: unknown) => JSON.stringify(s)
+              const { showPanButtons, wheelMode, cursorMode } = self
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(
+                  'dotplot-showPanbuttons',
+                  s(showPanButtons),
+                )
+                localStorage.setItem('dotplot-cursorMode', cursorMode)
+                localStorage.setItem('dotplot-wheelMode', wheelMode)
+              }
+            },
+            { name: 'DotplotLocalStorage' },
+          ),
         )
         addDisposer(
           self,
           autorun(
-            () => {
+            function dotplotRegionsAutorun() {
               const session = getSession(self)
 
               // don't operate if width not set yet
@@ -699,22 +705,25 @@ export default function stateModelFactory(pm: PluginManager) {
                 self.showAllRegions()
               })
             },
-            { delay: 1000 },
+            { delay: 1000, name: 'DotplotRegions' },
           ),
         )
         addDisposer(
           self,
-          autorun(function borderSetter() {
-            // make sure we have a width on the view before trying to load
-            if (self.volatileWidth === undefined) {
-              return
-            }
+          autorun(
+            function dotplotBorderAutorun() {
+              // make sure we have a width on the view before trying to load
+              if (self.volatileWidth === undefined) {
+                return
+              }
 
-            // Calculate and apply borders
-            const { borderX, borderY } = self.calculateBorders()
-            self.setBorderX(borderX)
-            self.setBorderY(borderY)
-          }),
+              // Calculate and apply borders
+              const { borderX, borderY } = self.calculateBorders()
+              self.setBorderX(borderX)
+              self.setBorderY(borderY)
+            },
+            { name: 'DotplotBorder' },
+          ),
         )
       },
       /**

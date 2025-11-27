@@ -161,36 +161,39 @@ function VisibleRegionBox({
   const scalebarColor = theme.palette.tertiary.light
 
   useEffect(() => {
-    return autorun(() => {
-      const { dynamicBlocks, showCytobands, cytobandOffset } = model
-      const visibleRegions = dynamicBlocks.contentBlocks
-      const box = boxRef.current
-      if (!box || !visibleRegions.length) {
-        return
-      }
+    return autorun(
+      function overviewRubberBandAutorun() {
+        const { dynamicBlocks, showCytobands, cytobandOffset } = model
+        const visibleRegions = dynamicBlocks.contentBlocks
+        const box = boxRef.current
+        if (!box || !visibleRegions.length) {
+          return
+        }
 
-      const first = visibleRegions.at(0)!
-      const last = visibleRegions.at(-1)!
-      const firstOverviewPx =
-        overview.bpToPx({
-          refName: first.refName,
-          coord: first.reversed ? first.end : first.start,
-        }) || 0
-      const lastOverviewPx =
-        overview.bpToPx({
-          refName: last.refName,
-          coord: last.reversed ? last.start : last.end,
-        }) || 0
+        const first = visibleRegions.at(0)!
+        const last = visibleRegions.at(-1)!
+        const firstOverviewPx =
+          overview.bpToPx({
+            refName: first.refName,
+            coord: first.reversed ? first.end : first.start,
+          }) || 0
+        const lastOverviewPx =
+          overview.bpToPx({
+            refName: last.refName,
+            coord: last.reversed ? last.start : last.end,
+          }) || 0
 
-      const color = showCytobands ? '#f00' : scalebarColor
-      const transparency = showCytobands ? 0.1 : 0.3
-      const left = firstOverviewPx + cytobandOffset
+        const color = showCytobands ? '#f00' : scalebarColor
+        const transparency = showCytobands ? 0.1 : 0.3
+        const left = firstOverviewPx + cytobandOffset
 
-      box.style.width = `${lastOverviewPx - firstOverviewPx}px`
-      box.style.transform = `translateX(${left}px)`
-      box.style.background = alpha(color, transparency)
-      box.style.borderColor = color
-    })
+        box.style.width = `${lastOverviewPx - firstOverviewPx}px`
+        box.style.transform = `translateX(${left}px)`
+        box.style.background = alpha(color, transparency)
+        box.style.borderColor = color
+      },
+      { name: 'OverviewRubberBand' },
+    )
   }, [model, overview, scalebarColor])
 
   return <div ref={boxRef} className={className} />

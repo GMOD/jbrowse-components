@@ -84,13 +84,24 @@ function stateModelFactory() {
       /**
        * #method
        * the react props that are passed to the Renderer when data
-       * is rendered in this display
+       * is rendered in this display. these are serialized and sent to the
+       * worker for server-side rendering
        */
       renderProps() {
         return {
           ...getParentRenderProps(self),
           notReady: getContainingView(self).minimized,
           rpcDriverName: self.rpcDriverName,
+        }
+      },
+      /**
+       * #method
+       * props passed to the renderer's React "Rendering" component.
+       * these are client-side only and never sent to the worker.
+       * includes displayModel and callbacks
+       */
+      renderingProps() {
+        return {
           displayModel: self,
         }
       },

@@ -14,100 +14,106 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
 
   // Handle offsetPx changes - update container position and pinned label
   useEffect(() => {
-    return autorun(() => {
-      const { staticBlocks, offsetPx, scaleBarDisplayPrefix } = model
+    return autorun(
+      function refNameLabelsOffsetAutorun() {
+        const { staticBlocks, offsetPx, scaleBarDisplayPrefix } = model
 
-      const inner = innerRef.current
-      if (!inner) {
-        return
-      }
-
-      // Translate container to account for scroll position
-      inner.style.transform = `translateX(${-offsetPx}px)`
-
-      // Find which block should be pinned
-      let lastLeftBlock = 0
-      let i = 0
-      for (const block of staticBlocks) {
-        if (block.offsetPx - offsetPx < 0) {
-          lastLeftBlock = i
-        } else {
-          break
+        const inner = innerRef.current
+        if (!inner) {
+          return
         }
-        i++
-      }
 
-      const pinned = pinnedRef.current
-      const pinnedBlock = staticBlocks.blocks[lastLeftBlock]
-      if (pinned && pinnedBlock?.type === 'ContentBlock') {
-        const val = scaleBarDisplayPrefix()
-        pinned.style.transform = `translateX(${Math.max(0, offsetPx)}px)`
-        pinned.textContent = (val ? `${val}:` : '') + pinnedBlock.refName
-      }
-    })
+        // Translate container to account for scroll position
+        inner.style.transform = `translateX(${-offsetPx}px)`
+
+        // Find which block should be pinned
+        let lastLeftBlock = 0
+        let i = 0
+        for (const block of staticBlocks) {
+          if (block.offsetPx - offsetPx < 0) {
+            lastLeftBlock = i
+          } else {
+            break
+          }
+          i++
+        }
+
+        const pinned = pinnedRef.current
+        const pinnedBlock = staticBlocks.blocks[lastLeftBlock]
+        if (pinned && pinnedBlock?.type === 'ContentBlock') {
+          const val = scaleBarDisplayPrefix()
+          pinned.style.transform = `translateX(${Math.max(0, offsetPx)}px)`
+          pinned.textContent = (val ? `${val}:` : '') + pinnedBlock.refName
+        }
+      },
+      { name: 'RefNameLabelsOffset' },
+    )
   }, [model])
 
   // Handle staticBlocks changes - create/update label elements
   useEffect(() => {
     const bgColor = theme.palette.background.paper
 
-    return autorun(() => {
-      const { staticBlocks } = model
-      const inner = innerRef.current
-      if (!inner) {
-        return
-      }
-
-      const existingKeys = new Map<string, HTMLSpanElement>()
-      for (const child of inner.children) {
-        const key = (child as HTMLElement).dataset.labelKey
-        if (key) {
-          existingKeys.set(key, child as HTMLSpanElement)
+    return autorun(
+      function refNameLabelsLayoutAutorun() {
+        const { staticBlocks } = model
+        const inner = innerRef.current
+        if (!inner) {
+          return
         }
-      }
 
-      const fragment = document.createDocumentFragment()
-
-      let index = 0
-      for (const block of staticBlocks) {
-        const {
-          offsetPx: blockOffsetPx,
-          isLeftEndOfDisplayedRegion,
-          type,
-          refName,
-        } = block
-
-        if (type === 'ContentBlock' && isLeftEndOfDisplayedRegion) {
-          const key = `refLabel-${block.key}-${index}`
-          let span = existingKeys.get(key)
-          if (!span) {
-            span = createLabelElement(bgColor)
-            span.dataset.labelKey = key
-            span.dataset.testid = `refLabel-${refName}`
+        const existingKeys = new Map<string, HTMLSpanElement>()
+        for (const child of inner.children) {
+          const key = (child as HTMLElement).dataset.labelKey
+          if (key) {
+            existingKeys.set(key, child as HTMLSpanElement)
           }
-          span.style.left = `${blockOffsetPx - 1}px`
-          span.style.paddingLeft = '1px'
-          span.textContent = refName
-          fragment.append(span)
         }
-        index++
-      }
 
-      // Create pinned label
-      const key = 'pinned-label'
-      let pinned = existingKeys.get(key)
-      if (!pinned) {
-        pinned = createLabelElement(bgColor)
-        pinned.dataset.labelKey = key
-        pinned.style.zIndex = '2'
-      }
-      pinned.style.left = '0px'
-      pinned.style.paddingLeft = '0px'
-      pinnedRef.current = pinned
-      fragment.append(pinned)
+        const fragment = document.createDocumentFragment()
 
-      inner.replaceChildren(fragment)
-    })
+        let index = 0
+        for (const block of staticBlocks) {
+          const {
+            offsetPx: blockOffsetPx,
+            isLeftEndOfDisplayedRegion,
+            type,
+            refName,
+          } = block
+
+          if (type === 'ContentBlock' && isLeftEndOfDisplayedRegion) {
+            const key = `refLabel-${block.key}-${index}`
+            let span = existingKeys.get(key)
+            if (!span) {
+              span = createLabelElement(bgColor)
+              span.dataset.labelKey = key
+              span.dataset.testid = `refLabel-${refName}`
+            }
+            span.style.left = `${blockOffsetPx - 1}px`
+            span.style.paddingLeft = '1px'
+            span.textContent = refName
+            fragment.append(span)
+          }
+          index++
+        }
+
+        // Create pinned label
+        const key = 'pinned-label'
+        let pinned = existingKeys.get(key)
+        if (!pinned) {
+          pinned = createLabelElement(bgColor)
+          pinned.dataset.labelKey = key
+          pinned.style.zIndex = '2'
+        }
+        pinned.style.left = '0px'
+        pinned.style.paddingLeft = '0px'
+        pinnedRef.current = pinned
+        fragment.append(pinned)
+
+        inner.replaceChildren(fragment)
+      },
+      { name: 'RefNameLabelsLayout' },
+    )
   }, [model, theme])
 
   return (

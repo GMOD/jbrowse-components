@@ -53,15 +53,12 @@ export interface RenderLinearReadArcsDisplayArgs {
 export default class RenderLinearReadArcsDisplay extends RpcMethodType {
   name = 'RenderLinearReadArcsDisplay'
 
-  deserializeArguments(args: any, rpcDriver: string) {
+  deserializeArguments(args: any, _rpcDriver: string) {
     return {
       ...args,
-      config:
-        rpcDriver !== 'MainThreadRpcDriver'
-          ? configSchema(this.pluginManager).create(args.config, {
-              pluginManager: this.pluginManager,
-            })
-          : args.config,
+      config: configSchema(this.pluginManager).create(args.config, {
+        pluginManager: this.pluginManager,
+      }),
     }
   }
 

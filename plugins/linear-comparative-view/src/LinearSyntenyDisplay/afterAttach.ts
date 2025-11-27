@@ -32,50 +32,56 @@ type LSV = LinearSyntenyViewModel
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   addDisposer(
     self,
-    autorun(() => {
-      const view = getContainingView(self) as LinearSyntenyViewModel
-      if (
-        !view.initialized ||
-        !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
-      ) {
-        return
-      }
+    autorun(
+      function syntenyDrawAutorun() {
+        const view = getContainingView(self) as LinearSyntenyViewModel
+        if (
+          !view.initialized ||
+          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+        ) {
+          return
+        }
 
-      const ctx1 = self.mainCanvas?.getContext('2d')
-      const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
-      if (!ctx1 || !ctx3) {
-        return
-      }
+        const ctx1 = self.mainCanvas?.getContext('2d')
+        const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
+        if (!ctx1 || !ctx3) {
+          return
+        }
 
-      // Access alpha to make autorun react to alpha changes
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { alpha } = self
-      const height = self.height
-      const width = view.width
-      ctx1.clearRect(0, 0, width, height)
+        // Access alpha to make autorun react to alpha changes
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { alpha } = self
+        const height = self.height
+        const width = view.width
+        ctx1.clearRect(0, 0, width, height)
 
-      // Draw main canvas immediately
-      drawRef(self, ctx1)
+        // Draw main canvas immediately
+        drawRef(self, ctx1)
 
-      drawCigarClickMap(self, ctx3)
-    }),
+        drawCigarClickMap(self, ctx3)
+      },
+      { name: 'SyntenyDraw' },
+    ),
   )
 
   addDisposer(
     self,
-    autorun(() => {
-      const view = getContainingView(self) as LinearSyntenyViewModel
-      if (
-        !view.initialized ||
-        !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
-      ) {
-        return
-      }
-      // Access reactive properties so autorun is triggered when they change
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { clickId, mouseoverId } = self
-      drawMouseoverClickMap(self)
-    }),
+    autorun(
+      function syntenyMouseoverAutorun() {
+        const view = getContainingView(self) as LinearSyntenyViewModel
+        if (
+          !view.initialized ||
+          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+        ) {
+          return
+        }
+        // Access reactive properties so autorun is triggered when they change
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { clickId, mouseoverId } = self
+        drawMouseoverClickMap(self)
+      },
+      { name: 'SyntenyMouseover' },
+    ),
   )
 
   // this attempts to reduce recalculation of feature positions drawn by the

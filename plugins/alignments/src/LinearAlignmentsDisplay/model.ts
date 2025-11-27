@@ -238,53 +238,65 @@ function stateModelFactory(
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const {
-              SNPCoverageDisplay,
-              PileupDisplay,
-              coverageConf,
-              pileupConf,
-            } = self
-
-            if (!SNPCoverageDisplay) {
-              self.setSNPCoverageDisplay(coverageConf)
-            } else if (
-              !deepEqual(
+          autorun(
+            function alignmentsDisplayConfigAutorun() {
+              const {
+                SNPCoverageDisplay,
+                PileupDisplay,
                 coverageConf,
-                getSnapshot(SNPCoverageDisplay.configuration),
+                pileupConf,
+              } = self
+
+              if (!SNPCoverageDisplay) {
+                self.setSNPCoverageDisplay(coverageConf)
+              } else if (
+                !deepEqual(
+                  coverageConf,
+                  getSnapshot(SNPCoverageDisplay.configuration),
+                )
+              ) {
+                SNPCoverageDisplay.setHeight(self.snpCovHeight)
+                SNPCoverageDisplay.setConfig(self.coverageConf)
+              }
+
+              if (
+                !PileupDisplay ||
+                self.lowerPanelType !== PileupDisplay.type
+              ) {
+                self.setPileupDisplay(pileupConf)
+              } else if (
+                !deepEqual(pileupConf, getSnapshot(PileupDisplay.configuration))
+              ) {
+                PileupDisplay.setConfig(self.pileupConf)
+              }
+
+              propagateColorBy(self as LinearAlignmentsDisplayModel)
+              propagateFilterBy(self as LinearAlignmentsDisplayModel)
+            },
+            { name: 'AlignmentsDisplayConfig' },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(
+            function snpCoverageHeightAutorun() {
+              self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
+            },
+            { name: 'SNPCoverageHeight' },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(
+            function pileupHeightAutorun() {
+              self.PileupDisplay.setHeight(
+                self.height - self.SNPCoverageDisplay.height,
               )
-            ) {
-              SNPCoverageDisplay.setHeight(self.snpCovHeight)
-              SNPCoverageDisplay.setConfig(self.coverageConf)
-            }
-
-            if (!PileupDisplay || self.lowerPanelType !== PileupDisplay.type) {
-              self.setPileupDisplay(pileupConf)
-            } else if (
-              !deepEqual(pileupConf, getSnapshot(PileupDisplay.configuration))
-            ) {
-              PileupDisplay.setConfig(self.pileupConf)
-            }
-
-            propagateColorBy(self as LinearAlignmentsDisplayModel)
-            propagateFilterBy(self as LinearAlignmentsDisplayModel)
-          }),
-        )
-
-        addDisposer(
-          self,
-          autorun(() => {
-            self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
-          }),
-        )
-
-        addDisposer(
-          self,
-          autorun(() => {
-            self.PileupDisplay.setHeight(
-              self.height - self.SNPCoverageDisplay.height,
-            )
-          }),
+            },
+            { name: 'PileupHeight' },
+          ),
         )
       },
       /**

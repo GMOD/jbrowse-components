@@ -351,6 +351,7 @@ export function SharedLinearPileupDisplayMixin(
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
 
       return {
@@ -409,12 +410,19 @@ export function SharedLinearPileupDisplayMixin(
             ...superProps,
             notReady: superProps.notReady || !self.renderReady(),
             rpcDriverName,
-            displayModel: self,
             colorBy,
             filterBy,
             filters: self.filters,
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
             config: self.rendererConfig,
+          }
+        },
+        /**
+         * #method
+         */
+        renderingProps() {
+          return {
+            ...superRenderingProps(),
             async onFeatureClick(_: unknown, featureId?: string) {
               const session = getSession(self)
               const { rpcManager } = session

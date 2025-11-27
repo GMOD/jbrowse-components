@@ -315,9 +315,12 @@ export default function f(_pluginManager: PluginManager) {
         })
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem(key, JSON.stringify(self.bookmarks))
-          }),
+          autorun(
+            function bookmarkLocalStorageAutorun() {
+              localStorageSetItem(key, JSON.stringify(self.bookmarks))
+            },
+            { name: 'BookmarkLocalStorage' },
+          ),
         )
       },
     }))

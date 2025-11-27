@@ -69,35 +69,38 @@ function ScalebarCoordinateLabels({ model }: { model: LGV }) {
   useEffect(() => {
     const bgColor = theme.palette.background.paper
 
-    return autorun(() => {
-      const { staticBlocks, bpPerPx } = model
-      const container = containerRef.current
-      if (!container) {
-        return
-      }
-
-      const existingKeys = new Map<string, HTMLDivElement>()
-      for (const child of container.children) {
-        const key = (child as HTMLElement).dataset.blockKey
-        if (key) {
-          existingKeys.set(key, child as HTMLDivElement)
+    return autorun(
+      function scalebarCoordinateLabelsAutorun() {
+        const { staticBlocks, bpPerPx } = model
+        const container = containerRef.current
+        if (!container) {
+          return
         }
-      }
 
-      const fragment = document.createDocumentFragment()
-
-      for (const block of staticBlocks) {
-        const key = block.key
-        let div = existingKeys.get(key)
-        if (!div) {
-          div = createBlockElement(block, bpPerPx, bgColor)
-          div.dataset.blockKey = key
+        const existingKeys = new Map<string, HTMLDivElement>()
+        for (const child of container.children) {
+          const key = (child as HTMLElement).dataset.blockKey
+          if (key) {
+            existingKeys.set(key, child as HTMLDivElement)
+          }
         }
-        fragment.append(div)
-      }
 
-      container.replaceChildren(fragment)
-    })
+        const fragment = document.createDocumentFragment()
+
+        for (const block of staticBlocks) {
+          const key = block.key
+          let div = existingKeys.get(key)
+          if (!div) {
+            div = createBlockElement(block, bpPerPx, bgColor)
+            div.dataset.blockKey = key
+          }
+          fragment.append(div)
+        }
+
+        container.replaceChildren(fragment)
+      },
+      { name: 'ScalebarCoordinateLabels' },
+    )
   }, [model, theme])
 
   return <div ref={containerRef} style={{ display: 'flex' }} />

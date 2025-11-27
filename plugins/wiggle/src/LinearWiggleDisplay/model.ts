@@ -121,7 +121,6 @@ function stateModelFactory(
           return {
             ...superProps,
             rpcDriverName: self.rpcDriverName,
-            displayModel: self,
             config: self.rendererConfig,
             displayCrossHatches: self.displayCrossHatchesSetting,
             scaleOpts,

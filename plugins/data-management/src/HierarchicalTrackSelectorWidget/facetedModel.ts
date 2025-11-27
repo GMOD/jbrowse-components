@@ -112,6 +112,12 @@ export function facetedStateTreeF() {
       setShowFilters(f: boolean) {
         self.showFilters = f
       },
+      /**
+       * #action
+       */
+      setVisible(args: Record<string, boolean>) {
+        self.visible = args
+      },
     }))
     .views(self => ({
       /**
@@ -203,19 +209,17 @@ export function facetedStateTreeF() {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setVisible(args: Record<string, boolean>) {
-        self.visible = args
-      },
-
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            this.setVisible(Object.fromEntries(self.fields.map(c => [c, true])))
-          }),
+          autorun(
+            function facetedVisibleAutorun() {
+              self.setVisible(
+                Object.fromEntries(self.fields.map(c => [c, true])),
+              )
+            },
+            { name: 'FacetedVisible' },
+          ),
         )
       },
     }))

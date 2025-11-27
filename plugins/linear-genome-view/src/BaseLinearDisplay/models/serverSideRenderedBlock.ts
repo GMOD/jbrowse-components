@@ -282,6 +282,9 @@ export function renderBlockData(
     }
 
     const renderProps = display.renderProps()
+    const renderingProps = display.renderingProps?.() as
+      | Record<string, unknown>
+      | undefined
     const { config } = renderProps
 
     // This line is to trigger the mobx reaction when the config changes It
@@ -296,6 +299,7 @@ export function renderBlockData(
       rendererType,
       rpcManager,
       renderProps,
+      renderingProps,
       cannotBeRenderedReason,
       displayError: error,
       renderArgs: {
@@ -331,6 +335,7 @@ async function renderBlockEffect(
   const {
     rendererType,
     renderProps,
+    renderingProps,
     rpcManager,
     renderArgs,
     cannotBeRenderedReason,
@@ -353,6 +358,7 @@ async function renderBlockEffect(
       await rendererType.renderInClient(rpcManager, {
         ...renderArgs,
         ...renderProps,
+        renderingProps,
         viewParams: getViewParams(self),
         stopToken,
       })
