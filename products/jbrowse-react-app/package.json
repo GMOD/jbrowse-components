@@ -42,7 +42,6 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
@@ -82,14 +81,11 @@
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "base64-js": "^1.0.0",
-    "copy-to-clipboard": "^3.3.1",
-    "crypto-js": "^4.2.0",
     "file-saver-es": "^2.0.0",
     "mobx": "^6.6.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
     "pako-esm2": "^1.0.0",
-    "rxjs": "^7.0.0",
     "tss-react": "^4.4.1"
   },
   "peerDependencies": {

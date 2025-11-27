@@ -40,8 +40,9 @@ export interface IExtendedLGV extends LinearGenomeViewModel {
   setBookmarkLabelsVisible: (arg: boolean) => void
 }
 
-export interface ILabeledRegionModel
-  extends SnapshotIn<typeof LabeledRegionModel> {
+export interface ILabeledRegionModel extends SnapshotIn<
+  typeof LabeledRegionModel
+> {
   refName: string
   start: number
   end: number

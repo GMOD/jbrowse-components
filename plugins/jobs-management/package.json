@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.7.0",
-    "@jbrowse/text-indexing": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "mobx": "^6.0.0",

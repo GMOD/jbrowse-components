@@ -36,7 +36,7 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bam": "^6.0.1",
+    "@gmod/bam": "^7.0.5",
     "@gmod/cram": "^6.0.0",
     "@jbrowse/core": "^3.7.0",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",

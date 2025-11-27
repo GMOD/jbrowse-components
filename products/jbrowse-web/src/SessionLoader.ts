@@ -201,9 +201,9 @@ const SessionLoader = types
     get isSessionLoaded() {
       return Boolean(
         self.sessionError ||
-          self.sessionSnapshot ||
-          self.blankSession ||
-          self.sessionSpec,
+        self.sessionSnapshot ||
+        self.blankSession ||
+        self.sessionSpec,
       )
     },
     /**

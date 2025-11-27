@@ -36,18 +36,17 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^4.0.0",
     "@gmod/vcf": "^6.1.0",
     "@jbrowse/core": "^3.7.0",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@jbrowse/plugin-variants": "^3.7.0",
+    "@jbrowse/sv-core": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "@mui/x-data-grid": "^8.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
   },
   "peerDependencies": {

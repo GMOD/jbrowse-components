@@ -84,9 +84,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        const { renderToSvg } = await import(
-          './svgcomponents/SVGBreakpointSplitView'
-        )
+        const { renderToSvg } =
+          await import('./svgcomponents/SVGBreakpointSplitView')
         const html = await renderToSvg(self as BreakpointViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')

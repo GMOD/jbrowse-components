@@ -35,7 +35,6 @@
     "storybook:build": "storybook build"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
@@ -45,7 +44,6 @@
     "@jbrowse/plugin-circular-view": "^3.7.0",
     "@jbrowse/plugin-config": "^3.7.0",
     "@jbrowse/plugin-data-management": "^3.7.0",
-    "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@jbrowse/plugin-sequence": "^3.7.0",
     "@jbrowse/plugin-variants": "^3.7.0",
     "@jbrowse/plugin-wiggle": "^3.7.0",
@@ -54,9 +52,7 @@
     "@mui/material": "^7.0.0",
     "mobx": "^6.6.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
-    "rxjs": "^7.0.0",
-    "tss-react": "^4.4.1"
+    "mobx-state-tree": "^5.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0"
