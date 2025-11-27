@@ -85,7 +85,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           sessionId: session.id,
           view: viewSnapshot,
           adapterConfig: self.adapterConfig,
-          config: self.configuration,
+          config: getSnapshot(self.configuration),
           theme: session.theme,
           filterBy,
           featureHeight,

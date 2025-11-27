@@ -11,6 +11,13 @@ const useStyles = makeStyles()({
     textOverflow: 'ellipsis',
     overflow: 'hidden',
   },
+  content: {
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    maxWidth: '80%',
+    textAlign: 'center',
+  },
 })
 
 const BlockErrorMessage = observer(function ({
@@ -65,7 +72,7 @@ const BlockErrorMessage = observer(function ({
       }}
     >
       <Tooltip title={`${model.error}`}>
-        <div>{`${model.error}`.slice(0, 100)}</div>
+        <div className={classes.content}>{`${model.error}`}</div>
       </Tooltip>
     </Alert>
   )

@@ -8,6 +8,13 @@ const useStyles = makeStyles()({
     textOverflow: 'ellipsis',
     overflow: 'hidden',
   },
+  content: {
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    maxWidth: '80%',
+    textAlign: 'center',
+  },
 })
 
 export default function BlockMsg({
@@ -36,7 +43,7 @@ export default function BlockMsg({
       }}
     >
       <Tooltip title={message}>
-        <div>{message}</div>
+        <div className={classes.content}>{message}</div>
       </Tooltip>
     </Alert>
   )
