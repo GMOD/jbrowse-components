@@ -383,6 +383,7 @@ export default function MultiVariantBaseModelF(
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
 
       return {
@@ -443,7 +444,7 @@ export default function MultiVariantBaseModelF(
          */
         renderingProps() {
           return {
-            displayModel: self,
+            ...superRenderingProps(),
           }
         },
         /**

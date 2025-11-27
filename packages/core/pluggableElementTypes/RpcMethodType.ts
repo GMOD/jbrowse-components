@@ -34,7 +34,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeNewAuthArguments(
     loc: UriLocation,
-    rpcDriverClassName: string,
+    _rpcDriverClassName: string,
   ) {
     const rootModel = this.pluginManager.rootModel
 

@@ -351,6 +351,7 @@ export function SharedLinearPileupDisplayMixin(
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
 
       return {
@@ -421,7 +422,7 @@ export function SharedLinearPileupDisplayMixin(
          */
         renderingProps() {
           return {
-            displayModel: self,
+            ...superRenderingProps(),
             async onFeatureClick(_: unknown, featureId?: string) {
               const session = getSession(self)
               const { rpcManager } = session
