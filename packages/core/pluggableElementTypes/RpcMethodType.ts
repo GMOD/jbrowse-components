@@ -45,9 +45,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
     const account = rootModel.findAppropriateInternetAccount(loc)
 
-    // mutating loc object is not allowed in MainThreadRpcDriver, and is only
-    // needed for web worker RPC
-    if (account && rpcDriverClassName !== 'MainThreadRpcDriver') {
+    if (account) {
       loc.internetAccountPreAuthorization =
         await account.getPreAuthorizationInformation(loc)
     }

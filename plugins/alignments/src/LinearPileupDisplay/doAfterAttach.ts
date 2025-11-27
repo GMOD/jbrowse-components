@@ -24,6 +24,7 @@ export function doAfterAttach(model: {
   currSortBpPerPx: number
   parentTrack: any
   renderPropsPre: () => Record<string, unknown>
+  renderingProps: () => Record<string, unknown>
   setCurrSortBpPerPx: (arg: number) => void
   setError: (arg: unknown) => void
   updateVisibleModifications: (arg: ModificationType[]) => void
