@@ -49,9 +49,13 @@ export default class CoreRender extends RpcMethodType {
       this.pluginManager.getRendererType(rendererType),
     )
 
-    return rpcDriver === 'MainThreadRpcDriver'
-      ? await RendererType.render(deserializedArgs)
-      : await RendererType.renderInWorker(deserializedArgs)
+    if (rpcDriver === 'MainThreadRpcDriver') {
+      // for MainThread, render and serialize results so deserializeResultsInClient
+      // receives consistent data format regardless of RPC driver
+      const results = await RendererType.render(deserializedArgs)
+      return RendererType.serializeResultsInWorker(results, deserializedArgs)
+    }
+    return RendererType.renderInWorker(deserializedArgs)
   }
 
   async deserializeReturn(
@@ -60,9 +64,8 @@ export default class CoreRender extends RpcMethodType {
     rpcDriver: string,
   ): Promise<unknown> {
     const des = await super.deserializeReturn(serializedReturn, args, rpcDriver)
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      return des
-    }
+    // always call deserializeResultsInClient to ensure renderingProps are
+    // properly spread into the React component props
     return validateRendererType(
       args.rendererType,
       this.pluginManager.getRendererType(args.rendererType),
