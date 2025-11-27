@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
@@ -13,44 +13,57 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
 }) {
   const { arr, width, height, displayModel } = props
   const ref = useRef<HTMLDivElement>(null)
+  const lastHoveredRef = useRef<string>()
 
-  function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {
-    if (!ref.current) {
-      return
+  const getFeatureUnderMouse = useCallback(
+    (eventClientX: number, eventClientY: number) => {
+      if (!ref.current) {
+        return
+      }
+      const r = ref.current.getBoundingClientRect()
+      const offsetX = eventClientX - r.left
+      const offsetY = eventClientY - r.top
+
+      const { scrollTop, rowHeight, sources } = displayModel
+
+      // Calculate actual source index accounting for scroll
+      const sourceIdx = Math.floor((offsetY + scrollTop) / rowHeight)
+      const name = sources?.[sourceIdx]?.name
+
+      // For genotype lookup in arr (which only contains visible rows)
+      const visibleRowIdx = Math.floor(offsetY / rowHeight)
+      const featureIdx = Math.floor((offsetX / width) * arr.length)
+      const genotype = arr[featureIdx]?.[visibleRowIdx]
+
+      return genotype && name ? { name, genotype } : undefined
+    },
+    [arr, width, displayModel],
+  )
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      const result = getFeatureUnderMouse(e.clientX, e.clientY)
+      const key = result ? `${result.name}:${result.genotype}` : undefined
+      if (key !== lastHoveredRef.current) {
+        lastHoveredRef.current = key
+        displayModel.setHoveredGenotype(result)
+      }
+    },
+    [getFeatureUnderMouse, displayModel],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    if (lastHoveredRef.current !== undefined) {
+      lastHoveredRef.current = undefined
+      displayModel.setHoveredGenotype(undefined)
     }
-    const r = ref.current.getBoundingClientRect()
-    const offsetX = eventClientX - r.left
-    const offsetY = eventClientY - r.top
-
-    const dimY = arr.length
-    const dimX = arr[0]?.length || 0
-    const name =
-      displayModel.sources![Math.floor((offsetY / height) * dimX)]?.name
-    const genotype =
-      arr[Math.floor((offsetX / width) * dimY)]?.[
-        Math.floor((offsetY / height) * dimX)
-      ]
-    return genotype && name
-      ? {
-          name,
-          genotype,
-        }
-      : undefined
-  }
+  }, [displayModel])
   return (
     <div
       ref={ref}
-      onMouseMove={e => {
-        displayModel.setHoveredGenotype(
-          getFeatureUnderMouse(e.clientX, e.clientY),
-        )
-      }}
-      onMouseLeave={() => {
-        displayModel.setHoveredGenotype(undefined)
-      }}
-      onMouseOut={() => {
-        displayModel.setHoveredGenotype(undefined)
-      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onMouseOut={handleMouseLeave}
       style={{
         overflow: 'visible',
         position: 'relative',
