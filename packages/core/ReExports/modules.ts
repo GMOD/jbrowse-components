@@ -51,6 +51,7 @@ import * as mstTypes from '../util/types/mst'
 const libs = {
   mobx,
   '@jbrowse/mobx-state-tree': mst,
+  'mobx-state-tree': mst,
   react: React,
   'react/jsx-runtime': ReactJSXRuntime,
   'react-dom': ReactDom,
