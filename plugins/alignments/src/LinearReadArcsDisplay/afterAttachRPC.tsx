@@ -78,7 +78,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
           sessionId: session.id,
           view: viewSnapshot,
           adapterConfig: self.adapterConfig,
-          config: self.configuration,
+          config: getSnapshot(self.configuration),
           theme: session.theme,
           filterBy,
           colorBy,
@@ -124,25 +124,29 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(height)
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'PerformRender' },
   )
 
   // Autorun to draw the imageData to canvas when available
-  createAutorun(self, async () => {
-    const canvas = self.ref
-    const { renderingImageData } = self
+  createAutorun(
+    self,
+    async () => {
+      const canvas = self.ref
+      const { renderingImageData } = self
 
-    if (!canvas || !renderingImageData) {
-      return
-    }
+      if (!canvas || !renderingImageData) {
+        return
+      }
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return
+      }
 
-    ctx.resetTransform()
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.drawImage(renderingImageData, 0, 0)
-  })
+      ctx.resetTransform()
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(renderingImageData, 0, 0)
+    },
+    { name: 'RenderCanvas' },
+  )
 }

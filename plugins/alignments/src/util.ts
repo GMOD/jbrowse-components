@@ -117,7 +117,7 @@ export function createAutorun(
 ) {
   addDisposer(
     self,
-    autorun(async () => {
+    autorun(async function sharedAlignmentsAutorun() {
       try {
         await cb()
       } catch (e) {

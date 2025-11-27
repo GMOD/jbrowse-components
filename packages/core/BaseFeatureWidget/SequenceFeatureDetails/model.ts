@@ -148,23 +148,29 @@ export function SequenceFeatureDetailsF() {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetNumber(`${p}-upDownBp`, self.upDownBp)
-            localStorageSetNumber(`${p}-intronBp`, self.intronBp)
-            localStorageSetBoolean(`${p}-upperCaseCDS`, self.upperCaseCDS)
-            localStorageSetItem(
-              `${p}-showCoordinatesSetting`,
-              self.showCoordinatesSetting,
-            )
-          }),
+          autorun(
+            function sequenceFeatureLocalStorageAutorun() {
+              localStorageSetNumber(`${p}-upDownBp`, self.upDownBp)
+              localStorageSetNumber(`${p}-intronBp`, self.intronBp)
+              localStorageSetBoolean(`${p}-upperCaseCDS`, self.upperCaseCDS)
+              localStorageSetItem(
+                `${p}-showCoordinatesSetting`,
+                self.showCoordinatesSetting,
+              )
+            },
+            { name: 'SequenceFeatureLocalStorage' },
+          ),
         )
         addDisposer(
           self,
-          autorun(() => {
-            self.setMode(
-              self.hasCDS ? 'cds' : self.hasExon ? 'cdna' : 'genomic',
-            )
-          }),
+          autorun(
+            function sequenceFeatureModeAutorun() {
+              self.setMode(
+                self.hasCDS ? 'cds' : self.hasExon ? 'cdna' : 'genomic',
+              )
+            },
+            { name: 'SequenceFeatureMode' },
+          ),
         )
       },
     }))

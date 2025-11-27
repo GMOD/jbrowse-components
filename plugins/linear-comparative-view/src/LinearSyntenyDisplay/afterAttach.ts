@@ -29,7 +29,7 @@ type LSV = LinearSyntenyViewModel
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   addDisposer(
     self,
-    autorun(() => {
+      function syntenyDrawAutorun() {
       const view = getContainingView(self) as LinearSyntenyViewModel
       if (!view.viewsInitialized) {
         return
@@ -65,7 +65,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { clickId, mouseoverId } = self
       drawMouseoverClickMap(self)
-    }),
+    },
+      { name: 'SyntenyMouseover' },
+    ),
   )
 
   // this attempts to reduce recalculation of feature positions drawn by the

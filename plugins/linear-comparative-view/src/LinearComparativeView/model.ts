@@ -328,13 +328,16 @@ function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            if (self.width) {
-              for (const view of self.views) {
-                view.setWidth(self.width)
+          autorun(
+            function comparativeViewWidthAutorun() {
+              if (self.width) {
+                for (const view of self.views) {
+                  view.setWidth(self.width)
+                }
               }
-            }
-          }),
+            },
+            { name: 'ComparativeViewWidth' },
+          ),
         )
       },
     }))

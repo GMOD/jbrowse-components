@@ -21,9 +21,6 @@ export default class CoreRender extends RpcMethodType {
       renamedArgs,
       rpcDriver,
     )) as RenderArgs
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      return superArgs
-    }
 
     return validateRendererType(
       args.rendererType,
@@ -35,23 +32,16 @@ export default class CoreRender extends RpcMethodType {
     args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
-    let deserializedArgs = args
-    if (rpcDriver !== 'MainThreadRpcDriver') {
-      deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    }
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { sessionId, rendererType } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
-    const RendererType = validateRendererType(
+    return validateRendererType(
       rendererType,
       this.pluginManager.getRendererType(rendererType),
-    )
-
-    return rpcDriver === 'MainThreadRpcDriver'
-      ? await RendererType.render(deserializedArgs)
-      : await RendererType.renderInWorker(deserializedArgs)
+    ).renderInWorker(deserializedArgs)
   }
 
   async deserializeReturn(
@@ -60,9 +50,8 @@ export default class CoreRender extends RpcMethodType {
     rpcDriver: string,
   ): Promise<unknown> {
     const des = await super.deserializeReturn(serializedReturn, args, rpcDriver)
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      return des
-    }
+    // always call deserializeResultsInClient to ensure renderingProps are
+    // properly spread into the React component props
     return validateRendererType(
       args.rendererType,
       this.pluginManager.getRendererType(args.rendererType),

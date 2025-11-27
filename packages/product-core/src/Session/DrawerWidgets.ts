@@ -188,9 +188,12 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem('drawerPosition', self.drawerPosition)
-          }),
+          autorun(
+            function drawerPositionAutorun() {
+              localStorageSetItem('drawerPosition', self.drawerPosition)
+            },
+            { name: 'DrawerPosition' },
+          ),
         )
       },
     }))

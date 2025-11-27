@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { untracked } from 'mobx'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, isAlive } from 'mobx-state-tree'
 
 import { createAutorun } from '../util'
 import { buildFlatbushIndex } from './drawFeatsCommon'
@@ -85,7 +85,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           sessionId: session.id,
           view: viewSnapshot,
           adapterConfig: self.adapterConfig,
-          config: self.configuration,
+          config: getSnapshot(self.configuration),
           theme: session.theme,
           filterBy,
           featureHeight,
@@ -135,7 +135,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
   createAutorun(
     self,
     async () => {
-      if (!self.drawCloud) {
+      if (!self.drawCloud || !isAlive(self)) {
         return
       }
 
@@ -143,14 +143,14 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(true)
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'StackRender' },
   )
 
   // Autorun for stack mode
   createAutorun(
     self,
     async () => {
-      if (self.drawCloud) {
+      if (self.drawCloud || !isAlive(self)) {
         return
       }
 
@@ -158,25 +158,29 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(false)
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'CloudRender' },
   )
 
   // Autorun to draw the imageData to canvas when available
-  createAutorun(self, async () => {
-    const canvas = self.ref
-    const { renderingImageData } = self
+  createAutorun(
+    self,
+    async () => {
+      const canvas = self.ref
+      const { renderingImageData } = self
 
-    if (!canvas || !renderingImageData) {
-      return
-    }
+      if (!canvas || !renderingImageData) {
+        return
+      }
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return
+      }
 
-    ctx.resetTransform()
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.drawImage(renderingImageData, 0, 0)
-  })
+      ctx.resetTransform()
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(renderingImageData, 0, 0)
+    },
+    { name: 'RenderCanvas' },
+  )
 }

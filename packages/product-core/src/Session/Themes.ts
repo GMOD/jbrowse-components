@@ -57,9 +57,12 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem('themeName', self.themeName)
-          }),
+          autorun(
+            function themeNameAutorun() {
+              localStorageSetItem('themeName', self.themeName)
+            },
+            { name: 'ThemeName' },
+          ),
         )
       },
     }))

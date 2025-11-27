@@ -432,10 +432,13 @@ export function BaseWebSession({
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem('drawerPosition', self.drawerPosition)
-            localStorageSetItem('themeName', self.themeName)
-          }),
+          autorun(
+            function sessionLocalStorageAutorun() {
+              localStorageSetItem('drawerPosition', self.drawerPosition)
+              localStorageSetItem('themeName', self.themeName)
+            },
+            { name: 'SessionLocalStorage' },
+          ),
         )
       },
     }))

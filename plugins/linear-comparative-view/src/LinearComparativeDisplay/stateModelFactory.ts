@@ -76,7 +76,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       renderProps() {
         return {
           rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           highResolutionScaling: 2,
         }
       },

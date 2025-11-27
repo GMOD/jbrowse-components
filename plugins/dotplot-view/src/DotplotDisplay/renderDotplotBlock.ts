@@ -39,6 +39,9 @@ export function renderBlockData(self: IAnyStateTreeNode) {
         minAlignmentLength: self.minAlignmentLength,
         colorBy: self.colorBy,
       },
+      renderingProps: self.renderingProps?.() as
+        | Record<string, unknown>
+        | undefined,
     }
   }
   return undefined
@@ -51,10 +54,10 @@ export async function renderBlockEffect(
     return
   }
 
-  const { rendererType, rpcManager, renderProps } = props
+  const { rendererType, rpcManager, renderProps, renderingProps } = props
   const { reactElement, ...data } = await rendererType.renderInClient(
     rpcManager,
-    renderProps,
+    { ...renderProps, renderingProps },
   )
   return {
     reactElement,

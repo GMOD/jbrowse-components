@@ -24,6 +24,7 @@ export function doAfterAttach(model: {
   currSortBpPerPx: number
   parentTrack: any
   renderPropsPre: () => Record<string, unknown>
+  renderingProps: () => Record<string, unknown>
   setCurrSortBpPerPx: (arg: number) => void
   setError: (arg: unknown) => void
   updateVisibleModifications: (arg: ModificationType[]) => void
@@ -42,7 +43,7 @@ export function doAfterAttach(model: {
 
       model.setCurrSortBpPerPx(view.bpPerPx)
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'CurrBpPerPx' },
   )
   createAutorun(
     model,
@@ -81,6 +82,7 @@ export function doAfterAttach(model: {
             }
           },
           ...model.renderPropsPre(),
+          renderingProps: model.renderingProps(),
         })
       }
       if (isAlive(model)) {
@@ -88,7 +90,7 @@ export function doAfterAttach(model: {
         model.setSortReady(true)
       }
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'SortReads' },
   )
 
   createAutorun(
@@ -111,6 +113,6 @@ export function doAfterAttach(model: {
         model.setModificationsReady(true)
       }
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'GetModInfo' },
   )
 }

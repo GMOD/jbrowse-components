@@ -383,6 +383,7 @@ export default function MultiVariantBaseModelF(
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
 
       return {
@@ -433,8 +434,17 @@ export default function MultiVariantBaseModelF(
           return {
             ...superProps,
             rpcDriverName: self.rpcDriverName,
-            displayModel: self,
             config: self.rendererConfig,
+          }
+        },
+        /**
+         * #method
+         * props for the renderer's React "Rendering" component - client-side
+         * only, never sent to the worker
+         */
+        renderingProps() {
+          return {
+            ...superRenderingProps(),
           }
         },
         /**

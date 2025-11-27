@@ -318,7 +318,6 @@ export function stateModelFactory(
           const superProps = superRenderProps()
           return {
             ...superProps,
-            displayModel: self,
             config: self.rendererConfig,
             filters: self.filters,
             resolution: self.resolution,
@@ -403,13 +402,20 @@ export function stateModelFactory(
         return {
           ...superProps,
           notReady: superProps.notReady || !self.sources || !self.stats,
-          displayModel: self,
           rpcDriverName: self.rpcDriverName,
           displayCrossHatches: self.displayCrossHatches,
           height: self.height,
           ticks: self.ticks,
           stats: self.stats,
           scaleOpts: self.scaleOpts,
+        }
+      },
+      /**
+       * #method
+       */
+      renderingProps() {
+        return {
+          displayModel: self,
           onMouseMove: (_: unknown, f: Feature) => {
             self.setFeatureUnderMouse(f)
           },

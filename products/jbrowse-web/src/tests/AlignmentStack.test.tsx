@@ -18,7 +18,8 @@ async function wait(view: any, findByTestId: any) {
   // Wait for PileupDisplay to be drawn
   await waitFor(
     () => {
-      const drawn = view.tracks[0].displays[0].PileupDisplay.drawn
+      const display = view.tracks[0]?.displays[0]?.PileupDisplay
+      const drawn = display?.drawn
       expect(drawn).toBe(true)
     },
     { timeout },

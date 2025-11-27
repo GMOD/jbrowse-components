@@ -486,13 +486,11 @@ function stateModelFactory() {
       },
       /**
        * #method
+       * props for the renderer's React "Rendering" component - client-side
+       * only, never sent to the worker. includes displayModel and callbacks
        */
-      renderProps() {
+      renderingProps() {
         return {
-          ...getParentRenderProps(self),
-          notReady: !self.featureDensityStatsReady,
-          rpcDriverName: self.rpcDriverName,
-
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse
@@ -536,6 +534,17 @@ function stateModelFactory() {
           },
         }
       },
+      /**
+       * #method
+       * props sent to the worker for server-side rendering
+       */
+      renderProps() {
+        return {
+          ...getParentRenderProps(self),
+          notReady: !self.featureDensityStatsReady,
+          rpcDriverName: self.rpcDriverName,
+        }
+      },
     }))
     .actions(self => ({
       /**
@@ -551,24 +560,35 @@ function stateModelFactory() {
         // deleting to match the parent blocks)
         addDisposer(
           self,
-          autorun(() => {
-            const blocksPresent: Record<string, boolean> = {}
-            const view = getContainingView(self) as LGV
-            if (!view.initialized) {
-              return
-            }
-            for (const block of self.blockDefinitions.contentBlocks) {
-              blocksPresent[block.key] = true
-              if (!self.blockState.has(block.key)) {
-                self.addBlock(block.key, block)
+          autorun(
+            function blockDefinitionsAutorun() {
+              try {
+                if (!isAlive(self)) {
+                  return
+                }
+                const blocksPresent: Record<string, boolean> = {}
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                for (const block of self.blockDefinitions.contentBlocks) {
+                  blocksPresent[block.key] = true
+                  if (!self.blockState.has(block.key)) {
+                    self.addBlock(block.key, block)
+                  }
+                }
+                for (const key of self.blockState.keys()) {
+                  if (!blocksPresent[key]) {
+                    self.deleteBlock(key)
+                  }
+                }
+              } catch (e) {
+                // catch errors that may occur during test cleanup or when
+                // the display is not properly attached to a view
               }
-            }
-            for (const key of self.blockState.keys()) {
-              if (!blocksPresent[key]) {
-                self.deleteBlock(key)
-              }
-            }
-          }),
+            },
+            { name: 'BaseLinearDisplayBlockDefinitions' },
+          ),
         )
       },
     }))

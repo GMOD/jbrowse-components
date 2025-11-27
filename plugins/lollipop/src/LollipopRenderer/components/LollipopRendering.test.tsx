@@ -1,7 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
-import { FloatingLayout, PrecomputedFloatingLayout } from '../Layout'
 import ConfigSchema from '../configSchema'
 import Rendering from './LollipopRendering'
 
@@ -12,8 +11,7 @@ test('no features', () => {
       width={500}
       height={500}
       regions={[{ refName: 'zonk', start: 0, end: 300 }]}
-      layout={new PrecomputedFloatingLayout({ pairs: [], totalHeight: 20 })}
-      config={{}}
+      config={ConfigSchema.create({})}
       bpPerPx={3}
     />,
   )
@@ -27,7 +25,6 @@ test('one feature', () => {
       width={500}
       height={500}
       regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
-      layout={new FloatingLayout({ width: 100 })}
       features={
         new Map([
           [

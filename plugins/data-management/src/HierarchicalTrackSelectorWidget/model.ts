@@ -532,59 +532,65 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         // this should be the first autorun to properly initialize
         addDisposer(
           self,
-          autorun(() => {
-            const { assemblyNames, view } = self
-            self.setRecentlyUsed(
-              localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
-            )
-            if (view) {
-              const lc = localStorageGetJSON<MaybeCollapsedKeys>(
-                collapsedK(assemblyNames, view.type),
-                undefined,
+          autorun(
+            function trackSelectorInitAutorun() {
+              const { assemblyNames, view } = self
+              self.setRecentlyUsed(
+                localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
               )
-              const r = ['hierarchical', 'defaultCollapsed']
-              const session = getSession(self)
-              if (!lc) {
-                self.expandAllCategories()
-                if (getConf(session, [...r, 'topLevelCategories'])) {
-                  self.collapseTopLevelCategories()
+              if (view) {
+                const lc = localStorageGetJSON<MaybeCollapsedKeys>(
+                  collapsedK(assemblyNames, view.type),
+                  undefined,
+                )
+                const r = ['hierarchical', 'defaultCollapsed']
+                const session = getSession(self)
+                if (!lc) {
+                  self.expandAllCategories()
+                  if (getConf(session, [...r, 'topLevelCategories'])) {
+                    self.collapseTopLevelCategories()
+                  }
+                  if (getConf(session, [...r, 'subCategories'])) {
+                    self.collapseSubCategories()
+                  }
+                  for (const elt of getConf(session, [...r, 'categoryNames'])) {
+                    self.setCategoryCollapsed(`Tracks-${elt}`, true)
+                  }
+                } else {
+                  self.setCollapsedCategories(lc)
                 }
-                if (getConf(session, [...r, 'subCategories'])) {
-                  self.collapseSubCategories()
-                }
-                for (const elt of getConf(session, [...r, 'categoryNames'])) {
-                  self.setCategoryCollapsed(`Tracks-${elt}`, true)
-                }
-              } else {
-                self.setCollapsedCategories(lc)
               }
-            }
-          }),
+            },
+            { name: 'TrackSelectorInit' },
+          ),
         )
         // this should be the second autorun
         addDisposer(
           self,
-          autorun(() => {
-            const {
-              sortTrackNames,
-              sortCategories,
-              favorites,
-              recentlyUsed,
-              assemblyNames,
-              collapsed,
-              view,
-            } = self
-            localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
-            localStorageSetJSON(favoritesK(), favorites)
-            localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
-            localStorageSetJSON(sortCategoriesK(), sortCategories)
-            if (view) {
-              localStorageSetJSON(
-                collapsedK(assemblyNames, view.type),
+          autorun(
+            function trackSelectorLocalStorageAutorun() {
+              const {
+                sortTrackNames,
+                sortCategories,
+                favorites,
+                recentlyUsed,
+                assemblyNames,
                 collapsed,
-              )
-            }
-          }),
+                view,
+              } = self
+              localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
+              localStorageSetJSON(favoritesK(), favorites)
+              localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
+              localStorageSetJSON(sortCategoriesK(), sortCategories)
+              if (view) {
+                localStorageSetJSON(
+                  collapsedK(assemblyNames, view.type),
+                  collapsed,
+                )
+              }
+            },
+            { name: 'TrackSelectorLocalStorage' },
+          ),
         )
       },
     }))

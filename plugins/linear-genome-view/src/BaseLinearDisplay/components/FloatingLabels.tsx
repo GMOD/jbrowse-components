@@ -162,137 +162,143 @@ function FloatingLabels({
       return
     }
 
-    return autorun(() => {
-      const container = containerRef.current
-      if (!container) {
-        return
-      }
-
-      const { layoutFeatures } = model
-      const domElements = domElementsRef.current
-      const labelPositions = labelPositionsRef.current
-      const newKeys = new Set<string>()
-
-      const featureLabels = deduplicateFeatureLabels(
-        layoutFeatures,
-        view,
-        assembly,
-      )
-
-      for (const [
-        key,
-        {
-          leftPx,
-          rightPx,
-          topPx,
-          totalFeatureHeight,
-          floatingLabels,
-          totalLayoutWidth,
-        },
-      ] of featureLabels.entries()) {
-        const featureVisualBottom = topPx + totalFeatureHeight
-
-        for (let i = 0, l = floatingLabels.length; i < l; i++) {
-          const floatingLabel = floatingLabels[i]!
-          const { text, relativeY, color, isOverlay } = floatingLabel
-
-          const labelWidth = measureText(text, fontSize)
-          const layoutWidth = totalLayoutWidth ?? rightPx - leftPx
-          if (labelWidth > layoutWidth) {
-            continue
-          }
-
-          const featureVisualLeftPx = leftPx
-          const effectiveRightPx =
-            totalLayoutWidth !== undefined
-              ? featureVisualLeftPx + totalLayoutWidth
-              : rightPx
-          const y = featureVisualBottom + relativeY
-
-          const labelKey = `${key}-${i}`
-          newKeys.add(labelKey)
-
-          // Store position data for fast offset updates
-          labelPositions.set(labelKey, {
-            featureLeftPx: featureVisualLeftPx,
-            effectiveRightPx,
-            labelWidth,
-            y,
-          })
-
-          let element = domElements.get(labelKey)
-
-          if (!element) {
-            element = document.createElement('div')
-            element.style.position = 'absolute'
-            element.style.fontSize = '11px'
-            element.style.pointerEvents = 'none'
-            element.style.willChange = 'transform'
-            container.append(element)
-            domElements.set(labelKey, element)
-          }
-
-          if (element.textContent !== text) {
-            element.textContent = text
-          }
-          if (element.style.color !== color) {
-            element.style.color = color
-          }
-          const bgColor = isOverlay ? 'rgba(255, 255, 255, 0.8)' : ''
-          if (element.style.backgroundColor !== bgColor) {
-            element.style.backgroundColor = bgColor
-          }
-          const lineHeight = isOverlay ? '1' : ''
-          if (element.style.lineHeight !== lineHeight) {
-            element.style.lineHeight = lineHeight
-          }
-
-          // Set initial transform (offset autorun will update x on scroll)
-          // Use untracked to avoid this autorun re-running on offsetPx changes
-          const offsetPx = untracked(() => view.offsetPx)
-          const naturalX = featureVisualLeftPx - offsetPx
-          const maxX = effectiveRightPx - offsetPx - labelWidth
-          const x = clamp(0, naturalX, maxX)
-          element.style.transform = `translate(${x}px, ${y}px)`
+    return autorun(
+      function floatingLabelsLayoutAutorun() {
+        const container = containerRef.current
+        if (!container) {
+          return
         }
-      }
 
-      // Remove stale elements
-      for (const [key, element] of domElements.entries()) {
-        if (!newKeys.has(key)) {
-          element.remove()
-          domElements.delete(key)
-          labelPositions.delete(key)
+        const { layoutFeatures } = model
+        const domElements = domElementsRef.current
+        const labelPositions = labelPositionsRef.current
+        const newKeys = new Set<string>()
+
+        const featureLabels = deduplicateFeatureLabels(
+          layoutFeatures,
+          view,
+          assembly,
+        )
+
+        for (const [
+          key,
+          {
+            leftPx,
+            rightPx,
+            topPx,
+            totalFeatureHeight,
+            floatingLabels,
+            totalLayoutWidth,
+          },
+        ] of featureLabels.entries()) {
+          const featureVisualBottom = topPx + totalFeatureHeight
+
+          for (let i = 0, l = floatingLabels.length; i < l; i++) {
+            const floatingLabel = floatingLabels[i]!
+            const { text, relativeY, color, isOverlay } = floatingLabel
+
+            const labelWidth = measureText(text, fontSize)
+            const layoutWidth = totalLayoutWidth ?? rightPx - leftPx
+            if (labelWidth > layoutWidth) {
+              continue
+            }
+
+            const featureVisualLeftPx = leftPx
+            const effectiveRightPx =
+              totalLayoutWidth !== undefined
+                ? featureVisualLeftPx + totalLayoutWidth
+                : rightPx
+            const y = featureVisualBottom + relativeY
+
+            const labelKey = `${key}-${i}`
+            newKeys.add(labelKey)
+
+            // Store position data for fast offset updates
+            labelPositions.set(labelKey, {
+              featureLeftPx: featureVisualLeftPx,
+              effectiveRightPx,
+              labelWidth,
+              y,
+            })
+
+            let element = domElements.get(labelKey)
+
+            if (!element) {
+              element = document.createElement('div')
+              element.style.position = 'absolute'
+              element.style.fontSize = '11px'
+              element.style.pointerEvents = 'none'
+              element.style.willChange = 'transform'
+              container.append(element)
+              domElements.set(labelKey, element)
+            }
+
+            if (element.textContent !== text) {
+              element.textContent = text
+            }
+            if (element.style.color !== color) {
+              element.style.color = color
+            }
+            const bgColor = isOverlay ? 'rgba(255, 255, 255, 0.8)' : ''
+            if (element.style.backgroundColor !== bgColor) {
+              element.style.backgroundColor = bgColor
+            }
+            const lineHeight = isOverlay ? '1' : ''
+            if (element.style.lineHeight !== lineHeight) {
+              element.style.lineHeight = lineHeight
+            }
+
+            // Set initial transform (offset autorun will update x on scroll)
+            // Use untracked to avoid this autorun re-running on offsetPx changes
+            const offsetPx = untracked(() => view.offsetPx)
+            const naturalX = featureVisualLeftPx - offsetPx
+            const maxX = effectiveRightPx - offsetPx - labelWidth
+            const x = clamp(0, naturalX, maxX)
+            element.style.transform = `translate(${x}px, ${y}px)`
+          }
         }
-      }
-    })
+
+        // Remove stale elements
+        for (const [key, element] of domElements.entries()) {
+          if (!newKeys.has(key)) {
+            element.remove()
+            domElements.delete(key)
+            labelPositions.delete(key)
+          }
+        }
+      },
+      { name: 'FloatingLabelsLayout' },
+    )
   }, [assembly, model, view])
 
   // Autorun 2: Update transforms when offsetPx changes (fast path)
   useEffect(() => {
-    return autorun(() => {
-      const { offsetPx } = view
-      const domElements = domElementsRef.current
-      const labelPositions = labelPositionsRef.current
+    return autorun(
+      function floatingLabelsOffsetAutorun() {
+        const { offsetPx } = view
+        const domElements = domElementsRef.current
+        const labelPositions = labelPositionsRef.current
 
-      for (const [key, element] of domElements.entries()) {
-        const pos = labelPositions.get(key)
-        if (!pos) {
-          continue
+        for (const [key, element] of domElements.entries()) {
+          const pos = labelPositions.get(key)
+          if (!pos) {
+            continue
+          }
+
+          const { featureLeftPx, effectiveRightPx, labelWidth, y } = pos
+          const naturalX = featureLeftPx - offsetPx
+          const maxX = effectiveRightPx - offsetPx - labelWidth
+          const x = clamp(0, naturalX, maxX)
+
+          // Only update DOM if x position changed
+          if (pos.lastX !== x) {
+            pos.lastX = x
+            element.style.transform = `translate(${x}px, ${y}px)`
+          }
         }
-
-        const { featureLeftPx, effectiveRightPx, labelWidth, y } = pos
-        const naturalX = featureLeftPx - offsetPx
-        const maxX = effectiveRightPx - offsetPx - labelWidth
-        const x = clamp(0, naturalX, maxX)
-
-        // Only update DOM if x position changed
-        if (pos.lastX !== x) {
-          pos.lastX = x
-          element.style.transform = `translate(${x}px, ${y}px)`
-        }
-      }
-    })
+      },
+      { name: 'FloatingLabelsOffset' },
+    )
   }, [view])
 
   return (

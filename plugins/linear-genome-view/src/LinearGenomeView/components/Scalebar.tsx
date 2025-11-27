@@ -45,25 +45,32 @@ const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
   const scalebarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    return autorun(() => {
-      const { scaleFactor } = model
-      const zoom = zoomRef.current
-      if (zoom) {
-        zoom.style.transform = scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
-      }
-    })
+    return autorun(
+      function scalebarZoomAutorun() {
+        const { scaleFactor } = model
+        const zoom = zoomRef.current
+        if (zoom) {
+          zoom.style.transform =
+            scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
+        }
+      },
+      { name: 'ScalebarZoom' },
+    )
   }, [model])
 
   useEffect(() => {
-    return autorun(() => {
-      const { staticBlocks, offsetPx } = model
-      const scalebar = scalebarRef.current
-      if (scalebar) {
-        const offsetLeft = staticBlocks.offsetPx - offsetPx
-        scalebar.style.transform = `translateX(${offsetLeft - 1}px)`
-        scalebar.style.width = `${staticBlocks.totalWidthPx}px`
-      }
-    })
+    return autorun(
+      function scalebarTransformAutorun() {
+        const { staticBlocks, offsetPx } = model
+        const scalebar = scalebarRef.current
+        if (scalebar) {
+          const offsetLeft = staticBlocks.offsetPx - offsetPx
+          scalebar.style.transform = `translateX(${offsetLeft - 1}px)`
+          scalebar.style.width = `${staticBlocks.totalWidthPx}px`
+        }
+      },
+      { name: 'ScalebarTransform' },
+    )
   }, [model])
 
   return (

@@ -32,14 +32,21 @@ const LinearBlocks = observer(function ({
   const viewModel = getContainingView(model) as LinearGenomeViewModel
 
   useEffect(() => {
-    return autorun(() => {
-      const { blockDefinitions } = model
-      const { offsetPx } = viewModel
-      const div = ref.current
-      if (div) {
-        div.style.transform = `translateX(${blockDefinitions.offsetPx - offsetPx}px)`
-      }
-    })
+    return autorun(
+      function linearBlocksTransformAutorun() {
+        try {
+          const { blockDefinitions } = model
+          const { offsetPx } = viewModel
+          const div = ref.current
+          if (div) {
+            div.style.transform = `translateX(${blockDefinitions.offsetPx - offsetPx}px)`
+          }
+        } catch (e) {
+          // may error during cleanup
+        }
+      },
+      { name: 'LinearBlocksTransform' },
+    )
   }, [model, viewModel])
 
   return (
