@@ -18,16 +18,133 @@
     "directory": "packages/core"
   },
   "author": "JBrowse Team",
-  "main": "index.js",
+  "type": "module",
+  "files": [
+    "dist",
+    "esm"
+  ],
+  "exports": {
+    "./Plugin": {
+      "import": "./esm/Plugin.js",
+      "require": "./dist/Plugin.js"
+    },
+    "./pluggableElementTypes": {
+      "import": "./esm/pluggableElementTypes/index.js",
+      "require": "./dist/pluggableElementTypes/index.js"
+    },
+    "./pluggableElementTypes/ViewType": {
+      "import": "./esm/pluggableElementTypes/ViewType.js",
+      "require": "./dist/pluggableElementTypes/ViewType.js"
+    },
+    "./pluggableElementTypes/AdapterType": {
+      "import": "./esm/pluggableElementTypes/AdapterType.js",
+      "require": "./dist/pluggableElementTypes/AdapterType.js"
+    },
+    "./pluggableElementTypes/DisplayType": {
+      "import": "./esm/pluggableElementTypes/DisplayType.js",
+      "require": "./dist/pluggableElementTypes/DisplayType.js"
+    },
+    "./pluggableElementTypes/TrackType": {
+      "import": "./esm/pluggableElementTypes/TrackType.js",
+      "require": "./dist/pluggableElementTypes/TrackType.js"
+    },
+    "./pluggableElementTypes/WidgetType": {
+      "import": "./esm/pluggableElementTypes/WidgetType.js",
+      "require": "./dist/pluggableElementTypes/WidgetType.js"
+    },
+    "./pluggableElementTypes/models": {
+      "import": "./esm/pluggableElementTypes/models/index.js",
+      "require": "./dist/pluggableElementTypes/models/index.js"
+    },
+    "./pluggableElementTypes/renderers/ServerSideRendererType": {
+      "import": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.js",
+      "require": "./dist/pluggableElementTypes/renderers/ServerSideRendererType.js"
+    },
+    "./pluggableElementTypes/renderers/CircularChordRendererType": {
+      "import": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.js",
+      "require": "./dist/pluggableElementTypes/renderers/CircularChordRendererType.js"
+    },
+    "./pluggableElementTypes/renderers/BoxRendererType": {
+      "import": "./esm/pluggableElementTypes/renderers/BoxRendererType.js",
+      "require": "./dist/pluggableElementTypes/renderers/BoxRendererType.js"
+    },
+    "./pluggableElementTypes/renderers/FeatureRendererType": {
+      "import": "./esm/pluggableElementTypes/renderers/FeatureRendererType.js",
+      "require": "./dist/pluggableElementTypes/renderers/FeatureRendererType.js"
+    },
+    "./pluggableElementTypes/renderers/RendererType": {
+      "import": "./esm/pluggableElementTypes/renderers/RendererType.js",
+      "require": "./dist/pluggableElementTypes/renderers/RendererType.js"
+    },
+    "./configuration": {
+      "import": "./esm/configuration/index.js",
+      "require": "./dist/configuration/index.js"
+    },
+    "./util/types/mst": {
+      "import": "./esm/util/types/mst.js",
+      "require": "./dist/util/types/mst.js"
+    },
+    "./ui": {
+      "import": "./esm/ui/index.js",
+      "require": "./dist/ui/index.js"
+    },
+    "./ui/theme": {
+      "import": "./esm/ui/theme.js",
+      "require": "./dist/ui/theme.js"
+    },
+    "./util": {
+      "import": "./esm/util/index.js",
+      "require": "./dist/util/index.js"
+    },
+    "./util/color": {
+      "import": "./esm/util/color/index.js",
+      "require": "./dist/util/color/index.js"
+    },
+    "./util/layouts": {
+      "import": "./esm/util/layouts/index.js",
+      "require": "./dist/util/layouts/index.js"
+    },
+    "./util/tracks": {
+      "import": "./esm/util/tracks.js",
+      "require": "./dist/util/tracks.js"
+    },
+    "./util/Base1DViewModel": {
+      "import": "./esm/util/Base1DViewModel.js",
+      "require": "./dist/util/Base1DViewModel.js"
+    },
+    "./util/io": {
+      "import": "./esm/util/io/index.js",
+      "require": "./dist/util/io/index.js"
+    },
+    "./util/mst-reflection": {
+      "import": "./esm/util/mst-reflection.js",
+      "require": "./dist/util/mst-reflection.js"
+    },
+    "./util/rxjs": {
+      "import": "./esm/util/rxjs.js",
+      "require": "./dist/util/rxjs.js"
+    },
+    "./BaseFeatureWidget/BaseFeatureDetail": {
+      "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/index.js",
+      "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/index.js"
+    },
+    "./data_adapters/BaseAdapter": {
+      "import": "./esm/data_adapters/BaseAdapter/index.js",
+      "require": "./dist/data_adapters/BaseAdapter/index.js"
+    }
+  },
   "scripts": {
     "test": "cd ../..; jest --passWithNoTests packages/core",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
     "coverage": "yarn test --coverage",
-    "clean": "rimraf dist tsconfig.build.tsbuildinfo",
+    "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "tsc -p tsconfig.build.json && cp package.json README.md ../../LICENSE dist/"
+    "build:esm": "tsc -p tsconfig.build.json",
+    "build:cjs": "tsc -p tsconfig.build.json --module commonjs --outDir dist",
+    "postbuild:cjs": "echo '{\"type\": \"commonjs\"}' > dist/package.json",
+    "build": "yarn build:esm && yarn build:cjs"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.0",
@@ -66,7 +183,6 @@
     "react-dom": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "public",
-    "directory": "dist"
+    "access": "public"
   }
 }
