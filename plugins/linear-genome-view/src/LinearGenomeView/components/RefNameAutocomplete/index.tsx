@@ -18,12 +18,12 @@ import { observer } from 'mobx-react'
 import AutocompleteTextField from './AutocompleteTextField'
 import { getDeduplicatedResult, getFiltered } from './util'
 
+import type { TextFieldProps } from './AutocompleteTextField'
 import type { Option } from './util'
 import type { LinearGenomeViewModel } from '../../model'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { TextFieldProps as TFP } from '@mui/material'
 
-const emptyObj = {} as const
+const emptyObj: TextFieldProps = {}
 
 function getOptionLabel(opt: Option | string) {
   return typeof opt === 'string' ? opt : opt.result.getDisplayString()
@@ -45,7 +45,7 @@ interface MemoizedAutocompleteProps {
   open: boolean
   searchOptions: Option[] | undefined
   inputRef: React.RefObject<HTMLInputElement | null>
-  TextFieldProps: TFP
+  TextFieldProps: TextFieldProps
   onOpen: () => void
   onClose: () => void
   onSelect: ((region: BaseResult) => void) | undefined
@@ -157,7 +157,7 @@ const RefNameAutocomplete = observer(function ({
   value,
   minWidth = 200,
   maxWidth = 550,
-  TextFieldProps = emptyObj as TFP,
+  TextFieldProps = emptyObj,
 }: {
   model: LinearGenomeViewModel
   onSelect?: (region: BaseResult) => void
@@ -168,7 +168,7 @@ const RefNameAutocomplete = observer(function ({
   style?: React.CSSProperties
   minWidth?: number
   maxWidth?: number
-  TextFieldProps?: TFP
+  TextFieldProps?: TextFieldProps
 }) {
   const session = getSession(model)
   const { assemblyManager } = session

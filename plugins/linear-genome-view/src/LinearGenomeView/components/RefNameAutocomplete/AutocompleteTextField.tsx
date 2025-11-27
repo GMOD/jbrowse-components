@@ -4,8 +4,20 @@ import { TextField } from '@mui/material'
 
 import type {
   AutocompleteRenderInputParams,
-  TextFieldProps as TFP,
+  InputBaseComponentProps,
+  InputProps,
 } from '@mui/material'
+
+export interface TextFieldProps {
+  variant?: 'outlined' | 'filled' | 'standard'
+  className?: string
+  style?: React.CSSProperties
+  helperText?: React.ReactNode
+  slotProps?: {
+    input?: Partial<InputProps>
+    htmlInput?: InputBaseComponentProps
+  }
+}
 
 export default function AutocompleteTextField({
   TextFieldProps,
@@ -13,7 +25,7 @@ export default function AutocompleteTextField({
   params,
   setCurrentSearch,
 }: {
-  TextFieldProps: TFP
+  TextFieldProps: TextFieldProps
   inputRef: RefObject<HTMLInputElement | null>
   params: AutocompleteRenderInputParams
   setCurrentSearch: (arg: string) => void
@@ -31,10 +43,6 @@ export default function AutocompleteTextField({
   // allowing imperative updates via inputRef
   const { value: _value, ...inputPropsWithoutValue } = inputProps
 
-  // slotProps.input could be a function in MUI, only spread if it's an object
-  const inputSlotProps =
-    typeof slotProps.input === 'object' ? slotProps.input : undefined
-
   return (
     <TextField
       variant={variant}
@@ -47,7 +55,7 @@ export default function AutocompleteTextField({
       slotProps={{
         input: {
           ...InputProps,
-          ...inputSlotProps,
+          ...slotProps.input,
         },
         htmlInput: inputPropsWithoutValue,
       }}

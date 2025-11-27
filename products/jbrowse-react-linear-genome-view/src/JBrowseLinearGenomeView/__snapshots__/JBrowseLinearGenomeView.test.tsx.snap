@@ -261,7 +261,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                                 role="combobox"
                                 spellcheck="false"
                                 type="text"
-                                value="ctgA:1..40"
                               />
                               <div
                                 class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1hnilo0-MuiInputAdornment-root-th"
