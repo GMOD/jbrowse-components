@@ -31,10 +31,15 @@ export async function makeImageData({
     features,
     stopToken,
     lengthCutoffFilter,
+    rowHeight,
+    scrollTop,
   } = renderArgs
 
   const { statusCallback = () => {} } = renderArgs
-  const h = canvasHeight / sources.length
+  const sln = sources.length
+  const h = rowHeight ?? canvasHeight / sln
+  const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
+  const endRow = Math.min(sln, Math.ceil((scrollTop + canvasHeight) / h))
   checkStopToken(stopToken)
 
   const genotypesCache = new Map<string, Record<string, string>>()
@@ -65,9 +70,8 @@ export async function makeImageData({
         if (hasPhaseSet) {
           const samp = feature.get('samples') as Record<string, SampleGenotype>
           const x = (idx / mafs.length) * canvasWidth
-          const sln = sources.length
-          for (let j = 0; j < sln; j++) {
-            const y = (j / sln) * canvasHeight
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name, HP } = sources[j]!
             const s = samp[name]
             if (s) {
@@ -132,9 +136,8 @@ export async function makeImageData({
             genotypesCache.set(featureId, samp)
           }
           const x = (idx / mafs.length) * canvasWidth
-          const sln = sources.length
-          for (let j = 0; j < sln; j++) {
-            const y = (j / sln) * canvasHeight
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name, HP } = sources[j]!
             const genotype = samp[name]
             if (genotype) {

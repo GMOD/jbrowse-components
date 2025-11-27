@@ -113,7 +113,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
         height={height}
         style={{
           position: 'absolute',
-          top: scrollTop,
+          top: 0,
           left: 0,
           zIndex: 100,
           pointerEvents: 'none',
@@ -131,8 +131,8 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
 
           const rect = event.currentTarget.getBoundingClientRect()
           const x = event.clientX - rect.left
-          // Canvas is positioned at scrollTop, and we translate the drawing by -scrollTop,
-          // so we need to account for both to get the correct tree coordinate
+          // Canvas is positioned at top:0, and we translate the drawing by -scrollTop,
+          // so we need to add scrollTop to get the correct tree coordinate
           const y = event.clientY - rect.top + scrollTop
 
           // Use flatbush to find nearby nodes (branch points)
@@ -154,7 +154,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
         }}
         style={{
           position: 'absolute',
-          top: scrollTop,
+          top: 0,
           left: 0,
           zIndex: 101,
           cursor: 'pointer',
@@ -170,8 +170,8 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
 
           const rect = event.currentTarget.getBoundingClientRect()
           const x = event.clientX - rect.left
-          // Canvas is positioned at scrollTop, and we translate the drawing by -scrollTop,
-          // so we need to account for both to get the correct tree coordinate
+          // Div is positioned at top:0, and we translate the drawing by -scrollTop,
+          // so we need to add scrollTop to get the correct tree coordinate
           const y = event.clientY - rect.top + scrollTop
 
           // Use flatbush to find nearby nodes (branch points)
@@ -193,7 +193,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
         }}
         style={{
           position: 'absolute',
-          top: scrollTop,
+          top: 0,
           left: 0,
           width: treeAreaWidth,
           height,

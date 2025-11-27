@@ -7,6 +7,8 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   minorAlleleFrequencyFilter: number
   highResolutionScaling: number
   height: number
+  rowHeight: number
+  scrollTop: number
   features: Map<string, Feature>
   renderingMode: string
   statusCallback?: (arg: string) => void

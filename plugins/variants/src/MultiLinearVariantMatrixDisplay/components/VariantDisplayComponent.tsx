@@ -14,7 +14,7 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
   model: MultiLinearVariantMatrixDisplayModel
 }) {
   const { model } = props
-  const { lineZoneHeight, height, setScrollTop } = model
+  const { lineZoneHeight, height, setScrollTop, autoHeight, scrollTop } = model
   const ref = useRef<HTMLDivElement>(null)
   const [mouseY, setMouseY] = useState<number>()
   const [mouseX, setMouseX] = useState<number>()
@@ -49,7 +49,7 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
           top: lineZoneHeight,
           height: matrixHeight,
           width: '100%',
-          overflowY: 'auto',
+          overflowY: autoHeight ? 'hidden' : 'auto',
           overflowX: 'hidden',
         }}
         onScroll={evt => {
@@ -58,7 +58,16 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
       >
         <TreeSidebar model={model} />
         <LegendBar model={model} />
-        <BaseLinearDisplayComponent {...props} />
+        <div
+          style={{
+            position: 'absolute',
+            top: autoHeight ? 0 : scrollTop,
+            left: 0,
+            width: '100%',
+          }}
+        >
+          <BaseLinearDisplayComponent {...props} />
+        </div>
       </div>
 
       {mouseX && mouseY && mouseY > lineZoneHeight ? (

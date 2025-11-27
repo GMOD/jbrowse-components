@@ -85,17 +85,26 @@ export default function stateModelFactory(
 
     .views(self => ({
       /**
+       * #getter
+       */
+      get visibleHeight() {
+        return self.height - self.lineZoneHeight
+      },
+      /**
        * #method
        */
       renderProps() {
         const superProps = self.adapterProps()
+        const visibleHeight = self.height - self.lineZoneHeight
         return {
           ...superProps,
           notReady: superProps.notReady || !self.sources || !self.featuresReady,
           renderingMode: self.renderingMode,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           lengthCutoffFilter: self.lengthCutoffFilter,
-          height: self.totalHeight,
+          height: self.autoHeight ? self.totalHeight : visibleHeight,
+          rowHeight: self.rowHeight,
+          scrollTop: self.scrollTop,
           sources: self.sources,
         }
       },

@@ -13,6 +13,7 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
   model: MultiLinearVariantDisplayModel
 }) {
   const { model } = props
+  const { scrollTop, autoHeight } = model
   const ref = useRef<HTMLDivElement>(null)
   const [mouseY, setMouseY] = useState<number>()
   const [mouseX, setMouseX] = useState<number>()
@@ -33,7 +34,16 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
       }}
     >
       <TreeSidebar model={model} />
-      <BaseLinearDisplayComponent {...props} />
+      <div
+        style={{
+          position: 'absolute',
+          top: autoHeight ? 0 : scrollTop,
+          left: 0,
+          width: '100%',
+        }}
+      >
+        <BaseLinearDisplayComponent {...props} />
+      </div>
       <LegendBar model={model} />
 
       {mouseX && mouseY ? (

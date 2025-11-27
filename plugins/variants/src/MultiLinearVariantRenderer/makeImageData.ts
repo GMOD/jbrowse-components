@@ -25,6 +25,7 @@ export async function makeImageData(
     minorAlleleFrequencyFilter,
     sources,
     rowHeight,
+    height: canvasHeight,
     features,
     regions,
     bpPerPx,
@@ -44,6 +45,9 @@ export async function makeImageData(
   const genotypesCache = new Map<string, Record<string, string>>()
   const drawRef = referenceDrawingMode === 'draw'
   const h = Math.max(rowHeight, 1)
+  const sln = sources.length
+  const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
+  const endRow = Math.min(sln, Math.ceil((scrollTop + canvasHeight) / h))
 
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
@@ -76,11 +80,10 @@ export async function makeImageData(
         const featureStrand = feature.get('strand')
         const alpha = bpLen > 5 ? 0.75 : 1
         const x = Math.floor(leftPx)
-        let y = -scrollTop
 
-        const s = sources.length
         if (renderingMode === 'phased') {
-          for (let j = 0; j < s; j++) {
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name, HP } = sources[j]!
             const genotype = samp[name]
             if (genotype) {
@@ -105,10 +108,10 @@ export async function makeImageData(
                 ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
               }
             }
-            y += rowHeight
           }
         } else {
-          for (let j = 0; j < s; j++) {
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name } = sources[j]!
             const genotype = samp[name]
             if (genotype) {
@@ -168,7 +171,6 @@ export async function makeImageData(
                 coords.push(x, y, x + w, y + h)
               }
             }
-            y += rowHeight
           }
         }
       },
