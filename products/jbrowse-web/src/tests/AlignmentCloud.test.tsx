@@ -1,4 +1,5 @@
-import { doBeforeEach, setup, testLinkedReadsDisplay } from './util'
+import { testLinkedReadsDisplay } from './renderingUtils'
+import { doBeforeEach, setup } from './util'
 
 setup()
 
@@ -17,18 +18,34 @@ const testCloud = (loc: string, track: string) =>
     timeout,
   })
 
-test('short-read cloud display', async () => {
-  await testCloud('ctgA:1-50000', 'volvox_sv_cram')
-}, timeout)
+test(
+  'short-read cloud display',
+  async () => {
+    await testCloud('ctgA:1-50000', 'volvox_sv_cram')
+  },
+  timeout,
+)
 
-test('long-read cloud display', async () => {
-  await testCloud('ctgA:19,101..32,027', 'volvox-simple-inv.bam')
-}, timeout)
+test(
+  'long-read cloud display',
+  async () => {
+    await testCloud('ctgA:19,101..32,027', 'volvox-simple-inv.bam')
+  },
+  timeout,
+)
 
-test('long-read cloud display, out of view pairing', async () => {
-  await testCloud('ctgA:478..6,191', 'volvox-long-reads-sv-cram')
-}, timeout)
+test(
+  'long-read cloud display, out of view pairing',
+  async () => {
+    await testCloud('ctgA:478..6,191', 'volvox-long-reads-sv-cram')
+  },
+  timeout,
+)
 
-test('short-read cloud display, out of view pairing', async () => {
-  await testCloud('ctgA:478..6,191', 'volvox_sv_cram')
-}, timeout)
+test(
+  'short-read cloud display, out of view pairing',
+  async () => {
+    await testCloud('ctgA:478..6,191', 'volvox_sv_cram')
+  },
+  timeout,
+)

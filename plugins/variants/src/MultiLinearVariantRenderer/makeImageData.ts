@@ -92,7 +92,17 @@ export async function makeImageData(
                   splitCache[genotype] ||
                   (splitCache[genotype] = genotype.split('|'))
                 if (
-                  drawPhased(alleles, ctx, x, y, w, drawH, HP!, undefined, drawRef)
+                  drawPhased(
+                    alleles,
+                    ctx,
+                    x,
+                    y,
+                    w,
+                    drawH,
+                    HP!,
+                    undefined,
+                    drawRef,
+                  )
                 ) {
                   items.push({
                     name,

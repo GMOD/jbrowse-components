@@ -59,7 +59,10 @@ async function testSyntenyView(
 }
 
 test('horizontally flipped inverted alignment', async () => {
-  await testSyntenyView('Pp01:28,845,211..28,845,272[rev]', 'chr1:316,306..316,364')
+  await testSyntenyView(
+    'Pp01:28,845,211..28,845,272[rev]',
+    'chr1:316,306..316,364',
+  )
 }, 40000)
 
 test('regular orientation inverted alignment', async () => {
@@ -67,7 +70,10 @@ test('regular orientation inverted alignment', async () => {
 }, 40000)
 
 test('regular orientation inverted alignment bottom', async () => {
-  await testSyntenyView('Pp01:28,845,211..28,845,272', 'chr1:316,306..316,364[rev]')
+  await testSyntenyView(
+    'Pp01:28,845,211..28,845,272',
+    'chr1:316,306..316,364[rev]',
+  )
 }, 40000)
 
 test('regular orientation both horizontally flipped', async () => {
@@ -78,7 +84,11 @@ test('regular orientation both horizontally flipped', async () => {
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped', async () => {
-  await testSyntenyView('Pp01:28,845,211..28,845,272', 'chr1:316,306..316,364', true)
+  await testSyntenyView(
+    'Pp01:28,845,211..28,845,272',
+    'chr1:316,306..316,364',
+    true,
+  )
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped rev 1', async () => {

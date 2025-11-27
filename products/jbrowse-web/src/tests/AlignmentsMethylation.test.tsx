@@ -1,6 +1,7 @@
 import path from 'path'
 
-import { doBeforeEach, setup, testAlignmentModificationsDisplay } from './util'
+import { testAlignmentModificationsDisplay } from './renderingUtils'
+import { doBeforeEach, setup } from './util'
 import config from '../../test_data/methylation_test/config.json'
 
 setup()

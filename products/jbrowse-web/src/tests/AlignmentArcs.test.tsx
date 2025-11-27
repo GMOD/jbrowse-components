@@ -1,4 +1,5 @@
-import { doBeforeEach, setup, testLinkedReadsDisplay } from './util'
+import { testLinkedReadsDisplay } from './renderingUtils'
+import { doBeforeEach, setup } from './util'
 
 setup()
 
@@ -7,7 +8,12 @@ beforeEach(() => {
 })
 
 const testArc = (loc: string, track: string) =>
-  testLinkedReadsDisplay({ loc, track, displayMode: 'arc', canvasId: 'arc-canvas' })
+  testLinkedReadsDisplay({
+    loc,
+    track,
+    displayMode: 'arc',
+    canvasId: 'arc-canvas',
+  })
 
 test('short-read arc display', async () => {
   await testArc('ctgA:1-50000', 'volvox_sv_cram')

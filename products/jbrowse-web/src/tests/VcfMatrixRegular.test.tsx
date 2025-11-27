@@ -1,4 +1,5 @@
-import { doBeforeEach, setup, testMultiVariantDisplay } from './util'
+import { testMultiVariantDisplay } from './renderingUtils'
+import { doBeforeEach, setup } from './util'
 
 setup()
 
@@ -11,5 +12,8 @@ test('regular', async () => {
 }, 60000)
 
 test('rphased', async () => {
-  await testMultiVariantDisplay({ displayType: 'regular', phasedMode: 'phased' })
+  await testMultiVariantDisplay({
+    displayType: 'regular',
+    phasedMode: 'phased',
+  })
 }, 60000)

@@ -27,10 +27,7 @@ beforeEach(() => {
 const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
-async function testExportSvgWithError(
-  tracks: string[],
-  filename: string,
-) {
+async function testExportSvgWithError(tracks: string[], filename: string) {
   await mockConsole(async () => {
     const { view, findByTestId, findByText, findAllByText } = await createView()
 
