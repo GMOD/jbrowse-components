@@ -433,8 +433,17 @@ export default function MultiVariantBaseModelF(
           return {
             ...superProps,
             rpcDriverName: self.rpcDriverName,
-            displayModel: self,
             config: self.rendererConfig,
+          }
+        },
+        /**
+         * #method
+         * props for the renderer's React "Rendering" component - client-side
+         * only, never sent to the worker
+         */
+        renderingProps() {
+          return {
+            displayModel: self,
           }
         },
         /**

@@ -108,11 +108,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return {
           ...getParentRenderProps(self),
           rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           config: self.configuration.renderer,
-          statusCallback: (message: string) => {
-            self.setMessage(message)
-          },
         }
       },
     }))
@@ -126,9 +122,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return null
         }
 
-        const { rendererType, rpcManager, renderProps } = props
+        const { rendererType, rpcManager, renderProps, renderingProps } = props
         const rendering = await rendererType.renderInClient(rpcManager, {
           ...renderProps,
+          renderingProps,
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,
         })

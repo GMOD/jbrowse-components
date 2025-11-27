@@ -81,6 +81,7 @@ export function doAfterAttach(model: {
             }
           },
           ...model.renderPropsPre(),
+          renderingProps: model.renderingProps(),
         })
       }
       if (isAlive(model)) {

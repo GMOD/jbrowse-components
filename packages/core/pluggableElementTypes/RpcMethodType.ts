@@ -110,9 +110,14 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   ) {
     const uris = [] as UriLocation[]
 
+    // exclude renderingProps from deep traversal - it is only needed
+    // client-side for React components and can contain circular references
+    // (e.g. d3 hierarchy nodes) or non-serializable objects like callbacks
+    const { renderingProps, ...rest } = thing
+
     // using map-obj avoids cycles, seen in circular view svg export
     mapObject(
-      thing,
+      rest,
       (key, val: unknown) => {
         if (isUriLocation(val)) {
           uris.push(val)

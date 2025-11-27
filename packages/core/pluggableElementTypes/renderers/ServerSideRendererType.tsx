@@ -24,6 +24,12 @@ interface BaseRenderArgs extends RenderProps {
 export interface RenderArgs extends BaseRenderArgs {
   config: SnapshotOrInstance<AnyConfigurationModel>
   filters?: SerializableFilterChain
+  /**
+   * Props passed only to the client-side React rendering component.
+   * These are NOT sent to the worker - they stay client-side only.
+   * Typically includes displayModel, event callbacks, etc.
+   */
+  renderingProps?: Record<string, unknown>
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
@@ -93,14 +99,18 @@ function createNormalElement(
   res: ResultsSerialized,
   args: RenderArgs,
   ReactComponent: ServerSideRenderer['ReactComponent'],
+  renderingProps?: Record<string, unknown>,
 ) {
-  return <ReactComponent {...args} {...res} />
+  return <ReactComponent {...args} {...res} {...renderingProps} />
 }
 
 export default class ServerSideRenderer extends RendererType {
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
+    // strip renderingProps - they are client-side only and should not be
+    // serialized to the worker
+    const { renderingProps, ...rest } = args
     return {
-      ...args,
+      ...rest,
       config: isStateTreeNode(args.config)
         ? getSnapshot(args.config)
         : args.config,
@@ -112,6 +122,7 @@ export default class ServerSideRenderer extends RendererType {
     res: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
+    const { renderingProps } = args
     return {
       ...res,
       reactElement: args.exportSVG
@@ -121,7 +132,7 @@ export default class ServerSideRenderer extends RendererType {
             this.ReactComponent,
             this.supportsSVG,
           )
-        : createNormalElement(res, args, this.ReactComponent),
+        : createNormalElement(res, args, this.ReactComponent, renderingProps),
     }
   }
 

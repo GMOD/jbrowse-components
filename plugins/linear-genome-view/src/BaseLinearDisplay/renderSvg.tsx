@@ -56,7 +56,7 @@ export async function renderBaseLinearDisplaySvg(
         ] as const
       }
 
-      const { rpcManager, renderArgs, renderProps, rendererType } =
+      const { rpcManager, renderArgs, renderProps, renderingProps, rendererType } =
         renderBlockData(blockState, self)
 
       return [
@@ -64,6 +64,7 @@ export async function renderBaseLinearDisplaySvg(
         await rendererType.renderInClient(rpcManager, {
           ...renderArgs,
           ...renderProps,
+          renderingProps,
           viewParams: getViewParams(self, true),
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,

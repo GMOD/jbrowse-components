@@ -12,6 +12,7 @@ export function renderReactionData(self: any) {
     rendererType,
     rpcManager,
     renderProps: self.renderProps(),
+    renderingProps: self.renderingProps?.() as Record<string, unknown> | undefined,
     renderArgs: {
       assemblyName: view.displayedRegions[0]!.assemblyName,
       adapterConfig: structuredClone(self.adapterConfig),
@@ -35,6 +36,7 @@ export async function renderReactionEffect(props?: any, stopToken?: string) {
     cannotBeRenderedReason,
     renderArgs,
     renderProps,
+    renderingProps,
     exportSVG,
   } = props
 
@@ -50,6 +52,7 @@ export async function renderReactionEffect(props?: any, stopToken?: string) {
   const { html, ...data } = await rendererType.renderInClient(rpcManager, {
     ...renderArgs,
     ...renderProps,
+    renderingProps,
     exportSVG,
     stopToken,
   })

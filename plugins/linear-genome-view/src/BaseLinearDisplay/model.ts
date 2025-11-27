@@ -486,13 +486,11 @@ function stateModelFactory() {
       },
       /**
        * #method
+       * props for the renderer's React "Rendering" component - client-side
+       * only, never sent to the worker. includes displayModel and callbacks
        */
-      renderProps() {
+      renderingProps() {
         return {
-          ...getParentRenderProps(self),
-          notReady: !self.featureDensityStatsReady,
-          rpcDriverName: self.rpcDriverName,
-
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse
@@ -534,6 +532,17 @@ function stateModelFactory() {
             self.setContextMenuFeature(undefined)
             self.clearFeatureSelection()
           },
+        }
+      },
+      /**
+       * #method
+       * props sent to the worker for server-side rendering
+       */
+      renderProps() {
+        return {
+          ...getParentRenderProps(self),
+          notReady: !self.featureDensityStatsReady,
+          rpcDriverName: self.rpcDriverName,
         }
       },
     }))
