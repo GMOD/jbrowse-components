@@ -1,0 +1,74 @@
+import ErrorMessageStackTraceDialog from '@jbrowse/core/ui/ErrorMessageStackTraceDialog'
+import { getSession } from '@jbrowse/core/util'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import ReportIcon from '@mui/icons-material/Report'
+import { Alert, IconButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()({
+  ellipses: {
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+  },
+})
+
+const BlockErrorMessage = observer(function ({
+  model,
+}: {
+  model: {
+    error?: unknown
+    reload: () => void
+  }
+}) {
+  const { classes } = useStyles()
+  return (
+    <Alert
+      severity="error"
+      action={
+        <>
+          <Tooltip title="Reload track">
+            <IconButton
+              data-testid="reload_button"
+              onClick={() => {
+                model.reload()
+              }}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Show stack trace">
+            <IconButton
+              onClick={() => {
+                getSession(model).queueDialog(onClose => [
+                  ErrorMessageStackTraceDialog,
+                  {
+                    onClose,
+                    error: model.error as Error,
+                  },
+                ])
+              }}
+            >
+              <ReportIcon />
+            </IconButton>
+          </Tooltip>
+        </>
+      }
+      classes={{
+        message: classes.ellipses,
+      }}
+      onMouseDown={event => {
+        event.stopPropagation()
+      }}
+      onClick={event => {
+        event.stopPropagation()
+      }}
+    >
+      <Tooltip title={`${model.error}`}>
+        <div>{`${model.error}`.slice(0, 100)}</div>
+      </Tooltip>
+    </Alert>
+  )
+})
+
+export default BlockErrorMessage
