@@ -133,7 +133,7 @@ const MultiVariantRendering = observer(function (props: {
         style={{
           position: 'absolute',
           left: 0,
-          top: 0,
+          top: origScrollTop,
         }}
       />
     </div>

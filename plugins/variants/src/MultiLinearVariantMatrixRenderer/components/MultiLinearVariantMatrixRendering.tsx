@@ -24,8 +24,9 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
   featureData: FeatureData[]
   rowHeight: number
   origScrollTop: number
+  totalHeight: number
 }) {
-  const { arr, width, height, displayModel, featureData, origScrollTop, rowHeight } =
+  const { arr, width, displayModel, featureData, totalHeight, origScrollTop, rowHeight } =
     props
   const ref = useRef<HTMLDivElement>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
@@ -76,7 +77,7 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
       const key = result ? `${result.name}:${result.genotype}` : undefined
       if (key !== lastHoveredRef.current) {
         lastHoveredRef.current = key
-        displayModel.setHoveredGenotype(result)
+        displayModel.setHoveredGenotype?.(result)
       }
     },
     [getFeatureUnderMouse, displayModel],
@@ -85,7 +86,7 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
   const handleMouseLeave = useCallback(() => {
     if (lastHoveredRef.current !== undefined) {
       lastHoveredRef.current = undefined
-      displayModel.setHoveredGenotype(undefined)
+      displayModel.setHoveredGenotype?.(undefined)
     }
   }, [displayModel])
 
@@ -98,12 +99,17 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
       style={{
         overflow: 'visible',
         position: 'relative',
-        height,
+        height: totalHeight,
       }}
     >
-      <div style={{ position: 'absolute', left: 0, top: origScrollTop }}>
-        <PrerenderedCanvas {...props} />
-      </div>
+      <PrerenderedCanvas
+        {...props}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: origScrollTop,
+        }}
+      />
     </div>
   )
 })

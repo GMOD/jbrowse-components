@@ -14,6 +14,7 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
   model: MultiLinearVariantDisplayModel
 }) {
   const { model } = props
+  const { height, setScrollTop, autoHeight, availableHeight } = model
   const ref = useRef<HTMLDivElement>(null)
   const { mouseState, handleMouseMove, handleMouseLeave } =
     useMouseTracking(ref)
@@ -21,21 +22,36 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
   return (
     <div
       ref={ref}
+      style={{ position: 'relative', height }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <TreeSidebar model={model} />
+      {/* Scrollable container for display content */}
       <div
         style={{
           position: 'absolute',
           top: 0,
-          left: 0,
+          height: availableHeight,
           width: '100%',
+          overflowY: autoHeight ? 'hidden' : 'auto',
+          overflowX: 'hidden',
+        }}
+        onScroll={evt => {
+          setScrollTop(evt.currentTarget.scrollTop)
         }}
       >
-        <BaseLinearDisplayComponent {...props} />
+        <TreeSidebar model={model} />
+        <LegendBar model={model} />
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            width: '100%',
+          }}
+        >
+          <BaseLinearDisplayComponent {...props} />
+        </div>
       </div>
-      <LegendBar model={model} />
 
       {mouseState ? (
         <Crosshair

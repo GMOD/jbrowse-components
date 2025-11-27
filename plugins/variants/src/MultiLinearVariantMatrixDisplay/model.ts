@@ -69,6 +69,7 @@ export default function stateModelFactory(
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           lengthCutoffFilter: self.lengthCutoffFilter,
           height: self.autoHeight ? self.totalHeight : self.availableHeight,
+          totalHeight: self.totalHeight,
           rowHeight: self.rowHeight,
           scrollTop: self.scrollTop,
           sources: self.sources,
