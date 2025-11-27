@@ -47,7 +47,7 @@ types:
 ```js
 // plugins/alignments/src/PileupRenderer/configSchema.ts
 
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 export default ConfigurationSchema('PileupRenderer', {
   color: {
     type: 'color',
@@ -175,7 +175,7 @@ a default value in your various pluggable elements.
 
 ### Configuration internals
 
-A configuration is a type of mobx-state-tree model, in which leaf nodes are
+A configuration is a type of @jbrowse/mobx-state-tree model, in which leaf nodes are
 ConfigSlot types, and other nodes are ConfigurationSchema types.
 
 ```

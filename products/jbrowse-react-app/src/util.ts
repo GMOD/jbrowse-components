@@ -6,14 +6,14 @@ import {
   isModelType,
   isReferenceType,
   isValidReference,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid

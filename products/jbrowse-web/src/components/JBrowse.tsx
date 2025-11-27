@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { App } from '@jbrowse/app-core'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
-import { onSnapshot } from 'mobx-state-tree'
+import { onSnapshot } from '@jbrowse/mobx-state-tree'
 
 import ShareButton from './ShareButton'
 import { readQueryParams, setQueryParams } from '../useQueryParam'

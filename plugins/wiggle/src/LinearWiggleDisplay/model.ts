@@ -5,7 +5,7 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
@@ -18,7 +18,7 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))

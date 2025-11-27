@@ -2,7 +2,7 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
-import { addDisposer, getSnapshot } from 'mobx-state-tree'
+import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
   drawCigarClickMap,

@@ -3,14 +3,14 @@ import {
   localStorageSetBoolean,
 } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
-import { addDisposer, cast, types } from 'mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel MultipleViewsSessionMixin

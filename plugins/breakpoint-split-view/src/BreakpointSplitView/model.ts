@@ -5,7 +5,7 @@ import { getSession, notEmpty } from '@jbrowse/core/util'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
-import { addDisposer, getPath, onAction, types } from 'mobx-state-tree'
+import { addDisposer, getPath, onAction, types } from '@jbrowse/mobx-state-tree'
 
 import { getClip } from './getClip'
 import { calc, getBlockFeatures, intersect } from './util'
@@ -14,7 +14,7 @@ import type { ExportSvgOptions } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))

@@ -10,7 +10,7 @@
  */
 export default [
   'mobx',
-  'mobx-state-tree',
+  '@jbrowse/mobx-state-tree',
   'react',
   'react/jsx-runtime',
   'react-dom',

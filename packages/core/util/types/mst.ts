@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { nanoid } from '../nanoid'
 
@@ -56,7 +56,7 @@ export const UriLocationRaw = types.model('UriLocation', {
 
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   postProcessor: snap => {
-    // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+    // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
     const { baseUri, ...rest } = snap as Omit<typeof snap, symbol>
     if (!baseUri) {
       return rest
@@ -76,7 +76,7 @@ export const FileLocation = types.snapshotProcessor(
       }
 
       // @ts-expect-error
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
       const { locationType, ...rest } = snap as Omit<typeof snap, symbol>
       if (!locationType) {
         // @ts-expect-error

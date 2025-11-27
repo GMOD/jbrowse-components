@@ -45,7 +45,7 @@ import {
   getSnapshot,
   resolveIdentifier,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import Header from './components/Header'
 import {
@@ -78,7 +78,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
 import type { Region, Region as IRegion } from '@jbrowse/core/util/types'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -1102,7 +1102,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.tracks.clear()
         // it is necessary to run these after setting displayed regions empty
         // or else model.offsetPx gets set to Infinity and breaks
-        // mobx-state-tree snapshot
+        // @jbrowse/mobx-state-tree snapshot
         self.scrollTo(0)
         self.zoomTo(10)
       },

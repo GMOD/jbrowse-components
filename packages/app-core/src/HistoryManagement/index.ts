@@ -1,6 +1,6 @@
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 
 import type { BaseRootModel } from '@jbrowse/product-core'
 
@@ -52,7 +52,7 @@ export function HistoryManagementMixin() {
                   // we use a specific initialization routine after session is
                   // created to get it to start tracking itself sort of related
                   // issue here
-                  // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
+                  // https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1089#issuecomment-441207911
                   self.history.initialize()
                 }
               },

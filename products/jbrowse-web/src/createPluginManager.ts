@@ -90,7 +90,7 @@ export function createPluginManager(
     } catch (e) {
       rootModel.setDefaultSession()
       const str = `${e}`
-      const m = str.replace('[mobx-state-tree] ', '').replace(/\(.+/, '')
+      const m = str.replace('[@jbrowse/mobx-state-tree] ', '').replace(/\(.+/, '')
       const r =
         m.length > 1000 ? `${m.slice(0, 1000)}...see more in console` : m
       const s = r.startsWith('Error:') ? r : `Error: ${r}`

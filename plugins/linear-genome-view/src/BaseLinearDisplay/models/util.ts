@@ -5,14 +5,14 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { BaseLinearDisplayModel } from '../model'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface RenderProps {
   rendererType: any

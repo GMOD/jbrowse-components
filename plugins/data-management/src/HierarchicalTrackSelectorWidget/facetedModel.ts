@@ -6,14 +6,14 @@ import {
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { autorun, observable } from 'mobx'
-import { addDisposer, getParent, types } from 'mobx-state-tree'
+import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { getRowStr } from './components/faceted/util'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil'
 import { matches } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 

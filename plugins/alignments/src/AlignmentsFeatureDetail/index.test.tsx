@@ -3,7 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import ReactComponent from './AlignmentsFeatureDetail'
 import { stateModelFactory } from './stateModelFactory'

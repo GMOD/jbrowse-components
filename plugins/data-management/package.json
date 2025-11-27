@@ -46,7 +46,7 @@
     "deepmerge": "^4.3.1",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
+    "@jbrowse/mobx-state-tree": "^5.0.0",
     "react-virtualized-auto-sizer": "^1.0.26",
     "react-vtree": "^3.0.0-beta.1",
     "react-window": "^1.8.6",

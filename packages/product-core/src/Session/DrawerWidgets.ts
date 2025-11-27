@@ -1,13 +1,13 @@
 import { isConfigurationModel } from '@jbrowse/core/configuration'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive, types } from 'mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const minDrawerWidth = 128
 

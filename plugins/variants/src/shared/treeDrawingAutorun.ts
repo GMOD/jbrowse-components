@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
-import { addDisposer } from 'mobx-state-tree'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

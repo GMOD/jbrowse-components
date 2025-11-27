@@ -21,7 +21,7 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, when } from 'mobx'
-import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
+import { addDisposer, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
@@ -34,7 +34,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -604,7 +604,7 @@ function stateModelFactory() {
       return { heightPreConfig: height, ...rest }
     })
     .postProcessSnapshot(snap => {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
       const r = snap as Omit<typeof snap, symbol>
       const { blockState, ...rest } = r
       return rest

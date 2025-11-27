@@ -12,7 +12,7 @@ import {
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 

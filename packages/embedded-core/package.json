@@ -46,7 +46,7 @@
     "@mui/material": "^7.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
+    "@jbrowse/mobx-state-tree": "^5.0.0",
     "tss-react": "^4.0.0"
   },
   "peerDependencies": {

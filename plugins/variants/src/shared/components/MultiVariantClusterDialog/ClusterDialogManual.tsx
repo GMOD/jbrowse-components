@@ -20,7 +20,7 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import type { ReducedModel } from './types'

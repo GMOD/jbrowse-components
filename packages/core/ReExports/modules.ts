@@ -10,7 +10,7 @@ import {
 } from '@mui/x-data-grid'
 import * as mobx from 'mobx'
 import * as mxreact from 'mobx-react'
-import * as mst from 'mobx-state-tree'
+import * as mst from '@jbrowse/mobx-state-tree'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import * as ReactDomClient from 'react-dom/client'
@@ -50,7 +50,7 @@ import * as mstTypes from '../util/types/mst'
 
 const libs = {
   mobx,
-  'mobx-state-tree': mst,
+  '@jbrowse/mobx-state-tree': mst,
   react: React,
   'react/jsx-runtime': ReactJSXRuntime,
   'react-dom': ReactDom,

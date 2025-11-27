@@ -11,7 +11,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { observable } from 'mobx'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { modificationData } from '../shared/modificationData'
@@ -24,7 +24,7 @@ import type {
 } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))

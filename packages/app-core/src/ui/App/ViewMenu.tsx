@@ -10,7 +10,7 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import MenuIcon from '@mui/icons-material/Menu'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

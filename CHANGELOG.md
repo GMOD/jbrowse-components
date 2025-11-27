@@ -4359,7 +4359,7 @@ yarn run v1.22.18 $ lerna-changelog 2.6.1
     ([@cmdcolin](https://github.com/cmdcolin))
 - `__mocks__`, `core`, `text-indexing`
   - [#2949](https://github.com/GMOD/jbrowse-components/pull/2949) Upgrade to MUI
-    v5, mobx-state-tree v5, mobx-react v6, mobx-react v7
+    v5, @jbrowse/mobx-state-tree v5, mobx-react v6, mobx-react v7
     ([@cmdcolin](https://github.com/cmdcolin))
 
 #### :bug: Bug Fix
@@ -7845,7 +7845,7 @@ Broken releases missing some packages
     --branch and --nightly flags for `jbrowse create` and `jbrowse upgrade`
     commands ([@cmdcolin](https://github.com/cmdcolin))
   - [#1575](https://github.com/GMOD/jbrowse-components/pull/1575) Improve
-    mobx-state-tree type validation errors
+    @jbrowse/mobx-state-tree type validation errors
     ([@cmdcolin](https://github.com/cmdcolin))
   - [#1574](https://github.com/GMOD/jbrowse-components/pull/1574) Make softclip
     indicator black if no seq available

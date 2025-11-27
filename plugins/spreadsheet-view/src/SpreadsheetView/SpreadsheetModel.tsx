@@ -4,13 +4,13 @@ import {
   measureGridWidth,
   toLocale,
 } from '@jbrowse/core/util'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import LocationCell from './components/LocationCell'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface Row {
   // optional feature per-row

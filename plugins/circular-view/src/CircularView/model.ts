@@ -12,7 +12,7 @@ import {
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { transaction } from 'mobx'
-import { cast, getRoot, resolveIdentifier, types } from 'mobx-state-tree'
+import { cast, getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
 
 import { calculateStaticSlices, sliceIsVisible } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
@@ -23,7 +23,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region as IRegion } from '@jbrowse/core/util/types'
 import type { Region } from '@jbrowse/core/util/types/mst'
-import type { Instance, SnapshotOrInstance } from 'mobx-state-tree'
+import type { Instance, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))

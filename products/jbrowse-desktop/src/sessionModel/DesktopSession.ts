@@ -1,7 +1,7 @@
 import { BaseSessionModel } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel DesktopSessionModel

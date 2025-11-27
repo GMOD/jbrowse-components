@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive, types } from 'mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import autorunFeatureDensityStats from './autorunFeatureDensityStats'
 import { getDisplayStr, getFeatureDensityStatsPre } from './util'

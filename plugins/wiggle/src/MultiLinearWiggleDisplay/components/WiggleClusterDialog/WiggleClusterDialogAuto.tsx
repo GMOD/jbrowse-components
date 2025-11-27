@@ -17,7 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { ReducedModel } from './types'
 import type { Source } from '../../../util'

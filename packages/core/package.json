@@ -54,7 +54,7 @@
     "load-script": "^2.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
+    "@jbrowse/mobx-state-tree": "^5.0.0",
     "react-draggable": "^4.4.5",
     "rxjs": "^7.0.0",
     "serialize-error": "^8.0.0",

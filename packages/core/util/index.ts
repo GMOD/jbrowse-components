@@ -10,7 +10,7 @@ import {
   hasParent,
   isAlive,
   isStateTreeNode,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
@@ -38,7 +38,7 @@ import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   Instance,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 export * from './types'
 export * from './when'

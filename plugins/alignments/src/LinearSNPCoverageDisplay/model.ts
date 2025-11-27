@@ -6,7 +6,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
-import { cast, getEnv, isAlive, types } from 'mobx-state-tree'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun, getColorForModification } from '../util'

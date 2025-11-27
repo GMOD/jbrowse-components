@@ -7,7 +7,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { waitFor } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'

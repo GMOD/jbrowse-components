@@ -15,7 +15,7 @@ import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
@@ -28,7 +28,7 @@ import {
 
 import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // async
 const SetFeatureHeightDialog = lazy(

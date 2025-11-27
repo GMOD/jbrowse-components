@@ -57,7 +57,7 @@
     "idb": "^8.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
+    "@jbrowse/mobx-state-tree": "^5.0.0",
     "pako-esm2": "^1.0.0",
     "react": "^19.0.0",
     "react-dev-utils": "^12.0.1",

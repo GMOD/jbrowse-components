@@ -150,7 +150,7 @@ the widget: a `ReactComponent`, a `configSchema`, and a `stateModelFactory`.
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 export { default as ReactComponent } from './CircularViewChordWidget'
 export const configSchema = ConfigurationSchema('CircularViewChordWidget', {})
@@ -175,7 +175,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 }
 ```
 
-With [mobx-state-tree](https://mobx-state-tree.js.org/), you can observe here
+With [@jbrowse/mobx-state-tree](https://@jbrowse/mobx-state-tree.js.org/), you can observe here
 we're defining the properties of our widget and some actions it can take.
 
 Within the `.model` method, we're defining that the model of our

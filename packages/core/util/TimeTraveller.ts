@@ -1,4 +1,4 @@
-// adapted from https://github.com/mobxjs/mobx-state-tree/blob/master/packages/mst-middlewares/src/time-traveller.ts
+// adapted from https://github.com/mobxjs/@jbrowse/mobx-state-tree/blob/master/packages/mst-middlewares/src/time-traveller.ts
 import {
   applySnapshot,
   getEnv,
@@ -6,9 +6,9 @@ import {
   onSnapshot,
   resolvePath,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
-import type { IAnyStateTreeNode, IDisposer } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, IDisposer } from '@jbrowse/mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
 

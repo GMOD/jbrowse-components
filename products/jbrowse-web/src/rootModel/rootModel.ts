@@ -36,7 +36,7 @@ import {
   getType,
   isAlive,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
@@ -57,7 +57,7 @@ import type {
   IAnyType,
   Instance,
   SnapshotIn,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))

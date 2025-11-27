@@ -12,12 +12,12 @@ import {
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
 import InfoIcon from '@mui/icons-material/Info'
-import { cast, getParent, types } from 'mobx-state-tree'
+import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 

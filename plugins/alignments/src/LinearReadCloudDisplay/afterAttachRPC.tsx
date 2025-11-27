@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { untracked } from 'mobx'
-import { getSnapshot, isAlive } from 'mobx-state-tree'
+import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 
 import { createAutorun } from '../util'
 import { buildFlatbushIndex } from './drawFeatsCommon'

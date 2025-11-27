@@ -14,7 +14,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import { getRoot, resolveIdentifier } from 'mobx-state-tree'
+import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 
 import { navToOption } from '../../searchUtils'
 

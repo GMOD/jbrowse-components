@@ -1,11 +1,11 @@
 import { clamp } from '@jbrowse/core/util'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearVariantMatrixDisplay

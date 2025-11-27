@@ -2,7 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
-import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
+import { addDisposer, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
@@ -16,7 +16,7 @@ import type {
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const minDisplayHeight = 20
 

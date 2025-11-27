@@ -17,7 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { shareSessionToDynamo } from '../sessionSharing'
 import { setQueryParams } from '../useQueryParam'

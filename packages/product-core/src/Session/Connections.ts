@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession'
 
@@ -9,7 +9,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel ConnectionManagementSessionMixin

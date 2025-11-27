@@ -14,7 +14,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 // @ts-expect-error
 import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
-import { cast, isAlive, types } from 'mobx-state-tree'
+import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { cluster, hierarchy } from '../d3-hierarchy2'
 import { getSources } from './getSources'
@@ -22,7 +22,7 @@ import { getSources } from './getSources'
 import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))

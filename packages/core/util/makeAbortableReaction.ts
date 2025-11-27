@@ -1,5 +1,5 @@
 import { reaction } from 'mobx'
-import { addDisposer, isAlive } from 'mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 
 import { isAbortException } from './aborting'
 import { createStopToken, stopStopToken } from './stopToken'

@@ -18,7 +18,7 @@ import {
   RadioGroup,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
+import { getRoot } from '@jbrowse/mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import TrackSelector from './TrackSelector'

@@ -1,4 +1,4 @@
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
@@ -10,7 +10,7 @@ import type { AnyConfigurationModel } from '../../configuration'
 import type { SerializedFilterChain } from './util/serializableFilterChain'
 import type RpcManager from '../../rpc/RpcManager'
 import type { ThemeOptions } from '@mui/material'
-import type { SnapshotIn, SnapshotOrInstance } from 'mobx-state-tree'
+import type { SnapshotIn, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
