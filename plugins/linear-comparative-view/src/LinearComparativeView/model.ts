@@ -3,18 +3,24 @@ import { lazy } from 'react'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import {
+  addDisposer,
+  cast,
+  getPath,
+  onAction,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getPath, onAction, types } from '@jbrowse/mobx-state-tree'
 
 import type { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -29,7 +35,7 @@ const ReturnToImportFormDialog = lazy(
 function stateModelFactory(pluginManager: PluginManager) {
   const LinearSyntenyViewHelper = pluginManager.getViewType(
     'LinearSyntenyViewHelper',
-  )?.stateModel as LinearSyntenyViewHelperStateModel
+  )?.stateModel
   return types
     .compose(
       'LinearComparativeView',
@@ -99,7 +105,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get initialized() {
         return (
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           self.width !== undefined &&
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
@@ -343,7 +348,7 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .preProcessSnapshot(snap => {
       // @ts-expect-error
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
       const { tracks, levels = [{ tracks, level: 0 }], ...rest } = snap || {}
       return {
         ...rest,

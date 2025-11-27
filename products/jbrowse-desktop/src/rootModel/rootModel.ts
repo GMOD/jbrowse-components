@@ -8,6 +8,7 @@ import {
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable, DNA } from '@jbrowse/core/ui/Icons'
+import { types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -22,7 +23,6 @@ import SaveAsIcon from '@mui/icons-material/SaveAs'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import { DesktopSessionManagementMixin, getSaveSession } from './Sessions'
 import packageJSON from '../../package.json'
@@ -36,8 +36,8 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/ass
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { SessionWithDialogs } from '@jbrowse/product-core'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+import type { SessionWithDialogs } from '@jbrowse/product-core'
 
 // lazies
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))

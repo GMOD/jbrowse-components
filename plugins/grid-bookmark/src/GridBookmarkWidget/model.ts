@@ -4,13 +4,13 @@ import {
   localStorageSetItem,
 } from '@jbrowse/core/util'
 import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
-import { autorun } from 'mobx'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LabeledRegionModel = types
   .compose(

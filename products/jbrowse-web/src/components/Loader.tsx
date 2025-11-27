@@ -2,8 +2,8 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { observer } from 'mobx-react'
 import { destroy } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
 

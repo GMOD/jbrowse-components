@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { toJS } from 'mobx'
 import { cast, getParent, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { toJS } from 'mobx'
 
 import { JBrowseConfigF } from '../JBrowseConfig'
 

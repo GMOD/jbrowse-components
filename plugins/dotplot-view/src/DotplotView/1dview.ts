@@ -1,7 +1,7 @@
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
-import { observable } from 'mobx'
 import { getParent } from '@jbrowse/mobx-state-tree'
+import { observable } from 'mobx'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

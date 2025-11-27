@@ -1,5 +1,5 @@
-import { autorun } from 'mobx'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { getConf } from '../configuration'
 import { getSession } from '../util'

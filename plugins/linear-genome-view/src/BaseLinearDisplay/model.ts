@@ -17,11 +17,16 @@ import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, when } from 'mobx'
-import { addDisposer, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
@@ -33,8 +38,8 @@ import type { ExportSvgOptions } from '../LinearGenomeView/types'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import type { ThemeOptions } from '@mui/material'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -434,7 +439,6 @@ function stateModelFactory() {
                 label: 'Copy info to clipboard',
                 icon: ContentCopyIcon,
                 onClick: () => {
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   self.copyInfoToClipboard(feat)
                 },
               },
@@ -593,7 +597,6 @@ function stateModelFactory() {
       },
     }))
     .preProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }

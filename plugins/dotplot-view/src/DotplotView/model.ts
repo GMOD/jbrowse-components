@@ -16,9 +16,6 @@ import {
 } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { autorun, observable, transaction } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -28,6 +25,9 @@ import {
   resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import { autorun, observable, transaction } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
@@ -139,9 +139,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        tracks: types.array(
-          pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
-        ),
+        tracks: types.array(pm.pluggableMstType('track', 'stateModel')),
 
         /**
          * #property
@@ -697,10 +695,10 @@ export default function stateModelFactory(pm: PluginManager) {
 
               transaction(() => {
                 hview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[0]!)?.regions || [],
+                  session.assemblyManager.get(assemblyNames[0])?.regions || [],
                 )
                 vview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[1]!)?.regions || [],
+                  session.assemblyManager.get(assemblyNames[1])?.regions || [],
                 )
                 self.showAllRegions()
               })

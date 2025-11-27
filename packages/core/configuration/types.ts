@@ -3,7 +3,11 @@ import type {
   ConfigurationSchemaType,
 } from './configurationSchema'
 import type ConfigSlot from './configurationSlot'
-import type { IStateTreeNode, Instance, SnapshotOut } from '@jbrowse/mobx-state-tree'
+import type {
+  IStateTreeNode,
+  Instance,
+  SnapshotOut,
+} from '@jbrowse/mobx-state-tree'
 
 export type GetOptions<SCHEMA> =
   SCHEMA extends ConfigurationSchemaType<any, infer OPTIONS> ? OPTIONS : never

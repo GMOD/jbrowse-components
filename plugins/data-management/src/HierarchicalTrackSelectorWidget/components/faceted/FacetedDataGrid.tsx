@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
 import { getEnv, measureGridWidth } from '@jbrowse/core/util'
+import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import { DataGrid } from '@mui/x-data-grid'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
-import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'

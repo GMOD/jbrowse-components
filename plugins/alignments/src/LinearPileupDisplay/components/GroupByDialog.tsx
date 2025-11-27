@@ -7,6 +7,7 @@ import {
   getSession,
   useDebounce,
 } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   DialogActions,
@@ -16,14 +17,13 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { getUniqueTags } from '../../shared/getUniqueTags'
 import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const GroupByTagDialog = observer(function (props: {
   model: {

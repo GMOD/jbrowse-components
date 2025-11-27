@@ -3,16 +3,21 @@ import path from 'path'
 
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import {
+  addDisposer,
+  getParent,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import {
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
-import { addDisposer, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -90,8 +95,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get session() {
-        return getParent<any>(self).session as AbstractSessionModel &
-          SessionWithDrawerWidgets
+        return getParent<any>(self).session
       },
       /**
        * #getter

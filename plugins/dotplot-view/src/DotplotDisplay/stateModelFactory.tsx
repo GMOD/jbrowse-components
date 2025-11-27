@@ -13,8 +13,8 @@ import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { ThemeOptions } from '@mui/material'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel DotplotDisplay

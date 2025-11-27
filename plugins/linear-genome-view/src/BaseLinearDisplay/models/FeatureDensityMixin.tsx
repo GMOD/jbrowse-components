@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import autorunFeatureDensityStats from './autorunFeatureDensityStats'
 import { getDisplayStr, getFeatureDensityStatsPre } from './util'
@@ -87,7 +87,7 @@ export default function FeatureDensityMixin() {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => autorunFeatureDensityStats(self as any)),
+          autorun(() => autorunFeatureDensityStats(self)),
         )
       },
     }))
@@ -114,14 +114,14 @@ export default function FeatureDensityMixin() {
        */
       getFeatureDensityStats() {
         if (!self.featureDensityStatsP) {
-          self.featureDensityStatsP = getFeatureDensityStatsPre(
-            self as any,
-          ).catch((e: unknown) => {
-            if (isAlive(self)) {
-              this.setFeatureDensityStatsP(undefined)
-            }
-            throw e
-          })
+          self.featureDensityStatsP = getFeatureDensityStatsPre(self).catch(
+            (e: unknown) => {
+              if (isAlive(self)) {
+                this.setFeatureDensityStatsP(undefined)
+              }
+              throw e
+            },
+          )
         }
         return self.featureDensityStatsP
       },
@@ -209,9 +209,7 @@ export default function FeatureDensityMixin() {
        *  react node allows user to force load at current setting
        */
       regionCannotBeRendered(_region: Region) {
-        return self.regionTooLarge ? (
-          <TooLargeMessage model={self as any} />
-        ) : null
+        return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))
 }

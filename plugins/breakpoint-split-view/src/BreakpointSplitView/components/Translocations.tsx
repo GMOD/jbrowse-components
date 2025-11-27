@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
 import { getMatchedTranslocationFeatures } from './util'
 import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
@@ -51,7 +51,7 @@ const Translocations = observer(function ({
   const snap = getSnapshot(model)
   useNextFrame(snap)
 
-  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
+  const assembly = assemblyManager.get(views[0]!.assemblyNames[0])
   if (!assembly) {
     return null
   }
@@ -93,11 +93,11 @@ const Translocations = observer(function ({
           const res = info.STRANDS?.[0]?.split('') // not all files have STRANDS
           const [myDirection, mateDirection] = res ?? ['.', '.']
 
-          const r = getPxFromCoordinate(views[level2]!, chr2, end2)
+          const r = getPxFromCoordinate(views[level2], chr2, end2)
           if (r) {
             const c2: LayoutRecord = [r, 0, r + 1, 0]
             const x1 = getPxFromCoordinate(
-              views[level1]!,
+              views[level1],
               f1.get('refName'),
               c1[LEFT],
             )

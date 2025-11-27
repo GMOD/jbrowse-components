@@ -5,6 +5,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
@@ -14,7 +15,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getMembers } from '@jbrowse/mobx-state-tree'
 import { singular } from 'pluralize'
 import { makeStyles } from 'tss-react/mui'
 

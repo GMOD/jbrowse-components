@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
-import { transaction } from 'mobx'
 import { getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
+import { transaction } from 'mobx'
 
 import { Save } from '@mui/icons-material'
 

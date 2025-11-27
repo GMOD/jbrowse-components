@@ -9,6 +9,13 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
+  addDisposer,
+  cast,
+  getParent,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import {
   DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
   MultipleViewsSessionMixin,
@@ -21,13 +28,6 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getSnapshot,
-  types,
-} from '@jbrowse/mobx-state-tree'
 
 import { WebSessionConnectionsMixin } from '../SessionConnections'
 
@@ -452,7 +452,7 @@ export function BaseWebSession({
     // @ts-expect-error
     preProcessor(snapshot) {
       // @ts-expect-error
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
       const { connectionInstances, ...rest } = snapshot || {}
 
       // connectionInstances schema changed from object to an array, so any old

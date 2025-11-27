@@ -15,12 +15,12 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, observable } from 'mobx'
-import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { createAutorun } from '../util'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
@@ -386,7 +386,6 @@ export function SharedLinearPileupDisplayMixin(
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: () => {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.copyFeatureToClipboard(feat)
                   },
                 },
@@ -741,7 +740,6 @@ export function SharedLinearPileupDisplayMixin(
       },
     }))
     .preProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snap) {
         // @ts-expect-error
         const { colorBy, colorBySetting, filterBySetting, filterBy, ...rest } =

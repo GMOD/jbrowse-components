@@ -10,12 +10,12 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   type ExportSvgDisplayOptions,
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'

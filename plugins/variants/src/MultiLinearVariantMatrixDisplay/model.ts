@@ -4,8 +4,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearVariantMatrixDisplay

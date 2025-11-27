@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import Checkbox2 from './Checkbox2'
 import { navToMultiLevelBreak } from './navToMultiLevelBreak'

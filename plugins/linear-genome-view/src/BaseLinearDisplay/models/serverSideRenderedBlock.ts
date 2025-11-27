@@ -117,7 +117,7 @@ const blockState = types
       setTimeout(() => {
         if (isAlive(self)) {
           makeAbortableReaction(
-            self as any,
+            self,
             renderBlockData,
             renderBlockEffect,
             {

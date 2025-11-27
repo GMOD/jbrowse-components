@@ -36,7 +36,7 @@ export function getSubType(type: IAnyType): IAnyType {
   } else {
     throw new TypeError('unsupported mst type')
   }
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
   if (!t) {
     throw new Error('failed to get subtype')
   }

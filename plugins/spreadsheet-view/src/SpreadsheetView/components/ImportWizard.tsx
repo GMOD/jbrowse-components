@@ -7,6 +7,7 @@ import {
   LoadingEllipses,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { getRoot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   FormControl,
@@ -18,7 +19,6 @@ import {
   RadioGroup,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getRoot } from '@jbrowse/mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import TrackSelector from './TrackSelector'
@@ -141,7 +141,6 @@ const ImportWizard = observer(function ({
             data-testid="open_spreadsheet"
             color="primary"
             onClick={() => {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               model.import(selectedAssembly!)
             }}
           >

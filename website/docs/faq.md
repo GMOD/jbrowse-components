@@ -327,8 +327,8 @@ The soft-clipping indicators on these reads will appear black.
 
 ### Do you have any tips for learning React and @jbrowse/mobx-state-tree
 
-Here is a short guide to React and @jbrowse/mobx-state-tree that could help get you
-oriented:
+Here is a short guide to React and @jbrowse/mobx-state-tree that could help get
+you oriented:
 
 https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 

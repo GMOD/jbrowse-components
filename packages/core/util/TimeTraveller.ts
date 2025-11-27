@@ -78,7 +78,6 @@ const TimeTraveller = types
           ? resolvePath(self, self.targetPath)
           : getEnv(self).targetStore
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!targetStore) {
           throw new Error(
             'Failed to find target store for TimeTraveller. Please provide `targetPath` property, or a `targetStore` in the environment',
@@ -98,14 +97,14 @@ const TimeTraveller = types
       undo() {
         self.undoIdx--
         skipNextUndoState = true
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (targetStore) {
           applySnapshot(targetStore, self.history[self.undoIdx])
         }
       },
       redo() {
         self.undoIdx++
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (targetStore) {
           applySnapshot(targetStore, self.history[self.undoIdx])
         }

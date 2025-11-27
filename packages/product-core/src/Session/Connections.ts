@@ -21,10 +21,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
        * #property
        */
       connectionInstances: types.array(
-        pluginManager.pluggableMstType(
-          'connection',
-          'stateModel',
-        ) as BaseConnectionModel,
+        pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
     })
     .views(self => ({

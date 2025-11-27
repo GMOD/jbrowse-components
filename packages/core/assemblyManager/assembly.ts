@@ -1,6 +1,6 @@
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
-import { autorun } from 'mobx'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { getConf } from '../configuration'
 import { adapterConfigCacheKey } from '../data_adapters/util'

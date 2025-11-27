@@ -74,7 +74,6 @@ export function createPluginManager(
     try {
       const { sessionError, sessionSpec, sessionSnapshot, hubSpec } = model
       if (sessionError) {
-        // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw sessionError
       } else if (sessionSnapshot) {
         rootModel.setSession(sessionSnapshot)
@@ -90,7 +89,9 @@ export function createPluginManager(
     } catch (e) {
       rootModel.setDefaultSession()
       const str = `${e}`
-      const m = str.replace('[@jbrowse/mobx-state-tree] ', '').replace(/\(.+/, '')
+      const m = str
+        .replace('[@jbrowse/mobx-state-tree] ', '')
+        .replace(/\(.+/, '')
       const r =
         m.length > 1000 ? `${m.slice(0, 1000)}...see more in console` : m
       const s = r.startsWith('Error:') ? r : `Error: ${r}`

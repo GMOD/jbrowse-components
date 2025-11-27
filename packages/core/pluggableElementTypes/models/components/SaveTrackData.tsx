@@ -130,7 +130,6 @@ const SaveTrackDataDialog = observer(function ({
         const adapterConfig = getConf(model, ['adapter'])
         const adapterType = pluginManager.getAdapterType(adapterConfig.type)
         const supportsExport =
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           adapterType?.adapterCapabilities?.includes('exportData')
 
         if (supportsExport) {

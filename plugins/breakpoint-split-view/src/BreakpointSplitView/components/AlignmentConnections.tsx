@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 
 import { getSession, getStrokeProps } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
   getBadlyPairedAlignments,
@@ -44,7 +44,7 @@ const AlignmentConnections = observer(function ({
   const snap = getSnapshot(model)
   const { assemblyManager } = session
   const v0 = views[0]
-  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
+  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]) : undefined
   useNextFrame(snap)
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
@@ -121,8 +121,8 @@ const AlignmentConnections = observer(function ({
           const p1 = c1[s1 === -1 ? LEFT : RIGHT]
           const sn1 = s2 === -1
           const p2 = hasPaired ? c2[sn1 ? LEFT : RIGHT] : c2[sn1 ? RIGHT : LEFT]
-          const x1 = getPxFromCoordinate(views[level1]!, f1ref, p1)
-          const x2 = getPxFromCoordinate(views[level2]!, f2ref, p2)
+          const x1 = getPxFromCoordinate(views[level1], f1ref, p1)
+          const x2 = getPxFromCoordinate(views[level2], f2ref, p2)
           const reversed1 = views[level1]!.pxToBp(x1).reversed
           const reversed2 = views[level2]!.pxToBp(x2).reversed
           const rf1 = reversed1 ? -1 : 1

@@ -216,13 +216,13 @@ export default function ConfigSlot(
         if (self.isCallback) {
           // compile as jexl function
           const { pluginManager } = getEnv(self)
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
           if (!pluginManager && typeof jest === 'undefined') {
             console.warn(
               'no pluginManager detected on config env (if you dynamically instantiate a config, for example in renderProps for your display model, check that you add the env argument)',
             )
           }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
           return stringToJexlExpression(String(self.value), pluginManager?.jexl)
         }
         return { evalSync: () => self.value }

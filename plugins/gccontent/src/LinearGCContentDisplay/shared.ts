@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { types } from '@jbrowse/mobx-state-tree'
+import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

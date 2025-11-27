@@ -5,8 +5,8 @@ import {
   localStorageGetNumber,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { autorun, observable } from 'mobx'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import { autorun, observable } from 'mobx'
 
 import { getRowStr } from './components/faceted/util'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil'

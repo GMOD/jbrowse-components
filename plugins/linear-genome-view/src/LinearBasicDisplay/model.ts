@@ -12,8 +12,6 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -22,6 +20,8 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import { autorun } from 'mobx'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 

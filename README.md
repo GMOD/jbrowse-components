@@ -13,7 +13,8 @@ be deployed on websites.
 JBrowse 2 is also "static website compatible" meaning it only uses client-side
 JS, CSS, and HTML.
 
-The core technology stack includes React, Typescript, and @jbrowse/mobx-state-tree
+The core technology stack includes React, Typescript, and
+@jbrowse/mobx-state-tree
 
 ## Quick-start guide
 

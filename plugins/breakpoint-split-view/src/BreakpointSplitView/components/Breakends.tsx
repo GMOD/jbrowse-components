@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
 import { findMatchingAlt, getMatchedBreakendFeatures } from './util'
 import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
@@ -38,7 +38,7 @@ const Breakends = observer(function ({
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const snap = getSnapshot(model)
   useNextFrame(snap)
-  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
+  const assembly = assemblyManager.get(views[0]!.assemblyNames[0])
 
   if (!assembly) {
     return null
@@ -77,8 +77,8 @@ const Breakends = observer(function ({
           if (!f1ref || !f2ref) {
             throw new Error(`unable to find ref for ${f1ref || f2ref}`)
           }
-          const x1 = getPxFromCoordinate(views[level1]!, f1ref, c1[LEFT])
-          const x2 = getPxFromCoordinate(views[level2]!, f2ref, c2[LEFT])
+          const x1 = getPxFromCoordinate(views[level1], f1ref, c1[LEFT])
+          const x2 = getPxFromCoordinate(views[level2], f2ref, c2[LEFT])
           const reversed1 = views[level1]!.pxToBp(x1).reversed
           const reversed2 = views[level2]!.pxToBp(x2).reversed
 

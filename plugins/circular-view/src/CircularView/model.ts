@@ -9,10 +9,15 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import {
+  cast,
+  getRoot,
+  resolveIdentifier,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { transaction } from 'mobx'
-import { cast, getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
 
 import { calculateStaticSlices, sliceIsVisible } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'

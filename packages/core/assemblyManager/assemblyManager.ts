@@ -1,5 +1,5 @@
-import { reaction } from 'mobx'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import { reaction } from 'mobx'
 
 import { readConfObject } from '../configuration'
 import { when } from '../util'
@@ -144,7 +144,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
         )
         if (assembly.error) {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw assembly.error
         }
         return assembly

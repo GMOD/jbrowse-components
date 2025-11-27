@@ -26,6 +26,15 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import {
+  addDisposer,
+  cast,
+  getParent,
+  getRoot,
+  getSnapshot,
+  resolveIdentifier,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
@@ -37,15 +46,6 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import { autorun, transaction, when } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getRoot,
-  getSnapshot,
-  resolveIdentifier,
-  types,
-} from '@jbrowse/mobx-state-tree'
 
 import Header from './components/Header'
 import {
@@ -1009,7 +1009,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         simView.moveTo(leftOffset, rightOffset)
 
         return simView.dynamicBlocks.contentBlocks.map(region => ({
-          // eslint-disable-next-line @typescript-eslint/no-misused-spread
           ...region,
           start: Math.floor(region.start),
           end: Math.ceil(region.end),
@@ -1801,7 +1800,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               getSession(self).queueDialog(handleClose => [
                 GetSequenceDialog,
 
-                { model: self as any, handleClose },
+                { model: self, handleClose },
               ])
             },
           },
@@ -1940,7 +1939,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .preProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
@@ -1954,7 +1952,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       } else {

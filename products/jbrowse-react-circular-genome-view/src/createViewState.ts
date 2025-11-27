@@ -1,5 +1,5 @@
-import { autorun } from 'mobx'
 import { onPatch } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import createModel from './createModel'
 

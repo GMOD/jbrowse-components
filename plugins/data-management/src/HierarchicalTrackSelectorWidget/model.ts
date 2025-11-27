@@ -7,8 +7,8 @@ import {
   notEmpty,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { autorun, observable } from 'mobx'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { autorun, observable } from 'mobx'
 
 import { facetedStateTreeF } from './facetedModel'
 import { filterTracks } from './filterTracks'
@@ -17,8 +17,8 @@ import { findSubCategories, findTopLevelCategories } from './util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { GridRowId } from '@mui/x-data-grid'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { GridRowId } from '@mui/x-data-grid'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 

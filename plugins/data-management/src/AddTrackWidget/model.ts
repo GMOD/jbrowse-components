@@ -7,8 +7,8 @@ import {
   guessTrackType,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import deepmerge from 'deepmerge'
 import { types } from '@jbrowse/mobx-state-tree'
+import deepmerge from 'deepmerge'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'

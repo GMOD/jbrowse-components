@@ -2,8 +2,8 @@ import {
   localStorageGetBoolean,
   localStorageSetBoolean,
 } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets'

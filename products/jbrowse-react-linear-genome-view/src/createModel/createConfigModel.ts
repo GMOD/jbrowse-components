@@ -3,12 +3,12 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'

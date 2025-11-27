@@ -4,8 +4,8 @@ import {
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-import { untracked } from 'mobx'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { untracked } from 'mobx'
 
 import { createAutorun } from '../util'
 

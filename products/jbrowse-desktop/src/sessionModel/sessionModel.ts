@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/app-core'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   ConnectionManagementSessionMixin,
   DialogQueueSessionMixin,
@@ -14,7 +15,6 @@ import {
   ThemeManagerSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { DesktopSessionFactory } from './DesktopSession'
 import { DesktopSessionTrackMenuMixin } from './TrackMenu'
@@ -149,7 +149,6 @@ export default function sessionModelFactory({
   return types.snapshotProcessor(extendedSessionModel, {
     // @ts-expect-error
     preProcessor(snapshot) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snapshot) {
         // @ts-expect-error
         const { connectionInstances, ...rest } = snapshot
