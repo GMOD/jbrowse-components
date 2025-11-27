@@ -97,8 +97,8 @@ export default function stateModelFactory(
       },
 
       afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           setupMultiVariantAutoruns(self)
           try {
             const { setupMultiVariantAutoruns } = await import(

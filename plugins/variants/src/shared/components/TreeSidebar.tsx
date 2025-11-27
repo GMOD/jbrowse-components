@@ -73,6 +73,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
     return autorun(
       function treeSpatialIndexAutorun() {
         // it is required to access treeAreaWidth here for the autorun to respond
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { treeAreaWidth: _t, hierarchy: h, totalHeight: th } = model
         // Access totalHeight to rebuild index when row height changes
         void th

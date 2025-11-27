@@ -15,9 +15,17 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
   model: MultiLinearVariantMatrixDisplayModel
 }) {
   const { model } = props
-  const { lineZoneHeight, height, setScrollTop, autoHeight, scrollTop, availableHeight } = model
+  const {
+    lineZoneHeight,
+    height,
+    setScrollTop,
+    autoHeight,
+    scrollTop,
+    availableHeight,
+  } = model
   const ref = useRef<HTMLDivElement>(null)
-  const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(ref)
+  const { mouseState, handleMouseMove, handleMouseLeave } =
+    useMouseTracking(ref)
 
   return (
     <div

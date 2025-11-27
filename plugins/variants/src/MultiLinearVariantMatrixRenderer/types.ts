@@ -1,3 +1,3 @@
 import type { MultiVariantRenderArgsBase } from '../shared/types'
 
-export interface RenderArgsDeserialized extends MultiVariantRenderArgsBase {}
+export type RenderArgsDeserialized = MultiVariantRenderArgsBase

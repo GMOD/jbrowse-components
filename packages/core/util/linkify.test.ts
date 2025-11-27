@@ -105,7 +105,9 @@ test('handles URL with special characters', () => {
 })
 
 test('handles URL with parentheses', () => {
-  expect(linkify('See https://en.wikipedia.org/wiki/Test_(disambiguation)')).toBe(
+  expect(
+    linkify('See https://en.wikipedia.org/wiki/Test_(disambiguation)'),
+  ).toBe(
     'See <a href=\'https://en.wikipedia.org/wiki/Test_(disambiguation)\' target="_blank">https://en.wikipedia.org/wiki/Test_(disambiguation)</a>',
   )
 })
@@ -146,8 +148,9 @@ test('handles bioinformatics URLs', () => {
 })
 
 test('handles URLs in genomic context', () => {
-  const text = 'Gene info at https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&position=chr17:43044295-43125483'
-  expect(linkify(text)).toContain('href=\'https://genome.ucsc.edu')
+  const text =
+    'Gene info at https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&position=chr17:43044295-43125483'
+  expect(linkify(text)).toContain("href='https://genome.ucsc.edu")
   expect(linkify(text)).toContain('target="_blank"')
 })
 

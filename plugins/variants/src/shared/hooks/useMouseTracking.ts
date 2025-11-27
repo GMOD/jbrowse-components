@@ -12,24 +12,27 @@ export function useMouseTracking(ref: React.RefObject<HTMLDivElement | null>) {
   )
   const [mouseState, setMouseState] = useState<MouseState>()
 
-  const handleMouseMove = useCallback((event: React.MouseEvent) => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current)
-    }
-    const clientX = event.clientX
-    const clientY = event.clientY
-    rafRef.current = requestAnimationFrame(() => {
-      const rect = ref.current?.getBoundingClientRect()
-      if (rect) {
-        setMouseState({
-          x: clientX - rect.left,
-          y: clientY - rect.top,
-          offsetX: rect.left,
-          offsetY: rect.top,
-        })
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
       }
-    })
-  }, [ref])
+      const clientX = event.clientX
+      const clientY = event.clientY
+      rafRef.current = requestAnimationFrame(() => {
+        const rect = ref.current?.getBoundingClientRect()
+        if (rect) {
+          setMouseState({
+            x: clientX - rect.left,
+            y: clientY - rect.top,
+            offsetX: rect.left,
+            offsetY: rect.top,
+          })
+        }
+      })
+    },
+    [ref],
+  )
 
   const handleMouseLeave = useCallback(() => {
     if (rafRef.current) {

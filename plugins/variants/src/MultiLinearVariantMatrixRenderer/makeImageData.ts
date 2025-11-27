@@ -34,7 +34,7 @@ export async function makeImageData({
 
   const { statusCallback = () => {} } = renderArgs
   const sln = sources.length
-  const h = rowHeight ?? canvasHeight / sln
+  const h = rowHeight
   const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
   const endRow = Math.min(sln, Math.ceil((scrollTop + canvasHeight) / h))
   checkStopToken(stopToken)

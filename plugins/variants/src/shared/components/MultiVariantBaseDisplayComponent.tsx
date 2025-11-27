@@ -15,10 +15,15 @@ const MultiVariantBaseDisplayComponent = observer(function (props: {
 }) {
   const { model } = props
   const ref = useRef<HTMLDivElement>(null)
-  const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(ref)
+  const { mouseState, handleMouseMove, handleMouseLeave } =
+    useMouseTracking(ref)
 
   return (
-    <div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
+    <div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
       <BaseLinearDisplayComponent {...props} />
       <TreeSidebar model={model} />
       <LegendBar model={model} />

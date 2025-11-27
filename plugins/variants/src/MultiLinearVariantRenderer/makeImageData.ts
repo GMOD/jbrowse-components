@@ -7,10 +7,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
-import {
-  drawColorAlleleCount,
-  getAlleleColor,
-} from '../shared/drawAlleleCount'
+import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 

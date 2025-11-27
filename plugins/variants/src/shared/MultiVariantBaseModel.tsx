@@ -95,7 +95,10 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        lengthCutoffFilter: types.optional(types.number, Number.MAX_SAFE_INTEGER),
+        lengthCutoffFilter: types.optional(
+          types.number,
+          Number.MAX_SAFE_INTEGER,
+        ),
 
         /**
          * #property
