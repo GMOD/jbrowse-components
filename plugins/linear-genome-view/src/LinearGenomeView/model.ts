@@ -1893,44 +1893,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const { init } = self
-            if (init) {
-              self
-                .navToLocString(init.loc, init.assembly)
-                .catch((e: unknown) => {
-                  console.error(init, e)
-                  getSession(self).notifyError(`${e}`, e)
-                })
+          autorun(
+            function initAutorun() {
+              const { init } = self
+              if (init) {
+                self
+                  .navToLocString(init.loc, init.assembly)
+                  .catch((e: unknown) => {
+                    console.error(init, e)
+                    getSession(self).notifyError(`${e}`, e)
+                  })
 
-              init.tracks?.map(t => self.showTrack(t))
+                init.tracks?.map(t => self.showTrack(t))
 
-              // clear init state
-              self.setInit(undefined)
-            }
-          }),
+                // clear init state
+                self.setInit(undefined)
+              }
+            },
+            { name: 'LGVInitAutorun' },
+          ),
         )
         addDisposer(
           self,
           autorun(
-            () => {
+            function coarseDynamicBlocksAutorun() {
               if (self.initialized) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
               }
             },
-            { delay: 100 },
+            { delay: 100, name: 'LGVCoarseDynamicBlocksAutorun' },
           ),
         )
 
         addDisposer(
           self,
-          autorun(() => {
-            const s = (s: unknown) => JSON.stringify(s)
-            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
-            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
-            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
-            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
-          }),
+          autorun(
+            function localStorageAutorun() {
+              const s = (s: unknown) => JSON.stringify(s)
+              const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+              localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+              localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
+              localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
+            },
+            { name: 'LGVLocalStorageAutorun' },
+          ),
         )
       },
     }))

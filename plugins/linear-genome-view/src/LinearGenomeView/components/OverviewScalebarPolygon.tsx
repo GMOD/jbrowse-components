@@ -24,48 +24,51 @@ function OverviewScalebarPolygon({
   const multiplier = Number(useOffset)
 
   useEffect(() => {
-    return autorun(() => {
-      const {
-        interRegionPaddingWidth,
-        offsetPx,
-        dynamicBlocks,
-        cytobandOffset,
-      } = model
-      const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
-      const polygon = polygonRef.current
-      if (!polygon || !contentBlocks.length) {
-        return
-      }
+    return autorun(
+      function overviewPolygonAutorun() {
+        const {
+          interRegionPaddingWidth,
+          offsetPx,
+          dynamicBlocks,
+          cytobandOffset,
+        } = model
+        const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+        const polygon = polygonRef.current
+        if (!polygon || !contentBlocks.length) {
+          return
+        }
 
-      const first = contentBlocks.at(0)!
-      const last = contentBlocks.at(-1)!
-      const topLeft =
-        (overview.bpToPx({
-          refName: first.refName,
-          coord: first.reversed ? first.end : first.start,
-        }) || 0) +
-        cytobandOffset * multiplier
-      const topRight =
-        (overview.bpToPx({
-          refName: last.refName,
-          coord: last.reversed ? last.start : last.end,
-        }) || 0) +
-        cytobandOffset * multiplier
+        const first = contentBlocks.at(0)!
+        const last = contentBlocks.at(-1)!
+        const topLeft =
+          (overview.bpToPx({
+            refName: first.refName,
+            coord: first.reversed ? first.end : first.start,
+          }) || 0) +
+          cytobandOffset * multiplier
+        const topRight =
+          (overview.bpToPx({
+            refName: last.refName,
+            coord: last.reversed ? last.start : last.end,
+          }) || 0) +
+          cytobandOffset * multiplier
 
-      const startPx = Math.max(0, -offsetPx)
-      const endPx =
-        startPx +
-        totalWidthPxWithoutBorders +
-        (contentBlocks.length * interRegionPaddingWidth) / 2
+        const startPx = Math.max(0, -offsetPx)
+        const endPx =
+          startPx +
+          totalWidthPxWithoutBorders +
+          (contentBlocks.length * interRegionPaddingWidth) / 2
 
-      const points = [
-        [startPx, HEADER_BAR_HEIGHT],
-        [endPx, HEADER_BAR_HEIGHT],
-        [topRight, 0],
-        [topLeft, 0],
-      ]
-      polygon.setAttribute('points', points.toString())
-    })
+        const points = [
+          [startPx, HEADER_BAR_HEIGHT],
+          [endPx, HEADER_BAR_HEIGHT],
+          [topRight, 0],
+          [topLeft, 0],
+        ]
+        polygon.setAttribute('points', points.toString())
+      },
+      { name: 'OverviewScalebarPolygonAutorun' },
+    )
   }, [model, overview, multiplier])
 
   return (

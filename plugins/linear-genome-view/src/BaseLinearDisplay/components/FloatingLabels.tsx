@@ -162,16 +162,17 @@ function FloatingLabels({
       return
     }
 
-    return autorun(() => {
-      const container = containerRef.current
-      if (!container) {
-        return
-      }
+    return autorun(
+      function floatingLabelsLayoutAutorun() {
+        const container = containerRef.current
+        if (!container) {
+          return
+        }
 
-      const { layoutFeatures } = model
-      const domElements = domElementsRef.current
-      const labelPositions = labelPositionsRef.current
-      const newKeys = new Set<string>()
+        const { layoutFeatures } = model
+        const domElements = domElementsRef.current
+        const labelPositions = labelPositionsRef.current
+        const newKeys = new Set<string>()
 
       const featureLabels = deduplicateFeatureLabels(
         layoutFeatures,
@@ -265,34 +266,39 @@ function FloatingLabels({
           labelPositions.delete(key)
         }
       }
-    })
+      },
+      { name: 'FloatingLabelsLayoutAutorun' },
+    )
   }, [assembly, model, view])
 
   // Autorun 2: Update transforms when offsetPx changes (fast path)
   useEffect(() => {
-    return autorun(() => {
-      const { offsetPx } = view
-      const domElements = domElementsRef.current
-      const labelPositions = labelPositionsRef.current
+    return autorun(
+      function floatingLabelsOffsetAutorun() {
+        const { offsetPx } = view
+        const domElements = domElementsRef.current
+        const labelPositions = labelPositionsRef.current
 
-      for (const [key, element] of domElements.entries()) {
-        const pos = labelPositions.get(key)
-        if (!pos) {
-          continue
+        for (const [key, element] of domElements.entries()) {
+          const pos = labelPositions.get(key)
+          if (!pos) {
+            continue
+          }
+
+          const { featureLeftPx, effectiveRightPx, labelWidth, y } = pos
+          const naturalX = featureLeftPx - offsetPx
+          const maxX = effectiveRightPx - offsetPx - labelWidth
+          const x = clamp(0, naturalX, maxX)
+
+          // Only update DOM if x position changed
+          if (pos.lastX !== x) {
+            pos.lastX = x
+            element.style.transform = `translate(${x}px, ${y}px)`
+          }
         }
-
-        const { featureLeftPx, effectiveRightPx, labelWidth, y } = pos
-        const naturalX = featureLeftPx - offsetPx
-        const maxX = effectiveRightPx - offsetPx - labelWidth
-        const x = clamp(0, naturalX, maxX)
-
-        // Only update DOM if x position changed
-        if (pos.lastX !== x) {
-          pos.lastX = x
-          element.style.transform = `translate(${x}px, ${y}px)`
-        }
-      }
-    })
+      },
+      { name: 'FloatingLabelsOffsetAutorun' },
+    )
   }, [view])
 
   return (

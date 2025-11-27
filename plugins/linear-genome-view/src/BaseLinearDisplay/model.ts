@@ -560,32 +560,35 @@ function stateModelFactory() {
         // deleting to match the parent blocks)
         addDisposer(
           self,
-          autorun(() => {
-            try {
-              if (!isAlive(self)) {
-                return
-              }
-              const blocksPresent: Record<string, boolean> = {}
-              const view = getContainingView(self) as LGV
-              if (!view.initialized) {
-                return
-              }
-              for (const block of self.blockDefinitions.contentBlocks) {
-                blocksPresent[block.key] = true
-                if (!self.blockState.has(block.key)) {
-                  self.addBlock(block.key, block)
+          autorun(
+            function blockDefinitionsAutorun() {
+              try {
+                if (!isAlive(self)) {
+                  return
                 }
-              }
-              for (const key of self.blockState.keys()) {
-                if (!blocksPresent[key]) {
-                  self.deleteBlock(key)
+                const blocksPresent: Record<string, boolean> = {}
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
                 }
+                for (const block of self.blockDefinitions.contentBlocks) {
+                  blocksPresent[block.key] = true
+                  if (!self.blockState.has(block.key)) {
+                    self.addBlock(block.key, block)
+                  }
+                }
+                for (const key of self.blockState.keys()) {
+                  if (!blocksPresent[key]) {
+                    self.deleteBlock(key)
+                  }
+                }
+              } catch (e) {
+                // catch errors that may occur during test cleanup or when
+                // the display is not properly attached to a view
               }
-            } catch (e) {
-              // catch errors that may occur during test cleanup or when
-              // the display is not properly attached to a view
-            }
-          }),
+            },
+            { name: 'BaseLinearDisplayBlockDefinitions' },
+          ),
         )
       },
     }))
