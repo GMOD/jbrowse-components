@@ -50,10 +50,11 @@ const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
         const { scaleFactor } = model
         const zoom = zoomRef.current
         if (zoom) {
-          zoom.style.transform = scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
+          zoom.style.transform =
+            scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
         }
       },
-      { name: 'ScalebarZoomAutorun' },
+      { name: 'ScalebarZoom' },
     )
   }, [model])
 
@@ -68,7 +69,7 @@ const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
           scalebar.style.width = `${staticBlocks.totalWidthPx}px`
         }
       },
-      { name: 'ScalebarTransformAutorun' },
+      { name: 'ScalebarTransform' },
     )
   }, [model])
 

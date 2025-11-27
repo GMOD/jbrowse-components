@@ -43,7 +43,7 @@ export function doAfterAttach(model: {
 
       model.setCurrSortBpPerPx(view.bpPerPx)
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'CurrBpPerPx' },
   )
   createAutorun(
     model,
@@ -90,7 +90,7 @@ export function doAfterAttach(model: {
         model.setSortReady(true)
       }
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'SortReads' },
   )
 
   createAutorun(
@@ -113,6 +113,6 @@ export function doAfterAttach(model: {
         model.setModificationsReady(true)
       }
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'GetModInfo' },
   )
 }

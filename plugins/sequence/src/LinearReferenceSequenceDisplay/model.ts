@@ -169,14 +169,17 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const view = getContainingView(self) as LGV
-            if (view.bpPerPx > 3) {
-              self.setHeight(50)
-            } else {
-              self.setHeight(self.sequenceHeight)
-            }
-          }),
+          autorun(
+            function sequenceHeightAutorun() {
+              const view = getContainingView(self) as LGV
+              if (view.bpPerPx > 3) {
+                self.setHeight(50)
+              } else {
+                self.setHeight(self.sequenceHeight)
+              }
+            },
+            { name: 'SequenceHeight' },
+          ),
         )
       },
     }))

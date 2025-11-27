@@ -67,7 +67,7 @@ function OverviewScalebarPolygon({
         ]
         polygon.setAttribute('points', points.toString())
       },
-      { name: 'OverviewScalebarPolygonAutorun' },
+      { name: 'OverviewScalebarPolygon' },
     )
   }, [model, overview, multiplier])
 

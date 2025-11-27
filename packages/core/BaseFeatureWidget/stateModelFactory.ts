@@ -131,47 +131,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
       afterCreate() {
         addDisposer(
           self,
-          autorun(() => {
-            try {
-              const { unformattedFeatureData, track } = self
-              const session = getSession(self)
-              if (track) {
-                self.setExtra(
-                  track.type,
-                  track.configuration.trackId,
-                  getConf(track, ['formatDetails', 'maxDepth']),
-                )
-              }
-              if (unformattedFeatureData) {
-                const feature = structuredClone(unformattedFeatureData)
-
-                const combine = (
-                  arg2: string,
-                  feature: Record<string, unknown>,
-                ) => ({
-                  ...getConf(session, ['formatDetails', arg2], { feature }),
-                  ...getConf(track, ['formatDetails', arg2], { feature }),
-                })
-
+          autorun(
+            function featureWidgetAutorun() {
+              try {
+                const { unformattedFeatureData, track } = self
+                const session = getSession(self)
                 if (track) {
-                  feature.__jbrowsefmt = combine('feature', feature)
-
-                  formatSubfeatures(
-                    feature,
-                    getConf(track, ['formatDetails', 'depth']),
-                    sub => {
-                      sub.__jbrowsefmt = combine('subfeatures', sub)
-                    },
+                  self.setExtra(
+                    track.type,
+                    track.configuration.trackId,
+                    getConf(track, ['formatDetails', 'maxDepth']),
                   )
                 }
+                if (unformattedFeatureData) {
+                  const feature = structuredClone(unformattedFeatureData)
 
-                self.setFormattedData(feature)
+                  const combine = (
+                    arg2: string,
+                    feature: Record<string, unknown>,
+                  ) => ({
+                    ...getConf(session, ['formatDetails', arg2], { feature }),
+                    ...getConf(track, ['formatDetails', arg2], { feature }),
+                  })
+
+                  if (track) {
+                    feature.__jbrowsefmt = combine('feature', feature)
+
+                    formatSubfeatures(
+                      feature,
+                      getConf(track, ['formatDetails', 'depth']),
+                      sub => {
+                        sub.__jbrowsefmt = combine('subfeatures', sub)
+                      },
+                    )
+                  }
+
+                  self.setFormattedData(feature)
+                }
+              } catch (e) {
+                console.error(e)
+                self.setError(e)
               }
-            } catch (e) {
-              console.error(e)
-              self.setError(e)
-            }
-          }),
+            },
+            { name: 'FeatureWidget' },
+          ),
         )
       },
     }))

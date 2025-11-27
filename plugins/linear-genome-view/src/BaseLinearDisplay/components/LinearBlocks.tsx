@@ -45,7 +45,7 @@ const LinearBlocks = observer(function ({
           // may error during cleanup
         }
       },
-      { name: 'LinearBlocksTransformAutorun' },
+      { name: 'LinearBlocksTransform' },
     )
   }, [model, viewModel])
 

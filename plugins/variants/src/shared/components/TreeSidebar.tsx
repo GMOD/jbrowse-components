@@ -62,39 +62,42 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
 
   // Build spatial index for tree nodes (branch points only) using autorun
   useEffect(() => {
-    return autorun(() => {
-      // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-      const { hierarchy: h, treeAreaWidth: w, totalHeight: th } = model
-      if (!h) {
-        setNodeIndex(null)
-        setNodeData([])
-        return
-      }
+    return autorun(
+      function treeSpatialIndexAutorun() {
+        // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+        const { hierarchy: h, treeAreaWidth: w, totalHeight: th } = model
+        if (!h) {
+          setNodeIndex(null)
+          setNodeData([])
+          return
+        }
 
-      // Get all internal nodes (branch points) - exclude leaves
-      // Note: accessing totalHeight ensures we rebuild when row height changes
-      const nodes = [...h.descendants()].filter(
-        (node: any) => node.children && node.children.length > 0,
-      )
+        // Get all internal nodes (branch points) - exclude leaves
+        // Note: accessing totalHeight ensures we rebuild when row height changes
+        const nodes = [...h.descendants()].filter(
+          (node: any) => node.children && node.children.length > 0,
+        )
 
-      const index = new Flatbush(nodes.length)
-      const data: any[] = []
+        const index = new Flatbush(nodes.length)
+        const data: any[] = []
 
-      const hitRadius = 8 // Click radius around node
+        const hitRadius = 8 // Click radius around node
 
-      for (const node of nodes) {
-        const x = node.y
-        const y = node.x!
+        for (const node of nodes) {
+          const x = node.y
+          const y = node.x!
 
-        // Add bounding box for the node
-        index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
-        data.push(node)
-      }
+          // Add bounding box for the node
+          index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
+          data.push(node)
+        }
 
-      index.finish()
-      setNodeIndex(index)
-      setNodeData(data)
-    })
+        index.finish()
+        setNodeIndex(index)
+        setNodeData(data)
+      },
+      { name: 'TreeSpatialIndex' },
+    )
   }, [model])
 
   if (!hierarchy || !showTree) {

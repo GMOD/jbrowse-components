@@ -118,12 +118,15 @@ export default function RootModel({
         afterCreate() {
           addDisposer(
             self,
-            autorun(() => {
-              if (self.pluginsUpdated) {
-                // reload app to get a fresh plugin manager
-                window.location.reload()
-              }
-            }),
+            autorun(
+              function pluginsUpdatedAutorun() {
+                if (self.pluginsUpdated) {
+                  // reload app to get a fresh plugin manager
+                  window.location.reload()
+                }
+              },
+              { name: 'PluginsUpdated' },
+            ),
           )
         },
         /**

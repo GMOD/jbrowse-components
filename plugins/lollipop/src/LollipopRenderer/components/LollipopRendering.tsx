@@ -80,8 +80,13 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
     setClient(true)
   }, [])
 
-  const { regions, bpPerPx, config, features = new Map(), displayModel = {} } =
-    props
+  const {
+    regions,
+    bpPerPx,
+    config,
+    features = new Map(),
+    displayModel = {},
+  } = props
   const { selectedFeatureId } = displayModel
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx

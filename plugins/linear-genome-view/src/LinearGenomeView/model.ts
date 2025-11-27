@@ -1910,7 +1910,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.setInit(undefined)
               }
             },
-            { name: 'LGVInitAutorun' },
+            { name: 'LGVInit' },
           ),
         )
         addDisposer(
@@ -1921,7 +1921,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
               }
             },
-            { delay: 100, name: 'LGVCoarseDynamicBlocksAutorun' },
+            { delay: 100, name: 'LGVCoarseDynamicBlocks' },
           ),
         )
 
@@ -1935,7 +1935,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
               localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
             },
-            { name: 'LGVLocalStorageAutorun' },
+            { name: 'LGVLocalStorage' },
           ),
         )
       },
