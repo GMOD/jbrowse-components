@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
@@ -10,31 +10,55 @@ import TreeSidebar from '../../shared/components/TreeSidebar'
 
 import type { MultiLinearVariantMatrixDisplayModel } from '../model'
 
+interface MouseState {
+  x: number
+  y: number
+  offsetX: number
+  offsetY: number
+}
+
 const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
   model: MultiLinearVariantMatrixDisplayModel
 }) {
   const { model } = props
   const { lineZoneHeight, height, setScrollTop, autoHeight, scrollTop } = model
   const ref = useRef<HTMLDivElement>(null)
-  const [mouseY, setMouseY] = useState<number>()
-  const [mouseX, setMouseX] = useState<number>()
+  const rafRef = useRef<number>()
+  const [mouseState, setMouseState] = useState<MouseState>()
   const matrixHeight = height - lineZoneHeight
+
+  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
+    }
+    const clientX = event.clientX
+    const clientY = event.clientY
+    rafRef.current = requestAnimationFrame(() => {
+      const rect = ref.current?.getBoundingClientRect()
+      if (rect) {
+        setMouseState({
+          x: clientX - rect.left,
+          y: clientY - rect.top,
+          offsetX: rect.left,
+          offsetY: rect.top,
+        })
+      }
+    })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
+    }
+    setMouseState(undefined)
+  }, [])
 
   return (
     <div
       ref={ref}
       style={{ position: 'relative', height }}
-      onMouseMove={event => {
-        const rect = ref.current?.getBoundingClientRect()
-        const top = rect?.top || 0
-        const left = rect?.left || 0
-        setMouseY(event.clientY - top)
-        setMouseX(event.clientX - left)
-      }}
-      onMouseLeave={() => {
-        setMouseY(undefined)
-        setMouseX(undefined)
-      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Connecting lines - fixed at top */}
       <div data-testid="connecting-lines">
@@ -70,8 +94,14 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
         </div>
       </div>
 
-      {mouseX && mouseY && mouseY > lineZoneHeight ? (
-        <Crosshair mouseX={mouseX} mouseY={mouseY} model={model} />
+      {mouseState && mouseState.y > lineZoneHeight ? (
+        <Crosshair
+          mouseX={mouseState.x}
+          mouseY={mouseState.y}
+          offsetX={mouseState.offsetX}
+          offsetY={mouseState.offsetY}
+          model={model}
+        />
       ) : null}
     </div>
   )

@@ -106,101 +106,103 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
 
   return (
     <>
-      {/* Tree structure canvas */}
-      <canvas
-        ref={treeCanvasRef}
-        width={treeAreaWidth}
-        height={height}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          zIndex: 100,
-          pointerEvents: 'none',
-        }}
-      />
-      {/* Mouseover interaction canvas - spans full width for highlighting */}
-      <canvas
-        ref={mouseoverCanvasRef}
-        width={viewWidth}
-        height={height}
-        onMouseMove={(event: React.MouseEvent<HTMLCanvasElement>) => {
-          if (!hierarchy || !nodeIndex) {
-            return
-          }
-
-          const rect = event.currentTarget.getBoundingClientRect()
-          const x = event.clientX - rect.left
-          // Canvas is positioned at top:0, and we translate the drawing by -scrollTop,
-          // so we need to add scrollTop to get the correct tree coordinate
-          const y = event.clientY - rect.top + scrollTop
-
-          // Use flatbush to find nearby nodes (branch points)
-          const results = nodeIndex.search(x, y, x, y)
-
-          if (results.length > 0) {
-            // Get the closest node
-            const node = nodeData[results[0]!]!
-            model.setHoveredTreeNode({
-              node,
-              descendantNames: getDescendantNames(node),
-            })
-          } else {
-            model.setHoveredTreeNode(undefined)
-          }
-        }}
-        onMouseLeave={() => {
-          model.setHoveredTreeNode(undefined)
-        }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          zIndex: 101,
-          cursor: 'pointer',
-          pointerEvents: 'none',
-        }}
-      />
-      {/* Invisible interaction area over tree only */}
+      {/* Sticky container keeps tree visible when scrolling */}
       <div
-        onMouseMove={event => {
-          if (!hierarchy || !nodeIndex) {
-            return
-          }
-
-          const rect = event.currentTarget.getBoundingClientRect()
-          const x = event.clientX - rect.left
-          // Div is positioned at top:0, and we translate the drawing by -scrollTop,
-          // so we need to add scrollTop to get the correct tree coordinate
-          const y = event.clientY - rect.top + scrollTop
-
-          // Use flatbush to find nearby nodes (branch points)
-          const results = nodeIndex.search(x, y, x, y)
-
-          if (results.length > 0) {
-            // Get the closest node
-            const node = nodeData[results[0]!]!
-            model.setHoveredTreeNode({
-              node,
-              descendantNames: getDescendantNames(node),
-            })
-          } else {
-            model.setHoveredTreeNode(undefined)
-          }
-        }}
-        onMouseLeave={() => {
-          model.setHoveredTreeNode(undefined)
-        }}
         style={{
-          position: 'absolute',
+          position: 'sticky',
           top: 0,
           left: 0,
-          width: treeAreaWidth,
-          height,
-          zIndex: 102,
-          cursor: 'pointer',
+          height: 0,
+          zIndex: 100,
         }}
-      />
+      >
+        {/* Tree structure canvas */}
+        <canvas
+          ref={treeCanvasRef}
+          width={treeAreaWidth}
+          height={height}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+          }}
+        />
+        {/* Mouseover interaction canvas - spans full width for highlighting */}
+        <canvas
+          ref={mouseoverCanvasRef}
+          width={viewWidth}
+          height={height}
+          onMouseMove={(event: React.MouseEvent<HTMLCanvasElement>) => {
+            if (!hierarchy || !nodeIndex) {
+              return
+            }
+
+            const rect = event.currentTarget.getBoundingClientRect()
+            const x = event.clientX - rect.left
+            const y = event.clientY - rect.top + scrollTop
+
+            const results = nodeIndex.search(x, y, x, y)
+
+            if (results.length > 0) {
+              const node = nodeData[results[0]!]!
+              model.setHoveredTreeNode({
+                node,
+                descendantNames: getDescendantNames(node),
+              })
+            } else {
+              model.setHoveredTreeNode(undefined)
+            }
+          }}
+          onMouseLeave={() => {
+            model.setHoveredTreeNode(undefined)
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 1,
+            cursor: 'pointer',
+            pointerEvents: 'none',
+          }}
+        />
+        {/* Invisible interaction area over tree only */}
+        <div
+          onMouseMove={event => {
+            if (!hierarchy || !nodeIndex) {
+              return
+            }
+
+            const rect = event.currentTarget.getBoundingClientRect()
+            const x = event.clientX - rect.left
+            const y = event.clientY - rect.top + scrollTop
+
+            const results = nodeIndex.search(x, y, x, y)
+
+            if (results.length > 0) {
+              const node = nodeData[results[0]!]!
+              model.setHoveredTreeNode({
+                node,
+                descendantNames: getDescendantNames(node),
+              })
+            } else {
+              model.setHoveredTreeNode(undefined)
+            }
+          }}
+          onMouseLeave={() => {
+            model.setHoveredTreeNode(undefined)
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: treeAreaWidth,
+            height,
+            zIndex: 2,
+            cursor: 'pointer',
+          }}
+        />
+      </div>
       <ResizeHandle
         onDrag={(distance: number) => {
           model.setTreeAreaWidth(Math.max(50, treeAreaWidth + distance))

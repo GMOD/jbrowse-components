@@ -9,13 +9,20 @@ import TreeSidebar from '../../shared/components/TreeSidebar'
 
 import type { MultiLinearVariantDisplayModel } from '../model'
 
+interface MouseState {
+  x: number
+  y: number
+  offsetX: number
+  offsetY: number
+}
+
 const MultiLinearVariantDisplayComponent = observer(function (props: {
   model: MultiLinearVariantDisplayModel
 }) {
   const { model } = props
   const ref = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number>()
-  const [mousePos, setMousePos] = useState<{ x: number; y: number }>()
+  const [mouseState, setMouseState] = useState<MouseState>()
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
     if (rafRef.current) {
@@ -26,9 +33,11 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
     rafRef.current = requestAnimationFrame(() => {
       const rect = ref.current?.getBoundingClientRect()
       if (rect) {
-        setMousePos({
+        setMouseState({
           x: clientX - rect.left,
           y: clientY - rect.top,
+          offsetX: rect.left,
+          offsetY: rect.top,
         })
       }
     })
@@ -38,7 +47,7 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current)
     }
-    setMousePos(undefined)
+    setMouseState(undefined)
   }, [])
 
   return (
@@ -56,8 +65,14 @@ const MultiLinearVariantDisplayComponent = observer(function (props: {
       </div>
       <LegendBar model={model} />
 
-      {mousePos ? (
-        <Crosshair mouseX={mousePos.x} mouseY={mousePos.y} model={model} />
+      {mouseState ? (
+        <Crosshair
+          mouseX={mouseState.x}
+          mouseY={mouseState.y}
+          offsetX={mouseState.offsetX}
+          offsetY={mouseState.offsetY}
+          model={model}
+        />
       ) : null}
     </div>
   )
