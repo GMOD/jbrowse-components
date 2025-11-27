@@ -23,6 +23,7 @@ const RubberbandSpan = lazy(() => import('./RubberbandSpan'))
 const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
+    contain: 'layout style',
   },
 })
 

@@ -1,4 +1,3 @@
-import { getBpDisplayStr } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -20,10 +19,10 @@ const HeaderRegionWidth = observer(function ({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { coarseTotalBp } = model
+  const { coarseTotalBpDisplayStr } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {getBpDisplayStr(coarseTotalBp)}
+      {coarseTotalBpDisplayStr}
     </Typography>
   )
 })

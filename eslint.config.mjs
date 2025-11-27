@@ -18,6 +18,7 @@ export default defineConfig(
       'packages/__mocks__/generic-filehandle2.ts',
       'packages/core/util/map-obj/*',
       'packages/core/util/QuickLRU/*',
+      'scripts/analyze_cpuprof.ts',
       'config/jest/*',
       'benchmarks/*',
       '**/build/**/*',

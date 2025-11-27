@@ -1,40 +1,12 @@
 import { Suspense, isValidElement, lazy } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import BlockMsg from './BlockMsg'
+import LoadingOverlay from './LoadingOverlay'
 
 // lazies
 const BlockErrorMessage = lazy(() => import('./BlockErrorMessage'))
-
-const useStyles = makeStyles()({
-  contentContainer: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    minHeight: 20,
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.05) 8px, rgba(0, 0, 0, 0.05) 16px)`,
-    pointerEvents: 'none',
-    zIndex: 1,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingMessage: {
-    zIndex: 2,
-    pointerEvents: 'none',
-  },
-})
 
 const ServerSideRenderedBlockContent = observer(function ({
   model,
@@ -49,8 +21,6 @@ const ServerSideRenderedBlockContent = observer(function ({
     isRenderingPending?: boolean
   }
 }) {
-  const { classes } = useStyles()
-
   if (model.error) {
     return (
       <Suspense fallback={null}>
@@ -72,14 +42,9 @@ const ServerSideRenderedBlockContent = observer(function ({
     // Render is in flight, or we have no content and not filled yet
     // Show old content with overlay if available, otherwise show just overlay
     return (
-      <div className={classes.contentContainer}>
+      <LoadingOverlay message={model.status}>
         {model.reactElement}
-        <div className={classes.loadingOverlay}>
-          <div className={classes.loadingMessage}>
-            <LoadingEllipses message={model.status} />
-          </div>
-        </div>
-      </div>
+      </LoadingOverlay>
     )
   } else if (model.filled) {
     // Render completed - show new content without overlay

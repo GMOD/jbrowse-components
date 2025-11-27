@@ -1,8 +1,8 @@
 import type React from 'react'
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useRef } from 'react'
 
 import { Paper } from '@mui/material'
-import { observer } from 'mobx-react'
+import { autorun } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
 
 import Gridlines from './Gridlines'
@@ -20,11 +20,13 @@ const useStyles = makeStyles()({
   },
   zoomContainer: {
     position: 'relative',
+    willChange: 'transform',
   },
   scalebar: {
     position: 'absolute',
     display: 'flex',
     pointerEvents: 'none',
+    willChange: 'transform, width',
   },
 })
 
@@ -34,63 +36,55 @@ interface ScalebarProps {
   className?: string
 }
 
-// Separate observer component for offsetPx changes to minimize re-renders
-const ScalebarPositionedContent = observer(function ScalebarPositionedContent({
-  model,
-  style,
-}: {
-  model: LGV
-  style?: React.CSSProperties
-}) {
-  const { classes } = useStyles()
-  const { staticBlocks, offsetPx } = model
-  const offsetLeft = staticBlocks.offsetPx - offsetPx
+const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
+  { model, style, className, ...other },
+  ref,
+) {
+  const { classes, cx } = useStyles()
+  const zoomRef = useRef<HTMLDivElement>(null)
+  const scalebarRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    return autorun(() => {
+      const { scaleFactor } = model
+      const zoom = zoomRef.current
+      if (zoom) {
+        zoom.style.transform = scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
+      }
+    })
+  }, [model])
+
+  useEffect(() => {
+    return autorun(() => {
+      const { staticBlocks, offsetPx } = model
+      const scalebar = scalebarRef.current
+      if (scalebar) {
+        const offsetLeft = staticBlocks.offsetPx - offsetPx
+        scalebar.style.transform = `translateX(${offsetLeft - 1}px)`
+        scalebar.style.width = `${staticBlocks.totalWidthPx}px`
+      }
+    })
+  }, [model])
 
   return (
-    <div
-      className={classes.scalebar}
-      style={{
-        left: offsetLeft - 1,
-        width: staticBlocks.totalWidthPx,
-        ...style,
-      }}
+    <Paper
+      data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
+      className={cx(classes.container, className)}
+      variant="outlined"
+      ref={ref}
+      style={style}
+      {...other}
     >
-      <ScalebarCoordinateLabels model={model} />
-    </div>
+      {/* offset 1px for left track border */}
+      <Gridlines model={model} offset={1} />
+      <div ref={zoomRef} className={classes.zoomContainer}>
+        <div ref={scalebarRef} className={classes.scalebar}>
+          <ScalebarCoordinateLabels model={model} />
+        </div>
+      </div>
+      <ScalebarRefNameLabels model={model} />
+    </Paper>
   )
 })
-
-const Scalebar = observer(
-  forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
-    { model, style, className, ...other },
-    ref,
-  ) {
-    const { classes, cx } = useStyles()
-    const { scaleFactor } = model
-
-    return (
-      <Paper
-        data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
-        className={cx(classes.container, className)}
-        variant="outlined"
-        ref={ref}
-        style={style}
-        {...other}
-      >
-        {/* offset 1px since for left track border */}
-        <Gridlines model={model} offset={1} />
-        <div
-          className={classes.zoomContainer}
-          style={{
-            transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
-          }}
-        >
-          <ScalebarPositionedContent model={model} style={style} />
-        </div>
-        <ScalebarRefNameLabels model={model} />
-      </Paper>
-    )
-  }),
-)
 
 export default Scalebar

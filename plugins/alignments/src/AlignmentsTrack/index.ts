@@ -2,6 +2,7 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 import configSchemaF from './configSchemaF'
+import { stringifySAM } from '../saveTrackFormats/sam'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -12,7 +13,23 @@ export default function register(pm: PluginManager) {
       name: 'AlignmentsTrack',
       displayName: 'Alignments track',
       configSchema,
-      stateModel: createBaseTrackModel(pm, 'AlignmentsTrack', configSchema),
+      stateModel: createBaseTrackModel(
+        pm,
+        'AlignmentsTrack',
+        configSchema,
+      ).views(() => ({
+        saveTrackFileFormatOptions() {
+          return {
+            sam: {
+              name: 'SAM',
+              extension: 'sam',
+              callback: stringifySAM,
+              helpText:
+                'Note: SAM format export is experimental and does not currently output optional tags. The output may not fully conform to the SAM specification and should be validated before use in production workflows.',
+            },
+          }
+        },
+      })),
     })
     const linearAlignmentsDisplay = pm.getDisplayType(
       'LinearAlignmentsDisplay',

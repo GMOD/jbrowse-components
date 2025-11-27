@@ -92,68 +92,68 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     class="css-dznme2-rubberbandControl"
                   >
                     <div
-                      class="css-16vhz0m-scalebar"
+                      class="css-1eig9rh-scalebar"
                     >
                       <div
-                        class="css-den3n5-scalebarVisibleRegion"
-                        style="width: 272px; left: 0px; background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
+                        class="css-1co65jp-scalebarVisibleRegion"
+                        style="width: 272px; transform: translateX(0px); background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
                       />
                       <div
-                        class="css-2jeg0a-scalebarContig"
-                        style="width: 0px; left: 0px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
+                        class="css-12i65rv-scalebarContig"
+                        style="width: 0px; transform: translateX(0px); background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
                       />
                       <div>
                         <p
-                          class="MuiTypography-root MuiTypography-body1 css-10gjpil-MuiTypography-root-scalebarRefName"
-                          style="left: 3px; color: rgb(153, 102, 0);"
+                          class="MuiTypography-root MuiTypography-body1 css-yydqu3-MuiTypography-root-scalebarRefName"
+                          style="transform: translateX(3px); color: rgb(153, 102, 0);"
                         >
                           ctgA
                         </p>
                         <div
-                          class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
-                          style="left: 0px; width: 808px; border-color: rgb(153, 102, 0);"
+                          class="css-10fcb8d-scalebarContig-scalebarContigForward-scalebarBorder"
+                          style="transform: translateX(0px); width: 808px; border-color: rgb(153, 102, 0);"
                         >
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 134.66666666666669px; pointer-events: none; color: rgb(153, 102, 0);"
+                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            style="transform: translateX(134.66666666666669px); color: rgb(153, 102, 0);"
                           >
                             20
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 269.33333333333337px; pointer-events: none; color: rgb(153, 102, 0);"
+                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            style="transform: translateX(269.33333333333337px); color: rgb(153, 102, 0);"
                           >
                             40
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 404px; pointer-events: none; color: rgb(153, 102, 0);"
+                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            style="transform: translateX(404px); color: rgb(153, 102, 0);"
                           >
                             60
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 538.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
+                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            style="transform: translateX(538.6666666666667px); color: rgb(153, 102, 0);"
                           >
                             80
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 673.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
+                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            style="transform: translateX(673.3333333333334px); color: rgb(153, 102, 0);"
                           >
                             100
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
-                            style="left: 808px; pointer-events: none; color: rgb(153, 102, 0);"
+                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            style="transform: translateX(808px); color: rgb(153, 102, 0);"
                           >
                             120
                           </p>
                         </div>
                       </div>
                       <div
-                        class="css-2jeg0a-scalebarContig"
-                        style="width: 0px; left: 808px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
+                        class="css-12i65rv-scalebarContig"
+                        style="width: 0px; transform: translateX(808px); background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
                       />
                     </div>
                   </div>
@@ -235,79 +235,81 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         </svg>
                       </button>
                       <div
-                        class="MuiAutocomplete-root css-7yn9vh-MuiAutocomplete-root"
-                        data-testid="autocomplete"
                         style="width: 175px;"
                       >
                         <div
-                          class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1jmmqni-MuiFormControl-root-MuiTextField-root-headerRefName"
-                          style="margin: 7px;"
+                          class="MuiAutocomplete-root css-7yn9vh-MuiAutocomplete-root"
+                          data-testid="autocomplete"
                         >
                           <div
-                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-fwcp0t-MuiInputBase-root-MuiOutlinedInput-root"
-                            style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
+                            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1jmmqni-MuiFormControl-root-MuiTextField-root-headerRefName"
+                            style="margin: 7px;"
                           >
-                            <input
-                              aria-autocomplete="list"
-                              aria-expanded="false"
-                              aria-invalid="false"
-                              autocapitalize="none"
-                              autocomplete="off"
-                              class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
-                              id="_r_8_"
-                              placeholder="Search for location"
-                              role="combobox"
-                              spellcheck="false"
-                              type="text"
-                              value="ctgA:1..40"
-                            />
                             <div
-                              class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1hnilo0-MuiInputAdornment-root-th"
+                              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-fwcp0t-MuiInputBase-root-MuiOutlinedInput-root"
+                              style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
                             >
-                              <svg
-                                aria-hidden="true"
-                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
-                                data-testid="SearchIcon"
-                                focusable="false"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
-                                />
-                              </svg>
-                              <button
-                                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
-                                tabindex="0"
-                                type="button"
+                              <input
+                                aria-autocomplete="list"
+                                aria-expanded="false"
+                                aria-invalid="false"
+                                autocapitalize="none"
+                                autocomplete="off"
+                                class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
+                                id="_r_8_"
+                                placeholder="Search for location"
+                                role="combobox"
+                                spellcheck="false"
+                                type="text"
+                              />
+                              <div
+                                class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1hnilo0-MuiInputAdornment-root-th"
                               >
                                 <svg
                                   aria-hidden="true"
                                   class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
-                                  data-testid="HelpIcon"
+                                  data-testid="SearchIcon"
                                   focusable="false"
                                   viewBox="0 0 24 24"
                                 >
                                   <path
-                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
+                                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
                                   />
                                 </svg>
-                              </button>
-                            </div>
-                            <fieldset
-                              aria-hidden="true"
-                              class="MuiOutlinedInput-notchedOutline css-18p5xg2-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
-                            >
-                              <legend
-                                class="css-1nf2c5d-MuiNotchedOutlined-root"
-                              >
-                                <span
-                                  aria-hidden="true"
-                                  class="notranslate"
+                                <button
+                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                                  tabindex="0"
+                                  type="button"
                                 >
-                                  ​
-                                </span>
-                              </legend>
-                            </fieldset>
+                                  <svg
+                                    aria-hidden="true"
+                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                                    data-testid="HelpIcon"
+                                    focusable="false"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
+                              <fieldset
+                                aria-hidden="true"
+                                class="MuiOutlinedInput-notchedOutline css-18p5xg2-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+                              >
+                                <legend
+                                  class="css-1nf2c5d-MuiNotchedOutlined-root"
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    class="notranslate"
+                                  >
+                                    ​
+                                  </span>
+                                </legend>
+                              </fieldset>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -429,26 +431,26 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               </div>
             </div>
             <div
-              class="css-1x918n3-tracksContainer"
+              class="css-p33ofe-tracksContainer"
               data-testid="tracksContainer"
             >
               <div
-                class="css-n6mj5o-verticalGuidesZoomContainer"
+                class="css-xn9n8g-verticalGuidesZoomContainer"
               >
                 <div
-                  class="css-14511yq-verticalGuidesContainer"
-                  style="left: -800px; width: 2400px;"
+                  class="css-poxp29-verticalGuidesContainer"
+                  style="transform: translateX(-800px); width: 2400px;"
                 >
                   <div
-                    class="css-a9ifge-boundaryPaddingBlock"
-                    style="width: 800px;"
+                    data-block-key="{volvox}ctgA:1..40-0-beforeFirstRegion"
+                    style="height: 100%; flex-shrink: 0; position: relative; width: 800px; background-color: rgba(0, 0, 0, 0.12);"
                   />
                   <div
-                    class="css-1dmfa10-contentBlock"
-                    style="width: 800px;"
+                    data-block-key="{volvox}ctgA:1..40-0"
+                    style="height: 100%; flex-shrink: 0; position: relative; width: 800px;"
                   >
                     <svg
-                      class="css-6m1lch-svgOverlay"
+                      style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
                     >
                       <line
                         stroke="rgba(0, 0, 0, 0.26)"
@@ -797,11 +799,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </svg>
                   </div>
                   <div
-                    class="css-1dmfa10-contentBlock"
-                    style="width: 800px;"
+                    data-block-key="{volvox}ctgA:41..80-0"
+                    style="height: 100%; flex-shrink: 0; position: relative; width: 800px;"
                   >
                     <svg
-                      class="css-6m1lch-svgOverlay"
+                      style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
                     >
                       <line
                         stroke="rgba(0, 0, 0, 0.26)"
@@ -1162,22 +1164,22 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="height: 17px; box-sizing: border-box;"
                 >
                   <div
-                    class="css-n6mj5o-verticalGuidesZoomContainer"
+                    class="css-xn9n8g-verticalGuidesZoomContainer"
                   >
                     <div
-                      class="css-14511yq-verticalGuidesContainer"
-                      style="left: -801px; width: 2400px;"
+                      class="css-poxp29-verticalGuidesContainer"
+                      style="transform: translateX(-801px); width: 2400px;"
                     >
                       <div
-                        class="css-a9ifge-boundaryPaddingBlock"
-                        style="width: 800px;"
+                        data-block-key="{volvox}ctgA:1..40-0-beforeFirstRegion"
+                        style="height: 100%; flex-shrink: 0; position: relative; width: 800px; background-color: rgba(0, 0, 0, 0.12);"
                       />
                       <div
-                        class="css-1dmfa10-contentBlock"
-                        style="width: 800px;"
+                        data-block-key="{volvox}ctgA:1..40-0"
+                        style="height: 100%; flex-shrink: 0; position: relative; width: 800px;"
                       >
                         <svg
-                          class="css-6m1lch-svgOverlay"
+                          style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
                         >
                           <line
                             stroke="rgba(0, 0, 0, 0.26)"
@@ -1526,11 +1528,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         </svg>
                       </div>
                       <div
-                        class="css-1dmfa10-contentBlock"
-                        style="width: 800px;"
+                        data-block-key="{volvox}ctgA:41..80-0"
+                        style="height: 100%; flex-shrink: 0; position: relative; width: 800px;"
                       >
                         <svg
-                          class="css-6m1lch-svgOverlay"
+                          style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none;"
                         >
                           <line
                             stroke="rgba(0, 0, 0, 0.26)"
@@ -1881,118 +1883,141 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-tyiuoa-zoomContainer"
+                    class="css-1c7qp56-zoomContainer"
                   >
                     <div
-                      class="css-y3821b-scalebar"
-                      style="left: -801px; width: 2400px; height: 17px; box-sizing: border-box;"
+                      class="css-167fr73-scalebar"
+                      style="transform: translateX(-801px); width: 2400px;"
                     >
                       <div
-                        class="css-a9ifge-boundaryPaddingBlock"
-                        style="background: none; width: 800px;"
-                      />
-                      <div
-                        style="width: 800px; position: relative; min-height: 100%; contain: layout style paint;"
+                        style="display: flex;"
                       >
                         <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
+                          data-block-key="{volvox}ctgA:1..40-0-beforeFirstRegion"
+                          style="width: 800px; position: relative; flex-shrink: 0; overflow: hidden; height: 13px;"
+                        />
+                        <div
+                          data-block-key="{volvox}ctgA:1..40-0"
+                          style="width: 800px; position: relative; flex-shrink: 0; overflow: hidden; height: 13px;"
                         >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: -20px;"
                           >
-                            10
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              0
+                            </div>
+                          </div>
+                          <div
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
+                          >
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              10
+                            </div>
+                          </div>
+                          <div
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
+                          >
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              20
+                            </div>
+                          </div>
+                          <div
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
+                          >
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              30
+                            </div>
+                          </div>
+                          <div
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
+                          >
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              40
+                            </div>
                           </div>
                         </div>
                         <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
+                          data-block-key="{volvox}ctgA:41..80-0"
+                          style="width: 800px; position: relative; flex-shrink: 0; overflow: hidden; height: 13px;"
                         >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: -20px;"
                           >
-                            20
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              40
+                            </div>
                           </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
-                        >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
                           >
-                            30
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              50
+                            </div>
                           </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
-                        >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
                           >
-                            40
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              60
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <div
-                        style="width: 800px; position: relative; min-height: 100%; contain: layout style paint;"
-                      >
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: -20px;"
-                        >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
                           >
-                            40
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              70
+                            </div>
                           </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 180px;"
-                        >
                           <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
                           >
-                            50
-                          </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 380px;"
-                        >
-                          <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
-                          >
-                            60
-                          </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 580px;"
-                        >
-                          <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
-                          >
-                            70
-                          </div>
-                        </div>
-                        <div
-                          style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 780px;"
-                        >
-                          <div
-                            style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
-                          >
-                            80
+                            <div
+                              style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
+                            >
+                              80
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-4lhiy8-MuiTypography-root-refLabel"
-                    data-testid="refLabel-ctgA"
-                    style="left: -1px; padding-left: 1px;"
+                  <div
+                    style="position: absolute; will-change: transform; transform: translateX(0px);"
                   >
-                    ctgA
-                  </p>
+                    <span
+                      data-label-key="refLabel-{volvox}ctgA:1..40-0-1"
+                      data-testid="refLabel-ctgA"
+                      style="font-size: 11px; position: absolute; left: -1px; top: -1px; font-weight: bold; line-height: normal; z-index: 1; background: rgb(255, 255, 255); padding-left: 1px;"
+                    >
+                      ctgA
+                    </span>
+                    <span
+                      data-label-key="pinned-label"
+                      style="font-size: 11px; position: absolute; left: 0px; top: -1px; font-weight: bold; line-height: normal; z-index: 2; background: rgb(255, 255, 255); padding-left: 0px;"
+                    />
+                  </div>
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-u7uo4q-MuiPaper-root-root-unpinnedTrack"
+                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1m2nal4-MuiPaper-root-root-unpinnedTrack"
               >
                 <div
                   class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1fyjxz2-MuiPaper-root-trackLabel-trackLabelOffset-root"
@@ -2034,7 +2059,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </svg>
                   </button>
                   <span
-                    class="MuiTypography-root MuiTypography-body1 css-1r88dex-MuiTypography-root-trackName"
+                    class="MuiTypography-root MuiTypography-body1 css-14nk8rx-MuiTypography-root-trackName"
                   >
                     <span>
                       Reference sequence (volvox)
@@ -2060,27 +2085,27 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </button>
                 </div>
                 <div
-                  class="css-rgoijz-trackRenderingContainer"
+                  class="css-1amg6mz-trackRenderingContainer"
                   data-testid="trackRenderingContainer-test_view-volvox_refseq"
                   style="height: 120px;"
                 >
                   <div
-                    class="css-v11ioz-renderingComponentContainer"
+                    class="css-ewmwoa-renderingComponentContainer"
                   >
                     <div
                       class="css-1y9lrrz-display"
                       data-testid="display-volvox_refseq-LinearReferenceSequenceDisplay"
                     >
                       <div
-                        class="css-d6gpow-linearBlocks"
-                        style="left: -800px;"
+                        class="css-85fyjg-linearBlocks"
+                        style="transform: translateX(-800px);"
                       >
                         <div
                           class="css-a9ifge-boundaryPaddingBlock"
                           style="background: none; width: 800px;"
                         />
                         <div
-                          class="css-1dmfa10-contentBlock"
+                          class="css-100aiuy-contentBlock"
                           style="width: 800px;"
                         >
                           <svg
@@ -5076,7 +5101,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                           </svg>
                         </div>
                         <div
-                          class="css-1dmfa10-contentBlock"
+                          class="css-100aiuy-contentBlock"
                           style="width: 800px;"
                         >
                           <svg

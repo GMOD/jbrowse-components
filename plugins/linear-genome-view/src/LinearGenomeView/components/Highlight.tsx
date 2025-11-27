@@ -19,8 +19,10 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
+    left: 0,
     overflow: 'hidden',
     background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
+    willChange: 'transform',
   },
   linkIcon: {
     color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
@@ -90,7 +92,7 @@ const Highlight = observer(function ({
     <div
       className={classes.highlight}
       style={{
-        left: h.left,
+        transform: `translateX(${h.left}px)`,
         width: h.width,
       }}
     >

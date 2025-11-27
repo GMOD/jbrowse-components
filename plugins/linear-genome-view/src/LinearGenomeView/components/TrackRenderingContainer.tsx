@@ -17,6 +17,7 @@ const useStyles = makeStyles()({
     left: -1,
     height: '100%',
     width: '100%',
+    willChange: 'transform',
   },
 
   trackRenderingContainer: {
@@ -25,6 +26,7 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
+    contain: 'strict',
   },
 })
 

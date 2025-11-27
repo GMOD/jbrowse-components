@@ -9,6 +9,7 @@ import {
   assembleLocString,
   clamp,
   findLast,
+  getBpDisplayStr,
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
@@ -1478,6 +1479,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get coarseVisibleLocStrings() {
           return calculateVisibleLocStrings(self.coarseDynamicBlocks)
         },
+
+        /**
+         * #getter
+         */
+        get coarseTotalBpDisplayStr() {
+          return getBpDisplayStr(self.coarseTotalBp)
+        },
       }
     })
     .actions(self => ({
@@ -1851,6 +1859,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ? this.pxToBp(self.width / 2)
           : undefined
       },
+
+      get visibleRegions() {
+        return self.dynamicBlocks.contentBlocks
+      },
     }))
     .actions(self => ({
       afterCreate() {
@@ -1906,7 +1918,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
               }
             },
-            { delay: 500 },
+            { delay: 100 },
           ),
         )
 

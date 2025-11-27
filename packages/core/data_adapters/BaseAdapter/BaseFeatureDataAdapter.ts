@@ -271,4 +271,23 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       name: source,
     }))
   }
+
+  /**
+   * Export data from the adapter in a specified format for given regions.
+   * Some adapters (like VcfAdapter) can efficiently export raw data directly
+   * from the file without parsing to features.
+   *
+   * @param regions - Regions to export data from
+   * @param formatType - The format to export to (e.g. 'vcf', 'sam', 'bedgraph')
+   * @param opts - Feature adapter options
+   * @returns Promise resolving to the exported data as a string, or undefined
+   *          if the adapter does not support direct export for this format
+   */
+  public async getExportData(
+    _regions: Region[],
+    _formatType: string,
+    _opts?: BaseOptions,
+  ): Promise<string | undefined> {
+    return undefined
+  }
 }

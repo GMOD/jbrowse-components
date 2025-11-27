@@ -48,7 +48,7 @@
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "@mui/x-charts-vendor": "^8.19.0",
-    "@mui/x-data-grid": "^8.0.0",
+    "@mui/x-data-grid": "^8.20.0",
     "d3-hierarchy": "^3.1.2",
     "escape-html": "^1.0.3",
     "mobx": "^6.0.0",

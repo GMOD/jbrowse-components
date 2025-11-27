@@ -2,6 +2,7 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 import configSchemaF from './configSchema'
+import { stringifyVCF } from './saveTrackFormats/vcf'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -12,7 +13,19 @@ export default function VariantTrackF(pm: PluginManager) {
       name: 'VariantTrack',
       displayName: 'Variant track',
       configSchema,
-      stateModel: createBaseTrackModel(pm, 'VariantTrack', configSchema),
+      stateModel: createBaseTrackModel(pm, 'VariantTrack', configSchema).views(
+        () => ({
+          saveTrackFileFormatOptions() {
+            return {
+              vcf: {
+                name: 'VCF',
+                extension: 'vcf',
+                callback: stringifyVCF,
+              },
+            }
+          },
+        }),
+      ),
     })
   })
 }
