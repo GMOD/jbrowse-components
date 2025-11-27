@@ -168,6 +168,7 @@ export default defineConfig(
       'unicorn/expiring-todo-comments': 'off',
       'unicorn/no-array-sort': 'off',
 
+      'import/extensions': ['error', 'ignorePackages'],
       'import/no-unresolved': 'off',
       'import/order': [
         'error',
