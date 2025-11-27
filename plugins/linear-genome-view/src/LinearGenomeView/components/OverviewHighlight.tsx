@@ -13,9 +13,11 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
+    left: 0,
     background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
     borderLeft: `1px solid ${theme.palette.highlight.main}`,
     borderRight: `1px solid ${theme.palette.highlight.main}`,
+    willChange: 'transform',
   },
 }))
 
@@ -59,8 +61,8 @@ const OverviewHighlight = observer(function OverviewHighlight({
         key={`${left}_${width}_${idx}`}
         className={classes.highlight}
         style={{
-          width: width,
-          left: left,
+          width,
+          transform: `translateX(${left}px)`,
         }}
       />
     ))

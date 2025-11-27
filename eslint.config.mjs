@@ -22,6 +22,7 @@ export default defineConfig(
       'benchmarks/*',
       '**/build/**/*',
       '**/dist/**/*',
+      'scripts/analyze_cpuprof.ts',
       '**/esm/**/*',
       '**/public/**/*',
       '**/storybook-static/**',

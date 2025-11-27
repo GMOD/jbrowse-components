@@ -15,6 +15,8 @@ const useStyles = makeStyles()({
   highlight: {
     height: '100%',
     position: 'absolute',
+    left: 0,
+    willChange: 'transform',
   },
 })
 
@@ -71,7 +73,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
               <div
                 className={classes.highlight}
                 style={{
-                  left,
+                  transform: `translateX(${left}px)`,
                   width,
                   background: highlight,
                   borderLeft: `1px solid ${highlight}`,

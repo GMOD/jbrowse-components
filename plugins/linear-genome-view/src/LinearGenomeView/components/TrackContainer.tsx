@@ -19,6 +19,7 @@ const useStyles = makeStyles()(theme => ({
     marginTop: 2,
     overflow: 'hidden',
     position: 'relative',
+    contain: 'layout style paint',
   },
   unpinnedTrack: {
     background: 'none',
