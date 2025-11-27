@@ -273,11 +273,13 @@ export function createBaseTrackModel(
                       helpText: displayType.helpText,
                       checked: d.displayId === shownId,
                       onClick: () => {
-                        self.replaceDisplay(
-                          shownId,
-                          d.displayId,
-                          self.displays[0].getPortableSettings?.() ?? {},
-                        )
+                        if (d.displayId !== shownId) {
+                          self.replaceDisplay(
+                            shownId,
+                            d.displayId,
+                            self.displays[0].getPortableSettings?.() ?? {},
+                          )
+                        }
                       },
                     }
                   }),
