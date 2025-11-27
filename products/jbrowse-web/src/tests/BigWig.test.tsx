@@ -1,4 +1,5 @@
-import { doBeforeEach, setup, testOpenTrack } from './util'
+import { testOpenTrack } from './testOpenTrack'
+import { doBeforeEach, setup } from './util'
 
 setup()
 

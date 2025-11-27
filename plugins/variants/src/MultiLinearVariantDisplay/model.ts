@@ -2,7 +2,6 @@ import { getSession } from '@jbrowse/core/util'
 import { isAlive, types } from 'mobx-state-tree'
 
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
-import { setupMultiVariantAutoruns } from '../shared/setupMultiVariantAutoruns'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -43,7 +42,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            setupMultiVariantAutoruns(self)
             try {
               const { setupMultiVariantAutoruns } = await import(
                 '../shared/setupMultiVariantAutoruns'

@@ -22,8 +22,11 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
   displayModel: MultiVariantBaseModel
   arr: string[][]
   featureData: FeatureData[]
+  rowHeight: number
+  origScrollTop: number
 }) {
-  const { arr, width, height, displayModel, featureData } = props
+  const { arr, width, height, displayModel, featureData, origScrollTop, rowHeight } =
+    props
   const ref = useRef<HTMLDivElement>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
 
@@ -36,14 +39,16 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
       const offsetX = eventClientX - r.left
       const offsetY = eventClientY - r.top
 
-      const { scrollTop, rowHeight, sources } = displayModel
+      const { sources } = displayModel
 
-      // Calculate actual source index accounting for scroll
-      const sourceIdx = Math.floor((offsetY + scrollTop) / rowHeight)
+      // Canvas is positioned at top=origScrollTop, so adjust mouse position
+      // relative to canvas top
+      const canvasOffsetY = offsetY - origScrollTop
+      // The first row in the canvas corresponds to source at index startRow
+      const startRow = Math.floor(origScrollTop / rowHeight)
+      const visibleRowIdx = Math.floor(canvasOffsetY / rowHeight)
+      const sourceIdx = startRow + visibleRowIdx
       const name = sources?.[sourceIdx]?.name
-
-      // For genotype lookup in arr (which only contains visible rows)
-      const visibleRowIdx = Math.floor(offsetY / rowHeight)
       const featureIdx = Math.floor((offsetX / width) * arr.length)
       const genotype = arr[featureIdx]?.[visibleRowIdx]
       const feature = featureData[featureIdx]
@@ -62,7 +67,7 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
       }
       return undefined
     },
-    [arr, width, displayModel, featureData],
+    [arr, width, displayModel, featureData, origScrollTop, rowHeight],
   )
 
   const handleMouseMove = useCallback(
@@ -83,6 +88,7 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
       displayModel.setHoveredGenotype(undefined)
     }
   }, [displayModel])
+
   return (
     <div
       ref={ref}
@@ -95,7 +101,9 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
         height,
       }}
     >
-      <PrerenderedCanvas {...props} />
+      <div style={{ position: 'absolute', left: 0, top: origScrollTop }}>
+        <PrerenderedCanvas {...props} />
+      </div>
     </div>
   )
 })

@@ -1,4 +1,4 @@
-import { testMultiVariantDisplay } from './renderingUtils'
+import { testMultiVariantDisplay } from './testMultiVariantDisplay'
 import { doBeforeEach, setup } from './util'
 
 setup()

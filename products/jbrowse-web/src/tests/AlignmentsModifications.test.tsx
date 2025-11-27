@@ -1,6 +1,6 @@
 import path from 'path'
 
-import { testAlignmentModificationsDisplay } from './renderingUtils'
+import { testAlignmentModificationsDisplay } from './testAlignmentModificationsDisplay'
 import { doBeforeEach, setup } from './util'
 import config from '../../test_data/modifications_test/config.json'
 
@@ -14,7 +14,6 @@ beforeEach(() => {
 
 test('color by modifications', async () => {
   await testAlignmentModificationsDisplay({
-    testDataDir: 'modifications_test',
     config,
     canvasTestId: 'prerendered_canvas_{hg38_clip}20:13433..13524-0_done',
   })

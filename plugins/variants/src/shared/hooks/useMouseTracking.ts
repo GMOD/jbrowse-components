@@ -41,5 +41,9 @@ export function useMouseTracking(ref: React.RefObject<HTMLDivElement | null>) {
     setMouseState(undefined)
   }, [])
 
-  return { mouseState, handleMouseMove, handleMouseLeave }
+  return {
+    mouseState,
+    handleMouseMove,
+    handleMouseLeave,
+  }
 }

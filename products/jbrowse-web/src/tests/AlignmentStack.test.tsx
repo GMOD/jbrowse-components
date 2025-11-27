@@ -1,6 +1,6 @@
 import { cleanup } from '@testing-library/react'
 
-import { testLinkedReadsDisplay } from './renderingUtils'
+import { testLinkedReadsDisplay } from './testLinkedReadsDisplay'
 import { doBeforeEach, setup } from './util'
 
 setup()

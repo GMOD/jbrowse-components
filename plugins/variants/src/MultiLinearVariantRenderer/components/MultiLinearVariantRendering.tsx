@@ -34,7 +34,7 @@ const MultiVariantRendering = observer(function (props: {
   width: number
   height: number
   sources: Source[]
-  scrollTop: number
+  origScrollTop: number
   featureGenotypeMap: Record<string, MinimizedVariantRecord>
   totalHeight: number
   flatbush: any
@@ -44,8 +44,14 @@ const MultiVariantRendering = observer(function (props: {
   onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
   onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
 }) {
-  const { flatbush, items, displayModel, featureGenotypeMap, totalHeight } =
-    props
+  const {
+    flatbush,
+    items,
+    displayModel,
+    featureGenotypeMap,
+    totalHeight,
+    origScrollTop,
+  } = props
   const ref = useRef<HTMLDivElement>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
   const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
@@ -59,7 +65,15 @@ const MultiVariantRendering = observer(function (props: {
       const offsetX = eventClientX - rect.left
       const offsetY = eventClientY - rect.top
 
-      const x = flatbush2.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
+      // Canvas is positioned at top=origScrollTop, so adjust mouse position
+      // relative to canvas top for Flatbush lookup
+      const canvasOffsetY = offsetY - origScrollTop
+      const x = flatbush2.search(
+        offsetX,
+        canvasOffsetY,
+        offsetX + 1,
+        canvasOffsetY + 1,
+      )
       if (x.length) {
         const res = minElt(x, idx => items[idx]?.bpLen ?? 0)!
         const { bpLen, genotype, featureId, ...rest } = items[res] ?? {}
@@ -80,7 +94,7 @@ const MultiVariantRendering = observer(function (props: {
       }
       return undefined
     },
-    [flatbush2, items, featureGenotypeMap],
+    [flatbush2, items, featureGenotypeMap, origScrollTop],
   )
 
   const handleMouseMove = useCallback(

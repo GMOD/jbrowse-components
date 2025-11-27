@@ -59,7 +59,7 @@ const MultiLinearVariantMatrixDisplayComponent = observer(function (props: {
         <div
           style={{
             position: 'absolute',
-            top: autoHeight ? 0 : scrollTop,
+            // top: autoHeight ? 0 : scrollTop,
             left: 0,
             width: '100%',
           }}

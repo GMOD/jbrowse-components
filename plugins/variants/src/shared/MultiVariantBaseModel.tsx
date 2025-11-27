@@ -331,6 +331,13 @@ export default function MultiVariantBaseModelF(
       /**
        * #getter
        */
+      get autoHeight() {
+        return self.rowHeightMode === 'auto'
+      },
+
+      /**
+       * #getter
+       */
       get activeFilters() {
         // config jexlFilters are deferred evaluated so they are prepended with
         // jexl at runtime rather than being stored with jexl in the config
@@ -388,7 +395,6 @@ export default function MultiVariantBaseModelF(
     }))
     .views(self => {
       const {
-        trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
         renderingProps: superRenderingProps,
       } = self
@@ -417,11 +423,14 @@ export default function MultiVariantBaseModelF(
         get nrow() {
           return self.sources?.length || 1
         },
+
         /**
          * #getter
          */
-        get autoHeight() {
+        get totalHeight() {
           return self.rowHeightMode === 'auto'
+            ? this.availableHeight
+            : this.nrow * self.rowHeightMode
         },
         /**
          * #getter
@@ -430,14 +439,6 @@ export default function MultiVariantBaseModelF(
           return self.rowHeightMode === 'auto'
             ? this.availableHeight / this.nrow
             : self.rowHeightMode
-        },
-        /**
-         * #getter
-         */
-        get totalHeight() {
-          return self.rowHeightMode === 'auto'
-            ? this.availableHeight
-            : this.nrow * self.rowHeightMode
         },
         /**
          * #getter
@@ -476,6 +477,12 @@ export default function MultiVariantBaseModelF(
             ...superRenderingProps(),
           }
         },
+      }
+    })
+    .views(self => {
+      const { trackMenuItems: superTrackMenuItems } = self
+
+      return {
         /**
          * #method
          */
