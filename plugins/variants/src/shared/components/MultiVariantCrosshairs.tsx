@@ -30,10 +30,9 @@ const MultiVariantCrosshairs = observer(function ({
 }) {
   const { classes } = useStyles()
   const theme = useTheme()
-  const { hoveredGenotype, height, scrollTop, sourceMap } = model
+  const { hoveredGenotype, height, sourceMap } = model
   const { width } = getContainingView(model) as LinearGenomeViewModel
   const source = hoveredGenotype ? sourceMap?.[hoveredGenotype.name] : undefined
-  const y = mouseY - scrollTop
   return (
     <div className={classes.rel}>
       <svg
@@ -41,14 +40,14 @@ const MultiVariantCrosshairs = observer(function ({
         width={width}
         height={height}
         style={{
-          top: scrollTop,
+          top: 0,
         }}
       >
         <line
           x1={0}
           x2={width}
-          y1={y}
-          y2={y}
+          y1={mouseY}
+          y2={mouseY}
           stroke={theme.palette.text.primary}
         />
         <line
