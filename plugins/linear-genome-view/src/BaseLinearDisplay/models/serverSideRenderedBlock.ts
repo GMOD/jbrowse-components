@@ -346,12 +346,14 @@ async function renderBlockEffect(
   } else if (displayError) {
     self.setError(displayError)
     return undefined
+  } else if (renderProps.notReady) {
+    // Wait for feature density stats before evaluating cannotBeRenderedReason.
+    // This ordering ensures all blocks make consistent render-vs-message
+    // decisions once stats are available, avoiding a race where some blocks
+    // render while others show "Zoom in to see features"
+    return undefined
   } else if (cannotBeRenderedReason) {
     self.setMessage(cannotBeRenderedReason)
-    return undefined
-  } else if (renderProps.notReady) {
-    // Just return without rendering - isRenderingPending will stay true from setLoading
-    // so old content remains visible with loading overlay
     return undefined
   } else {
     const { reactElement, features, layout, maxHeightReached } =
