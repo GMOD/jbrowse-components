@@ -561,21 +561,29 @@ function stateModelFactory() {
         addDisposer(
           self,
           autorun(() => {
-            const blocksPresent: Record<string, boolean> = {}
-            const view = getContainingView(self) as LGV
-            if (!view.initialized) {
-              return
-            }
-            for (const block of self.blockDefinitions.contentBlocks) {
-              blocksPresent[block.key] = true
-              if (!self.blockState.has(block.key)) {
-                self.addBlock(block.key, block)
+            try {
+              if (!isAlive(self)) {
+                return
               }
-            }
-            for (const key of self.blockState.keys()) {
-              if (!blocksPresent[key]) {
-                self.deleteBlock(key)
+              const blocksPresent: Record<string, boolean> = {}
+              const view = getContainingView(self) as LGV
+              if (!view.initialized) {
+                return
               }
+              for (const block of self.blockDefinitions.contentBlocks) {
+                blocksPresent[block.key] = true
+                if (!self.blockState.has(block.key)) {
+                  self.addBlock(block.key, block)
+                }
+              }
+              for (const key of self.blockState.keys()) {
+                if (!blocksPresent[key]) {
+                  self.deleteBlock(key)
+                }
+              }
+            } catch (e) {
+              // catch errors that may occur during test cleanup or when
+              // the display is not properly attached to a view
             }
           }),
         )
