@@ -41,8 +41,9 @@ export async function makeImageData(
   const splitCache = {} as Record<string, string[]>
   const genotypesCache = new Map<string, Record<string, string>>()
   const drawRef = referenceDrawingMode === 'draw'
-  // Use at least 1px row height for rendering to avoid insanely small subpixel rendering
-  const h = Math.max(rowHeight, 1)
+  const h = rowHeight
+  // Use at least 1px for drawing operations to avoid insanely small subpixel rendering
+  const drawH = Math.max(rowHeight, 1)
   const sln = sources.length
   const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
   const endRow = Math.min(sln, Math.ceil((scrollTop + canvasHeight) / h))
@@ -91,7 +92,7 @@ export async function makeImageData(
                   splitCache[genotype] ||
                   (splitCache[genotype] = genotype.split('|'))
                 if (
-                  drawPhased(alleles, ctx, x, y, w, h, HP!, undefined, drawRef)
+                  drawPhased(alleles, ctx, x, y, w, drawH, HP!, undefined, drawRef)
                 ) {
                   items.push({
                     name,
@@ -99,11 +100,11 @@ export async function makeImageData(
                     featureId,
                     bpLen,
                   })
-                  coords.push(x, y, x + w, y + h)
+                  coords.push(x, y, x + w, y + drawH)
                 }
               } else {
                 ctx.fillStyle = 'black'
-                ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+                ctx.fillRect(x - f2, y - f2, w + f2, drawH + f2)
               }
             }
           }
@@ -127,7 +128,7 @@ export async function makeImageData(
                   x,
                   y,
                   w,
-                  h,
+                  drawH,
                   featureType,
                   featureStrand,
                   alpha,
@@ -139,7 +140,7 @@ export async function makeImageData(
                   featureId,
                   bpLen,
                 })
-                coords.push(x, y, x + w, y + h)
+                coords.push(x, y, x + w, y + drawH)
               }
             }
           }

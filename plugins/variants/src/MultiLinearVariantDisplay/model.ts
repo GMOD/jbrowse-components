@@ -25,14 +25,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         type: types.literal('MultiLinearVariantDisplay'),
         /**
          * #property
-         * Regular display defaults to manual 11px row height (not auto)
-         */
-        rowHeightMode: types.optional(
-          types.union(types.literal('auto'), types.number),
-          11,
-        ),
-        /**
-         * #property
          */
         minorAlleleFrequencyFilter: types.optional(types.number, 0),
       }),
