@@ -1,17 +1,29 @@
 import { useCallback, useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { makeSimpleAltString } from '../../VcfFeature/util'
+
 import type { MultiVariantBaseModel } from '../../shared/MultiVariantBaseModel'
+
+interface FeatureData {
+  alt: string[]
+  ref: string
+  name: string
+  description: string
+  length: number
+}
 
 const MultiLinearVariantMatrixRendering = observer(function (props: {
   width: number
   height: number
   displayModel: MultiVariantBaseModel
   arr: string[][]
+  featureData: FeatureData[]
 }) {
-  const { arr, width, height, displayModel } = props
+  const { arr, width, height, displayModel, featureData } = props
   const ref = useRef<HTMLDivElement>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
 
@@ -34,10 +46,23 @@ const MultiLinearVariantMatrixRendering = observer(function (props: {
       const visibleRowIdx = Math.floor(offsetY / rowHeight)
       const featureIdx = Math.floor((offsetX / width) * arr.length)
       const genotype = arr[featureIdx]?.[visibleRowIdx]
+      const feature = featureData[featureIdx]
 
-      return genotype && name ? { name, genotype } : undefined
+      if (genotype && name && feature) {
+        const { ref, alt, name: featureName, description, length } = feature
+        const alleles = makeSimpleAltString(genotype, ref, alt)
+        return {
+          name,
+          genotype,
+          alleles,
+          featureName,
+          description: alt.length >= 3 ? 'multiple ALT alleles' : description,
+          length: getBpDisplayStr(length),
+        }
+      }
+      return undefined
     },
-    [arr, width, displayModel],
+    [arr, width, displayModel, featureData],
   )
 
   const handleMouseMove = useCallback(

@@ -2,6 +2,42 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import { f2 } from './constants'
 
+export function getAlleleColor(
+  genotype: string,
+  mostFrequentAlt: string,
+  colorCache: Record<string, string | undefined>,
+  splitCache: Record<string, string[]>,
+  drawRef: boolean,
+) {
+  const cacheKey = `${genotype}:${mostFrequentAlt}`
+  let c = colorCache[cacheKey]
+  if (c === undefined) {
+    let alt = 0
+    let uncalled = 0
+    let alt2 = 0
+    let ref = 0
+    const alleles =
+      splitCache[genotype] || (splitCache[genotype] = genotype.split(/[/|]/))
+    const total = alleles.length
+
+    for (let i = 0; i < total; i++) {
+      const allele = alleles[i]!
+      if (allele === mostFrequentAlt) {
+        alt++
+      } else if (allele === '0') {
+        ref++
+      } else if (allele === '.') {
+        uncalled++
+      } else {
+        alt2++
+      }
+    }
+    c = getColorAlleleCount(ref, alt, alt2, uncalled, total, drawRef)
+    colorCache[cacheKey] = c
+  }
+  return c
+}
+
 export function getColorAlleleCount(
   ref: number,
   alt: number,

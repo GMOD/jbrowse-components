@@ -1,18 +1,18 @@
-import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { SimpleFeature, renderToAbstractCanvas } from '@jbrowse/core/util'
 
 import type { RenderArgsDeserialized } from './types'
+import type { Feature } from '@jbrowse/core/util'
 
-export default class LinearVariantMatrixRenderer extends BoxRendererType {
+export default class LinearVariantMatrixRenderer extends FeatureRendererType {
   supportsSVG = true
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
     const { height, sources, regions, bpPerPx } = renderProps
     const region = regions[0]!
-    const { end, start } = region
+    const width = (region.end - region.start) / bpPerPx
 
-    const width = (end - start) / bpPerPx
     const { makeImageData } = await import('./makeImageData')
     const { mafs, ...rest } = await renderToAbstractCanvas(
       width,
@@ -42,7 +42,7 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
     return {
       ...results,
       ...rest,
-      features: new Map(),
+      features: new Map<string, Feature>(),
       simplifiedFeatures: mafs.map(
         ({ feature }) =>
           new SimpleFeature({
@@ -59,11 +59,3 @@ export default class LinearVariantMatrixRenderer extends BoxRendererType {
     }
   }
 }
-
-export type {
-  RenderArgs,
-  RenderArgsSerialized,
-  RenderResults,
-  ResultsDeserialized,
-  ResultsSerialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

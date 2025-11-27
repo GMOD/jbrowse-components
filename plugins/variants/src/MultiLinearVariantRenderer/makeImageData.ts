@@ -9,7 +9,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { f2 } from '../shared/constants'
 import {
   drawColorAlleleCount,
-  getColorAlleleCount,
+  getAlleleColor,
 } from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
@@ -115,40 +115,13 @@ export async function makeImageData(
             const { name } = sources[j]!
             const genotype = samp[name]
             if (genotype) {
-              const cacheKey = `${genotype}:${mostFrequentAlt}`
-              let c = colorCache[cacheKey]
-              if (c === undefined) {
-                let alt = 0
-                let uncalled = 0
-                let alt2 = 0
-                let ref = 0
-                const alleles =
-                  splitCache[genotype] ||
-                  (splitCache[genotype] = genotype.split(/[/|]/))
-                const total = alleles.length
-
-                for (let i = 0; i < total; i++) {
-                  const allele = alleles[i]!
-                  if (allele === mostFrequentAlt) {
-                    alt++
-                  } else if (allele === '0') {
-                    ref++
-                  } else if (allele === '.') {
-                    uncalled++
-                  } else {
-                    alt2++
-                  }
-                }
-                c = getColorAlleleCount(
-                  ref,
-                  alt,
-                  alt2,
-                  uncalled,
-                  total,
-                  drawRef,
-                )
-                colorCache[cacheKey] = c
-              }
+              const c = getAlleleColor(
+                genotype,
+                mostFrequentAlt,
+                colorCache,
+                splitCache,
+                drawRef,
+              )
               if (c) {
                 drawColorAlleleCount(
                   c,
