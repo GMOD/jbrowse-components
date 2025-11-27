@@ -1,41 +1,63 @@
+import type { RefObject } from 'react'
+
 import { TextField } from '@mui/material'
 
 import type {
   AutocompleteRenderInputParams,
-  TextFieldProps as TFP,
+  InputBaseComponentProps,
+  InputProps,
 } from '@mui/material'
+
+export interface TextFieldProps {
+  variant?: 'outlined' | 'filled' | 'standard'
+  className?: string
+  style?: React.CSSProperties
+  helperText?: React.ReactNode
+  slotProps?: {
+    input?: Partial<InputProps>
+    htmlInput?: InputBaseComponentProps
+  }
+}
 
 export default function AutocompleteTextField({
   TextFieldProps,
-  inputBoxVal,
+  inputRef,
   params,
-  setInputValue,
   setCurrentSearch,
 }: {
-  TextFieldProps: TFP
-  inputBoxVal: string
+  TextFieldProps: TextFieldProps
+  inputRef: RefObject<HTMLInputElement | null>
   params: AutocompleteRenderInputParams
-  setInputValue: (arg: string) => void
   setCurrentSearch: (arg: string) => void
 }) {
-  const { helperText, slotProps = {} } = TextFieldProps
+  const {
+    variant,
+    className,
+    style,
+    helperText,
+    slotProps = {},
+  } = TextFieldProps
+  const { InputProps, inputProps, fullWidth } = params
+
+  // Remove 'value' from inputProps to keep input uncontrolled,
+  // allowing imperative updates via inputRef
+  const { value: _value, ...inputPropsWithoutValue } = inputProps
+
   return (
     <TextField
-      onBlur={() => {
-        // this is used to restore a refName or the non-user-typed input to the
-        // box on blurring
-        setInputValue(inputBoxVal)
-      }}
-      {...params}
-      {...TextFieldProps}
+      variant={variant}
+      className={className}
+      style={style}
+      fullWidth={fullWidth}
+      inputRef={inputRef}
       size="small"
       helperText={helperText}
       slotProps={{
         input: {
-          ...params.InputProps,
-          // eslint-disable-next-line @typescript-eslint/no-misused-spread
+          ...InputProps,
           ...slotProps.input,
         },
+        htmlInput: inputPropsWithoutValue,
       }}
       placeholder="Search for location"
       onChange={e => {
