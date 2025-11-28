@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.7.0",
+    "@jbrowse/product-core": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "@types/file-saver-es": "^2.0.1",

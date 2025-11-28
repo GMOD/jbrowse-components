@@ -39,11 +39,11 @@
     "@jbrowse/core": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
+    "@mui/x-data-grid": "^8.20.0",
     "date-fns": "^4.1.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "pluralize": "^8.0.0",
     "react-dropzone": "^14.2.1",
     "tss-react": "^4.0.0"
   },

@@ -709,9 +709,8 @@ export default function MultiVariantBaseModelF(
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { setupMultiVariantAutoruns } = await import(
-              './setupMultiVariantAutoruns'
-            )
+            const { setupMultiVariantAutoruns } =
+              await import('./setupMultiVariantAutoruns')
             setupMultiVariantAutoruns(self)
           } catch (e) {
             if (isAlive(self)) {

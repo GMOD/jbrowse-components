@@ -43,9 +43,9 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
   ? never
   : SCHEMA extends ConfigurationSchemaType<infer D, any>
     ? // this provides the ability to type check names in the config readConfObject usage
-      // it is not commonly used but retained for now with this lint ignore
-      // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-      | (keyof D & string)
+        // it is not commonly used but retained for now with this lint ignore
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+        | (keyof D & string)
         | GetExplicitIdentifier<SCHEMA>
         | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
             ? ConfigurationSlotName<GetBase<SCHEMA>>

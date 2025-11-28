@@ -28,8 +28,7 @@ export interface RenderArgs extends ServerSideRenderArgs {
   regions: Region[]
 }
 
-export interface RenderArgsDeserialized
-  extends ServerSideRenderArgsDeserialized {
+export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized {
   regions: Region[]
   dataAdapter: HicDataAdapter
   bpPerPx: number
@@ -39,8 +38,7 @@ export interface RenderArgsDeserialized
   displayHeight?: number
 }
 
-export interface RenderArgsDeserializedWithFeatures
-  extends RenderArgsDeserialized {
+export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: HicFeature[]
   statusCallback?: (arg: string) => void
 }

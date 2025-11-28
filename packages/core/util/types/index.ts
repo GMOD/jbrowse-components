@@ -29,8 +29,9 @@ import type {
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer
-  extends IStateTreeNode<IType<any, any, any>> {
+export interface AbstractViewContainer extends IStateTreeNode<
+  IType<any, any, any>
+> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
@@ -268,8 +269,7 @@ export function isSelectionContainer(
 }
 
 /** abstract interface for a session allows applying focus to views and widgets */
-export interface SessionWithFocusedViewAndDrawerWidgets
-  extends SessionWithDrawerWidgets {
+export interface SessionWithFocusedViewAndDrawerWidgets extends SessionWithDrawerWidgets {
   focusedViewId: string | undefined
   setFocusedViewId(id: string): void
 }
@@ -411,8 +411,9 @@ export function isAbstractMenuManager(
 // Empty interfaces required by mobx-state-tree
 // See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface NoAssemblyRegion
-  extends SnapshotIn<typeof MUNoAssemblyRegion> {}
+export interface NoAssemblyRegion extends SnapshotIn<
+  typeof MUNoAssemblyRegion
+> {}
 
 /**
  * a description of a specific genomic region. assemblyName, refName, start,
@@ -426,8 +427,9 @@ export interface AugmentedRegion extends Region {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface LocalPathLocation
-  extends SnapshotIn<typeof MULocalPathLocation> {}
+export interface LocalPathLocation extends SnapshotIn<
+  typeof MULocalPathLocation
+> {}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}

@@ -299,9 +299,8 @@ function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { getQuantitativeStatsAutorun } = await import(
-              '../getQuantitativeStatsAutorun'
-            )
+            const { getQuantitativeStatsAutorun } =
+              await import('../getQuantitativeStatsAutorun')
             getQuantitativeStatsAutorun(self)
           })()
         },
