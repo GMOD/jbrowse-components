@@ -609,7 +609,7 @@ function stateModelFactory() {
       return { heightPreConfig: height, ...rest }
     })
     .postProcessSnapshot(snap => {
-      // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       const r = snap as Omit<typeof snap, symbol>
       const { blockState, ...rest } = r
       return rest

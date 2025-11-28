@@ -146,7 +146,7 @@ export default function stateModelFactory() {
       const { importWizard, spreadsheet } = snap
       if (importWizard.cachedFileLocation && spreadsheet) {
         // don't serialize spreadsheet rows if we have the importForm
-        // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
+        // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
         const { rowSet, ...rest } = spreadsheet as Omit<
           typeof spreadsheet,
           symbol

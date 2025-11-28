@@ -43,7 +43,7 @@ export default class PileupRenderer extends BoxRendererType {
     const bpExpansion = showSoftClip ? Math.round(maxClippingSize) : 0
 
     return {
-      // xref https://github.com/mobxjs/@jbrowse/mobx-state-tree/issues/1524 for Omit
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       ...(region as Omit<typeof region, symbol>),
       start: Math.floor(Math.max(start - bpExpansion, 0)),
       end: Math.ceil(end + bpExpansion),

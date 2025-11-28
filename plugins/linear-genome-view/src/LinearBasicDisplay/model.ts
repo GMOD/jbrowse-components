@@ -74,11 +74,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        trackShowSubfeatureLabels: types.maybe(types.boolean),
+        trackSubfeatureLabels: types.maybe(types.string),
         /**
          * #property
          */
-        trackSubfeatureLabelPosition: types.maybe(types.string),
+        trackGeneGlyphMode: types.maybe(types.string),
         /**
          * #property
          */
@@ -152,20 +152,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get showSubfeatureLabels() {
+      get subfeatureLabels() {
         return (
-          self.trackShowSubfeatureLabels ??
-          getConf(self, ['renderer', 'showSubfeatureLabels'])
+          self.trackSubfeatureLabels ??
+          getConf(self, ['renderer', 'subfeatureLabels'])
         )
       },
 
       /**
        * #getter
        */
-      get subfeatureLabelPosition() {
+      get geneGlyphMode() {
         return (
-          self.trackSubfeatureLabelPosition ??
-          getConf(self, ['renderer', 'subfeatureLabelPosition'])
+          self.trackGeneGlyphMode ??
+          getConf(self, ['renderer', 'geneGlyphMode'])
         )
       },
     }))
@@ -182,10 +182,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...config,
             showLabels: self.showLabels,
             showDescriptions: self.showDescriptions,
-            showSubfeatureLabels: self.showSubfeatureLabels,
-            subfeatureLabelPosition: self.subfeatureLabelPosition,
+            subfeatureLabels: self.subfeatureLabels,
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
+            geneGlyphMode: self.geneGlyphMode,
           },
           getEnv(self),
         )
@@ -220,14 +220,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      toggleShowSubfeatureLabels() {
-        self.trackShowSubfeatureLabels = !self.showSubfeatureLabels
-      },
-      /**
-       * #action
-       */
-      setSubfeatureLabelPosition(val: string) {
-        self.trackSubfeatureLabelPosition = val
+      setSubfeatureLabels(val: string) {
+        self.trackSubfeatureLabels = val
       },
       /**
        * #action
@@ -240,6 +234,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMaxHeight(val?: number) {
         self.trackMaxHeight = val
+      },
+      /**
+       * #action
+       */
+      setGeneGlyphMode(val: string) {
+        self.trackGeneGlyphMode = val
       },
     }))
     .views(self => ({
@@ -256,6 +256,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
       return {
         /**
@@ -294,8 +295,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               filters: self.activeFilters,
             }),
             sequenceAdapter,
-            // Override onFeatureClick to use CoreGetFeatureDetails This avoids
-            // heavy serialization overhead from webworker
+          }
+        },
+
+        /**
+         * #method
+         */
+        renderingProps() {
+          const superProps = superRenderingProps()
+          const session = getSession(self)
+          return {
+            ...superProps,
             async onFeatureClick(_: unknown, featureId?: string) {
               const { rpcManager } = session
               try {
@@ -324,7 +334,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 session.notifyError(`${e}`, e)
               }
             },
-            // Override onFeatureContextMenu to use CoreGetFeatureDetails
             async onFeatureContextMenu(_: unknown, featureId?: string) {
               const { rpcManager } = session
               try {
@@ -383,21 +392,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: 'Show subfeature labels',
-                  type: 'checkbox',
-                  checked: self.showSubfeatureLabels,
-                  onClick: () => {
-                    self.toggleShowSubfeatureLabels()
-                  },
-                },
-                {
-                  label: 'Subfeature label position',
-                  subMenu: ['below', 'overlay'].map(val => ({
+                  label: 'Subfeature labels',
+                  subMenu: ['none', 'below', 'overlay'].map(val => ({
                     label: val,
                     type: 'radio' as const,
-                    checked: self.subfeatureLabelPosition === val,
+                    checked: self.subfeatureLabels === val,
                     onClick: () => {
-                      self.setSubfeatureLabelPosition(val)
+                      self.setSubfeatureLabels(val)
+                    },
+                  })),
+                },
+                {
+                  label: 'Gene glyph',
+                  subMenu: [
+                    { value: 'all', label: 'All transcripts' },
+                    { value: 'longest', label: 'Longest transcript' },
+                    {
+                      value: 'longestCoding',
+                      label: 'Longest coding transcript',
+                    },
+                  ].map(({ value, label }) => ({
+                    label,
+                    type: 'radio' as const,
+                    checked: self.geneGlyphMode === value,
+                    onClick: () => {
+                      self.setGeneGlyphMode(value)
                     },
                   })),
                 },
@@ -407,12 +426,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Display mode',
               icon: VisibilityIcon,
               subMenu: [
+                'normal',
                 'compact',
                 'reducedRepresentation',
-                'normal',
                 'collapse',
               ].map(val => ({
                 label: val,
+                type: 'radio' as const,
+                checked: self.displayMode === val,
                 onClick: () => {
                   self.setDisplayMode(val)
                 },
@@ -431,16 +452,39 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label: 'Edit filters',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  AddFiltersDialog,
-                  {
-                    model: self,
-                    handleClose,
+              label: 'Filters',
+              subMenu: [
+                {
+                  label: 'Show only genes',
+                  type: 'checkbox',
+                  checked: self.activeFilters.includes(
+                    "jexl:get(feature,'type')=='gene'",
+                  ),
+                  onClick: () => {
+                    const geneFilter = "jexl:get(feature,'type')=='gene'"
+                    const currentFilters = self.activeFilters
+                    if (currentFilters.includes(geneFilter)) {
+                      self.setJexlFilters(
+                        currentFilters.filter((f: string) => f !== geneFilter),
+                      )
+                    } else {
+                      self.setJexlFilters([...currentFilters, geneFilter])
+                    }
                   },
-                ])
-              },
+                },
+                {
+                  label: 'Edit filters...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      AddFiltersDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+              ],
             },
           ]
         },

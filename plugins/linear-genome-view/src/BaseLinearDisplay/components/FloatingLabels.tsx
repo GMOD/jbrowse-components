@@ -69,7 +69,6 @@ interface FeatureLabelData {
   topPx: number
   totalFeatureHeight: number
   floatingLabels: FloatingLabelData[]
-  totalLayoutWidth?: number
 }
 
 function deduplicateFeatureLabels(
@@ -93,7 +92,6 @@ function deduplicateFeatureLabels(
       refName = '',
       floatingLabels,
       totalFeatureHeight,
-      totalLayoutWidth,
       actualTopPx,
     } = feature
 
@@ -125,7 +123,6 @@ function deduplicateFeatureLabels(
         topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
-        totalLayoutWidth,
       })
     }
   }
@@ -136,7 +133,7 @@ function deduplicateFeatureLabels(
 // Data stored per label element for fast offset updates
 interface LabelPositionData {
   featureLeftPx: number
-  effectiveRightPx: number
+  featureRightPx: number
   labelWidth: number
   y: number
   lastX?: number
@@ -182,41 +179,31 @@ function FloatingLabels({
 
         for (const [
           key,
-          {
-            leftPx,
-            rightPx,
-            topPx,
-            totalFeatureHeight,
-            floatingLabels,
-            totalLayoutWidth,
-          },
+          { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels },
         ] of featureLabels.entries()) {
           const featureVisualBottom = topPx + totalFeatureHeight
+          const featureWidth = rightPx - leftPx
 
           for (let i = 0, l = floatingLabels.length; i < l; i++) {
             const floatingLabel = floatingLabels[i]!
             const { text, relativeY, color, isOverlay } = floatingLabel
 
             const labelWidth = measureText(text, fontSize)
-            const layoutWidth = totalLayoutWidth ?? rightPx - leftPx
-            if (labelWidth > layoutWidth) {
+            if (labelWidth > featureWidth) {
               continue
             }
 
             const featureVisualLeftPx = leftPx
-            const effectiveRightPx =
-              totalLayoutWidth !== undefined
-                ? featureVisualLeftPx + totalLayoutWidth
-                : rightPx
             const y = featureVisualBottom + relativeY
 
             const labelKey = `${key}-${i}`
             newKeys.add(labelKey)
 
             // Store position data for fast offset updates
+            // Use rightPx (actual feature bounds) to constrain labels within feature width
             labelPositions.set(labelKey, {
               featureLeftPx: featureVisualLeftPx,
-              effectiveRightPx,
+              featureRightPx: rightPx,
               labelWidth,
               y,
             })
@@ -252,7 +239,7 @@ function FloatingLabels({
             // Use untracked to avoid this autorun re-running on offsetPx changes
             const offsetPx = untracked(() => view.offsetPx)
             const naturalX = featureVisualLeftPx - offsetPx
-            const maxX = effectiveRightPx - offsetPx - labelWidth
+            const maxX = rightPx - offsetPx - labelWidth
             const x = clamp(0, naturalX, maxX)
             element.style.transform = `translate(${x}px, ${y}px)`
           }
@@ -285,9 +272,9 @@ function FloatingLabels({
             continue
           }
 
-          const { featureLeftPx, effectiveRightPx, labelWidth, y } = pos
+          const { featureLeftPx, featureRightPx, labelWidth, y } = pos
           const naturalX = featureLeftPx - offsetPx
-          const maxX = effectiveRightPx - offsetPx - labelWidth
+          const maxX = featureRightPx - offsetPx - labelWidth
           const x = clamp(0, naturalX, maxX)
 
           // Only update DOM if x position changed
@@ -311,6 +298,7 @@ function FloatingLabels({
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
+        zIndex: 5,
       }}
     />
   )
