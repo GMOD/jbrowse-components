@@ -6,6 +6,27 @@ export interface ParsedLocString {
   reversed?: boolean
 }
 
+// matches coordinate strings: "100", "100-200", "100..200", "100.." (open-ended)
+// groups: [1]=start [2]=end (if range) [3]=trailing separator (if open-ended)
+const COORD_REGEX = /^(-?\d+)(?:(?:\.\.|[-–])(-?\d+))?(\.\.|[-–])?$/
+
+// matches optional "{assemblyName}" prefix followed by the rest of the location
+// groups: [1]=assemblyName (without braces) [2]=remainder
+const ASSEMBLY_REGEX = /^(?:\{([^}]+)\})?(.+)/
+
+function parseCoords(suffix: string, locString: string) {
+  // strip commas before matching so regex only needs to handle plain digits
+  const match = COORD_REGEX.exec(suffix.replaceAll(',', ''))
+  if (!match) {
+    throw new Error(
+      `could not parse range "${suffix}" on location "${locString}"`,
+    )
+  }
+  const [, startStr, endStr, trailing] = match
+  const start = +startStr!
+  return { start, end: endStr ? +endStr : trailing ? undefined : start }
+}
+
 export function parseLocStringOneBased(
   locString: string,
   isValidRefName: (refName: string, assemblyName?: string) => boolean,
@@ -13,142 +34,63 @@ export function parseLocStringOneBased(
   if (!locString) {
     throw new Error('no location string provided, could not parse')
   }
+
+  // handle reverse strand notation e.g. "chr1:1-100[rev]"
   let reversed = false
   if (locString.endsWith('[rev]')) {
     reversed = true
-    locString = locString.replace(/\[rev]$/, '')
+    locString = locString.slice(0, -5)
   }
-  // remove any whitespace
-  locString = locString.replace(/\s/, '')
-  // refNames can have colons, refer to
-  // https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
-  const assemblyMatch = /^(?:\{([^}]+)\})?(.+)/.exec(locString)
+  locString = locString.replaceAll(/\s/g, '')
+
+  // extract optional assembly name in braces e.g. "{hg19}chr1:1-100"
+  const assemblyMatch = ASSEMBLY_REGEX.exec(locString)
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
   }
-  const [, assemblyName2, location2] = assemblyMatch
-  const assemblyName = assemblyName2!
-  const location = location2!
-  if (!assemblyName && location.startsWith('{}')) {
+
+  const [, assemblyName, location] = assemblyMatch
+  // reject empty braces e.g. "{}chr1:1-100"
+  if (!assemblyName && location!.startsWith('{}')) {
     throw new Error(`no assembly name was provided in location "${location}"`)
   }
-  const lastColonIdx = location.lastIndexOf(':')
+
+  // refNames can contain colons (see SAM spec), so find the last colon to split
+  const lastColonIdx = location!.lastIndexOf(':')
+  // no colon means just a refName with no coordinates e.g. "chr1"
   if (lastColonIdx === -1) {
-    if (isValidRefName(location, assemblyName)) {
-      return {
-        assemblyName,
-        refName: location,
-        reversed,
-      }
+    if (isValidRefName(location!, assemblyName)) {
+      return { assemblyName, refName: location!, reversed }
     }
     throw new Error(`Unknown reference sequence "${location}"`)
   }
-  const prefix = location.slice(0, lastColonIdx)
-  const suffix = location.slice(lastColonIdx + 1)
-  if (
-    isValidRefName(prefix, assemblyName) &&
-    isValidRefName(location, assemblyName)
-  ) {
+
+  // split into refName (prefix) and coordinate part (suffix) at the last colon
+  const prefix = location!.slice(0, lastColonIdx)
+  const suffix = location!.slice(lastColonIdx + 1)
+  const prefixValid = isValidRefName(prefix, assemblyName)
+  const locationValid = isValidRefName(location!, assemblyName)
+
+  // both interpretations valid is ambiguous e.g. refName "chr1:1" and "chr1" both exist
+  if (prefixValid && locationValid) {
     throw new Error(`ambiguous location string: "${locString}"`)
-  } else if (isValidRefName(prefix, assemblyName)) {
-    if (suffix) {
-      // see if it's a range
-      const rangeMatch =
-        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/.exec(
-          suffix,
-        )
-      // see if it's a single point
-      const singleMatch = /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/.exec(suffix)
-      if (rangeMatch) {
-        const [, start, , , , end] = rangeMatch
-        if (start !== undefined && end !== undefined) {
-          return {
-            assemblyName,
-            refName: prefix,
-            start: +start.replaceAll(',', ''),
-            end: +end.replaceAll(',', ''),
-            reversed,
-          }
-        }
-      } else if (singleMatch) {
-        const [, start, , , separator] = singleMatch
-        if (start !== undefined) {
-          if (separator) {
-            // indefinite end
-            return {
-              assemblyName,
-              refName: prefix,
-              start: +start.replaceAll(',', ''),
-              reversed,
-            }
-          }
-          return {
-            assemblyName,
-            refName: prefix,
-            start: +start.replaceAll(',', ''),
-            end: +start.replaceAll(',', ''),
-            reversed,
-          }
-        }
-      } else {
-        throw new Error(
-          `could not parse range "${suffix}" on location "${locString}"`,
-        )
-      }
-    } else {
-      return {
-        assemblyName,
-        refName: prefix,
-        reversed,
-      }
+  }
+  // the colon is part of the refName, not a coordinate separator
+  if (locationValid) {
+    return { assemblyName, refName: location!, reversed }
+  }
+  // standard case: prefix is refName, suffix is coordinates
+  if (prefixValid) {
+    // colon with no suffix means just refName e.g. "chr1:"
+    if (!suffix) {
+      return { assemblyName, refName: prefix, reversed }
     }
-  } else if (isValidRefName(location, assemblyName)) {
-    return {
-      assemblyName,
-      refName: location,
-      reversed,
-    }
+    const coords = parseCoords(suffix, locString)
+    return { assemblyName, refName: prefix, reversed, ...coords }
   }
   throw new Error(`unknown reference sequence name in location "${locString}"`)
 }
 
-/**
- * Parse a 1-based location string into an interbase genomic location
- * @param locString - Location string
- * @param isValidRefName - Function that checks if a refName exists in the set
- * of all known refNames, or in the set of refNames for an assembly if
- * assemblyName is given
- * @example
- * ```ts
- * parseLocString('chr1:1..100', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0, end: 100 }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1:1-100', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0, end: 100 }
- * ```
- * @example
- * ```ts
- * parseLocString(`{hg19}chr1:1..100`, isValidRefName)
- * // ↳ { assemblyName: 'hg19', refName: 'chr1', start: 0, end: 100 }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1', isValidRefName)
- * // ↳ { refName: 'chr1' }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1:1', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0, end: 1 }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1:1..', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0}
- * ```
- */
 export function parseLocString(
   locString: string,
   isValidRefName: (refName: string, assemblyName?: string) => boolean,

@@ -307,6 +307,15 @@ describe('parseLocString - edge cases and functional behavior changes', () => {
     expect(result.end).toBe(200)
   })
 
+  test('handles commas in refName', () => {
+    const validRefNameWithComma = (refName: string) =>
+      ['chr1,2', 'chr1'].includes(refName)
+    const result = parseLocString('chr1,2:100..200', validRefNameWithComma)
+    expect(result.refName).toBe('chr1,2')
+    expect(result.start).toBe(99)
+    expect(result.end).toBe(200)
+  })
+
   test('anchored regex requires match from start', () => {
     // Old regex had no anchor, new one has ^
     // Both should work the same since we're using .exec() on the full string

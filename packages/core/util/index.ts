@@ -16,6 +16,7 @@ import { createRoot } from 'react-dom/client'
 
 import { coarseStripHTML } from './coarseStripHTML'
 import { colord } from './colord'
+import { parseLocString } from './locString'
 import { checkStopToken } from './stopToken'
 import {
   isDisplayModel,
@@ -25,6 +26,7 @@ import {
   isViewModel,
 } from './types'
 
+import type { ParsedLocString } from './locString'
 import type PluginManager from '../PluginManager'
 import type { BaseBlock } from './blockTypes'
 import type { Feature } from './simpleFeature'
@@ -353,13 +355,6 @@ export function assembleLocStringFast(
   }
   return `${assemblyNameString}${refName}${startString}${endString}${rev}`
 }
-
-export {
-  type ParsedLocString,
-  parseLocString,
-  parseLocStringOneBased,
-} from './locString'
-
 export function compareLocs(locA: ParsedLocString, locB: ParsedLocString) {
   const assemblyComp =
     locA.assemblyName || locB.assemblyName
@@ -1401,3 +1396,4 @@ export { blobToDataURL } from './blobToDataURL'
 export { makeAbortableReaction } from './makeAbortableReaction'
 export * from './aborting'
 export * from './linkify'
+export * from './locString'
