@@ -66,6 +66,9 @@ export interface FlatbushItem {
   rightPx: number
   topPx: number
   bottomPx: number
+  label?: string
+  description?: string
+  mouseOver?: string
 }
 
 export interface SubfeatureInfo {

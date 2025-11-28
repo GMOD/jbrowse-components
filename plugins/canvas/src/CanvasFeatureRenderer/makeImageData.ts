@@ -16,16 +16,28 @@ import type {
   RenderArgs,
   SubfeatureInfo,
 } from './types'
-/**
- * Render features to a canvas context and return spatial index data
- */
+
+function buildFlatbush(coords: number[], count: number) {
+  const fb = new Flatbush(Math.max(count, 1))
+  if (coords.length) {
+    for (let i = 0; i < coords.length; i += 4) {
+      fb.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+    }
+  } else {
+    fb.add(0, 0, 0, 0)
+  }
+  fb.finish()
+  return fb
+}
 export function makeImageData({
   ctx,
   layoutRecords,
+  canvasWidth,
   renderArgs,
 }: {
   ctx: CanvasRenderingContext2D
   layoutRecords: LayoutRecord[]
+  canvasWidth: number
   renderArgs: RenderArgs
 }) {
   const {
@@ -40,7 +52,6 @@ export function makeImageData({
   } = renderArgs
   const region = regions[0]!
   const theme = createJBrowseTheme(configTheme)
-  const canvasWidth = (region.end - region.start) / bpPerPx
 
   const coords: number[] = []
   const items: FlatbushItem[] = []
@@ -129,6 +140,15 @@ export function makeImageData({
     const rightPx = adjustedLayout.x + adjustedLayout.totalLayoutWidth
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight // Use totalLayoutHeight to include labels
+
+    const label = String(
+      readConfObject(config, ['labels', 'name'], { feature }) || '',
+    )
+    const description = String(
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    )
+    const mouseOver = feature.get('_mouseOver') as string | undefined
+
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({
       featureId: feature.id(),
@@ -139,6 +159,9 @@ export function makeImageData({
       rightPx,
       topPx,
       bottomPx,
+      label: label || undefined,
+      description: description || undefined,
+      mouseOver,
     })
 
     // If it's a gene with transcript children, also add subfeature info to secondary flatbush
@@ -160,42 +183,15 @@ export function makeImageData({
       addNestedSubfeaturesToLayout({
         layout,
         featureLayout: adjustedLayout,
-        config,
       })
     }
   })
 
-  // Create primary spatial index (for highlighting)
-  const flatbush = new Flatbush(Math.max(items.length, 1))
-  if (coords.length) {
-    for (let i = 0; i < coords.length; i += 4) {
-      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
-    }
-  } else {
-    flatbush.add(0, 0, 0, 0)
-  }
-  flatbush.finish()
-
-  // Create secondary spatial index (for subfeature info)
-  const subfeatureFlatbush = new Flatbush(Math.max(subfeatureInfos.length, 1))
-  if (subfeatureCoords.length) {
-    for (let i = 0; i < subfeatureCoords.length; i += 4) {
-      subfeatureFlatbush.add(
-        subfeatureCoords[i]!,
-        subfeatureCoords[i + 1]!,
-        subfeatureCoords[i + 2],
-        subfeatureCoords[i + 3],
-      )
-    }
-  } else {
-    subfeatureFlatbush.add(0, 0, 0, 0)
-  }
-  subfeatureFlatbush.finish()
-
   return {
-    flatbush: flatbush.data,
+    flatbush: buildFlatbush(coords, items.length).data,
     items,
-    subfeatureFlatbush: subfeatureFlatbush.data,
+    subfeatureFlatbush: buildFlatbush(subfeatureCoords, subfeatureInfos.length)
+      .data,
     subfeatureInfos,
   }
 }

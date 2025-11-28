@@ -58,6 +58,7 @@ export async function doAll({
       makeImageData({
         ctx,
         layoutRecords,
+        canvasWidth: width,
         renderArgs: {
           ...renderProps,
           features,

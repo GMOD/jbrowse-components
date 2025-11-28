@@ -6,52 +6,28 @@ import { chooseGlyphType } from './util'
 
 import type { DrawFeatureArgs, DrawingResult } from './types'
 
-/**
- * Draw a processed transcript feature (special handling for CDS/UTR subfeatures)
- */
-export function drawProcessedTranscript(args: DrawFeatureArgs): DrawingResult {
-  const {
-    featureLayout,
-    peptideDataMap,
-    colorByCDS,
-    color1,
-    color3,
-    isColor1Callback,
-    isColor3Callback,
-  } = args
+// accumulates coords/items from child features into the parent's result for flatbush indexing
+function mergeResults(target: DrawingResult, source: DrawingResult) {
+  target.coords.push(...source.coords)
+  target.items.push(...source.items)
+}
 
-  // Draw the connecting line
+function drawChildFeatures(args: DrawFeatureArgs): DrawingResult {
   const result = drawSegments(args)
-
-  // Draw subfeatures
-  for (const childLayout of featureLayout.children) {
-    const subResult = drawFeature({
-      ...args,
-      feature: childLayout.feature,
-      featureLayout: childLayout,
-      topLevel: false,
-      peptideDataMap,
-      colorByCDS,
-      color1,
-      color3,
-      isColor1Callback,
-      isColor3Callback,
-    })
-    for (const c of subResult.coords) {
-      result.coords.push(c)
-    }
-    for (const item of subResult.items) {
-      result.items.push(item)
-    }
+  for (const childLayout of args.featureLayout.children) {
+    mergeResults(
+      result,
+      drawFeature({
+        ...args,
+        feature: childLayout.feature,
+        featureLayout: childLayout,
+        topLevel: false,
+      }),
+    )
   }
-
   return result
 }
 
-/**
- * Draw a feature based on its glyph type, dispatching to the appropriate
- * drawing function
- */
 export function drawFeature(args: DrawFeatureArgs): DrawingResult {
   const { feature, config, topLevel, featureLayout } = args
   const glyphType = chooseGlyphType({ feature, config })
@@ -60,55 +36,25 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
 
   switch (glyphType) {
     case 'ProcessedTranscript':
-      result = drawProcessedTranscript(args)
+    case 'Segments':
+      result = drawChildFeatures(args)
       break
-    case 'Segments': {
-      // Draw the connecting line
-      result = drawSegments(args)
-      // Draw subfeatures
-      for (const childLayout of featureLayout.children) {
-        const subResult = drawFeature({
-          ...args,
-          feature: childLayout.feature,
-          featureLayout: childLayout,
-          topLevel: false,
-          peptideDataMap: args.peptideDataMap,
-          colorByCDS: args.colorByCDS,
-        })
-        for (const c of subResult.coords) {
-          result.coords.push(c)
-        }
-        for (const item of subResult.items) {
-          result.items.push(item)
-        }
-      }
-      break
-    }
     case 'CDS':
-      // Draw CDS with optional peptide rendering
       result = drawCDS(args)
       break
     case 'Subfeatures': {
-      // Draw subfeatures vertically offset
-      const coords: number[] = []
-      const items = []
+      result = { coords: [], items: [] }
       for (const childLayout of featureLayout.children) {
-        const subResult = drawFeature({
-          ...args,
-          feature: childLayout.feature,
-          featureLayout: childLayout,
-          topLevel: false,
-          peptideDataMap: args.peptideDataMap,
-          colorByCDS: args.colorByCDS,
-        })
-        for (const c of subResult.coords) {
-          coords.push(c)
-        }
-        for (const item of subResult.items) {
-          items.push(item)
-        }
+        mergeResults(
+          result,
+          drawFeature({
+            ...args,
+            feature: childLayout.feature,
+            featureLayout: childLayout,
+            topLevel: false,
+          }),
+        )
       }
-      result = { coords, items }
       break
     }
     default:
@@ -116,15 +62,8 @@ export function drawFeature(args: DrawFeatureArgs): DrawingResult {
       break
   }
 
-  // Draw arrow for top-level features (but not for containers like genes)
   if (topLevel && glyphType !== 'Subfeatures') {
-    const arrowResult = drawArrow(args)
-    for (const c of arrowResult.coords) {
-      result.coords.push(c)
-    }
-    for (const item of arrowResult.items) {
-      result.items.push(item)
-    }
+    mergeResults(result, drawArrow(args))
   }
 
   return result

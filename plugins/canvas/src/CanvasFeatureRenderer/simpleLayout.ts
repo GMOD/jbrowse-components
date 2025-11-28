@@ -11,22 +11,14 @@ import type { Feature } from '@jbrowse/core/util'
 // Padding between transcripts in pixels
 const TRANSCRIPT_PADDING = 2
 
-// Types that indicate a coding transcript
 const CODING_TYPES = new Set(['CDS', 'cds'])
 
 function hasCodingSubfeature(feature: Feature): boolean {
   const subfeatures = feature.get('subfeatures') || []
-  for (const sub of subfeatures) {
-    const type = sub.get('type')
-    if (CODING_TYPES.has(type)) {
-      return true
-    }
-    // Check nested subfeatures (e.g., CDS inside exon)
-    if (hasCodingSubfeature(sub)) {
-      return true
-    }
-  }
-  return false
+  return subfeatures.some(
+    (sub: Feature) =>
+      CODING_TYPES.has(sub.get('type')) || hasCodingSubfeature(sub),
+  )
 }
 
 /**

@@ -60,7 +60,7 @@ export function addSubfeaturesToLayoutAndFlatbush({
     // Only add transcript-type children to secondary flatbush
     if (!isTranscript) {
       // Non-transcript children just get stored in layout
-      addNestedSubfeaturesToLayout({ layout, featureLayout: child, config })
+      addNestedSubfeaturesToLayout({ layout, featureLayout: child })
       continue
     }
 
@@ -127,7 +127,7 @@ export function addSubfeaturesToLayoutAndFlatbush({
 
     // Store layout/feature data for nested children (CDS, UTR, exons)
     if (child.children.length > 0) {
-      addNestedSubfeaturesToLayout({ layout, featureLayout: child, config })
+      addNestedSubfeaturesToLayout({ layout, featureLayout: child })
     }
   }
 }
@@ -141,11 +141,9 @@ export function addSubfeaturesToLayoutAndFlatbush({
 export function addNestedSubfeaturesToLayout({
   layout,
   featureLayout,
-  config,
 }: {
   layout: BaseLayout<unknown>
   featureLayout: FeatureLayout
-  config: AnyConfigurationModel
 }) {
   for (const child of featureLayout.children) {
     const childFeature = child.feature
@@ -164,7 +162,7 @@ export function addNestedSubfeaturesToLayout({
     )
 
     if (child.children.length > 0) {
-      addNestedSubfeaturesToLayout({ layout, featureLayout: child, config })
+      addNestedSubfeaturesToLayout({ layout, featureLayout: child })
     }
   }
 }

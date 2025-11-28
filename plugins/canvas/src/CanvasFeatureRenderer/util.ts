@@ -2,15 +2,15 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getFrame } from '@jbrowse/core/util'
 
 import type { GlyphType } from './types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { Theme } from '@mui/material'
 
 const MAX_LABEL_LENGTH = 50
 
 export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
 }
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
-import type { Theme } from '@mui/material'
 
 /**
  * Determines if a feature is an untranslated region (UTR)
