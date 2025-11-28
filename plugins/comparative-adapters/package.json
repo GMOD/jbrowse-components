@@ -38,12 +38,12 @@
   "dependencies": {
     "@gmod/tabix": "^3.0.1",
     "@jbrowse/core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.5",
     "@jbrowse/plugin-alignments": "^3.7.0",
     "@mui/material": "^7.0.0",
     "generic-filehandle2": "^2.0.1",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
     "rxjs": "^7.0.0"
   },
   "peerDependencies": {

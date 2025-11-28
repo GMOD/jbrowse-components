@@ -41,7 +41,7 @@
     "@jbrowse/core": "^3.7.0",
     "gff-nostream": "^2.0.0",
     "mobx": "^6.0.0",
-    "mobx-state-tree": "^5.0.0",
+    "@jbrowse/mobx-state-tree": "^5.0.0",
     "rxjs": "^7.0.0"
   },
   "publishConfig": {

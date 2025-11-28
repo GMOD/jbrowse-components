@@ -8,6 +8,27 @@ import {
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
+function getMateInfo(feature: Feature, alt: string | undefined) {
+  const bnd = alt ? parseBreakend(alt) : undefined
+
+  if (alt === '<TRA>') {
+    const info = feature.get('INFO')
+    return { mateRefName: info.CHR2[0], matePos: info.END[0] - 1 }
+  }
+
+  if (bnd?.MatePosition) {
+    const [ref, pos] = bnd.MatePosition.split(':')
+    return { mateRefName: ref!, matePos: +pos! - 1 }
+  }
+
+  const mate = feature.get('mate')
+  if (mate) {
+    return { mateRefName: mate.refName, matePos: mate.start }
+  }
+
+  return { mateRefName: feature.get('refName'), matePos: feature.get('end') }
+}
+
 export default class BreakpointSplitViewType extends ViewType {
   getBreakendCoveringRegions({
     feature,
@@ -16,43 +37,17 @@ export default class BreakpointSplitViewType extends ViewType {
     feature: Feature
     assembly: Assembly
   }) {
+    const canonicalize = (ref: string) =>
+      assembly.getCanonicalRefName(ref) || ref
     const alt = feature.get('ALT')?.[0]
-    const bnd = alt ? parseBreakend(alt) : undefined
-    const startPos = feature.get('start')
     const refName = feature.get('refName')
-    const f = (ref: string) => assembly.getCanonicalRefName(ref) || ref
+    const { mateRefName, matePos } = getMateInfo(feature, alt)
 
-    if (alt === '<TRA>') {
-      const INFO = feature.get('INFO')
-      return {
-        pos: startPos,
-        refName: f(refName),
-        mateRefName: f(INFO.CHR2[0]),
-        matePos: INFO.END[0] - 1,
-      }
-    } else if (bnd?.MatePosition) {
-      const matePosition = bnd.MatePosition.split(':')
-      return {
-        pos: startPos,
-        refName: f(refName),
-        mateRefName: f(matePosition[0]!),
-        matePos: +matePosition[1]! - 1,
-      }
-    } else if (feature.get('mate')) {
-      const mate = feature.get('mate')
-      return {
-        pos: startPos,
-        refName: f(refName),
-        mateRefName: f(mate.refName),
-        matePos: mate.start,
-      }
-    } else {
-      return {
-        pos: startPos,
-        refName: f(refName),
-        mateRefName: f(refName),
-        matePos: feature.get('end'),
-      }
+    return {
+      pos: feature.get('start'),
+      refName: canonicalize(refName),
+      mateRefName: canonicalize(mateRefName),
+      matePos,
     }
   }
 
@@ -73,13 +68,14 @@ export default class BreakpointSplitViewType extends ViewType {
     if (!assembly.regions) {
       throw new Error(`assembly ${assemblyName} regions not loaded`)
     }
-    const coverage = this.getBreakendCoveringRegions({
-      feature,
-      assembly,
-    })
+    const coverage = this.getBreakendCoveringRegions({ feature, assembly })
     const { refName, mateRefName } = coverage
-    const topRegion = assembly.regions.find(f => f.refName === refName)!
-    const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)!
+    const topRegion = assembly.regions.find(r => r.refName === refName)
+    const bottomRegion = assembly.regions.find(r => r.refName === mateRefName)
+    if (!topRegion || !bottomRegion) {
+      throw new Error(`could not find regions for ${refName} or ${mateRefName}`)
+    }
+    const featureName = feature.get('name') || feature.get('id') || 'breakend'
     return {
       coverage,
       snap: {
@@ -90,9 +86,7 @@ export default class BreakpointSplitViewType extends ViewType {
             displayedRegions: gatherOverlaps([topRegion, bottomRegion]),
           },
         ],
-        displayName: `${
-          feature.get('name') || feature.get('id') || 'breakend'
-        } split detail`,
+        displayName: `${featureName} split detail`,
       },
     }
   }

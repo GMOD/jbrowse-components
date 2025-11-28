@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 import { baseChordDisplayConfig } from '@jbrowse/plugin-circular-view'
-import { types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

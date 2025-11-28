@@ -1,4 +1,4 @@
-import { isAlive, isStateTreeNode } from 'mobx-state-tree'
+import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { readConfObject } from '../configuration'
 import { clamp } from '../util'

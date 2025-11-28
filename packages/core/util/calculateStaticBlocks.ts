@@ -1,4 +1,4 @@
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { assembleLocStringFast } from '.'
 import {
@@ -10,7 +10,7 @@ import {
 
 import type { Region } from './types'
 import type { Region as RegionModel } from './types/mst'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface Base1DViewModel {
   offsetPx: number

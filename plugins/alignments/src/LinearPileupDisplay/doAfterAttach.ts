@@ -4,7 +4,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun } from '../util'

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import type React from 'react'
 
-import { isStateTreeNode } from 'mobx-state-tree'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type {
   BlobLocation as MUBlobLocation,
@@ -17,14 +17,14 @@ import type { BaseInternetAccountModel } from '../../pluggableElementTypes/model
 import type RpcManager from '../../rpc/RpcManager'
 import type { MenuItem } from '../../ui'
 import type { Feature } from '../simpleFeature'
-import type { ThemeOptions } from '@mui/material'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   IType,
   Instance,
   SnapshotIn,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 export * from './util'
 
@@ -408,8 +408,8 @@ export function isAbstractMenuManager(
   )
 }
 
-// Empty interfaces required by mobx-state-tree
-// See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
+// Empty interfaces required by @jbrowse/mobx-state-tree
+// See https://@jbrowse/mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NoAssemblyRegion extends SnapshotIn<
   typeof MUNoAssemblyRegion

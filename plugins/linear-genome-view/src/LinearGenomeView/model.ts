@@ -26,6 +26,15 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import {
+  addDisposer,
+  cast,
+  getParent,
+  getRoot,
+  getSnapshot,
+  resolveIdentifier,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
@@ -37,15 +46,6 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import { autorun, transaction, when } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getRoot,
-  getSnapshot,
-  resolveIdentifier,
-  types,
-} from 'mobx-state-tree'
 
 import Header from './components/Header'
 import {
@@ -78,7 +78,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
 import type { Region, Region as IRegion } from '@jbrowse/core/util/types'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -1009,8 +1009,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         simView.moveTo(leftOffset, rightOffset)
 
         return simView.dynamicBlocks.contentBlocks.map(region => ({
-          // eslint-disable-next-line @typescript-eslint/no-misused-spread
-          ...region,
+          assemblyName: region.assemblyName,
+          refName: region.refName,
           start: Math.floor(region.start),
           end: Math.ceil(region.end),
         }))
@@ -1102,7 +1102,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.tracks.clear()
         // it is necessary to run these after setting displayed regions empty
         // or else model.offsetPx gets set to Infinity and breaks
-        // mobx-state-tree snapshot
+        // @jbrowse/mobx-state-tree snapshot
         self.scrollTo(0)
         self.zoomTo(10)
       },
@@ -1801,7 +1801,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               getSession(self).queueDialog(handleClose => [
                 GetSequenceDialog,
 
-                { model: self as any, handleClose },
+                { model: self, handleClose },
               ])
             },
           },

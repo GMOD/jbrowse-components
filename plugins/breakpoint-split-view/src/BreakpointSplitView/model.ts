@@ -2,10 +2,10 @@ import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
+import { addDisposer, getPath, onAction, types } from '@jbrowse/mobx-state-tree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
-import { addDisposer, getPath, onAction, types } from 'mobx-state-tree'
 
 import { getClip } from './getClip'
 import { calc, getBlockFeatures, intersect } from './util'
@@ -13,8 +13,8 @@ import { calc, getBlockFeatures, intersect } from './util'
 import type { ExportSvgOptions } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -120,7 +120,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       getMatchedTracks(trackConfigId: string) {
         return self.views
           .map(view => view.getTrack(trackConfigId))
-          .filter(f => !!f)
+          .filter(notEmpty)
       },
 
       /**
@@ -129,7 +129,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * a mate e.g. they are one sided
        */
       hasTranslocations(trackConfigId: string) {
-        return [...this.getTrackFeatures(trackConfigId).values()].find(
+        return [...this.getTrackFeatures(trackConfigId).values()].some(
           f => f.get('type') === 'translocation',
         )
       },
@@ -139,7 +139,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Paired features similar to breakends, but simpler, like BEDPE
        */
       hasPairedFeatures(trackConfigId: string) {
-        return [...this.getTrackFeatures(trackConfigId).values()].find(
+        return [...this.getTrackFeatures(trackConfigId).values()].some(
           f => f.get('type') === 'paired_feature',
         )
       },
@@ -161,7 +161,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
-        // use reverse to search the second track first
         const tracks = this.getMatchedTracks(trackConfigId)
         return features.map(c =>
           c
@@ -319,12 +318,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       menuItems() {
         return [
-          ...self.views
-            .map((view, idx) => [idx, view.menuItems()] as const)
-            .map(f => ({
-              label: `Row ${f[0] + 1} view menu`,
-              subMenu: f[1],
-            })),
+          ...self.views.map((view, idx) => ({
+            label: `Row ${idx + 1} view menu`,
+            subMenu: view.menuItems(),
+          })),
 
           ...(self.views.length > 1
             ? [

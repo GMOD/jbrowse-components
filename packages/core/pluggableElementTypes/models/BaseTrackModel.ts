@@ -1,9 +1,8 @@
 import { lazy } from 'react'
 
+import { getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
+import Save from '@mui/icons-material/Save'
 import { transaction } from 'mobx'
-import { getRoot, resolveIdentifier, types } from 'mobx-state-tree'
-
-import { Save } from '@mui/icons-material'
 
 import { ConfigurationReference, getConf } from '../../configuration'
 import { adapterConfigCacheKey } from '../../data_adapters/util'
@@ -20,7 +19,7 @@ import type {
   AnyConfigurationSchemaType,
 } from '../../configuration'
 import type { MenuItem } from '../../ui'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))

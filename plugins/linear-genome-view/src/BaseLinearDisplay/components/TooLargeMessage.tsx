@@ -1,6 +1,6 @@
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
 
 import BlockMsg from '../components/BlockMsg'
 

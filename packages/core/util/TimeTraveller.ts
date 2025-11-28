@@ -6,9 +6,9 @@ import {
   onSnapshot,
   resolvePath,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
-import type { IAnyStateTreeNode, IDisposer } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, IDisposer } from '@jbrowse/mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
 
@@ -98,6 +98,7 @@ const TimeTraveller = types
       undo() {
         self.undoIdx--
         skipNextUndoState = true
+
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (targetStore) {
           applySnapshot(targetStore, self.history[self.undoIdx])
@@ -105,6 +106,7 @@ const TimeTraveller = types
       },
       redo() {
         self.undoIdx++
+
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (targetStore) {
           applySnapshot(targetStore, self.history[self.undoIdx])
