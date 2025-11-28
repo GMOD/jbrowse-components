@@ -70,6 +70,7 @@ export const FileLocation = types.snapshotProcessor(
   {
     // @ts-expect-error
     preProcessor(snap) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return undefined
       }

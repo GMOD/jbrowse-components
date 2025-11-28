@@ -141,6 +141,7 @@ const ImportWizard = observer(function ({
             data-testid="open_spreadsheet"
             color="primary"
             onClick={() => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               model.import(selectedAssembly!)
             }}
           >

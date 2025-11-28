@@ -386,6 +386,7 @@ export function SharedLinearPileupDisplayMixin(
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: () => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.copyFeatureToClipboard(feat)
                   },
                 },
@@ -740,6 +741,7 @@ export function SharedLinearPileupDisplayMixin(
       },
     }))
     .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snap) {
         // @ts-expect-error
         const { colorBy, colorBySetting, filterBySetting, filterBy, ...rest } =

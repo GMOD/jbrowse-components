@@ -80,6 +80,7 @@ type MSTMap = Instance<ReturnType<typeof types.map>>
 export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
   // makes it work with session sharing
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (node === undefined) {
     return
   }

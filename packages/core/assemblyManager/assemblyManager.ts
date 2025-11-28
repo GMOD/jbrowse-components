@@ -144,7 +144,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
         )
         if (assembly.error) {
-          throw assembly.error
+          throw new Error(assembly.error)
         }
         return assembly
       },

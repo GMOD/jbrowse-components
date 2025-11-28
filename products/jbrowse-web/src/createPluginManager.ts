@@ -74,7 +74,7 @@ export function createPluginManager(
     try {
       const { sessionError, sessionSpec, sessionSnapshot, hubSpec } = model
       if (sessionError) {
-        throw sessionError
+        throw new Error(sessionError)
       } else if (sessionSnapshot) {
         rootModel.setSession(sessionSnapshot)
       } else if (hubSpec) {

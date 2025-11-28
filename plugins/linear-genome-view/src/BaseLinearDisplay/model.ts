@@ -439,6 +439,7 @@ function stateModelFactory() {
                 label: 'Copy info to clipboard',
                 icon: ContentCopyIcon,
                 onClick: () => {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   self.copyInfoToClipboard(feat)
                 },
               },
@@ -597,6 +598,7 @@ function stateModelFactory() {
       },
     }))
     .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }

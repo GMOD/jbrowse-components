@@ -1009,7 +1009,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         simView.moveTo(leftOffset, rightOffset)
 
         return simView.dynamicBlocks.contentBlocks.map(region => ({
-          ...region,
+          assemblyName: region.assemblyName,
+          refName: region.refName,
           start: Math.floor(region.start),
           end: Math.ceil(region.end),
         }))
@@ -1939,6 +1940,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
@@ -1952,6 +1954,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       } else {

@@ -149,6 +149,7 @@ export default function sessionModelFactory({
   return types.snapshotProcessor(extendedSessionModel, {
     // @ts-expect-error
     preProcessor(snapshot) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snapshot) {
         // @ts-expect-error
         const { connectionInstances, ...rest } = snapshot

@@ -352,6 +352,7 @@ function stateModelFactory(
       }
     })
     .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }

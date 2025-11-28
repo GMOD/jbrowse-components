@@ -453,6 +453,7 @@ export function BaseWebSession({
     preProcessor(snapshot) {
       // @ts-expect-error
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const { connectionInstances, ...rest } = snapshot || {}
 
       // connectionInstances schema changed from object to an array, so any old
