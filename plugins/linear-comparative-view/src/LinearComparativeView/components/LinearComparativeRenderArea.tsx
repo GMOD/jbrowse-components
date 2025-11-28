@@ -11,7 +11,10 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface TrackEntry {
   configuration: AnyConfigurationModel
-  displays: { height: number; RenderingComponent: React.FC<{ model: unknown }> }[]
+  displays: {
+    height: number
+    RenderingComponent: React.FC<{ model: unknown }>
+  }[]
 }
 
 const useStyles = makeStyles()({
