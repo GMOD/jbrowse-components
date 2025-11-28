@@ -48,8 +48,7 @@ export function layoutFeature(args: {
     transcriptTypes,
     showLabels,
     showDescriptions,
-    showSubfeatureLabels,
-    subfeatureLabelPosition,
+    subfeatureLabels,
     fontHeight,
     labelAllowed,
     geneGlyphMode,
@@ -130,9 +129,7 @@ export function layoutFeature(args: {
         })
         layout.children.push(childLayout)
         const useExtraHeightForLabels =
-          showSubfeatureLabels &&
-          isChildTranscript &&
-          subfeatureLabelPosition === 'below'
+          subfeatureLabels === 'below' && isChildTranscript
         const heightForStacking = useExtraHeightForLabels
           ? childLayout.totalLayoutHeight
           : childLayout.height
@@ -177,6 +174,7 @@ export function layoutFeature(args: {
     }
   }
 
+  const showSubfeatureLabels = subfeatureLabels !== 'none'
   const shouldCalculateLabels =
     labelAllowed && (!isNested || (isTranscriptChild && showSubfeatureLabels))
 
@@ -211,8 +209,7 @@ export function layoutFeature(args: {
       )
     }
 
-    const isOverlayMode =
-      isTranscriptChild && subfeatureLabelPosition === 'overlay'
+    const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
     if (!isOverlayMode) {
       layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
     }

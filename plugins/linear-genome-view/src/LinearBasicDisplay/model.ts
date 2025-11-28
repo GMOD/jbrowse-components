@@ -74,11 +74,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        trackShowSubfeatureLabels: types.maybe(types.boolean),
-        /**
-         * #property
-         */
-        trackSubfeatureLabelPosition: types.maybe(types.string),
+        trackSubfeatureLabels: types.maybe(types.string),
         /**
          * #property
          */
@@ -156,20 +152,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get showSubfeatureLabels() {
+      get subfeatureLabels() {
         return (
-          self.trackShowSubfeatureLabels ??
-          getConf(self, ['renderer', 'showSubfeatureLabels'])
-        )
-      },
-
-      /**
-       * #getter
-       */
-      get subfeatureLabelPosition() {
-        return (
-          self.trackSubfeatureLabelPosition ??
-          getConf(self, ['renderer', 'subfeatureLabelPosition'])
+          self.trackSubfeatureLabels ??
+          getConf(self, ['renderer', 'subfeatureLabels'])
         )
       },
 
@@ -196,8 +182,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...config,
             showLabels: self.showLabels,
             showDescriptions: self.showDescriptions,
-            showSubfeatureLabels: self.showSubfeatureLabels,
-            subfeatureLabelPosition: self.subfeatureLabelPosition,
+            subfeatureLabels: self.subfeatureLabels,
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
             geneGlyphMode: self.geneGlyphMode,
@@ -235,14 +220,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      toggleShowSubfeatureLabels() {
-        self.trackShowSubfeatureLabels = !self.showSubfeatureLabels
-      },
-      /**
-       * #action
-       */
-      setSubfeatureLabelPosition(val: string) {
-        self.trackSubfeatureLabelPosition = val
+      setSubfeatureLabels(val: string) {
+        self.trackSubfeatureLabels = val
       },
       /**
        * #action
@@ -413,21 +392,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: 'Show subfeature labels',
-                  type: 'checkbox',
-                  checked: self.showSubfeatureLabels,
-                  onClick: () => {
-                    self.toggleShowSubfeatureLabels()
-                  },
-                },
-                {
-                  label: 'Subfeature label position',
-                  subMenu: ['below', 'overlay'].map(val => ({
+                  label: 'Subfeature labels',
+                  subMenu: ['none', 'below', 'overlay'].map(val => ({
                     label: val,
                     type: 'radio' as const,
-                    checked: self.subfeatureLabelPosition === val,
+                    checked: self.subfeatureLabels === val,
                     onClick: () => {
-                      self.setSubfeatureLabelPosition(val)
+                      self.setSubfeatureLabels(val)
                     },
                   })),
                 },

@@ -27,8 +27,7 @@ export function addSubfeaturesToLayoutAndFlatbush({
   subfeatureCoords,
   subfeatureInfos,
   config,
-  showSubfeatureLabels,
-  subfeatureLabelPosition,
+  subfeatureLabels,
   transcriptTypes,
   labelColor,
 }: {
@@ -38,11 +37,11 @@ export function addSubfeaturesToLayoutAndFlatbush({
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
   config: AnyConfigurationModel
-  showSubfeatureLabels: boolean
-  subfeatureLabelPosition: string
+  subfeatureLabels: string
   transcriptTypes: string[]
   labelColor: string
 }) {
+  const showSubfeatureLabels = subfeatureLabels !== 'none'
   for (const child of featureLayout.children) {
     const childFeature = child.feature
     const childType = childFeature.get('type')
@@ -79,7 +78,7 @@ export function addSubfeaturesToLayoutAndFlatbush({
       const label = createTranscriptFloatingLabel({
         transcriptName,
         featureHeight: child.height,
-        subfeatureLabelPosition,
+        subfeatureLabels,
         color: labelColor,
       })
       if (label) {

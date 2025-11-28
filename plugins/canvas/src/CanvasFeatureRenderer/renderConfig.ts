@@ -26,8 +26,7 @@ export interface RenderConfigContext {
   displayMode: string
   showLabels: boolean
   showDescriptions: boolean
-  showSubfeatureLabels: boolean
-  subfeatureLabelPosition: string
+  subfeatureLabels: string
 
   transcriptTypes: string[]
   containerTypes: string[]
@@ -51,14 +50,7 @@ export function createRenderConfigContext(
   const displayMode = readConfObject(config, 'displayMode') as string
   const showLabels = readConfObject(config, 'showLabels') as boolean
   const showDescriptions = readConfObject(config, 'showDescriptions') as boolean
-  const showSubfeatureLabels = readConfObject(
-    config,
-    'showSubfeatureLabels',
-  ) as boolean
-  const subfeatureLabelPosition = readConfObject(
-    config,
-    'subfeatureLabelPosition',
-  ) as string
+  const subfeatureLabels = readConfObject(config, 'subfeatureLabels') as string
   const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
   const containerTypes = readConfObject(config, 'containerTypes') as string[]
   const geneGlyphMode = readConfObject(config, 'geneGlyphMode') as string
@@ -81,8 +73,7 @@ export function createRenderConfigContext(
     displayMode,
     showLabels,
     showDescriptions,
-    showSubfeatureLabels,
-    subfeatureLabelPosition,
+    subfeatureLabels,
     transcriptTypes,
     containerTypes,
     color1,

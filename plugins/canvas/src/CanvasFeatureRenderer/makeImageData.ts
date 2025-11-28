@@ -65,8 +65,7 @@ export function makeImageData({
   ctx.textBaseline = 'top'
   ctx.textAlign = 'left'
 
-  const { showSubfeatureLabels, subfeatureLabelPosition, transcriptTypes } =
-    configContext
+  const { subfeatureLabels, transcriptTypes } = configContext
 
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
     const { feature, layout: featureLayout, topPx: recordTopPx } = record
@@ -150,8 +149,7 @@ export function makeImageData({
         subfeatureCoords,
         subfeatureInfos,
         config,
-        showSubfeatureLabels,
-        subfeatureLabelPosition,
+        subfeatureLabels,
         transcriptTypes,
         labelColor: theme.palette.text.primary,
       })

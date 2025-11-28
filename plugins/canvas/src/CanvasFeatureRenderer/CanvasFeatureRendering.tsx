@@ -199,8 +199,10 @@ const CanvasFeatureRendering = observer(function (props: {
         <div
           style={{
             position: 'absolute',
-            backgroundColor: '#0003',
+            backgroundColor: '#d0d0d0',
             pointerEvents: 'none',
+            mixBlendMode: 'multiply',
+            zIndex: 10,
             ...highlight,
           }}
         />

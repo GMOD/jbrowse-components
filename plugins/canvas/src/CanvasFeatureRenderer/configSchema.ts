@@ -76,22 +76,12 @@ const CanvasFeatureRenderer = ConfigurationSchema(
     /**
      * #slot
      */
-    showSubfeatureLabels: {
-      type: 'boolean',
-      description:
-        'show labels on transcript subfeatures (mRNA, transcript) within gene glyphs',
-      defaultValue: false,
-    },
-
-    /**
-     * #slot
-     */
-    subfeatureLabelPosition: {
+    subfeatureLabels: {
       type: 'stringEnum',
-      model: types.enumeration('subfeatureLabelPosition', ['below', 'overlay']),
+      model: types.enumeration('subfeatureLabels', ['none', 'below', 'overlay']),
       description:
-        'position of subfeature labels: "below" reserves extra space, "overlay" draws on top of feature',
-      defaultValue: 'overlay',
+        'subfeature label display: "none" hides labels, "below" reserves extra space, "overlay" draws on top of feature',
+      defaultValue: 'none',
     },
 
     labels: ConfigurationSchema('CanvasFeatureLabels', {
