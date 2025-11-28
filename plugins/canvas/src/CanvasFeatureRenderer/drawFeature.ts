@@ -32,13 +32,18 @@ export function drawFeature(args: DrawFeatureArgs) {
       drawCDS(args)
       break
     case 'Subfeatures': {
-      for (const childLayout of featureLayout.children) {
-        drawFeature({
-          ...args,
-          feature: childLayout.feature,
-          featureLayout: childLayout,
-          topLevel: false,
-        })
+      if (featureLayout.children.length === 0) {
+        drawBox(args)
+        drawArrow(args)
+      } else {
+        for (const childLayout of featureLayout.children) {
+          drawFeature({
+            ...args,
+            feature: childLayout.feature,
+            featureLayout: childLayout,
+            topLevel: false,
+          })
+        }
       }
       break
     }

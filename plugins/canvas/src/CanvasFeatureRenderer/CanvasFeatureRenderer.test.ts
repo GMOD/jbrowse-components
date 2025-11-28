@@ -570,6 +570,7 @@ describe('CanvasFeatureRenderer', () => {
         type: 'gene',
         start: 10,
         end: 180,
+        strand: 1,
         name: 'TestGene',
         subfeatures: [
           {
@@ -578,6 +579,7 @@ describe('CanvasFeatureRenderer', () => {
             type: 'mRNA',
             start: 10,
             end: 180,
+            strand: 1,
             name: 'Transcript-1',
             subfeatures: [
               {
@@ -586,6 +588,7 @@ describe('CanvasFeatureRenderer', () => {
                 type: 'five_prime_UTR',
                 start: 10,
                 end: 30,
+                strand: 1,
               },
               {
                 uniqueId: 'cds1',
@@ -593,6 +596,7 @@ describe('CanvasFeatureRenderer', () => {
                 type: 'CDS',
                 start: 30,
                 end: 70,
+                strand: 1,
                 phase: 0,
               },
               {
@@ -601,6 +605,7 @@ describe('CanvasFeatureRenderer', () => {
                 type: 'CDS',
                 start: 100,
                 end: 150,
+                strand: 1,
                 phase: 0,
               },
               {
@@ -609,6 +614,7 @@ describe('CanvasFeatureRenderer', () => {
                 type: 'three_prime_UTR',
                 start: 150,
                 end: 180,
+                strand: 1,
               },
             ],
           },
@@ -798,6 +804,77 @@ describe('CanvasFeatureRenderer', () => {
 
       const width = region.end - region.start
       const height = 80
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('reducedRepresentation mode with gene', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 20,
+        end: 180,
+        strand: 1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 20,
+            end: 180,
+            strand: 1,
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 40,
+                end: 160,
+                strand: 1,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        displayMode: 'reducedRepresentation',
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
       const canvas = createCanvas(width, height)
       const ctx = canvas.getContext('2d')
 

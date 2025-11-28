@@ -416,12 +416,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Display mode',
               icon: VisibilityIcon,
               subMenu: [
+                'normal',
                 'compact',
                 'reducedRepresentation',
-                'normal',
                 'collapse',
               ].map(val => ({
                 label: val,
+                type: 'radio' as const,
+                checked: self.displayMode === val,
                 onClick: () => {
                   self.setDisplayMode(val)
                 },
