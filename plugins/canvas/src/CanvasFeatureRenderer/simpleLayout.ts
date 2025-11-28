@@ -52,6 +52,7 @@ export function layoutFeature(args: {
     subfeatureLabelPosition,
     fontHeight,
     labelAllowed,
+    geneGlyphMode,
   } = configContext
 
   const glyphType = chooseGlyphType({ feature, configContext })
@@ -85,7 +86,7 @@ export function layoutFeature(args: {
   const subfeatures = feature.get('subfeatures') || []
   if (subfeatures.length > 0 && displayMode !== 'reducedRepresentation') {
     if (glyphType === 'Subfeatures') {
-      const sortedSubfeatures = [...subfeatures].sort((a, b) => {
+      let sortedSubfeatures = [...subfeatures].sort((a, b) => {
         const aHasCDS = hasCodingSubfeature(a)
         const bHasCDS = hasCodingSubfeature(b)
         if (aHasCDS && !bHasCDS) {
@@ -96,6 +97,20 @@ export function layoutFeature(args: {
         }
         return 0
       })
+
+      if (geneGlyphMode === 'longest' && sortedSubfeatures.length > 1) {
+        const transcriptSubfeatures = sortedSubfeatures.filter(sub =>
+          transcriptTypes.includes(sub.get('type')),
+        )
+        if (transcriptSubfeatures.length > 0) {
+          const longest = transcriptSubfeatures.reduce((a, b) =>
+            a.get('end') - a.get('start') > b.get('end') - b.get('start')
+              ? a
+              : b,
+          )
+          sortedSubfeatures = [longest]
+        }
+      }
 
       let currentY = parentY
       for (let i = 0; i < sortedSubfeatures.length; i++) {

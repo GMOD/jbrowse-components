@@ -822,6 +822,98 @@ describe('CanvasFeatureRenderer', () => {
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
 
+    test('longest transcript mode', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 10,
+        end: 180,
+        strand: 1,
+        name: 'MultiTranscriptGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 10,
+            end: 100,
+            strand: 1,
+            name: 'Short-Transcript',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 20,
+                end: 90,
+                strand: 1,
+                phase: 0,
+              },
+            ],
+          },
+          {
+            uniqueId: 'mrna2',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 10,
+            end: 180,
+            strand: 1,
+            name: 'Long-Transcript',
+            subfeatures: [
+              {
+                uniqueId: 'cds2',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 30,
+                end: 170,
+                strand: 1,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        geneGlyphMode: 'longest',
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
     test('reducedRepresentation mode with gene', async () => {
       const feature = new SimpleFeature({
         uniqueId: 'gene1',

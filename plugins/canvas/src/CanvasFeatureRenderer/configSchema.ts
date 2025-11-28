@@ -210,6 +210,17 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: ['proteoform_orf'],
     },
+
+    /**
+     * #slot
+     */
+    geneGlyphMode: {
+      type: 'stringEnum',
+      model: types.enumeration('geneGlyphMode', ['all', 'longest']),
+      description:
+        'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript',
+      defaultValue: 'all',
+    },
   },
   { explicitlyTyped: true },
 )

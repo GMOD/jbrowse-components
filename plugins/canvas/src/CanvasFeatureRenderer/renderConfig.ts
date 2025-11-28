@@ -41,6 +41,8 @@ export interface RenderConfigContext {
   isFontHeightCallback: boolean
 
   labelAllowed: boolean
+
+  geneGlyphMode: string
 }
 
 export function createRenderConfigContext(
@@ -59,6 +61,7 @@ export function createRenderConfigContext(
   ) as string
   const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
   const containerTypes = readConfObject(config, 'containerTypes') as string[]
+  const geneGlyphMode = readConfObject(config, 'geneGlyphMode') as string
 
   const isColor1Callback = config.color1?.isCallback ?? false
   const isColor3Callback = config.color3?.isCallback ?? false
@@ -89,5 +92,6 @@ export function createRenderConfigContext(
     fontHeight,
     isFontHeightCallback,
     labelAllowed: displayMode !== 'collapse',
+    geneGlyphMode,
   }
 }

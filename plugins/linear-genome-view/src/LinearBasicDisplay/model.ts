@@ -82,6 +82,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        trackGeneGlyphMode: types.maybe(types.string),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
@@ -168,6 +172,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           getConf(self, ['renderer', 'subfeatureLabelPosition'])
         )
       },
+
+      /**
+       * #getter
+       */
+      get geneGlyphMode() {
+        return (
+          self.trackGeneGlyphMode ??
+          getConf(self, ['renderer', 'geneGlyphMode'])
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -186,6 +200,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             subfeatureLabelPosition: self.subfeatureLabelPosition,
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
+            geneGlyphMode: self.geneGlyphMode,
           },
           getEnv(self),
         )
@@ -240,6 +255,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMaxHeight(val?: number) {
         self.trackMaxHeight = val
+      },
+      /**
+       * #action
+       */
+      setGeneGlyphMode(val: string) {
+        self.trackGeneGlyphMode = val
       },
     }))
     .views(self => ({
@@ -410,6 +431,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     },
                   })),
                 },
+                {
+                  label: 'Gene glyph',
+                  subMenu: [
+                    { value: 'all', label: 'All transcripts' },
+                    { value: 'longest', label: 'Longest transcript' },
+                  ].map(({ value, label }) => ({
+                    label,
+                    type: 'radio' as const,
+                    checked: self.geneGlyphMode === value,
+                    onClick: () => {
+                      self.setGeneGlyphMode(value)
+                    },
+                  })),
+                },
               ],
             },
             {
@@ -442,16 +477,39 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label: 'Edit filters',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  AddFiltersDialog,
-                  {
-                    model: self,
-                    handleClose,
+              label: 'Filters',
+              subMenu: [
+                {
+                  label: 'Show only genes',
+                  type: 'checkbox',
+                  checked: self.activeFilters.includes(
+                    "jexl:get(feature,'type')=='gene'",
+                  ),
+                  onClick: () => {
+                    const geneFilter = "jexl:get(feature,'type')=='gene'"
+                    const currentFilters = self.activeFilters
+                    if (currentFilters.includes(geneFilter)) {
+                      self.setJexlFilters(
+                        currentFilters.filter(f => f !== geneFilter),
+                      )
+                    } else {
+                      self.setJexlFilters([...currentFilters, geneFilter])
+                    }
                   },
-                ])
-              },
+                },
+                {
+                  label: 'Edit filters...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      AddFiltersDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+              ],
             },
           ]
         },
