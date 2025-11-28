@@ -256,6 +256,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
       return {
         /**
@@ -294,8 +295,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               filters: self.activeFilters,
             }),
             sequenceAdapter,
-            // Override onFeatureClick to use CoreGetFeatureDetails This avoids
-            // heavy serialization overhead from webworker
+          }
+        },
+
+        /**
+         * #method
+         */
+        renderingProps() {
+          const superProps = superRenderingProps()
+          const session = getSession(self)
+          return {
+            ...superProps,
             async onFeatureClick(_: unknown, featureId?: string) {
               const { rpcManager } = session
               try {
@@ -324,7 +334,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 session.notifyError(`${e}`, e)
               }
             },
-            // Override onFeatureContextMenu to use CoreGetFeatureDetails
             async onFeatureContextMenu(_: unknown, featureId?: string) {
               const { rpcManager } = session
               try {
