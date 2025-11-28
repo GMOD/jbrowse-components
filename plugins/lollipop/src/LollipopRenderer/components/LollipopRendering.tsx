@@ -117,18 +117,23 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
         return (
           <Fragment key={feature.id()}>
             <Stick
-              key={`stick-${feature.id()}`}
-              {...props}
               config={config}
               layoutRecord={layoutRecord}
               feature={feature}
             />
             <Lollipop
-              key={`body-${feature.id()}`}
-              {...props}
+              config={config}
               layoutRecord={layoutRecord}
               feature={feature}
               selectedFeatureId={selectedFeatureId}
+              onFeatureMouseDown={props.onFeatureMouseDown}
+              onFeatureMouseEnter={props.onFeatureMouseEnter}
+              onFeatureMouseOut={props.onFeatureMouseOut}
+              onFeatureMouseOver={props.onFeatureMouseOver}
+              onFeatureMouseUp={props.onFeatureMouseUp}
+              onFeatureMouseLeave={props.onFeatureMouseLeave}
+              onFeatureMouseMove={props.onFeatureMouseMove}
+              onFeatureClick={props.onFeatureClick}
             />
           </Fragment>
         )
