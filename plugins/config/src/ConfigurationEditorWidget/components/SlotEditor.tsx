@@ -116,9 +116,9 @@ const StringEnumEditor = observer(function ({
   slot: AnyConfigurationSlot
   slotSchema: AnyConfigurationSlotType
 }) {
-  const p = getPropertyMembers(getSubType(slotSchema)!)
+  const p = getPropertyMembers(getSubType(slotSchema))
   const choices = getUnionSubTypes(
-    getUnionSubTypes(getSubType(p.properties.value!)!)[1]!,
+    getUnionSubTypes(getSubType(p.properties.value!))[1]!,
   ).map(t => (t as ILiteralType<string>).value)
 
   return (
@@ -158,7 +158,7 @@ const FileSelectorWrapper = observer(function ({
       }}
       name={slot.name}
       description={slot.description}
-      rootModel={getEnv(slot).pluginManager?.rootModel}
+      rootModel={getEnv(slot).pluginManager.rootModel}
     />
   )
 })

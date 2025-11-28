@@ -1,9 +1,9 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 
+import type { BpOffset } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-import type { BpOffset } from '../types'
 
 export async function fetchSequence(
   model: {

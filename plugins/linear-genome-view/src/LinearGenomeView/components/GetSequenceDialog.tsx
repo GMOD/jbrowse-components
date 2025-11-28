@@ -20,8 +20,8 @@ import { makeStyles } from 'tss-react/mui'
 
 import { fetchSequence } from './fetchSequence'
 
-import type { Feature, Region } from '@jbrowse/core/util'
 import type { BpOffset } from '../types'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {

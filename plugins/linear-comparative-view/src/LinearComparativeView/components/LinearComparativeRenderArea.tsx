@@ -1,4 +1,4 @@
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -6,8 +6,13 @@ import { Fragment } from 'react/jsx-runtime'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearComparativeViewModel } from '../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { LinearSyntenyViewHelperModel } from '../../LinearSyntenyViewHelper/stateModelFactory'
+
+interface TrackEntry {
+  configuration: AnyConfigurationModel
+  displays: { height: number; RenderingComponent: React.FC<{ model: unknown }> }[]
+}
 
 const useStyles = makeStyles()({
   container: {
@@ -69,16 +74,11 @@ const Overlays = observer(function ({
   level: number
 }) {
   const { classes } = useStyles()
-  // the 'level' is a LinearSyntenyViewHelperModel, but the typing isn't great
-  // on it for some reason
   const levelImpl = model.levels[level]!
-  const tracks = levelImpl.tracks as {
-    configuration: AnyConfigurationModel
-    displays: { height: number; RenderingComponent: React.FC<any> }[]
-  }[]
+  const tracks = levelImpl.tracks as TrackEntry[]
   return (
     <>
-      {tracks?.map(track => {
+      {tracks.map(track => {
         const display = track.displays[0]
         const RenderingComponent = display?.RenderingComponent
         const trackId = getConf(track, 'trackId') as string

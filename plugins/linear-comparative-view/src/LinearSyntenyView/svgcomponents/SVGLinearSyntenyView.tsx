@@ -22,6 +22,10 @@ import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model
 import type { LinearSyntenyViewModel } from '../model'
 import type { ExportSvgOptions } from '../types'
 
+interface TrackEntry {
+  displays: unknown[]
+}
+
 // render LGV to SVG
 export async function renderToSvg(
   model: LinearSyntenyViewModel,
@@ -70,9 +74,9 @@ export async function renderToSvg(
     levels.map(async level => {
       const { tracks } = level
       return Promise.all(
-        tracks.map(async (track: { displays: unknown[] }) => {
-          const d = track.displays[0]! as LinearSyntenyDisplayModel
-          await when(() => (d.ready !== undefined ? d.ready : true))
+        tracks.map(async (track: TrackEntry) => {
+          const d = track.displays[0] as LinearSyntenyDisplayModel
+          await when(() => d.ready)
           const r = await renderToAbstractCanvas(
             width,
             level.height,

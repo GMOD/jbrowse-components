@@ -1,10 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import {
-  isSessionModelWithWidgets,
-  SessionWithDrawerWidgets,
-} from '@jbrowse/core/util'
+import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import {
   addDisposer,
   getParent,
@@ -18,8 +15,9 @@ import {
 import { autorun, observable, toJS } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import { JobsListModel } from '@jbrowse/plugin-jobs-management/src/JobsListWidget/model'
+import type { JobsListModel } from '@jbrowse/plugin-jobs-management/src/JobsListWidget/model'
 
 const { ipcRenderer } = window.require('electron')
 

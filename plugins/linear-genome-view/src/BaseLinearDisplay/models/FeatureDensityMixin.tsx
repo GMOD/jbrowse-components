@@ -121,14 +121,12 @@ export default function FeatureDensityMixin() {
         if (!self.featureDensityStatsP) {
           self.featureDensityStatsP = getFeatureDensityStatsPre(
             self as unknown as FeatureDensityStatsSelf,
-          ).catch(
-            (e: unknown) => {
-              if (isAlive(self)) {
-                this.setFeatureDensityStatsP(undefined)
-              }
-              throw e
-            },
-          )
+          ).catch((e: unknown) => {
+            if (isAlive(self)) {
+              this.setFeatureDensityStatsP(undefined)
+            }
+            throw e
+          })
         }
         return self.featureDensityStatsP
       },
