@@ -97,14 +97,25 @@ export function layoutFeature(args: {
         return 0
       })
 
-      if (geneGlyphMode === 'longest' && sortedSubfeatures.length > 1) {
+      if (
+        (geneGlyphMode === 'longest' || geneGlyphMode === 'longestCoding') &&
+        sortedSubfeatures.length > 1
+      ) {
         const transcriptSubfeatures = sortedSubfeatures.filter(sub =>
           transcriptTypes.includes(sub.get('type')),
         )
-        const candidates =
+        let candidates =
           transcriptSubfeatures.length > 0
             ? transcriptSubfeatures
             : sortedSubfeatures
+
+        if (geneGlyphMode === 'longestCoding') {
+          const codingCandidates = candidates.filter(hasCodingSubfeature)
+          if (codingCandidates.length > 0) {
+            candidates = codingCandidates
+          }
+        }
+
         const longest = candidates.reduce((a, b) =>
           a.get('end') - a.get('start') > b.get('end') - b.get('start') ? a : b,
         )
@@ -180,7 +191,9 @@ export function layoutFeature(args: {
 
   if (shouldCalculateLabels) {
     const effectiveShowLabels = isTranscriptChild ? true : showLabels
-    const effectiveShowDescriptions = isTranscriptChild ? false : showDescriptions
+    const effectiveShowDescriptions = isTranscriptChild
+      ? false
+      : showDescriptions
 
     const name = truncateLabel(
       String(readConfObject(config, ['labels', 'name'], { feature }) || ''),

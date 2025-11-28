@@ -58,7 +58,12 @@ export function getBoxColor({
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
 
-    const frame = getFrame(featureStart, featureEnd, featureStrand, featurePhase)
+    const frame = getFrame(
+      featureStart,
+      featureEnd,
+      featureStrand,
+      featurePhase,
+    )
     const frameColor = theme.palette.framesCDS.at(frame)?.main
     if (frameColor) {
       fill = frameColor

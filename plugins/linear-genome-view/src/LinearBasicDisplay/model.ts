@@ -407,6 +407,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   subMenu: [
                     { value: 'all', label: 'All transcripts' },
                     { value: 'longest', label: 'Longest transcript' },
+                    {
+                      value: 'longestCoding',
+                      label: 'Longest coding transcript',
+                    },
                   ].map(({ value, label }) => ({
                     label,
                     type: 'radio' as const,

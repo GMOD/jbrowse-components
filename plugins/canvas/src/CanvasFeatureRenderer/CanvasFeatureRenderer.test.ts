@@ -683,7 +683,9 @@ describe('CanvasFeatureRenderer', () => {
         end: 200,
         assemblyName: 'volvox',
       }
-      const args = createRenderArgs(features, region, { displayMode: 'compact' })
+      const args = createRenderArgs(features, region, {
+        displayMode: 'compact',
+      })
 
       const layoutRecords = computeLayouts({
         features,

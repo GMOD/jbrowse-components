@@ -78,7 +78,11 @@ const CanvasFeatureRenderer = ConfigurationSchema(
      */
     subfeatureLabels: {
       type: 'stringEnum',
-      model: types.enumeration('subfeatureLabels', ['none', 'below', 'overlay']),
+      model: types.enumeration('subfeatureLabels', [
+        'none',
+        'below',
+        'overlay',
+      ]),
       description:
         'subfeature label display: "none" hides labels, "below" reserves extra space, "overlay" draws on top of feature',
       defaultValue: 'none',
@@ -206,9 +210,13 @@ const CanvasFeatureRenderer = ConfigurationSchema(
      */
     geneGlyphMode: {
       type: 'stringEnum',
-      model: types.enumeration('geneGlyphMode', ['all', 'longest']),
+      model: types.enumeration('geneGlyphMode', [
+        'all',
+        'longest',
+        'longestCoding',
+      ]),
       description:
-        'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript',
+        'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript, "longestCoding" shows only the longest coding transcript',
       defaultValue: 'all',
     },
   },
