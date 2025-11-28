@@ -1,8 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { getSubparts } from './filterSubparts'
-import { chooseGlyphType, truncateLabel } from './util'
+import { chooseGlyphType, getChildFeatures, truncateLabel } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { FeatureLayout } from './types'
@@ -158,11 +157,7 @@ export function layoutFeature(args: {
       layout.totalFeatureHeight = totalStackedHeight
       layout.totalLayoutHeight = totalStackedHeight
     } else {
-      const childFeatures =
-        glyphType === 'ProcessedTranscript'
-          ? getSubparts(feature, config)
-          : subfeatures
-      for (const subfeature of childFeatures) {
+      for (const subfeature of getChildFeatures({ feature, glyphType, config })) {
         layout.children.push(
           layoutFeature({
             feature: subfeature,

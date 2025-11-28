@@ -1,6 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
+import { getSubparts } from './filterSubparts'
+
 import type { RenderConfigContext } from './renderConfig'
 import type { GlyphType } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -106,6 +108,21 @@ export function chooseGlyphType({
   } else {
     return 'Box'
   }
+}
+
+export function getChildFeatures({
+  feature,
+  glyphType,
+  config,
+}: {
+  feature: Feature
+  glyphType: GlyphType
+  config: AnyConfigurationModel
+}): Feature[] {
+  if (glyphType === 'ProcessedTranscript') {
+    return getSubparts(feature, config)
+  }
+  return feature.get('subfeatures') || []
 }
 
 export function getStrokeColor({
