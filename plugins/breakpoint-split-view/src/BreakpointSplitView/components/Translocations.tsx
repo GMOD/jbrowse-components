@@ -2,12 +2,13 @@ import { observer } from 'mobx-react'
 
 import {
   LEFT,
+  calculateYPositions,
   createMouseHandlers,
   getTestId,
   useBreakpointOverlaySetup,
 } from './useBreakpointOverlay'
 import { getMatchedTranslocationFeatures } from './util'
-import { getPxFromCoordinate, yPos } from '../util'
+import { getPxFromCoordinate } from '../util'
 
 import type { OverlayProps } from './useBreakpointOverlay'
 import type { LayoutRecord } from '../types'
@@ -85,13 +86,16 @@ const Translocations = observer(function ({
             const reversed1 = views[level1]!.pxToBp(x1).reversed
             const reversed2 = views[level2]!.pxToBp(x2).reversed
 
-            const tracks = views.map(v => v.getTrack(trackId))
-            const y1 =
-              yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
-              yOffset
-            const y2 =
-              yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
-              yOffset
+            const { y1, y2 } = calculateYPositions(
+              trackId,
+              level1,
+              level2,
+              views,
+              c1,
+              c2,
+              yOffset,
+              getTrackYPosOverride,
+            )
 
             const path = [
               'M',
@@ -114,7 +118,7 @@ const Translocations = observer(function ({
               session,
               'VariantFeatureWidget',
               'variantFeature',
-              (totalFeatures.get(id) || { toJSON: () => ({}) }).toJSON(),
+              totalFeatures.get(id)?.toJSON(),
             )
 
             ret.push(
