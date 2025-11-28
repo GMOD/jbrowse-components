@@ -76,22 +76,16 @@ const CanvasFeatureRenderer = ConfigurationSchema(
     /**
      * #slot
      */
-    showSubfeatureLabels: {
-      type: 'boolean',
-      description:
-        'show labels on transcript subfeatures (mRNA, transcript) within gene glyphs',
-      defaultValue: false,
-    },
-
-    /**
-     * #slot
-     */
-    subfeatureLabelPosition: {
+    subfeatureLabels: {
       type: 'stringEnum',
-      model: types.enumeration('subfeatureLabelPosition', ['below', 'overlay']),
+      model: types.enumeration('subfeatureLabels', [
+        'none',
+        'below',
+        'overlay',
+      ]),
       description:
-        'position of subfeature labels: "below" reserves extra space, "overlay" draws on top of feature',
-      defaultValue: 'below',
+        'subfeature label display: "none" hides labels, "below" reserves extra space, "overlay" draws on top of feature',
+      defaultValue: 'none',
     },
 
     labels: ConfigurationSchema('CanvasFeatureLabels', {
@@ -209,6 +203,21 @@ const CanvasFeatureRenderer = ConfigurationSchema(
     containerTypes: {
       type: 'stringArray',
       defaultValue: ['proteoform_orf'],
+    },
+
+    /**
+     * #slot
+     */
+    geneGlyphMode: {
+      type: 'stringEnum',
+      model: types.enumeration('geneGlyphMode', [
+        'all',
+        'longest',
+        'longestCoding',
+      ]),
+      description:
+        'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript, "longestCoding" shows only the longest coding transcript',
+      defaultValue: 'all',
     },
   },
   { explicitlyTyped: true },
