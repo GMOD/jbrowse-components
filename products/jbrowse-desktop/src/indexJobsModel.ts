@@ -15,9 +15,7 @@ import {
 import { autorun, observable, toJS } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
 
 const { ipcRenderer } = window.require('electron')
 

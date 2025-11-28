@@ -41,6 +41,7 @@
     "@gmod/tabix": "^3.0.1",
     "@gmod/vcf": "^6.1.0",
     "@jbrowse/core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.5",
     "@jbrowse/plugin-circular-view": "^3.7.0",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@jbrowse/sv-core": "^3.7.0",
@@ -54,7 +55,6 @@
     "file-saver-es": "^2.0.5",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "@jbrowse/mobx-state-tree": "^5.0.0",
     "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
   },

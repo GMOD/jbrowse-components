@@ -37,12 +37,12 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.5",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@mui/x-charts-vendor": "^8.0.0",
     "hic-straw": "^2.0.3",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "@jbrowse/mobx-state-tree": "^5.0.0",
     "rxjs": "^7.0.0"
   },
   "peerDependencies": {

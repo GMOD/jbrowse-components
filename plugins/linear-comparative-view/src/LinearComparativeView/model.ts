@@ -13,7 +13,6 @@ import {
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
-import type { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -105,6 +104,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get initialized() {
         return (
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           self.width !== undefined &&
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
@@ -348,7 +348,7 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .preProcessSnapshot(snap => {
       // @ts-expect-error
-
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const { tracks, levels = [{ tracks, level: 0 }], ...rest } = snap || {}
       return {
         ...rest,

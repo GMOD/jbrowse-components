@@ -213,30 +213,21 @@ export default function ConfigSlot(
     }))
     .views(self => ({
       get expr() {
-        if (self.isCallback) {
-          // compile as jexl function
-          const { pluginManager } = getEnv(self)
-
-          if (!pluginManager && typeof jest === 'undefined') {
-            console.warn(
-              'no pluginManager detected on config env (if you dynamically instantiate a config, for example in renderProps for your display model, check that you add the env argument)',
+        return self.isCallback
+          ? stringToJexlExpression(
+              String(self.value),
+              getEnv(self).pluginManager.jexl,
             )
-          }
-
-          return stringToJexlExpression(String(self.value), pluginManager?.jexl)
-        }
-        return { evalSync: () => self.value }
+          : {
+              evalSync: () => self.value,
+            }
       },
 
       // JS representation of the value of this slot, suitable
       // for embedding in either JSON or a JS function string.
       // many of the data types override this in typeModelExtensions
       get valueJSON(): any[] | Record<string, any> | string | undefined {
-        if (self.isCallback) {
-          return undefined
-        }
-
-        return json(self.value)
+        return self.isCallback ? undefined : json(self.value)
       },
     }))
     .preProcessSnapshot(val =>
