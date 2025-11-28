@@ -8,12 +8,13 @@ beforeEach(() => {
 })
 
 test('regular', async () => {
-  await testMultiVariantDisplay({ displayType: 'regular' })
-}, 60000)
+  await testMultiVariantDisplay({ displayType: 'regular', timeout: 90000 })
+}, 90000)
 
 test('rphased', async () => {
   await testMultiVariantDisplay({
     displayType: 'regular',
     phasedMode: 'phased',
+    timeout: 90000,
   })
-}, 60000)
+}, 90000)

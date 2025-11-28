@@ -76,11 +76,13 @@ export async function makeImageData({
               const genotype = s.GT?.[0]
               if (genotype) {
                 arr2.push(genotype)
-                const isPhased = genotype.includes('|')
+                const alleles =
+                  splitCache[genotype] ??
+                  (splitCache[genotype] = genotype.split(/[/|]/))
+                const isPhased = alleles.length > 1 && genotype.includes('|')
                 if (renderingMode === 'phased') {
                   if (isPhased) {
                     const PS = s.PS?.[0]
-                    const alleles = genotype.split('|')
                     drawPhased(alleles, ctx, x, y, w, h, HP!, PS)
                   } else {
                     ctx.fillStyle = 'black'
@@ -115,10 +117,12 @@ export async function makeImageData({
             const genotype = samp[name]
             if (genotype) {
               arr2.push(genotype)
-              const isPhased = genotype.includes('|')
+              const alleles =
+                splitCache[genotype] ??
+                (splitCache[genotype] = genotype.split(/[/|]/))
+              const isPhased = alleles.length > 1 && genotype.includes('|')
               if (renderingMode === 'phased') {
                 if (isPhased) {
-                  const alleles = genotype.split('|')
                   drawPhased(alleles, ctx, x, y, w, h, HP!)
                 } else {
                   ctx.fillStyle = 'black'
