@@ -74,7 +74,8 @@ export function createPluginManager(
     try {
       const { sessionError, sessionSpec, sessionSnapshot, hubSpec } = model
       if (sessionError) {
-        throw new Error(sessionError)
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw sessionError
       } else if (sessionSnapshot) {
         rootModel.setSession(sessionSnapshot)
       } else if (hubSpec) {

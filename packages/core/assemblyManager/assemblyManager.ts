@@ -144,7 +144,8 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
         )
         if (assembly.error) {
-          throw new Error(assembly.error)
+          // eslint-disable-next-line @typescript-eslint/only-throw-error
+          throw assembly.error
         }
         return assembly
       },
