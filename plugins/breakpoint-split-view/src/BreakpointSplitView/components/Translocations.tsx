@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { observer } from 'mobx-react'
 
 import {
@@ -15,13 +13,7 @@ import type { OverlayProps } from './useBreakpointOverlay'
 import type { LayoutRecord } from '../types'
 
 function str(s: string) {
-  if (s === '+') {
-    return 1
-  } else if (s === '-') {
-    return -1
-  } else {
-    return 0
-  }
+  return s === '+' ? 1 : s === '-' ? -1 : 0
 }
 
 const Translocations = observer(function ({
@@ -31,16 +23,21 @@ const Translocations = observer(function ({
   getTrackYPosOverride,
 }: OverlayProps) {
   const { interactiveOverlay, views } = model
-  const getMatchedFeatures = useCallback(getMatchedTranslocationFeatures, [])
+  const totalFeatures = model.getTrackFeatures(trackId)
   const {
     session,
     assembly,
-    totalFeatures,
     layoutMatches,
     mouseoverElt,
     setMouseoverElt,
     yOffset,
-  } = useBreakpointOverlaySetup(model, trackId, parentRef, getMatchedFeatures)
+  } = useBreakpointOverlaySetup(
+    model,
+    trackId,
+    parentRef,
+    getMatchedTranslocationFeatures,
+    totalFeatures,
+  )
 
   if (!assembly) {
     return null

@@ -29,32 +29,28 @@ export function useBreakpointOverlaySetup(
   trackId: string,
   parentRef: React.RefObject<SVGSVGElement | null>,
   getMatchedFeatures: (features: Map<string, Feature>) => Feature[][],
+  totalFeatures: Map<string, Feature>,
 ) {
   const { views } = model
   const session = getSession(model)
   const { assemblyManager } = session
-  const totalFeatures = model.getTrackFeatures(trackId)
 
-  const layoutMatches = useMemo(
-    () =>
-      model.getMatchedFeaturesInLayout(
-        trackId,
-        getMatchedFeatures(totalFeatures),
-      ),
-    [totalFeatures, trackId, model, getMatchedFeatures],
-  )
+  const layoutMatches = useMemo(() => {
+    const matchedFeatures = getMatchedFeatures(totalFeatures)
+    return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
+  }, [totalFeatures, trackId, model, getMatchedFeatures])
 
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const snap = getSnapshot(model)
   useNextFrame(snap)
 
-  const assembly = assemblyManager.get(views[0]?.assemblyNames[0] ?? '')
+  const v0 = views[0]
+  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
   const yOffset = getYOffset(parentRef)
 
   return {
     session,
     assembly,
-    totalFeatures,
     layoutMatches,
     mouseoverElt,
     setMouseoverElt,
@@ -73,11 +69,10 @@ export function calculateYPositions(
   getTrackYPosOverride?: (trackId: string, level: number) => number,
 ) {
   const tracks = views.map(v => v.getTrack(trackId))
-  const y1 =
-    yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) - yOffset
-  const y2 =
-    yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) - yOffset
-  return { y1, y2, tracks }
+  return {
+    y1: yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) - yOffset,
+    y2: yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) - yOffset,
+  }
 }
 
 export function createMouseHandlers(

@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { observer } from 'mobx-react'
 
 import {
@@ -22,16 +20,21 @@ const PairedFeatures = observer(function ({
   getTrackYPosOverride,
 }: OverlayProps) {
   const { interactiveOverlay, views } = model
-  const getMatchedFeatures = useCallback(getMatchedPairedFeatures, [])
+  const totalFeatures = model.getTrackFeatures(trackId)
   const {
     session,
     assembly,
-    totalFeatures,
     layoutMatches,
     mouseoverElt,
     setMouseoverElt,
     yOffset,
-  } = useBreakpointOverlaySetup(model, trackId, parentRef, getMatchedFeatures)
+  } = useBreakpointOverlaySetup(
+    model,
+    trackId,
+    parentRef,
+    getMatchedPairedFeatures,
+    totalFeatures,
+  )
 
   if (!assembly) {
     return null

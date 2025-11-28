@@ -42,13 +42,12 @@ const AlignmentConnections = observer(function ({
   useNextFrame(snap)
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
+
   const layoutMatches = useMemo(() => {
-    const layoutMatches = model.getMatchedFeaturesInLayout(
-      trackId,
-      hasPaired
-        ? getBadlyPairedAlignments(allFeatures)
-        : getMatchedAlignmentFeatures(allFeatures),
-    )
+    const matched = hasPaired
+      ? getBadlyPairedAlignments(allFeatures)
+      : getMatchedAlignmentFeatures(allFeatures)
+    const layoutMatches = model.getMatchedFeaturesInLayout(trackId, matched)
     if (!hasPaired) {
       for (const m of layoutMatches) {
         m.sort((a, b) => a.clipPos - b.clipPos)
@@ -60,7 +59,11 @@ const AlignmentConnections = observer(function ({
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const yOffset = getYOffset(parentRef)
 
-  return assembly ? (
+  if (!assembly) {
+    return null
+  }
+
+  return (
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
       {layoutMatches.map(chunk => {
         const ret = []
@@ -186,7 +189,7 @@ const AlignmentConnections = observer(function ({
         return ret
       })}
     </g>
-  ) : null
+  )
 })
 
 export default AlignmentConnections
