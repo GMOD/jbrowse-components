@@ -1,7 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
-import { isSessionModelWithWidgets } from '@jbrowse/core/util'
+import {
+  isSessionModelWithWidgets,
+  SessionWithDrawerWidgets,
+} from '@jbrowse/core/util'
 import {
   addDisposer,
   getParent,
@@ -16,6 +19,7 @@ import { autorun, observable, toJS } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import { JobsListModel } from '@jbrowse/plugin-jobs-management/src/JobsListWidget/model'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -93,7 +97,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get session() {
-        return getParent<any>(self).session
+        return getParent<{ session: SessionWithDrawerWidgets }>(self).session
       },
       /**
        * #getter
@@ -115,7 +119,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         if (!jobStatusWidget) {
           jobStatusWidget = session.addWidget('JobsListWidget', 'JobsList')
         }
-        return jobStatusWidget
+        return jobStatusWidget as JobsListModel
       },
     }))
     .actions(self => ({
@@ -187,7 +191,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             name,
             statusMessage,
             progressPct,
-            cancelCallback,
+            cancelCallback: cancelCallback!,
+            setStatusMessage: () => {},
           })
         }
         self.jobsQueue.push(props)
@@ -300,7 +305,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 name,
                 statusMessage: statusMessage || 'done',
                 progressPct: progressPct || 100,
-                cancelCallback,
+                cancelCallback: cancelCallback!,
+                setStatusMessage: () => {},
               })
             }
           }
@@ -341,7 +347,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               name,
               statusMessage: statusMessage || '',
               progressPct: progressPct || 0,
-              cancelCallback,
+              cancelCallback: cancelCallback!,
+              setStatusMessage: () => {},
             })
             jobStatusWidget.removeQueuedJob(name)
           }

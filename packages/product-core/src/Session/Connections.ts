@@ -52,8 +52,6 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         const length = self.connectionInstances.push({
           ...initialSnapshot,
           name,
-          // @ts-expect-error unsure why ts doesn't like `type` here, but is
-          // needed
           type,
           configuration,
         })

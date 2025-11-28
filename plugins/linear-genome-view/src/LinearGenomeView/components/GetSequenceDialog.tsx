@@ -20,8 +20,8 @@ import { makeStyles } from 'tss-react/mui'
 
 import { fetchSequence } from './fetchSequence'
 
-import type { LinearGenomeViewModel } from '..'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { BpOffset } from '../types'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -36,7 +36,12 @@ const GetSequenceDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: LinearGenomeViewModel
+  model: {
+    leftOffset?: BpOffset
+    rightOffset?: BpOffset
+    getSelectedRegions: (left?: BpOffset, right?: BpOffset) => Region[]
+    setOffsets: (left?: BpOffset, right?: BpOffset) => void
+  }
   handleClose: () => void
 }) {
   const { classes } = useStyles()

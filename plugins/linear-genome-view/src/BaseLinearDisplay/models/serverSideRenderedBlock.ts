@@ -112,26 +112,7 @@ const blockState = types
     doReload() {
       self.reloadFlag = self.reloadFlag + 1
     },
-    afterAttach() {
-      const display = getContainingDisplay(self)
-      setTimeout(() => {
-        if (isAlive(self)) {
-          makeAbortableReaction(
-            self,
-            renderBlockData,
-            renderBlockEffect,
-            {
-              name: `${display.id}/${assembleLocString(self.region)} rendering`,
-              delay: display.renderDelay,
-              fireImmediately: true,
-            },
-            this.setLoading,
-            this.setRendered,
-            this.setError,
-          )
-        }
-      }, display.renderDelay)
-    },
+
     /**
      * #action
      */
@@ -253,6 +234,28 @@ const blockState = types
           console.error('Error while destroying block', e)
         }
       })()
+    },
+  }))
+  .actions(self => ({
+    afterAttach() {
+      const display = getContainingDisplay(self)
+      setTimeout(() => {
+        if (isAlive(self)) {
+          makeAbortableReaction(
+            self as BlockModel,
+            renderBlockData,
+            renderBlockEffect,
+            {
+              name: `${display.id}/${assembleLocString(self.region)} rendering`,
+              delay: display.renderDelay,
+              fireImmediately: true,
+            },
+            self.setLoading,
+            self.setRendered,
+            self.setError,
+          )
+        }
+      }, display.renderDelay)
     },
   }))
 

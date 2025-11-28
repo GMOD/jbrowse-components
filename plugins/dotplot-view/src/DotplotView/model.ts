@@ -694,10 +694,10 @@ export default function stateModelFactory(pm: PluginManager) {
 
               transaction(() => {
                 hview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[0])?.regions || [],
+                  session.assemblyManager.get(assemblyNames[0]!)?.regions || [],
                 )
                 vview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[1])?.regions || [],
+                  session.assemblyManager.get(assemblyNames[1]!)?.regions || [],
                 )
                 self.showAllRegions()
               })

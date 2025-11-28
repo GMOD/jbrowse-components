@@ -13,6 +13,9 @@ import type { Region } from '@jbrowse/core/util/types'
 
 type LGV = LinearGenomeViewModel
 
+type AutorunSelf = Parameters<typeof autorunFeatureDensityStats>[0]
+type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
+
 /**
  * #stateModel FeatureDensityMixin
  * #category display
@@ -87,7 +90,9 @@ export default function FeatureDensityMixin() {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => autorunFeatureDensityStats(self)),
+          autorun(() =>
+            autorunFeatureDensityStats(self as unknown as AutorunSelf),
+          ),
         )
       },
     }))
@@ -114,7 +119,9 @@ export default function FeatureDensityMixin() {
        */
       getFeatureDensityStats() {
         if (!self.featureDensityStatsP) {
-          self.featureDensityStatsP = getFeatureDensityStatsPre(self).catch(
+          self.featureDensityStatsP = getFeatureDensityStatsPre(
+            self as unknown as FeatureDensityStatsSelf,
+          ).catch(
             (e: unknown) => {
               if (isAlive(self)) {
                 this.setFeatureDensityStatsP(undefined)
@@ -209,6 +216,7 @@ export default function FeatureDensityMixin() {
        *  react node allows user to force load at current setting
        */
       regionCannotBeRendered(_region: Region) {
+        // @ts-expect-error
         return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))

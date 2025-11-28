@@ -108,7 +108,7 @@ export async function fetchSequence(
   return feats[0]?.get('seq')
 }
 
-type DisplayModel = IAnyStateTreeNode & { setError: (arg: unknown) => void }
+type DisplayModel = IAnyStateTreeNode & { setError?: (arg: unknown) => void }
 
 export function createAutorun(
   self: DisplayModel,
@@ -122,7 +122,7 @@ export function createAutorun(
         await cb()
       } catch (e) {
         if (isAlive(self)) {
-          self.setError(e)
+          self.setError?.(e)
         }
       }
     }, opts),

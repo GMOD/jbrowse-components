@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -7,6 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 
 import type { LinearComparativeViewModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { LinearSyntenyViewHelperModel } from '../../LinearSyntenyViewHelper/stateModelFactory'
 
 const useStyles = makeStyles()({
   container: {
@@ -68,12 +69,19 @@ const Overlays = observer(function ({
   level: number
 }) {
   const { classes } = useStyles()
+  // the 'level' is a LinearSyntenyViewHelperModel, but the typing isn't great
+  // on it for some reason
+  const levelImpl = model.levels[level]!
+  const tracks = levelImpl.tracks as {
+    configuration: AnyConfigurationModel
+    displays: { height: number; RenderingComponent: React.FC<any> }[]
+  }[]
   return (
     <>
-      {model.levels[level]?.tracks.map(track => {
-        const [display] = track.displays
-        const { RenderingComponent } = display
-        const trackId = getConf(track, 'trackId')
+      {tracks?.map(track => {
+        const display = track.displays[0]
+        const RenderingComponent = display?.RenderingComponent
+        const trackId = getConf(track, 'trackId') as string
         return RenderingComponent ? (
           <div
             className={classes.overlay}

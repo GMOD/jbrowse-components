@@ -1,12 +1,17 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 
-import type { LinearGenomeViewModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { BpOffset } from '../types'
 
 export async function fetchSequence(
-  model: LinearGenomeViewModel,
+  model: {
+    leftOffset?: BpOffset
+    rightOffset?: BpOffset
+    getSelectedRegions: (left?: BpOffset, right?: BpOffset) => Region[]
+    setOffsets: (left?: BpOffset, right?: BpOffset) => void
+  },
   regions: Region[],
 ) {
   const session = getSession(model)
