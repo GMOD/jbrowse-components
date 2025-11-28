@@ -10,7 +10,7 @@ import configSchema from './configSchema'
 import { makeImageData } from './makeImageData'
 import { createRenderConfigContext } from './renderConfig'
 
-const pluginManager = new PluginManager([]).createPluggableElements()
+const pluginManager = new PluginManager([])
 pluginManager.configure()
 
 expect.extend({ toMatchImageSnapshot })

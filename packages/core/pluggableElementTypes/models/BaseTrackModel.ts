@@ -1,9 +1,8 @@
 import { lazy } from 'react'
 
 import { getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
-import { transaction } from 'mobx'
-
 import Save from '@mui/icons-material/Save'
+import { transaction } from 'mobx'
 
 import { ConfigurationReference, getConf } from '../../configuration'
 import { adapterConfigCacheKey } from '../../data_adapters/util'
