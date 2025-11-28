@@ -42,11 +42,11 @@ export function getBoxColor({
   if (isUTR(feature)) {
     fill = isColor3Callback
       ? readConfObject(config, 'color3', { feature })
-      : (color3 ?? readConfObject(config, 'color3'))
+      : color3!
   } else {
     fill = isColor1Callback
       ? readConfObject(config, 'color1', { feature })
-      : (color1 ?? readConfObject(config, 'color1'))
+      : color1!
   }
 
   const featureType: string | undefined = feature.get('type')
@@ -122,6 +122,6 @@ export function getStrokeColor({
   const { color2, isColor2Callback } = configContext
   const c = isColor2Callback
     ? readConfObject(config, 'color2', { feature })
-    : (color2 ?? readConfObject(config, 'color2'))
+    : color2!
   return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 }

@@ -52,6 +52,8 @@ export function layoutFeature(args: {
     fontHeight,
     labelAllowed,
     geneGlyphMode,
+    featureHeight,
+    isHeightCallback,
   } = configContext
 
   const glyphType = chooseGlyphType({ feature, configContext })
@@ -65,7 +67,9 @@ export function layoutFeature(args: {
     x = parentX + relativeX / bpPerPx
   }
 
-  const height = readConfObject(config, 'height', { feature }) as number
+  const height = isHeightCallback
+    ? (readConfObject(config, 'height', { feature }) as number)
+    : featureHeight
   const actualHeight = displayMode === 'compact' ? height / 2 : height
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const y = parentY
@@ -153,34 +157,24 @@ export function layoutFeature(args: {
       layout.height = totalStackedHeight
       layout.totalFeatureHeight = totalStackedHeight
       layout.totalLayoutHeight = totalStackedHeight
-    } else if (glyphType === 'ProcessedTranscript') {
-      const subparts = getSubparts(feature, config)
-      for (const subfeature of subparts) {
-        const childLayout = layoutFeature({
-          feature: subfeature,
-          bpPerPx,
-          reversed,
-          config,
-          configContext,
-          parentX: x,
-          parentY,
-          isNested: true,
-        })
-        layout.children.push(childLayout)
-      }
     } else {
-      for (const subfeature of subfeatures) {
-        const childLayout = layoutFeature({
-          feature: subfeature,
-          bpPerPx,
-          reversed,
-          config,
-          configContext,
-          parentX: x,
-          parentY,
-          isNested: true,
-        })
-        layout.children.push(childLayout)
+      const childFeatures =
+        glyphType === 'ProcessedTranscript'
+          ? getSubparts(feature, config)
+          : subfeatures
+      for (const subfeature of childFeatures) {
+        layout.children.push(
+          layoutFeature({
+            feature: subfeature,
+            bpPerPx,
+            reversed,
+            config,
+            configContext,
+            parentX: x,
+            parentY,
+            isNested: true,
+          }),
+        )
       }
     }
   }

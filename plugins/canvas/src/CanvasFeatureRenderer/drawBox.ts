@@ -9,7 +9,7 @@ function getOutline(args: DrawFeatureArgs) {
   const { outline, isOutlineCallback } = configContext
   return isOutlineCallback
     ? (readConfObject(config, 'outline', { feature }) as string)
-    : (outline ?? '')
+    : outline!
 }
 
 const utrHeightFraction = 0.65
