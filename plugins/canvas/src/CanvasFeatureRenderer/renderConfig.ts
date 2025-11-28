@@ -34,9 +34,11 @@ export interface RenderConfigContext {
   color1?: string
   color2?: string
   color3?: string
+  outline?: string
   isColor1Callback: boolean
   isColor2Callback: boolean
   isColor3Callback: boolean
+  isOutlineCallback: boolean
 
   fontHeight: number
   isFontHeightCallback: boolean
@@ -60,6 +62,7 @@ export function createRenderConfigContext(
   const isColor1Callback = config.color1?.isCallback ?? false
   const isColor2Callback = config.color2?.isCallback ?? false
   const isColor3Callback = config.color3?.isCallback ?? false
+  const isOutlineCallback = config.outline?.isCallback ?? false
   const color1 = isColor1Callback
     ? undefined
     : (readConfObject(config, 'color1') as string)
@@ -69,6 +72,9 @@ export function createRenderConfigContext(
   const color3 = isColor3Callback
     ? undefined
     : (readConfObject(config, 'color3') as string)
+  const outline = isOutlineCallback
+    ? undefined
+    : (readConfObject(config, 'outline') as string)
 
   const isFontHeightCallback = config.labels?.fontSize?.isCallback ?? false
   const fontHeight = isFontHeightCallback
@@ -85,9 +91,11 @@ export function createRenderConfigContext(
     color1,
     color2,
     color3,
+    outline,
     isColor1Callback,
     isColor2Callback,
     isColor3Callback,
+    isOutlineCallback,
     fontHeight,
     isFontHeightCallback,
     labelAllowed: displayMode !== 'collapse',

@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -68,7 +67,8 @@ export function makeImageData({
   const { subfeatureLabels, transcriptTypes } = configContext
 
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
-    const { feature, layout: featureLayout, topPx: recordTopPx } = record
+    const { feature, layout: featureLayout, topPx: recordTopPx, label, description } =
+      record
 
     const start = feature.get(region.reversed ? 'end' : 'start')
     const startPx = bpToPx(start, region, bpPerPx)
@@ -110,12 +110,6 @@ export function makeImageData({
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
-    const label = String(
-      readConfObject(config, ['labels', 'name'], { feature }) || '',
-    )
-    const description = String(
-      readConfObject(config, ['labels', 'description'], { feature }) || '',
-    )
     const mouseOver = feature.get('_mouseOver') as string | undefined
 
     coords.push(leftPx, topPx, rightPx, bottomPx)

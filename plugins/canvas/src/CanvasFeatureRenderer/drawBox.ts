@@ -4,6 +4,14 @@ import { getBoxColor, isOffScreen, isUTR } from './util'
 
 import type { DrawFeatureArgs } from './types'
 
+function getOutline(args: DrawFeatureArgs) {
+  const { feature, config, configContext } = args
+  const { outline, isOutlineCallback } = configContext
+  return isOutlineCallback
+    ? (readConfObject(config, 'outline', { feature }) as string)
+    : (outline ?? '')
+}
+
 const utrHeightFraction = 0.65
 
 export function drawBox(args: DrawFeatureArgs) {
@@ -49,16 +57,13 @@ export function drawBox(args: DrawFeatureArgs) {
     colorByCDS,
     theme,
   })
-  const stroke = readConfObject(config, 'outline', { feature }) as string
+  const stroke = getOutline(args)
 
   ctx.fillStyle = fill
+  ctx.fillRect(leftWithinBlock, top, widthWithinBlock, height)
   if (stroke) {
     ctx.strokeStyle = stroke
     ctx.lineWidth = 1
-  }
-
-  ctx.fillRect(leftWithinBlock, top, widthWithinBlock, height)
-  if (stroke) {
     ctx.strokeRect(leftWithinBlock, top, widthWithinBlock, height)
   }
 }

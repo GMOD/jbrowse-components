@@ -11,11 +11,10 @@ function makeSubpartsFilter(
 ) {
   const filter = readConfObject(config, confKey) as string[] | string
   const ret = typeof filter === 'string' ? filter.split(/\s*,\s*/) : filter
+  const lowerRet = ret.map(t => t.toLowerCase())
 
   return (feature: Feature) =>
-    ret
-      .map(typeName => typeName.toLowerCase())
-      .includes(feature.get('type').toLowerCase())
+    lowerRet.includes(feature.get('type').toLowerCase())
 }
 
 export function filterSubpart(feature: Feature, config: AnyConfigurationModel) {

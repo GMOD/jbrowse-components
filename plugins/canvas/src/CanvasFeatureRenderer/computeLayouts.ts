@@ -56,6 +56,8 @@ export function computeLayouts({
       configContext,
       nameColor: 'black',
       descriptionColor: 'blue',
+      name,
+      description,
     })
 
     const featureStart = feature.get('start')
@@ -90,6 +92,8 @@ export function computeLayouts({
         feature,
         layout: featureLayout,
         topPx,
+        label: name,
+        description,
       })
     }
   }

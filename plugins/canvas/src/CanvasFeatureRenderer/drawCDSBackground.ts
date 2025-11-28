@@ -35,12 +35,13 @@ export function drawCDSBackground(args: DrawCDSBackgroundArgs) {
 
   const flipper = reversed ? -1 : 1
   const rightPos = left + width
+  const baseHex = colord(baseColor).toHex()
+  const color1 = lighten(baseHex, 0.2)
+  const color2 = darken(baseHex, 0.1)
+
   for (let i = 0, l = aggregatedAminoAcids.length; i < l; i++) {
     const aa = aggregatedAminoAcids[i]!
-    const isAlternate = i % 2 === 1
-    const bgColor = isAlternate
-      ? darken(colord(baseColor).toHex(), 0.1)
-      : lighten(colord(baseColor).toHex(), 0.2)
+    const bgColor = i % 2 === 1 ? color2 : color1
 
     if (strand * flipper === -1) {
       const startX = rightPos - (1 / bpPerPx) * aa.startIndex

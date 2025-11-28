@@ -25,24 +25,22 @@ export function createFeatureFloatingLabels({
   configContext,
   nameColor,
   descriptionColor,
+  name: rawName,
+  description: rawDescription,
 }: {
   feature: Feature
   config: AnyConfigurationModel
   configContext: RenderConfigContext
   nameColor: string
   descriptionColor: string
+  name: string
+  description: string
 }): FloatingLabelData[] {
   const { showLabels, showDescriptions, fontHeight, isFontHeightCallback } =
     configContext
 
-  const name = truncateLabel(
-    String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
-  )
-  const description = truncateLabel(
-    String(
-      readConfObject(config, ['labels', 'description'], { feature }) || '',
-    ),
-  )
+  const name = truncateLabel(rawName)
+  const description = truncateLabel(rawDescription)
 
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
