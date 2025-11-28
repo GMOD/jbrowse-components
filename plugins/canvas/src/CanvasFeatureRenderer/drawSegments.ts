@@ -3,8 +3,15 @@ import { getStrokeColor, isOffScreen } from './util'
 import type { DrawFeatureArgs } from './types'
 
 export function drawSegments(args: DrawFeatureArgs) {
-  const { ctx, featureLayout, config, configContext, theme, feature, canvasWidth } =
-    args
+  const {
+    ctx,
+    featureLayout,
+    config,
+    configContext,
+    theme,
+    feature,
+    canvasWidth,
+  } = args
 
   const left = featureLayout.x
   const width = featureLayout.width

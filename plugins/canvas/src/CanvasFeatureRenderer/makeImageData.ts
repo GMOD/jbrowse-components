@@ -67,8 +67,13 @@ export function makeImageData({
   const { subfeatureLabels, transcriptTypes } = configContext
 
   forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
-    const { feature, layout: featureLayout, topPx: recordTopPx, label, description } =
-      record
+    const {
+      feature,
+      layout: featureLayout,
+      topPx: recordTopPx,
+      label,
+      description,
+    } = record
 
     const start = feature.get(region.reversed ? 'end' : 'start')
     const startPx = bpToPx(start, region, bpPerPx)
@@ -77,7 +82,11 @@ export function makeImageData({
       ...featureLayout,
       x: startPx + featureLayout.x,
       y: recordTopPx + featureLayout.y,
-      children: adjustChildPositions(featureLayout.children, startPx, recordTopPx),
+      children: adjustChildPositions(
+        featureLayout.children,
+        startPx,
+        recordTopPx,
+      ),
     }
 
     drawFeature({

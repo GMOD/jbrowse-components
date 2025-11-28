@@ -157,7 +157,11 @@ export function layoutFeature(args: {
       layout.totalFeatureHeight = totalStackedHeight
       layout.totalLayoutHeight = totalStackedHeight
     } else {
-      for (const subfeature of getChildFeatures({ feature, glyphType, config })) {
+      for (const subfeature of getChildFeatures({
+        feature,
+        glyphType,
+        config,
+      })) {
         layout.children.push(
           layoutFeature({
             feature: subfeature,
@@ -221,4 +225,3 @@ export function layoutFeature(args: {
 
   return layout
 }
-

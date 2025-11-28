@@ -14,6 +14,7 @@ interface DrawCDSBackgroundArgs {
   bpPerPx: number
   strand: number
   reversed: boolean
+  canvasWidth: number
 }
 
 /**
@@ -31,6 +32,7 @@ export function drawCDSBackground(args: DrawCDSBackgroundArgs) {
     bpPerPx,
     strand,
     reversed,
+    canvasWidth,
   } = args
 
   const flipper = reversed ? -1 : 1
@@ -46,17 +48,19 @@ export function drawCDSBackground(args: DrawCDSBackgroundArgs) {
     if (strand * flipper === -1) {
       const startX = rightPos - (1 / bpPerPx) * aa.startIndex
       const endX = rightPos - (1 / bpPerPx) * (aa.endIndex + 1)
-      const rectWidth = startX - endX
-
+      if (startX < 0 || endX > canvasWidth) {
+        continue
+      }
       ctx.fillStyle = bgColor
-      ctx.fillRect(endX, top, rectWidth, height)
+      ctx.fillRect(endX, top, startX - endX, height)
     } else {
       const startX = left + (1 / bpPerPx) * aa.startIndex
       const endX = left + (1 / bpPerPx) * (aa.endIndex + 1)
-      const rectWidth = endX - startX
-
+      if (endX < 0 || startX > canvasWidth) {
+        continue
+      }
       ctx.fillStyle = bgColor
-      ctx.fillRect(startX, top, rectWidth, height)
+      ctx.fillRect(startX, top, endX - startX, height)
     }
   }
 }

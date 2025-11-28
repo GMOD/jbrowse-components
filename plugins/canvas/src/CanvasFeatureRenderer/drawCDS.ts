@@ -71,6 +71,7 @@ export function drawCDS(args: DrawFeatureArgs) {
       bpPerPx,
       strand,
       reversed,
+      canvasWidth,
     })
 
     if (shouldRenderPeptideText(bpPerPx)) {
@@ -84,6 +85,7 @@ export function drawCDS(args: DrawFeatureArgs) {
         bpPerPx,
         strand,
         reversed,
+        canvasWidth,
       })
     }
   } else {
