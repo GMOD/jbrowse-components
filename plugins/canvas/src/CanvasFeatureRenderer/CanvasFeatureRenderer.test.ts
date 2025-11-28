@@ -1,3 +1,4 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -8,6 +9,9 @@ import { computeLayouts } from './computeLayouts'
 import configSchema from './configSchema'
 import { makeImageData } from './makeImageData'
 import { createRenderConfigContext } from './renderConfig'
+
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
 
 expect.extend({ toMatchImageSnapshot })
 
@@ -36,7 +40,7 @@ function createRenderArgs(
   region: { refName: string; start: number; end: number; assemblyName: string },
   configOverrides: Record<string, unknown> = {},
 ) {
-  const config = configSchema.create(configOverrides, {})
+  const config = configSchema.create(configOverrides, { pluginManager })
   const bpPerPx = 1
   const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
   const configContext = createRenderConfigContext(config)
