@@ -4,19 +4,39 @@ import { colord } from '@jbrowse/core/util/colord'
 import { f2 } from './constants'
 import { colorify } from './util'
 
-function getColorPhased(alleles: string[], HP: number, drawReference = true) {
-  const c = +alleles[HP]!
+function getColorPhased(allele: string, drawReference: boolean) {
+  const c = +allele
   return c ? set1[c - 1] || 'black' : drawReference ? '#ccc' : undefined
 }
 
 function getColorPhasedWithPhaseSet(
-  alleles: string[],
-  HP: number,
+  allele: string,
   PS: string,
+  drawReference: boolean,
+) {
+  const c = +allele
+  return c ? colorify(+PS) || 'black' : drawReference ? '#ccc' : undefined
+}
+
+export function drawPhasedBatched(
+  alleles: string[],
+  colorBatches: Record<string, Array<[number, number]>>,
+  x: number,
+  y: number,
+  HP: number,
+  PS?: string,
   drawReference = true,
 ) {
-  const c = +alleles[HP]!
-  return c ? colorify(+PS) || 'black' : drawReference ? '#ccc' : undefined
+  const allele = alleles[HP]!
+  const c =
+    PS !== undefined
+      ? getColorPhasedWithPhaseSet(allele, PS, drawReference)
+      : getColorPhased(allele, drawReference)
+  if (c) {
+    const batch = colorBatches[c] || (colorBatches[c] = [])
+    batch.push([x - f2, y - f2])
+  }
+  return c
 }
 
 export function drawPhased(
@@ -31,10 +51,11 @@ export function drawPhased(
   drawReference = true,
   alpha = 1,
 ) {
+  const allele = alleles[HP]!
   const c =
     PS !== undefined
-      ? getColorPhasedWithPhaseSet(alleles, HP, PS, drawReference)
-      : getColorPhased(alleles, HP, drawReference)
+      ? getColorPhasedWithPhaseSet(allele, PS, drawReference)
+      : getColorPhased(allele, drawReference)
   if (c) {
     ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
     ctx.fillRect(x - f2, y - f2, w + f2, h + f2)

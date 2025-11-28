@@ -2,13 +2,34 @@ import { forEachWithStopTokenCheck, updateStatus } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
-import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
-import { drawPhased } from '../shared/drawPhased'
+import { getAlleleColor } from '../shared/drawAlleleCount'
+import { drawPhasedBatched } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
 import type { RenderArgsDeserialized } from './types'
 
 type SampleGenotype = Record<string, string[]>
+
+interface SplitResult {
+  alleles: string[]
+  isPhased: boolean
+}
+
+function getSplitResult(
+  genotype: string,
+  cache: Record<string, SplitResult>,
+): SplitResult {
+  let result = cache[genotype]
+  if (!result) {
+    const alleles = genotype.split(/[/|]/)
+    result = {
+      alleles,
+      isPhased: alleles.length > 1 && genotype.includes('|'),
+    }
+    cache[genotype] = result
+  }
+  return result
+}
 
 export async function makeImageData({
   ctx,
@@ -37,7 +58,16 @@ export async function makeImageData({
   const h = rowHeight
   const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
   const endRow = Math.min(sln, Math.ceil((scrollTop + canvasHeight) / h))
+  const numRows = endRow - startRow
   checkStopToken(stopToken)
+
+  const sourceNames = new Array<string>(numRows)
+  const sourceHPs = new Array<number>(numRows)
+  for (let j = 0; j < numRows; j++) {
+    const source = sources[startRow + j]!
+    sourceNames[j] = source.name
+    sourceHPs[j] = source.HP!
+  }
 
   const genotypesCache = new Map<string, Record<string, string>>()
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
@@ -51,53 +81,61 @@ export async function makeImageData({
   )
   checkStopToken(stopToken)
   const arr = [] as string[][]
-  const m = mafs.length
-  const w = canvasWidth / m
+  const w = canvasWidth / mafs.length
+  const wAdj = w + f2
+  const hAdj = h + f2
+  const isPhasedMode = renderingMode === 'phased'
+  const xF2 = -f2
+  const yBase = startRow * h - scrollTop
 
   await updateStatus('Drawing variant matrix', statusCallback, () => {
     const colorCache = {} as Record<string, string | undefined>
-    const splitCache = {} as Record<string, string[]>
+    const splitCache = {} as Record<string, SplitResult>
+    const splitCacheSimple = {} as Record<string, string[]>
+    const colorBatches = {} as Record<string, Array<[number, number]>>
+
     forEachWithStopTokenCheck(
       mafs,
       stopToken,
       ({ feature, mostFrequentAlt }, idx) => {
         const arr2 = [] as string[]
+        const x = idx * w
+        const xAdj = x + xF2
         const hasPhaseSet = (
           feature.get('FORMAT') as string | undefined
         )?.includes('PS')
+
         if (hasPhaseSet) {
           const samp = feature.get('samples') as Record<string, SampleGenotype>
-          const x = (idx / mafs.length) * canvasWidth
-          for (let j = startRow; j < endRow; j++) {
-            const y = j * h - scrollTop
-            const { name, HP } = sources[j]!
+          for (let j = 0; j < numRows; j++) {
+            const y = yBase + j * h
+            const name = sourceNames[j]!
+            const HP = sourceHPs[j]!
             const s = samp[name]
             if (s) {
               const genotype = s.GT?.[0]
               if (genotype) {
                 arr2.push(genotype)
-                const alleles =
-                  splitCache[genotype] ??
-                  (splitCache[genotype] = genotype.split(/[/|]/))
-                const isPhased = alleles.length > 1 && genotype.includes('|')
-                if (renderingMode === 'phased') {
+                if (isPhasedMode) {
+                  const { alleles, isPhased } = getSplitResult(genotype, splitCache)
                   if (isPhased) {
                     const PS = s.PS?.[0]
-                    drawPhased(alleles, ctx, x, y, w, h, HP!, PS)
+                    drawPhasedBatched(alleles, colorBatches, x, y, HP, PS)
                   } else {
-                    ctx.fillStyle = 'black'
-                    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+                    const batch = colorBatches['black'] || (colorBatches['black'] = [])
+                    batch.push([xAdj, y - f2])
                   }
                 } else {
                   const c = getAlleleColor(
                     genotype,
                     mostFrequentAlt,
                     colorCache,
-                    splitCache,
+                    splitCacheSimple,
                     true,
                   )
                   if (c) {
-                    drawColorAlleleCount(c, ctx, x, y, w, h)
+                    const batch = colorBatches[c] || (colorBatches[c] = [])
+                    batch.push([xAdj, y - f2])
                   }
                 }
               }
@@ -110,34 +148,32 @@ export async function makeImageData({
             samp = feature.get('genotypes') as Record<string, string>
             genotypesCache.set(featureId, samp)
           }
-          const x = (idx / mafs.length) * canvasWidth
-          for (let j = startRow; j < endRow; j++) {
-            const y = j * h - scrollTop
-            const { name, HP } = sources[j]!
+          for (let j = 0; j < numRows; j++) {
+            const y = yBase + j * h
+            const name = sourceNames[j]!
+            const HP = sourceHPs[j]!
             const genotype = samp[name]
             if (genotype) {
               arr2.push(genotype)
-              const alleles =
-                splitCache[genotype] ??
-                (splitCache[genotype] = genotype.split(/[/|]/))
-              const isPhased = alleles.length > 1 && genotype.includes('|')
-              if (renderingMode === 'phased') {
+              if (isPhasedMode) {
+                const { alleles, isPhased } = getSplitResult(genotype, splitCache)
                 if (isPhased) {
-                  drawPhased(alleles, ctx, x, y, w, h, HP!)
+                  drawPhasedBatched(alleles, colorBatches, x, y, HP)
                 } else {
-                  ctx.fillStyle = 'black'
-                  ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+                  const batch = colorBatches['black'] || (colorBatches['black'] = [])
+                  batch.push([xAdj, y - f2])
                 }
               } else {
                 const c = getAlleleColor(
                   genotype,
                   mostFrequentAlt,
                   colorCache,
-                  splitCache,
+                  splitCacheSimple,
                   true,
                 )
                 if (c) {
-                  drawColorAlleleCount(c, ctx, x, y, w, h)
+                  const batch = colorBatches[c] || (colorBatches[c] = [])
+                  batch.push([xAdj, y - f2])
                 }
               }
             }
@@ -146,6 +182,13 @@ export async function makeImageData({
         arr.push(arr2)
       },
     )
+
+    for (const [color, rects] of Object.entries(colorBatches)) {
+      ctx.fillStyle = color
+      for (const [rx, ry] of rects) {
+        ctx.fillRect(rx, ry, wAdj, hAdj)
+      }
+    }
   })
   const featureData = mafs.map(({ feature }) => ({
     alt: feature.get('ALT') as string[],
