@@ -150,7 +150,6 @@ export function makeImageData({
         subfeatureCoords,
         subfeatureInfos,
         config,
-        configContext,
         showSubfeatureLabels,
         subfeatureLabelPosition,
         transcriptTypes,

@@ -46,7 +46,6 @@ export function layoutFeature(args: {
   const {
     displayMode,
     transcriptTypes,
-    containerTypes,
     showLabels,
     showDescriptions,
     showSubfeatureLabels,

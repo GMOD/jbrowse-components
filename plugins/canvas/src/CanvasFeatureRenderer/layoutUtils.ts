@@ -2,7 +2,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { createTranscriptFloatingLabel } from './floatingLabels'
 
-import type { RenderConfigContext } from './renderConfig'
 import type { FloatingLabelData } from './floatingLabels'
 import type { FeatureLayout, SubfeatureInfo } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -28,7 +27,6 @@ export function addSubfeaturesToLayoutAndFlatbush({
   subfeatureCoords,
   subfeatureInfos,
   config,
-  configContext,
   showSubfeatureLabels,
   subfeatureLabelPosition,
   transcriptTypes,
@@ -40,7 +38,6 @@ export function addSubfeaturesToLayoutAndFlatbush({
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
   config: AnyConfigurationModel
-  configContext: RenderConfigContext
   showSubfeatureLabels: boolean
   subfeatureLabelPosition: string
   transcriptTypes: string[]

@@ -26,6 +26,7 @@ export function drawFeature(args: DrawFeatureArgs) {
     case 'ProcessedTranscript':
     case 'Segments':
       drawChildFeatures(args)
+      drawArrow(args)
       break
     case 'CDS':
       drawCDS(args)

@@ -30,18 +30,6 @@ export function computeLayouts({
   const reversed = region.reversed || false
   const layoutRecords: LayoutRecord[] = []
 
-  const {
-    displayMode,
-    transcriptTypes,
-    containerTypes,
-    showLabels,
-    showDescriptions,
-    showSubfeatureLabels,
-    subfeatureLabelPosition,
-    fontHeight,
-    labelAllowed,
-  } = configContext
-
   for (const feature of features.values()) {
     const featureLayout = layoutFeature({
       feature,

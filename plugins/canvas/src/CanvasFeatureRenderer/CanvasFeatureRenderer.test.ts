@@ -485,7 +485,7 @@ describe('CanvasFeatureRenderer', () => {
       const ctx = canvas.getContext('2d')
 
       makeImageData({
-        ctx,
+        ctx: ctx as unknown as CanvasRenderingContext2D,
         layoutRecords,
         canvasWidth: width,
         renderArgs: {
@@ -549,7 +549,7 @@ describe('CanvasFeatureRenderer', () => {
       const ctx = canvas.getContext('2d')
 
       makeImageData({
-        ctx,
+        ctx: ctx as unknown as CanvasRenderingContext2D,
         layoutRecords,
         canvasWidth: width,
         renderArgs: {
@@ -638,7 +638,7 @@ describe('CanvasFeatureRenderer', () => {
       const ctx = canvas.getContext('2d')
 
       makeImageData({
-        ctx,
+        ctx: ctx as unknown as CanvasRenderingContext2D,
         layoutRecords,
         canvasWidth: width,
         renderArgs: {
@@ -694,7 +694,7 @@ describe('CanvasFeatureRenderer', () => {
       const ctx = canvas.getContext('2d')
 
       makeImageData({
-        ctx,
+        ctx: ctx as unknown as CanvasRenderingContext2D,
         layoutRecords,
         canvasWidth: width,
         renderArgs: {
@@ -715,6 +715,7 @@ describe('CanvasFeatureRenderer', () => {
         type: 'gene',
         start: 10,
         end: 180,
+        strand: 1,
         name: 'MultiTranscriptGene',
         subfeatures: [
           {
@@ -723,6 +724,7 @@ describe('CanvasFeatureRenderer', () => {
             type: 'mRNA',
             start: 10,
             end: 180,
+            strand: 1,
             name: 'Transcript-1',
             subfeatures: [
               {
@@ -731,6 +733,7 @@ describe('CanvasFeatureRenderer', () => {
                 type: 'CDS',
                 start: 20,
                 end: 60,
+                strand: 1,
                 phase: 0,
               },
               {
@@ -739,6 +742,7 @@ describe('CanvasFeatureRenderer', () => {
                 type: 'CDS',
                 start: 120,
                 end: 170,
+                strand: 1,
                 phase: 0,
               },
             ],
@@ -749,6 +753,7 @@ describe('CanvasFeatureRenderer', () => {
             type: 'mRNA',
             start: 10,
             end: 150,
+            strand: 1,
             name: 'Transcript-2',
             subfeatures: [
               {
@@ -757,6 +762,7 @@ describe('CanvasFeatureRenderer', () => {
                 type: 'CDS',
                 start: 30,
                 end: 80,
+                strand: 1,
                 phase: 0,
               },
               {
@@ -765,6 +771,7 @@ describe('CanvasFeatureRenderer', () => {
                 type: 'CDS',
                 start: 100,
                 end: 140,
+                strand: 1,
                 phase: 0,
               },
             ],
@@ -795,7 +802,111 @@ describe('CanvasFeatureRenderer', () => {
       const ctx = canvas.getContext('2d')
 
       makeImageData({
-        ctx,
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('transcript arrows on forward and reverse strand', async () => {
+      const forwardGene = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 10,
+        end: 90,
+        strand: 1,
+        name: 'ForwardGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 10,
+            end: 90,
+            strand: 1,
+            name: 'Forward-Transcript',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 20,
+                end: 80,
+                strand: 1,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const reverseGene = new SimpleFeature({
+        uniqueId: 'gene2',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 110,
+        end: 190,
+        strand: -1,
+        name: 'ReverseGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna2',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 110,
+            end: 190,
+            strand: -1,
+            name: 'Reverse-Transcript',
+            subfeatures: [
+              {
+                uniqueId: 'cds2',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 120,
+                end: 180,
+                strand: -1,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([
+        ['gene1', forwardGene],
+        ['gene2', reverseGene],
+      ])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
         layoutRecords,
         canvasWidth: width,
         renderArgs: {
