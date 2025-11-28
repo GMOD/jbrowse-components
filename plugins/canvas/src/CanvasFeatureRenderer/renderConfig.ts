@@ -32,8 +32,10 @@ export interface RenderConfigContext {
   containerTypes: string[]
 
   color1?: string
+  color2?: string
   color3?: string
   isColor1Callback: boolean
+  isColor2Callback: boolean
   isColor3Callback: boolean
 
   fontHeight: number
@@ -56,10 +58,14 @@ export function createRenderConfigContext(
   const geneGlyphMode = readConfObject(config, 'geneGlyphMode') as string
 
   const isColor1Callback = config.color1?.isCallback ?? false
+  const isColor2Callback = config.color2?.isCallback ?? false
   const isColor3Callback = config.color3?.isCallback ?? false
   const color1 = isColor1Callback
     ? undefined
     : (readConfObject(config, 'color1') as string)
+  const color2 = isColor2Callback
+    ? undefined
+    : (readConfObject(config, 'color2') as string)
   const color3 = isColor3Callback
     ? undefined
     : (readConfObject(config, 'color3') as string)
@@ -77,8 +83,10 @@ export function createRenderConfigContext(
     transcriptTypes,
     containerTypes,
     color1,
+    color2,
     color3,
     isColor1Callback,
+    isColor2Callback,
     isColor3Callback,
     fontHeight,
     isFontHeightCallback,

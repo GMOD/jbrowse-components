@@ -1,10 +1,10 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { stripAlpha } from '@jbrowse/core/util'
+import { getStrokeColor } from './util'
 
 import type { DrawFeatureArgs } from './types'
 
 export function drawArrow(args: DrawFeatureArgs) {
-  const { ctx, feature, featureLayout, config, theme, reversed } = args
+  const { ctx, feature, featureLayout, config, configContext, theme, reversed } =
+    args
 
   const strand = feature.get('strand')
   const size = 5
@@ -16,8 +16,7 @@ export function drawArrow(args: DrawFeatureArgs) {
   const height = featureLayout.height
   const y = top + height / 2
 
-  const c = readConfObject(config, 'color2', { feature })
-  const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
+  const color2 = getStrokeColor({ feature, config, configContext, theme })
   const p =
     strand * reverseFlip === -1
       ? left

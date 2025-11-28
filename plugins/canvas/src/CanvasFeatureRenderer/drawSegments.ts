@@ -1,13 +1,11 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { stripAlpha } from '@jbrowse/core/util'
+import { getStrokeColor } from './util'
 
 import type { DrawFeatureArgs } from './types'
 
 export function drawSegments(args: DrawFeatureArgs) {
-  const { ctx, featureLayout, config, theme, feature } = args
+  const { ctx, featureLayout, config, configContext, theme, feature } = args
 
-  const c = readConfObject(config, 'color2', { feature })
-  const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
+  const color2 = getStrokeColor({ feature, config, configContext, theme })
   const left = featureLayout.x
   const top = featureLayout.y
   const width = featureLayout.width

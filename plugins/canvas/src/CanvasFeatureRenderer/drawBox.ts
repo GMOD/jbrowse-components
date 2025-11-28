@@ -26,7 +26,7 @@ export function drawBox(args: DrawFeatureArgs) {
   let top = featureLayout.y
   let height = featureLayout.height
 
-  if (left + width < 0) {
+  if (left + width < 0 || (feature.parent() && featureType === 'intron')) {
     return
   }
 

@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getFrame } from '@jbrowse/core/util'
+import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { GlyphType } from './types'
@@ -102,4 +102,22 @@ export function chooseGlyphType({
   } else {
     return 'Box'
   }
+}
+
+export function getStrokeColor({
+  feature,
+  config,
+  configContext,
+  theme,
+}: {
+  feature: Feature
+  config: AnyConfigurationModel
+  configContext: RenderConfigContext
+  theme: Theme
+}) {
+  const { color2, isColor2Callback } = configContext
+  const c = isColor2Callback
+    ? readConfObject(config, 'color2', { feature })
+    : (color2 ?? readConfObject(config, 'color2'))
+  return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 }
