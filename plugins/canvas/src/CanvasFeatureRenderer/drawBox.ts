@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { getBoxColor, isUTR } from './util'
+import { getBoxColor, isOffScreen, isUTR } from './util'
 
 import type { DrawFeatureArgs } from './types'
 
@@ -16,17 +16,20 @@ export function drawBox(args: DrawFeatureArgs) {
     config,
     configContext,
     theme,
+    canvasWidth,
     colorByCDS = false,
   } = args
   const { start, end } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
-  const featureType: string | undefined = feature.get('type')
   const width = featureLayout.width
   const left = featureLayout.x
   let top = featureLayout.y
   let height = featureLayout.height
 
-  if (left + width < 0 || (feature.parent() && featureType === 'intron')) {
+  if (
+    isOffScreen(left, width, canvasWidth) ||
+    (feature.parent() && feature.get('type') === 'intron')
+  ) {
     return
   }
 
@@ -47,10 +50,6 @@ export function drawBox(args: DrawFeatureArgs) {
     theme,
   })
   const stroke = readConfObject(config, 'outline', { feature }) as string
-
-  if (feature.parent() && featureType === 'intron') {
-    return
-  }
 
   ctx.fillStyle = fill
   if (stroke) {

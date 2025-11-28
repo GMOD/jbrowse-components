@@ -77,15 +77,7 @@ export function makeImageData({
       ...featureLayout,
       x: startPx + featureLayout.x,
       y: recordTopPx + featureLayout.y,
-      height: featureLayout.height,
-      totalFeatureHeight: featureLayout.totalFeatureHeight,
-      totalLayoutHeight: featureLayout.totalLayoutHeight,
-      totalLayoutWidth: featureLayout.totalLayoutWidth,
-      children: adjustChildPositions(
-        featureLayout.children,
-        startPx,
-        recordTopPx,
-      ),
+      children: adjustChildPositions(featureLayout.children, startPx, recordTopPx),
     }
 
     drawFeature({

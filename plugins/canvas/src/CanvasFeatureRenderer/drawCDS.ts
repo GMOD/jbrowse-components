@@ -2,7 +2,7 @@ import { drawBox } from './drawBox'
 import { drawCDSBackground } from './drawCDSBackground'
 import { drawPeptidesOnCDS } from './drawPeptidesOnCDS'
 import { prepareAminoAcidData } from './prepareAminoAcidData'
-import { getBoxColor } from './util'
+import { getBoxColor, isOffScreen } from './util'
 import {
   shouldRenderPeptideBackground,
   shouldRenderPeptideText,
@@ -20,6 +20,7 @@ export function drawCDS(args: DrawFeatureArgs) {
     configContext,
     theme,
     reversed,
+    canvasWidth,
     peptideDataMap,
     colorByCDS = false,
   } = args
@@ -32,7 +33,7 @@ export function drawCDS(args: DrawFeatureArgs) {
   const top = featureLayout.y
   const height = featureLayout.height
 
-  if (left + width < 0) {
+  if (isOffScreen(left, width, canvasWidth)) {
     return
   }
 

@@ -13,6 +13,10 @@ export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
 }
 
+export function isOffScreen(left: number, width: number, canvasWidth: number) {
+  return left + width < 0 || left > canvasWidth
+}
+
 export function isUTR(feature: Feature) {
   return /(\bUTR|_UTR|untranslated[_\s]region)\b/i.test(
     feature.get('type') || '',
