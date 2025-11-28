@@ -490,7 +490,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     const currentFilters = self.activeFilters
                     if (currentFilters.includes(geneFilter)) {
                       self.setJexlFilters(
-                        currentFilters.filter(f => f !== geneFilter),
+                        currentFilters.filter((f: string) => f !== geneFilter),
                       )
                     } else {
                       self.setJexlFilters([...currentFilters, geneFilter])

@@ -102,14 +102,14 @@ export function layoutFeature(args: {
         const transcriptSubfeatures = sortedSubfeatures.filter(sub =>
           transcriptTypes.includes(sub.get('type')),
         )
-        if (transcriptSubfeatures.length > 0) {
-          const longest = transcriptSubfeatures.reduce((a, b) =>
-            a.get('end') - a.get('start') > b.get('end') - b.get('start')
-              ? a
-              : b,
-          )
-          sortedSubfeatures = [longest]
-        }
+        const candidates =
+          transcriptSubfeatures.length > 0
+            ? transcriptSubfeatures
+            : sortedSubfeatures
+        const longest = candidates.reduce((a, b) =>
+          a.get('end') - a.get('start') > b.get('end') - b.get('start') ? a : b,
+        )
+        sortedSubfeatures = [longest]
       }
 
       let currentY = parentY
