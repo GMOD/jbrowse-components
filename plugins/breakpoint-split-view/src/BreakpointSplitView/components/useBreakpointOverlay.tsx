@@ -70,8 +70,10 @@ export function calculateYPositions(
 ) {
   const tracks = views.map(v => v.getTrack(trackId))
   return {
-    y1: yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) - yOffset,
-    y2: yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) - yOffset,
+    y1:
+      yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) - yOffset,
+    y2:
+      yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) - yOffset,
   }
 }
 

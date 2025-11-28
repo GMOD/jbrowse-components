@@ -102,7 +102,9 @@ test('renders with defaults of the PileupTrack schema', () => {
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <ConfigurationEditor
-        model={{ target: PileupDisplaySchema.create(undefined, { pluginManager: pm }) }}
+        model={{
+          target: PileupDisplaySchema.create(undefined, { pluginManager: pm }),
+        }}
       />
       ,
     </ThemeProvider>,

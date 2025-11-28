@@ -1,7 +1,7 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
-import PluginManager from '../PluginManager'
 import { getConf, readConfObject } from '.'
+import PluginManager from '../PluginManager'
 import { ConfigurationSchema } from './configurationSchema'
 import { isConfigurationModel } from './util'
 
