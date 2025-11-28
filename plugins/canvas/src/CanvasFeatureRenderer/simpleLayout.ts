@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
 import { getSubparts } from './filterSubparts'
-import { chooseGlyphType } from './util'
+import { chooseGlyphType, truncateLabel } from './util'
 
 import type { FeatureLayout } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -244,13 +244,15 @@ export function layoutFeature(args: {
         feature,
       }) as number)
 
-    const name = String(
-      readConfObject(config, ['labels', 'name'], { feature }) || '',
+    const name = truncateLabel(
+      String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
     )
     const shouldShowName = /\S/.test(name) && showLabels
 
-    const description = String(
-      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    const description = truncateLabel(
+      String(
+        readConfObject(config, ['labels', 'description'], { feature }) || '',
+      ),
     )
     const shouldShowDescription = /\S/.test(description) && showDescriptions
 

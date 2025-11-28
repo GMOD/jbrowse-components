@@ -1,5 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
+import { truncateLabel } from './util'
+
 import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -32,11 +34,13 @@ export function createFeatureFloatingLabels({
 }): FloatingLabelData[] {
   const { showLabels, showDescriptions, fontHeight } = configContext
 
-  const name = String(
-    readConfObject(config, ['labels', 'name'], { feature }) || '',
+  const name = truncateLabel(
+    String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
   )
-  const description = String(
-    readConfObject(config, ['labels', 'description'], { feature }) || '',
+  const description = truncateLabel(
+    String(
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    ),
   )
 
   const shouldShowLabel = /\S/.test(name) && showLabels
@@ -104,6 +108,8 @@ export function createTranscriptFloatingLabel({
     return null
   }
 
+  const truncatedName = truncateLabel(transcriptName)
+
   // For 'overlay' mode, position label at top of feature (negative relativeY)
   // For 'below' mode, position label at bottom of feature (relativeY = 0)
   // The label Y formula is: featureTop + totalFeatureHeight + relativeY
@@ -112,7 +118,7 @@ export function createTranscriptFloatingLabel({
   const relativeY = isOverlay ? 2 - featureHeight : 0
 
   return {
-    text: transcriptName,
+    text: truncatedName,
     relativeY,
     color,
     isOverlay,
