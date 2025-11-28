@@ -6,8 +6,7 @@ import { FileLocation } from '../util/types/mst'
 
 import type { IAnyComplexType, IAnyModelType } from '@jbrowse/mobx-state-tree'
 
-function isValidColorString(/* str */) {
-  // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
+function isValidColorString(_str: string) {
   return true
 }
 const typeModels: Record<string, any> = {
@@ -191,11 +190,7 @@ export default function ConfigSlot(
     throw new Error("no 'defaultValue' provided")
   }
 
-  // if the `type` is something like `color`, then the model name
-  // here will be `ColorConfigSlot`
-  const configSlotModelName = `${slotName
-    .charAt(0)
-    .toUpperCase()}${slotName.slice(1)}ConfigSlot`
+  const configSlotModelName = `${slotName[0].toUpperCase()}${slotName.slice(1)}ConfigSlot`
   let slot = types
     .model(configSlotModelName, {
       name: types.literal(slotName),
@@ -298,7 +293,8 @@ export default function ConfigSlot(
     description,
     value: defaultValue,
   })
-  const m = completeModel
-  Object.defineProperty(m, 'isJBrowseConfigurationSlot', { value: true })
-  return m
+  Object.defineProperty(completeModel, 'isJBrowseConfigurationSlot', {
+    value: true,
+  })
+  return completeModel
 }

@@ -1,8 +1,12 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
+import PluginManager from '../PluginManager'
 import { getConf, readConfObject } from '.'
 import { ConfigurationSchema } from './configurationSchema'
 import { isConfigurationModel } from './util'
+
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
 
 describe('configuration schemas', () => {
   test('can make a schema with a color', () => {
@@ -21,7 +25,7 @@ describe('configuration schemas', () => {
       }),
     })
 
-    const model = container.create()
+    const model = container.create(undefined, { pluginManager })
 
     expect(isConfigurationModel(model.configuration)).toBe(true)
     expect(getConf(model, 'backgroundColor')).toBe('#eee')
@@ -66,7 +70,7 @@ describe('configuration schemas', () => {
       }),
     })
 
-    const model = container.create()
+    const model = container.create(undefined, { pluginManager })
     expect(getConf(model, 'someInteger')).toBe(12)
     // expect(getConf(model, 'myArrayOfSubConfigurations')).toBe(undefined)
   })
@@ -89,7 +93,7 @@ describe('configuration schemas', () => {
       }),
     })
 
-    const model = container.create()
+    const model = container.create(undefined, { pluginManager })
     expect(isConfigurationModel(model.configuration)).toBe(true)
     expect(getConf(model, 'someInteger')).toBe(12)
     // expect(getConf(model, 'mySubConfiguration.someNumber')).toBe(4.3)
@@ -124,7 +128,7 @@ describe('configuration schemas', () => {
       },
     )
 
-    const model = child.create()
+    const model = child.create(undefined, { pluginManager })
     expect(isConfigurationModel(model)).toBe(true)
     expect(readConfObject(model, 'someInteger')).toBe(12)
 
@@ -147,12 +151,15 @@ describe('configuration schemas', () => {
       }),
     })
 
-    const model = container.create({ configuration: { someInteger: 42 } })
+    const model = container.create(
+      { configuration: { someInteger: 42 } },
+      { pluginManager },
+    )
     expect(getConf(model, 'someInteger')).toEqual(42)
     expect(getSnapshot(model)).toEqual({ configuration: { someInteger: 42 } })
     expect(getConf(model, 'someInteger')).toEqual(42)
 
-    const model2 = container.create({ configuration: {} })
+    const model2 = container.create({ configuration: {} }, { pluginManager })
     expect(getSnapshot(model2)).toEqual({ configuration: {} })
     expect(getConf(model2, 'someInteger')).toEqual(12)
   })
@@ -183,13 +190,19 @@ describe('configuration schemas', () => {
       }),
     })
 
-    const model = container.create({
-      configuration: {
-        someInteger: 42,
-        mySubConfiguration: {},
-        myArrayOfSubConfigurations: [{ someNumber: 3.5 }, { someNumber: 11.1 }],
+    const model = container.create(
+      {
+        configuration: {
+          someInteger: 42,
+          mySubConfiguration: {},
+          myArrayOfSubConfigurations: [
+            { someNumber: 3.5 },
+            { someNumber: 11.1 },
+          ],
+        },
       },
-    })
+      { pluginManager },
+    )
     expect(getSnapshot(model)).toEqual({
       configuration: {
         someInteger: 42,
@@ -234,13 +247,16 @@ describe('configuration schemas', () => {
       }),
     })
 
-    const model = container.create({
-      configuration: {
-        someInteger: 12,
-        myConfigurationMap: { nog: {} },
-        mySubConfiguration: { someNumber: 12 },
+    const model = container.create(
+      {
+        configuration: {
+          someInteger: 12,
+          myConfigurationMap: { nog: {} },
+          mySubConfiguration: { someNumber: 12 },
+        },
       },
-    })
+      { pluginManager },
+    )
     expect(getSnapshot(model)).toEqual({
       configuration: {
         myConfigurationMap: { nog: {} },
@@ -287,7 +303,7 @@ describe('configuration schemas', () => {
       },
       { explicitlyTyped: true },
     )
-    const tester = configSchema.create()
+    const tester = configSchema.create(undefined, { pluginManager })
     expect(readConfObject(tester, 'dontRedispatch')[0]).toBe('chromosome')
     expect(readConfObject(tester, 'thisShouldGetInstantiated')).toBe(
       'Not instantiated',

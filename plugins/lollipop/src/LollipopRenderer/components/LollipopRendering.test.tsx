@@ -1,8 +1,12 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
 import ConfigSchema from '../configSchema'
 import Rendering from './LollipopRendering'
+
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
 
 // these tests do very little, let's try to expand them at some point
 test('no features', () => {
@@ -11,7 +15,7 @@ test('no features', () => {
       width={500}
       height={500}
       regions={[{ refName: 'zonk', start: 0, end: 300 }]}
-      config={ConfigSchema.create({})}
+      config={ConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
@@ -39,7 +43,7 @@ test('one feature', () => {
           ],
         ])
       }
-      config={ConfigSchema.create({})}
+      config={ConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
