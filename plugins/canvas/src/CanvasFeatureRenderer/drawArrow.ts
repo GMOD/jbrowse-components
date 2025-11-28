@@ -1,12 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { stripAlpha } from '@jbrowse/core/util'
 
-import type { DrawFeatureArgs, DrawingResult, FlatbushItem } from './types'
+import type { DrawFeatureArgs } from './types'
 
-/**
- * Draw a directional arrow indicator for stranded features
- */
-export function drawArrow(args: DrawFeatureArgs): DrawingResult {
+export function drawArrow(args: DrawFeatureArgs) {
   const { ctx, feature, featureLayout, config, theme, reversed } = args
 
   const strand = feature.get('strand')
@@ -17,6 +14,7 @@ export function drawArrow(args: DrawFeatureArgs): DrawingResult {
   const top = featureLayout.y
   const width = featureLayout.width
   const height = featureLayout.height
+  const y = top + height / 2
 
   const c = readConfObject(config, 'color2', { feature })
   const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
@@ -26,13 +24,8 @@ export function drawArrow(args: DrawFeatureArgs): DrawingResult {
       : strand * reverseFlip === 1
         ? left + width
         : null
-  const y = top + height / 2
-
-  const coords: number[] = []
-  const items: FlatbushItem[] = []
 
   if (p !== null) {
-    // Draw line
     ctx.strokeStyle = color2
     ctx.lineWidth = 1
     ctx.beginPath()
@@ -40,7 +33,6 @@ export function drawArrow(args: DrawFeatureArgs): DrawingResult {
     ctx.lineTo(p + offset, y)
     ctx.stroke()
 
-    // Draw arrow polygon
     ctx.fillStyle = color2
     ctx.strokeStyle = color2
     ctx.beginPath()
@@ -51,6 +43,4 @@ export function drawArrow(args: DrawFeatureArgs): DrawingResult {
     ctx.fill()
     ctx.stroke()
   }
-
-  return { coords, items }
 }

@@ -2,15 +2,23 @@ import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Image, createCanvas } from 'canvas'
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import { computeLayouts } from './computeLayouts'
 import configSchema from './configSchema'
 import { makeImageData } from './makeImageData'
+import { createRenderConfigContext } from './renderConfig'
+
+expect.extend({ toMatchImageSnapshot })
 
 // @ts-expect-error
 global.nodeImage = Image
 // @ts-expect-error
 global.nodeCreateCanvas = createCanvas
+
+function canvasToBuffer(canvas: ReturnType<typeof createCanvas>) {
+  return canvas.toBuffer('image/png')
+}
 
 const defaultTheme = {
   palette: {
@@ -31,14 +39,16 @@ function createRenderArgs(
   const config = configSchema.create(configOverrides, {})
   const bpPerPx = 1
   const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
+  const configContext = createRenderConfigContext(config)
 
   return {
     features,
     bpPerPx,
     region: { ...region, reversed: false },
     config,
+    configContext,
     layout,
-    displayMode: 'normal',
+    displayMode: configContext.displayMode,
     theme: defaultTheme,
   }
 }
@@ -67,6 +77,7 @@ describe('CanvasFeatureRenderer', () => {
         bpPerPx: args.bpPerPx,
         region: args.region,
         config: args.config,
+        configContext: args.configContext,
         layout: args.layout,
       })
 
@@ -108,6 +119,7 @@ describe('CanvasFeatureRenderer', () => {
         bpPerPx: args.bpPerPx,
         region: args.region,
         config: args.config,
+        configContext: args.configContext,
         layout: args.layout,
       })
 
@@ -140,6 +152,7 @@ describe('CanvasFeatureRenderer', () => {
         bpPerPx: args.bpPerPx,
         region: args.region,
         config: args.config,
+        configContext: args.configContext,
         layout: args.layout,
       })
 
@@ -159,6 +172,7 @@ describe('CanvasFeatureRenderer', () => {
               features,
               regions: [args.region],
             },
+            configContext: args.configContext,
           }),
       )
 
@@ -194,6 +208,7 @@ describe('CanvasFeatureRenderer', () => {
         bpPerPx: args.bpPerPx,
         region: args.region,
         config: args.config,
+        configContext: args.configContext,
         layout: args.layout,
       })
 
@@ -213,6 +228,7 @@ describe('CanvasFeatureRenderer', () => {
               features,
               regions: [args.region],
             },
+            configContext: args.configContext,
           }),
       )
 
@@ -270,6 +286,7 @@ describe('CanvasFeatureRenderer', () => {
         bpPerPx: args.bpPerPx,
         region: args.region,
         config: args.config,
+        configContext: args.configContext,
         layout: args.layout,
       })
 
@@ -289,6 +306,7 @@ describe('CanvasFeatureRenderer', () => {
               features,
               regions: [args.region],
             },
+            configContext: args.configContext,
           }),
       )
 
@@ -324,6 +342,7 @@ describe('CanvasFeatureRenderer', () => {
         bpPerPx: args.bpPerPx,
         region: args.region,
         config: args.config,
+        configContext: args.configContext,
         layout: args.layout,
       })
 
@@ -353,6 +372,7 @@ describe('CanvasFeatureRenderer', () => {
         bpPerPx: args.bpPerPx,
         region: args.region,
         config: args.config,
+        configContext: args.configContext,
         layout: args.layout,
       })
 
@@ -372,6 +392,7 @@ describe('CanvasFeatureRenderer', () => {
               features,
               regions: [args.region],
             },
+            configContext: args.configContext,
           }),
       )
 
@@ -402,6 +423,7 @@ describe('CanvasFeatureRenderer', () => {
         bpPerPx: args.bpPerPx,
         region: args.region,
         config: args.config,
+        configContext: args.configContext,
         layout: args.layout,
       })
 
@@ -421,11 +443,370 @@ describe('CanvasFeatureRenderer', () => {
               features,
               regions: [args.region],
             },
+            configContext: args.configContext,
           }),
       )
 
       expect(result.items).toMatchSnapshot()
       expect(result.subfeatureInfos).toMatchSnapshot()
+    })
+  })
+
+  describe('canvas snapshots', () => {
+    test('simple box feature rendering', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 50,
+        end: 150,
+        name: 'SimpleFeature',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('multiple overlapping features', async () => {
+      const feature1 = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 20,
+        end: 80,
+        name: 'Feature1',
+      })
+      const feature2 = new SimpleFeature({
+        uniqueId: 'test2',
+        refName: 'ctgA',
+        start: 60,
+        end: 120,
+        name: 'Feature2',
+      })
+      const feature3 = new SimpleFeature({
+        uniqueId: 'test3',
+        refName: 'ctgA',
+        start: 100,
+        end: 180,
+        name: 'Feature3',
+      })
+      const features = new Map([
+        ['test1', feature1],
+        ['test2', feature2],
+        ['test3', feature3],
+      ])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 100
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('gene with transcript and CDS', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 10,
+        end: 180,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 10,
+            end: 180,
+            name: 'Transcript-1',
+            subfeatures: [
+              {
+                uniqueId: 'utr1',
+                refName: 'ctgA',
+                type: 'five_prime_UTR',
+                start: 10,
+                end: 30,
+              },
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 30,
+                end: 70,
+                phase: 0,
+              },
+              {
+                uniqueId: 'cds2',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 100,
+                end: 150,
+                phase: 0,
+              },
+              {
+                uniqueId: 'utr2',
+                refName: 'ctgA',
+                type: 'three_prime_UTR',
+                start: 150,
+                end: 180,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('compact display mode', async () => {
+      const feature1 = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 20,
+        end: 80,
+        name: 'Feature1',
+      })
+      const feature2 = new SimpleFeature({
+        uniqueId: 'test2',
+        refName: 'ctgA',
+        start: 60,
+        end: 120,
+        name: 'Feature2',
+      })
+      const features = new Map([
+        ['test1', feature1],
+        ['test2', feature2],
+      ])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, { displayMode: 'compact' })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('gene with multiple transcripts', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 10,
+        end: 180,
+        name: 'MultiTranscriptGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 10,
+            end: 180,
+            name: 'Transcript-1',
+            subfeatures: [
+              {
+                uniqueId: 'cds1a',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 20,
+                end: 60,
+                phase: 0,
+              },
+              {
+                uniqueId: 'cds1b',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 120,
+                end: 170,
+                phase: 0,
+              },
+            ],
+          },
+          {
+            uniqueId: 'mrna2',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 10,
+            end: 150,
+            name: 'Transcript-2',
+            subfeatures: [
+              {
+                uniqueId: 'cds2a',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 30,
+                end: 80,
+                phase: 0,
+              },
+              {
+                uniqueId: 'cds2b',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 100,
+                end: 140,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 80
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
   })
 })

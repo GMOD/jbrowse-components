@@ -3,45 +3,46 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
- * Pre-read configuration values for the renderer.
+ * IMPORTANT: Config Reading Performance Optimization
  *
- * IMPORTANT: Reading config values via readConfObject is expensive because it
- * may involve JEXL expression evaluation. We read all needed config values once
- * upfront and pass them through the rendering pipeline to avoid repeated reads
- * in hot paths (e.g., per-feature loops).
+ * Reading config values via readConfObject is expensive because:
+ * 1. It may involve JEXL expression evaluation
+ * 2. It traverses the config tree
+ * 3. It can trigger MobX reactions
+ *
+ * In rendering code, we process thousands of features in tight loops.
+ * Calling readConfObject per-feature creates significant overhead.
+ *
+ * SOLUTION: Read all non-feature-dependent config values ONCE at the start
+ * of the rendering pipeline and pass them through as a context object.
+ *
+ * For feature-dependent configs (callbacks), we check `isCallback` to determine
+ * if we need to call readConfObject per-feature or can use a cached value.
+ *
+ * This pattern should be maintained for any new config values added.
  */
+
 export interface RenderConfigContext {
-  // Display settings
   displayMode: string
   showLabels: boolean
   showDescriptions: boolean
   showSubfeatureLabels: boolean
   subfeatureLabelPosition: string
 
-  // Feature type classification
   transcriptTypes: string[]
   containerTypes: string[]
 
-  // Colors (undefined if callback - will be read per-feature)
   color1?: string
   color3?: string
   isColor1Callback: boolean
   isColor3Callback: boolean
 
-  // Font settings (undefined if callback - will be read per-feature)
-  fontHeight?: number
+  fontHeight: number
   isFontHeightCallback: boolean
 
-  // Derived flags
   labelAllowed: boolean
 }
 
-/**
- * Read all renderer config values upfront to avoid repeated expensive reads.
- *
- * Call this once at the start of rendering and pass the context through
- * to all functions that need config values.
- */
 export function createRenderConfigContext(
   config: AnyConfigurationModel,
 ): RenderConfigContext {
@@ -59,7 +60,6 @@ export function createRenderConfigContext(
   const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
   const containerTypes = readConfObject(config, 'containerTypes') as string[]
 
-  // Check if colors are callbacks to avoid unnecessary per-feature reads
   const isColor1Callback = config.color1?.isCallback ?? false
   const isColor3Callback = config.color3?.isCallback ?? false
   const color1 = isColor1Callback
@@ -69,10 +69,9 @@ export function createRenderConfigContext(
     ? undefined
     : (readConfObject(config, 'color3') as string)
 
-  // Check if fontHeight is a callback
   const isFontHeightCallback = config.labels?.fontSize?.isCallback ?? false
   const fontHeight = isFontHeightCallback
-    ? undefined
+    ? 12
     : (readConfObject(config, ['labels', 'fontSize']) as number)
 
   return {
@@ -89,6 +88,6 @@ export function createRenderConfigContext(
     isColor3Callback,
     fontHeight,
     isFontHeightCallback,
-    labelAllowed: displayMode !== 'collapsed',
+    labelAllowed: displayMode !== 'collapse',
   }
 }

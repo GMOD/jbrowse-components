@@ -91,7 +91,7 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       model: types.enumeration('subfeatureLabelPosition', ['below', 'overlay']),
       description:
         'position of subfeature labels: "below" reserves extra space, "overlay" draws on top of feature',
-      defaultValue: 'below',
+      defaultValue: 'overlay',
     },
 
     labels: ConfigurationSchema('CanvasFeatureLabels', {

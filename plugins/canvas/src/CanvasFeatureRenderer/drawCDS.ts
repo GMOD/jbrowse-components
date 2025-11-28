@@ -8,26 +8,22 @@ import {
   shouldRenderPeptideText,
 } from './zoomThresholds'
 
-import type { DrawFeatureArgs, DrawingResult } from './types'
+import type { DrawFeatureArgs } from './types'
 
-/**
- * Draw a CDS feature with optional peptide rendering on the canvas
- */
-export function drawCDS(args: DrawFeatureArgs): DrawingResult {
+export function drawCDS(args: DrawFeatureArgs) {
   const {
     ctx,
     feature,
     featureLayout,
-    region,
     bpPerPx,
     config,
+    configContext,
     theme,
     reversed,
     peptideDataMap,
     colorByCDS = false,
   } = args
-  const { start, end } = region
-  const screenWidth = Math.ceil((end - start) / bpPerPx)
+
   const featureStart = feature.get('start')
   const featureEnd = feature.get('end')
   const strand = feature.get('strand') as number
@@ -36,33 +32,16 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
   const top = featureLayout.y
   const height = featureLayout.height
 
-  const coords: number[] = []
-  const items: DrawingResult['items'] = []
-
   if (left + width < 0) {
-    return { coords, items }
+    return
   }
 
-  // Get peptide data for the parent feature (transcript)
   const parent = feature.parent() ?? feature
   const peptideData = peptideDataMap?.get(parent.id())
   const protein = peptideData?.protein
   const doRenderBackground =
     shouldRenderPeptideBackground(bpPerPx) && colorByCDS && !!protein
 
-  // Get the base CDS color (frame-based coloring if colorByCDS is on)
-  const baseColor = getBoxColor({
-    feature,
-    config,
-    colorByCDS,
-    theme,
-    color1: args.color1,
-    color3: args.color3,
-    isColor1Callback: args.isColor1Callback,
-    isColor3Callback: args.isColor3Callback,
-  })
-
-  // If we have peptide data and should render amino acid backgrounds
   if (doRenderBackground) {
     const aggregatedAminoAcids = prepareAminoAcidData(
       parent,
@@ -72,7 +51,14 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
       strand,
     )
 
-    // Draw the alternating amino acid background colors
+    const baseColor = getBoxColor({
+      feature,
+      config,
+      configContext,
+      colorByCDS,
+      theme,
+    })
+
     drawCDSBackground({
       ctx,
       aggregatedAminoAcids,
@@ -86,7 +72,6 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
       reversed,
     })
 
-    // Draw the amino acid text labels on top (only if zoomed in enough)
     if (shouldRenderPeptideText(bpPerPx)) {
       drawPeptidesOnCDS({
         ctx,
@@ -99,33 +84,8 @@ export function drawCDS(args: DrawFeatureArgs): DrawingResult {
         strand,
         reversed,
       })
-
-      // Add to spatial index
-      const leftWithinBlock = Math.max(left, 0)
-      const widthWithinBlock = Math.max(
-        2,
-        Math.min(width, screenWidth - leftWithinBlock),
-      )
-      coords.push(
-        leftWithinBlock,
-        top,
-        leftWithinBlock + widthWithinBlock,
-        top + height,
-      )
-      items.push({
-        featureId: feature.id(),
-        type: 'cds',
-        startBp: featureStart,
-        endBp: featureEnd,
-        leftPx: leftWithinBlock,
-        rightPx: leftWithinBlock + widthWithinBlock,
-        topPx: top,
-        bottomPx: top + height,
-      })
     }
-    return { coords, items }
   } else {
-    // Fall back to regular box drawing if peptide rendering is not available or failed
-    return drawBox(args)
+    drawBox(args)
   }
 }
