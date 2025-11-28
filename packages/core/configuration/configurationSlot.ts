@@ -190,7 +190,7 @@ export default function ConfigSlot(
     throw new Error("no 'defaultValue' provided")
   }
 
-  const configSlotModelName = `${slotName[0].toUpperCase()}${slotName.slice(1)}ConfigSlot`
+  const configSlotModelName = `${slotName.charAt(0).toUpperCase()}${slotName.slice(1)}ConfigSlot`
   let slot = types
     .model(configSlotModelName, {
       name: types.literal(slotName),
