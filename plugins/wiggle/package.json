@@ -39,7 +39,7 @@
     "@gmod/bbi": "^7.0.0",
     "@gmod/hclust": "^1.0.7",
     "@jbrowse/core": "^3.7.0",
-    "@jbrowse/mobx-state-tree": "^5.4.5",
+    "@jbrowse/mobx-state-tree": "^5.4.6",
     "@jbrowse/plugin-data-management": "^3.7.0",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@mui/icons-material": "^7.0.0",

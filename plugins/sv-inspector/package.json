@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.7.0",
-    "@jbrowse/mobx-state-tree": "^5.4.5",
+    "@jbrowse/mobx-state-tree": "^5.4.6",
     "@jbrowse/plugin-circular-view": "^3.7.0",
     "@jbrowse/plugin-spreadsheet-view": "^3.7.0",
     "@jbrowse/sv-core": "^3.7.0",

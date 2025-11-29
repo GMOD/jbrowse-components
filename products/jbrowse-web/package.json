@@ -15,7 +15,7 @@
     "@fontsource/roboto": "^5.0.2",
     "@jbrowse/app-core": "^3.7.0",
     "@jbrowse/core": "^3.7.0",
-    "@jbrowse/mobx-state-tree": "^5.4.5",
+    "@jbrowse/mobx-state-tree": "^5.4.6",
     "@jbrowse/plugin-alignments": "^3.7.0",
     "@jbrowse/plugin-arc": "^3.7.0",
     "@jbrowse/plugin-authentication": "^3.7.0",
