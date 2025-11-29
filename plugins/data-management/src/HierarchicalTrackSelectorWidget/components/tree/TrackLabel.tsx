@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { getSession } from '@jbrowse/core/util'
@@ -34,7 +36,66 @@ export interface InfoArgs {
   conf: AnyConfigurationModel
 }
 
-const TrackLabel = observer(function TrackLabel({
+// Small observer component that only re-renders when track visibility changes
+const TrackCheckbox = observer(function TrackCheckbox({
+  model,
+  trackId,
+  id,
+  disabled,
+  className,
+}: {
+  model: HierarchicalTrackSelectorModel
+  trackId: string
+  id: string
+  disabled: boolean
+  className: string
+}) {
+  const checked = model.shownTrackIds.has(trackId)
+  return (
+    <Checkbox
+      className={className}
+      checked={checked}
+      onChange={() => {
+        model.view.toggleTrack(trackId)
+      }}
+      disabled={disabled}
+      slotProps={{
+        input: {
+          // @ts-expect-error
+          'data-testid': `htsTrackEntry-${id}`,
+        },
+      }}
+    />
+  )
+})
+
+// Small observer for selection state
+const TrackLabelText = observer(function TrackLabelText({
+  model,
+  trackId,
+  id,
+  name,
+  selectedClass,
+}: {
+  model: HierarchicalTrackSelectorModel
+  trackId: string
+  id: string
+  name: string
+  selectedClass: string
+}) {
+  const selected = model.selectionSet.has(trackId)
+  return (
+    <div
+      data-testid={`htsTrackLabel-${id}`}
+      className={selected ? selectedClass : undefined}
+    >
+      <SanitizedHTML html={name} />
+    </div>
+  )
+})
+
+// Memoized outer component - expensive MUI components don't re-render on track toggle
+const TrackLabel = memo(function TrackLabel({
   model,
   item,
 }: {
@@ -46,50 +107,35 @@ const TrackLabel = observer(function TrackLabel({
   const { id, name, conf } = item
   const trackId = readConfObject(conf, 'trackId')
   const description = readConfObject(conf, 'description')
-  const selected = model.selectionSet.has(trackId)
-  const checked = model.shownTrackIds.has(trackId)
-  console.log('here abel')
+
   return (
     <>
-      <Tooltip
-        title={description + (selected ? ' (in selection)' : '')}
-        placement={drawerPosition === 'left' ? 'right' : 'left'}
-      >
+      <Tooltip title={description} placement={drawerPosition === 'left' ? 'right' : 'left'}>
         <FormControlLabel
           className={classes.checkboxLabel}
           onClick={event => {
             if (event.ctrlKey || event.metaKey) {
-              if (selected) {
-                model.removeFromSelection([conf])
-              } else {
-                model.addToSelection([conf])
-              }
+              model.addToSelection([conf])
               event.preventDefault()
             }
           }}
           control={
-            <Checkbox
-              className={classes.compactCheckbox}
-              checked={checked}
-              onChange={() => {
-                model.view.toggleTrack(trackId)
-              }}
+            <TrackCheckbox
+              model={model}
+              trackId={trackId}
+              id={id}
               disabled={isUnsupported(name)}
-              slotProps={{
-                input: {
-                  // @ts-expect-error
-                  'data-testid': `htsTrackEntry-${id}`,
-                },
-              }}
+              className={classes.compactCheckbox}
             />
           }
           label={
-            <div
-              data-testid={`htsTrackLabel-${id}`}
-              className={selected ? classes.selected : undefined}
-            >
-              <SanitizedHTML html={name} />
-            </div>
+            <TrackLabelText
+              model={model}
+              trackId={trackId}
+              id={id}
+              name={name}
+              selectedClass={classes.selected}
+            />
           }
         />
       </Tooltip>

@@ -433,6 +433,27 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           size: 'small' as const,
         },
       },
+      MuiButtonBase: {
+        styleOverrides: {
+          root: {
+            '& .MuiTouchRipple-root .MuiTouchRipple-ripple': {
+              animationDuration: '100ms',
+            },
+            '& .MuiTouchRipple-root .MuiTouchRipple-rippleVisible': {
+              animationDuration: '100ms',
+            },
+            '& .MuiTouchRipple-root .MuiTouchRipple-child': {
+              animationDuration: '100ms',
+            },
+            '& .MuiTouchRipple-root .MuiTouchRipple-childLeaving': {
+              animationDuration: '100ms',
+            },
+            '& .MuiTouchRipple-root .MuiTouchRipple-childPulsate': {
+              animationDuration: '100ms',
+            },
+          },
+        },
+      },
     },
   }
   return deepmerge(themeP, theme || {}, { arrayMerge: overwriteArrayMerge })
