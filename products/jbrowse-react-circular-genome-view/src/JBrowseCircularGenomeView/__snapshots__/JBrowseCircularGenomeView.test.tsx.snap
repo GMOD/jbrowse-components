@@ -16,7 +16,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           class="css-10rokvf-container"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-iwqq6r-MuiButtonBase-root-MuiIconButton-root-iconRoot"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-1xja71r-MuiButtonBase-root-MuiIconButton-root-iconRoot"
             data-testid="view_menu_icon"
             tabindex="0"
             type="button"
@@ -40,7 +40,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             class="css-122lw0e-grow"
           />
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -144,7 +144,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               class="css-1vhj25i-controls"
             >
               <button
-                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 disabled=""
                 tabindex="-1"
                 title="unlock to zoom out"
@@ -163,7 +163,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="zoom in"
                 type="button"
@@ -184,7 +184,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="rotate counter-clockwise"
                 type="button"
@@ -202,7 +202,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="rotate clockwise"
                 type="button"
@@ -220,7 +220,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="locked model to window size"
                 type="button"
@@ -238,7 +238,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 type="button"
               >
@@ -255,7 +255,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 data-testid="circular_track_select"
                 tabindex="0"
                 title="Open track selector"
