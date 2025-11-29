@@ -29,7 +29,6 @@ type MaybeCollapsedKeys = [string, boolean][] | undefined
 
 const defaultItemHeight = 22
 const categoryItemHeight = 40
-const categoryItemOccupyingHeight = 40
 const overscan = 5
 
 // for settings that are config dependent
@@ -44,11 +43,8 @@ function keyConfigPostFix() {
     : 'empty'
 }
 
-// Function to determine the height of an item based on its type
 export function getItemHeight(item: TreeNode) {
-  return item.type === 'category'
-    ? categoryItemOccupyingHeight
-    : defaultItemHeight
+  return item.type === 'category' ? categoryItemHeight : defaultItemHeight
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -561,10 +557,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         // Estimate the end index (this is an approximation)
         let end = start
         let currentHeight = offsets[start]!
-        const targetHeight =
-          scrollTop +
-          height +
-          overscan * Math.min(categoryItemHeight, defaultItemHeight)
+        const targetHeight = scrollTop + height + overscan * defaultItemHeight
 
         while (
           end < flattenedItems.length - 1 &&

@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import TrackCategory from './TrackCategory'
 import TrackLabel from './TrackLabel'
+import { getItemHeight } from '../../model'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { TreeNode } from '../../types'
@@ -32,27 +33,24 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function getLeft(item: TreeNode) {
-  return (
-    item.nestingLevel * levelWidth + (!item.children.length ? levelWidth : 0)
-  )
+function getMarginLeft(item: TreeNode) {
+  const isCategory = item.type === 'category'
+  return item.nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
 }
 
 const TreeItem = observer(function ({
   item,
   model,
-  itemOffset,
-  rowHeight,
+  top,
 }: {
   item: TreeNode
   model: HierarchicalTrackSelectorModel
-  itemOffset: number
-  rowHeight: number
+  top: number
 }) {
   const { classes } = useStyles()
-  const hasChildren = item.children.length > 0
-  const top = itemOffset
+  const isCategory = item.type === 'category'
   const { nestingLevel } = item
+  const height = getItemHeight(item)
 
   return (
     <div
@@ -61,7 +59,7 @@ const TreeItem = observer(function ({
         width: '100%',
         display: 'flex',
         cursor: 'pointer',
-        height: rowHeight,
+        height,
         top,
         left: 0,
       }}
@@ -71,23 +69,23 @@ const TreeItem = observer(function ({
           <div
             /* biome-ignore lint/suspicious/noArrayIndexKey: */
             key={`mark-${idx}`}
-            style={{ left: idx * levelWidth + 4, height: rowHeight }}
+            style={{ left: idx * levelWidth + 4, height }}
             className={classes.nestingLevelMarker}
           />
         ))}
         <div
-          className={hasChildren ? classes.accordionCard : undefined}
+          className={isCategory ? classes.accordionCard : undefined}
           style={{
-            marginLeft: getLeft(item),
+            marginLeft: getMarginLeft(item),
             whiteSpace: 'nowrap',
             flex: 1,
           }}
         >
-          <div className={hasChildren ? classes.accordionColor : undefined}>
-            {item.type !== 'category' ? (
-              <TrackLabel model={model} item={item} />
-            ) : (
+          <div className={isCategory ? classes.accordionColor : undefined}>
+            {isCategory ? (
               <TrackCategory model={model} item={item} />
+            ) : (
+              <TrackLabel model={model} item={item} />
             )}
           </div>
         </div>
@@ -104,7 +102,6 @@ const TreeView = observer(function ({
   model: HierarchicalTrackSelectorModel
 }) {
   const { flattenedItems } = model
-  const parentRef = useRef(null)
   const [scrollTop, setScrollTop] = useState(0)
   const { startIndex, endIndex, totalHeight, itemOffsets } = model.itemOffsets(
     height,
@@ -114,43 +111,33 @@ const TreeView = observer(function ({
   return (
     <div
       style={{
-        overflow: 'hidden',
+        height,
+        overflowY: 'auto',
+        contain: 'strict',
+      }}
+      onScroll={e => {
+        setScrollTop((e.target as HTMLElement).scrollTop)
       }}
     >
       <div
-        ref={parentRef}
         style={{
-          height,
-          overflowY: 'auto',
-          contain: 'strict',
-        }}
-        onScroll={e => {
-          setScrollTop((e.target as HTMLUnknownElement).scrollTop)
+          height: totalHeight,
+          width: '100%',
+          position: 'relative',
         }}
       >
-        <div
-          style={{
-            height: totalHeight,
-            width: '100%',
-            position: 'relative',
-          }}
-        >
-          {Array.from({ length: endIndex - startIndex + 1 }, (_, i) => {
-            const index = startIndex + i
-            const item = flattenedItems[index]
-            const nextOffset = itemOffsets[index + 1] ?? totalHeight
-            const rowHeight = nextOffset - itemOffsets[index]!
-            return item ? (
-              <TreeItem
-                model={model}
-                key={item.id}
-                item={item}
-                itemOffset={itemOffsets[index]!}
-                rowHeight={rowHeight}
-              />
-            ) : null
-          })}
-        </div>
+        {Array.from({ length: endIndex - startIndex + 1 }, (_, i) => {
+          const index = startIndex + i
+          const item = flattenedItems[index]
+          return item ? (
+            <TreeItem
+              key={item.id}
+              model={model}
+              item={item}
+              top={itemOffsets[index]!}
+            />
+          ) : null
+        })}
       </div>
     </div>
   )
