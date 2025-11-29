@@ -27,7 +27,6 @@ export async function getGenotypeMatrix({
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const genotypeFactor = new Set<string>()
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
@@ -36,12 +35,6 @@ export async function getGenotypeMatrix({
       dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
     ),
   })
-
-  for (const { alleleCounts } of mafs) {
-    for (const alt of Object.keys(alleleCounts)) {
-      genotypeFactor.add(alt)
-    }
-  }
 
   const rows = {} as Record<string, number[]>
   const cacheSplit = {} as Record<string, string[]>
