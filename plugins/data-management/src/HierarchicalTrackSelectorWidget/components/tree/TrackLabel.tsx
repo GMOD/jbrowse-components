@@ -72,18 +72,18 @@ const TrackCheckbox = observer(function TrackCheckbox({
 // Small observer for selection state
 const TrackLabelText = observer(function TrackLabelText({
   model,
-  trackId,
+  conf,
   id,
   name,
   selectedClass,
 }: {
   model: HierarchicalTrackSelectorModel
-  trackId: string
+  conf: AnyConfigurationModel
   id: string
   name: string
   selectedClass: string
 }) {
-  const selected = model.selectionSet.has(trackId)
+  const selected = model.selectionSet.has(conf)
   return (
     <div
       data-testid={`htsTrackLabel-${id}`}
@@ -110,7 +110,10 @@ const TrackLabel = memo(function TrackLabel({
 
   return (
     <>
-      <Tooltip title={description} placement={drawerPosition === 'left' ? 'right' : 'left'}>
+      <Tooltip
+        title={description}
+        placement={drawerPosition === 'left' ? 'right' : 'left'}
+      >
         <FormControlLabel
           className={classes.checkboxLabel}
           onClick={event => {
@@ -131,7 +134,7 @@ const TrackLabel = memo(function TrackLabel({
           label={
             <TrackLabelText
               model={model}
-              trackId={trackId}
+              conf={conf}
               id={id}
               name={name}
               selectedClass={classes.selected}
