@@ -66,7 +66,6 @@ module.exports = function startWebpack(config) {
       const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
       const appName = require(paths.appPackageJson).name
 
-      const useTypeScript = fs.existsSync(paths.appTsConfig)
       const urls = prepareUrls(
         protocol,
         HOST,
@@ -79,7 +78,6 @@ module.exports = function startWebpack(config) {
         config,
         urls,
         useYarn,
-        useTypeScript,
         webpack,
       })
 

@@ -7,16 +7,10 @@
 'use strict'
 
 const address = require('address')
-const fs = require('fs')
-const path = require('path')
 const url = require('url')
 const chalk = require('chalk')
 const detect = require('detect-port-alt')
-const prompts = require('prompts')
-const clearConsole = require('./clearConsole')
 const formatWebpackMessages = require('./formatWebpackMessages')
-const getProcessForPort = require('./getProcessForPort')
-const forkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
 const isInteractive = process.stdout.isTTY
 
@@ -94,14 +88,7 @@ function printInstructions(appName, urls, useYarn) {
   console.log()
 }
 
-function createCompiler({
-  appName,
-  config,
-  urls,
-  useYarn,
-  useTypeScript,
-  webpack,
-}) {
+function createCompiler({ appName, config, urls, useYarn, webpack }) {
   let compiler
   try {
     compiler = webpack(config)
@@ -114,32 +101,12 @@ function createCompiler({
   }
 
   compiler.hooks.invalid.tap('invalid', () => {
-    if (isInteractive) {
-      clearConsole()
-    }
     console.log('Compiling...')
   })
 
   let isFirstCompile = true
-  let tsMessagesPromise
-
-  if (useTypeScript) {
-    forkTsCheckerWebpackPlugin
-      .getCompilerHooks(compiler)
-      .waiting.tap('awaitingTypeScriptCheck', () => {
-        console.log(
-          chalk.yellow(
-            'Files successfully emitted, waiting for typecheck results...',
-          ),
-        )
-      })
-  }
 
   compiler.hooks.done.tap('done', async stats => {
-    if (isInteractive) {
-      clearConsole()
-    }
-
     const statsData = stats.toJson({
       all: false,
       warnings: true,
@@ -182,188 +149,23 @@ function createCompiler({
     }
   })
 
-  const isSmokeTest = process.argv.some(arg => arg.indexOf('--smoke-test') > -1)
-  if (isSmokeTest) {
-    compiler.hooks.failed.tap('smokeTest', async () => {
-      await tsMessagesPromise
-      process.exit(1)
-    })
-    compiler.hooks.done.tap('smokeTest', async stats => {
-      await tsMessagesPromise
-      if (stats.hasErrors() || stats.hasWarnings()) {
-        process.exit(1)
-      } else {
-        process.exit(0)
-      }
-    })
-  }
-
   return compiler
-}
-
-function resolveLoopback(proxy) {
-  const o = url.parse(proxy)
-  o.host = undefined
-  if (o.hostname !== 'localhost') {
-    return proxy
-  }
-
-  try {
-    if (!address.ip()) {
-      o.hostname = '127.0.0.1'
-    }
-  } catch (_ignored) {
-    o.hostname = '127.0.0.1'
-  }
-  return url.format(o)
-}
-
-function onProxyError(proxy) {
-  return (err, req, res) => {
-    const host = req.headers && req.headers.host
-    console.log(
-      chalk.red('Proxy error:') +
-        ' Could not proxy request ' +
-        chalk.cyan(req.url) +
-        ' from ' +
-        chalk.cyan(host) +
-        ' to ' +
-        chalk.cyan(proxy) +
-        '.',
-    )
-    console.log(
-      'See https://nodejs.org/api/errors.html#errors_common_system_errors for more information (' +
-        chalk.cyan(err.code) +
-        ').',
-    )
-    console.log()
-
-    if (res.writeHead && !res.headersSent) {
-      res.writeHead(500)
-    }
-    res.end(
-      'Proxy error: Could not proxy request ' +
-        req.url +
-        ' from ' +
-        host +
-        ' to ' +
-        proxy +
-        ' (' +
-        err.code +
-        ').',
-    )
-  }
-}
-
-function prepareProxy(proxy, appPublicFolder, servedPathname) {
-  if (!proxy) {
-    return undefined
-  }
-  if (typeof proxy !== 'string') {
-    console.log(
-      chalk.red('When specified, "proxy" in package.json must be a string.'),
-    )
-    console.log(
-      chalk.red('Instead, the type of "proxy" was "' + typeof proxy + '".'),
-    )
-    console.log(
-      chalk.red(
-        'Either remove "proxy" from package.json, or make it a string.',
-      ),
-    )
-    process.exit(1)
-  }
-
-  const sockPath = process.env.WDS_SOCKET_PATH || '/ws'
-  const isDefaultSockHost = !process.env.WDS_SOCKET_HOST
-  function mayProxy(pathname) {
-    const maybePublicPath = path.resolve(
-      appPublicFolder,
-      pathname.replace(new RegExp('^' + servedPathname), ''),
-    )
-    const isPublicFileRequest = fs.existsSync(maybePublicPath)
-    const isWdsEndpointRequest =
-      isDefaultSockHost && pathname.startsWith(sockPath)
-    return !(isPublicFileRequest || isWdsEndpointRequest)
-  }
-
-  if (!/^http(s)?:\/\//.test(proxy)) {
-    console.log(
-      chalk.red(
-        'When "proxy" is specified in package.json it must start with either http:// or https://',
-      ),
-    )
-    process.exit(1)
-  }
-
-  let target
-  if (process.platform === 'win32') {
-    target = resolveLoopback(proxy)
-  } else {
-    target = proxy
-  }
-  return [
-    {
-      target,
-      logLevel: 'silent',
-      context: function (pathname, req) {
-        return (
-          req.method !== 'GET' ||
-          (mayProxy(pathname) &&
-            req.headers.accept &&
-            req.headers.accept.indexOf('text/html') === -1)
-        )
-      },
-      onProxyReq: proxyReq => {
-        if (proxyReq.getHeader('origin')) {
-          proxyReq.setHeader('origin', target)
-        }
-      },
-      onError: onProxyError(target),
-      secure: false,
-      changeOrigin: true,
-      ws: true,
-      xfwd: true,
-    },
-  ]
 }
 
 function choosePort(host, defaultPort) {
   return detect(defaultPort, host).then(
-    port =>
-      new Promise(resolve => {
-        if (port === defaultPort) {
-          return resolve(port)
-        }
-        const message =
-          process.platform !== 'win32' && defaultPort < 1024
-            ? `Admin permissions are required to run a server on a port below 1024.`
-            : `Something is already running on port ${defaultPort}.`
-        if (isInteractive) {
-          clearConsole()
-          const existingProcess = getProcessForPort(defaultPort)
-          const question = {
-            type: 'confirm',
-            name: 'shouldChangePort',
-            message:
-              chalk.yellow(
-                message +
-                  `${existingProcess ? ` Probably:\n  ${existingProcess}` : ''}`,
-              ) + '\n\nWould you like to run the app on another port instead?',
-            initial: true,
-          }
-          prompts(question).then(answer => {
-            if (answer.shouldChangePort) {
-              resolve(port)
-            } else {
-              resolve(null)
-            }
-          })
-        } else {
-          console.log(chalk.red(message))
-          resolve(null)
-        }
-      }),
+    port => {
+      if (port === defaultPort) {
+        return port
+      }
+      const message =
+        process.platform !== 'win32' && defaultPort < 1024
+          ? `Admin permissions are required to run a server on a port below 1024.`
+          : `Something is already running on port ${defaultPort}.`
+      console.log(chalk.yellow(message))
+      console.log(`Using port ${port} instead.\n`)
+      return port
+    },
     err => {
       throw new Error(
         chalk.red(`Could not find an open port at ${chalk.bold(host)}.`) +
@@ -378,6 +180,5 @@ function choosePort(host, defaultPort) {
 module.exports = {
   choosePort,
   createCompiler,
-  prepareProxy,
   prepareUrls,
 }
