@@ -4,7 +4,7 @@ import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import type { MultiRenderArgsDeserialized } from './types'
 import type { Feature } from '@jbrowse/core/util'
 
-export default class MultiVariantBaseRenderer extends FeatureRendererType {
+export default class MultiVariantRenderer extends FeatureRendererType {
   supportsSVG = true
 
   async render(renderProps: MultiRenderArgsDeserialized) {

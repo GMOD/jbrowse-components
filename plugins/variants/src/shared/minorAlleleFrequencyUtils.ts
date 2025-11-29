@@ -1,49 +1,40 @@
-import { forEachWithStopTokenCheck, sum } from '@jbrowse/core/util'
+import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
-
-export function findSecondLargestNumber(arr: Iterable<number>) {
-  let firstMax = 0
-  let secondMax = 0
-
-  for (const num of arr) {
-    if (num > firstMax) {
-      secondMax = firstMax
-      firstMax = num
-    } else if (num > secondMax && num !== firstMax) {
-      secondMax = num
-    }
-  }
-
-  return secondMax
-}
 
 export function calculateAlleleCounts(
   genotypes: Record<string, string>,
   cacheSplit: Record<string, string[]>,
 ) {
-  const alleleCounts = { 0: 0, 1: 0, '.': 0 } as Record<string, number>
+  const alleleCounts = {} as Record<string, number>
   const vals = Object.values(genotypes)
-  const len = vals.length
-  for (let i = 0; i < len; i++) {
+  for (let i = 0; i < vals.length; i++) {
     const genotype = vals[i]!
-    const alleles =
-      cacheSplit[genotype] || (cacheSplit[genotype] = genotype.split(/[/|]/))
-
-    for (let i = 0, len = alleles.length; i < len; i++) {
-      const a = alleles[i]!
-      alleleCounts[a] = (alleleCounts[a] ?? 0) + 1
+    const alleles = (cacheSplit[genotype] ||= genotype.split(/[/|]/))
+    for (let j = 0; j < alleles.length; j++) {
+      const a = alleles[j]!
+      alleleCounts[a] = (alleleCounts[a] || 0) + 1
     }
   }
-
   return alleleCounts
 }
 
 export function calculateMinorAlleleFrequency(
   alleleCounts: Record<string, number>,
 ) {
-  const counts = Object.values(alleleCounts)
-  return findSecondLargestNumber(counts) / (sum(counts) || 1)
+  let firstMax = 0
+  let secondMax = 0
+  let total = 0
+  for (const count of Object.values(alleleCounts)) {
+    total += count
+    if (count > firstMax) {
+      secondMax = firstMax
+      firstMax = count
+    } else if (count > secondMax && count !== firstMax) {
+      secondMax = count
+    }
+  }
+  return secondMax / (total || 1)
 }
 
 function getMostFrequentAlt(alleleCounts: Record<string, number>) {

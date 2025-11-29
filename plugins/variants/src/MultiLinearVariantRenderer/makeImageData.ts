@@ -30,9 +30,9 @@ export async function makeImageData(
     stopToken,
     lengthCutoffFilter,
     referenceDrawingMode,
+    statusCallback = () => {},
   } = props
   const region = regions[0]!
-  const { statusCallback = () => {} } = props
   checkStopToken(stopToken)
 
   const coords = [] as number[]
@@ -64,21 +64,16 @@ export async function makeImageData(
       mafs,
       stopToken,
       ({ mostFrequentAlt, feature }) => {
-        const start = feature.get('start')
-        const end = feature.get('end')
-        const bpLen = end - start
         const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
         const featureId = feature.id()
+        const bpLen = feature.get('end') - feature.get('start')
         const w = Math.max(Math.round(rightPx - leftPx), 2)
+        const x = Math.floor(leftPx)
         let samp = genotypesCache.get(featureId)
         if (!samp) {
           samp = feature.get('genotypes') as Record<string, string>
           genotypesCache.set(featureId, samp)
         }
-        const featureType = feature.get('type')
-        const featureStrand = feature.get('strand')
-        const alpha = bpLen > 5 ? 0.75 : 1
-        const x = Math.floor(leftPx)
 
         if (renderingMode === 'phased') {
           for (let j = startRow; j < endRow; j++) {
@@ -88,9 +83,7 @@ export async function makeImageData(
             if (genotype) {
               const isPhased = genotype.includes('|')
               if (isPhased) {
-                const alleles =
-                  splitCache[genotype] ||
-                  (splitCache[genotype] = genotype.split('|'))
+                const alleles = (splitCache[genotype] ||= genotype.split('|'))
                 if (
                   drawPhased(
                     alleles,
@@ -119,6 +112,9 @@ export async function makeImageData(
             }
           }
         } else {
+          const featureType = feature.get('type')
+          const featureStrand = feature.get('strand')
+          const alpha = bpLen > 5 ? 0.75 : 1
           for (let j = startRow; j < endRow; j++) {
             const y = j * h - scrollTop
             const { name } = sources[j]!
@@ -143,13 +139,7 @@ export async function makeImageData(
                   featureStrand,
                   alpha,
                 )
-
-                items.push({
-                  name,
-                  genotype,
-                  featureId,
-                  bpLen,
-                })
+                items.push({ name, genotype, featureId, bpLen })
                 coords.push(x, y, x + w, y + drawH)
               }
             }

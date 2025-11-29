@@ -30,9 +30,8 @@ export async function makeImageData({
     lengthCutoffFilter,
     rowHeight,
     scrollTop,
+    statusCallback = () => {},
   } = renderArgs
-
-  const { statusCallback = () => {} } = renderArgs
   const sln = sources.length
   const h = rowHeight
   const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
@@ -65,9 +64,9 @@ export async function makeImageData({
         const hasPhaseSet = (
           feature.get('FORMAT') as string | undefined
         )?.includes('PS')
+        const x = (idx / m) * canvasWidth
         if (hasPhaseSet) {
           const samp = feature.get('samples') as Record<string, SampleGenotype>
-          const x = (idx / mafs.length) * canvasWidth
           for (let j = startRow; j < endRow; j++) {
             const y = j * h - scrollTop
             const { name, HP } = sources[j]!
@@ -80,7 +79,7 @@ export async function makeImageData({
                 if (renderingMode === 'phased') {
                   if (isPhased) {
                     const PS = s.PS?.[0]
-                    const alleles = genotype.split('|')
+                    const alleles = (splitCache[genotype] ||= genotype.split('|'))
                     drawPhased(alleles, ctx, x, y, w, h, HP!, PS)
                   } else {
                     ctx.fillStyle = 'black'
@@ -108,7 +107,6 @@ export async function makeImageData({
             samp = feature.get('genotypes') as Record<string, string>
             genotypesCache.set(featureId, samp)
           }
-          const x = (idx / mafs.length) * canvasWidth
           for (let j = startRow; j < endRow; j++) {
             const y = j * h - scrollTop
             const { name, HP } = sources[j]!
@@ -118,7 +116,7 @@ export async function makeImageData({
               const isPhased = genotype.includes('|')
               if (renderingMode === 'phased') {
                 if (isPhased) {
-                  const alleles = genotype.split('|')
+                  const alleles = (splitCache[genotype] ||= genotype.split('|'))
                   drawPhased(alleles, ctx, x, y, w, h, HP!)
                 } else {
                   ctx.fillStyle = 'black'
