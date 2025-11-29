@@ -298,5 +298,12 @@ module.exports = function webpackBuilder(webpackEnv) {
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false,
+    ...(isEnvDevelopment && {
+      devServer: {
+        port: process.env.PORT || 3000,
+        hot: true,
+        open: true,
+      },
+    }),
   }
 }
