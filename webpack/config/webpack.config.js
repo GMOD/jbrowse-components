@@ -17,10 +17,6 @@ const paths = require('./paths')
 // source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 
-const reactRefreshRuntimeEntry = require.resolve('react-refresh/runtime')
-const reactRefreshWebpackPluginRuntimeEntry =
-  require.resolve('@pmmmwh/react-refresh-webpack-plugin')
-
 function getWorkspaces(fromDir) {
   const cwd = fromDir || process.cwd()
   const workspacesStr = cp
@@ -52,11 +48,12 @@ module.exports = function webpackBuilder(webpackEnv) {
   const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1))
 
   const shouldUseReactRefresh = env.raw.FAST_REFRESH
+  const cssSourceMap = isEnvProduction ? shouldUseSourceMap : true
 
   // common function to get style loaders
   const getStyleLoaders = cssOptions => {
     const loaders = [
-      isEnvDevelopment && require.resolve('style-loader'),
+      isEnvDevelopment && 'style-loader',
       isEnvProduction && {
         loader: MiniCssExtractPlugin.loader,
         // css is located in `static/css`, use '../../' to locate index.html folder
@@ -66,7 +63,7 @@ module.exports = function webpackBuilder(webpackEnv) {
           : {},
       },
       {
-        loader: require.resolve('css-loader'),
+        loader: 'css-loader',
         options: cssOptions,
       },
     ].filter(Boolean)
@@ -79,14 +76,14 @@ module.exports = function webpackBuilder(webpackEnv) {
     target: ['browserslist'],
     // Webpack noise constrained to errors and warnings
     stats: 'errors-warnings',
-    mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
+    mode: isEnvProduction ? 'production' : 'development',
     // Stop compilation early in production
     bail: isEnvProduction,
     devtool: isEnvProduction
       ? shouldUseSourceMap
         ? 'source-map'
         : false
-      : isEnvDevelopment && 'cheap-module-source-map',
+      : 'cheap-module-source-map',
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: paths.appIndexJs,
@@ -99,11 +96,11 @@ module.exports = function webpackBuilder(webpackEnv) {
       // development, it does not produce real files.
       filename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].js'
-        : isEnvDevelopment && 'static/js/bundle.js',
+        : 'static/js/bundle.js',
       // There are also additional JS chunk files if you use code splitting.
       chunkFilename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].chunk.js'
-        : isEnvDevelopment && 'static/js/[name].chunk.js',
+        : 'static/js/[name].chunk.js',
       assetModuleFilename: 'static/media/[name].[hash][ext]',
       // webpack uses `publicPath` to determine where the app is being served
       // from. It requires a trailing slash, or the file assets will get an
@@ -117,8 +114,7 @@ module.exports = function webpackBuilder(webpackEnv) {
             path
               .relative(paths.appSrc, info.absoluteResourcePath)
               .replace(/\\/g, '/')
-        : isEnvDevelopment &&
-          (info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
+        : info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     },
 
     resolve: {
@@ -146,7 +142,7 @@ module.exports = function webpackBuilder(webpackEnv) {
         shouldUseSourceMap && {
           enforce: 'pre',
           test: /\.(js|mjs|jsx|ts|tsx|css)$/,
-          loader: require.resolve('source-map-loader'),
+          loader: 'source-map-loader',
         },
         {
           // "oneOf" will traverse all following loaders until one will
@@ -165,7 +161,7 @@ module.exports = function webpackBuilder(webpackEnv) {
               include: [paths.appSrc, getWorkspaces()],
               // End: jbrowse-web customizations
 
-              loader: require.resolve('babel-loader'),
+              loader: 'babel-loader',
               options: {
                 plugins: ['babel-plugin-react-compiler'],
                 presets: [
@@ -193,12 +189,8 @@ module.exports = function webpackBuilder(webpackEnv) {
               exclude: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
-                modules: {
-                  mode: 'icss',
-                },
+                sourceMap: cssSourceMap,
+                modules: { mode: 'icss' },
               }),
               // Don't consider CSS imports dead code even if the
               // containing package claims to have no side effects.
@@ -212,9 +204,7 @@ module.exports = function webpackBuilder(webpackEnv) {
               test: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: cssSourceMap,
                 modules: {
                   mode: 'local',
                   localIdentName: '[name]_[local]__[hash:base64:5]',
@@ -243,31 +233,24 @@ module.exports = function webpackBuilder(webpackEnv) {
     },
     plugins: [
       // Generates an `index.html` file with the <script> injected.
-      new HtmlWebpackPlugin(
-        Object.assign(
-          {},
-          {
-            inject: true,
-            template: paths.appHtml,
+      new HtmlWebpackPlugin({
+        inject: true,
+        template: paths.appHtml,
+        ...(isEnvProduction && {
+          minify: {
+            removeComments: true,
+            collapseWhitespace: true,
+            removeRedundantAttributes: true,
+            useShortDoctype: true,
+            removeEmptyAttributes: true,
+            removeStyleLinkTypeAttributes: true,
+            keepClosingSlash: true,
+            minifyJS: true,
+            minifyCSS: true,
+            minifyURLs: true,
           },
-          isEnvProduction
-            ? {
-                minify: {
-                  removeComments: true,
-                  collapseWhitespace: true,
-                  removeRedundantAttributes: true,
-                  useShortDoctype: true,
-                  removeEmptyAttributes: true,
-                  removeStyleLinkTypeAttributes: true,
-                  keepClosingSlash: true,
-                  minifyJS: true,
-                  minifyCSS: true,
-                  minifyURLs: true,
-                },
-              }
-            : undefined,
-        ),
-      ),
+        }),
+      }),
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
       // https://github.com/facebook/create-react-app/issues/5358
