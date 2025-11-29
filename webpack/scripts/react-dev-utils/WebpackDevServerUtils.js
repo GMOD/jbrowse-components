@@ -31,21 +31,16 @@ function prepareUrls(protocol, host, port, pathname = '/') {
     })
 
   const isUnspecifiedHost = host === '0.0.0.0' || host === '::'
-  let prettyHost, lanUrlForConfig, lanUrlForTerminal
+  let prettyHost, lanUrlForTerminal
   if (isUnspecifiedHost) {
     prettyHost = 'localhost'
     try {
-      lanUrlForConfig = address.ip()
-      if (lanUrlForConfig) {
-        if (
-          /^10[.]|^172[.](1[6-9]|2[0-9]|3[0-1])[.]|^192[.]168[.]/.test(
-            lanUrlForConfig,
-          )
-        ) {
-          lanUrlForTerminal = prettyPrintUrl(lanUrlForConfig)
-        } else {
-          lanUrlForConfig = undefined
-        }
+      const lanIp = address.ip()
+      if (
+        lanIp &&
+        /^10[.]|^172[.](1[6-9]|2[0-9]|3[0-1])[.]|^192[.]168[.]/.test(lanIp)
+      ) {
+        lanUrlForTerminal = prettyPrintUrl(lanIp)
       }
     } catch (_e) {
       // ignored
@@ -56,7 +51,6 @@ function prepareUrls(protocol, host, port, pathname = '/') {
   const localUrlForTerminal = prettyPrintUrl(prettyHost)
   const localUrlForBrowser = formatUrl(prettyHost)
   return {
-    lanUrlForConfig,
     lanUrlForTerminal,
     localUrlForTerminal,
     localUrlForBrowser,

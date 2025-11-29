@@ -1,7 +1,7 @@
 // Makes the script crash on unhandled rejections instead of silently ignoring
 // them. In the future, promise rejections that are not handled will terminate
 // the Node.js process with a non-zero exit code.
-process.on('unhandledRion', err => {
+process.on('unhandledRejection', err => {
   throw err
 })
 
@@ -24,7 +24,6 @@ const WebpackDevServer = require('webpack-dev-server')
 const paths = require('../config/paths')
 
 const useYarn = fs.existsSync(paths.yarnLockFile)
-const isInteractive = process.stdout.isTTY
 
 // Tools like Cloud9 rely on this.
 const DEFAULT_PORT = Number.parseInt(process.env.PORT, 10) || 3000
@@ -51,7 +50,7 @@ if (process.env.HOST) {
 // browserslist defaults.
 
 module.exports = function startWebpack(config) {
-  return checkBrowsers(paths.appPath, isInteractive)
+  return checkBrowsers(paths.appPath)
     .then(() => {
       // We attempt to use the default port but if it is busy, we offer the user to
       // run on a different port. `choosePort()` Promise resolves to the next free port.

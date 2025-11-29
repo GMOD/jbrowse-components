@@ -8,7 +8,7 @@
 
 const browserslist = require('browserslist')
 
-function checkBrowsers(dir, isInteractive) {
+function checkBrowsers(dir) {
   const current = browserslist.loadConfig({ path: dir })
   if (current != null) {
     return Promise.resolve(current)

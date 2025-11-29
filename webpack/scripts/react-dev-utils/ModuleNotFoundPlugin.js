@@ -12,13 +12,8 @@ const fs = require('fs')
 const path = require('path')
 
 class ModuleNotFoundPlugin {
-  constructor(appPath, yarnLockFile) {
+  constructor(appPath) {
     this.appPath = appPath
-    this.yarnLockFile = yarnLockFile
-
-    this.useYarnCommand = this.useYarnCommand.bind(this)
-    this.getRelativePath = this.getRelativePath.bind(this)
-    this.prettierError = this.prettierError.bind(this)
   }
 
   useYarnCommand() {
@@ -104,7 +99,7 @@ class ModuleNotFoundPlugin {
   }
 
   apply(compiler) {
-    const { prettierError } = this
+    const prettierError = this.prettierError.bind(this)
     compiler.hooks.make.intercept({
       register(tap) {
         if (!(tap.name === 'MultiEntryPlugin' || tap.name === 'EntryPlugin')) {

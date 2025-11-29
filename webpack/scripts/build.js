@@ -30,8 +30,6 @@ const useYarn = fs.existsSync(paths.yarnLockFile)
 const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
 const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
 
-const isInteractive = process.stdout.isTTY
-
 // Warn and crash if required files are missing
 if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
   process.exit(1)
@@ -44,7 +42,7 @@ const writeStatsJson = argv.includes('--stats')
 // browserslist defaults.
 
 module.exports = function buildWebpack(config) {
-  return checkBrowsers(paths.appPath, isInteractive)
+  return checkBrowsers(paths.appPath)
     .then(() => {
       // First, read the current file sizes in build directory.
       // This lets us display how much they changed later.

@@ -9,7 +9,6 @@
 
 const chalk = require('chalk')
 const url = require('url')
-const fs = require('fs')
 
 function printHostingInstructions(
   appPackage,
