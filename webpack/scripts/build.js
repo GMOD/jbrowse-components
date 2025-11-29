@@ -4,6 +4,7 @@ process.on('unhandledRejection', err => {
 
 const fs = require('fs')
 const path = require('path')
+
 const chalk = require('chalk')
 const webpack = require('webpack')
 
@@ -12,11 +13,11 @@ const writeStatsJson = argv.includes('--stats')
 
 function formatFileSize(bytes) {
   if (bytes < 1024) {
-    return bytes + ' B'
+    return `${bytes} B`
   } else if (bytes < 1024 * 1024) {
-    return (bytes / 1024).toFixed(2) + ' kB'
+    return `${(bytes / 1024).toFixed(2)} kB`
   } else {
-    return (bytes / (1024 * 1024)).toFixed(2) + ' MB'
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
   }
 }
 
@@ -29,7 +30,10 @@ function printFileSizes(webpackStats, buildFolder) {
         .map(asset => {
           const size = fs.statSync(path.join(buildFolder, asset.name)).size
           return {
-            folder: path.join(path.basename(buildFolder), path.dirname(asset.name)),
+            folder: path.join(
+              path.basename(buildFolder),
+              path.dirname(asset.name),
+            ),
             name: path.basename(asset.name),
             size,
             sizeLabel: formatFileSize(size),
@@ -41,8 +45,9 @@ function printFileSizes(webpackStats, buildFolder) {
   const longest = Math.max(...assets.map(a => a.sizeLabel.length))
   for (const asset of assets) {
     console.log(
-      '  ' + asset.sizeLabel.padEnd(longest) + '  ' +
-      chalk.dim(asset.folder + path.sep) + chalk.cyan(asset.name),
+      `  ${asset.sizeLabel.padEnd(longest)}  ${chalk.dim(
+        asset.folder + path.sep,
+      )}${chalk.cyan(asset.name)}`,
     )
   }
 }
@@ -67,45 +72,49 @@ module.exports = function buildWebpack(config) {
   console.log('Creating an optimized production build...')
 
   const compiler = webpack(config)
-  return new Promise((resolve, reject) => {
-    compiler.run((err, stats) => {
-      if (err) {
-        reject(err)
-        return
-      }
+  return (
+    new Promise((resolve, reject) => {
+      compiler.run((err, stats) => {
+        if (err) {
+          reject(err)
+          return
+        }
 
-      const info = stats.toJson({ all: false, warnings: true, errors: true })
+        const info = stats.toJson({ all: false, warnings: true, errors: true })
 
-      if (info.errors.length) {
-        console.log(chalk.red('Failed to compile.\n'))
-        console.log(info.errors.map(e => e.message || e).join('\n\n'))
-        process.exit(1)
-      }
+        if (info.errors.length) {
+          console.log(chalk.red('Failed to compile.\n'))
+          console.log(info.errors.map(e => e.message || e).join('\n\n'))
+          process.exit(1)
+        }
 
-      if (info.warnings.length) {
-        console.log(chalk.yellow('Compiled with warnings.\n'))
-        console.log(info.warnings.map(w => w.message || w).join('\n\n'))
-      } else {
-        console.log(chalk.green('Compiled successfully.\n'))
-      }
+        if (info.warnings.length) {
+          console.log(chalk.yellow('Compiled with warnings.\n'))
+          console.log(info.warnings.map(w => w.message || w).join('\n\n'))
+        } else {
+          console.log(chalk.green('Compiled successfully.\n'))
+        }
 
-      console.log('File sizes:\n')
-      printFileSizes(stats, paths.appBuild)
-      console.log()
+        console.log('File sizes:\n')
+        printFileSizes(stats, paths.appBuild)
+        console.log()
 
-      if (writeStatsJson) {
-        fs.writeFileSync(
-          `${paths.appBuild}/bundle-stats.json`,
-          JSON.stringify(stats.toJson()),
-        )
-      }
+        if (writeStatsJson) {
+          fs.writeFileSync(
+            `${paths.appBuild}/bundle-stats.json`,
+            JSON.stringify(stats.toJson()),
+          )
+        }
 
-      resolve()
+        resolve()
+      })
     })
-  }).catch(err => {
-    if (err?.message) {
-      console.log(err.message)
-    }
-    process.exit(1)
-  })
+      // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
+      .catch(err => {
+        if (err instanceof Error) {
+          console.log(err.message)
+        }
+        process.exit(1)
+      })
+  )
 }

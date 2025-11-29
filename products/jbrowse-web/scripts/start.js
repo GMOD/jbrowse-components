@@ -1,6 +1,7 @@
 process.env.NODE_ENV = 'development'
 
 const webpack = require('webpack')
+
 const configFactory = require('../../../webpack/config/webpack.config')
 const startServer = require('../../../webpack/scripts/start')
 

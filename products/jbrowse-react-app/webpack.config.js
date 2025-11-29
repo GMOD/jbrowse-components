@@ -19,9 +19,7 @@ module.exports = {
       'Access-Control-Allow-Headers': '*',
     },
   },
-  plugins: [
-    new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
-  ],
+  plugins: [new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 })],
   resolve: {
     extensions: ['.mjs', '.js', '.ts', '.tsx', '.jsx', '.json'],
   },

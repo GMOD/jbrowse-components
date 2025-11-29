@@ -1,6 +1,7 @@
 process.env.NODE_ENV = 'production'
 
 const webpack = require('webpack')
+
 const configFactory = require('../../../webpack/config/webpack.config')
 const build = require('../../../webpack/scripts/build')
 
@@ -15,4 +16,5 @@ config.plugins.push(
 )
 config.output.publicPath = 'auto'
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 build(config)

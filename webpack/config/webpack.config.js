@@ -17,13 +17,19 @@ const moduleFileExtensions = ['.js', '.ts', '.tsx', '.jsx', '.mjs', '.json']
 // Get public URL from homepage in package.json or PUBLIC_URL env
 function getPublicUrlOrPath(isEnvDevelopment, homepage, envPublicUrl) {
   if (envPublicUrl) {
-    const url = envPublicUrl.endsWith('/') ? envPublicUrl : envPublicUrl + '/'
-    return isEnvDevelopment && !url.startsWith('.') ? new URL(url, 'https://x').pathname : url
+    const url = envPublicUrl.endsWith('/') ? envPublicUrl : `${envPublicUrl}/`
+    return isEnvDevelopment && !url.startsWith('.')
+      ? new URL(url, 'https://x').pathname
+      : url
   }
   if (homepage) {
-    const hp = homepage.endsWith('/') ? homepage : homepage + '/'
+    const hp = homepage.endsWith('/') ? homepage : `${homepage}/`
     const pathname = new URL(hp, 'https://x').pathname
-    return isEnvDevelopment && !hp.startsWith('.') ? pathname : hp.startsWith('.') ? hp : pathname
+    return isEnvDevelopment && !hp.startsWith('.')
+      ? pathname
+      : hp.startsWith('.')
+        ? hp
+        : pathname
   }
   return '/'
 }
@@ -49,7 +55,9 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 
 function getWorkspaces(fromDir) {
   const cwd = fromDir || process.cwd()
-  const workspacesStr = cp.execSync('yarn -s workspaces info', { cwd }).toString()
+  const workspacesStr = cp
+    .execSync('yarn -s workspaces info', { cwd })
+    .toString()
   return Object.values(JSON.parse(workspacesStr)).map(e =>
     path.resolve(path.join('..', '..', e.location)),
   )
@@ -71,14 +79,17 @@ module.exports = function webpackBuilder(webpackEnv) {
   const env = getClientEnvironment(publicUrlOrPath.slice(0, -1))
   const cssSourceMap = isEnvProduction ? shouldUseSourceMap : true
 
-  const getStyleLoaders = cssOptions => [
-    isEnvDevelopment && 'style-loader',
-    isEnvProduction && {
-      loader: MiniCssExtractPlugin.loader,
-      options: publicUrlOrPath.startsWith('.') ? { publicPath: '../../' } : {},
-    },
-    { loader: 'css-loader', options: cssOptions },
-  ].filter(Boolean)
+  const getStyleLoaders = cssOptions =>
+    [
+      isEnvDevelopment && 'style-loader',
+      isEnvProduction && {
+        loader: MiniCssExtractPlugin.loader,
+        options: publicUrlOrPath.startsWith('.')
+          ? { publicPath: '../../' }
+          : {},
+      },
+      { loader: 'css-loader', options: cssOptions },
+    ].filter(Boolean)
 
   return {
     ...(process.env.NO_CACHE ? { cache: false } : {}),
@@ -87,7 +98,9 @@ module.exports = function webpackBuilder(webpackEnv) {
     mode: isEnvProduction ? 'production' : 'development',
     bail: isEnvProduction,
     devtool: isEnvProduction
-      ? shouldUseSourceMap ? 'source-map' : false
+      ? shouldUseSourceMap
+        ? 'source-map'
+        : false
       : 'cheap-module-source-map',
     entry: paths.appIndexJs,
     output: {
@@ -101,7 +114,10 @@ module.exports = function webpackBuilder(webpackEnv) {
         : 'static/js/[name].chunk.js',
       assetModuleFilename: 'static/media/[name].[hash][ext]',
       devtoolModuleFilenameTemplate: isEnvProduction
-        ? info => path.relative(paths.appSrc, info.absoluteResourcePath).replace(/\\/g, '/')
+        ? info =>
+            path
+              .relative(paths.appSrc, info.absoluteResourcePath)
+              .replace(/\\/g, '/')
         : info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     },
     resolve: {
@@ -123,6 +139,9 @@ module.exports = function webpackBuilder(webpackEnv) {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
               include: [paths.appSrc, getWorkspaces()],
               loader: 'babel-loader',
+              options: {
+                rootMode: 'upward',
+              },
             },
             {
               test: cssRegex,
@@ -175,10 +194,11 @@ module.exports = function webpackBuilder(webpackEnv) {
       }),
       new webpack.DefinePlugin(env),
       isEnvDevelopment && new ReactRefreshWebpackPlugin({ overlay: false }),
-      isEnvProduction && new MiniCssExtractPlugin({
-        filename: 'static/css/[name].[contenthash:8].css',
-        chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
-      }),
+      isEnvProduction &&
+        new MiniCssExtractPlugin({
+          filename: 'static/css/[name].[contenthash:8].css',
+          chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+        }),
       new WebpackManifestPlugin({
         fileName: 'asset-manifest.json',
         publicPath: publicUrlOrPath,
