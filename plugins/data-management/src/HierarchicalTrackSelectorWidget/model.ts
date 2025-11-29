@@ -27,8 +27,8 @@ type MaybeBoolean = boolean | undefined
 
 type MaybeCollapsedKeys = [string, boolean][] | undefined
 
-const defaultItemHeight = 20
-const categoryItemHeight = 32
+const defaultItemHeight = 22
+const categoryItemHeight = 40
 const categoryItemOccupyingHeight = 40
 const overscan = 5
 

@@ -16,6 +16,11 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     borderLeft: '1.5px solid #555',
   },
+  accordionCard: {
+    padding: 3,
+    cursor: 'pointer',
+    display: 'flex',
+  },
   // accordionColor set's display:flex so that the child accordionText use
   // vertically centered text
   accordionColor: {
@@ -37,10 +42,12 @@ const TreeItem = observer(function ({
   item,
   model,
   itemOffset,
+  rowHeight,
 }: {
   item: TreeNode
   model: HierarchicalTrackSelectorModel
   itemOffset: number
+  rowHeight: number
 }) {
   const { classes } = useStyles()
   const hasChildren = item.children.length > 0
@@ -54,35 +61,35 @@ const TreeItem = observer(function ({
         width: '100%',
         display: 'flex',
         cursor: 'pointer',
-        height: getItemHeight(item),
+        height: rowHeight,
         top,
         left: 0,
       }}
     >
-      <div>
+      <div style={{ display: 'flex', width: '100%' }}>
         {new Array(nestingLevel).fill(0).map((_, idx) => (
           <div
             /* biome-ignore lint/suspicious/noArrayIndexKey: */
             key={`mark-${idx}`}
-            style={{ left: idx * levelWidth + 2, height: 100 }}
+            style={{ left: idx * levelWidth + 4, height: rowHeight }}
             className={classes.nestingLevelMarker}
           />
         ))}
         <div
+          className={hasChildren ? classes.accordionCard : undefined}
           style={{
+            marginLeft: getLeft(item),
             whiteSpace: 'nowrap',
-            width: '100%',
-            position: 'absolute',
-            left: getLeft(item),
-            marginBottom: 2,
+            flex: 1,
           }}
-          className={hasChildren ? classes.accordionColor : undefined}
         >
-          {item.type !== 'category' ? (
-            <TrackLabel model={model} item={item} />
-          ) : (
-            <TrackCategory model={model} item={item} />
-          )}
+          <div className={hasChildren ? classes.accordionColor : undefined}>
+            {item.type !== 'category' ? (
+              <TrackLabel model={model} item={item} />
+            ) : (
+              <TrackCategory model={model} item={item} />
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -132,12 +139,15 @@ const TreeView = observer(function ({
           {Array.from({ length: endIndex - startIndex + 1 }, (_, i) => {
             const index = startIndex + i
             const item = flattenedItems[index]
+            const nextOffset = itemOffsets[index + 1] ?? totalHeight
+            const rowHeight = nextOffset - itemOffsets[index]!
             return item ? (
               <TreeItem
                 model={model}
                 key={item.id}
                 item={item}
                 itemOffset={itemOffsets[index]!}
+                rowHeight={rowHeight}
               />
             ) : null
           })}
