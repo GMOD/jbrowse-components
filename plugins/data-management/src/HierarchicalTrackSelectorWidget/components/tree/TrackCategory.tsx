@@ -5,13 +5,13 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import { getAllChildren, treeToMap } from '../util'
 
-import type { TreeCategoryNode } from '../../types'
 import type { HierarchicalTrackSelectorModel } from '../../model'
-import { observer } from 'mobx-react'
+import type { TreeCategoryNode } from '../../types'
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
@@ -28,11 +28,9 @@ const useStyles = makeStyles()(theme => ({
 
 function getAllSubcategories(node: TreeCategoryNode): string[] {
   const categoryIds: string[] = []
-  if (node.type === 'category') {
-    for (const child of node.children) {
-      if (child.type === 'category') {
-        categoryIds.push(child.id, ...getAllSubcategories(child))
-      }
+  for (const child of node.children) {
+    if (child.type === 'category') {
+      categoryIds.push(child.id, ...getAllSubcategories(child))
     }
   }
   return categoryIds
@@ -57,7 +55,6 @@ const TrackCategory = observer(function ({
     <div
       className={classes.accordionText}
       onClick={() => {
-        console.log('HEREE!!!', { menuOpen, id, name, item })
         if (!menuOpen) {
           model.toggleCategory(id)
         }

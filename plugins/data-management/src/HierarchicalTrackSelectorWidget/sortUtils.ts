@@ -1,7 +1,6 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export function sortConfs(
   confs: AnyConfigurationModel[],

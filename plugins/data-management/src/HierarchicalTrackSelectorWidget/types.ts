@@ -1,4 +1,4 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export interface TreeTrackNode {
   name: string

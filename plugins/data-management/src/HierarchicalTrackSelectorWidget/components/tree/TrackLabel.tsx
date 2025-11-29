@@ -8,8 +8,8 @@ import { makeStyles } from 'tss-react/mui'
 import { isUnsupported } from '../util'
 import TrackLabelMenu from './TrackLabelMenu'
 
-import type { TreeTrackNode } from '../../types'
 import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { TreeTrackNode } from '../../types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
