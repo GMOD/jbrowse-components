@@ -29,6 +29,7 @@ type MaybeCollapsedKeys = [string, boolean][] | undefined
 
 const defaultItemHeight = 20
 const categoryItemHeight = 32
+const categoryItemOccupyingHeight = 40
 const overscan = 5
 
 // for settings that are config dependent
@@ -45,7 +46,9 @@ function keyConfigPostFix() {
 
 // Function to determine the height of an item based on its type
 export function getItemHeight(item: TreeNode) {
-  return item.type === 'category' ? categoryItemHeight : defaultItemHeight
+  return item.type === 'category'
+    ? categoryItemOccupyingHeight
+    : defaultItemHeight
 }
 
 function recentlyUsedK(assemblyNames: string[]) {

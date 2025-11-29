@@ -53,7 +53,6 @@ const TreeItem = observer(function ({
         position: 'absolute',
         width: '100%',
         display: 'flex',
-        alignItems: 'center',
         cursor: 'pointer',
         height: getItemHeight(item),
         top,
@@ -65,7 +64,7 @@ const TreeItem = observer(function ({
           <div
             /* biome-ignore lint/suspicious/noArrayIndexKey: */
             key={`mark-${idx}`}
-            style={{ left: idx * levelWidth, height: 40 }}
+            style={{ left: idx * levelWidth + 2, height: 100 }}
             className={classes.nestingLevelMarker}
           />
         ))}
