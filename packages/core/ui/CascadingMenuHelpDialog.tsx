@@ -9,13 +9,14 @@ export default function CascadingMenuHelpDialog({
 }: {
   onClose: (event: React.MouseEvent | React.KeyboardEvent) => void
   helpText: React.ReactNode
-  label?: string
+  label?: React.ReactNode
 }) {
   return (
     <Dialog
       open
       onClose={onClose}
-      title={label ? `Help: ${label}` : 'Help'}
+      title="Help"
+      titleNode={label ? <>Help: {label}</> : undefined}
       onClick={e => {
         e.stopPropagation()
       }}
