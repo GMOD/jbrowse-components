@@ -5,10 +5,8 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
-
 import fetch from '../fetchWithProxy'
-import { dataDir, readConf, runInTmpDir } from '../testUtil'
+import { dataDir, readConf, runCommand, runInTmpDir } from '../testUtil'
 
 const { copyFile, rename, chmod } = fs.promises
 
@@ -16,10 +14,6 @@ const testConfig = dataDir('test_config.json')
 
 // extend setup to include the addition of a simple HTML index to serve statically
 const testIndex = dataDir('simpleIndex.html')
-
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
 
 function getPort(output: string) {
   const portMatch = /localhost:([0-9]{4})/.exec(output)
@@ -31,7 +25,7 @@ function getPort(output: string) {
 }
 
 function getAdminKey(output: string) {
-  const keyMatch = /adminKey=([a-zA-Z0-9]{10,12}) /.exec(output)
+  const keyMatch = /Admin key: ([a-zA-Z0-9]{10,12})/.exec(output)
   const key = keyMatch?.[1]
   if (!key) {
     throw new Error(`Admin key not found in "${output}"`)
@@ -40,10 +34,6 @@ function getAdminKey(output: string) {
 }
 
 async function killExpress({ stdout }: { stdout: string }) {
-  // if (!stdout || typeof stdout !== 'string') {
-  //   // This test didn't start a server
-  //   return
-  // }
   return fetch(`http://localhost:${getPort(stdout)}/shutdown`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -111,8 +101,8 @@ test('notifies the user if adminKey is incorrect', async () => {
       },
       body: JSON.stringify(payload),
     })
-    expect(response.status).toBe(403)
-    expect(await response.text()).toBe('Admin key does not match')
+    expect(response.status).toBe(401)
+    expect(await response.text()).toBe('Error: Invalid admin key')
     await killExpress({ stdout })
   })
 })
@@ -122,16 +112,15 @@ test('writes the config to disk if adminKey is valid', async () => {
     const { stdout } = await runCommand(['admin-server', '--port', '9094'])
     const adminKey = getAdminKey(stdout)
     const config = { foo: 'bar' }
-    const payload = { adminKey, config }
-    const response = await fetch('http://localhost:9094/updateConfig', {
+    const response = await fetch(`http://localhost:9094/updateConfig`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ adminKey, config }),
     })
 
-    expect(await response.text()).toBe('Config written to disk')
+    expect(await response.text()).toBe('Config updated successfully')
     expect(readConf(ctx)).toEqual(config)
     await killExpress({ stdout })
   })
@@ -141,7 +130,6 @@ test('throws an error if unable to write to config.json', async () => {
   await runInTmpDir(async () => {
     const { stdout } = await runCommand(['admin-server', '--port', '9095'])
     await chmod('config.json', '444')
-    // grab the correct admin key from URL
     const adminKey = getAdminKey(stdout)
     const config = { foo: 'bar' }
     const payload = { adminKey, config }
@@ -153,7 +141,7 @@ test('throws an error if unable to write to config.json', async () => {
       body: JSON.stringify(payload),
     })
     expect(response.status).toBe(500)
-    expect(await response.text()).toMatch(/Could not write config file/)
+    expect(await response.text()).toMatch(/Failed to update config/)
     await killExpress({ stdout })
   })
 })
@@ -164,7 +152,7 @@ test('throws an error if unable to write to config.json pt 2', async () => {
     const configPath = '/etc/passwd'
     const config = { foo: 'bar' }
     const payload = { configPath, adminKey, config }
-    const response = await fetch('http://localhost:9096/updateConfig', {
+    const response = await fetch('http://localhost:9096/updateConfig?', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -172,7 +160,76 @@ test('throws an error if unable to write to config.json pt 2', async () => {
       body: JSON.stringify(payload),
     })
     expect(response.status).toBe(500)
+    expect(await response.text()).toMatch(/Failed to update config/)
+    await killExpress({ stdout })
+  })
+})
+
+test('blocks relative path traversal attempts in updateConfig', async () => {
+  await runInTmpDir(async () => {
+    const { stdout } = await runCommand(['admin-server', '--port', '9097'])
+    const adminKey = getAdminKey(stdout)
+    const configPath = '../../../etc/passwd'
+    const config = { foo: 'bar' }
+    const payload = { configPath, adminKey, config }
+    const response = await fetch('http://localhost:9097/updateConfig', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+    expect(response.status).toBe(401)
     expect(await response.text()).toMatch(/Cannot perform directory traversal/)
+    await killExpress({ stdout })
+  })
+})
+
+test('blocks relative path traversal attempts in config route', async () => {
+  await runInTmpDir(async () => {
+    const { stdout } = await runCommand(['admin-server', '--port', '9098'])
+    const adminKey = getAdminKey(stdout)
+    const configPath = '../../../etc/passwd'
+    const response = await fetch(
+      `http://localhost:9098/config?adminKey=${adminKey}&config=${configPath}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    expect(response.status).toBe(401)
+    expect(await response.text()).toMatch(/Cannot perform directory traversal/)
+    await killExpress({ stdout })
+  })
+})
+
+test('allows valid configPath in updateConfig', async () => {
+  await runInTmpDir(async ctx => {
+    const { stdout } = await runCommand(['admin-server', '--port', '9099'])
+    const adminKey = getAdminKey(stdout)
+    const configPath = 'custom-config.json'
+    const config = { foo: 'custom' }
+    const payload = { configPath, adminKey, config }
+    const response = await fetch('http://localhost:9099/updateConfig', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+    expect(response.status).toBe(200)
+    expect(await response.text()).toBe('Config updated successfully')
+
+    // Verify the file was created in the correct location
+    const customConfigPath = path.join(ctx.dir, configPath)
+    expect(fs.existsSync(customConfigPath)).toBe(true)
+
+    // Verify the content
+    const content = JSON.parse(fs.readFileSync(customConfigPath, 'utf8'))
+    expect(content).toEqual(config)
+
     await killExpress({ stdout })
   })
 })

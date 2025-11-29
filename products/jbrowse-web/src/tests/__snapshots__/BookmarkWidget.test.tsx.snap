@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Create a bookmark using the click and drag rubberband 1`] = `
 [
@@ -18,7 +18,7 @@ exports[`Create a bookmark using the hotkey to bookmark the current region 1`] =
 [
   {
     "assemblyName": "volvox",
-    "end": 140,
+    "end": 141,
     "highlight": "rgba(247, 129, 192, 0.35)",
     "label": "",
     "refName": "ctgA",
@@ -32,7 +32,7 @@ exports[`Create a bookmark using the menu button to bookmark the current region 
 [
   {
     "assemblyName": "volvox",
-    "end": 140,
+    "end": 141,
     "highlight": "rgba(247, 129, 192, 0.35)",
     "label": "",
     "refName": "ctgA",

@@ -16,10 +16,6 @@ import {
 } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
-import { autorun, observable, transaction } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -28,7 +24,10 @@ import {
   getSnapshot,
   resolveIdentifier,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import { autorun, observable, transaction } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
@@ -36,10 +35,9 @@ import { getBlockLabelKeysToHide, makeTicks } from './components/util'
 import type { ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -140,9 +138,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        tracks: types.array(
-          pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
-        ),
+        tracks: types.array(pm.pluggableMstType('track', 'stateModel')),
 
         /**
          * #property
@@ -395,6 +391,8 @@ export default function stateModelFactory(pm: PluginManager) {
         self.hview.zoomIn()
         self.vview.zoomIn()
       },
+    }))
+    .actions(self => ({
       /**
        * #action
        */
@@ -511,8 +509,45 @@ export default function stateModelFactory(pm: PluginManager) {
       },
       /**
        * #action
+       * Calculate borders synchronously for a given zoom level
+       */
+      calculateBorders() {
+        if (self.volatileWidth === undefined) {
+          return { borderX: self.borderX, borderY: self.borderY }
+        }
+        const { vview, hview, viewHeight, viewWidth } = self
+        const padding = 40
+        const vblocks = vview.dynamicBlocks.contentBlocks
+        const hblocks = hview.dynamicBlocks.contentBlocks
+        const hoffset = hview.offsetPx
+        const voffset = vview.offsetPx
+
+        const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
+        const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
+        const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
+        const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
+
+        return {
+          borderX: Math.max(bx + padding, 50),
+          borderY: Math.max(by + padding, 50),
+        }
+      },
+      /**
+       * #action
        */
       showAllRegions() {
+        // First zoom to max to trigger border recalculation
+        self.hview.zoomTo(self.hview.maxBpPerPx)
+        self.vview.zoomTo(self.vview.maxBpPerPx)
+
+        // Calculate what borders should be at this zoom level
+        const { borderX, borderY } = this.calculateBorders()
+
+        // Apply calculated borders
+        self.setBorderX(borderX)
+        self.setBorderY(borderY)
+
+        // Now zoom again with updated borders/dimensions and center
         self.hview.zoomTo(self.hview.maxBpPerPx)
         self.vview.zoomTo(self.vview.maxBpPerPx)
         self.vview.center()
@@ -600,8 +635,12 @@ export default function stateModelFactory(pm: PluginManager) {
       async exportSvg(opts: ExportSvgOptions = {}) {
         const { renderToSvg } = await import('./svgcomponents/SVGDotplotView')
         const html = await renderToSvg(self as DotplotViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {
@@ -613,20 +652,26 @@ export default function stateModelFactory(pm: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const s = (s: unknown) => JSON.stringify(s)
-            const { showPanButtons, wheelMode, cursorMode } = self
-            if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('dotplot-showPanbuttons', s(showPanButtons))
-              localStorage.setItem('dotplot-cursorMode', cursorMode)
-              localStorage.setItem('dotplot-wheelMode', wheelMode)
-            }
-          }),
+          autorun(
+            function dotplotLocalStorageAutorun() {
+              const s = (s: unknown) => JSON.stringify(s)
+              const { showPanButtons, wheelMode, cursorMode } = self
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(
+                  'dotplot-showPanbuttons',
+                  s(showPanButtons),
+                )
+                localStorage.setItem('dotplot-cursorMode', cursorMode)
+                localStorage.setItem('dotplot-wheelMode', wheelMode)
+              }
+            },
+            { name: 'DotplotLocalStorage' },
+          ),
         )
         addDisposer(
           self,
           autorun(
-            () => {
+            function dotplotRegionsAutorun() {
               const session = getSession(self)
 
               // don't operate if width not set yet
@@ -637,51 +682,45 @@ export default function stateModelFactory(pm: PluginManager) {
                 return
               }
 
+              const { hview, assemblyNames, vview } = self
               // also don't operate if displayedRegions already set, this is a
               // helper autorun to load regions from assembly
               if (
-                self.hview.displayedRegions.length > 0 &&
-                self.vview.displayedRegions.length > 0
+                hview.displayedRegions.length &&
+                vview.displayedRegions.length
               ) {
                 return
               }
 
-              const views = [self.hview, self.vview]
               transaction(() => {
-                for (const [index, name] of self.assemblyNames.entries()) {
-                  const assembly = session.assemblyManager.get(name)
-                  const view = views[index]!
-                  view.setDisplayedRegions(assembly?.regions || [])
-                }
+                hview.setDisplayedRegions(
+                  session.assemblyManager.get(assemblyNames[0]!)?.regions || [],
+                )
+                vview.setDisplayedRegions(
+                  session.assemblyManager.get(assemblyNames[1]!)?.regions || [],
+                )
                 self.showAllRegions()
               })
             },
-            { delay: 1000 },
+            { delay: 1000, name: 'DotplotRegions' },
           ),
         )
         addDisposer(
           self,
-          autorun(function borderSetter() {
-            // make sure we have a width on the view before trying to load
-            if (self.volatileWidth === undefined) {
-              return
-            }
-            const { vview, hview, viewHeight, viewWidth } = self
-            const padding = 40
-            const vblocks = vview.dynamicBlocks.contentBlocks
-            const hblocks = hview.dynamicBlocks.contentBlocks
-            const hoffset = hview.offsetPx
-            const voffset = vview.offsetPx
+          autorun(
+            function dotplotBorderAutorun() {
+              // make sure we have a width on the view before trying to load
+              if (self.volatileWidth === undefined) {
+                return
+              }
 
-            const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
-            const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
-            const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
-            const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
-
-            // these are set via autorun to avoid dependency cycle
-            self.setBorderY(Math.max(by + padding, 50))
-            self.setBorderX(Math.max(bx + padding, 50))
-          }),
+              // Calculate and apply borders
+              const { borderX, borderY } = self.calculateBorders()
+              self.setBorderX(borderX)
+              self.setBorderY(borderY)
+            },
+            { name: 'DotplotBorder' },
+          ),
         )
       },
       /**
@@ -732,7 +771,6 @@ export default function stateModelFactory(pm: PluginManager) {
               ])
             },
           },
-
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,

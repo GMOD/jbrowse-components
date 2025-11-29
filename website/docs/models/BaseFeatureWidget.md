@@ -125,7 +125,7 @@ maxDepth: types.maybe(types.number)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized; mode: string; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized; mode: SequenceDisplayMode; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 ```

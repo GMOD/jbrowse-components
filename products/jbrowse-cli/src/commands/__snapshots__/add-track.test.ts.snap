@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`adds a bam track from a url 1`] = `
+exports[`adds bam track from a url 1`] = `
 [
   {
     "adapter": {
@@ -34,7 +34,7 @@ exports[`adds a bam track from a url 1`] = `
 ]
 `;
 
-exports[`adds a bam track with all the custom fields 1`] = `
+exports[`adds bam track with all the custom fields 1`] = `
 [
   {
     "adapter": {
@@ -58,7 +58,7 @@ exports[`adds a bam track with all the custom fields 1`] = `
       "newcategory",
     ],
     "defaultRendering": "test",
-    "description": "new description",
+    "description": ""new description"",
     "name": "customName",
     "trackId": "customTrackId",
     "type": "CustomTrackType",
@@ -66,7 +66,7 @@ exports[`adds a bam track with all the custom fields 1`] = `
 ]
 `;
 
-exports[`adds a bam track with bai 1`] = `
+exports[`adds bam track with bai 1`] = `
 [
   {
     "adapter": {
@@ -100,7 +100,7 @@ exports[`adds a bam track with bai 1`] = `
 ]
 `;
 
-exports[`adds a bam track with csi 1`] = `
+exports[`adds bam track with csi 1`] = `
 [
   {
     "adapter": {
@@ -134,7 +134,7 @@ exports[`adds a bam track with csi 1`] = `
 ]
 `;
 
-exports[`adds a bam track with indexFile for bai 1`] = `
+exports[`adds bam track with indexFile for bai 1`] = `
 [
   {
     "adapter": {
@@ -168,7 +168,7 @@ exports[`adds a bam track with indexFile for bai 1`] = `
 ]
 `;
 
-exports[`adds a bam track with load inPlace 1`] = `
+exports[`adds bam track with load inPlace 1`] = `
 [
   {
     "adapter": {
@@ -202,7 +202,7 @@ exports[`adds a bam track with load inPlace 1`] = `
 ]
 `;
 
-exports[`adds a bam track with subDir 1`] = `
+exports[`adds bam track with subDir 1`] = `
 [
   {
     "adapter": {
@@ -236,7 +236,7 @@ exports[`adds a bam track with subDir 1`] = `
 ]
 `;
 
-exports[`adds a bam track with subDir and localPath protocol 1`] = `
+exports[`adds bam track with subDir and localPath protocol 1`] = `
 [
   {
     "adapter": {
@@ -270,7 +270,7 @@ exports[`adds a bam track with subDir and localPath protocol 1`] = `
 ]
 `;
 
-exports[`adds a bam+bai track with load inPlace 1`] = `
+exports[`adds bam+bai track with load inPlace 1`] = `
 [
   {
     "adapter": {
@@ -304,7 +304,7 @@ exports[`adds a bam+bai track with load inPlace 1`] = `
 ]
 `;
 
-exports[`adds a chain file 1`] = `
+exports[`adds chain file 1`] = `
 [
   {
     "adapter": {
@@ -329,7 +329,7 @@ exports[`adds a chain file 1`] = `
 ]
 `;
 
-exports[`adds a delta file 1`] = `
+exports[`adds delta file 1`] = `
 [
   {
     "adapter": {
@@ -354,7 +354,7 @@ exports[`adds a delta file 1`] = `
 ]
 `;
 
-exports[`adds a mashmap file 1`] = `
+exports[`adds mashmap file 1`] = `
 [
   {
     "adapter": {
@@ -379,7 +379,7 @@ exports[`adds a mashmap file 1`] = `
 ]
 `;
 
-exports[`adds a mcscan anchors file 1`] = `
+exports[`adds mcscan anchors file 1`] = `
 [
   {
     "adapter": {
@@ -412,7 +412,7 @@ exports[`adds a mcscan anchors file 1`] = `
 ]
 `;
 
-exports[`adds a mcscan simple anchors file 1`] = `
+exports[`adds mcscan simple anchors file 1`] = `
 [
   {
     "adapter": {
@@ -445,7 +445,7 @@ exports[`adds a mcscan simple anchors file 1`] = `
 ]
 `;
 
-exports[`adds a paf file 1`] = `
+exports[`adds paf file 1`] = `
 [
   {
     "adapter": {
@@ -470,7 +470,7 @@ exports[`adds a paf file 1`] = `
 ]
 `;
 
-exports[`adds a paf.gz file 1`] = `
+exports[`adds paf.gz file 1`] = `
 [
   {
     "adapter": {
@@ -495,7 +495,7 @@ exports[`adds a paf.gz file 1`] = `
 ]
 `;
 
-exports[`adds a plaintext bed 1`] = `
+exports[`adds plaintext bed 1`] = `
 [
   {
     "adapter": {
@@ -515,7 +515,7 @@ exports[`adds a plaintext bed 1`] = `
 ]
 `;
 
-exports[`adds a plaintext bedpe 1`] = `
+exports[`adds plaintext bedpe 1`] = `
 [
   {
     "adapter": {
@@ -535,7 +535,7 @@ exports[`adds a plaintext bedpe 1`] = `
 ]
 `;
 
-exports[`adds a plaintext gff 1`] = `
+exports[`adds plaintext gff 1`] = `
 [
   {
     "adapter": {
@@ -555,7 +555,7 @@ exports[`adds a plaintext gff 1`] = `
 ]
 `;
 
-exports[`adds a plaintext gtf 1`] = `
+exports[`adds plaintext gtf 1`] = `
 [
   {
     "adapter": {
@@ -575,7 +575,7 @@ exports[`adds a plaintext gtf 1`] = `
 ]
 `;
 
-exports[`adds a plaintext vcf 1`] = `
+exports[`adds plaintext vcf 1`] = `
 [
   {
     "adapter": {
@@ -595,7 +595,7 @@ exports[`adds a plaintext vcf 1`] = `
 ]
 `;
 
-exports[`adds a tabix gff with csi 1`] = `
+exports[`adds tabix gff with csi 1`] = `
 [
   {
     "adapter": {
@@ -622,7 +622,7 @@ exports[`adds a tabix gff with csi 1`] = `
 ]
 `;
 
-exports[`adds a tabix gff with tbi 1`] = `
+exports[`adds tabix gff with tbi 1`] = `
 [
   {
     "adapter": {
@@ -649,16 +649,16 @@ exports[`adds a tabix gff with tbi 1`] = `
 ]
 `;
 
-exports[`cannot add a track if there is no config file 1`] = `"Error: ENOENT: no such file or directory, open './config.json'"`;
+exports[`cannot add a track if there is no config file 1`] = `"Error: Error: ENOENT: no such file or directory, open './config.json'"`;
 
-exports[`cannot add a track with the same track id 1`] = `"Cannot add track with id simple, a track with that id already exists (use --force to override)"`;
+exports[`cannot add a track with the same track id 1`] = `"Error: Cannot add track with id simple, a track with that id already exists (use --force to override)"`;
 
-exports[`fails if URL with load flag is passed 1`] = `"The --load flag is used for local files only, but a URL was provided"`;
+exports[`fails if URL with load flag is passed 1`] = `"Error: The --load flag is used for local files only, but a URL was provided"`;
 
-exports[`fails if it cannot assume the assemblyname 1`] = `"No assemblies found. Please add one before adding tracks"`;
+exports[`fails if it cannot assume the assemblyname 1`] = `"Error: No assemblies found. Please add one before adding tracks"`;
 
 exports[`fails if load flag is not passed in for a localFile 1`] = `
-"The --load flag should be used if a local file is used, example --load
+"Error: The --load flag should be used if a local file is used, example --load
         copy to copy the file into the config directory. Options for load are
         copy/move/symlink/inPlace (inPlace for no file operations)"
 `;
@@ -669,4 +669,4 @@ track  Track file or URL
 See more help with --help"
 `;
 
-exports[`fails multiple assemblies exist but no assemblyNames passed 1`] = `"Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag"`;
+exports[`fails multiple assemblies exist but no assemblyNames passed 1`] = `"Error: Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag"`;

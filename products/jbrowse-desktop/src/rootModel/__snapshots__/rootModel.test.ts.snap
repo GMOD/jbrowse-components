@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`adds menus 1`] = `
 [
@@ -18,7 +18,14 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "icon": [Function],
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
         "label": "Save session as...",
         "onClick": [Function],
       },
@@ -162,7 +169,14 @@ exports[`adds menus 2`] = `
         "onClick": [Function],
       },
       {
-        "icon": [Function],
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
         "label": "Save session as...",
         "onClick": [Function],
       },

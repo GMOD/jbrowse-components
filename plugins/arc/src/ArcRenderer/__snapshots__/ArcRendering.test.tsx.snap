@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`no features 1`] = `
 <div>
@@ -20,8 +20,6 @@ exports[`one feature 1`] = `
         d="M 0.3 0 C 0.3 100, 1 100, 1 0"
         fill="transparent"
         pointer-events="stroke"
-        stroke="#000000"
-        stroke-opacity="1"
         stroke-width="2"
       />
       <text
@@ -51,8 +49,6 @@ exports[`one semicircle 1`] = `
         d="M 0.29999999999999993 4.286263797015736e-17 A 0.35 0.35 0 0 0 0.9999999999999999 0"
         fill="transparent"
         pointer-events="stroke"
-        stroke="#000000"
-        stroke-opacity="1"
         stroke-width="2"
       />
       <text

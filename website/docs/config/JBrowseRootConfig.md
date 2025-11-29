@@ -22,70 +22,10 @@ this is a config model representing a config.json (for jbrowse-web) or
 somefile.jbrowse (for jbrowse-desktop, where configs have the .jbrowse
 extension)
 
-includes
-
-- [FormatDetails](../formatdetails) for global (instead of per-track) feature
-  detail formatters
-- [FormatAbout](../formatabout) for global (instead of per-track) about track
-  formatters
-- [HierarchicalConfigSchema](../hierarchicalconfigschema) for track selector
-  configs
-
 also includes any pluginManager.pluginConfigurationSchemas(), so plugins that
 have a configurationSchema field on their class are mixed into this object
 
 ### JBrowseRootConfig - Slots
-
-#### slot: configuration.rpc
-
-```js
-rpc: RpcManager.configSchema
-```
-
-#### slot: configuration.highResolutionScaling
-
-```js
-highResolutionScaling: {
-        type: 'number',
-        defaultValue: 2,
-      }
-```
-
-#### slot: configuration.disableAnalytics
-
-```js
-disableAnalytics: {
-        type: 'boolean',
-        defaultValue: false,
-      }
-```
-
-#### slot: configuration.theme
-
-```js
-theme: {
-        type: 'frozen',
-        defaultValue: {},
-      }
-```
-
-#### slot: configuration.extraThemes
-
-```js
-extraThemes: {
-        type: 'frozen',
-        defaultValue: {},
-      }
-```
-
-#### slot: configuration.logoPath
-
-```js
-logoPath: {
-        type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
-      }
-```
 
 #### slot: plugins
 

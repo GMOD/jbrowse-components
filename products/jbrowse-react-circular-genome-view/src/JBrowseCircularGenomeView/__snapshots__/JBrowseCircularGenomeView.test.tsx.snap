@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`<JBrowseCircularGenomeView /> 1`] = `
 <div>
@@ -81,11 +81,11 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           <div
             class="css-1vtmdlf-root"
             data-testid="test_view"
-            style="width: 800px; height: 400px;"
+            style="width: 808px; height: 400px;"
           >
             <div
               class="css-4l8qn4-scroller"
-              style="width: 800px; height: 400px;"
+              style="width: 808px; height: 400px;"
             >
               <svg
                 height="216.3661977236758"
@@ -97,7 +97,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 >
                   <text
                     class="css-wdlapd-rulerLabel"
-                    dominant-baseline="baseline"
+                    dominant-baseline="middle"
                     fill="#996600"
                     fill-opacity="1"
                     text-anchor="middle"
@@ -118,7 +118,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   />
                   <text
                     class="css-wdlapd-rulerLabel"
-                    dominant-baseline="baseline"
+                    dominant-baseline="middle"
                     fill="#666600"
                     fill-opacity="1"
                     text-anchor="middle"
@@ -276,7 +276,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             <div
               class="css-1g8jgpw-horizontalHandle"
               data-resizer="true"
-              style="height: 3px; position: absolute; bottom: 0px; left: 0px; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"
+              style="height: 3px; position: absolute; bottom: 0px; left: 0px; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid rgb(250, 250, 250);"
             />
           </div>
         </div>

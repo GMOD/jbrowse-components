@@ -23,10 +23,6 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(4),
     margin: '0 auto',
   },
-  assemblySelector: {
-    width: '75%',
-    margin: '0 auto',
-  },
 }))
 
 function doSubmit({
@@ -54,8 +50,18 @@ function doSubmit({
       })
     }
 
-    model.showAllRegions()
     model.setAssemblyNames(assembly2, assembly1)
+
+    // Only show all regions if views are properly initialized
+    // Otherwise the autorun will handle it once initialization is complete
+    // if (
+    //   model.volatileWidth !== undefined &&
+    //   model.assembliesInitialized &&
+    //   model.hview.displayedRegions.length > 0 &&
+    //   model.vview.displayedRegions.length > 0
+    // ) {
+    //   model.showAllRegions()
+    // }
   })
 }
 

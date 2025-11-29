@@ -2,9 +2,9 @@ import { useRef } from 'react'
 
 import { ErrorMessage, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 import Gridlines from './Gridlines'
@@ -14,21 +14,26 @@ import TrackRenderingContainer from './TrackRenderingContainer'
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: 2,
     overflow: 'hidden',
     position: 'relative',
+    contain: 'layout style paint',
   },
   unpinnedTrack: {
     background: 'none',
   },
   resizeHandle: {
-    height: 3,
+    height: 4,
     boxSizing: 'border-box',
     position: 'relative',
+    background: 'transparent',
+    '&:hover': {
+      background: theme.palette.divider,
+    },
   },
-})
+}))
 
 type LGV = LinearGenomeViewModel
 

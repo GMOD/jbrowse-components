@@ -1,16 +1,19 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { getMinimalDesc } from '../VcfFeature/util'
 
 export default function AltFormatter({
   value,
-  ref,
+  refString,
 }: {
   value: string
-  ref: string
+  refString: string
 }) {
   const [show, setShow] = useState(false)
-  const alt = getMinimalDesc(ref, value)
+  const alt = useMemo(
+    () => getMinimalDesc(refString, value),
+    [refString, value],
+  )
   return alt !== value ? (
     <div>
       <button
@@ -20,7 +23,7 @@ export default function AltFormatter({
       >
         {show ? 'Show simplified ALT' : 'Show raw ALT'}
       </button>{' '}
-      {show ? value : getMinimalDesc(ref, value)}
+      {show ? value : alt}
     </div>
   ) : (
     value

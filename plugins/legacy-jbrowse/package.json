@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "3.5.0",
+  "version": "3.7.0",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [
     "jbrowse",
@@ -30,20 +30,18 @@
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "npm run clean",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "prebuild": "yarn clean",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
     "@gmod/nclist": "^3.0.0",
-    "@jbrowse/core": "^3.5.0",
+    "@jbrowse/core": "^3.7.0",
     "crc": "^4.0.0",
     "generic-filehandle2": "^2.0.1",
-    "get-value": "^3.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
+    "@jbrowse/mobx-state-tree": "^5.0.0",
     "rxjs": "^7.0.0",
     "set-value": "^4.0.1"
   },

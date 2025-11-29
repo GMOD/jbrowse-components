@@ -1,3 +1,4 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -8,6 +9,9 @@ import Rendering from './SvgFeatureRendering'
 import SvgOverlay from './SvgOverlay'
 
 import '@testing-library/jest-dom'
+
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
 
 test('no features', () => {
   const { container } = render(
@@ -25,8 +29,7 @@ test('no features', () => {
           maxHeightReached: false,
         })
       }
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
@@ -43,7 +46,6 @@ test('one feature', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -57,7 +59,7 @@ test('one feature', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
@@ -75,7 +77,6 @@ test('click on one feature, and do not re-render', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -107,7 +108,7 @@ test('click on one feature, and do not re-render', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
       detectRerender={() => counter++}
     />,
@@ -119,7 +120,10 @@ test('click on one feature, and do not re-render', () => {
 })
 
 test('one feature (compact mode)', () => {
-  const config = SvgRendererConfigSchema.create({ displayMode: 'compact' })
+  const config = SvgRendererConfigSchema.create(
+    { displayMode: 'compact' },
+    { pluginManager },
+  )
 
   const { container } = render(
     <Rendering
@@ -129,7 +133,6 @@ test('one feature (compact mode)', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -299,9 +302,10 @@ test('one feature (compact mode)', () => {
 })
 
 test('processed transcript (reducedRepresentation mode)', () => {
-  const config = SvgRendererConfigSchema.create({
-    displayMode: 'reducedRepresentation',
-  })
+  const config = SvgRendererConfigSchema.create(
+    { displayMode: 'reducedRepresentation' },
+    { pluginManager },
+  )
   const { container } = render(
     <Rendering
       blockKey="hello"
@@ -310,7 +314,6 @@ test('processed transcript (reducedRepresentation mode)', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -341,7 +344,6 @@ test('processed transcript', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -501,7 +503,7 @@ test('processed transcript', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
@@ -518,7 +520,6 @@ test('processed transcript (exons + impliedUTR)', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -1132,7 +1133,7 @@ test('processed transcript (exons + impliedUTR)', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
@@ -1177,7 +1178,6 @@ test('gene with CDS children', () => {
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -1209,7 +1209,7 @@ test('gene with CDS children', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )

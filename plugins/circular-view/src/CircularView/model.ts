@@ -9,11 +9,15 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import {
+  cast,
+  getRoot,
+  resolveIdentifier,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
 import { transaction } from 'mobx'
-import { cast, getRoot, resolveIdentifier, types } from 'mobx-state-tree'
 
 import { calculateStaticSlices, sliceIsVisible } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
@@ -24,7 +28,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region as IRegion } from '@jbrowse/core/util/types'
 import type { Region } from '@jbrowse/core/util/types/mst'
-import type { Instance, SnapshotOrInstance } from 'mobx-state-tree'
+import type { Instance, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -582,8 +586,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       async exportSvg(opts: ExportSvgOptions = {}) {
         const { renderToSvg } = await import('./svgcomponents/SVGCircularView')
         const html = await renderToSvg(self as CircularViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
     }))
     .views(self => ({

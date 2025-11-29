@@ -18,10 +18,11 @@ export function findSecondLargestNumber(arr: Iterable<number>) {
   return secondMax
 }
 
-export function calculateAlleleCounts(feat: Feature) {
-  const genotypes = feat.get('genotypes') as Record<string, string>
+export function calculateAlleleCounts(
+  genotypes: Record<string, string>,
+  cacheSplit: Record<string, string[]>,
+) {
   const alleleCounts = { 0: 0, 1: 0, '.': 0 } as Record<string, number>
-  const cacheSplit = {} as Record<string, string[]>
   const vals = Object.values(genotypes)
   const len = vals.length
   for (let i = 0; i < len; i++) {
@@ -66,20 +67,31 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   minorAlleleFrequencyFilter,
   lengthCutoffFilter,
   stopToken,
+  genotypesCache,
 }: {
   features: Iterable<Feature>
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
   stopToken?: string
+  genotypesCache?: Map<string, Record<string, string>>
 }) {
   const results = [] as {
     feature: Feature
     mostFrequentAlt: string
     alleleCounts: Record<string, number>
   }[]
+  const cacheSplit = {} as Record<string, string[]>
+
   forEachWithStopTokenCheck(features, stopToken, feature => {
     if (feature.get('end') - feature.get('start') <= lengthCutoffFilter) {
-      const alleleCounts = calculateAlleleCounts(feature)
+      const featureId = feature.id()
+      let genotypes = genotypesCache?.get(featureId)
+      if (!genotypes) {
+        genotypes = feature.get('genotypes') as Record<string, string>
+        genotypesCache?.set(featureId, genotypes)
+      }
+
+      const alleleCounts = calculateAlleleCounts(genotypes, cacheSplit)
       if (
         calculateMinorAlleleFrequency(alleleCounts) >=
         minorAlleleFrequencyFilter

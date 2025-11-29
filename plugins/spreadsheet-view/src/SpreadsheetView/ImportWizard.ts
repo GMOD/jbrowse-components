@@ -2,11 +2,11 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getParent, types } from 'mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const IMPORT_SIZE_LIMIT = 100_000_000
 
@@ -46,7 +46,10 @@ function getAdapterLoc(adapter: Record<string, FileLocation>) {
 }
 
 // regexp used to guess the type of a file or URL from its file extension
-const fileTypesRegexp = new RegExp(`\\.(${fileTypes.join('|')})(\\.gz)?$`, 'i')
+const fileTypesRegexp = new RegExp(
+  String.raw`\.(${fileTypes.join('|')})(\.gz)?$`,
+  'i',
+)
 
 /**
  * #stateModel SpreadsheetImportWizard

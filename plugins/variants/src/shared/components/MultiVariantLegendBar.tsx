@@ -1,21 +1,37 @@
-import { clamp, getContainingView, max, measureText } from '@jbrowse/core/util'
+import { useMemo } from 'react'
+
+import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './MultiVariantColorLegend'
 
-import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
+import type { Source } from '../types'
+
+interface LegendBarModel {
+  id: string
+  scrollTop: number
+  height: number
+  hierarchy?: any
+  treeAreaWidth: number
+  totalHeight: number
+  canDisplayLabels: boolean
+  rowHeight: number
+  sources?: Source[]
+  showTree: boolean
+}
 
 const Wrapper = observer(function ({
   children,
   model,
   exportSVG,
 }: {
-  model: MultiVariantBaseModel
+  model: LegendBarModel
   children: React.ReactNode
   exportSVG?: boolean
 }) {
-  const { id, scrollTop, height } = model
+  const { id, scrollTop, height, hierarchy, treeAreaWidth, showTree } = model
   const clipid = `legend-${id}`
+  const leftOffset = hierarchy && showTree ? treeAreaWidth : 0
   return exportSVG ? (
     <>
       <defs>
@@ -32,7 +48,7 @@ const Wrapper = observer(function ({
       style={{
         position: 'absolute',
         top: 0,
-        left: 0,
+        left: leftOffset,
         zIndex: 100,
         pointerEvents: 'none',
         height: model.totalHeight,
@@ -45,24 +61,33 @@ const Wrapper = observer(function ({
 })
 
 export const LegendBar = observer(function (props: {
-  model: MultiVariantBaseModel
+  model: LegendBarModel
   orientation?: string
   exportSVG?: boolean
 }) {
   const { model } = props
   const { canDisplayLabels, rowHeight, sources } = model
-  const svgFontSize = clamp(rowHeight, 8, 12)
+  const svgFontSize = Math.min(rowHeight, 12)
+
+  const labelWidth = useMemo(() => {
+    if (!sources) {
+      return 0
+    }
+    let maxWidth = 0
+    for (const s of sources) {
+      const width = canDisplayLabels
+        ? measureText(s.label, svgFontSize) + 10
+        : 20
+      if (width > maxWidth) {
+        maxWidth = width
+      }
+    }
+    return maxWidth
+  }, [sources, svgFontSize, canDisplayLabels])
+
   return sources ? (
     <Wrapper {...props}>
-      <ColorLegend
-        model={model}
-        labelWidth={max(
-          sources
-            .map(s => measureText(s.label, svgFontSize) + 10)
-            .map(width => (canDisplayLabels ? width : 20)),
-          0,
-        )}
-      />
+      <ColorLegend model={model} labelWidth={labelWidth} />
     </Wrapper>
   ) : null
 })

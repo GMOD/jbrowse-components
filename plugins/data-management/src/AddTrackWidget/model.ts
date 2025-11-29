@@ -7,12 +7,12 @@ import {
   guessTrackType,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { types } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
-import { types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function isAbsoluteUrl(url = '') {
   try {
@@ -97,6 +97,8 @@ export default function f(pluginManager: PluginManager) {
        */
       setTrackData(obj: FileLocation) {
         self.trackData = obj
+        // Clear adapter hint when track data changes to force re-evaluation
+        self.adapterHint = ''
       },
       /**
        * #action

@@ -3,14 +3,11 @@ import {
   forEachWithStopTokenCheck,
   updateStatus,
 } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import RBush from 'rbush'
 
 import { f2 } from '../shared/constants'
-import {
-  drawColorAlleleCount,
-  getColorAlleleCount,
-} from '../shared/drawAlleleCount'
+import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
 import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
@@ -25,6 +22,7 @@ export async function makeImageData(
     minorAlleleFrequencyFilter,
     sources,
     rowHeight,
+    height: canvasHeight,
     features,
     regions,
     bpPerPx,
@@ -36,39 +34,63 @@ export async function makeImageData(
   const region = regions[0]!
   const { statusCallback = () => {} } = props
   checkStopToken(stopToken)
+
+  const coords = [] as number[]
+  const items = [] as any[]
+  const colorCache = {} as Record<string, string | undefined>
+  const splitCache = {} as Record<string, string[]>
+  const genotypesCache = new Map<string, Record<string, string>>()
+  const drawRef = referenceDrawingMode === 'draw'
+  const h = rowHeight
+  // Use at least 1px for drawing operations to avoid insanely small subpixel rendering
+  const drawH = Math.max(rowHeight, 1)
+  const sln = sources.length
+  const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
+  const endRow = Math.min(sln, Math.ceil((scrollTop + canvasHeight) / h))
+
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
       stopToken,
       features: features.values(),
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
+      genotypesCache,
     }),
   )
   checkStopToken(stopToken)
-  const rbush = new RBush()
 
   await updateStatus('Drawing variants', statusCallback, () => {
     forEachWithStopTokenCheck(
       mafs,
       stopToken,
       ({ mostFrequentAlt, feature }) => {
+        const start = feature.get('start')
+        const end = feature.get('end')
+        const bpLen = end - start
         const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-        const flen = feature.get('end') - feature.get('start')
+        const featureId = feature.id()
         const w = Math.max(Math.round(rightPx - leftPx), 2)
-        const samp = feature.get('genotypes') as Record<string, string>
-        let y = -scrollTop
+        let samp = genotypesCache.get(featureId)
+        if (!samp) {
+          samp = feature.get('genotypes') as Record<string, string>
+          genotypesCache.set(featureId, samp)
+        }
+        const featureType = feature.get('type')
+        const featureStrand = feature.get('strand')
+        const alpha = bpLen > 5 ? 0.75 : 1
+        const x = Math.floor(leftPx)
 
-        const s = sources.length
         if (renderingMode === 'phased') {
-          for (let j = 0; j < s; j++) {
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name, HP } = sources[j]!
             const genotype = samp[name]
-            const x = Math.floor(leftPx)
-            const h = Math.max(rowHeight, 1)
             if (genotype) {
               const isPhased = genotype.includes('|')
               if (isPhased) {
-                const alleles = genotype.split('|')
+                const alleles =
+                  splitCache[genotype] ||
+                  (splitCache[genotype] = genotype.split('|'))
                 if (
                   drawPhased(
                     alleles,
@@ -76,68 +98,39 @@ export async function makeImageData(
                     x,
                     y,
                     w,
-                    h,
+                    drawH,
                     HP!,
                     undefined,
-                    referenceDrawingMode === 'draw',
+                    drawRef,
                   )
                 ) {
-                  rbush.insert({
-                    minX: x,
-                    maxX: x + w,
-                    minY: y,
-                    maxY: y + h,
-                    genotype,
+                  items.push({
                     name,
-                    featureId: feature.id(),
+                    genotype,
+                    featureId,
+                    bpLen,
                   })
+                  coords.push(x, y, x + w, y + drawH)
                 }
               } else {
                 ctx.fillStyle = 'black'
-                ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+                ctx.fillRect(x - f2, y - f2, w + f2, drawH + f2)
               }
             }
-            y += rowHeight
           }
         } else {
-          const colorCache = {} as Record<string, string | undefined>
-          for (let j = 0; j < s; j++) {
+          for (let j = startRow; j < endRow; j++) {
+            const y = j * h - scrollTop
             const { name } = sources[j]!
             const genotype = samp[name]
-            const x = Math.floor(leftPx)
-            const h = Math.max(rowHeight, 1)
             if (genotype) {
-              let c = colorCache[genotype]
-              if (c === undefined) {
-                let alt = 0
-                let uncalled = 0
-                let alt2 = 0
-                let ref = 0
-                const alleles = genotype.split(/[/|]/)
-                const total = alleles.length
-
-                for (let i = 0; i < total; i++) {
-                  const allele = alleles[i]!
-                  if (allele === mostFrequentAlt) {
-                    alt++
-                  } else if (allele === '0') {
-                    ref++
-                  } else if (allele === '.') {
-                    uncalled++
-                  } else {
-                    alt2++
-                  }
-                }
-                c = getColorAlleleCount(
-                  ref,
-                  alt,
-                  alt2,
-                  uncalled,
-                  total,
-                  referenceDrawingMode === 'draw',
-                )
-                colorCache[genotype] = c
-              }
+              const c = getAlleleColor(
+                genotype,
+                mostFrequentAlt,
+                colorCache,
+                splitCache,
+                drawRef,
+              )
               if (c) {
                 drawColorAlleleCount(
                   c,
@@ -145,42 +138,61 @@ export async function makeImageData(
                   x,
                   y,
                   w,
-                  h,
-                  feature.get('type'),
-                  feature.get('strand'),
-                  flen > 5 ? 0.75 : 1,
+                  drawH,
+                  featureType,
+                  featureStrand,
+                  alpha,
                 )
-                rbush.insert({
-                  minX: x,
-                  maxX: x + w,
-                  minY: y,
-                  maxY: y + h,
-                  genotype,
+
+                items.push({
                   name,
-                  featureId: feature.id(),
+                  genotype,
+                  featureId,
+                  bpLen,
                 })
+                coords.push(x, y, x + w, y + drawH)
               }
             }
-            y += rowHeight
           }
         }
       },
     )
   })
 
+  const flatbush = new Flatbush(Math.max(items.length, 1))
+  if (items.length) {
+    for (let i = 0, l = coords.length; i < l; i += 4) {
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+    }
+  } else {
+    flatbush.add(0, 0)
+  }
+  flatbush.finish()
+
+  const featureGenotypeMap = {} as Record<
+    string,
+    {
+      alt: unknown
+      ref: unknown
+      name: unknown
+      description: unknown
+      length: number
+    }
+  >
+  for (const { feature } of mafs) {
+    const id = feature.id()
+    featureGenotypeMap[id] = {
+      alt: feature.get('ALT'),
+      ref: feature.get('REF'),
+      name: feature.get('name'),
+      description: feature.get('description'),
+      length: feature.get('end') - feature.get('start'),
+    }
+  }
+
   return {
-    rbush: rbush.toJSON(),
-    featureGenotypeMap: Object.fromEntries(
-      mafs.map(({ feature }) => [
-        feature.id(),
-        {
-          alt: feature.get('ALT'),
-          ref: feature.get('REF'),
-          name: feature.get('name'),
-          description: feature.get('description'),
-          length: feature.get('end') - feature.get('start'),
-        },
-      ]),
-    ),
+    flatbush: flatbush.data,
+    items,
+    featureGenotypeMap,
   }
 }

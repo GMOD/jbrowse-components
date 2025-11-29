@@ -1,11 +1,12 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzip, getProgressDisplayStr } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import VcfFeature from '../VcfFeature'
+import { parseVcfBuffer } from './vcfParser'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -13,15 +14,19 @@ import type { Feature, Region } from '@jbrowse/core/util'
 type StatusCallback = (arg: string) => void
 
 export default class VcfAdapter extends BaseFeatureDataAdapter {
-  calculatedIntervalTreeMap: Record<string, IntervalTree> = {}
+  calculatedIntervalTreeMap: Record<string, IntervalTree<Feature>> = {}
 
   vcfFeatures?: Promise<{
     header: string
     parser: VcfParser
-    intervalTreeMap: Record<string, (sc?: StatusCallback) => IntervalTree>
+    intervalTreeMap: Record<
+      string,
+      (sc?: StatusCallback) => IntervalTree<Feature>
+    >
+    featureMap: Record<string, string[]>
   }>
 
-  public static capabilities = ['getFeatures', 'getRefNames']
+  public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
 
   public async getHeader() {
     const { header } = await this.setup()
@@ -37,40 +42,8 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     const { statusCallback = () => {} } = opts || {}
     const loc = openLocation(this.getConf('vcfLocation'), this.pluginManager)
     const buffer = await fetchAndMaybeUnzip(loc, opts)
-    const headerLines = []
-    const featureMap = {} as Record<string, string[]>
-    let blockStart = 0
 
-    const decoder = new TextDecoder('utf8')
-    let i = 0
-    while (blockStart < buffer.length) {
-      const n = buffer.indexOf(10, blockStart)
-      // could be a non-newline ended file, so slice to end of file if n===-1
-      const b =
-        n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)
-      const line = decoder.decode(b).trim()
-      if (line) {
-        if (line.startsWith('#')) {
-          headerLines.push(line)
-        } else {
-          const ret = line.indexOf('\t')
-          const refName = line.slice(0, ret)
-          if (!featureMap[refName]) {
-            featureMap[refName] = []
-          }
-          featureMap[refName].push(line)
-        }
-      }
-      if (i++ % 10_000 === 0) {
-        statusCallback(
-          `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
-        )
-      }
-
-      blockStart = n + 1
-    }
-
-    const header = headerLines.join('\n')
+    const { header, featureMap } = parseVcfBuffer(buffer, statusCallback)
     const parser = new VcfParser({ header })
 
     const intervalTreeMap = Object.fromEntries(
@@ -80,7 +53,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing VCF data')
             let idx = 0
-            const intervalTree = new IntervalTree()
+            const intervalTree = new IntervalTree<Feature>()
             for (const line of lines) {
               const f = new VcfFeature({
                 variant: parser.parseLine(line),
@@ -100,6 +73,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       header,
       parser,
       intervalTreeMap,
+      featureMap,
     }
   }
 
@@ -134,6 +108,39 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
         observer.error(e)
       }
     }, opts.stopToken)
+  }
+
+  public async getExportData(
+    regions: Region[],
+    formatType: string,
+    _opts?: BaseOptions,
+  ): Promise<string | undefined> {
+    if (formatType !== 'vcf') {
+      return undefined
+    }
+
+    const { header, featureMap } = await this.setup()
+    const exportLines: string[] = [header]
+
+    for (const region of regions) {
+      const { refName, start, end } = region
+      const lines = featureMap[refName] || []
+
+      for (const line of lines) {
+        // VCF format: CHROM POS ID REF ALT QUAL FILTER ...
+        // Extract POS (second field, 1-based)
+        const fields = line.split('\t')
+        const pos = parseInt(fields[1]!, 10)
+
+        // VCF positions are 1-based, convert to 0-based for comparison
+        // and check if overlaps with region
+        if (pos - 1 >= start && pos - 1 < end) {
+          exportLines.push(line)
+        }
+      }
+    }
+
+    return exportLines.join('\n')
   }
 
   async getSources() {

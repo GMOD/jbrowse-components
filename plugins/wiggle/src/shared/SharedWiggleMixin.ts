@@ -7,8 +7,8 @@ import {
 } from '@jbrowse/core/configuration'
 import { getEnv, getSession, isSelectionContainer } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
 
 import { getNiceDomain } from '../util'
 
@@ -90,6 +90,10 @@ export default function SharedWiggleMixin(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        statsRegion: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -112,11 +116,14 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      updateQuantitativeStats(stats: {
-        currStatsBpPerPx: number
-        scoreMin: number
-        scoreMax: number
-      }) {
+      updateQuantitativeStats(
+        stats: {
+          currStatsBpPerPx: number
+          scoreMin: number
+          scoreMax: number
+        },
+        statsRegion?: string,
+      ) {
         const { currStatsBpPerPx, scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
         if (
@@ -129,6 +136,9 @@ export default function SharedWiggleMixin(
             scoreMin,
             scoreMax,
           }
+        }
+        if (statsRegion) {
+          self.statsRegion = statsRegion
         }
       },
       /**
@@ -158,6 +168,13 @@ export default function SharedWiggleMixin(
           stopStopToken(self.statsFetchInProgress)
         }
         self.statsFetchInProgress = arg
+      },
+
+      /**
+       * #action
+       */
+      setStatsRegion(statsRegion: string) {
+        self.statsRegion = statsRegion
       },
 
       /**

@@ -1,11 +1,11 @@
 export { default as baseLinearDisplayConfigSchema } from './models/configSchema'
 export type { BlockModel } from './models/serverSideRenderedBlock'
-export { BaseLinearDisplay } from './models/BaseLinearDisplayModel'
+export { BaseLinearDisplay } from './model'
 export type {
   BaseLinearDisplayModel,
   BaseLinearDisplayStateModel,
   ExportSvgDisplayOptions,
-} from './models/BaseLinearDisplayModel'
+} from './model'
 export {
   BlockMsg,
   Tooltip,

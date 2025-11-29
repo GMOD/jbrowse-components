@@ -5,7 +5,6 @@ import { BaseAdapter } from './BaseAdapter'
 import { max, min, sum } from '../../util'
 import { ObservableCreate } from '../../util/rxjs'
 import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
-import { checkStopToken } from '../../util/stopToken'
 
 import type { BaseOptions } from './BaseOptions'
 import type { FeatureDensityStats } from './types'
@@ -84,7 +83,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const hasData = await this.hasDataForRefName(region.refName, opts)
-      checkStopToken(opts.stopToken)
       if (!hasData) {
         observer.complete()
       } else {
@@ -183,7 +181,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * is)
    */
   getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
-    let lastTime = +Date.now()
+    let lastTime = Date.now()
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
       const sampleCenter = start * 0.75 + end * 0.25
@@ -224,7 +222,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       if (statsSampleFeatures >= 70 || interval * 2 > refLen) {
         return stats
       } else if (expansionTime <= 5000) {
-        const currTime = +Date.now()
+        const currTime = Date.now()
         expansionTime += currTime - lastTime
         lastTime = currTime
         return statsFromInterval(interval * 2, expansionTime)
@@ -276,5 +274,24 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     return [...sources].map(source => ({
       name: source,
     }))
+  }
+
+  /**
+   * Export data from the adapter in a specified format for given regions.
+   * Some adapters (like VcfAdapter) can efficiently export raw data directly
+   * from the file without parsing to features.
+   *
+   * @param regions - Regions to export data from
+   * @param formatType - The format to export to (e.g. 'vcf', 'sam', 'bedgraph')
+   * @param opts - Feature adapter options
+   * @returns Promise resolving to the exported data as a string, or undefined
+   *          if the adapter does not support direct export for this format
+   */
+  public async getExportData(
+    _regions: Region[],
+    _formatType: string,
+    _opts?: BaseOptions,
+  ): Promise<string | undefined> {
+    return undefined
   }
 }

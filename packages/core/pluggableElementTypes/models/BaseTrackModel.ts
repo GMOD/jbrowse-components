@@ -1,9 +1,15 @@
+import { lazy } from 'react'
+
+import { getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
+import Save from '@mui/icons-material/Save'
 import { transaction } from 'mobx'
-import { getRoot, resolveIdentifier, types } from 'mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../configuration'
 import { adapterConfigCacheKey } from '../../data_adapters/util'
 import { getContainingView, getEnv, getSession } from '../../util'
+import { stringifyBED } from './saveTrackFileTypes/bed'
+import { stringifyGBK } from './saveTrackFileTypes/genbank'
+import { stringifyGFF3 } from './saveTrackFileTypes/gff3'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 
@@ -13,7 +19,10 @@ import type {
   AnyConfigurationSchemaType,
 } from '../../configuration'
 import type { MenuItem } from '../../ui'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+
+// lazies
+const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
 
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
@@ -200,6 +209,29 @@ export function createBaseTrackModel(
         })
       },
     }))
+    .views(() => ({
+      saveTrackFileFormatOptions() {
+        return {
+          gff3: {
+            name: 'GFF3',
+            extension: 'gff3',
+            callback: stringifyGFF3,
+          },
+          genbank: {
+            name: 'GenBank',
+            extension: 'gbk',
+            callback: stringifyGBK,
+            helpText:
+              'Note: GenBank format export is experimental. The generated output may not fully conform to the GenBank specification and should be validated before use in production workflows.',
+          },
+          bed: {
+            name: 'BED',
+            extension: 'bed',
+            callback: stringifyBED,
+          },
+        }
+      },
+    }))
     .views(self => ({
       /**
        * #method
@@ -213,20 +245,43 @@ export function createBaseTrackModel(
 
         return [
           ...menuItems,
+          {
+            label: 'Save track data',
+            icon: Save,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SaveTrackDataDlg,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
           ...(compatDisp.length > 1
             ? [
                 {
                   type: 'subMenu',
                   label: 'Display types',
                   priority: -1000,
-                  subMenu: compatDisp.map(d => ({
-                    type: 'radio',
-                    label: pm.getDisplayType(d.type)!.displayName,
-                    checked: d.displayId === shownId,
-                    onClick: () => {
-                      self.replaceDisplay(shownId, d.displayId)
-                    },
-                  })),
+                  subMenu: compatDisp.map(d => {
+                    const displayType = pm.getDisplayType(d.type)!
+                    return {
+                      type: 'radio',
+                      label: displayType.displayName,
+                      helpText: displayType.helpText,
+                      checked: d.displayId === shownId,
+                      onClick: () => {
+                        if (d.displayId !== shownId) {
+                          self.replaceDisplay(
+                            shownId,
+                            d.displayId,
+                            self.displays[0].getPortableSettings?.() ?? {},
+                          )
+                        }
+                      },
+                    }
+                  }),
                 },
               ]
             : []),

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 
 import { getSession, getStrokeProps } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 
+import { LEFT, RIGHT, getTestId, getYOffset } from './useBreakpointOverlay'
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
@@ -23,21 +24,14 @@ import {
   isAbnormalOrientation,
 } from './getOrientationColor'
 
-import type { BreakpointViewModel } from '../model'
-
-const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
+import type { OverlayProps } from './useBreakpointOverlay'
 
 const AlignmentConnections = observer(function ({
   model,
   trackId,
   parentRef,
   getTrackYPosOverride,
-}: {
-  model: BreakpointViewModel
-  trackId: string
-  parentRef: React.RefObject<SVGSVGElement | null>
-  getTrackYPosOverride?: (trackId: string, level: number) => number
-}) {
+}: OverlayProps) {
   const { interactiveOverlay, views, showIntraviewLinks } = model
   const theme = useTheme()
   const session = getSession(model)
@@ -48,13 +42,12 @@ const AlignmentConnections = observer(function ({
   useNextFrame(snap)
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
+
   const layoutMatches = useMemo(() => {
-    const layoutMatches = model.getMatchedFeaturesInLayout(
-      trackId,
-      hasPaired
-        ? getBadlyPairedAlignments(allFeatures)
-        : getMatchedAlignmentFeatures(allFeatures),
-    )
+    const matched = hasPaired
+      ? getBadlyPairedAlignments(allFeatures)
+      : getMatchedAlignmentFeatures(allFeatures)
+    const layoutMatches = model.getMatchedFeaturesInLayout(trackId, matched)
     if (!hasPaired) {
       for (const m of layoutMatches) {
         m.sort((a, b) => a.clipPos - b.clipPos)
@@ -64,22 +57,16 @@ const AlignmentConnections = observer(function ({
   }, [allFeatures, trackId, hasPaired, model])
 
   const [mouseoverElt, setMouseoverElt] = useState<string>()
+  const yOffset = getYOffset(parentRef)
 
-  let yOffset = 0
-  if (parentRef.current) {
-    const rect = parentRef.current.getBoundingClientRect()
-    yOffset = rect.top
+  if (!assembly) {
+    return null
   }
 
-  return assembly ? (
-    <g
-      fill="none"
-      data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
-    >
+  return (
+    <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
       {layoutMatches.map(chunk => {
         const ret = []
-        // we follow a path in the list of chunks, not from top to bottom, just in series
-        // following x1,y1 -> x2,y2
         for (let i = 0; i < chunk.length - 1; i++) {
           const { layout: c1, feature: f1, level: level1 } = chunk[i]!
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
@@ -89,7 +76,6 @@ const AlignmentConnections = observer(function ({
             return null
           }
 
-          // disable rendering connections in a single row
           if (!showIntraviewLinks && level1 === level2) {
             return null
           }
@@ -147,27 +133,19 @@ const AlignmentConnections = observer(function ({
             getTrackYPosOverride,
           )
 
-          // possible todo: use totalCurveHeight to possibly make alternative
-          // squiggle if the S is too small
           const path = [
             'M',
             x1,
             y1,
             'C',
-
-            // first bezier x,y
             x1 + 200 * f1.get('strand') * rf1,
             abnormalSpecialRenderFlag
               ? Math.min(y0 - yOffset + trackHeight, y1 + trackHeight)
               : y1,
-
-            // second bezier x,y
             x2 - 200 * f2.get('strand') * rf2 * pf1,
             abnormalSpecialRenderFlag
               ? Math.min(y0 - yOffset + trackHeight, y2 + trackHeight)
               : y2,
-
-            // third bezier x,y
             x2,
             y2,
           ].join(' ')
@@ -189,10 +167,10 @@ const AlignmentConnections = observer(function ({
                   {
                     featureData: {
                       feature1: (
-                        allFeatures.get(f1.id()) || { toJSON: () => {} }
+                        allFeatures.get(f1.id()) || { toJSON: () => ({}) }
                       ).toJSON(),
                       feature2: (
-                        allFeatures.get(f2.id()) || { toJSON: () => {} }
+                        allFeatures.get(f2.id()) || { toJSON: () => ({}) }
                       ).toJSON(),
                     },
                   },
@@ -211,7 +189,7 @@ const AlignmentConnections = observer(function ({
         return ret
       })}
     </g>
-  ) : null
+  )
 })
 
 export default AlignmentConnections

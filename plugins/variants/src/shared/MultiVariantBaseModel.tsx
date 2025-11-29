@@ -1,24 +1,28 @@
 import { lazy } from 'react'
 
+import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import CategoryIcon from '@mui/icons-material/Category'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+// @ts-expect-error
+import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
-import { cast, types } from 'mobx-state-tree'
 
+import { cluster, hierarchy } from '../d3-hierarchy2'
 import { getSources } from './getSources'
 
 import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
@@ -64,7 +68,12 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        showSidebarLabelsSetting: true,
+        showSidebarLabelsSetting: types.optional(types.boolean, true),
+
+        /**
+         * #property
+         */
+        showTree: types.optional(types.boolean, true),
 
         /**
          * #property
@@ -73,20 +82,21 @@ export default function MultiVariantBaseModelF(
 
         /**
          * #property
-         * used only if autoHeight is false
+         * Controls row height: 'auto' calculates from available height,
+         * or a number specifies manual pixel height per row
          */
-        rowHeightSetting: types.optional(types.number, 8),
+        rowHeightMode: types.optional(
+          types.union(types.literal('auto'), types.number),
+          'auto',
+        ),
 
         /**
          * #property
-         * used only if autoHeight is false
          */
-        autoHeight: true,
-
-        /**
-         * #property
-         */
-        lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
+        lengthCutoffFilter: types.optional(
+          types.number,
+          Number.MAX_SAFE_INTEGER,
+        ),
 
         /**
          * #property
@@ -96,7 +106,20 @@ export default function MultiVariantBaseModelF(
         /**
          * #property
          */
-        referenceDrawingMode: 'skip',
+        referenceDrawingMode: types.optional(types.string, 'skip'),
+        /**
+         * #property
+         */
+        clusterTree: types.maybe(types.string),
+        /**
+         * #property
+         */
+        treeAreaWidth: types.optional(types.number, 80),
+        /**
+         * #property
+         * Height reserved for elements above the main display (e.g., connecting lines in matrix view)
+         */
+        lineZoneHeight: types.optional(types.number, 0),
       }),
     )
     .volatile(() => ({
@@ -134,6 +157,18 @@ export default function MultiVariantBaseModelF(
       hoveredGenotype: undefined as
         | { genotype: string; name: string }
         | undefined,
+      /**
+       * #volatile
+       */
+      hoveredTreeNode: undefined as any,
+      /**
+       * #volatile
+       */
+      treeCanvas: undefined as HTMLCanvasElement | undefined,
+      /**
+       * #volatile
+       */
+      mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
     }))
     .actions(self => ({
       /**
@@ -145,8 +180,8 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setRowHeight(arg: number) {
-        self.rowHeightSetting = arg
+      setRowHeight(arg: number | 'auto') {
+        self.rowHeightMode = arg
       },
       /**
        * #action
@@ -157,20 +192,61 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setFeatures(f: Feature[]) {
-        self.featuresVolatile = f
+      setHoveredTreeNode(node: any) {
+        self.hoveredTreeNode = node
       },
       /**
        * #action
        */
-      setLayout(layout: Source[]) {
+      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
+        self.treeCanvas = ref || undefined
+      },
+      /**
+       * #action
+       */
+      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
+        self.mouseoverCanvas = ref || undefined
+      },
+      /**
+       * #action
+       */
+      setTreeAreaWidth(width: number) {
+        self.treeAreaWidth = width
+      },
+      /**
+       * #action
+       */
+      setFeatures(f: Feature[]) {
+        self.featuresVolatile = f
+      },
+
+      /**
+       * #action
+       */
+      setLayout(layout: Source[], clearTree = true) {
+        const orderChanged =
+          clearTree &&
+          self.clusterTree &&
+          self.layout.length === layout.length &&
+          self.layout.some((source, idx) => source.name !== layout[idx]?.name)
+
         self.layout = layout
+        if (orderChanged) {
+          self.clusterTree = undefined
+        }
       },
       /**
        * #action
        */
       clearLayout() {
         self.layout = []
+        self.clusterTree = undefined
+      },
+      /**
+       * #action
+       */
+      setClusterTree(tree?: string) {
+        self.clusterTree = tree
       },
       /**
        * #action
@@ -214,14 +290,21 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
+      setShowTree(arg: boolean) {
+        self.showTree = arg
+      },
+      /**
+       * #action
+       */
       setPhasedMode(arg: string) {
         self.renderingMode = arg
       },
       /**
        * #action
+       * Toggle auto height mode. When turning off, uses default of 10px per row.
        */
-      setAutoHeight(arg: boolean) {
-        self.autoHeight = arg
+      setAutoHeight(auto: boolean) {
+        self.rowHeightMode = auto ? 'auto' : 10
       },
       /**
        * #action
@@ -245,6 +328,13 @@ export default function MultiVariantBaseModelF(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get autoHeight() {
+        return self.rowHeightMode === 'auto'
+      },
+
       /**
        * #getter
        */
@@ -287,11 +377,26 @@ export default function MultiVariantBaseModelF(
             })
           : undefined
       },
+      /**
+       * #getter
+       */
+      get root() {
+        const newick = self.clusterTree
+        if (!newick) {
+          return undefined
+        }
+        const tree = fromNewick(newick)
+        return hierarchy(tree, (d: any) => d.children)
+          .sum((d: any) => (d.children ? 0 : 1))
+          .sort((a: any, b: any) =>
+            ascending(a.data.height || 1, b.data.height || 1),
+          )
+      },
     }))
     .views(self => {
       const {
-        trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
 
       return {
@@ -307,10 +412,49 @@ export default function MultiVariantBaseModelF(
         },
         /**
          * #getter
+         * Available height for rows (total height minus lineZoneHeight)
+         */
+        get availableHeight() {
+          return self.height - self.lineZoneHeight
+        },
+        /**
+         * #getter
+         */
+        get nrow() {
+          return self.sources?.length || 1
+        },
+
+        /**
+         * #getter
+         */
+        get totalHeight() {
+          return self.rowHeightMode === 'auto'
+            ? this.availableHeight
+            : this.nrow * self.rowHeightMode
+        },
+        /**
+         * #getter
          */
         get rowHeight() {
-          const { sources, autoHeight, rowHeightSetting, height } = self
-          return autoHeight ? height / (sources?.length || 1) : rowHeightSetting
+          return self.rowHeightMode === 'auto'
+            ? this.availableHeight / this.nrow
+            : self.rowHeightMode
+        },
+        /**
+         * #getter
+         */
+        get hierarchy() {
+          const r = self.root
+          if (r) {
+            const clust = cluster()
+              .size([this.totalHeight, self.treeAreaWidth])!
+              // @ts-expect-error
+              .separation(() => 1)
+            clust(r)
+            return r
+          } else {
+            return undefined
+          }
         },
         /**
          * #method
@@ -320,10 +464,25 @@ export default function MultiVariantBaseModelF(
           return {
             ...superProps,
             rpcDriverName: self.rpcDriverName,
-            displayModel: self,
             config: self.rendererConfig,
           }
         },
+        /**
+         * #method
+         * props for the renderer's React "Rendering" component - client-side
+         * only, never sent to the worker
+         */
+        renderingProps() {
+          return {
+            ...superRenderingProps(),
+          }
+        },
+      }
+    })
+    .views(self => {
+      const { trackMenuItems: superTrackMenuItems } = self
+
+      return {
         /**
          * #method
          */
@@ -337,6 +496,16 @@ export default function MultiVariantBaseModelF(
               checked: self.showSidebarLabelsSetting,
               onClick: () => {
                 self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
+              },
+            },
+            {
+              label: 'Show tree',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showTree,
+              disabled: !self.clusterTree,
+              onClick: () => {
+                self.setShowTree(!self.showTree)
               },
             },
 
@@ -372,7 +541,9 @@ export default function MultiVariantBaseModelF(
               icon: SplitscreenIcon,
               subMenu: [
                 {
-                  label: 'Allele count',
+                  label: 'Allele count (dosage)',
+                  helpText:
+                    'Draws the color darker the more times this allele exists, so homozygous variants are darker than heterozygous. Works on polyploid also',
                   type: 'radio',
                   checked: self.renderingMode === 'alleleCount',
                   onClick: () => {
@@ -385,6 +556,8 @@ export default function MultiVariantBaseModelF(
                       ? ' (disabled, no phased variants found)'
                       : ''
                   }`,
+                  helpText:
+                    'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1-HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',
                   disabled: !self.hasPhased,
                   checked: self.renderingMode === 'phased',
                   type: 'radio',
@@ -395,28 +568,18 @@ export default function MultiVariantBaseModelF(
               ],
             },
             {
-              label: 'Reference mode',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label:
-                    'Fill background grey, skip reference allele mouseovers (helps with large overlapping SVs)',
-                  type: 'radio',
-                  checked: self.referenceDrawingMode === 'skip',
-                  onClick: () => {
-                    self.setReferenceDrawingMode('skip')
-                  },
-                },
-                {
-                  label:
-                    "Don't fill background grey, only draw actual reference alleles as grey",
-                  type: 'radio',
-                  checked: self.referenceDrawingMode === 'draw',
-                  onClick: () => {
-                    self.setReferenceDrawingMode('draw')
-                  },
-                },
-              ],
+              label: 'Skip drawing reference alleles',
+              helpText:
+                'When this setting is on, the background is filled with grey, and then we skip drawing reference alleles. This helps drawing with drawing overlapping SVs. When this setting is off, each reference allele is colored grey',
+              type: 'checkbox',
+              checked: self.referenceDrawingMode === 'skip',
+              onClick: () => {
+                if (self.referenceDrawingMode === 'skip') {
+                  self.setReferenceDrawingMode('draw')
+                } else {
+                  self.setReferenceDrawingMode('skip')
+                }
+              },
             },
             {
               label: 'Filter by',
@@ -482,7 +645,7 @@ export default function MultiVariantBaseModelF(
        * #getter
        */
       get canDisplayLabels() {
-        return self.rowHeight >= 8 && self.showSidebarLabelsSetting
+        return self.rowHeight >= 6 && self.showSidebarLabelsSetting
       },
       /**
        * #getter
@@ -495,6 +658,26 @@ export default function MultiVariantBaseModelF(
        */
       get featuresReady() {
         return !!self.featuresVolatile
+      },
+      /**
+       * #method
+       */
+      getPortableSettings() {
+        // Note: rowHeightMode is intentionally excluded because Matrix and
+        // Regular displays have different defaults
+        return {
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          showSidebarLabelsSetting: self.showSidebarLabelsSetting,
+          showTree: self.showTree,
+          renderingMode: self.renderingMode,
+          lengthCutoffFilter: self.lengthCutoffFilter,
+          jexlFilters: self.jexlFilters,
+          referenceDrawingMode: self.referenceDrawingMode,
+          clusterTree: self.clusterTree,
+          treeAreaWidth: self.treeAreaWidth,
+          layout: self.layout,
+          height: self.height,
+        }
       },
     }))
     .views(self => ({
@@ -519,6 +702,23 @@ export default function MultiVariantBaseModelF(
             filters: self.activeFilters,
           }),
         }
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { setupMultiVariantAutoruns } =
+              await import('./setupMultiVariantAutoruns')
+            setupMultiVariantAutoruns(self)
+          } catch (e) {
+            if (isAlive(self)) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+          }
+        })()
       },
     }))
 }

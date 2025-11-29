@@ -12,6 +12,7 @@ import {
   MenuItem,
 } from '@mui/material'
 
+import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton'
 import HoverMenu from './HoverMenu'
 import { MenuItemEndDecoration } from './Menu'
 import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
@@ -28,9 +29,15 @@ const CascadingContext = createContext({
   rootPopupState: PopupState | undefined
 })
 
+function HelpIconSpacer() {
+  // Empty spacer that matches HelpIconButton dimensions for alignment
+  return <div style={{ marginLeft: 4, padding: 4, width: 28, height: 28 }} />
+}
+
 function CascadingMenuItem({
   onClick,
   closeAfterItemClick,
+  children,
   ...props
 }: {
   closeAfterItemClick: boolean
@@ -39,6 +46,7 @@ function CascadingMenuItem({
   children: React.ReactNode
 }) {
   const { rootPopupState, parentPopupState } = useContext(CascadingContext)
+
   if (!rootPopupState) {
     throw new Error('must be used inside a CascadingMenu')
   }
@@ -53,12 +61,16 @@ function CascadingMenuItem({
         onClick?.(event)
       }}
       onMouseOver={() => {
+        // Close any existing child submenu when hovering over a regular menu item
+        // Note: This logic is duplicated in CascadingSubmenu for consistency
         if (parentPopupState?.childHandle) {
           parentPopupState.childHandle.close()
           parentPopupState.setChildHandle(undefined)
         }
       }}
-    />
+    >
+      {children}
+    </MenuItem>
   )
 }
 
@@ -80,18 +92,23 @@ function CascadingSubmenu({
     parentPopupState,
   })
 
+  const { onMouseOver: originalOnMouseOver, ...hoverProps } =
+    bindHover(popupState)
+
   return (
     <>
       <MenuItem
         {...bindFocus(popupState)}
-        onMouseOver={(event: React.MouseEvent) => {
+        {...hoverProps}
+        onMouseOver={event => {
+          // Close any existing sibling submenus before opening this one
+          // Note: This logic is duplicated from CascadingMenuItem for consistency
           if (parentPopupState?.childHandle) {
             parentPopupState.childHandle.close()
             parentPopupState.setChildHandle(undefined)
           }
-
-          // Use the existing bindHover functionality
-          bindHover(popupState).onMouseOver(event)
+          // Call the original hover handler to open this submenu
+          originalOnMouseOver(event)
         }}
       >
         {Icon ? (
@@ -196,6 +213,13 @@ function CascadingMenuList({
   onMenuItemClick: Function
 }) {
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
+  const hasCheckboxOrRadioWithHelp = menuItems.some(
+    m =>
+      (m.type === 'checkbox' || m.type === 'radio') &&
+      'helpText' in m &&
+      m.helpText,
+  )
+
   return (
     <>
       {menuItems
@@ -251,6 +275,15 @@ function CascadingMenuList({
               />
               <CascadingSpacer />
               <EndDecoration item={item} />
+              {item.type === 'checkbox' || item.type === 'radio' ? (
+                'helpText' in item && item.helpText ? (
+                  <CascadingMenuHelpIconButton helpText={item.helpText} />
+                ) : hasCheckboxOrRadioWithHelp ? (
+                  <HelpIconSpacer />
+                ) : null
+              ) : 'helpText' in item && item.helpText ? (
+                <CascadingMenuHelpIconButton helpText={item.helpText} />
+              ) : null}
             </CascadingMenuItem>
           )
         })}

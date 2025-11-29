@@ -1,11 +1,11 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface Pos {
   offsetPx: number
@@ -39,6 +39,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * color scheme to use for rendering synteny features
+         */
+        colorBy: types.optional(types.string, 'default'),
       }),
     )
     .volatile(() => ({
@@ -95,6 +100,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * currently mouseover'd CIGAR subfeature
        */
       cigarMouseoverId: -1,
+
+      /**
+       * #volatile
+       * alpha transparency value for synteny drawing (0-1)
+       */
+      alpha: 0.2,
+
+      /**
+       * #volatile
+       * minimum alignment length to display (in bp)
+       */
+      minAlignmentLength: 0,
     }))
     .actions(self => ({
       /**
@@ -144,6 +161,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setClickId(arg?: string) {
         self.clickId = arg
+      },
+      /**
+       * #action
+       */
+      setAlpha(value: number) {
+        self.alpha = value
+      },
+      /**
+       * #action
+       */
+      setMinAlignmentLength(value: number) {
+        self.minAlignmentLength = value
+      },
+      /**
+       * #action
+       */
+      setColorBy(value: string) {
+        self.colorBy = value
       },
     }))
 

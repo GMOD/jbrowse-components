@@ -1,9 +1,9 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { ElementId, Region } from '../../util/types/mst'
 
 import type { MenuItem } from '../../ui'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseViewModel
@@ -74,7 +74,9 @@ const BaseViewModel = types
 
 export default BaseViewModel
 
-export type IBaseViewModel = Instance<typeof BaseViewModel>
+// the base view does not have type but any derived type needs to add type, so
+// just add it here
+export type IBaseViewModel = Instance<typeof BaseViewModel> & { type: string }
 
 export const BaseViewModelWithDisplayedRegions = BaseViewModel.props({
   displayedRegions: types.array(Region),

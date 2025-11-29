@@ -33,6 +33,13 @@ configuration: types.safeReference(assemblyConfigType)
 
 ### Assembly - Getters
 
+#### getter: lowerCaseRefNameAliases
+
+```js
+// type
+{ [k: string]: string; }
+```
+
 #### getter: initialized
 
 this is a getter with a side effect of loading the data. not the best practice,
@@ -142,9 +149,20 @@ hasName: (name: string) => any
 
 #### method: getCanonicalRefName
 
+returns canonical refname
+
 ```js
 // type signature
 getCanonicalRefName: (refName: string) => string
+```
+
+#### method: getCanonicalRefName2
+
+returns canonical or fallback
+
+```js
+// type signature
+getCanonicalRefName2: (asmName: string) => any
 ```
 
 #### method: getRefNameColor
@@ -192,7 +210,7 @@ getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) =>
 
 ```js
 // type signature
-setLoaded: ({ regions, refNameAliases, lowerCaseRefNameAliases, cytobands, }: { regions: Region[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; }) => void
+setLoaded: ({ regions, refNameAliases, cytobands, }: { regions: Region[]; refNameAliases: RefNameAliases; cytobands: Feature[]; }) => void
 ```
 
 #### action: setError
@@ -213,7 +231,7 @@ setRegions: (regions: Region[]) => void
 
 ```js
 // type signature
-setRefNameAliases: (aliases: RefNameAliases, lowerCaseAliases: RefNameAliases) => void
+setRefNameAliases: (aliases: RefNameAliases) => void
 ```
 
 #### action: setCytobands

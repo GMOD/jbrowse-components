@@ -12,7 +12,8 @@ export default function register(pluginManager: PluginManager) {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
       name: 'LinearReadArcsDisplay',
-      displayName: 'Arc display',
+      displayName: 'Read arc display',
+      helpText: 'Connect paired end reads and long split reads using arcs',
       configSchema,
       stateModel: stateModelF(configSchema),
       trackType: 'AlignmentsTrack',

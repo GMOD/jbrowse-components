@@ -21,6 +21,12 @@ module.exports = {
       },
       items: [
         {
+          to: 'http://genomes.jbrowse.org/',
+          label: 'Genomes',
+          className: 'new_feature',
+          position: 'left',
+        },
+        {
           to: 'docs/',
           activeBasePath: 'docs',
           label: 'Docs',
@@ -155,7 +161,12 @@ module.exports = {
   presets: [
     [
       '@docusaurus/preset-classic',
+
       {
+        gtag: {
+          trackingID: 'G-TRMBQZRJW7',
+          anonymizeIP: true,
+        },
         docs: {
           sidebarPath: require.resolve('./sidebars.json'),
           // Please change this to your repo.

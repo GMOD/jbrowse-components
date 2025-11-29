@@ -8,10 +8,10 @@ interface LayoutItem {
   anchorLocation: number
   width: number
   height: number
-  data: { score: number }
+  data: { score: number; featureId: string; anchorX: number; radiusPx: number }
 }
 
-type LayoutEntry = LayoutItem & { x: number; y: number }
+export type LayoutEntry = LayoutItem & { x: number; y: number }
 
 type LayoutMap = Map<string, LayoutEntry>
 
@@ -43,7 +43,7 @@ export class FloatingLayout {
     anchorLocation: number,
     width: number,
     height: number,
-    data: { score: number },
+    data: LayoutItem['data'],
   ) {
     this.items.push({
       uniqueId,

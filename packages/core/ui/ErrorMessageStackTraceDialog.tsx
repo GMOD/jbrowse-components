@@ -7,7 +7,6 @@ import {
   Typography,
   alpha,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { SourceMapConsumer } from 'source-map-js'
 import { makeStyles } from 'tss-react/mui'
 
@@ -97,7 +96,7 @@ const MAX_ERR_LEN = 10_000
 // Chrome has the error message in the stacktrace, firefox doesn't
 function stripMessage(trace: string, error: unknown) {
   if (trace.startsWith('Error:')) {
-    // remove the error message, which can be very long due to mobx-state-tree
+    // remove the error message, which can be very long due to @jbrowse/mobx-state-tree
     // stuff, to get just the stack trace
     const err = `${error}`
     return trace.slice(err.length)
@@ -206,7 +205,8 @@ export default function ErrorMessageStackTraceDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => {
+          onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(errorBoxText)
             setClicked(true)
             setTimeout(() => {

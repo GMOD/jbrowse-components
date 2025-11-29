@@ -32,9 +32,7 @@ const Segments = observer(function Segments(props: {
   const theme = useTheme()
   const c = readConfObject(config, 'color2', { feature })
   const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
-
   const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
-
   const y = top + height / 2
   return (
     <>
@@ -47,6 +45,8 @@ const Segments = observer(function Segments(props: {
         stroke={color2}
       />
       {subfeatures?.map(subfeature => {
+        // bad or old code might not be a string id but try to assume it is
+
         const subfeatureId = String(subfeature.id())
         const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
         // This subfeature got filtered out

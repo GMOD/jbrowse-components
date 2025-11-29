@@ -5,21 +5,21 @@ import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import SequencePanel from '../SequencePanel'
-import { useFeatureSequence } from '../hooks'
 import SequenceFeatureMenu from './SequenceFeatureMenu'
 import SequenceTypeSelector from './SequenceTypeSelector'
+import {
+  SimpleFeature,
+  type SimpleFeatureSerialized,
+  getSession,
+} from '../../../util'
+import { useFeatureSequence } from '../../../util/useFeatureSequence'
+import SequencePanel from '../SequencePanel'
 
-import type { SimpleFeatureSerialized } from '../../../util'
 import type { BaseFeatureWidgetModel } from '../../stateModelFactory'
 
 const useStyles = makeStyles()({
   dialogContent: {
     width: '80em',
-  },
-  formControl: {
-    margin: 0,
-    marginLeft: 4,
   },
 })
 
@@ -36,22 +36,25 @@ const SequenceDialog = observer(function ({
   const { upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
-  const [force, setForce] = useState(false)
-  const { sequence, error } = useFeatureSequence(
-    model,
-    feature,
+  const [forceLoad, setForceLoad] = useState(false)
+  const session = getSession(model)
+  const assemblyName = model.view?.assemblyNames?.[0]
+  const { sequence, error } = useFeatureSequence({
+    assemblyName,
+    session,
+    feature: new SimpleFeature(feature),
     upDownBp,
-    force,
-  )
+    forceLoad,
+  })
 
   return (
     <Dialog
       maxWidth="xl"
       open
+      title="Sequence view"
       onClose={() => {
         handleClose()
       }}
-      title="Sequence view"
     >
       <DialogContent className={classes.dialogContent}>
         <div>
@@ -79,7 +82,7 @@ const SequenceDialog = observer(function ({
                 variant="contained"
                 color="inherit"
                 onClick={() => {
-                  setForce(true)
+                  setForceLoad(true)
                 }}
               >
                 Force load

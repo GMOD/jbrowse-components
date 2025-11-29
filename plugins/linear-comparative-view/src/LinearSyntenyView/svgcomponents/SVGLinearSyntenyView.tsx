@@ -18,8 +18,13 @@ import SVGBackground from './SVGBackground'
 import SVGLinearGenomeView from './SVGLinearGenomeView'
 import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
 
+import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
 import type { LinearSyntenyViewModel } from '../model'
 import type { ExportSvgOptions } from '../types'
+
+interface TrackEntry {
+  displays: unknown[]
+}
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -66,38 +71,38 @@ export async function renderToSvg(
   )
 
   const renderings = await Promise.all(
-    levels.map(
-      async level =>
-        await Promise.all(
-          level.tracks.map(async track => {
-            const d = track.displays[0]
-            await when(() => (d.ready !== undefined ? d.ready : true))
-            const r = await renderToAbstractCanvas(
-              width,
-              level.height,
-              { exportSVG: opts },
-              ctx => {
-                drawRef(d, ctx)
-                return undefined
-              },
-            )
+    levels.map(async level => {
+      const { tracks } = level
+      return Promise.all(
+        tracks.map(async (track: TrackEntry) => {
+          const d = track.displays[0] as LinearSyntenyDisplayModel
+          await when(() => d.ready)
+          const r = await renderToAbstractCanvas(
+            width,
+            level.height,
+            { exportSVG: opts },
+            ctx => {
+              drawRef(d, ctx)
+              return undefined
+            },
+          )
 
-            if ('imageData' in r) {
-              throw new Error('found a canvas in svg export, probably a bug')
-            } else if ('canvasRecordedData' in r) {
-              return {
-                html: await getSerializedSvg({
-                  ...r,
-                  width,
-                  height: level.height,
-                }),
-              }
-            } else {
-              return r
+          if ('imageData' in r) {
+            throw new Error('found a canvas in svg export, probably a bug')
+          } else if ('canvasRecordedData' in r) {
+            return {
+              html: await getSerializedSvg({
+                ...r,
+                width,
+                height: level.height,
+              }),
             }
-          }),
-        ),
-    ),
+          } else {
+            return r
+          }
+        }),
+      )
+    }),
   )
 
   const trackLabelMaxLen =
@@ -145,7 +150,9 @@ export async function renderToSvg(
           transform={`translate(${shift + trackLabelOffset} ${fontSize})`}
           clipPath={`url(#synclip-${i})`}
         >
-          {rendering?.map((r, i) => <ReactRendering key={i} rendering={r} />)}
+          {rendering?.map((r, i) => (
+            <ReactRendering key={i} rendering={r} />
+          ))}
         </g>
         <g transform={`translate(0 ${levelHeight})`}>
           <SVGLinearGenomeView

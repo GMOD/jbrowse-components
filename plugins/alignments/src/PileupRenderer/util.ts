@@ -59,6 +59,14 @@ export interface LayoutFeature {
   feature: Feature
 }
 
+/**
+ * Sets the standard monospace font used for rendering base letters in alignments
+ * @param ctx - Canvas rendering context
+ */
+export function setAlignmentFont(ctx: CanvasRenderingContext2D) {
+  ctx.font = 'bold 10px Courier New,monospace'
+}
+
 // get width and height of chars the height is an approximation: width letter M
 // is approximately the height
 export function getCharWidthHeight() {

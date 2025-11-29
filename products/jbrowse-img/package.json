@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "3.5.0",
+  "version": "3.7.0",
   "main": "dist/index.js",
   "module": "esm/index.js",
   "author": "JBrowse Team",
@@ -21,21 +21,20 @@
     "build": "npm-run-all build:*",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
-    "preversion": "npm run build"
+    "preversion": "yarn build"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
-    "@jbrowse/react-linear-genome-view2": "^3.5.0",
+    "@jbrowse/plugin-linear-genome-view": "^3.7.0",
+    "@jbrowse/react-linear-genome-view2": "^3.7.0",
     "canvas": "^3.0.0",
-    "jsdom": "^26.0.0",
-    "mobx": "^6.6.0",
+    "jsdom": "27.0.0",
     "node-fetch": "^2.6.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tmp": "^0.2.1",
-    "yargs": "^17.3.0"
+    "yargs": "^18.0.0"
   },
   "publishConfig": {
     "access": "public"

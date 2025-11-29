@@ -2,12 +2,12 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
+import { main as nativeMain } from './index'
 
 const { mkdir, mkdtemp } = fs.promises
 
 // increase test timeout for all tests
-jest.setTimeout(20000)
+// jest.setTimeout(20000)
 
 // On macOS, os.tmpdir() is not a real path:
 // https://github.com/nodejs/node/issues/11422
@@ -31,8 +31,115 @@ export async function runInTmpDir(
     process.chdir(originalDir)
   }
 }
-export async function setup(str: string | string[]) {
-  return runCommand(str)
+
+// Native command runner for testing
+export async function runCommand(
+  args: string | string[],
+): Promise<{ stdout: string; stderr: string; error?: Error }> {
+  let stdout = ''
+  let stderr = ''
+  let error: Error | undefined
+  let outputReceived = false
+
+  // Mock console functions using Jest spies
+  const consoleLogSpy = jest
+    .spyOn(console, 'log')
+    .mockImplementation((...args: any[]) => {
+      stdout += `${args.join(' ')}\n`
+      outputReceived = true
+    })
+
+  const consoleErrorSpy = jest
+    .spyOn(console, 'error')
+    .mockImplementation((...args: any[]) => {
+      stderr += `${args.join(' ')}\n`
+      outputReceived = true
+    })
+
+  // Mock process.stdout.write
+  const stdoutWriteSpy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation((chunk: any) => {
+      stdout += chunk.toString()
+      outputReceived = true
+      return true
+    })
+
+  // Mock process.stderr.write
+  const stderrWriteSpy = jest
+    .spyOn(process.stderr, 'write')
+    .mockImplementation((chunk: any) => {
+      stderr += chunk.toString()
+      outputReceived = true
+      return true
+    })
+
+  // Mock process.exit
+  const processExitSpy = jest
+    .spyOn(process, 'exit')
+    .mockImplementation((code?: string | number | null) => {
+      if (code && code !== 0) {
+        error = new Error(stderr.trim() || `Process exited with code ${code}`)
+      }
+      throw new Error('EXIT_MOCK')
+    })
+
+  try {
+    // Parse arguments
+    const argsArray = Array.isArray(args) ? args : args.split(' ')
+
+    // Run the native command with args directly instead of mutating process.argv
+    await nativeMain(argsArray)
+
+    // Wait for any pending asynchronous console output
+    // This handles cases where commands start servers or other async operations
+    // that log output after the main command completes
+    await new Promise(resolve => {
+      if (outputReceived) {
+        // If we received output, wait a bit for any additional async output
+        setTimeout(resolve, 50)
+      } else {
+        // If no output yet, wait longer and check periodically
+        let attempts = 0
+        const checkForOutput = () => {
+          if (outputReceived || attempts > 10) {
+            resolve(undefined)
+          } else {
+            attempts++
+            setTimeout(checkForOutput, 10)
+          }
+        }
+        checkForOutput()
+      }
+    })
+  } catch (err) {
+    if (err instanceof Error && err.message !== 'EXIT_MOCK') {
+      error = err
+    }
+  } finally {
+    // Restore Jest mocks
+    consoleLogSpy.mockRestore()
+    consoleErrorSpy.mockRestore()
+    stdoutWriteSpy.mockRestore()
+    stderrWriteSpy.mockRestore()
+    processExitSpy.mockRestore()
+  }
+
+  // If we have stderr but no error, create an error from stderr
+  if (!error && stderr.trim()) {
+    error = new Error(stderr.trim())
+  }
+
+  // Clean up the error message to remove EXIT_MOCK
+  if (error?.message.includes('Error: EXIT_MOCK')) {
+    error = new Error(error.message.replace('\nError: EXIT_MOCK', ''))
+  }
+
+  return {
+    stdout,
+    stderr,
+    error,
+  }
 }
 
 type Conf = Record<string, any>
@@ -53,4 +160,50 @@ export function dataDir(str: string) {
 
 export function ctxDir(ctx: { dir: string }, str: string) {
   return path.join(ctx.dir, str)
+}
+
+interface MockFetchResponse {
+  ok?: boolean
+  status?: number
+  statusText?: string
+  headers?: Record<string, string>
+  json?: unknown
+  arrayBuffer?: ArrayBuffer
+  body?: NodeJS.ReadableStream
+}
+
+export function mockFetch(
+  mockOrHandler:
+    | MockFetchResponse
+    | ((url: string) => MockFetchResponse | undefined),
+) {
+  const fetchWithProxy = require('./fetchWithProxy')
+    .default as jest.MockedFunction<
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    typeof import('./fetchWithProxy').default
+  >
+
+  fetchWithProxy.mockImplementation(async (url: RequestInfo) => {
+    const urlStr = url.toString()
+    const response =
+      typeof mockOrHandler === 'function'
+        ? mockOrHandler(urlStr)
+        : mockOrHandler
+
+    if (!response) {
+      throw new Error(`Unexpected fetch to ${urlStr}`)
+    }
+
+    return {
+      ok: response.ok ?? true,
+      status: response.status ?? (response.ok === false ? 500 : 200),
+      statusText: response.statusText ?? '',
+      headers: new Headers(response.headers),
+      json: async () => response.json,
+      arrayBuffer: async () => response.arrayBuffer,
+      body: response.body,
+    } as unknown as Response
+  })
+
+  return fetchWithProxy
 }

@@ -1,17 +1,17 @@
 import { useState } from 'react'
 
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
+import { CascadingMenuButton } from '@jbrowse/core/ui'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
-import { IconButton, Typography } from '@mui/material'
-import { observer } from 'mobx-react'
+import { Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import { getAllChildren, treeToMap } from '../util'
 
 import type { TreeCategoryNode } from '../../types'
 import type { HierarchicalTrackSelectorModel } from '../../model'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
@@ -26,6 +26,18 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function getAllSubcategories(node: TreeCategoryNode): string[] {
+  const categoryIds: string[] = []
+  if (node.type === 'category') {
+    for (const child of node.children) {
+      if (child.type === 'category') {
+        categoryIds.push(child.id, ...getAllSubcategories(child))
+      }
+    }
+  }
+  return categoryIds
+}
+
 const TrackCategory = observer(function ({
   item,
   model,
@@ -34,16 +46,19 @@ const TrackCategory = observer(function ({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const { name, id } = item
   const isOpen = !model.collapsed.get(id)
+
+  const subcategoryIds = getAllSubcategories(item)
+  const hasSubcategories = subcategoryIds.length > 0
 
   return (
     <div
       className={classes.accordionText}
       onClick={() => {
-        console.log('HEREE!!!', { menuEl, id, name, item })
-        if (!menuEl) {
+        console.log('HEREE!!!', { menuOpen, id, name, item })
+        if (!menuOpen) {
           model.toggleCategory(id)
         }
       }}
@@ -51,19 +66,7 @@ const TrackCategory = observer(function ({
       <Typography data-testid={`htsCategory-${name}`}>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         {name}
-        <IconButton
-          className={classes.contrastColor}
-          onClick={event => {
-            setMenuEl(event.currentTarget)
-            event.stopPropagation()
-          }}
-        >
-          <MoreHorizIcon />
-        </IconButton>
-      </Typography>
-      {menuEl ? (
-        <JBrowseMenu
-          anchorEl={menuEl}
+        <CascadingMenuButton
           menuItems={[
             {
               label: 'Add to selection',
@@ -71,6 +74,8 @@ const TrackCategory = observer(function ({
                 const r = treeToMap(item).get(id)
                 model.addToSelection(getAllChildren(r))
               },
+              helpText:
+                'Add all tracks in this category to the current selection. This allows you to perform bulk operations on multiple tracks at once, such as configuring settings or exporting track configurations.',
             },
             {
               label: 'Remove from selection',
@@ -78,9 +83,11 @@ const TrackCategory = observer(function ({
                 const r = treeToMap(item).get(id)
                 model.removeFromSelection(getAllChildren(r))
               },
+              helpText:
+                'Remove all tracks in this category from the current selection. Use this to deselect tracks that were previously added to your selection.',
             },
             {
-              label: 'Show all tracks',
+              label: 'Show all',
               onClick: () => {
                 for (const entry of treeToMap(item).get(id)?.children || []) {
                   if (entry.type === 'track') {
@@ -88,9 +95,11 @@ const TrackCategory = observer(function ({
                   }
                 }
               },
+              helpText:
+                'Display all tracks in this category on the current view. This is useful when you want to visualize multiple related tracks simultaneously to compare their data.',
             },
             {
-              label: 'Hide all tracks',
+              label: 'Hide all',
               onClick: () => {
                 for (const entry of treeToMap(item).get(id)?.children || []) {
                   if (entry.type === 'track') {
@@ -98,19 +107,47 @@ const TrackCategory = observer(function ({
                   }
                 }
               },
+              helpText:
+                'Hide all tracks in this category from the current view. This helps declutter your view by removing tracks you are not currently analyzing.',
             },
-            // ...menuItems,
+            ...(hasSubcategories
+              ? [
+                  {
+                    label: 'Collapse all subcategories',
+                    onClick: () => {
+                      for (const subcategoryId of subcategoryIds) {
+                        // Only collapse if currently open
+                        if (!model.collapsed.get(subcategoryId)) {
+                          model.toggleCategory(subcategoryId)
+                        }
+                      }
+                    },
+                    helpText:
+                      'Collapse all nested subcategories within this category. This provides a cleaner, more compact view of the track hierarchy by hiding the detailed contents of subcategories.',
+                  },
+                  {
+                    label: 'Expand all subcategories',
+                    onClick: () => {
+                      for (const subcategoryId of subcategoryIds) {
+                        // Only expand if currently collapsed
+                        if (model.collapsed.get(subcategoryId)) {
+                          model.toggleCategory(subcategoryId)
+                        }
+                      }
+                    },
+                    helpText:
+                      'Expand all nested subcategories within this category. This reveals all tracks and subcategories at once, making it easier to browse and select tracks from the entire hierarchy.',
+                  },
+                ]
+              : []),
           ]}
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setMenuEl(null)
-          }}
-          open={Boolean(menuEl)}
-          onClose={() => {
-            setMenuEl(null)
-          }}
-        />
-      ) : null}
+          className={classes.contrastColor}
+          stopPropagation
+          setOpen={setMenuOpen}
+        >
+          <MoreHorizIcon />
+        </CascadingMenuButton>
+      </Typography>
     </div>
   )
 })

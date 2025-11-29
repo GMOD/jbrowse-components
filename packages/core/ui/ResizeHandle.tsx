@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { makeStyles } from 'tss-react/mui'
 
@@ -44,10 +44,20 @@ function ResizeHandle({
   const prevPos = useRef(0)
   const { classes, cx } = useStyles()
 
+  const getPosition = useCallback(
+    (event: MouseEvent | React.MouseEvent) =>
+      vertical ? event.clientX : event.clientY,
+    [vertical],
+  )
+
   useEffect(() => {
+    if (!mouseDragging) {
+      return
+    }
+
     function mouseMove(event: MouseEvent) {
       event.preventDefault()
-      const pos = vertical ? event.clientX : event.clientY
+      const pos = getPosition(event)
       const totalDistance = initialPosition.current - pos
       const lastFrameDistance = pos - prevPos.current
       prevPos.current = pos
@@ -57,40 +67,40 @@ function ResizeHandle({
     function mouseUp() {
       setMouseDragging(false)
     }
-    if (mouseDragging) {
-      window.addEventListener('mousemove', mouseMove, true)
-      window.addEventListener('mouseup', mouseUp, true)
-      return () => {
-        window.removeEventListener('mousemove', mouseMove, true)
-        window.removeEventListener('mouseup', mouseUp, true)
-      }
-    }
-    return () => {}
-  }, [mouseDragging, onDrag, vertical])
 
-  let className: string
-  if (flexbox) {
-    className = vertical
+    window.addEventListener('mousemove', mouseMove, true)
+    window.addEventListener('mouseup', mouseUp, true)
+    return () => {
+      window.removeEventListener('mousemove', mouseMove, true)
+      window.removeEventListener('mouseup', mouseUp, true)
+    }
+  }, [mouseDragging, onDrag, getPosition])
+
+  const handleMouseDown = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault()
+      const pos = getPosition(event)
+      initialPosition.current = pos
+      prevPos.current = pos
+      setMouseDragging(true)
+      onMouseDown?.(event)
+    },
+    [getPosition, onMouseDown],
+  )
+
+  const className = flexbox
+    ? vertical
       ? classes.flexbox_verticalHandle
       : classes.flexbox_horizontalHandle
-  } else if (vertical) {
-    className = classes.verticalHandle
-  } else {
-    className = classes.horizontalHandle
-  }
+    : vertical
+      ? classes.verticalHandle
+      : classes.horizontalHandle
 
   return (
     <div
       data-resizer="true"
-      onMouseDown={event => {
-        event.preventDefault()
-        const pos = vertical ? event.clientX : event.clientY
-        initialPosition.current = pos
-        prevPos.current = pos
-        setMouseDragging(true)
-        onMouseDown?.(event)
-      }}
-      className={cx(className, originalClassName)}
+      onMouseDown={handleMouseDown}
+      className={cx(originalClassName, className)}
       {...props}
     />
   )

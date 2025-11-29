@@ -49,8 +49,8 @@ export interface PAFRecord {
 // could be a 2d map)
 //
 // the result is a single number that says e.g. chr5 from human mapped to chr5
-// on mouse with 0.8 quality, and that0.8 is then attached to all the pieces of
-// chr5 on human that mapped to chr5 on mouse. if chr5 on human also more
+// on mouse with 0.8 quality, and that 0.8 is then attached to all the pieces
+// of chr5 on human that mapped to chr5 on mouse. if chr5 on human also more
 // weakly mapped to chr6 on mouse, then it would have another value e.g. 0.6.
 // this can show strong and weak levels of synteny, especially in polyploidy
 // situations

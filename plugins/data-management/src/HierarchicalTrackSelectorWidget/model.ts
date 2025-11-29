@@ -7,8 +7,8 @@ import {
   notEmpty,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
 
 import { facetedStateTreeF } from './facetedModel'
 import { filterTracks } from './filterTracks'
@@ -18,8 +18,8 @@ import { findSubCategories, findTopLevelCategories } from './util'
 import type { TreeNode } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { GridRowId } from '@mui/x-data-grid'
-import type { Instance } from 'mobx-state-tree'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
@@ -468,7 +468,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           },
           ...connectionInstances.flatMap(c => ({
             group: getConf(c, 'name'),
-            tracks: c.tracks,
+            tracks: filterTracks(c.tracks, self),
             noCategories: false,
             menuItems: [],
           })),
@@ -622,59 +622,65 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         // this should be the first autorun to properly initialize
         addDisposer(
           self,
-          autorun(() => {
-            const { assemblyNames, view } = self
-            self.setRecentlyUsed(
-              localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
-            )
-            if (view) {
-              const lc = localStorageGetJSON<MaybeCollapsedKeys>(
-                collapsedK(assemblyNames, view.type),
-                undefined,
+          autorun(
+            function trackSelectorInitAutorun() {
+              const { assemblyNames, view } = self
+              self.setRecentlyUsed(
+                localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
               )
-              const r = ['hierarchical', 'defaultCollapsed']
-              const session = getSession(self)
-              if (!lc) {
-                self.expandAllCategories()
-                if (getConf(session, [...r, 'topLevelCategories'])) {
-                  self.collapseTopLevelCategories()
+              if (view) {
+                const lc = localStorageGetJSON<MaybeCollapsedKeys>(
+                  collapsedK(assemblyNames, view.type),
+                  undefined,
+                )
+                const r = ['hierarchical', 'defaultCollapsed']
+                const session = getSession(self)
+                if (!lc) {
+                  self.expandAllCategories()
+                  if (getConf(session, [...r, 'topLevelCategories'])) {
+                    self.collapseTopLevelCategories()
+                  }
+                  if (getConf(session, [...r, 'subCategories'])) {
+                    self.collapseSubCategories()
+                  }
+                  for (const elt of getConf(session, [...r, 'categoryNames'])) {
+                    self.setCategoryCollapsed(`Tracks-${elt}`, true)
+                  }
+                } else {
+                  self.setCollapsedCategories(lc)
                 }
-                if (getConf(session, [...r, 'subCategories'])) {
-                  self.collapseSubCategories()
-                }
-                for (const elt of getConf(session, [...r, 'categoryNames'])) {
-                  self.setCategoryCollapsed(`Tracks-${elt}`, true)
-                }
-              } else {
-                self.setCollapsedCategories(lc)
               }
-            }
-          }),
+            },
+            { name: 'TrackSelectorInit' },
+          ),
         )
         // this should be the second autorun
         addDisposer(
           self,
-          autorun(() => {
-            const {
-              sortTrackNames,
-              sortCategories,
-              favorites,
-              recentlyUsed,
-              assemblyNames,
-              collapsed,
-              view,
-            } = self
-            localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
-            localStorageSetJSON(favoritesK(), favorites)
-            localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
-            localStorageSetJSON(sortCategoriesK(), sortCategories)
-            if (view) {
-              localStorageSetJSON(
-                collapsedK(assemblyNames, view.type),
+          autorun(
+            function trackSelectorLocalStorageAutorun() {
+              const {
+                sortTrackNames,
+                sortCategories,
+                favorites,
+                recentlyUsed,
+                assemblyNames,
                 collapsed,
-              )
-            }
-          }),
+                view,
+              } = self
+              localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
+              localStorageSetJSON(favoritesK(), favorites)
+              localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
+              localStorageSetJSON(sortCategoriesK(), sortCategories)
+              if (view) {
+                localStorageSetJSON(
+                  collapsedK(assemblyNames, view.type),
+                  collapsed,
+                )
+              }
+            },
+            { name: 'TrackSelectorLocalStorage' },
+          ),
         )
       },
     }))

@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`renders 1`] = `
 <div>
@@ -71,8 +71,8 @@ exports[`renders 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-flglzq-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for="«r2»"
-                      id="«r2»-label"
+                      for="_r_3_"
+                      id="_r_3_-label"
                     >
                       connectionType
                     </label>
@@ -80,12 +80,12 @@ exports[`renders 1`] = `
                       class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiSelect-root css-b32mwt-MuiInputBase-root-MuiOutlinedInput-root"
                     >
                       <div
-                        aria-describedby="«r2»-helper-text"
+                        aria-describedby="_r_3_-helper-text"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                        aria-labelledby="«r2»-label «r2»"
-                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-w76bbz-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
-                        id="«r2»"
+                        aria-labelledby="_r_3_-label _r_3_"
+                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNativeSelect-root-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                        id="_r_3_"
                         role="combobox"
                         tabindex="0"
                       >
@@ -100,7 +100,7 @@ exports[`renders 1`] = `
                       />
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-e00l0k-MuiSvgIcon-root-MuiSelect-icon"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-1n8g1bv-MuiSvgIcon-root-MuiNativeSelect-root-MuiSelect-icon"
                         data-testid="ArrowDropDownIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -111,10 +111,10 @@ exports[`renders 1`] = `
                       </svg>
                       <fieldset
                         aria-hidden="true"
-                        class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
+                        class="MuiOutlinedInput-notchedOutline css-18p5xg2-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
                       >
                         <legend
-                          class="css-w1u3ce"
+                          class="css-ex8a5f-MuiNotchedOutlined-root"
                         >
                           <span>
                             connectionType
@@ -124,7 +124,7 @@ exports[`renders 1`] = `
                     </div>
                     <p
                       class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-nxe85d-MuiFormHelperText-root"
-                      id="«r2»-helper-text"
+                      id="_r_3_-helper-text"
                     >
                       A track or assembly hub in the Track Hub format
                       <a

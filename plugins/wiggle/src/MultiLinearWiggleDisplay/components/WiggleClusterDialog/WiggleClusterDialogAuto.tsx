@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   DialogActions,
@@ -17,9 +18,9 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
 
 import type { ReducedModel } from './types'
+import type { Source } from '../../../util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const WiggleClusterDialogAuto = observer(function ({
@@ -123,13 +124,25 @@ const WiggleClusterDialogAuto = observer(function ({
                   },
                 )) as { order: number[] }
 
+                // Preserve color and other layout customizations
+                const currentLayout = model.layout?.length
+                  ? model.layout
+                  : sourcesWithoutLayout
+                const sourcesByName = Object.fromEntries(
+                  currentLayout.map((s: Source) => [s.name, s]),
+                )
+
                 model.setLayout(
                   ret.order.map(idx => {
-                    const ret = sourcesWithoutLayout[idx]
-                    if (!ret) {
+                    const sourceItem = sourcesWithoutLayout[idx]
+                    if (!sourceItem) {
                       throw new Error(`out of bounds at ${idx}`)
                     }
-                    return ret
+                    // Preserve customizations from current layout
+                    return {
+                      ...sourceItem,
+                      ...sourcesByName[sourceItem.name],
+                    }
                   }),
                 )
               }

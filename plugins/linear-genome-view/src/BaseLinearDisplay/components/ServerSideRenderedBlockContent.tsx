@@ -2,8 +2,8 @@ import { Suspense, isValidElement, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
-import BlockLoadingMessage from './BlockLoadingMessage'
 import BlockMsg from './BlockMsg'
+import LoadingOverlay from './LoadingOverlay'
 
 // lazies
 const BlockErrorMessage = lazy(() => import('./BlockErrorMessage'))
@@ -18,6 +18,7 @@ const ServerSideRenderedBlockContent = observer(function ({
     filled?: boolean
     status?: string
     reactElement?: React.ReactElement
+    isRenderingPending?: boolean
   }
 }) {
   if (model.error) {
@@ -34,10 +35,23 @@ const ServerSideRenderedBlockContent = observer(function ({
     ) : (
       <BlockMsg message={`${model.message}`} severity="info" />
     )
-  } else if (!model.filled) {
-    return <BlockLoadingMessage model={model} />
-  } else {
+  } else if (
+    model.isRenderingPending ||
+    (!model.filled && !model.reactElement)
+  ) {
+    // Render is in flight, or we have no content and not filled yet
+    // Show old content with overlay if available, otherwise show just overlay
+    return (
+      <LoadingOverlay message={model.status}>
+        {model.reactElement}
+      </LoadingOverlay>
+    )
+  } else if (model.filled) {
+    // Render completed - show new content without overlay
     return model.reactElement
+  } else {
+    // No content and not rendering - show nothing
+    return null
   }
 })
 

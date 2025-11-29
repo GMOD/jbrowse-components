@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { getParent, isRoot, types } from 'mobx-state-tree'
+import { getParent, isRoot, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration'
 import { getContainingView, getEnv } from '../../util'
@@ -8,7 +8,7 @@ import { getParentRenderProps } from '../../util/tracks'
 import { ElementId } from '../../util/types/mst'
 
 import type { MenuItem } from '../../ui'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseDisplay
@@ -84,13 +84,24 @@ function stateModelFactory() {
       /**
        * #method
        * the react props that are passed to the Renderer when data
-       * is rendered in this display
+       * is rendered in this display. these are serialized and sent to the
+       * worker for server-side rendering
        */
       renderProps() {
         return {
           ...getParentRenderProps(self),
           notReady: getContainingView(self).minimized,
           rpcDriverName: self.rpcDriverName,
+        }
+      },
+      /**
+       * #method
+       * props passed to the renderer's React "Rendering" component.
+       * these are client-side only and never sent to the worker.
+       * includes displayModel and callbacks
+       */
+      renderingProps() {
+        return {
           displayModel: self,
         }
       },

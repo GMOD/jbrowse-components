@@ -10,12 +10,12 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   scaleOpts: ScaleOpts
 }
 
-export interface RenderArgsDeserializedWithFeatures
-  extends RenderArgsDeserialized {
+export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
   visibleModifications?: Record<string, ModificationTypeWithColor>
+  simplexModifications?: string[]
   statusCallback?: (arg: string) => void
   colorBy: ColorBy
 }

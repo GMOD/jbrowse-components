@@ -4,6 +4,7 @@ import {
   getSession,
   parseLocString,
 } from '@jbrowse/core/util'
+import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   Paper,
@@ -14,7 +15,8 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import { getRoot, resolveIdentifier } from 'mobx-state-tree'
+
+import { navToOption } from '../../searchUtils'
 
 import type { LinearGenomeViewModel } from '../..'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -52,8 +54,16 @@ export default function SearchResultsTable({
     }
     return ''
   }
-  async function handleClick(location: string) {
-    try {
+  async function handleClick(result: BaseResult) {
+    if (result.hasLocation()) {
+      await navToOption({
+        option: result,
+        model,
+        assemblyName,
+      })
+    } else {
+      // label is used if it is a refName, it has no location
+      const location = result.getLabel()
       const newRegion = assembly?.regions?.find(
         region => location === region.refName,
       )
@@ -62,12 +72,7 @@ export default function SearchResultsTable({
         // we use showAllRegions after setDisplayedRegions to make the entire
         // region visible, xref #1703
         model.showAllRegions()
-      } else {
-        await model.navToLocString(location, assemblyName)
       }
-    } catch (e) {
-      console.warn(e)
-      session.notify(`${e}`, 'warning')
     }
   }
   return (
@@ -114,14 +119,7 @@ export default function SearchResultsTable({
                   <Button
                     onClick={async () => {
                       try {
-                        await handleClick(
-                          // label is used if it is a refName, it has no location
-                          result.getLocation() || result.getLabel(),
-                        )
-                        const resultTrackId = result.getTrackId()
-                        if (resultTrackId) {
-                          model.showTrack(resultTrackId)
-                        }
+                        await handleClick(result)
                       } catch (e) {
                         console.error(e)
                         session.notifyError(`${e}`, e)

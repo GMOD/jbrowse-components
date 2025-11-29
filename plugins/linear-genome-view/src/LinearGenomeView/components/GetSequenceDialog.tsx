@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
-import { Dialog } from '@jbrowse/core/ui'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import { complement, getSession, reverse } from '@jbrowse/core/util'
+import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { complement, reverse } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
   Checkbox,
-  CircularProgress,
-  Container,
   DialogActions,
   DialogContent,
   FormControlLabel,
@@ -18,12 +15,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
-import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
-import type { LinearGenomeViewModel } from '..'
+import { fetchSequence } from './fetchSequence'
+
+import type { BpOffset } from '../types'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
@@ -33,51 +30,18 @@ const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-  ml: {
-    marginLeft: 10,
-  },
 })
-
-type LGV = LinearGenomeViewModel
-
-/**
- * Fetches and returns a list features for a given list of regions
- */
-async function fetchSequence(model: LGV, regions: Region[]) {
-  const session = getSession(model)
-  const { leftOffset, rightOffset } = model
-
-  if (!leftOffset || !rightOffset) {
-    throw new Error('no offsets on model to use for range')
-  }
-
-  const assemblyNames = new Set(regions.map(r => r.assemblyName))
-  if (assemblyNames.size > 1) {
-    throw new Error(
-      'not able to fetch sequences from multiple assemblies currently',
-    )
-  }
-  const { rpcManager, assemblyManager } = session
-  const assemblyName = leftOffset.assemblyName || rightOffset.assemblyName || ''
-  const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`assembly ${assemblyName} not found`)
-  }
-  const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
-
-  const sessionId = 'getSequence'
-  return rpcManager.call(sessionId, 'CoreGetFeatures', {
-    adapterConfig,
-    regions,
-    sessionId,
-  }) as Promise<Feature[]>
-}
 
 const GetSequenceDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: LGV
+  model: {
+    leftOffset?: BpOffset
+    rightOffset?: BpOffset
+    getSelectedRegions: (left?: BpOffset, right?: BpOffset) => Region[]
+    setOffsets: (left?: BpOffset, right?: BpOffset) => void
+  }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
@@ -87,7 +51,7 @@ const GetSequenceDialog = observer(function ({
   const [copied, setCopied] = useState(false)
   const [comp, setComplement] = useState(false)
   const { leftOffset, rightOffset } = model
-  const loading = Boolean(sequenceChunks === undefined)
+  const loading = sequenceChunks === undefined
 
   useEffect(() => {
     const controller = new AbortController()
@@ -102,9 +66,7 @@ const GetSequenceDialog = observer(function ({
         if (selection.length === 0) {
           throw new Error('Selected region is out of bounds')
         }
-        // TODO:ABORT
-        const chunks = await fetchSequence(model, selection)
-        setSequenceChunks(chunks)
+        setSequenceChunks(await fetchSequence(model, selection))
       } catch (e) {
         console.error(e)
         setError(e)
@@ -152,23 +114,19 @@ const GetSequenceDialog = observer(function ({
     <Dialog
       maxWidth="xl"
       open
+      title="Reference sequence"
       onClose={() => {
         handleClose()
         model.setOffsets()
       }}
-      title="Reference sequence"
     >
       <DialogContent>
         {error ? (
-          <Typography color="error">{`${error}`}</Typography>
+          <ErrorMessage error={error} />
         ) : loading ? (
-          <Container>
-            Retrieving reference sequence...
-            <CircularProgress className={classes.ml} size={20} disableShrink />
-          </Container>
+          <LoadingEllipses message="Retrieving sequences" />
         ) : null}
         <TextField
-          data-testid="rubberband-sequence"
           variant="outlined"
           multiline
           minRows={5}
@@ -220,7 +178,8 @@ const GetSequenceDialog = observer(function ({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => {
+          onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(sequence)
             setCopied(true)
             setTimeout(() => {
@@ -234,7 +193,9 @@ const GetSequenceDialog = observer(function ({
           {copied ? 'Copied' : 'Copy to clipboard'}
         </Button>
         <Button
-          onClick={() => {
+          onClick={async () => {
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
+            const { saveAs } = await import('file-saver-es')
             saveAs(
               new Blob([sequence || ''], {
                 type: 'text/x-fasta;charset=utf-8',

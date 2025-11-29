@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import type React from 'react'
 
-import { isStateTreeNode } from 'mobx-state-tree'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type {
   BlobLocation as MUBlobLocation,
@@ -17,20 +17,21 @@ import type { BaseInternetAccountModel } from '../../pluggableElementTypes/model
 import type RpcManager from '../../rpc/RpcManager'
 import type { MenuItem } from '../../ui'
 import type { Feature } from '../simpleFeature'
-import type { ThemeOptions } from '@mui/material'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   IType,
   Instance,
   SnapshotIn,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer
-  extends IStateTreeNode<IType<any, any, any>> {
+export interface AbstractViewContainer extends IStateTreeNode<
+  IType<any, any, any>
+> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
@@ -91,6 +92,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   selection?: unknown
   focusedViewId?: string
   themeName?: string
+  theme?: ThemeOptions
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void
@@ -220,7 +222,7 @@ export function isSessionModelWithWidgets(
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
 }
-interface SessionWithConnections {
+export interface SessionWithConnections {
   makeConnection: (arg: AnyConfigurationModel) => void
 }
 export function isSessionModelWithConnections(
@@ -229,7 +231,7 @@ export function isSessionModelWithConnections(
   return isSessionModel(thing) && 'makeConnection' in thing
 }
 
-interface SessionWithConnectionEditing {
+export interface SessionWithConnectionEditing {
   addConnectionConf: (arg: AnyConfigurationModel) => void
 }
 
@@ -267,8 +269,7 @@ export function isSelectionContainer(
 }
 
 /** abstract interface for a session allows applying focus to views and widgets */
-export interface SessionWithFocusedViewAndDrawerWidgets
-  extends SessionWithDrawerWidgets {
+export interface SessionWithFocusedViewAndDrawerWidgets extends SessionWithDrawerWidgets {
   focusedViewId: string | undefined
   setFocusedViewId(id: string): void
 }
@@ -407,11 +408,12 @@ export function isAbstractMenuManager(
   )
 }
 
-// Empty interfaces required by mobx-state-tree
-// See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
+// Empty interfaces required by @jbrowse/mobx-state-tree
+// See https://@jbrowse/mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface NoAssemblyRegion
-  extends SnapshotIn<typeof MUNoAssemblyRegion> {}
+export interface NoAssemblyRegion extends SnapshotIn<
+  typeof MUNoAssemblyRegion
+> {}
 
 /**
  * a description of a specific genomic region. assemblyName, refName, start,
@@ -425,8 +427,9 @@ export interface AugmentedRegion extends Region {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface LocalPathLocation
-  extends SnapshotIn<typeof MULocalPathLocation> {}
+export interface LocalPathLocation extends SnapshotIn<
+  typeof MULocalPathLocation
+> {}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}

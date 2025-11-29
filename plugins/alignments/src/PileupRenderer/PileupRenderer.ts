@@ -43,7 +43,7 @@ export default class PileupRenderer extends BoxRendererType {
     const bpExpansion = showSoftClip ? Math.round(maxClippingSize) : 0
 
     return {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       ...(region as Omit<typeof region, symbol>),
       start: Math.floor(Math.max(start - bpExpansion, 0)),
       end: Math.ceil(end + bpExpansion),
@@ -77,7 +77,7 @@ export default class PileupRenderer extends BoxRendererType {
             : undefined
         const { makeImageData } = await import('./makeImageData')
 
-        return renderToAbstractCanvas(width, height, renderProps, ctx => {
+        return renderToAbstractCanvas(width, height, renderProps, ctx =>
           makeImageData({
             ctx,
             layoutRecords,
@@ -88,9 +88,8 @@ export default class PileupRenderer extends BoxRendererType {
               features,
               regionSequence,
             },
-          })
-          return undefined
-        })
+          }),
+        )
       },
     )
 
@@ -119,11 +118,3 @@ export default class PileupRenderer extends BoxRendererType {
     return new PileupLayoutSession(args)
   }
 }
-
-export type {
-  RenderArgs,
-  RenderArgsSerialized,
-  RenderResults,
-  ResultsDeserialized,
-  ResultsSerialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

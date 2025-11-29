@@ -3,10 +3,10 @@ import { lazy } from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
-import { cast, getEnv, isAlive, types } from 'mobx-state-tree'
 
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun, getColorForModification } from '../util'
@@ -86,6 +86,10 @@ function stateModelFactory(
       /**
        * #volatile
        */
+      simplexModifications: new Set<string>(),
+      /**
+       * #volatile
+       */
       modificationsReady: false,
     }))
     .views(self => ({
@@ -148,10 +152,22 @@ function stateModelFactory(
           }
         }
       },
+      /**
+       * #action
+       */
+      setSimplexModifications(simplex: string[]) {
+        self.simplexModifications = new Set(simplex)
+      },
     }))
     .views(self => {
       const { adapterProps: superAdapterProps } = self
       return {
+        /**
+         * #getter
+         */
+        get modificationThreshold() {
+          return self.colorBy?.modifications?.threshold ?? 10
+        },
         /**
          * #getter
          */
@@ -222,6 +238,7 @@ function stateModelFactory(
             ...superProps,
             filters,
             filterBy,
+            modificationThreshold: this.modificationThreshold,
           }
         },
       }
@@ -265,13 +282,15 @@ function stateModelFactory(
             const { staticBlocks } = view
             const { colorBy } = self
             if (colorBy?.type === 'modifications') {
-              const vals = await getUniqueModifications({
-                model: self,
-                adapterConfig: getConf(self.parentTrack, 'adapter'),
-                blocks: staticBlocks,
-              })
+              const { modifications, simplexModifications } =
+                await getUniqueModifications({
+                  model: self,
+                  adapterConfig: getConf(self.parentTrack, 'adapter'),
+                  blocks: staticBlocks,
+                })
               if (isAlive(self)) {
-                self.updateVisibleModifications(vals)
+                self.updateVisibleModifications(modifications)
+                self.setSimplexModifications(simplexModifications)
                 self.setModificationsReady(true)
               }
             } else {
@@ -301,7 +320,7 @@ function stateModelFactory(
          * #method
          */
         renderProps() {
-          const { colorBy, visibleModifications } = self
+          const { colorBy, visibleModifications, simplexModifications } = self
           return {
             ...superRenderProps(),
             notReady: !this.renderReady(),
@@ -309,6 +328,7 @@ function stateModelFactory(
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),
             ),
+            simplexModifications: [...simplexModifications],
           }
         },
         /**

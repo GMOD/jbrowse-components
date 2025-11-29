@@ -1,8 +1,8 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { types } from '@jbrowse/mobx-state-tree'
 import { BaseChordDisplayModel } from '@jbrowse/plugin-circular-view'
-import { types } from 'mobx-state-tree'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -45,11 +45,18 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         return {
           ...getParentRenderProps(self),
           rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           bezierRadius: view.radiusPx * self.bezierRadiusRatio,
           radius: view.radiusPx,
           blockDefinitions: self.blockDefinitions,
           config: self.configuration.renderer,
+        }
+      },
+      /**
+       * #method
+       */
+      renderingProps() {
+        return {
+          displayModel: self,
           onChordClick: (arg: Feature) => {
             self.onChordClick(arg)
           },

@@ -11,6 +11,7 @@ export default function VcfAdapterF(pluginManager: PluginManager) {
         name: 'VcfAdapter',
         displayName: 'VCF adapter',
         configSchema,
+        adapterCapabilities: ['exportData'],
         getAdapterClass: () => import('./VcfAdapter').then(r => r.default),
       }),
   )

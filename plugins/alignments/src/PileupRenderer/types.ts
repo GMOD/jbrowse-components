@@ -13,6 +13,19 @@ export interface LayoutFeature {
   feature: Feature
 }
 
+export interface FlatbushItem {
+  type:
+    | 'insertion'
+    | 'deletion'
+    | 'mismatch'
+    | 'modification'
+    | 'softclip'
+    | 'hardclip'
+  seq: string
+  modType?: string
+  probability?: number
+}
+
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: ColorBy
   colorTagMap?: Record<string, string>

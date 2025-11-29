@@ -55,6 +55,13 @@ lineZoneHeight: 20
 
 ### LinearVariantMatrixDisplay - Getters
 
+#### getter: nrow
+
+```js
+// type
+number
+```
+
 #### getter: blockType
 
 ```js

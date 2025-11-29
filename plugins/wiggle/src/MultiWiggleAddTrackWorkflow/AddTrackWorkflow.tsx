@@ -27,10 +27,9 @@ const useStyles = makeStyles()(theme => ({
 
 // on electron, use path to LocalFileLocation, on web, use the BlobLocation
 function makeFileLocation(file: File) {
-  const { webUtils } = window.require('electron')
   return isElectron
     ? {
-        localPath: webUtils.getPathForFile(file),
+        localPath: window.require('electron').webUtils.getPathForFile(file),
         locationType: 'LocalPathLocation',
       }
     : storeBlobLocation({ blob: file })
@@ -96,7 +95,7 @@ const MultiWiggleAddTrackWorkflow = observer(function ({
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
-  const [trackName, setTrackName] = useState(`MultiWiggle${+Date.now()}`)
+  const [trackName, setTrackName] = useState(`MultiWiggle${Date.now()}`)
   return (
     <Paper className={classes.paper}>
       <ul>

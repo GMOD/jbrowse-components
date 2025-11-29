@@ -3,18 +3,23 @@ import { lazy } from 'react'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import {
+  addDisposer,
+  cast,
+  getPath,
+  onAction,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getPath, onAction, types } from 'mobx-state-tree'
 
-import type { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -29,7 +34,7 @@ const ReturnToImportFormDialog = lazy(
 function stateModelFactory(pluginManager: PluginManager) {
   const LinearSyntenyViewHelper = pluginManager.getViewType(
     'LinearSyntenyViewHelper',
-  )?.stateModel as LinearSyntenyViewHelperStateModel
+  )?.stateModel
   return types
     .compose(
       'LinearComparativeView',
@@ -62,7 +67,11 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        levels: types.array(LinearSyntenyViewHelper),
+        showDynamicControls: true,
+        /**
+         * #property
+         */
+        levels: types.array(LinearSyntenyViewHelper!),
         /**
          * #property
          * currently this is limited to an array of two
@@ -202,6 +211,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setShowDynamicControls(arg: boolean) {
+        self.showDynamicControls = arg
+      },
+      /**
+       * #action
+       */
       activateTrackSelector(level: number) {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
@@ -318,13 +333,16 @@ function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            if (self.width) {
-              for (const view of self.views) {
-                view.setWidth(self.width)
+          autorun(
+            function comparativeViewWidthAutorun() {
+              if (self.width) {
+                for (const view of self.views) {
+                  view.setWidth(self.width)
+                }
               }
-            }
-          }),
+            },
+            { name: 'ComparativeViewWidth' },
+          ),
         )
       },
     }))

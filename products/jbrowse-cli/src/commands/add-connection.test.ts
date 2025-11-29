@@ -5,10 +5,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { runCommand } from '@oclif/test'
-import nock from 'nock'
+import { mockFetch, readConf, runCommand, runInTmpDir } from '../testUtil'
 
-import { readConf, runInTmpDir } from '../testUtil'
+jest.mock('../fetchWithProxy')
 
 const { copyFile, rename } = fs.promises
 
@@ -30,14 +29,10 @@ async function copyConf(ctx: { dir: string }) {
   )
 }
 
-// Cleaning up exitCode in Node.js 20, xref
-// https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
 beforeAll(() => (Date.now = jest.fn(() => 1)))
 
 test('fails if no config file', async () => {
-  nock('https://example.com').head('/hub.txt').reply(200)
-
+  mockFetch({})
   const { error } = await runCommand([
     'add-connection',
     'https://example.com/hub.txt',
@@ -51,7 +46,7 @@ test('fails if data directory is not an url', async () => {
 })
 
 test('fails when fetching from url fails', async () => {
-  nock('https://mysite.com').head('/notafile.txt').reply(500)
+  mockFetch({ ok: false, status: 500 })
   const { error } = await runCommand([
     'add-connection',
     'https://mysite.com/notafile.txt',
@@ -61,7 +56,7 @@ test('fails when fetching from url fails', async () => {
 
 test('adds an UCSCTrackHubConnection connection from a url', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://mysite.com').head('/data/hub.txt').reply(200)
+    mockFetch({})
     await copyConf(ctx)
     await runCommand(['add-connection', 'https://mysite.com/data/hub.txt'])
     expect(readConf(ctx).connections).toMatchSnapshot()
@@ -70,15 +65,16 @@ test('adds an UCSCTrackHubConnection connection from a url', async () => {
 
 test('adds JBrowse1 connection from a url', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://mysite.com').head('/jbrowse/data').reply(200)
+    mockFetch({})
     await copyConf(ctx)
     await runCommand(['add-connection', 'https://mysite.com/jbrowse/data'])
     expect(readConf(ctx).connections).toMatchSnapshot()
   })
 })
+
 test('adds a custom connection with user set fields', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://mysite.com').head('/custom').reply(200)
+    mockFetch({})
     await copyConf(ctx)
     await runCommand([
       'add-connection',
@@ -97,9 +93,10 @@ test('adds a custom connection with user set fields', async () => {
     expect(readConf(ctx).connections).toMatchSnapshot()
   })
 })
+
 test('fails to add a duplicate connection', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://mysite.com').head('/custom').reply(200)
+    mockFetch({})
     await copyConf(ctx)
     await runCommand([
       'add-connection',
@@ -109,7 +106,6 @@ test('fails to add a duplicate connection', async () => {
       '--config',
       '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
     ])
-    nock('https://mysite.com').head('/custom').reply(200)
     const { error } = await runCommand([
       'add-connection',
       'https://mysite.com/custom',
@@ -121,9 +117,10 @@ test('fails to add a duplicate connection', async () => {
     expect(error?.message).toMatchSnapshot()
   })
 })
+
 test('overwrites an existing custom connection and does not check URL', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://mysite.com').head('/custom').reply(200)
+    mockFetch({})
     await copyConf(ctx)
     await runCommand([
       'add-connection',
@@ -134,7 +131,6 @@ test('overwrites an existing custom connection and does not check URL', async ()
       '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
       '--force',
     ])
-    nock('https://mysite.com').head('/custom').reply(200)
     await runCommand([
       'add-connection',
       'https://mysite.com/custom',

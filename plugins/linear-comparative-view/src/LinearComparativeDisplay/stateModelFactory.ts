@@ -11,12 +11,12 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getParent, getSnapshot, types } from 'mobx-state-tree'
+import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import type { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearComparativeDisplay
@@ -39,7 +39,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile((/* self */) => ({
+    .volatile(() => ({
       /**
        * #volatile
        */
@@ -52,6 +52,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       message: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      loadingStatus: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -72,7 +76,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       renderProps() {
         return {
           rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           highResolutionScaling: 2,
         }
       },
@@ -99,6 +102,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.message = messageText
           self.error = undefined
           stopToken = undefined
+        },
+
+        /**
+         * #action
+         * controlled by a reaction
+         */
+        setLoadingStatus(messageText: string) {
+          self.loadingStatus = messageText
         },
 
         /**
@@ -196,6 +207,7 @@ function renderBlockData(self: LinearComparativeDisplay) {
         rpcManager,
         renderProps: {
           ...(display.renderProps() as Record<string, unknown>),
+          model: display,
           level,
           view: parent,
           adapterConfig,
@@ -213,16 +225,20 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   }
 
   const { rpcManager, renderProps } = props
-  const { sessionId, adapterConfig, level } = renderProps
+  const { model, sessionId, adapterConfig, level } = renderProps
   const view = renderProps.view.views[level]!
-  const features = (await rpcManager.call('getFeats', 'CoreGetFeatures', {
-    regions: view.staticBlocks.contentBlocks,
-    sessionId,
-    adapterConfig,
-  })) as Feature[]
-
   return {
-    features: dedupe(features, f => f.id()),
+    features: dedupe(
+      (await rpcManager.call('getFeats', 'CoreGetFeatures', {
+        regions: view.staticBlocks.contentBlocks,
+        sessionId,
+        adapterConfig,
+        statusCallback: (arg: string) => {
+          model.setLoadingStatus(arg)
+        },
+      })) as Feature[],
+      f => f.id(),
+    ),
   }
 }
 

@@ -7,6 +7,7 @@ import {
   getSession,
   useDebounce,
 } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   DialogActions,
@@ -16,14 +17,13 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 
 import { getUniqueTags } from '../../shared/getUniqueTags'
 import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 const GroupByTagDialog = observer(function (props: {
   model: {
@@ -111,7 +111,7 @@ const GroupByTagDialog = observer(function (props: {
             {error ? (
               <ErrorMessage error={error} />
             ) : loading ? (
-              <LoadingEllipses title="Loading unique tags" />
+              <LoadingEllipses message="Loading unique tags" />
             ) : tagSet ? (
               <div>
                 <div>Found unique {tag} values:</div>
@@ -137,7 +137,7 @@ const GroupByTagDialog = observer(function (props: {
               if (tagSet) {
                 const ret = [...tagSet, undefined] as (string | undefined)[]
                 for (const tagValue of ret) {
-                  const t1 = `${trackConf.trackId}-${tag}:${tagValue}-${+Date.now()}-sessionTrack`
+                  const t1 = `${trackConf.trackId}-${tag}:${tagValue}-${Date.now()}-sessionTrack`
                   // @ts-expect-error
                   session.addTrackConf({
                     ...trackConf,
@@ -165,8 +165,8 @@ const GroupByTagDialog = observer(function (props: {
                 }
               }
             } else if (type === 'strand') {
-              const t1 = `${trackConf.trackId}-${tag}:(-)-${+Date.now()}-sessionTrack`
-              const t2 = `${trackConf.trackId}-${tag}:(+)-${+Date.now()}-sessionTrack`
+              const t1 = `${trackConf.trackId}-${tag}:(-)-${Date.now()}-sessionTrack`
+              const t2 = `${trackConf.trackId}-${tag}:(+)-${Date.now()}-sessionTrack`
 
               // @ts-expect-error
               session.addTrackConf({

@@ -1,17 +1,10 @@
-import fs from 'fs'
-import path from 'path'
-
-import { fireEvent, waitFor } from '@testing-library/react'
-import FileSaver from 'file-saver'
-
-import { createView, doBeforeEach, setup } from './util'
+import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util'
 import volvoxConfig from '../../test_data/volvox/config.json'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
 
-// mock from https://stackoverflow.com/questions/44686077
-jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
+jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
 
 setup()
 
@@ -21,7 +14,6 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 40000 }
-const opts = [{}, delay]
 
 test('export svg of dotplot', async () => {
   const { findByTestId, findByText } = await createView({
@@ -106,19 +98,10 @@ test('export svg of dotplot', async () => {
     },
   })
 
-  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Export SVG', ...opts))
-  fireEvent.click(await findByText('Submit', ...opts))
-
-  await waitFor(() => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(FileSaver.saveAs).toHaveBeenCalled()
-  }, delay)
-
-  // @ts-expect-error
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/dotplot_snapshot.svg`, svg)
-  expect(svg).toMatchSnapshot()
+  await exportAndVerifySvg({
+    findByTestId,
+    findByText,
+    filename: 'dotplot',
+    delay,
+  })
 }, 45000)

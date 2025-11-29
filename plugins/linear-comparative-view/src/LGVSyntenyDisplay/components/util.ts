@@ -88,17 +88,30 @@ export async function navToSynteny({
     rMateStart = mateStart
     rMateEnd = mateEnd
   }
-
-  const view2 = session.addView('LinearSyntenyView', {
+  const l1 = `${featRef}:${Math.floor(rFeatStart - ws)}-${Math.floor(rFeatEnd + ws)}`
+  const m1 = Math.min(rMateStart, rMateEnd)
+  const m2 = Math.max(rMateStart, rMateEnd)
+  const l2 = `${mateRef}:${Math.floor(m1 - ws)}-${Math.floor(m2 + ws)}${
+    horizontallyFlip ? '[rev]' : ''
+  }`
+  session.addView('LinearSyntenyView', {
     type: 'LinearSyntenyView',
     views: [
       {
         type: 'LinearGenomeView',
         hideHeader: true,
+        init: {
+          assembly: featAsm,
+          loc: l1,
+        },
       },
       {
         type: 'LinearGenomeView',
         hideHeader: true,
+        init: {
+          assembly: mateAsm,
+          loc: l2,
+        },
       },
     ],
     tracks: [
@@ -114,14 +127,4 @@ export async function navToSynteny({
       },
     ],
   }) as LSV
-  const l1 = `${featRef}:${Math.floor(rFeatStart - ws)}-${Math.floor(rFeatEnd + ws)}`
-  const m1 = Math.min(rMateStart, rMateEnd)
-  const m2 = Math.max(rMateStart, rMateEnd)
-  const l2 = `${mateRef}:${Math.floor(m1 - ws)}-${Math.floor(m2 + ws)}${
-    horizontallyFlip ? '[rev]' : ''
-  }`
-  await Promise.all([
-    view2.views[0]!.navToLocString(l1, featAsm),
-    view2.views[1]!.navToLocString(l2, mateAsm),
-  ])
 }

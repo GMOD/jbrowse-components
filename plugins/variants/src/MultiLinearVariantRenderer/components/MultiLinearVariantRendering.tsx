@@ -1,9 +1,9 @@
-import { useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
-import RBush from 'rbush'
 
 import { minElt } from './util'
 import { makeSimpleAltString } from '../../VcfFeature/util'
@@ -12,16 +12,12 @@ import type { Source } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-interface RBushData {
-  minX: number
-  maxX: number
-  minY: number
-  maxY: number
+interface Item {
+  name: string
   genotype: string
   featureId: string
+  bpLen: number
 }
-
-type SerializedRBush = any
 
 interface MinimizedVariantRecord {
   alt: string[]
@@ -38,79 +34,94 @@ const MultiVariantRendering = observer(function (props: {
   width: number
   height: number
   sources: Source[]
-  scrollTop: number
+  origScrollTop: number
   featureGenotypeMap: Record<string, MinimizedVariantRecord>
   totalHeight: number
-  rbush: SerializedRBush
+  flatbush: any
+  items: Item[]
   displayModel: any
   onMouseLeave?: (event: React.MouseEvent) => void
   onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
   onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
 }) {
-  const { featureGenotypeMap, totalHeight, scrollTop } = props
-  const { rbush, displayModel } = props
+  const {
+    flatbush,
+    items,
+    displayModel,
+    featureGenotypeMap,
+    totalHeight,
+    origScrollTop,
+  } = props
   const ref = useRef<HTMLDivElement>(null)
-  const rbush2 = useMemo(() => new RBush<RBushData>().fromJSON(rbush), [rbush])
+  const lastHoveredRef = useRef<string | undefined>(undefined)
+  const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
 
-  function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {
-    let offsetX = 0
-    let offsetY = 0
-    if (ref.current) {
-      const r = ref.current.getBoundingClientRect()
-      offsetX = eventClientX - r.left
-      offsetY = eventClientY - r.top - (displayModel?.scrollTop || 0)
-    }
+  const getFeatureUnderMouse = useCallback(
+    (eventClientX: number, eventClientY: number) => {
+      if (!ref.current) {
+        return
+      }
+      const rect = ref.current.getBoundingClientRect()
+      const offsetX = eventClientX - rect.left
+      const offsetY = eventClientY - rect.top
 
-    const x = rbush2.search({
-      minX: offsetX,
-      maxX: offsetX + 1,
-      minY: offsetY,
-      maxY: offsetY + 1,
-    })
-    if (x.length) {
-      const { minX, minY, maxX, maxY, genotype, featureId, ...rest } = minElt(
-        x,
-        elt => elt.maxX - elt.minX,
-      )!
-      const ret = featureGenotypeMap[featureId]
-      if (ret) {
-        const { ref, alt, name, description, length } = ret
-        const alleles = makeSimpleAltString(genotype, ref, alt)
-        return {
-          ...rest,
-          genotype,
-
-          // alleles is a expanded description, e.g. if genotype is 1/0,
-          // alleles is T/C
-          alleles,
-          featureName: name,
-
-          // avoid rendering multiple alt alleles as description, particularly
-          // with Cactus VCF where a large SV has many different ALT alleles.
-          // since descriptions are a join of ALT allele descriptions, just
-          // skip this in this case
-          description: alt.length >= 3 ? 'multiple ALT alleles' : description,
-          length: getBpDisplayStr(length),
+      // Canvas is positioned at top=origScrollTop, so adjust mouse position
+      // relative to canvas top for Flatbush lookup
+      const canvasOffsetY = offsetY - origScrollTop
+      const x = flatbush2.search(
+        offsetX,
+        canvasOffsetY,
+        offsetX + 1,
+        canvasOffsetY + 1,
+      )
+      if (x.length) {
+        const res = minElt(x, idx => items[idx]?.bpLen ?? 0)!
+        const { bpLen, genotype, featureId, ...rest } = items[res] ?? {}
+        const ret =
+          featureId !== undefined ? featureGenotypeMap[featureId] : undefined
+        if (ret && genotype) {
+          const { ref, alt, name, description, length } = ret
+          const alleles = makeSimpleAltString(genotype, ref, alt)
+          return {
+            ...rest,
+            genotype,
+            alleles,
+            featureName: name,
+            description: alt.length >= 3 ? 'multiple ALT alleles' : description,
+            length: getBpDisplayStr(length),
+          }
         }
       }
+      return undefined
+    },
+    [flatbush2, items, featureGenotypeMap, origScrollTop],
+  )
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      const result = getFeatureUnderMouse(e.clientX, e.clientY)
+      const key = result ? `${result.name}:${result.genotype}` : undefined
+      if (key !== lastHoveredRef.current) {
+        lastHoveredRef.current = key
+        displayModel.setHoveredGenotype?.(result)
+      }
+    },
+    [getFeatureUnderMouse, displayModel],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    if (lastHoveredRef.current !== undefined) {
+      lastHoveredRef.current = undefined
+      displayModel.setHoveredGenotype?.(undefined)
     }
-    return undefined
-  }
+  }, [displayModel])
 
   return (
     <div
       ref={ref}
-      onMouseMove={e =>
-        displayModel.setHoveredGenotype?.(
-          getFeatureUnderMouse(e.clientX, e.clientY),
-        )
-      }
-      onMouseLeave={() => {
-        displayModel.setHoveredGenotype?.(undefined)
-      }}
-      onMouseOut={() => {
-        displayModel.setHoveredGenotype?.(undefined)
-      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onMouseOut={handleMouseLeave}
       style={{
         overflow: 'visible',
         position: 'relative',
@@ -122,7 +133,7 @@ const MultiVariantRendering = observer(function (props: {
         style={{
           position: 'absolute',
           left: 0,
-          top: scrollTop,
+          top: origScrollTop,
         }}
       />
     </div>
