@@ -11,7 +11,7 @@ export default function CascadingMenuHelpIconButton({
   label,
 }: {
   helpText: string
-  label?: string
+  label?: React.ReactNode
 }) {
   const [helpDialogOpen, setHelpDialogOpen] = useState(false)
 
