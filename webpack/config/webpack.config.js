@@ -6,7 +6,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const InlineChunkHtmlPlugin = require('../scripts/react-dev-utils/InlineChunkHtmlPlugin')
 const InterpolateHtmlPlugin = require('../scripts/react-dev-utils/InterpolateHtmlPlugin')
-const getCSSModuleLocalIdent = require('../scripts/react-dev-utils/getCSSModuleLocalIdent')
 const webpack = require('webpack')
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
 

@@ -8,21 +8,17 @@ process.on('unhandledRejection', err => {
 // Ensure environment variables are read.
 require('../config/env')
 
-const fs = require('fs')
-
 const chalk = require('chalk')
+const open = require('open')
 const {
   choosePort,
   createCompiler,
   prepareUrls,
 } = require('./react-dev-utils/WebpackDevServerUtils')
-const openBrowser = require('./react-dev-utils/openBrowser')
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 
 const paths = require('../config/paths')
-
-const useYarn = fs.existsSync(paths.yarnLockFile)
 
 // Tools like Cloud9 rely on this.
 const DEFAULT_PORT = Number.parseInt(process.env.PORT, 10) || 3000
@@ -39,10 +35,14 @@ if (process.env.HOST) {
   console.log(
     `If this was unintentional, check that you haven't mistakenly set it in your shell.`,
   )
-  console.log(
-    `Learn more here: ${chalk.yellow('https://cra.link/advanced-config')}`,
-  )
   console.log()
+}
+
+function openBrowser(url) {
+  if (process.env.BROWSER === 'none') {
+    return
+  }
+  open(url, { wait: false }).catch(() => {})
 }
 
 module.exports = function startWebpack(config) {
@@ -65,7 +65,6 @@ module.exports = function startWebpack(config) {
         appName,
         config,
         urls,
-        useYarn,
         webpack,
       })
 

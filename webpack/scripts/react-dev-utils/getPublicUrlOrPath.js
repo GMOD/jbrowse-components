@@ -7,39 +7,28 @@
 
 'use strict'
 
-const { URL } = require('url')
-
-module.exports = function getPublicUrlOrPath(
-  isEnvDevelopment,
-  homepage,
-  envPublicUrl,
-) {
+module.exports = function getPublicUrlOrPath(isEnvDevelopment, homepage, envPublicUrl) {
   const stubDomain = 'https://create-react-app.dev'
 
   if (envPublicUrl) {
-    envPublicUrl = envPublicUrl.endsWith('/')
-      ? envPublicUrl
-      : envPublicUrl + '/'
-
-    const validPublicUrl = new URL(envPublicUrl, stubDomain)
-
+    const publicUrl = envPublicUrl.endsWith('/') ? envPublicUrl : envPublicUrl + '/'
+    const validPublicUrl = new URL(publicUrl, stubDomain)
     return isEnvDevelopment
-      ? envPublicUrl.startsWith('.')
+      ? publicUrl.startsWith('.')
         ? '/'
         : validPublicUrl.pathname
-      : envPublicUrl
+      : publicUrl
   }
 
   if (homepage) {
-    homepage = homepage.endsWith('/') ? homepage : homepage + '/'
-
-    const validHomepagePathname = new URL(homepage, stubDomain).pathname
+    const hp = homepage.endsWith('/') ? homepage : homepage + '/'
+    const validHomepagePathname = new URL(hp, stubDomain).pathname
     return isEnvDevelopment
-      ? homepage.startsWith('.')
+      ? hp.startsWith('.')
         ? '/'
         : validHomepagePathname
-      : homepage.startsWith('.')
-        ? homepage
+      : hp.startsWith('.')
+        ? hp
         : validHomepagePathname
   }
 

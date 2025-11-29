@@ -7,27 +7,15 @@
 'use strict'
 
 const address = require('address')
-const url = require('url')
 const chalk = require('chalk')
 const detect = require('detect-port-alt')
 
 const isInteractive = process.stdout.isTTY
 
 function prepareUrls(protocol, host, port, pathname = '/') {
-  const formatUrl = hostname =>
-    url.format({
-      protocol,
-      hostname,
-      port,
-      pathname,
-    })
+  const formatUrl = hostname => `${protocol}://${hostname}:${port}${pathname}`
   const prettyPrintUrl = hostname =>
-    url.format({
-      protocol,
-      hostname,
-      port: chalk.bold(port),
-      pathname,
-    })
+    `${protocol}://${hostname}:${chalk.bold(port)}${pathname}`
 
   const isUnspecifiedHost = host === '0.0.0.0' || host === '::'
   let prettyHost, lanUrlForTerminal
@@ -47,16 +35,14 @@ function prepareUrls(protocol, host, port, pathname = '/') {
   } else {
     prettyHost = host
   }
-  const localUrlForTerminal = prettyPrintUrl(prettyHost)
-  const localUrlForBrowser = formatUrl(prettyHost)
   return {
     lanUrlForTerminal,
-    localUrlForTerminal,
-    localUrlForBrowser,
+    localUrlForTerminal: prettyPrintUrl(prettyHost),
+    localUrlForBrowser: formatUrl(prettyHost),
   }
 }
 
-function printInstructions(appName, urls, useYarn) {
+function printInstructions(appName, urls) {
   console.log()
   console.log(`You can now view ${chalk.bold(appName)} in the browser.`)
   console.log()
@@ -75,13 +61,12 @@ function printInstructions(appName, urls, useYarn) {
   console.log()
   console.log('Note that the development build is not optimized.')
   console.log(
-    `To create a production build, use ` +
-      `${chalk.cyan(`${useYarn ? 'yarn' : 'npm run'} build`)}.`,
+    `To create a production build, use ${chalk.cyan('yarn build')}.`,
   )
   console.log()
 }
 
-function createCompiler({ appName, config, urls, useYarn, webpack }) {
+function createCompiler({ appName, config, urls, webpack }) {
   let compiler
   try {
     compiler = webpack(config)
@@ -111,7 +96,7 @@ function createCompiler({ appName, config, urls, useYarn, webpack }) {
       console.log(chalk.green('Compiled successfully!'))
     }
     if (isSuccessful && (isInteractive || isFirstCompile)) {
-      printInstructions(appName, urls, useYarn)
+      printInstructions(appName, urls)
     }
     isFirstCompile = false
 
