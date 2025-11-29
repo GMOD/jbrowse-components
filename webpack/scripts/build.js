@@ -5,9 +5,7 @@ process.on('unhandledRejection', err => {
 const fs = require('fs')
 const chalk = require('chalk')
 const webpack = require('webpack')
-const FileSizeReporter = require('./react-dev-utils/FileSizeReporter')
-
-const { measureFileSizesBeforeBuild, printFileSizesAfterBuild } = FileSizeReporter
+const { printFileSizesAfterBuild } = require('./react-dev-utils/FileSizeReporter')
 
 const argv = process.argv.slice(2)
 const writeStatsJson = argv.includes('--stats')
@@ -15,7 +13,6 @@ const writeStatsJson = argv.includes('--stats')
 module.exports = function buildWebpack(config) {
   const { paths } = require('../config/webpack.config')
 
-  // Warn and crash if required files are missing
   for (const filePath of [paths.appHtml, paths.appIndexJs]) {
     if (!fs.existsSync(filePath)) {
       console.log(chalk.red(`Could not find required file: ${filePath}`))
@@ -23,73 +20,55 @@ module.exports = function buildWebpack(config) {
     }
   }
 
-  return measureFileSizesBeforeBuild(paths.appBuild)
-    .then(previousFileSizes => {
-      fs.rmSync(paths.appBuild, { recursive: true, force: true })
-      fs.cpSync(paths.appPublic, paths.appBuild, {
-        recursive: true,
-        dereference: true,
-        filter: file => file !== paths.appHtml,
-      })
-      return build(previousFileSizes)
-    })
-    .then(
-      ({ stats, previousFileSizes, warnings }) => {
-        if (warnings.length) {
-          console.log(chalk.yellow('Compiled with warnings.\n'))
-          console.log(warnings.join('\n\n'))
-        } else {
-          console.log(chalk.green('Compiled successfully.\n'))
-        }
+  fs.rmSync(paths.appBuild, { recursive: true, force: true })
+  fs.cpSync(paths.appPublic, paths.appBuild, {
+    recursive: true,
+    dereference: true,
+    filter: file => file !== paths.appHtml,
+  })
 
-        console.log('File sizes:\n')
-        printFileSizesAfterBuild(stats, previousFileSizes, paths.appBuild)
-        console.log()
-      },
-      err => {
-        console.log(chalk.red('Failed to compile.\n'))
-        console.log(err.message || err)
-        process.exit(1)
-      },
-    )
-    .catch(err => {
-      if (err?.message) {
-        console.log(err.message)
+  console.log('Creating an optimized production build...')
+
+  const compiler = webpack(config)
+  return new Promise((resolve, reject) => {
+    compiler.run((err, stats) => {
+      if (err) {
+        reject(err)
+        return
       }
-      process.exit(1)
+
+      const info = stats.toJson({ all: false, warnings: true, errors: true })
+
+      if (info.errors.length) {
+        console.log(chalk.red('Failed to compile.\n'))
+        console.log(info.errors.map(e => e.message || e).join('\n\n'))
+        process.exit(1)
+      }
+
+      if (info.warnings.length) {
+        console.log(chalk.yellow('Compiled with warnings.\n'))
+        console.log(info.warnings.map(w => w.message || w).join('\n\n'))
+      } else {
+        console.log(chalk.green('Compiled successfully.\n'))
+      }
+
+      console.log('File sizes:\n')
+      printFileSizesAfterBuild(stats, paths.appBuild)
+      console.log()
+
+      if (writeStatsJson) {
+        fs.writeFileSync(
+          `${paths.appBuild}/bundle-stats.json`,
+          JSON.stringify(stats.toJson()),
+        )
+      }
+
+      resolve()
     })
-
-  function build(previousFileSizes) {
-    console.log('Creating an optimized production build...')
-
-    const compiler = webpack(config)
-    return new Promise((resolve, reject) => {
-      compiler.run((err, stats) => {
-        if (err) {
-          reject(err)
-          return
-        }
-
-        const info = stats.toJson({ all: false, warnings: true, errors: true })
-
-        if (info.errors.length) {
-          reject(new Error(info.errors.map(e => e.message || e).join('\n\n')))
-          return
-        }
-
-        if (writeStatsJson) {
-          fs.writeFileSync(
-            `${paths.appBuild}/bundle-stats.json`,
-            JSON.stringify(stats.toJson()),
-          )
-        }
-
-        resolve({
-          stats,
-          previousFileSizes,
-          warnings: info.warnings.map(w => w.message || w),
-        })
-      })
-    })
-  }
+  }).catch(err => {
+    if (err?.message) {
+      console.log(err.message)
+    }
+    process.exit(1)
+  })
 }

@@ -5,7 +5,6 @@ const path = require('path')
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const InterpolateHtmlPlugin = require('../scripts/react-dev-utils/InterpolateHtmlPlugin')
 const webpack = require('webpack')
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
 
@@ -47,16 +46,12 @@ const paths = {
 }
 
 function getClientEnvironment(publicUrl) {
-  const raw = {
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    PUBLIC_URL: publicUrl,
+  return {
+    'process.env': {
+      NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
+      PUBLIC_URL: JSON.stringify(publicUrl),
+    },
   }
-  const stringified = {
-    'process.env': Object.fromEntries(
-      Object.entries(raw).map(([key, value]) => [key, JSON.stringify(value)]),
-    ),
-  }
-  return { raw, stringified }
 }
 
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
@@ -178,6 +173,7 @@ module.exports = function webpackBuilder(webpackEnv) {
       new HtmlWebpackPlugin({
         inject: true,
         template: paths.appHtml,
+        publicPath: publicUrlOrPath,
         ...(isEnvProduction && {
           minify: {
             removeComments: true,
@@ -193,8 +189,7 @@ module.exports = function webpackBuilder(webpackEnv) {
           },
         }),
       }),
-      new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
-      new webpack.DefinePlugin(env.stringified),
+      new webpack.DefinePlugin(env),
       isEnvDevelopment && new ReactRefreshWebpackPlugin({ overlay: false }),
       isEnvProduction && new MiniCssExtractPlugin({
         filename: 'static/css/[name].[contenthash:8].css',
