@@ -115,7 +115,6 @@ const TreeView = observer(function ({
     <div
       style={{
         overflow: 'hidden',
-        marginLeft: 2,
       }}
     >
       <div
