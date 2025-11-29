@@ -1,41 +1,36 @@
-// Makes the script crash on unhandled rejections instead of silently ignoring
-// them. In the future, promise rejections that are not handled will terminate
-// the Node.js process with a non-zero exit code.
 process.on('unhandledRejection', err => {
   throw err
 })
 
 const fs = require('fs')
-
 const chalk = require('chalk')
-const FileSizeReporter = require('./react-dev-utils/FileSizeReporter')
 const webpack = require('webpack')
+const FileSizeReporter = require('./react-dev-utils/FileSizeReporter')
 
-const paths = require('../config/paths')
-
-const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild
-const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild
-
-// Warn and crash if required files are missing
-for (const filePath of [paths.appHtml, paths.appIndexJs]) {
-  if (!fs.existsSync(filePath)) {
-    console.log(chalk.red(`Could not find required file: ${filePath}`))
-    process.exit(1)
-  }
-}
+const { measureFileSizesBeforeBuild, printFileSizesAfterBuild } = FileSizeReporter
 
 const argv = process.argv.slice(2)
 const writeStatsJson = argv.includes('--stats')
 
 module.exports = function buildWebpack(config) {
+  const { paths } = require('../config/webpack.config')
+
+  // Warn and crash if required files are missing
+  for (const filePath of [paths.appHtml, paths.appIndexJs]) {
+    if (!fs.existsSync(filePath)) {
+      console.log(chalk.red(`Could not find required file: ${filePath}`))
+      process.exit(1)
+    }
+  }
+
   return measureFileSizesBeforeBuild(paths.appBuild)
     .then(previousFileSizes => {
-      // Remove all content but keep the directory so that
-      // if you're in it, you don't end up in Trash
       fs.rmSync(paths.appBuild, { recursive: true, force: true })
-      // Merge with the public folder
-      copyPublicFolder()
-      // Start the webpack build
+      fs.cpSync(paths.appPublic, paths.appBuild, {
+        recursive: true,
+        dereference: true,
+        filter: file => file !== paths.appHtml,
+      })
       return build(previousFileSizes)
     })
     .then(
@@ -95,14 +90,6 @@ module.exports = function buildWebpack(config) {
           warnings: info.warnings.map(w => w.message || w),
         })
       })
-    })
-  }
-
-  function copyPublicFolder() {
-    fs.cpSync(paths.appPublic, paths.appBuild, {
-      recursive: true,
-      dereference: true,
-      filter: file => file !== paths.appHtml,
     })
   }
 }
