@@ -12,7 +12,6 @@ const fs = require('fs')
 
 const chalk = require('chalk')
 const FileSizeReporter = require('./react-dev-utils/FileSizeReporter')
-const { checkBrowsers } = require('./react-dev-utils/browsersHelper')
 const checkRequiredFiles = require('./react-dev-utils/checkRequiredFiles')
 const webpack = require('webpack')
 
@@ -33,16 +32,8 @@ if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
 const argv = process.argv.slice(2)
 const writeStatsJson = argv.includes('--stats')
 
-// We require that you explicitly set browsers and do not fall back to
-// browserslist defaults.
-
 module.exports = function buildWebpack(config) {
-  return checkBrowsers(paths.appPath)
-    .then(() => {
-      // First, read the current file sizes in build directory.
-      // This lets us display how much they changed later.
-      return measureFileSizesBeforeBuild(paths.appBuild)
-    })
+  return measureFileSizesBeforeBuild(paths.appBuild)
     .then(previousFileSizes => {
       // Remove all content but keep the directory so that
       // if you're in it, you don't end up in Trash
