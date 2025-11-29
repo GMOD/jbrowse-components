@@ -5,8 +5,8 @@ import { makeStyles } from 'tss-react/mui'
 
 import TrackCategory from './TrackCategory'
 import TrackLabel from './TrackLabel'
-import { type HierarchicalTrackSelectorModel, getItemHeight } from '../../model'
 
+import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { TreeNode } from '../../types'
 
 const levelWidth = 10

@@ -523,9 +523,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
         for (let i = 0, l = this.flattenedItems.length; i < l; i++) {
           offsets.push(cumulativeHeight)
-          cumulativeHeight +=
-            getItemHeight(this.flattenedItems[i]!) +
-            (this.flattenedItems[i]!.type === 'category' ? 5 : 0)
+          cumulativeHeight += getItemHeight(this.flattenedItems[i]!)
         }
         return { cumulativeHeight, offsets }
       },
