@@ -437,19 +437,19 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
         styleOverrides: {
           root: {
             '& .MuiTouchRipple-root .MuiTouchRipple-ripple': {
-              animationDuration: '100ms',
+              animationDuration: '50ms',
             },
             '& .MuiTouchRipple-root .MuiTouchRipple-rippleVisible': {
-              animationDuration: '100ms',
+              animationDuration: '50ms',
             },
             '& .MuiTouchRipple-root .MuiTouchRipple-child': {
-              animationDuration: '100ms',
+              animationDuration: '50ms',
             },
             '& .MuiTouchRipple-root .MuiTouchRipple-childLeaving': {
-              animationDuration: '100ms',
+              animationDuration: '50ms',
             },
             '& .MuiTouchRipple-root .MuiTouchRipple-childPulsate': {
-              animationDuration: '100ms',
+              animationDuration: '50ms',
             },
           },
         },
