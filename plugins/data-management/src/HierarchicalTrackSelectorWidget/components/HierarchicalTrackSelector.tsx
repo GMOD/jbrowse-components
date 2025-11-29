@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import { observer } from 'mobx-react'
-import AutoSizer from 'react-virtualized-auto-sizer'
 
+import AutoSizer from './AutoSizer'
 import HierarchicalFab from './HierarchicalFab'
 import HierarchicalHeader from './tree/HierarchicalHeader'
 import HierarchicalTree from './tree/HierarchicalTree'

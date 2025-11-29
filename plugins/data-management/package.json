@@ -47,8 +47,6 @@
     "deepmerge": "^4.3.1",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "react-virtualized-auto-sizer": "^1.0.26",
-    "react-window": "^1.8.6",
     "tss-react": "^4.0.0"
   },
   "peerDependencies": {
