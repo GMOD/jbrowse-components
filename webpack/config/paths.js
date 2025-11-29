@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const getPublicUrlOrPath = require('react-dev-utils/getPublicUrlOrPath')
+const getPublicUrlOrPath = require('../scripts/react-dev-utils/getPublicUrlOrPath')
 
 // Make sure any symlinks in the project folder are resolved:
 // https://github.com/facebook/create-react-app/issues/637
