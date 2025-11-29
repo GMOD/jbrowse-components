@@ -277,12 +277,12 @@ function CascadingMenuList({
               <EndDecoration item={item} />
               {item.type === 'checkbox' || item.type === 'radio' ? (
                 'helpText' in item && item.helpText ? (
-                  <CascadingMenuHelpIconButton helpText={item.helpText} />
+                  <CascadingMenuHelpIconButton helpText={item.helpText} label={item.label} />
                 ) : hasCheckboxOrRadioWithHelp ? (
                   <HelpIconSpacer />
                 ) : null
               ) : 'helpText' in item && item.helpText ? (
-                <CascadingMenuHelpIconButton helpText={item.helpText} />
+                <CascadingMenuHelpIconButton helpText={item.helpText} label={item.label} />
               ) : null}
             </CascadingMenuItem>
           )

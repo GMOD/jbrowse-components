@@ -8,8 +8,10 @@ import CascadingMenuHelpDialog from './CascadingMenuHelpDialog'
 
 export default function CascadingMenuHelpIconButton({
   helpText,
+  label,
 }: {
   helpText: string
+  label?: string
 }) {
   const [helpDialogOpen, setHelpDialogOpen] = useState(false)
 
@@ -29,6 +31,7 @@ export default function CascadingMenuHelpIconButton({
         <Suspense fallback={null}>
           <CascadingMenuHelpDialog
             helpText={helpText}
+            label={label}
             onClose={event => {
               event.stopPropagation()
               setHelpDialogOpen(false)
