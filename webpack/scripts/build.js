@@ -12,7 +12,6 @@ const fs = require('fs')
 
 const chalk = require('chalk')
 const FileSizeReporter = require('./react-dev-utils/FileSizeReporter')
-const checkRequiredFiles = require('./react-dev-utils/checkRequiredFiles')
 const webpack = require('webpack')
 
 const paths = require('../config/paths')
@@ -25,8 +24,11 @@ const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
 const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
 
 // Warn and crash if required files are missing
-if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
-  process.exit(1)
+for (const filePath of [paths.appHtml, paths.appIndexJs]) {
+  if (!fs.existsSync(filePath)) {
+    console.log(chalk.red(`Could not find required file: ${filePath}`))
+    process.exit(1)
+  }
 }
 
 const argv = process.argv.slice(2)
