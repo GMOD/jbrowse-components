@@ -34,7 +34,7 @@
     "@gmod/abortable-promise-cache": "^3.0.1",
     "@gmod/bgzf-filehandle": "^5.0.2",
     "@gmod/http-range-fetcher": "^5.0.0",
-    "@jbrowse/mobx-state-tree": "^5.4.5",
+    "@jbrowse/mobx-state-tree": "^5.4.6",
     "@leeoniya/ufuzzy": "^1.0.18",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
