@@ -529,6 +529,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const { flattenedItems, flattenedItemOffsets } = self
         const { cumulativeHeight, offsets } = flattenedItemOffsets
 
+        if (offsets.length === 0) {
+          return {
+            startIndex: 0,
+            endIndex: 0,
+            totalHeight: 0,
+            itemOffsets: offsets,
+          }
+        }
+
         // Binary search to find the start index based on scroll position
         const findIndexAtOffset = (offset: number) => {
           let low = 0
@@ -551,14 +560,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           return 0
         }
 
-        // Find the approximate start index
         const start = Math.max(0, findIndexAtOffset(scrollTop) - overscan)
-
-        // Estimate the end index (this is an approximation)
-        let end = start
-        let currentHeight = offsets[start]!
         const targetHeight = scrollTop + height + overscan * defaultItemHeight
 
+        let end = start
+        let currentHeight = offsets[start]!
         while (
           end < flattenedItems.length - 1 &&
           currentHeight < targetHeight
