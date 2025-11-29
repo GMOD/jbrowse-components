@@ -217,7 +217,7 @@ module.exports = function webpackBuilder(webpackEnv) {
                   : isEnvDevelopment,
                 modules: {
                   mode: 'local',
-                  getLocalIdent: getCSSModuleLocalIdent,
+                  localIdentName: '[name]_[local]__[hash:base64:5]',
                 },
               }),
             },

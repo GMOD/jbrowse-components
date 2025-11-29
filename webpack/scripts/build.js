@@ -19,10 +19,6 @@ const paths = require('../config/paths')
 const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild
 
-// These sizes are pretty large. We'll warn for bundles exceeding them.
-const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
-const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
-
 // Warn and crash if required files are missing
 for (const filePath of [paths.appHtml, paths.appIndexJs]) {
   if (!fs.existsSync(filePath)) {
@@ -54,14 +50,8 @@ module.exports = function buildWebpack(config) {
           console.log(chalk.green('Compiled successfully.\n'))
         }
 
-        console.log('File sizes after gzip:\n')
-        printFileSizesAfterBuild(
-          stats,
-          previousFileSizes,
-          paths.appBuild,
-          WARN_AFTER_BUNDLE_GZIP_SIZE,
-          WARN_AFTER_CHUNK_GZIP_SIZE,
-        )
+        console.log('File sizes:\n')
+        printFileSizesAfterBuild(stats, previousFileSizes, paths.appBuild)
         console.log()
       },
       err => {

@@ -10,7 +10,6 @@
 const fs = require('fs')
 const path = require('path')
 const chalk = require('chalk')
-const { gzipSizeSync } = require('gzip-size')
 
 function formatFileSize(bytes) {
   if (bytes < 1024) {
@@ -66,13 +65,7 @@ function readDirRecursive(dir) {
   return files
 }
 
-function printFileSizesAfterBuild(
-  webpackStats,
-  previousSizeMap,
-  buildFolder,
-  maxBundleGzipSize,
-  maxChunkGzipSize,
-) {
+function printFileSizesAfterBuild(webpackStats, previousSizeMap, buildFolder) {
   const root = previousSizeMap.root
   const sizes = previousSizeMap.sizes
   const assets = (webpackStats.stats || [webpackStats])
@@ -81,8 +74,8 @@ function printFileSizesAfterBuild(
         .toJson({ all: false, assets: true })
         .assets.filter(asset => canReadAsset(asset.name))
         .map(asset => {
-          const fileContents = fs.readFileSync(path.join(root, asset.name))
-          const size = gzipSizeSync(fileContents)
+          const filePath = path.join(root, asset.name)
+          const size = fs.statSync(filePath).size
           const previousSize = sizes[removeFileNameHash(root, asset.name)]
           const difference = getDifferenceLabel(size, previousSize)
           return {
@@ -96,30 +89,17 @@ function printFileSizesAfterBuild(
     .sort((a, b) => b.size - a.size)
 
   const longestSizeLabelLength = Math.max(...assets.map(a => a.sizeLabel.replace(/\x1b\[[0-9;]*m/g, '').length))
-  let suggestBundleSplitting = false
 
   for (const asset of assets) {
     const sizeLength = asset.sizeLabel.replace(/\x1b\[[0-9;]*m/g, '').length
     const sizeLabel = asset.sizeLabel + ' '.repeat(longestSizeLabelLength - sizeLength)
-    const isMainBundle = asset.name.startsWith('main.')
-    const maxRecommendedSize = isMainBundle ? maxBundleGzipSize : maxChunkGzipSize
-    const isLarge = maxRecommendedSize && asset.size > maxRecommendedSize
-    if (isLarge && path.extname(asset.name) === '.js') {
-      suggestBundleSplitting = true
-    }
     console.log(
       '  ' +
-        (isLarge ? chalk.yellow(sizeLabel) : sizeLabel) +
+        sizeLabel +
         '  ' +
         chalk.dim(asset.folder + path.sep) +
         chalk.cyan(asset.name),
     )
-  }
-
-  if (suggestBundleSplitting) {
-    console.log()
-    console.log(chalk.yellow('The bundle size is significantly larger than recommended.'))
-    console.log(chalk.yellow('Consider reducing it with code splitting.'))
   }
 }
 
@@ -128,9 +108,8 @@ function measureFileSizesBeforeBuild(buildFolder) {
   const sizes = {}
   for (const fileName of fileNames) {
     if (canReadAsset(fileName)) {
-      const contents = fs.readFileSync(fileName)
       const key = removeFileNameHash(buildFolder, fileName)
-      sizes[key] = gzipSizeSync(contents)
+      sizes[key] = fs.statSync(fileName).size
     }
   }
   return Promise.resolve({
