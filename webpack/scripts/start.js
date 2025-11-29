@@ -5,9 +5,6 @@ process.on('unhandledRejection', err => {
   throw err
 })
 
-// Ensure environment variables are read.
-require('../config/env')
-
 const chalk = require('chalk')
 const open = require('open')
 const {

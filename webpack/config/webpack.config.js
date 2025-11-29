@@ -4,13 +4,24 @@ const path = require('path')
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const InlineChunkHtmlPlugin = require('../scripts/react-dev-utils/InlineChunkHtmlPlugin')
 const InterpolateHtmlPlugin = require('../scripts/react-dev-utils/InterpolateHtmlPlugin')
 const webpack = require('webpack')
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
 
-const getClientEnvironment = require('./env')
 const paths = require('./paths')
+
+function getClientEnvironment(publicUrl) {
+  const raw = {
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    PUBLIC_URL: publicUrl,
+  }
+  const stringified = {
+    'process.env': Object.fromEntries(
+      Object.entries(raw).map(([key, value]) => [key, JSON.stringify(value)]),
+    ),
+  }
+  return { raw, stringified }
+}
 
 // Source maps are resource heavy and can cause out of memory issue for large
 // source files.
@@ -25,10 +36,6 @@ function getWorkspaces(fromDir) {
     path.resolve(path.join('..', '..', e.location)),
   )
 }
-
-// Some apps do not need the benefits of saving a web request, so not inlining
-// the chunk makes for a smoother build process.
-const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false'
 
 // style files regexes
 const cssRegex = /\.css$/
@@ -46,7 +53,7 @@ module.exports = function webpackBuilder(webpackEnv) {
   // Get environment variables to inject into our app.
   const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1))
 
-  const shouldUseReactRefresh = env.raw.FAST_REFRESH
+  const shouldUseReactRefresh = isEnvDevelopment
   const cssSourceMap = isEnvProduction ? shouldUseSourceMap : true
 
   // common function to get style loaders
@@ -237,12 +244,6 @@ module.exports = function webpackBuilder(webpackEnv) {
           },
         }),
       }),
-      // Inlines the webpack runtime script. This script is too small to warrant
-      // a network request.
-      // https://github.com/facebook/create-react-app/issues/5358
-      isEnvProduction &&
-        shouldInlineRuntimeChunk &&
-        new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
       // Makes some environment variables available in index.html.
       // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
       // <link rel="icon" href="%PUBLIC_URL%/favicon.ico">
