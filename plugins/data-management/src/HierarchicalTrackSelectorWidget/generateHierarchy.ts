@@ -23,10 +23,7 @@ export function generateHierarchy({
   extra?: string
 }): TreeNode[] {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
-  const { filterText, activeSortTrackNames, activeSortCategories, view } = model
-  if (!view) {
-    return []
-  }
+  const { filterText, activeSortTrackNames, activeSortCategories } = model
   const session = getSession(model)
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
 

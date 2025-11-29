@@ -1,4 +1,5 @@
-import { observer } from 'mobx-react'
+import { memo } from 'react'
+
 import { makeStyles } from 'tss-react/mui'
 
 import TrackCategory from './TrackCategory'
@@ -29,12 +30,8 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function getMarginLeft(item: TreeNode) {
-  const isCategory = item.type === 'category'
-  return item.nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
-}
-
-const TreeItem = observer(function ({
+// Memoized to prevent re-renders when parent re-renders but props haven't changed
+const TreeItem = memo(function TreeItem({
   item,
   model,
   top,
@@ -47,6 +44,7 @@ const TreeItem = observer(function ({
   const isCategory = item.type === 'category'
   const { nestingLevel } = item
   const height = getItemHeight(item)
+  const marginLeft = nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
 
   return (
     <div
@@ -57,33 +55,30 @@ const TreeItem = observer(function ({
         cursor: 'pointer',
         height,
         top,
-        left: 0,
       }}
     >
-      <div style={{ display: 'flex', width: '100%' }}>
-        {new Array(nestingLevel).fill(0).map((_, idx) => (
-          <div
-            /* biome-ignore lint/suspicious/noArrayIndexKey: */
-            key={`mark-${idx}`}
-            style={{ left: idx * levelWidth + 4, height }}
-            className={classes.nestingLevelMarker}
-          />
-        ))}
+      {new Array(nestingLevel).fill(0).map((_, idx) => (
         <div
-          className={isCategory ? classes.accordionCard : undefined}
-          style={{
-            marginLeft: getMarginLeft(item),
-            whiteSpace: 'nowrap',
-            flex: 1,
-          }}
-        >
-          <div className={isCategory ? classes.accordionColor : undefined}>
-            {isCategory ? (
-              <TrackCategory model={model} item={item} />
-            ) : (
-              <TrackLabel model={model} item={item} />
-            )}
-          </div>
+          /* biome-ignore lint/suspicious/noArrayIndexKey: */
+          key={`mark-${idx}`}
+          style={{ left: idx * levelWidth + 4, height }}
+          className={classes.nestingLevelMarker}
+        />
+      ))}
+      <div
+        className={isCategory ? classes.accordionCard : undefined}
+        style={{
+          marginLeft,
+          whiteSpace: 'nowrap',
+          flex: 1,
+        }}
+      >
+        <div className={isCategory ? classes.accordionColor : undefined}>
+          {isCategory ? (
+            <TrackCategory model={model} item={item} />
+          ) : (
+            <TrackLabel model={model} item={item} />
+          )}
         </div>
       </div>
     </div>

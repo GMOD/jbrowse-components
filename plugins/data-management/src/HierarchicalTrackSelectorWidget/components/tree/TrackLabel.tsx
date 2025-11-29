@@ -48,6 +48,7 @@ const TrackLabel = observer(function TrackLabel({
   const description = readConfObject(conf, 'description')
   const selected = model.selectionSet.has(trackId)
   const checked = model.shownTrackIds.has(trackId)
+  console.log('here abel')
   return (
     <>
       <Tooltip

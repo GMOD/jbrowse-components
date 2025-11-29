@@ -24,8 +24,4 @@ export interface MinimalModel {
   filterText: string
   activeSortTrackNames: boolean
   activeSortCategories: boolean
-  collapsed: Map<string | number, boolean>
-  view?: {
-    tracks: { configuration: AnyConfigurationModel }[]
-  }
 }
