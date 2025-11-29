@@ -16,6 +16,12 @@ export function useSideScroll(model: LinearGenomeViewModel) {
 
     function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
+
+      // Don't do horizontal scrolling if a virtual scrollbar is being dragged
+      if (document.body.getAttribute('data-virtual-scrollbar-dragging')) {
+        return
+      }
+
       const currX = event.clientX
       const distance = currX - prevX.current
       if (distance) {

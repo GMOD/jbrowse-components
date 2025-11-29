@@ -1,9 +1,12 @@
-import { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+
+import VirtualScrollbar from './VirtualScrollbar'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -21,12 +24,19 @@ const useStyles = makeStyles()({
   },
 
   trackRenderingContainer: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
     contain: 'strict',
+  },
+  // When virtual scrollbars are enabled, hide overflow completely
+  virtualScrollMode: {
+    overflow: 'hidden',
+  },
+  // When virtual scrollbars are disabled, allow native scrolling
+  nativeScrollMode: {
+    overflowY: 'auto',
+    overflowX: 'hidden',
   },
 })
 
@@ -43,11 +53,36 @@ const TrackRenderingContainer = observer(function ({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { height, RenderingComponent, DisplayBlurb } = display
+  const { height, RenderingComponent, DisplayBlurb, scrollTop, blockState } =
+    display
   const { trackRefs, id, scaleFactor } = model
+  const session = getSession(model)
   const trackId = getConf(track, 'trackId')
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
+
+  // Check if virtual scrollbars are enabled in user preferences
+  const useVirtualScrollbars =
+    'useVirtualScrollbars' in session ? session.useVirtualScrollbars : false
+
+  // Calculate content height based on actual layout
+  const containerHeight = minimized ? 20 : height
+  let contentHeight = containerHeight
+
+  // Get the maximum height from all block layouts
+  if (blockState && !minimized) {
+    let maxLayoutHeight = 0
+    for (const block of blockState.values()) {
+      if (block?.layout?.getTotalHeight) {
+        maxLayoutHeight = Math.max(
+          maxLayoutHeight,
+          block.layout.getTotalHeight(),
+        )
+      }
+    }
+    // Use the larger of container height or actual content height
+    contentHeight = Math.max(containerHeight, maxLayoutHeight)
+  }
 
   useEffect(() => {
     if (ref.current) {
@@ -58,15 +93,14 @@ const TrackRenderingContainer = observer(function ({
     }
   }, [trackRefs, trackId])
 
-  return (
+  const trackContent = (
     <div
-      className={classes.trackRenderingContainer}
-      style={{
-        height: minimized ? 20 : height,
-      }}
-      onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
       onDragEnter={onDragEnter}
       data-testid={`trackRenderingContainer-${id}-${trackId}`}
+      style={{
+        height: useVirtualScrollbars ? contentHeight : containerHeight,
+        position: 'relative',
+      }}
     >
       {!minimized ? (
         <>
@@ -101,6 +135,36 @@ const TrackRenderingContainer = observer(function ({
       ) : null}
     </div>
   )
+
+  if (useVirtualScrollbars) {
+    // Use virtual scrollbar mode
+    return (
+      <VirtualScrollbar
+        contentHeight={contentHeight}
+        containerHeight={containerHeight}
+        scrollTop={scrollTop}
+        onScroll={newScrollTop => display.setScrollTop(newScrollTop)}
+        className={`${classes.trackRenderingContainer} ${classes.virtualScrollMode}`}
+      >
+        {trackContent}
+      </VirtualScrollbar>
+    )
+  } else {
+    // Use native scrolling mode
+    return (
+      <div
+        className={`${classes.trackRenderingContainer} ${classes.nativeScrollMode}`}
+        style={{
+          height: containerHeight,
+        }}
+        onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
+        onDragEnter={onDragEnter}
+        data-testid={`trackRenderingContainer-${id}-${trackId}`}
+      >
+        {trackContent}
+      </div>
+    )
+  }
 })
 
 export default TrackRenderingContainer
