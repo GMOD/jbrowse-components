@@ -14,7 +14,6 @@ const chalk = require('chalk')
 const FileSizeReporter = require('./react-dev-utils/FileSizeReporter')
 const { checkBrowsers } = require('./react-dev-utils/browsersHelper')
 const checkRequiredFiles = require('./react-dev-utils/checkRequiredFiles')
-const formatWebpackMessages = require('./react-dev-utils/formatWebpackMessages')
 const webpack = require('webpack')
 
 const paths = require('../config/paths')
@@ -58,12 +57,6 @@ module.exports = function buildWebpack(config) {
         if (warnings.length) {
           console.log(chalk.yellow('Compiled with warnings.\n'))
           console.log(warnings.join('\n\n'))
-          console.log(
-            `\nSearch for the ${chalk.underline(chalk.yellow('keywords'))} to learn more about each warning.`,
-          )
-          console.log(
-            `To ignore, add ${chalk.cyan('// eslint-disable-next-line')} to the line before.\n`,
-          )
         } else {
           console.log(chalk.green('Compiled successfully.\n'))
         }
@@ -91,71 +84,22 @@ module.exports = function buildWebpack(config) {
       process.exit(1)
     })
 
-  // Create the production build and print the deployment instructions.
   function build(previousFileSizes) {
     console.log('Creating an optimized production build...')
 
     const compiler = webpack(config)
     return new Promise((resolve, reject) => {
       compiler.run((err, stats) => {
-        let messages
         if (err) {
-          if (!err.message) {
-            reject(err)
-            return
-          }
-
-          let errMessage = err.message
-
-          // Add additional information for postcss errors
-          if (Object.prototype.hasOwnProperty.call(err, 'postcssNode')) {
-            errMessage += `\nCompileError: Begins at CSS selector ${err.postcssNode.selector}`
-          }
-
-          messages = formatWebpackMessages({
-            errors: [errMessage],
-            warnings: [],
-          })
-        } else {
-          messages = formatWebpackMessages(
-            stats.toJson({ all: false, warnings: true, errors: true }),
-          )
-        }
-        if (messages.errors.length) {
-          // Only keep the first error. Others are often indicative
-          // of the same problem, but confuse the reader with noise.
-          if (messages.errors.length > 1) {
-            messages.errors.length = 1
-          }
-          reject(new Error(messages.errors.join('\n\n')))
+          reject(err)
           return
         }
-        if (
-          process.env.CI &&
-          (typeof process.env.CI !== 'string' ||
-            process.env.CI.toLowerCase() !== 'false') &&
-          messages.warnings.length
-        ) {
-          // Ignore sourcemap warnings in CI builds. See #8227 for more info.
-          const filteredWarnings = messages.warnings.filter(
-            w => !/Failed to parse source map/.test(w),
-          )
-          if (filteredWarnings.length) {
-            console.log(
-              chalk.yellow(
-                '\nTreating warnings as errors because process.env.CI = true.\n' +
-                  'Most CI servers set it automatically.\n',
-              ),
-            )
-            reject(new Error(filteredWarnings.join('\n\n')))
-            return
-          }
-        }
 
-        const resolveArgs = {
-          stats,
-          previousFileSizes,
-          warnings: messages.warnings,
+        const info = stats.toJson({ all: false, warnings: true, errors: true })
+
+        if (info.errors.length) {
+          reject(new Error(info.errors.map(e => e.message || e).join('\n\n')))
+          return
         }
 
         if (writeStatsJson) {
@@ -163,10 +107,13 @@ module.exports = function buildWebpack(config) {
             `${paths.appBuild}/bundle-stats.json`,
             JSON.stringify(stats.toJson()),
           )
-          return
         }
 
-        resolve(resolveArgs)
+        resolve({
+          stats,
+          previousFileSizes,
+          warnings: info.warnings.map(w => w.message || w),
+        })
       })
     })
   }

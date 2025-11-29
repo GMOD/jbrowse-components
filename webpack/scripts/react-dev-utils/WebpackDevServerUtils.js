@@ -10,7 +10,6 @@ const address = require('address')
 const url = require('url')
 const chalk = require('chalk')
 const detect = require('detect-port-alt')
-const formatWebpackMessages = require('./formatWebpackMessages')
 
 const isInteractive = process.stdout.isTTY
 
@@ -101,14 +100,13 @@ function createCompiler({ appName, config, urls, useYarn, webpack }) {
   let isFirstCompile = true
 
   compiler.hooks.done.tap('done', async stats => {
-    const statsData = stats.toJson({
+    const info = stats.toJson({
       all: false,
       warnings: true,
       errors: true,
     })
 
-    const messages = formatWebpackMessages(statsData)
-    const isSuccessful = !messages.errors.length && !messages.warnings.length
+    const isSuccessful = !info.errors.length && !info.warnings.length
     if (isSuccessful) {
       console.log(chalk.green('Compiled successfully!'))
     }
@@ -117,29 +115,15 @@ function createCompiler({ appName, config, urls, useYarn, webpack }) {
     }
     isFirstCompile = false
 
-    if (messages.errors.length) {
-      if (messages.errors.length > 1) {
-        messages.errors.length = 1
-      }
+    if (info.errors.length) {
       console.log(chalk.red('Failed to compile.\n'))
-      console.log(messages.errors.join('\n\n'))
+      console.log(info.errors.map(e => e.message || e).join('\n\n'))
       return
     }
 
-    if (messages.warnings.length) {
+    if (info.warnings.length) {
       console.log(chalk.yellow('Compiled with warnings.\n'))
-      console.log(messages.warnings.join('\n\n'))
-
-      console.log(
-        '\nSearch for the ' +
-          chalk.underline(chalk.yellow('keywords')) +
-          ' to learn more about each warning.',
-      )
-      console.log(
-        'To ignore, add ' +
-          chalk.cyan('// eslint-disable-next-line') +
-          ' to the line before.\n',
-      )
+      console.log(info.warnings.map(w => w.message || w).join('\n\n'))
     }
   })
 
