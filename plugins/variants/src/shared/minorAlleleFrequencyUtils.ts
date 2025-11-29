@@ -42,21 +42,17 @@ export function calculateAlleleCounts(
 export function calculateMinorAlleleFrequency(
   alleleCounts: Record<string, number>,
 ) {
-  return (
-    findSecondLargestNumber(Object.values(alleleCounts)) /
-    (sum(Object.values(alleleCounts)) || 1)
-  )
+  const counts = Object.values(alleleCounts)
+  return findSecondLargestNumber(counts) / (sum(counts) || 1)
 }
 
 function getMostFrequentAlt(alleleCounts: Record<string, number>) {
   let mostFrequentAlt
   let max = 0
   for (const [alt, altCount] of Object.entries(alleleCounts)) {
-    if (alt !== '.' && alt !== '0') {
-      if (altCount > max) {
-        mostFrequentAlt = alt
-        max = altCount
-      }
+    if (alt !== '.' && alt !== '0' && altCount > max) {
+      mostFrequentAlt = alt
+      max = altCount
     }
   }
   return mostFrequentAlt

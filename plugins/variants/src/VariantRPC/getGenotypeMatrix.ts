@@ -36,47 +36,32 @@ export async function getGenotypeMatrix({
     ),
   })
 
-  const rows = {} as Record<string, number[]>
+  const rows = Object.fromEntries(sources.map(s => [s.name, [] as number[]]))
   const cacheSplit = {} as Record<string, string[]>
   forEachWithStopTokenCheck(mafs, stopToken, ({ feature }) => {
     const genotypes = feature.get('genotypes') as Record<string, string>
     for (const { name } of sources) {
-      if (!rows[name]) {
-        rows[name] = []
-      }
       const val = genotypes[name]!
+      const alleles = (cacheSplit[val] ||= val.split(/[/|]/))
 
-      let alleles: string[]
-      if (cacheSplit[val]) {
-        alleles = cacheSplit[val]
-      } else {
-        alleles = val.split(/[/|]/)
-        cacheSplit[val] = alleles
-      }
-
-      // Calculate '012' status of the allele for a VCF genotype matrix
-      // Similar to vcftools --012 https://vcftools.github.io/man_latest.html
-      // Note: could also consider https://www.rdocumentation.org/packages/fastcluster/versions/1.2.6/topics/hclust.vector for clustering true multi-dimensional allele count vectors
-      let genotypeStatus = 0
       let nonRefCount = 0
       let uncalledCount = 0
-      for (const l of alleles) {
-        if (l === '.') {
+      for (const allele of alleles) {
+        if (allele === '.') {
           uncalledCount++
-        } else if (l !== '0') {
+        } else if (allele !== '0') {
           nonRefCount++
         }
       }
 
-      if (uncalledCount === alleles.length) {
-        genotypeStatus = -1 // All no-call
-      } else if (nonRefCount === 0) {
-        genotypeStatus = 0 // Homozygous reference
-      } else if (nonRefCount === alleles.length) {
-        genotypeStatus = 2 // Homozygous alternate
-      } else {
-        genotypeStatus = 1 // Heterozygous
-      }
+      const genotypeStatus =
+        uncalledCount === alleles.length
+          ? -1
+          : nonRefCount === 0
+            ? 0
+            : nonRefCount === alleles.length
+              ? 2
+              : 1
 
       rows[name].push(genotypeStatus)
     }
