@@ -6,8 +6,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const InlineChunkHtmlPlugin = require('../scripts/react-dev-utils/InlineChunkHtmlPlugin')
 const InterpolateHtmlPlugin = require('../scripts/react-dev-utils/InterpolateHtmlPlugin')
-const ModuleNotFoundPlugin = require('../scripts/react-dev-utils/ModuleNotFoundPlugin')
-const ModuleScopePlugin = require('../scripts/react-dev-utils/ModuleScopePlugin')
 const getCSSModuleLocalIdent = require('../scripts/react-dev-utils/getCSSModuleLocalIdent')
 const webpack = require('webpack')
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
@@ -141,20 +139,6 @@ module.exports = function webpackBuilder(webpackEnv) {
       // extension prefixes have been added for better support for React Native
       // Web.
       extensions: paths.moduleFileExtensions.map(ext => `.${ext}`),
-      plugins: [
-        // Prevents users from importing files from outside of src/ (or
-        // node_modules/). This often causes confusion because we only process
-        // files within src/ with babel. To fix this, we prevent you from
-        // importing files out of src/ -- if you'd like to, please link the
-        // files into your node_modules/ and let module-resolution kick in.
-        // Make sure your source files are compiled, as they will not be
-        // processed in any way.
-        new ModuleScopePlugin(paths.appSrc, [
-          paths.appPackageJson,
-          reactRefreshRuntimeEntry,
-          reactRefreshWebpackPluginRuntimeEntry,
-        ]),
-      ],
     },
     module: {
       strictExportPresence: true,
@@ -297,9 +281,6 @@ module.exports = function webpackBuilder(webpackEnv) {
       // It will be an empty string unless you specify "homepage"
       // in `package.json`, in which case it will be the pathname of that URL.
       new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
-      // This gives some necessary context to module not found errors, such as
-      // the requesting resource.
-      new ModuleNotFoundPlugin(paths.appPath),
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === 'production') { ... }. See `./env.js`.
       // It is absolutely essential that NODE_ENV is set to production

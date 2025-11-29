@@ -9,7 +9,6 @@ process.on('unhandledRejection', err => {
 require('../config/env')
 
 const fs = require('fs')
-const path = require('path')
 
 const chalk = require('chalk')
 const FileSizeReporter = require('./react-dev-utils/FileSizeReporter')
@@ -17,14 +16,12 @@ const { checkBrowsers } = require('./react-dev-utils/browsersHelper')
 const checkRequiredFiles = require('./react-dev-utils/checkRequiredFiles')
 const formatWebpackMessages = require('./react-dev-utils/formatWebpackMessages')
 const printBuildError = require('./react-dev-utils/printBuildError')
-const printHostingInstructions = require('./react-dev-utils/printHostingInstructions')
 const webpack = require('webpack')
 
 const paths = require('../config/paths')
 
 const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild
-const useYarn = fs.existsSync(paths.yarnLockFile)
 
 // These sizes are pretty large. We'll warn for bundles exceeding them.
 const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
@@ -81,18 +78,6 @@ module.exports = function buildWebpack(config) {
           WARN_AFTER_CHUNK_GZIP_SIZE,
         )
         console.log()
-
-        const appPackage = require(paths.appPackageJson)
-        const publicUrl = paths.publicUrlOrPath
-        const publicPath = config.output.publicPath
-        const buildFolder = path.relative(process.cwd(), paths.appBuild)
-        printHostingInstructions(
-          appPackage,
-          publicUrl,
-          publicPath,
-          buildFolder,
-          useYarn,
-        )
       },
       err => {
         const tscCompileOnError = process.env.TSC_COMPILE_ON_ERROR === 'true'
