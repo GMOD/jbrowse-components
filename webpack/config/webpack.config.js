@@ -12,14 +12,7 @@ const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
 const appDirectory = fs.realpathSync(process.cwd())
 const resolveApp = relativePath => path.resolve(appDirectory, relativePath)
 
-// Find the entry file with the right extension
-const moduleFileExtensions = ['js', 'ts', 'tsx', 'jsx', 'mjs', 'json']
-function resolveModule(filePath) {
-  const ext = moduleFileExtensions.find(ext =>
-    fs.existsSync(resolveApp(`${filePath}.${ext}`)),
-  )
-  return resolveApp(`${filePath}.${ext || 'js'}`)
-}
+const moduleFileExtensions = ['.js', '.ts', '.tsx', '.jsx', '.mjs', '.json']
 
 // Get public URL from homepage in package.json or PUBLIC_URL env
 function getPublicUrlOrPath(isEnvDevelopment, homepage, envPublicUrl) {
@@ -35,14 +28,12 @@ function getPublicUrlOrPath(isEnvDevelopment, homepage, envPublicUrl) {
   return '/'
 }
 
-// App paths
 const paths = {
   appBuild: resolveApp(process.env.BUILD_PATH || 'build'),
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
-  appIndexJs: resolveModule('src/index'),
+  appIndexJs: resolveApp('src/index.tsx'),
   appSrc: resolveApp('src'),
-  appNodeModules: resolveApp('node_modules'),
 }
 
 function getClientEnvironment(publicUrl) {
@@ -115,8 +106,8 @@ module.exports = function webpackBuilder(webpackEnv) {
     },
     resolve: {
       conditionNames: ['mui-modern', '...'],
-      modules: ['node_modules', paths.appNodeModules],
-      extensions: moduleFileExtensions.map(ext => `.${ext}`),
+      modules: ['node_modules'],
+      extensions: moduleFileExtensions,
     },
     module: {
       strictExportPresence: true,
@@ -132,13 +123,6 @@ module.exports = function webpackBuilder(webpackEnv) {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
               include: [paths.appSrc, getWorkspaces()],
               loader: 'babel-loader',
-              options: {
-                plugins: ['babel-plugin-react-compiler'],
-                presets: [
-                  ['@babel/preset-react', { runtime: 'automatic' }],
-                  '@babel/preset-typescript',
-                ],
-              },
             },
             {
               test: cssRegex,

@@ -3,12 +3,49 @@ process.on('unhandledRejection', err => {
 })
 
 const fs = require('fs')
+const path = require('path')
 const chalk = require('chalk')
 const webpack = require('webpack')
-const { printFileSizesAfterBuild } = require('./react-dev-utils/FileSizeReporter')
 
 const argv = process.argv.slice(2)
 const writeStatsJson = argv.includes('--stats')
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) {
+    return bytes + ' B'
+  } else if (bytes < 1024 * 1024) {
+    return (bytes / 1024).toFixed(2) + ' kB'
+  } else {
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB'
+  }
+}
+
+function printFileSizes(webpackStats, buildFolder) {
+  const assets = (webpackStats.stats || [webpackStats])
+    .flatMap(stats =>
+      stats
+        .toJson({ all: false, assets: true })
+        .assets.filter(asset => /\.(js|css)$/.test(asset.name))
+        .map(asset => {
+          const size = fs.statSync(path.join(buildFolder, asset.name)).size
+          return {
+            folder: path.join(path.basename(buildFolder), path.dirname(asset.name)),
+            name: path.basename(asset.name),
+            size,
+            sizeLabel: formatFileSize(size),
+          }
+        }),
+    )
+    .sort((a, b) => b.size - a.size)
+
+  const longest = Math.max(...assets.map(a => a.sizeLabel.length))
+  for (const asset of assets) {
+    console.log(
+      '  ' + asset.sizeLabel.padEnd(longest) + '  ' +
+      chalk.dim(asset.folder + path.sep) + chalk.cyan(asset.name),
+    )
+  }
+}
 
 module.exports = function buildWebpack(config) {
   const { paths } = require('../config/webpack.config')
@@ -53,7 +90,7 @@ module.exports = function buildWebpack(config) {
       }
 
       console.log('File sizes:\n')
-      printFileSizesAfterBuild(stats, paths.appBuild)
+      printFileSizes(stats, paths.appBuild)
       console.log()
 
       if (writeStatsJson) {

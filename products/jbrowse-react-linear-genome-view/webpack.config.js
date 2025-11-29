@@ -1,17 +1,12 @@
 const path = require('path')
 const webpack = require('webpack')
 
-const buildDir = path.resolve('.')
-const distDir = path.resolve(buildDir, 'dist')
-
-const mode = process.env.NODE_ENV || 'production'
-
 module.exports = {
-  mode,
-  entry: path.join(buildDir, 'src', 'webpack.ts'),
+  mode: process.env.NODE_ENV || 'production',
+  entry: './src/webpack.ts',
   devtool: 'source-map',
   output: {
-    path: distDir,
+    path: path.resolve('dist'),
     filename: 'react-linear-genome-view.umd.production.min.js',
     library: 'JBrowseReactLinearGenomeView',
     libraryTarget: 'umd',
@@ -25,48 +20,22 @@ module.exports = {
     },
   },
   plugins: [
-    new webpack.optimize.LimitChunkCountPlugin({
-      maxChunks: 1,
-    }),
-    new webpack.ProvidePlugin({
-      React: 'react',
-    }),
+    new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
   ],
   resolve: {
-    extensions: [
-      '.mjs',
-      '.web.js',
-      '.js',
-      '.ts',
-      '.tsx',
-      '.json',
-      '.web.jsx',
-      '.jsx',
-    ],
+    extensions: ['.mjs', '.js', '.ts', '.tsx', '.jsx', '.json'],
   },
-
   module: {
     rules: [
       {
-        oneOf: [
-          {
-            test: /\.m?[tj]sx?$/,
-            exclude: /(node_modules|bower_components)/,
-            use: {
-              loader: 'babel-loader',
-              options: {
-                rootMode: 'upward',
-                presets: ['@babel/preset-react'],
-              },
-            },
-          },
-          {
-            test: /\.css$/,
-            use: {
-              loader: require.resolve('css-loader'),
-            },
-          },
-        ],
+        test: /\.m?[tj]sx?$/,
+        exclude: /node_modules/,
+        loader: 'babel-loader',
+        options: { rootMode: 'upward' },
+      },
+      {
+        test: /\.css$/,
+        loader: 'css-loader',
       },
     ],
   },
