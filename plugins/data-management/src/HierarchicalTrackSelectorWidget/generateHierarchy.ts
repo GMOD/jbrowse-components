@@ -28,7 +28,6 @@ export function generateHierarchy({
     return []
   }
   const session = getSession(model)
-  const viewTracks = view.tracks
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
 
   // uses getConf
@@ -84,7 +83,6 @@ export function generateHierarchy({
       trackId: conf.trackId,
       name: getTrackName(conf, session),
       conf,
-      checked: viewTracks.some(f => f.configuration === conf),
       children: [],
       nestingLevel: categories.length + 1,
       type: 'track' as const,

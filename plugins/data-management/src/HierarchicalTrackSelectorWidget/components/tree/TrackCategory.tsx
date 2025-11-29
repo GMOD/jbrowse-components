@@ -50,6 +50,7 @@ const TrackCategory = observer(function ({
 
   const subcategoryIds = getAllSubcategories(item)
   const hasSubcategories = subcategoryIds.length > 0
+  console.log('here')
 
   return (
     <div
