@@ -46,11 +46,11 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
 }
 
 export interface RenderResults extends ServerSideRenderResults {
-  features: Map<string, Feature>
+  features?: Map<string, Feature>
 }
 
 export interface ResultsSerialized extends ServerSideResultsSerialized {
-  features: SimpleFeatureSerialized[]
+  features?: SimpleFeatureSerialized[]
 }
 
 export interface ResultsDeserialized extends ServerSideResultsDeserialized {
@@ -102,9 +102,13 @@ export default class FeatureRendererType extends ServerSideRendererType {
   ): ResultsSerialized {
     const serialized = super.serializeResultsInWorker(result, args)
     const { features } = result
+
     return {
       ...serialized,
-      features: features ? iterMap(features.values(), f => f.toJSON(), features.size) : [],
+      features:
+        features instanceof Map
+          ? iterMap(features.values(), f => f.toJSON(), features.size)
+          : undefined,
     }
   }
 

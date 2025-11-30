@@ -86,33 +86,17 @@ export default class BoxRendererType extends FeatureRendererType {
     }
   }
 
-  // renaming function to make clear it runs in worker
-  freeResources(args: Record<string, any>) {
-    this.freeResourcesInWorker(args)
-  }
-
-  freeResourcesInWorker(args: Record<string, any>) {
-    const { regions } = args
-
-    // @ts-expect-error
+  freeResources(args: Record<string, string>) {
     const key = getLayoutId(args)
     const session = this.layoutSessions[key]
-
     if (session) {
-      const region = regions[0]!
+      const region = (args as unknown as RenderArgs).regions[0]!
       session.layout.discardRange(region.refName, region.start, region.end)
     }
   }
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const { regions } = args
-    const key = getLayoutId(args)
-    const session = this.layoutSessions[key]
-
-    if (session) {
-      const region = regions[0]!
-      session.layout.discardRange(region.refName, region.start, region.end)
-    }
+    this.freeResources(args)
     return super.freeResourcesInClient(rpcManager, args)
   }
 
@@ -152,17 +136,21 @@ export default class BoxRendererType extends FeatureRendererType {
     ) as ResultsSerialized
 
     const region = args.regions[0]!
-    const layout = results.layout.serializeRegion(
-      this.getExpandedRegion(region, args),
-    )
+    const resultLayout = results.layout
+
+    // Layout may already be serialized (e.g., from canvas renderers during SVG export)
+    const layout =
+      typeof resultLayout?.serializeRegion === 'function'
+        ? resultLayout.serializeRegion(this.getExpandedRegion(region, args))
+        : (resultLayout as unknown as SerializedLayout)
+
     return {
       ...rest,
       layout,
       maxHeightReached: layout.maxHeightReached,
+      // Filter features to only those visible in the layout (if features exist)
       features:
-        // floating layout has no rectangles
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        layout.rectangles !== undefined
+        features && layout.rectangles
           ? features.filter(f => !!layout.rectangles[f.uniqueId])
           : features,
     }

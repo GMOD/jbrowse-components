@@ -4,7 +4,7 @@ import { filter, toArray } from 'rxjs/operators'
 import ServerSideRenderer from './ServerSideRendererType'
 import { normalizeRegion } from './util'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import { dedupe, getSerializedSvg } from '../../util'
+import { dedupe } from '../../util'
 
 import type {
   RenderArgs as ServerSideRenderArgs,
@@ -38,19 +38,6 @@ export interface ResultsDeserialized extends ServerSideResultsDeserialized {
   blockKey: string
 }
 
-export interface ResultsSerializedSvgExport extends ResultsSerialized {
-  canvasRecordedData: unknown
-  width: number
-  height: number
-  reactElement: unknown
-}
-
-function isCanvasRecordedSvgExport(
-  e: ResultsSerialized,
-): e is ResultsSerializedSvgExport {
-  return 'canvasRecordedData' in e
-}
-
 export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   async renameRegionsIfNeeded(args: RenderArgs) {
     return args
@@ -65,39 +52,18 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     result: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    const deserialized = super.deserializeResultsInClient(result, args)
     return {
-      ...deserialized,
+      ...super.deserializeResultsInClient(result, args),
       blockKey: args.blockKey,
     }
   }
+
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const results = (await rpcManager.call(
+    return rpcManager.call(
       args.sessionId,
       'ComparativeRender',
       args,
-    )) as ResultsSerialized
-
-    if (isCanvasRecordedSvgExport(results)) {
-      const { reactElement, ...rest } = results
-      return {
-        ...rest,
-        html: await getSerializedSvg(results),
-      }
-    } else {
-      return results
-    }
-  }
-
-  featurePassesFilters(
-    renderArgs: {
-      filters?: SerializableFilterChain
-    },
-    feature: Feature,
-  ) {
-    return renderArgs.filters
-      ? renderArgs.filters.passes(feature, renderArgs)
-      : true
+    ) as Promise<ResultsSerialized>
   }
 
   async getFeatures(renderArgs: {
@@ -106,7 +72,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     adapterConfig: AnyConfigurationModel
     filters?: SerializableFilterChain
   }) {
-    const { regions, sessionId, adapterConfig } = renderArgs
+    const { regions, sessionId, adapterConfig, filters } = renderArgs
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -119,7 +85,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
           renderArgs,
         )
         .pipe(
-          filter(f => this.featurePassesFilters(renderArgs, f)),
+          filter(f => (filters ? filters.passes(f, renderArgs) : true)),
           toArray(),
         ),
     )
