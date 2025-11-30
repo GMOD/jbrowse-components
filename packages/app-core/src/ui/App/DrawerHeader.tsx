@@ -1,3 +1,7 @@
+import { lazy } from 'react'
+
+import { getEnv } from '@jbrowse/core/util'
+import HelpOutline from '@mui/icons-material/HelpOutline'
 import LaunchIcon from '@mui/icons-material/Launch'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -7,6 +11,8 @@ import DrawerControls from './DrawerControls'
 import DrawerWidgetSelector from './DrawerWidgetSelector'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+
+const DrawerHeaderHelpDialog = lazy(() => import('./DrawerHeaderHelpDialog'))
 
 const useStyles = makeStyles()(theme => ({
   spacer: {
@@ -32,8 +38,14 @@ const DrawerHeader = observer(function ({
 }) {
   const { classes } = useStyles()
   const focusedViewId = session.focusedViewId
+  const { visibleWidget } = session
   // @ts-expect-error
-  const viewWidgetId = session.visibleWidget?.view?.id
+  const viewWidgetId = visibleWidget?.view?.id
+  const { pluginManager } = getEnv(session)
+  const widgetType = visibleWidget
+    ? pluginManager.getWidgetType(visibleWidget.type)
+    : undefined
+  const { helpText } = widgetType || {}
 
   return (
     <AppBar
@@ -59,6 +71,24 @@ const DrawerHeader = observer(function ({
             <LaunchIcon />
           </IconButton>
         </Tooltip>
+        {helpText ? (
+          <Tooltip title="Help">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                session.queueDialog(handleClose => [
+                  DrawerHeaderHelpDialog,
+                  {
+                    onClose: handleClose,
+                    helpText,
+                  },
+                ])
+              }}
+            >
+              <HelpOutline />
+            </IconButton>
+          </Tooltip>
+        ) : null}
         <div className={classes.spacer} />
         <DrawerControls session={session} />
       </Toolbar>
