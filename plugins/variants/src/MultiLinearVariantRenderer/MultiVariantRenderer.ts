@@ -3,7 +3,6 @@ import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import { rpcResult } from 'librpc-web-mod'
 
 import type { MultiRenderArgsDeserialized } from './types'
-import type { Feature } from '@jbrowse/core/util'
 
 export default class MultiVariantRenderer extends FeatureRendererType {
   supportsSVG = true
@@ -35,7 +34,6 @@ export default class MultiVariantRenderer extends FeatureRendererType {
 
     const serialized = {
       ...ret,
-      features: new Map<string, Feature>(),
       height,
       width,
       origScrollTop: scrollTop,

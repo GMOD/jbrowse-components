@@ -27,7 +27,6 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
 
     const serialized = {
       ...res,
-      features: new Map(),
       layout: serializedLayout,
       height,
       width,

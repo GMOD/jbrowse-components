@@ -97,7 +97,6 @@ export default class PileupRenderer extends BoxRendererType {
 
     const serialized = {
       ...res,
-      features: new Map(),
       layout: serializedLayout,
       height,
       width,

@@ -70,9 +70,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
     const serialized = {
       ...rest,
-      features: reducedFeatures
-        ? new Map<string, Feature>(reducedFeatures.map(r => [r.id(), r]))
-        : new Map<string, Feature>(),
+      features: reducedFeatures?.map(f => f.toJSON()),
       height,
       width,
     }

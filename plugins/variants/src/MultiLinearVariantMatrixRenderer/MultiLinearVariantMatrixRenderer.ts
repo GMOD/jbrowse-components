@@ -1,9 +1,8 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { SimpleFeature, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import { rpcResult } from 'librpc-web-mod'
 
 import type { RenderArgsDeserialized } from './types'
-import type { Feature } from '@jbrowse/core/util'
 
 export default class LinearVariantMatrixRenderer extends FeatureRendererType {
   supportsSVG = true
@@ -30,18 +29,12 @@ export default class LinearVariantMatrixRenderer extends FeatureRendererType {
 
     const serialized = {
       ...rest,
-      features: new Map<string, Feature>(),
-      simplifiedFeatures: mafs.map(
-        ({ feature }) =>
-          new SimpleFeature({
-            id: feature.id(),
-            data: {
-              start: feature.get('start'),
-              end: feature.get('end'),
-              refName: feature.get('refName'),
-            },
-          }),
-      ),
+      simplifiedFeatures: mafs.map(({ feature }) => ({
+        uniqueId: feature.id(),
+        start: feature.get('start'),
+        end: feature.get('end'),
+        refName: feature.get('refName'),
+      })),
       height,
       width,
       origScrollTop: scrollTop,
