@@ -110,7 +110,6 @@ export default class PileupRenderer extends BoxRendererType {
       height,
       width,
       maxHeightReached: layout.maxHeightReached,
-      containsNoTransferables: true,
     }
   }
 

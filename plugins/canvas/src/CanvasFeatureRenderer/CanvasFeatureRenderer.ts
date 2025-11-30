@@ -41,7 +41,6 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       height,
       width,
       maxHeightReached: layout.maxHeightReached,
-      containsNoTransferables: true,
     }
   }
 }

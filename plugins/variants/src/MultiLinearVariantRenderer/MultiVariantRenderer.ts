@@ -47,7 +47,6 @@ export default class MultiVariantRenderer extends FeatureRendererType {
       height,
       width,
       origScrollTop: scrollTop,
-      containsNoTransferables: true,
     }
   }
 }

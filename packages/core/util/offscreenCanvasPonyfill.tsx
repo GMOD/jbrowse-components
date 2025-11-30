@@ -77,7 +77,6 @@ if (weHave.realOffscreenCanvas) {
       height: canvas.height,
       width: canvas.width,
       serializedCommands: ctx.toJSON(),
-      containsNoTransferables: true,
     }
   }
   ImageBitmapType = String
