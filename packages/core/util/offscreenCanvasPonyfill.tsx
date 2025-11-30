@@ -47,8 +47,10 @@ const weHave = {
 if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  createImageBitmap = window.createImageBitmap || self.createImageBitmap
+  // Use transferToImageBitmap for zero-copy transfer from OffscreenCanvas
+  // This is synchronous and more efficient than createImageBitmap which copies
+  createImageBitmap = canvas =>
+    Promise.resolve((canvas as OffscreenCanvas).transferToImageBitmap())
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap

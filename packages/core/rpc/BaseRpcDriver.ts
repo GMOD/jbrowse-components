@@ -63,10 +63,6 @@ export default abstract class BaseRpcDriver {
 
   private workerPool?: LazyWorker[]
 
-  maxPingTime = 30000
-
-  workerCheckFrequency = 5000
-
   config: AnyConfigurationModel
 
   constructor(args: RpcDriverConstructorArgs) {
