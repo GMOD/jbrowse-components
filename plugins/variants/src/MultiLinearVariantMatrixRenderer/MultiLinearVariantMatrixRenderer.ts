@@ -1,5 +1,6 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { SimpleFeature, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { rpcResult } from 'librpc-web-mod'
 
 import type { RenderArgsDeserialized } from './types'
 import type { Feature } from '@jbrowse/core/util'
@@ -35,7 +36,7 @@ export default class LinearVariantMatrixRenderer extends FeatureRendererType {
       width,
     })
 
-    return {
+    const serialized = {
       ...results,
       ...rest,
       features: new Map<string, Feature>(),
@@ -55,5 +56,10 @@ export default class LinearVariantMatrixRenderer extends FeatureRendererType {
       origScrollTop: scrollTop,
       rowHeight,
     }
+
+    if (rest.imageData instanceof ImageBitmap) {
+      return rpcResult(serialized, [rest.imageData])
+    }
+    return serialized
   }
 }

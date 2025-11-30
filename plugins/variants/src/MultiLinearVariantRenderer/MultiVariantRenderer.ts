@@ -1,5 +1,6 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
+import { rpcResult } from 'librpc-web-mod'
 
 import type { MultiRenderArgsDeserialized } from './types'
 import type { Feature } from '@jbrowse/core/util'
@@ -40,7 +41,7 @@ export default class MultiVariantRenderer extends FeatureRendererType {
       width,
     })
 
-    return {
+    const serialized = {
       ...results,
       ...ret,
       features: new Map<string, Feature>(),
@@ -48,5 +49,10 @@ export default class MultiVariantRenderer extends FeatureRendererType {
       width,
       origScrollTop: scrollTop,
     }
+
+    if (ret.imageData instanceof ImageBitmap) {
+      return rpcResult(serialized, [ret.imageData])
+    }
+    return serialized
   }
 }

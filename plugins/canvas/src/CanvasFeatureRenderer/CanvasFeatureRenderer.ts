@@ -1,4 +1,5 @@
 import { BoxRendererType } from '@jbrowse/core/pluggableElementTypes'
+import { rpcResult } from 'librpc-web-mod'
 
 import { doAll } from './doAll'
 
@@ -33,7 +34,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       width,
     })
 
-    return {
+    const serialized = {
       ...result,
       ...res,
       features: new Map(),
@@ -42,5 +43,10 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       width,
       maxHeightReached: layout.maxHeightReached,
     }
+
+    if (res.imageData instanceof ImageBitmap) {
+      return rpcResult(serialized, [res.imageData])
+    }
+    return serialized
   }
 }

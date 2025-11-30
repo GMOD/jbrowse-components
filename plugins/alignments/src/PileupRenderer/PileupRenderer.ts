@@ -2,6 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import { rpcResult } from 'librpc-web-mod'
 
 import { PileupLayoutSession } from './PileupLayoutSession'
 import { fetchSequence } from '../util'
@@ -102,7 +103,7 @@ export default class PileupRenderer extends BoxRendererType {
       width,
     })
 
-    return {
+    const serialized = {
       ...results,
       ...res,
       features: new Map(),
@@ -111,6 +112,11 @@ export default class PileupRenderer extends BoxRendererType {
       width,
       maxHeightReached: layout.maxHeightReached,
     }
+
+    if (res.imageData instanceof ImageBitmap) {
+      return rpcResult(serialized, [res.imageData])
+    }
+    return serialized
   }
 
   createLayoutSession(args: PileupLayoutSessionProps) {

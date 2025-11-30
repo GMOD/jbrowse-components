@@ -1,5 +1,4 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-import { rpcResult } from 'librpc-web-mod'
 
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
@@ -177,7 +176,7 @@ export default class ServerSideRenderer extends RendererType {
     }
   }
 
-  async renderInWorker(args: RenderArgsSerialized) {
+  async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
     const { stopToken, statusCallback = () => {} } = args
     const args2 = this.deserializeArgsInWorker(args)
     const results = await updateStatus('Rendering plot', statusCallback, () =>
@@ -185,16 +184,9 @@ export default class ServerSideRenderer extends RendererType {
     )
     checkStopToken(stopToken)
 
-    const serialized = await updateStatus(
-      'Serializing results',
-      statusCallback,
-      () => this.serializeResultsInWorker(results, args2),
+    return updateStatus('Serializing results', statusCallback, () =>
+      this.serializeResultsInWorker(results, args2),
     )
-
-    if (serialized.imageData instanceof ImageBitmap) {
-      return rpcResult(serialized, [serialized.imageData])
-    }
-    return serialized
   }
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {

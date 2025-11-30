@@ -1,8 +1,6 @@
 import ComparativeRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import {
-  renameRegionsIfNeeded,
-  renderToAbstractCanvas,
-} from '@jbrowse/core/util'
+import { renameRegionsIfNeeded, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { rpcResult } from 'librpc-web-mod'
 
 import { Dotplot1DView } from '../DotplotView/model'
 
@@ -92,7 +90,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
       width,
     })
 
-    return {
+    const serialized = {
       ...results,
       ...ret,
       height,
@@ -102,5 +100,10 @@ export default class DotplotRenderer extends ComparativeRenderer {
       bpPerPxX: views[0]!.bpPerPx,
       bpPerPxY: views[1]!.bpPerPx,
     }
+
+    if (ret.imageData instanceof ImageBitmap) {
+      return rpcResult(serialized, [ret.imageData])
+    }
+    return serialized
   }
 }
