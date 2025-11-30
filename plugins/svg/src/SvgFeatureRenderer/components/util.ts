@@ -692,7 +692,7 @@ export function computeLayouts({
       reversed,
     )
 
-    layout.addRect(
+    const topPx = layout.addRect(
       feature.id(),
       layoutStart,
       layoutEnd,
@@ -714,6 +714,10 @@ export function computeLayouts({
       },
     )
 
+    if (topPx === null) {
+      continue
+    }
+
     // Add subfeatures to layout with flatbush data for hit detection
     const featureType = feature.get('type')
     const isGene = featureType === 'gene'
@@ -722,10 +726,17 @@ export function computeLayouts({
       return childFeature && transcriptTypes.includes(childFeature.get('type'))
     })
 
+    // Adjust child positions to absolute coordinates
+    const adjustedLayout = {
+      ...featureLayout,
+      y: topPx + featureLayout.y,
+      children: adjustChildPositions(featureLayout.children, 0, topPx),
+    }
+
     if (isGene && hasTranscriptChildren) {
       addSubfeaturesToLayoutAndFlatbush({
         layout,
-        featureLayout,
+        featureLayout: adjustedLayout,
         parentFeatureId: feature.id(),
         subfeatureCoords,
         subfeatureInfos,
@@ -735,10 +746,10 @@ export function computeLayouts({
         labelColor,
         allFeatures,
       })
-    } else if (featureLayout.children.length > 0) {
+    } else if (adjustedLayout.children.length > 0) {
       addNestedSubfeaturesToLayout({
         layout,
-        featureLayout,
+        featureLayout: adjustedLayout,
         allFeatures,
       })
     }
