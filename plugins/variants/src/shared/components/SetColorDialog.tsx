@@ -1,5 +1,5 @@
 import SourcesGrid from './SourcesGrid'
-import SharedSetColorDialog from './ui/SetColorDialog'
+import SharedSetColorDialog from './BaseSetColorDialog'
 
 import type { Source } from '../types'
 
