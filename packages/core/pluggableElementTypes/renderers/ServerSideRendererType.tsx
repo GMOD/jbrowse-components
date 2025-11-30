@@ -1,4 +1,5 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { rpcResult } from 'librpc-web-mod'
 
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
@@ -42,7 +43,9 @@ export interface RenderArgsDeserialized extends BaseRenderArgs {
   filters?: SerializableFilterChain
 }
 
-export type ResultsSerialized = Omit<RenderResults, 'reactElement'>
+export type ResultsSerialized = Omit<RenderResults, 'reactElement'> & {
+  imageData?: ImageBitmap
+}
 
 export interface ResultsSerializedSvgExport extends ResultsSerialized {
   canvasRecordedData: unknown
@@ -149,7 +152,7 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   serializeResultsInWorker(
-    results: RenderResults,
+    results: RenderResults & { imageData?: ImageBitmap },
     _args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const { reactElement, ...rest } = results
@@ -174,7 +177,7 @@ export default class ServerSideRenderer extends RendererType {
     }
   }
 
-  async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
+  async renderInWorker(args: RenderArgsSerialized) {
     const { stopToken, statusCallback = () => {} } = args
     const args2 = this.deserializeArgsInWorker(args)
     const results = await updateStatus('Rendering plot', statusCallback, () =>
@@ -182,9 +185,16 @@ export default class ServerSideRenderer extends RendererType {
     )
     checkStopToken(stopToken)
 
-    return updateStatus('Serializing results', statusCallback, () =>
-      this.serializeResultsInWorker(results, args2),
+    const serialized = await updateStatus(
+      'Serializing results',
+      statusCallback,
+      () => this.serializeResultsInWorker(results, args2),
     )
+
+    if (serialized.imageData instanceof ImageBitmap) {
+      return rpcResult(serialized, [serialized.imageData])
+    }
+    return serialized
   }
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {

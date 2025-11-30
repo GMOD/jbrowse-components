@@ -2,7 +2,6 @@ export type RectTuple = [number, number, number, number]
 export interface SerializedLayout {
   rectangles: Record<string, RectTuple>
   totalHeight: number
-  containsNoTransferables?: true
   maxHeightReached: boolean
 }
 export interface Rectangle<T> {

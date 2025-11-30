@@ -51,7 +51,6 @@ export default abstract class MultiVariantBaseRenderer extends FeatureRendererTy
       features: new Map<string, Feature>(),
       height,
       width,
-      containsNoTransferables: true,
     }
   }
 

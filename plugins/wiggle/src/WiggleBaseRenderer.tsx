@@ -83,7 +83,6 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
         : results.features,
       height,
       width,
-      containsNoTransferables: true,
     }
   }
 
