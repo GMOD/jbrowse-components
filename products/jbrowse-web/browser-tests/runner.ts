@@ -71,32 +71,13 @@ function ensureSnapshotsDir() {
   }
 }
 
-async function captureCanvasSnapshot(
+async function capturePageSnapshot(
   page: Page,
-  canvasSelector: string,
   snapshotName: string,
-  options: { threshold?: number } = {},
 ): Promise<{ passed: boolean; message: string }> {
-  const { threshold = 0.01 } = options
-
   ensureSnapshotsDir()
 
-  const canvas = await page.$(canvasSelector)
-  if (!canvas) {
-    throw new Error(`Canvas not found: ${canvasSelector}`)
-  }
-
-  const dataUrl = await page.evaluate((sel) => {
-    const c = document.querySelector(sel) as HTMLCanvasElement
-    return c ? c.toDataURL('image/png') : null
-  }, canvasSelector)
-
-  if (!dataUrl) {
-    throw new Error(`Could not get data URL from canvas: ${canvasSelector}`)
-  }
-
-  const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '')
-  const currentBuffer = Buffer.from(base64Data, 'base64')
+  const currentBuffer = await page.screenshot({ fullPage: true })
 
   const snapshotPath = path.join(snapshotsDir, `${snapshotName}.png`)
 
@@ -111,68 +92,12 @@ async function captureCanvasSnapshot(
     return { passed: true, message: 'Snapshot matches exactly' }
   }
 
-  const currentPixels = await decodeImage(currentBuffer)
-  const expectedPixels = await decodeImage(expectedBuffer)
-
-  if (!currentPixels || !expectedPixels) {
-    const diffPath = path.join(snapshotsDir, `${snapshotName}.diff.png`)
-    fs.writeFileSync(diffPath, currentBuffer)
-    return { passed: false, message: 'Could not decode images for comparison' }
-  }
-
-  if (currentPixels.width !== expectedPixels.width || currentPixels.height !== expectedPixels.height) {
-    const diffPath = path.join(snapshotsDir, `${snapshotName}.diff.png`)
-    fs.writeFileSync(diffPath, currentBuffer)
-    return {
-      passed: false,
-      message: `Size mismatch: ${currentPixels.width}x${currentPixels.height} vs ${expectedPixels.width}x${expectedPixels.height}`,
-    }
-  }
-
-  let diffCount = 0
-  const totalPixels = currentPixels.width * currentPixels.height
-
-  for (let i = 0; i < currentPixels.data.length; i += 4) {
-    const rDiff = Math.abs(currentPixels.data[i]! - expectedPixels.data[i]!)
-    const gDiff = Math.abs(currentPixels.data[i + 1]! - expectedPixels.data[i + 1]!)
-    const bDiff = Math.abs(currentPixels.data[i + 2]! - expectedPixels.data[i + 2]!)
-
-    if (rDiff > 1 || gDiff > 1 || bDiff > 1) {
-      diffCount++
-    }
-  }
-
-  const diffPercent = diffCount / totalPixels
-
-  if (diffPercent <= threshold) {
-    return { passed: true, message: `Snapshot matches (${(diffPercent * 100).toFixed(2)}% diff)` }
-  }
-
   const diffPath = path.join(snapshotsDir, `${snapshotName}.diff.png`)
   fs.writeFileSync(diffPath, currentBuffer)
 
   return {
     passed: false,
-    message: `Snapshot differs by ${(diffPercent * 100).toFixed(2)}% (threshold: ${threshold * 100}%). Diff saved to ${diffPath}`,
-  }
-}
-
-async function decodeImage(buffer: Buffer): Promise<{ width: number; height: number; data: Uint8Array } | null> {
-  const { createCanvas, loadImage } = await import('canvas')
-
-  try {
-    const img = await loadImage(buffer)
-    const canvas = createCanvas(img.width, img.height)
-    const ctx = canvas.getContext('2d')
-    ctx.drawImage(img, 0, 0)
-    const imageData = ctx.getImageData(0, 0, img.width, img.height)
-    return {
-      width: img.width,
-      height: img.height,
-      data: new Uint8Array(imageData.data),
-    }
-  } catch {
-    return null
+    message: `Snapshot differs. Diff saved to ${diffPath}`,
   }
 }
 
@@ -437,7 +362,7 @@ function defineTests(runner: TestRunner, baseUrl: string) {
       await findByTestId(page, 'Blockset-pileup', { timeout: 60000 })
     })
 
-    runner.test('alignments track canvas snapshot', async (page) => {
+    runner.test('alignments track screenshot', async (page) => {
       await page.goto(`${baseUrl}/?config=test_data/volvox/config.json`, {
         waitUntil: 'networkidle0',
         timeout: 60000,
@@ -449,32 +374,12 @@ function defineTests(runner: TestRunner, baseUrl: string) {
       await trackLabel.click()
 
       // Wait for the pileup canvas to render
-      const pileupBlockset = await findByTestId(page, 'Blockset-pileup', { timeout: 60000 })
+      await findByTestId(page, 'Blockset-pileup', { timeout: 60000 })
 
       // Wait for rendering to complete
       await delay(2000)
 
-      // Find the canvas within the pileup blockset
-      const canvas = await pileupBlockset.$('canvas')
-      if (!canvas) {
-        throw new Error('Could not find canvas in pileup blockset')
-      }
-
-      // Get a unique selector for this canvas
-      const canvasTestId = await page.evaluate(() => {
-        const canvases = document.querySelectorAll('[data-testid="Blockset-pileup"] canvas')
-        if (canvases.length > 0) {
-          const c = canvases[0] as HTMLElement
-          return c.getAttribute('data-testid') || null
-        }
-        return null
-      })
-
-      const selector = canvasTestId
-        ? `[data-testid="${canvasTestId}"]`
-        : '[data-testid="Blockset-pileup"] canvas'
-
-      const result = await captureCanvasSnapshot(page, selector, 'alignments-pileup', { threshold: 0.01 })
+      const result = await capturePageSnapshot(page, 'alignments-pileup')
 
       if (!result.passed) {
         throw new Error(result.message)

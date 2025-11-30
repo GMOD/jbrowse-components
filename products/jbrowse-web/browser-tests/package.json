@@ -10,7 +10,6 @@
     "test:update": "node --experimental-strip-types runner.ts --update-snapshots"
   },
   "dependencies": {
-    "canvas": "^3.0.1",
     "puppeteer": "^24.0.0",
     "serve-handler": "^6.1.5"
   },
