@@ -79,7 +79,9 @@ export default class FeatureRendererType extends ServerSideRendererType {
     args: RenderArgs,
   ): ResultsDeserialized {
     const deserializedFeatures = new Map<string, SimpleFeature>(
-      result.features?.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]) ?? [],
+      result.features
+        ?.map(f => SimpleFeature.fromJSON(f))
+        .map(f => [f.id(), f]),
     )
 
     const deserialized = super.deserializeResultsInClient(

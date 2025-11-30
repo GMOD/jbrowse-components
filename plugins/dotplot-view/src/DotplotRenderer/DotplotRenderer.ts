@@ -1,5 +1,8 @@
 import ComparativeRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { renameRegionsIfNeeded, renderToAbstractCanvas } from '@jbrowse/core/util'
+import {
+  renameRegionsIfNeeded,
+  renderToAbstractCanvas,
+} from '@jbrowse/core/util'
 import { rpcResult } from 'librpc-web-mod'
 
 import { Dotplot1DView } from '../DotplotView/model'

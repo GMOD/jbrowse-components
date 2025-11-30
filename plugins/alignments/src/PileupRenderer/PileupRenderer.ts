@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import { expandRegion } from '@jbrowse/core/pluggableElementTypes/renderers/util'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from 'librpc-web-mod'
 
@@ -39,15 +40,9 @@ export default class PileupRenderer extends BoxRendererType {
 
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     const { config, showSoftClip } = renderArgs
-    const { start, end } = region
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const bpExpansion = showSoftClip ? Math.round(maxClippingSize) : 0
-
-    return {
-      ...(region as Omit<typeof region, symbol>),
-      start: Math.floor(Math.max(start - bpExpansion, 0)),
-      end: Math.ceil(end + bpExpansion),
-    }
+    return expandRegion(region, bpExpansion)
   }
 
   async render(renderProps: RenderArgsDeserialized) {

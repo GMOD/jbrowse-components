@@ -9,11 +9,11 @@ import {
   renderToAbstractCanvas,
   updateStatus,
 } from '@jbrowse/core/util'
-import { rpcResult } from 'librpc-web-mod'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { rpcResult } from 'librpc-web-mod'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 

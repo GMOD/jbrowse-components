@@ -17,7 +17,6 @@ import type { AnyConfigurationModel } from '../../configuration'
 import type SerializableFilterChain from './util/serializableFilterChain'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import type RpcManager from '../../rpc/RpcManager'
-import type { Feature } from '../../util/simpleFeature'
 import type { Region } from '../../util/types'
 
 export interface RenderArgs extends ServerSideRenderArgs {

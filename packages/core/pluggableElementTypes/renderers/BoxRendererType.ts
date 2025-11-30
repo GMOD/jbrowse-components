@@ -1,5 +1,6 @@
 import FeatureRendererType from './FeatureRendererType'
 import { LayoutSession } from './LayoutSession'
+import { expandRegion } from './util'
 import { readConfObject } from '../../configuration'
 import { getLayoutId } from '../../util'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
@@ -19,11 +20,6 @@ import type {
   BaseLayout,
   SerializedLayout,
 } from '../../util/layouts/BaseLayout'
-import type GranularRectLayout from '../../util/layouts/GranularRectLayout'
-import type MultiLayout from '../../util/layouts/MultiLayout'
-
-export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
-
 export interface RenderArgs extends FeatureRenderArgs {
   bpPerPx: number
   layoutId: string
@@ -40,7 +36,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 }
 
 export interface RenderResults extends FeatureRenderResults {
-  layout: BaseLayout<Feature>
+  layout?: BaseLayout<Feature> | SerializedLayout
 }
 
 export interface ResultsSerialized extends FeatureResultsSerialized {
@@ -79,11 +75,7 @@ export default class BoxRendererType extends FeatureRendererType {
     const maxFeatureGlyphExpansion =
       readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
-    return {
-      ...(region as Omit<typeof region, symbol>),
-      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
-      end: Math.ceil(region.end + bpExpansion),
-    }
+    return expandRegion(region, bpExpansion)
   }
 
   freeResources(args: Record<string, string>) {

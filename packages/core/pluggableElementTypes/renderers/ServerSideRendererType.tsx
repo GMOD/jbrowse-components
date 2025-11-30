@@ -186,7 +186,6 @@ export default class ServerSideRenderer extends RendererType {
 
     // If render() returned an rpcResult, it's already serialized - pass through
     if (
-      results &&
       typeof results === 'object' &&
       '__rpcResult' in results &&
       results.__rpcResult === true
