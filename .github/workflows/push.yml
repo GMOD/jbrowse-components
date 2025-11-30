@@ -186,3 +186,8 @@ jobs:
           yarn install --frozen-lockfile
           yarn e2e
         working-directory: component_tests/app-vite
+      - name: Run browser tests with Puppeteer
+        run: |
+          yarn install --frozen-lockfile
+          yarn test
+        working-directory: products/jbrowse-web/browser-tests
