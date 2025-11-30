@@ -95,56 +95,56 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       class="css-1eig9rh-scalebar"
                     >
                       <div
-                        class="css-1co65jp-scalebarVisibleRegion"
+                        class="css-10brxif-scalebarVisibleRegion"
                         style="width: 272px; transform: translateX(0px); background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
                       />
                       <div
-                        class="css-12i65rv-scalebarContig"
+                        class="css-104ao9j-scalebarContig"
                         style="width: 0px; transform: translateX(0px); background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
                       />
                       <div>
                         <p
-                          class="MuiTypography-root MuiTypography-body1 css-yydqu3-MuiTypography-root-scalebarRefName"
+                          class="MuiTypography-root MuiTypography-body1 css-akphc4-MuiTypography-root-scalebarRefName"
                           style="transform: translateX(3px); color: rgb(153, 102, 0);"
                         >
                           ctgA
                         </p>
                         <div
-                          class="css-10fcb8d-scalebarContig-scalebarContigForward-scalebarBorder"
+                          class="css-1i1vhad-scalebarContig-scalebarContigForward-scalebarBorder"
                           style="transform: translateX(0px); width: 808px; border-color: rgb(153, 102, 0);"
                         >
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-j92ww1-MuiTypography-root-scalebarLabel"
                             style="transform: translateX(134.66666666666669px); color: rgb(153, 102, 0);"
                           >
                             20
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-j92ww1-MuiTypography-root-scalebarLabel"
                             style="transform: translateX(269.33333333333337px); color: rgb(153, 102, 0);"
                           >
                             40
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-j92ww1-MuiTypography-root-scalebarLabel"
                             style="transform: translateX(404px); color: rgb(153, 102, 0);"
                           >
                             60
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-j92ww1-MuiTypography-root-scalebarLabel"
                             style="transform: translateX(538.6666666666667px); color: rgb(153, 102, 0);"
                           >
                             80
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-j92ww1-MuiTypography-root-scalebarLabel"
                             style="transform: translateX(673.3333333333334px); color: rgb(153, 102, 0);"
                           >
                             100
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-j92ww1-MuiTypography-root-scalebarLabel"
                             style="transform: translateX(808px); color: rgb(153, 102, 0);"
                           >
                             120
@@ -152,7 +152,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         </div>
                       </div>
                       <div
-                        class="css-12i65rv-scalebarContig"
+                        class="css-104ao9j-scalebarContig"
                         style="width: 0px; transform: translateX(808px); background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
                       />
                     </div>
@@ -435,10 +435,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               data-testid="tracksContainer"
             >
               <div
-                class="css-xn9n8g-verticalGuidesZoomContainer"
+                class="css-n6mj5o-verticalGuidesZoomContainer"
               >
                 <div
-                  class="css-poxp29-verticalGuidesContainer"
+                  class="css-19dulcv-verticalGuidesContainer"
                   style="transform: translateX(-800px); width: 2400px;"
                 >
                   <div
@@ -1164,10 +1164,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="height: 17px; box-sizing: border-box;"
                 >
                   <div
-                    class="css-xn9n8g-verticalGuidesZoomContainer"
+                    class="css-n6mj5o-verticalGuidesZoomContainer"
                   >
                     <div
-                      class="css-poxp29-verticalGuidesContainer"
+                      class="css-19dulcv-verticalGuidesContainer"
                       style="transform: translateX(-801px); width: 2400px;"
                     >
                       <div
@@ -1883,10 +1883,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-1c7qp56-zoomContainer"
+                    class="css-tyiuoa-zoomContainer"
                   >
                     <div
-                      class="css-167fr73-scalebar"
+                      class="css-y3821b-scalebar"
                       style="transform: translateX(-801px); width: 2400px;"
                     >
                       <div
@@ -2000,7 +2000,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <div
-                    style="position: absolute; will-change: transform; transform: translateX(0px);"
+                    style="position: absolute; transform: translateX(0px);"
                   >
                     <span
                       data-label-key="refLabel-{volvox}ctgA:1..40-0-1"
@@ -2090,14 +2090,14 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="height: 120px;"
                 >
                   <div
-                    class="css-ewmwoa-renderingComponentContainer"
+                    class="css-v11ioz-renderingComponentContainer"
                   >
                     <div
                       class="css-1y9lrrz-display"
                       data-testid="display-volvox_refseq-LinearReferenceSequenceDisplay"
                     >
                       <div
-                        class="css-85fyjg-linearBlocks"
+                        class="css-13jib6o-linearBlocks"
                         style="transform: translateX(-800px);"
                       >
                         <div

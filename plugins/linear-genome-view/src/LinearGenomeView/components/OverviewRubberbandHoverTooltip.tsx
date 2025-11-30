@@ -15,7 +15,6 @@ const useStyles = makeStyles()({
     width: 1,
     position: 'absolute',
     left: 0,
-    willChange: 'transform',
   },
 })
 

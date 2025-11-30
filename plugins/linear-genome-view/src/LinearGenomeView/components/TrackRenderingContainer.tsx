@@ -17,7 +17,6 @@ const useStyles = makeStyles()({
     left: -1,
     height: '100%',
     width: '100%',
-    willChange: 'transform',
   },
 
   trackRenderingContainer: {
