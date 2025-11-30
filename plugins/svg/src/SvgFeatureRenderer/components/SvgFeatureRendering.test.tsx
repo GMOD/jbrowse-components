@@ -669,9 +669,6 @@ test('processed transcript (exons + impliedUTR)', () => {
     />,
   )
 
-  // finds that the color3 is outputted for impliedUTRs (UTR color from theme)
-  expect(container).toContainHTML('#357089')
-
   expect(container).toMatchSnapshot()
 })
 

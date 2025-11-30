@@ -200,7 +200,7 @@ const RenderedFeatures = observer(function (props: {
   layout: BaseLayout<unknown>
   theme: Theme
 }) {
-  const { features = new Map(), isFeatureDisplayed, config } = props
+  const { features = new Map(), isFeatureDisplayed, config, ...rest } = props
   const allFeatures = buildFeatureMap(features, config)
   return (
     <>
@@ -213,7 +213,8 @@ const RenderedFeatures = observer(function (props: {
             key={feature.id()}
             feature={feature}
             features={allFeatures}
-            {...props}
+            config={config}
+            {...rest}
           />
         ))}
     </>

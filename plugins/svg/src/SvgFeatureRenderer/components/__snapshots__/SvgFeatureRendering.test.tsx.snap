@@ -61,10 +61,58 @@ exports[`forward and reverse strand genes 1`] = `
   >
     <g
       transform="translate(10, 0)"
-    />
+    >
+      <line
+        data-testid="mrna1"
+        stroke="#000000"
+        x1="0"
+        x2="80"
+        y1="5"
+        y2="5"
+      />
+      <line
+        stroke="#000000"
+        x1="80"
+        x2="87"
+        y1="5"
+        y2="5"
+      />
+      <polygon
+        fill="#000000"
+        points="83.5,2.5 83.5,7.5 87,5"
+        stroke="#000000"
+      />
+      <rect
+        data-testid="box-cds1"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="60"
+        x="10"
+        y="0"
+      />
+    </g>
     <g
       transform="translate(110, 0)"
-    />
+    >
+      <line
+        data-testid="mrna2"
+        stroke="#000000"
+        x1="0"
+        x2="80"
+        y1="5"
+        y2="5"
+      />
+      <rect
+        data-testid="box-cds2"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="60"
+        x="10"
+        y="0"
+      />
+    </g>
   </svg>
 </div>
 `;
@@ -100,6 +148,24 @@ exports[`gene with CDS children 1`] = `
         points="1259.8333333333333,2.5 1259.8333333333333,7.5 1263.3333333333333,5"
         stroke="#000000"
       />
+      <rect
+        data-testid="box-one-0"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="12.666666666666666"
+        x="45"
+        y="0"
+      />
+      <rect
+        data-testid="box-one-1"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="22.666666666666668"
+        x="213.33333333333334"
+        y="0"
+      />
     </g>
   </svg>
 </div>
@@ -115,7 +181,84 @@ exports[`gene with multiple transcripts 1`] = `
   >
     <g
       transform="translate(10, 0)"
-    />
+    >
+      <line
+        data-testid="mrna1"
+        stroke="#000000"
+        x1="0"
+        x2="170"
+        y1="5"
+        y2="5"
+      />
+      <line
+        stroke="#000000"
+        x1="170"
+        x2="177"
+        y1="5"
+        y2="5"
+      />
+      <polygon
+        fill="#000000"
+        points="173.5,2.5 173.5,7.5 177,5"
+        stroke="#000000"
+      />
+      <rect
+        data-testid="box-cds1a"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="40"
+        x="10"
+        y="0"
+      />
+      <rect
+        data-testid="box-cds1b"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="50"
+        x="110"
+        y="0"
+      />
+      <line
+        data-testid="mrna2"
+        stroke="#000000"
+        x1="0"
+        x2="140"
+        y1="17"
+        y2="17"
+      />
+      <line
+        stroke="#000000"
+        x1="140"
+        x2="147"
+        y1="17"
+        y2="17"
+      />
+      <polygon
+        fill="#000000"
+        points="143.5,14.5 143.5,19.5 147,17"
+        stroke="#000000"
+      />
+      <rect
+        data-testid="box-cds2a"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="50"
+        x="20"
+        y="12"
+      />
+      <rect
+        data-testid="box-cds2b"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="40"
+        x="90"
+        y="12"
+      />
+    </g>
   </svg>
 </div>
 `;
@@ -130,7 +273,64 @@ exports[`gene with transcript and UTRs 1`] = `
   >
     <g
       transform="translate(10, 0)"
-    />
+    >
+      <line
+        data-testid="mrna1"
+        stroke="#000000"
+        x1="0"
+        x2="170"
+        y1="5"
+        y2="5"
+      />
+      <line
+        stroke="#000000"
+        x1="170"
+        x2="177"
+        y1="5"
+        y2="5"
+      />
+      <polygon
+        fill="#000000"
+        points="173.5,2.5 173.5,7.5 177,5"
+        stroke="#000000"
+      />
+      <rect
+        data-testid="box-utr1"
+        fill="#357089"
+        fill-opacity="1"
+        height="6.5"
+        width="20"
+        x="0"
+        y="1.75"
+      />
+      <rect
+        data-testid="box-cds1"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="40"
+        x="20"
+        y="0"
+      />
+      <rect
+        data-testid="box-cds2"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="50"
+        x="90"
+        y="0"
+      />
+      <rect
+        data-testid="box-utr2"
+        fill="#357089"
+        fill-opacity="1"
+        height="6.5"
+        width="30"
+        x="140"
+        y="1.75"
+      />
+    </g>
   </svg>
 </div>
 `;
@@ -145,7 +345,37 @@ exports[`longest transcript mode 1`] = `
   >
     <g
       transform="translate(10, 0)"
-    />
+    >
+      <line
+        data-testid="mrna2"
+        stroke="#000000"
+        x1="0"
+        x2="170"
+        y1="5"
+        y2="5"
+      />
+      <line
+        stroke="#000000"
+        x1="170"
+        x2="177"
+        y1="5"
+        y2="5"
+      />
+      <polygon
+        fill="#000000"
+        points="173.5,2.5 173.5,7.5 177,5"
+        stroke="#000000"
+      />
+      <rect
+        data-testid="box-cds2"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="140"
+        x="20"
+        y="0"
+      />
+    </g>
   </svg>
 </div>
 `;
@@ -243,6 +473,51 @@ exports[`one feature (compact mode) 1`] = `
         points="1259.8333333333333,0 1259.8333333333333,5 1263.3333333333333,2.5"
         stroke="#000000"
       />
+      <rect
+        data-testid="box-one-0"
+        fill="#357089"
+        fill-opacity="1"
+        height="3.25"
+        width="44.666666666666664"
+        x="0"
+        y="0.875"
+      />
+      <rect
+        data-testid="box-one-2"
+        fill="goldenrod"
+        height="5"
+        stroke=""
+        width="12.666666666666666"
+        x="45"
+        y="0"
+      />
+      <rect
+        data-testid="box-one-3"
+        fill="goldenrod"
+        height="5"
+        stroke=""
+        width="22.666666666666668"
+        x="213.33333333333334"
+        y="0"
+      />
+      <rect
+        data-testid="box-one-4"
+        fill="goldenrod"
+        height="5"
+        stroke=""
+        width="94"
+        x="261"
+        y="0"
+      />
+      <rect
+        data-testid="box-one-15"
+        fill="#357089"
+        fill-opacity="1"
+        height="3.25"
+        width="83"
+        x="1173.3333333333333"
+        y="0.875"
+      />
     </g>
   </svg>
 </div>
@@ -277,55 +552,76 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="139"
+    height="127"
     style="display: block;"
-    width="333.3333333333333"
+    width="300"
   >
     <g
-      transform="translate(7759845, 0)"
+      transform="translate(10, 0)"
     >
       <line
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0"
+        data-testid="mrna1"
         stroke="#000000"
         x1="0"
-        x2="6608"
+        x2="190"
         y1="5"
         y2="5"
       />
-      <rect
-        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-1"
-        fill="goldenrod"
-        height="10"
-        stroke=""
-        width="327.3333333333333"
-        x="0"
-        y="0"
+      <line
+        stroke="#000000"
+        x1="190"
+        x2="197"
+        y1="5"
+        y2="5"
+      />
+      <polygon
+        fill="#000000"
+        points="193.5,2.5 193.5,7.5 197,5"
+        stroke="#000000"
       />
       <rect
-        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-8"
-        fill="goldenrod"
-        height="10"
-        stroke=""
-        width="327.3333333333333"
-        x="0"
-        y="0"
-      />
-      <rect
-        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_7"
+        data-testid="box-mrna1_five_prime_UTR_0"
         fill="#357089"
         fill-opacity="1"
         height="6.5"
-        width="31.666666666666668"
-        x="6576.333333333333"
+        width="20"
+        x="0"
         y="1.75"
       />
       <rect
-        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_6"
+        data-testid="box-cds1"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="20"
+        x="20"
+        y="0"
+      />
+      <rect
+        data-testid="box-cds2"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="40"
+        x="70"
+        y="0"
+      />
+      <rect
+        data-testid="box-cds3"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="30"
+        x="140"
+        y="0"
+      />
+      <rect
+        data-testid="box-mrna1_three_prime_UTR_2"
         fill="#357089"
         fill-opacity="1"
         height="6.5"
-        width="38.333333333333336"
-        x="6424.666666666667"
+        width="20"
+        x="170"
         y="1.75"
       />
     </g>
@@ -389,6 +685,51 @@ exports[`processed transcript 1`] = `
         points="1259.8333333333333,2.5 1259.8333333333333,7.5 1263.3333333333333,5"
         stroke="#000000"
       />
+      <rect
+        data-testid="box-one-0"
+        fill="#357089"
+        fill-opacity="1"
+        height="6.5"
+        width="44.666666666666664"
+        x="0"
+        y="1.75"
+      />
+      <rect
+        data-testid="box-one-2"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="12.666666666666666"
+        x="45"
+        y="0"
+      />
+      <rect
+        data-testid="box-one-3"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="22.666666666666668"
+        x="213.33333333333334"
+        y="0"
+      />
+      <rect
+        data-testid="box-one-4"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="94"
+        x="261"
+        y="0"
+      />
+      <rect
+        data-testid="box-one-15"
+        fill="#357089"
+        fill-opacity="1"
+        height="6.5"
+        width="83"
+        x="1173.3333333333333"
+        y="1.75"
+      />
     </g>
   </svg>
 </div>
@@ -404,7 +745,46 @@ exports[`segments feature (no CDS) 1`] = `
   >
     <g
       transform="translate(10, 0)"
-    />
+    >
+      <line
+        data-testid="ncrna1"
+        stroke="#000000"
+        x1="0"
+        x2="170"
+        y1="5"
+        y2="5"
+      />
+      <line
+        stroke="#000000"
+        x1="170"
+        x2="177"
+        y1="5"
+        y2="5"
+      />
+      <polygon
+        fill="#000000"
+        points="173.5,2.5 173.5,7.5 177,5"
+        stroke="#000000"
+      />
+      <rect
+        data-testid="box-exon1"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="50"
+        x="0"
+        y="0"
+      />
+      <rect
+        data-testid="box-exon2"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="80"
+        x="90"
+        y="0"
+      />
+    </g>
   </svg>
 </div>
 `;
