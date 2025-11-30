@@ -1,37 +1,385 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { calculateLayoutBounds, measureText } from '@jbrowse/core/util'
-import { SceneGraph } from '@jbrowse/core/util/layouts'
+import { calculateLayoutBounds, measureText, stripAlpha } from '@jbrowse/core/util'
+import { getFrame } from '@jbrowse/core/util'
 
-import Box from './Box'
-import CDS from './CDS'
-import ProcessedTranscript from './ProcessedTranscript'
-import Segments from './Segments'
-import Subfeatures from './Subfeatures'
+import { getSubparts } from './filterSubparts'
+import { isUTR } from './isUTR'
 
 import type {
-  ExtraGlyphValidator,
-  FeatureLayOutArgs,
-  Glyph,
-  SubfeatureLayOutArgs,
+  FeatureLayout,
+  GlyphType,
+  RenderConfigContext,
 } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
+import type { Theme } from '@mui/material'
 
-interface FloatingLabelData {
-  text: string
-  relativeY: number
-  color: string
-}
-
+const TRANSCRIPT_PADDING = 2
+const CODING_TYPES = new Set(['CDS', 'cds'])
 const MAX_LABEL_LENGTH = 50
+const xPadding = 3
+const yPadding = 5
 
-function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
+export { xPadding, yPadding }
+
+export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
 }
 
 export function normalizeColor(color: string, fallback = 'black') {
   return color === '#f0f' ? fallback : color
+}
+
+export function createRenderConfigContext(
+  config: AnyConfigurationModel,
+): RenderConfigContext {
+  const displayMode = readConfObject(config, 'displayMode') as string
+  const showLabels = readConfObject(config, 'showLabels') as boolean
+  const showDescriptions = readConfObject(config, 'showDescriptions') as boolean
+  const subfeatureLabels = readConfObject(config, 'subfeatureLabels') as string
+  const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
+  const containerTypes = readConfObject(config, 'containerTypes') as string[]
+  const geneGlyphMode = readConfObject(config, 'geneGlyphMode') as string
+  const fontHeight = readConfObject(config, ['labels', 'fontSize']) as number
+  const featureHeight = readConfObject(config, 'height') as number
+  const isHeightCallback = config.height?.isCallback ?? false
+
+  return {
+    displayMode,
+    transcriptTypes,
+    containerTypes,
+    showLabels,
+    showDescriptions,
+    subfeatureLabels,
+    geneGlyphMode,
+    fontHeight,
+    featureHeight,
+    labelAllowed: displayMode !== 'collapse',
+    isHeightCallback,
+  }
+}
+
+function hasCodingSubfeature(feature: Feature): boolean {
+  const subfeatures = feature.get('subfeatures') || []
+  return subfeatures.some(
+    (sub: Feature) =>
+      CODING_TYPES.has(sub.get('type')) || hasCodingSubfeature(sub),
+  )
+}
+
+export function chooseGlyphType({
+  feature,
+  configContext,
+}: {
+  feature: Feature
+  configContext: RenderConfigContext
+}): GlyphType {
+  const type = feature.get('type')
+  const subfeatures = feature.get('subfeatures')
+  const { transcriptTypes, containerTypes } = configContext
+
+  if (subfeatures?.length && type !== 'CDS') {
+    const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
+    const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
+    if (transcriptTypes.includes(type) && hasCDS) {
+      return 'ProcessedTranscript'
+    } else if (
+      (!feature.parent() && hasSubSub) ||
+      containerTypes.includes(type)
+    ) {
+      return 'Subfeatures'
+    } else {
+      return 'Segments'
+    }
+  } else if (type === 'CDS') {
+    return 'CDS'
+  } else {
+    return 'Box'
+  }
+}
+
+export function getChildFeatures({
+  feature,
+  glyphType,
+  config,
+}: {
+  feature: Feature
+  glyphType: GlyphType
+  config: AnyConfigurationModel
+}): Feature[] {
+  if (glyphType === 'ProcessedTranscript') {
+    return getSubparts(feature, config)
+  }
+  return feature.get('subfeatures') || []
+}
+
+export function getBoxColor({
+  feature,
+  config,
+  colorByCDS,
+  theme,
+}: {
+  feature: Feature
+  config: AnyConfigurationModel
+  colorByCDS: boolean
+  theme: Theme
+}) {
+  let fill: string = isUTR(feature)
+    ? readConfObject(config, 'color3', { feature })
+    : readConfObject(config, 'color1', { feature })
+
+  const featureType: string | undefined = feature.get('type')
+  const featureStrand: -1 | 1 | undefined = feature.get('strand')
+  const featurePhase: 0 | 1 | 2 | undefined = feature.get('phase')
+
+  if (
+    colorByCDS &&
+    featureType === 'CDS' &&
+    featureStrand !== undefined &&
+    featurePhase !== undefined
+  ) {
+    const frame = getFrame(
+      feature.get('start'),
+      feature.get('end'),
+      featureStrand,
+      featurePhase,
+    )
+    const frameColor = theme.palette.framesCDS.at(frame)?.main
+    if (frameColor) {
+      fill = frameColor
+    }
+  }
+
+  return fill
+}
+
+export function getStrokeColor({
+  feature,
+  config,
+  theme,
+}: {
+  feature: Feature
+  config: AnyConfigurationModel
+  theme: Theme
+}) {
+  const c = readConfObject(config, 'color2', { feature }) as string
+  return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
+}
+
+export function layoutFeature(args: {
+  feature: Feature
+  bpPerPx: number
+  reversed: boolean
+  config: AnyConfigurationModel
+  configContext: RenderConfigContext
+  parentX?: number
+  parentY?: number
+  isNested?: boolean
+  isTranscriptChild?: boolean
+}): FeatureLayout {
+  const {
+    feature,
+    bpPerPx,
+    reversed,
+    config,
+    configContext,
+    parentX = 0,
+    parentY = 0,
+    isNested = false,
+    isTranscriptChild = false,
+  } = args
+
+  const {
+    displayMode,
+    transcriptTypes,
+    showLabels,
+    showDescriptions,
+    subfeatureLabels,
+    fontHeight,
+    labelAllowed,
+    geneGlyphMode,
+    featureHeight,
+    isHeightCallback,
+  } = configContext
+
+  const glyphType = chooseGlyphType({ feature, configContext })
+
+  const parentFeature = feature.parent()
+  let x = parentX
+  if (parentFeature) {
+    const relativeX = reversed
+      ? parentFeature.get('end') - feature.get('end')
+      : feature.get('start') - parentFeature.get('start')
+    x = parentX + relativeX / bpPerPx
+  }
+
+  const height = isHeightCallback
+    ? (readConfObject(config, 'height', { feature }) as number)
+    : featureHeight
+  const actualHeight = displayMode === 'compact' ? height / 2 : height
+  const width = (feature.get('end') - feature.get('start')) / bpPerPx
+  const y = parentY
+
+  const layout: FeatureLayout = {
+    featureId: feature.id(),
+    x,
+    y,
+    width,
+    height: actualHeight,
+    totalFeatureHeight: actualHeight,
+    totalLayoutHeight: actualHeight,
+    totalLayoutWidth: width,
+    children: [],
+    glyphType,
+  }
+
+  const subfeatures = feature.get('subfeatures') || []
+  if (subfeatures.length > 0 && displayMode !== 'reducedRepresentation') {
+    if (glyphType === 'Subfeatures') {
+      let sortedSubfeatures = [...subfeatures].sort((a, b) => {
+        const aHasCDS = hasCodingSubfeature(a)
+        const bHasCDS = hasCodingSubfeature(b)
+        if (aHasCDS && !bHasCDS) {
+          return -1
+        }
+        if (!aHasCDS && bHasCDS) {
+          return 1
+        }
+        return 0
+      })
+
+      if (
+        (geneGlyphMode === 'longest' || geneGlyphMode === 'longestCoding') &&
+        sortedSubfeatures.length > 1
+      ) {
+        const transcriptSubfeatures = sortedSubfeatures.filter(sub =>
+          transcriptTypes.includes(sub.get('type')),
+        )
+        let candidates =
+          transcriptSubfeatures.length > 0
+            ? transcriptSubfeatures
+            : sortedSubfeatures
+
+        if (geneGlyphMode === 'longestCoding') {
+          const codingCandidates = candidates.filter(hasCodingSubfeature)
+          if (codingCandidates.length > 0) {
+            candidates = codingCandidates
+          }
+        }
+
+        const longest = candidates.reduce((a, b) =>
+          a.get('end') - a.get('start') > b.get('end') - b.get('start') ? a : b,
+        )
+        sortedSubfeatures = [longest]
+      }
+
+      let currentY = parentY
+      for (let i = 0; i < sortedSubfeatures.length; i++) {
+        const subfeature = sortedSubfeatures[i]!
+        const childType = subfeature.get('type')
+        const isChildTranscript = transcriptTypes.includes(childType)
+        const childLayout = layoutFeature({
+          feature: subfeature,
+          bpPerPx,
+          reversed,
+          config,
+          configContext,
+          parentX: x,
+          parentY: currentY,
+          isNested: true,
+          isTranscriptChild: isChildTranscript,
+        })
+        layout.children.push(childLayout)
+        const useExtraHeightForLabels =
+          subfeatureLabels === 'below' && isChildTranscript
+        const heightForStacking = useExtraHeightForLabels
+          ? childLayout.totalLayoutHeight
+          : childLayout.height
+        currentY += heightForStacking
+        if (i < sortedSubfeatures.length - 1) {
+          currentY += TRANSCRIPT_PADDING
+        }
+      }
+      const totalStackedHeight = currentY - parentY
+      layout.height = totalStackedHeight
+      layout.totalFeatureHeight = totalStackedHeight
+      layout.totalLayoutHeight = totalStackedHeight
+    } else {
+      for (const subfeature of getChildFeatures({
+        feature,
+        glyphType,
+        config,
+      })) {
+        layout.children.push(
+          layoutFeature({
+            feature: subfeature,
+            bpPerPx,
+            reversed,
+            config,
+            configContext,
+            parentX: x,
+            parentY,
+            isNested: true,
+          }),
+        )
+      }
+    }
+  }
+
+  const showSubfeatureLabels = subfeatureLabels !== 'none'
+  const shouldCalculateLabels =
+    labelAllowed && (!isNested || (isTranscriptChild && showSubfeatureLabels))
+
+  if (shouldCalculateLabels) {
+    const effectiveShowLabels = isTranscriptChild ? true : showLabels
+    const effectiveShowDescriptions = isTranscriptChild
+      ? false
+      : showDescriptions
+
+    const name = truncateLabel(
+      String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
+    )
+    const shouldShowName = /\S/.test(name) && effectiveShowLabels
+
+    const description = truncateLabel(
+      String(
+        readConfObject(config, ['labels', 'description'], { feature }) || '',
+      ),
+    )
+    const shouldShowDescription =
+      /\S/.test(description) && effectiveShowDescriptions
+
+    let extraHeight = 0
+    let maxLabelWidth = 0
+    if (shouldShowName) {
+      extraHeight += fontHeight
+      maxLabelWidth = Math.max(maxLabelWidth, measureText(name, fontHeight))
+    }
+    if (shouldShowDescription) {
+      extraHeight += fontHeight
+      maxLabelWidth = Math.max(
+        maxLabelWidth,
+        measureText(description, fontHeight),
+      )
+    }
+
+    const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
+    if (!isOverlayMode) {
+      layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
+    }
+
+    layout.totalLayoutWidth = Math.max(layout.width, maxLabelWidth)
+  }
+
+  return layout
+}
+
+interface FloatingLabelData {
+  text: string
+  relativeY: number
+  color: string
+  isOverlay?: boolean
 }
 
 function createFeatureFloatingLabels({
@@ -75,99 +423,92 @@ function createFeatureFloatingLabels({
   return floatingLabels
 }
 
-const xPadding = 3
-const yPadding = 5
+function createSubfeatureFloatingLabel({
+  transcriptName,
+  featureHeight,
+  subfeatureLabels,
+  color,
+}: {
+  transcriptName: string
+  featureHeight: number
+  subfeatureLabels: string
+  color: string
+}): FloatingLabelData | null {
+  if (!transcriptName) {
+    return null
+  }
 
-export { xPadding, yPadding }
+  const truncatedName = truncateLabel(transcriptName)
+  const isOverlay = subfeatureLabels === 'overlay'
+  const relativeY = isOverlay ? 2 - featureHeight : 0
 
-export interface LabelLayoutResult {
-  name: string
-  description: string
-  shouldShowName: boolean
-  shouldShowDescription: boolean
-  fontHeight: number
-  expansion: number
-  floatingLabels?: FloatingLabelData[]
+  return {
+    text: truncatedName,
+    relativeY,
+    color: normalizeColor(color),
+    isOverlay,
+  }
 }
 
-export function computeLabelLayout({
-  feature,
+export function buildFeatureMap(features: Map<string, Feature>): Map<string, Feature> {
+  const allFeatures = new Map<string, Feature>()
+
+  function addFeatureAndSubfeatures(feature: Feature) {
+    allFeatures.set(feature.id(), feature)
+    const subfeatures = feature.get('subfeatures') || []
+    for (const sub of subfeatures) {
+      addFeatureAndSubfeatures(sub)
+    }
+  }
+
+  for (const feature of features.values()) {
+    addFeatureAndSubfeatures(feature)
+  }
+
+  return allFeatures
+}
+
+export function computeLayouts({
+  features,
+  bpPerPx,
+  region,
   config,
-  rootLayout,
-  featureLayout,
-  displayMode,
-  includeFloatingLabels = false,
+  configContext,
+  layout,
 }: {
-  feature: Feature
+  features: Map<string, Feature>
+  bpPerPx: number
+  region: Region
   config: AnyConfigurationModel
-  rootLayout: SceneGraph
-  featureLayout: SceneGraph
-  displayMode: string
-  includeFloatingLabels?: boolean
-}): LabelLayoutResult {
-  const labelAllowed = displayMode !== 'collapsed'
+  configContext: RenderConfigContext
+  layout: BaseLayout<unknown>
+}): void {
+  const reversed = region.reversed || false
+  const {
+    showLabels,
+    showDescriptions,
+    fontHeight,
+    subfeatureLabels,
+    transcriptTypes,
+  } = configContext
 
-  if (!labelAllowed) {
-    return {
-      name: '',
-      description: '',
-      shouldShowName: false,
-      shouldShowDescription: false,
-      fontHeight: 0,
-      expansion: 0,
-    }
-  }
+  const allFeatures = buildFeatureMap(features)
 
-  const showLabels = readConfObject(config, 'showLabels') as boolean
-  const showDescriptions = readConfObject(config, 'showDescriptions') as boolean
-  const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
-    feature,
-  }) as number
-  const expansion =
-    (readConfObject(config, 'maxFeatureGlyphExpansion') as number) || 0
-  const name = String(
-    readConfObject(config, ['labels', 'name'], { feature }) || '',
-  )
-  const description = String(
-    readConfObject(config, ['labels', 'description'], { feature }) || '',
-  )
-  const shouldShowName = /\S/.test(name) && showLabels
-  const shouldShowDescription = /\S/.test(description) && showDescriptions
+  for (const feature of features.values()) {
+    const featureLayout = layoutFeature({
+      feature,
+      bpPerPx,
+      reversed,
+      config,
+      configContext,
+    })
 
-  const getWidth = (text: string) => {
-    const glyphWidth = rootLayout.width + expansion
-    const textWidth = measureText(text, fontHeight)
-    return Math.round(Math.min(textWidth, glyphWidth))
-  }
-
-  if (shouldShowName) {
-    rootLayout.addChild(
-      'nameLabel',
-      0,
-      featureLayout.bottom,
-      getWidth(name),
-      fontHeight,
+    const name = String(
+      readConfObject(config, ['labels', 'name'], { feature }) || '',
     )
-  }
-
-  if (shouldShowDescription) {
-    const aboveLayout = shouldShowName
-      ? rootLayout.getSubRecord('nameLabel')
-      : featureLayout
-    if (!aboveLayout) {
-      throw new Error('failed to layout nameLabel')
-    }
-    rootLayout.addChild(
-      'descriptionLabel',
-      0,
-      aboveLayout.bottom,
-      getWidth(description),
-      fontHeight,
+    const description = String(
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
     )
-  }
-
-  let floatingLabels: FloatingLabelData[] | undefined
-  if (includeFloatingLabels) {
     const nameColor = readConfObject(config, ['labels', 'nameColor'], {
       feature,
     }) as string
@@ -176,7 +517,8 @@ export function computeLabelLayout({
       ['labels', 'descriptionColor'],
       { feature },
     ) as string
-    floatingLabels = createFeatureFloatingLabels({
+
+    const floatingLabels = createFeatureFloatingLabels({
       name,
       description,
       showLabels,
@@ -185,168 +527,34 @@ export function computeLabelLayout({
       nameColor,
       descriptionColor,
     })
-  }
 
-  return {
-    name,
-    description,
-    shouldShowName,
-    shouldShowDescription,
-    fontHeight,
-    expansion,
-    floatingLabels,
-  }
-}
-
-export function chooseGlyphComponent({
-  feature,
-  extraGlyphs,
-  config,
-}: {
-  feature: Feature
-  config: AnyConfigurationModel
-  extraGlyphs?: ExtraGlyphValidator[]
-}): Glyph {
-  const type = feature.get('type')
-  const subfeatures = feature.get('subfeatures')
-  const transcriptTypes = readConfObject(config, 'transcriptTypes')
-  const containerTypes = readConfObject(config, 'containerTypes')
-
-  if (subfeatures?.length && type !== 'CDS') {
-    const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
-    const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
-    if (transcriptTypes.includes(type) && hasCDS) {
-      return ProcessedTranscript
-    } else if (
-      (!feature.parent() && hasSubSub) ||
-      containerTypes.includes(type)
-    ) {
-      return Subfeatures
-    } else {
-      return Segments
+    // Add floating labels for transcript subfeatures if subfeatureLabels is enabled
+    const subfeatureFloatingLabels: { id: string; label: FloatingLabelData }[] = []
+    if (subfeatureLabels !== 'none') {
+      for (const childLayout of featureLayout.children) {
+        const childFeature = allFeatures.get(childLayout.featureId)
+        if (childFeature && transcriptTypes.includes(childFeature.get('type'))) {
+          const transcriptName = String(
+            readConfObject(config, ['labels', 'name'], { feature: childFeature }) || '',
+          )
+          const label = createSubfeatureFloatingLabel({
+            transcriptName,
+            featureHeight: childLayout.height,
+            subfeatureLabels,
+            color: nameColor,
+          })
+          if (label) {
+            subfeatureFloatingLabels.push({
+              id: childLayout.featureId,
+              label,
+            })
+          }
+        }
+      }
     }
-  } else if (type === 'CDS') {
-    return CDS
-  } else {
-    return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
-  }
-}
 
-export function layOut({
-  layout,
-  feature,
-  bpPerPx,
-  reversed,
-  config,
-  extraGlyphs,
-}: FeatureLayOutArgs): SceneGraph {
-  const displayMode = readConfObject(config, 'displayMode')
-  const subLayout = layOutFeature({
-    layout,
-    feature,
-    bpPerPx,
-    reversed,
-    config,
-    extraGlyphs,
-  })
-  if (displayMode !== 'reducedRepresentation') {
-    layOutSubfeatures({
-      layout: subLayout,
-      subfeatures: feature.get('subfeatures') || [],
-      bpPerPx,
-      reversed,
-      config,
-      extraGlyphs,
-    })
-  }
-  return subLayout
-}
-
-export function layOutFeature(args: FeatureLayOutArgs) {
-  const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
-  const displayMode = readConfObject(config, 'displayMode') as string
-  const GlyphComponent =
-    displayMode === 'reducedRepresentation'
-      ? Box
-      : chooseGlyphComponent({ feature, extraGlyphs, config })
-
-  const parentFeature = feature.parent()
-  const x = parentFeature
-    ? (reversed
-        ? parentFeature.get('end') - feature.get('end')
-        : feature.get('start') - parentFeature.get('start')) / bpPerPx
-    : 0
-
-  const height = readConfObject(config, 'height', { feature }) as number
-  const width = (feature.get('end') - feature.get('start')) / bpPerPx
-  const top = layout.parent?.top ?? 0
-
-  return layout.addChild(
-    feature.id(),
-    x,
-    displayMode === 'collapse' ? 0 : top,
-    Math.max(width, 1),
-    displayMode === 'compact' ? height / 2 : height,
-    { GlyphComponent },
-  )
-}
-
-export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
-  const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
-  for (const feature of subfeatures) {
-    ;(chooseGlyphComponent({ feature, extraGlyphs, config }).layOut || layOut)({
-      layout,
-      feature,
-      bpPerPx,
-      reversed,
-      config,
-      extraGlyphs,
-    })
-  }
-}
-
-export function layoutFeatures({
-  features,
-  bpPerPx,
-  region,
-  config,
-  layout,
-  extraGlyphs,
-  displayMode,
-}: {
-  features: Map<string, Feature>
-  bpPerPx: number
-  region: Region
-  config: AnyConfigurationModel
-  layout: BaseLayout<unknown>
-  extraGlyphs?: ExtraGlyphValidator[]
-  displayMode: string
-}): void {
-  const { reversed } = region
-
-  for (const feature of features.values()) {
-    const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
-    const GlyphComponent = chooseGlyphComponent({ config, feature, extraGlyphs })
-    const featureLayout = (GlyphComponent.layOut || layOut)({
-      layout: rootLayout,
-      feature,
-      bpPerPx,
-      reversed,
-      config,
-      extraGlyphs,
-    })
-
-    const totalFeatureHeight = featureLayout.height
-    const { name, description, floatingLabels } = computeLabelLayout({
-      feature,
-      config,
-      rootLayout,
-      featureLayout,
-      displayMode,
-      includeFloatingLabels: true,
-    })
-
-    const layoutWidthBp = rootLayout.width * bpPerPx + xPadding * bpPerPx
+    const layoutWidthBp =
+      featureLayout.totalLayoutWidth * bpPerPx + xPadding * bpPerPx
     const [layoutStart, layoutEnd] = calculateLayoutBounds(
       feature.get('start'),
       feature.get('end'),
@@ -358,16 +566,20 @@ export function layoutFeatures({
       feature.id(),
       layoutStart,
       layoutEnd,
-      rootLayout.height + yPadding,
+      featureLayout.totalLayoutHeight + yPadding,
       feature,
       {
         label: name || feature.get('name') || feature.get('id'),
         description:
           description || feature.get('description') || feature.get('note'),
         refName: feature.get('refName'),
-        totalLayoutWidth: rootLayout.width + xPadding,
-        ...(floatingLabels?.length
-          ? { floatingLabels, totalFeatureHeight }
+        totalLayoutWidth: featureLayout.totalLayoutWidth + xPadding,
+        featureLayout,
+        ...(floatingLabels.length > 0
+          ? { floatingLabels, totalFeatureHeight: featureLayout.totalFeatureHeight }
+          : {}),
+        ...(subfeatureFloatingLabels.length > 0
+          ? { subfeatureFloatingLabels }
           : {}),
       },
     )

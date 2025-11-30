@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -12,10 +13,12 @@ import '@testing-library/jest-dom'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
+const theme = createJBrowseTheme()
 
 test('no features', () => {
   const { container } = render(
     <Rendering
+      theme={theme}
       blockKey="hello"
       colorByCDS={false}
       features={new Map()}
@@ -40,6 +43,7 @@ test('no features', () => {
 test('one feature', () => {
   const { container } = render(
     <Rendering
+      theme={theme}
       blockKey="hello"
       colorByCDS={false}
       regions={[
@@ -71,6 +75,7 @@ test('click on one feature, and do not re-render', () => {
   let counter = 0
   const { container, getByTestId } = render(
     <Rendering
+      theme={theme}
       blockKey="hello"
       colorByCDS={false}
       regions={[
@@ -127,6 +132,7 @@ test('one feature (compact mode)', () => {
 
   const { container } = render(
     <Rendering
+      theme={theme}
       blockKey="hello"
       colorByCDS={false}
       regions={[
@@ -308,6 +314,7 @@ test('processed transcript (reducedRepresentation mode)', () => {
   )
   const { container } = render(
     <Rendering
+      theme={theme}
       blockKey="hello"
       colorByCDS={false}
       regions={[
@@ -338,6 +345,7 @@ test('processed transcript (reducedRepresentation mode)', () => {
 test('processed transcript', () => {
   const { container } = render(
     <Rendering
+      theme={theme}
       blockKey="hello"
       colorByCDS={false}
       regions={[
@@ -514,6 +522,7 @@ test('processed transcript', () => {
 test('processed transcript (exons + impliedUTR)', () => {
   const { container } = render(
     <Rendering
+      theme={theme}
       blockKey="hello"
       colorByCDS={false}
       regions={[
@@ -1172,6 +1181,7 @@ test('svg selected', () => {
 test('gene with CDS children', () => {
   const { container } = render(
     <Rendering
+      theme={theme}
       blockKey="hello"
       colorByCDS={false}
       regions={[

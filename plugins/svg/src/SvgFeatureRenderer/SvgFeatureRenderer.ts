@@ -1,8 +1,7 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BoxRendererType } from '@jbrowse/core/pluggableElementTypes'
 import { updateStatus } from '@jbrowse/core/util'
 
-import { layoutFeatures } from './components/util'
+import { computeLayouts, createRenderConfigContext } from './components/util'
 
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 
@@ -13,22 +12,23 @@ export default class SvgFeatureRenderer extends BoxRendererType {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
     const { statusCallback = () => {}, regions, bpPerPx, config } = renderProps
+    const configContext = createRenderConfigContext(config)
 
     await updateStatus('Computing feature layout', statusCallback, () => {
-      layoutFeatures({
+      computeLayouts({
         features,
         bpPerPx,
         region: regions[0]!,
         config,
+        configContext,
         layout,
-        displayMode: readConfObject(config, 'displayMode'),
-        extraGlyphs: (renderProps as any).extraGlyphs,
       })
     })
 
     return {
-      ...(await super.render({ ...renderProps, layout })),
+      ...(await super.render({ ...renderProps, layout, configContext })),
       layout,
+      configContext,
     }
   }
 }

@@ -1,14 +1,39 @@
-import type React from 'react'
+import type { Feature } from '@jbrowse/core/util'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
-import type SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
+export interface FeatureLayout {
+  featureId: string
+  x: number
+  y: number
+  width: number
+  height: number
+  totalFeatureHeight: number
+  totalLayoutHeight: number
+  totalLayoutWidth: number
+  children: FeatureLayout[]
+  glyphType: GlyphType
+}
 
-export interface ViewParams {
-  start: number
-  end: number
-  offsetPx: number
-  offsetPx1: number
+export type FeatureMap = Map<string, Feature>
+
+export type GlyphType =
+  | 'Box'
+  | 'ProcessedTranscript'
+  | 'Segments'
+  | 'Subfeatures'
+  | 'CDS'
+
+export interface RenderConfigContext {
+  displayMode: string
+  transcriptTypes: string[]
+  containerTypes: string[]
+  showLabels: boolean
+  showDescriptions: boolean
+  subfeatureLabels: string
+  geneGlyphMode: string
+  fontHeight: number
+  featureHeight: number
+  labelAllowed: boolean
+  isHeightCallback: boolean
 }
 
 export interface Coord {
@@ -16,24 +41,8 @@ export interface Coord {
   y: number
 }
 
-export interface Glyph extends React.FC<{
-  colorByCDS: boolean
-  feature: Feature
-  featureLayout: SceneGraph
-  selected?: boolean
-  config: AnyConfigurationModel
-  displayModel: any
-  region: Region
-  bpPerPx: number
-  topLevel?: boolean
-}> {
-  layOut?: (arg: FeatureLayOutArgs) => SceneGraph
-}
-
-type LayoutRecord = [number, number, number, number]
-
 export interface DisplayModel {
-  getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
+  getFeatureByID?: (blockKey: string, featureId: string) => LayoutRect
   getFeatureOverlapping?: (
     blockKey: string,
     bp: number,
@@ -44,24 +53,4 @@ export interface DisplayModel {
   contextMenuFeature?: Feature
 }
 
-export interface ExtraGlyphValidator {
-  glyph: Glyph
-  validator: (feature: Feature) => boolean
-}
-
-export interface BaseLayOutArgs {
-  layout: SceneGraph
-  bpPerPx: number
-  reversed?: boolean
-  config: AnyConfigurationModel
-}
-
-export interface FeatureLayOutArgs extends BaseLayOutArgs {
-  feature: Feature
-  extraGlyphs?: ExtraGlyphValidator[]
-}
-
-export interface SubfeatureLayOutArgs extends BaseLayOutArgs {
-  subfeatures: Feature[]
-  extraGlyphs?: ExtraGlyphValidator[]
-}
+type LayoutRect = [number, number, number, number]

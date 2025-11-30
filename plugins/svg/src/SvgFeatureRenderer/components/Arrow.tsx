@@ -1,13 +1,11 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { normalizeColor } from './util'
+import { getStrokeColor } from './util'
 
+import type { FeatureLayout, RenderConfigContext } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
 const Arrow = observer(function Arrow({
   feature,
@@ -17,18 +15,17 @@ const Arrow = observer(function Arrow({
 }: {
   region: Region
   feature: Feature
-  featureLayout: SceneGraph
+  featureLayout: FeatureLayout
   config: AnyConfigurationModel
+  configContext: RenderConfigContext
 }) {
   const theme = useTheme()
   const strand = feature.get('strand')
   const reverseFlip = region.reversed ? -1 : 1
   const offset = 7 * strand * reverseFlip
-  const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
-  const color2 = normalizeColor(
-    readConfObject(config, 'color2', { feature }),
-    stripAlpha(theme.palette.text.secondary),
-  )
+  const { x: left, y: top, width, height } = featureLayout
+  const color2 = getStrokeColor({ feature, config, theme })
+
   const size = 5
   const p =
     strand * reverseFlip === -1

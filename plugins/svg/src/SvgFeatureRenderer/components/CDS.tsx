@@ -8,23 +8,23 @@ import { observer } from 'mobx-react'
 
 import Arrow from './Arrow'
 import { aggregateAminos } from './aggregateAminos'
-import { getBoxColor } from './getBoxColor'
+import { getBoxColor } from './util'
 import { usePeptides } from '../hooks/usePeptides'
 
+import type { DisplayModel, FeatureLayout, RenderConfigContext } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
 const CDS = observer(function CDS(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel
-  featureLayout: SceneGraph
+  configContext: RenderConfigContext
+  featureLayout: FeatureLayout
   bpPerPx: number
-  selected?: boolean
   topLevel?: boolean
   colorByCDS: boolean
-  displayModel: any
+  displayModel?: DisplayModel
 }) {
   const theme = useTheme()
   const {
@@ -44,7 +44,8 @@ const CDS = observer(function CDS(props: {
   const featureEnd = feature.get('end')
   const strand = feature.get('strand')
   const width = (featureEnd - featureStart) / bpPerPx
-  const { left = 0, top = 0, right = 0, height = 0 } = featureLayout.absolute
+  const { x: left, y: top, height } = featureLayout
+  const right = left + featureLayout.width
   const zoomedInEnough = 1 / bpPerPx >= 10
   const dontRenderRect = left + width < 0 || left > screenWidth
   const dontRenderLetters = !zoomedInEnough

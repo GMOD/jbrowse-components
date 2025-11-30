@@ -1,42 +1,153 @@
 import { useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { bpToPx, calculateLayoutBounds } from '@jbrowse/core/util'
-import { SceneGraph } from '@jbrowse/core/util/layouts'
+import { bpToPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import FeatureGlyph from './FeatureGlyph'
+import Box from './Box'
+import CDS from './CDS'
+import ProcessedTranscript from './ProcessedTranscript'
+import Segments from './Segments'
+import Subfeatures from './Subfeatures'
 import SvgOverlay from './SvgOverlay'
-import {
-  chooseGlyphComponent,
-  computeLabelLayout,
-  layOut,
-  xPadding,
-  yPadding,
-} from './util'
+import { buildFeatureMap, createRenderConfigContext, normalizeColor } from './util'
 
-import type { Coord, DisplayModel, ExtraGlyphValidator } from './types'
+import type { Coord, DisplayModel, FeatureLayout, RenderConfigContext } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
+import type { Theme } from '@mui/material'
 
 const svgHeightPadding = 100
 
+const GlyphComponents = {
+  Box,
+  CDS,
+  ProcessedTranscript,
+  Segments,
+  Subfeatures,
+}
+
+function FeatureGlyph(props: {
+  feature: Feature
+  featureLayout: FeatureLayout
+  features: Map<string, Feature>
+  region: Region
+  bpPerPx: number
+  config: AnyConfigurationModel
+  configContext: RenderConfigContext
+  colorByCDS: boolean
+  displayModel?: DisplayModel
+  topLevel?: boolean
+  selected?: boolean
+  theme: Theme
+}) {
+  const { featureLayout, features, configContext, theme, config, region, topLevel } = props
+  const { glyphType, children } = featureLayout
+  const GlyphComponent = GlyphComponents[glyphType]
+
+  return (
+    <>
+      <GlyphComponent {...props} />
+      {children.map(childLayout => {
+        const childFeature = features.get(childLayout.featureId)
+        if (!childFeature) {
+          return null
+        }
+        return (
+          <FeatureGlyph
+            key={childLayout.featureId}
+            {...props}
+            feature={childFeature}
+            featureLayout={childLayout}
+            topLevel={false}
+          />
+        )
+      })}
+      {topLevel && configContext.subfeatureLabels !== 'none' && (
+        <SubfeatureLabels
+          featureLayout={featureLayout}
+          features={features}
+          config={config}
+          configContext={configContext}
+          theme={theme}
+          region={region}
+        />
+      )}
+    </>
+  )
+}
+
+function SubfeatureLabels({
+  featureLayout,
+  features,
+  config,
+  configContext,
+}: {
+  featureLayout: FeatureLayout
+  features: Map<string, Feature>
+  config: AnyConfigurationModel
+  configContext: RenderConfigContext
+  theme: Theme
+  region: Region
+}) {
+  const { subfeatureLabels, transcriptTypes, fontHeight } = configContext
+
+  return (
+    <>
+      {featureLayout.children.map(childLayout => {
+        const childFeature = features.get(childLayout.featureId)
+        if (!childFeature || !transcriptTypes.includes(childFeature.get('type'))) {
+          return null
+        }
+
+        const name = String(
+          readConfObject(config, ['labels', 'name'], { feature: childFeature }) || '',
+        )
+        if (!/\S/.test(name)) {
+          return null
+        }
+
+        const nameColor = readConfObject(config, ['labels', 'nameColor'], {
+          feature: childFeature,
+        }) as string
+        const color = normalizeColor(nameColor)
+
+        const isOverlay = subfeatureLabels === 'overlay'
+        const labelY = isOverlay
+          ? childLayout.y + 2 + fontHeight
+          : childLayout.y + childLayout.height + fontHeight
+
+        return (
+          <text
+            key={`label-${childLayout.featureId}`}
+            x={childLayout.x}
+            y={labelY}
+            fontSize={fontHeight}
+            fill={color}
+          >
+            {name}
+          </text>
+        )
+      })}
+    </>
+  )
+}
+
 function RenderedFeatureGlyph(props: {
   feature: Feature
+  features: Map<string, Feature>
   bpPerPx: number
   region: Region
   config: AnyConfigurationModel
+  configContext: RenderConfigContext
   colorByCDS: boolean
   layout: BaseLayout<unknown>
-  extraGlyphs?: ExtraGlyphValidator[]
-  displayMode: string
-  exportSVG?: unknown
   displayModel?: DisplayModel
+  theme: Theme
   detectRerender?: () => void
 }) {
-  const { feature, detectRerender, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
-    props
+  const { feature, detectRerender, bpPerPx, region, layout } = props
 
   detectRerender?.()
 
@@ -44,67 +155,22 @@ function RenderedFeatureGlyph(props: {
   const start = feature.get(reversed ? 'end' : 'start')
   const startPx = bpToPx(start, region, bpPerPx)
 
-  const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
-  const GlyphComponent = chooseGlyphComponent({ config, feature, extraGlyphs })
-  const featureLayout = (GlyphComponent.layOut || layOut)({
-    layout: rootLayout,
-    feature,
-    bpPerPx,
-    reversed,
-    config,
-    extraGlyphs,
-  })
-
-  const { name, description, shouldShowName, shouldShowDescription, fontHeight, expansion } =
-    computeLabelLayout({
-      feature,
-      config,
-      rootLayout,
-      featureLayout,
-      displayMode,
-    })
-
-  const layoutWidthBp = rootLayout.width * bpPerPx + xPadding * bpPerPx
-  const [layoutStart, layoutEnd] = calculateLayoutBounds(
-    feature.get('start'),
-    feature.get('end'),
-    layoutWidthBp,
-    reversed,
-  )
-
-  const topPx = layout.addRect(
-    feature.id(),
-    layoutStart,
-    layoutEnd,
-    rootLayout.height + yPadding,
-    feature,
-    {
-      label: feature.get('name') || feature.get('id'),
-      description: feature.get('description') || feature.get('note'),
-      refName: feature.get('refName'),
-      totalLayoutWidth: rootLayout.width + xPadding,
-    },
-  )
-
-  if (topPx === null) {
+  const layoutData = layout.getRectangles().get(feature.id())
+  if (!layoutData) {
     return null
   }
 
-  rootLayout.move(startPx, topPx)
+  // getRectangles returns [left, top, right, bottom, serializableData]
+  const [, topPx, , , data] = layoutData as [number, number, number, number, { featureLayout: FeatureLayout }?]
+  const featureLayout = data?.featureLayout
+  if (!featureLayout) {
+    return null
+  }
 
   return (
-    <FeatureGlyph
-      rootLayout={rootLayout}
-      name={name}
-      shouldShowName={shouldShowName}
-      description={description}
-      shouldShowDescription={shouldShowDescription}
-      fontHeight={fontHeight}
-      allowedWidthExpansion={expansion}
-      reversed={region.reversed}
-      topLevel={true}
-      {...props}
-    />
+    <g transform={`translate(${startPx}, ${topPx})`}>
+      <FeatureGlyph {...props} featureLayout={featureLayout} topLevel />
+    </g>
   )
 }
 
@@ -113,27 +179,21 @@ const RenderedFeatures = observer(function (props: {
   isFeatureDisplayed?: (f: Feature) => boolean
   bpPerPx: number
   config: AnyConfigurationModel
-  displayMode: string
+  configContext: RenderConfigContext
   colorByCDS: boolean
   displayModel?: DisplayModel
   region: Region
-  exportSVG?: unknown
-  extraGlyphs?: ExtraGlyphValidator[]
   layout: BaseLayout<unknown>
+  theme: Theme
 }) {
   const { features = new Map(), isFeatureDisplayed } = props
+  const allFeatures = buildFeatureMap(features)
   return (
     <>
       {[...features.values()]
-        .filter(feature =>
-          isFeatureDisplayed ? isFeatureDisplayed(feature) : true,
-        )
+        .filter(feature => (isFeatureDisplayed ? isFeatureDisplayed(feature) : true))
         .map(feature => (
-          <RenderedFeatureGlyph
-            key={feature.id()}
-            feature={feature}
-            {...props}
-          />
+          <RenderedFeatureGlyph key={feature.id()} feature={feature} features={allFeatures} {...props} />
         ))}
     </>
   )
@@ -146,12 +206,13 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   bpPerPx: number
   detectRerender?: () => void
   config: AnyConfigurationModel
+  configContext?: RenderConfigContext
   colorByCDS: boolean
   features: Map<string, Feature>
   displayModel?: DisplayModel
   exportSVG?: boolean
   featureDisplayHandler?: (f: Feature) => boolean
-  extraGlyphs?: ExtraGlyphValidator[]
+  theme: Theme
   onMouseOut?: React.MouseEventHandler
   onMouseDown?: React.MouseEventHandler
   onMouseLeave?: React.MouseEventHandler
@@ -161,13 +222,13 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   onMouseUp?: React.MouseEventHandler
   onClick?: React.MouseEventHandler
 }) {
-  const { regions = [], config, exportSVG, featureDisplayHandler } = props
+  const { regions = [], config, exportSVG, featureDisplayHandler, configContext: propsConfigContext } = props
   const region = regions[0]!
-  const displayMode = readConfObject(config, 'displayMode') as string
+  const configContext = propsConfigContext ?? createRenderConfigContext(config)
 
   return exportSVG ? (
     <RenderedFeatures
-      displayMode={displayMode}
+      configContext={configContext}
       isFeatureDisplayed={featureDisplayHandler}
       region={region}
       {...props}
@@ -175,7 +236,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   ) : (
     <Wrapper {...props}>
       <RenderedFeatures
-        displayMode={displayMode}
+        configContext={configContext}
         region={region}
         isFeatureDisplayed={featureDisplayHandler}
         {...props}
