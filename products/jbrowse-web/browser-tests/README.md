@@ -1,10 +1,12 @@
 # JBrowse Web Browser Tests
 
-This directory contains Puppeteer-based browser tests that run against a real browser instead of jsdom.
+This directory contains Puppeteer-based browser tests that run against a real
+browser instead of jsdom.
 
 ## Prerequisites
 
 1. Build jbrowse-web first:
+
    ```bash
    cd products/jbrowse-web
    yarn build
@@ -51,7 +53,7 @@ yarn test:update
 The test runner supports visual regression testing using full page screenshots:
 
 ```typescript
-runner.test('my screenshot test', async (page) => {
+runner.test('my screenshot test', async page => {
   // ... setup code to render the page ...
 
   const result = await capturePageSnapshot(page, 'my-snapshot-name')
@@ -62,9 +64,12 @@ runner.test('my screenshot test', async (page) => {
 })
 ```
 
-Snapshots are stored in `__snapshots__/` directory. On first run, snapshots are created automatically. On subsequent runs, the current screenshot is compared against the stored snapshot.
+Snapshots are stored in `__snapshots__/` directory. On first run, snapshots are
+created automatically. On subsequent runs, the current screenshot is compared
+against the stored snapshot.
 
-Use `yarn test:update` or `yarn test -u` to update snapshots when intentional visual changes are made.
+Use `yarn test:update` or `yarn test -u` to update snapshots when intentional
+visual changes are made.
 
 ## Adding Tests
 
@@ -72,7 +77,7 @@ Tests are defined in `runner.ts` using the `TestRunner` class:
 
 ```typescript
 runner.describe('My Test Suite', () => {
-  runner.test('my test name', async (page) => {
+  runner.test('my test name', async page => {
     await page.goto(`${baseUrl}/?config=test_data/volvox/config.json`)
 
     // Find elements
@@ -87,8 +92,10 @@ runner.describe('My Test Suite', () => {
 
 ## Available Helpers
 
-- `findByTestId(page, testId, options)` - Find element by `data-testid` attribute
-- `findByText(page, text, options)` - Find element containing text (string or RegExp)
+- `findByTestId(page, testId, options)` - Find element by `data-testid`
+  attribute
+- `findByText(page, text, options)` - Find element containing text (string or
+  RegExp)
 - `clickByText(page, text, options)` - Find and click element by text
 - `delay(ms)` - Wait for specified milliseconds
 - `capturePageSnapshot(page, name)` - Capture and compare full page screenshot
