@@ -212,13 +212,11 @@ module.exports = function webpackBuilder(webpackEnv) {
       }),
     ].filter(Boolean),
     performance: false,
-    ...(isEnvDevelopment && {
-      devServer: {
-        port: process.env.PORT || 3000,
-        hot: true,
-        open: true,
-      },
-    }),
+    devServer: {
+      port: process.env.PORT || 'auto',
+      hot: true,
+      open: true,
+    },
   }
 }
 
