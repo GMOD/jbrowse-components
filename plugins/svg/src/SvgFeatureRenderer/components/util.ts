@@ -268,24 +268,19 @@ export function layOutFeature(args: FeatureLayOutArgs) {
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
       ? Box
-      : chooseGlyphComponent({
-          feature,
-          extraGlyphs,
-          config,
-        })
+      : chooseGlyphComponent({ feature, extraGlyphs, config })
+
   const parentFeature = feature.parent()
-  let x = 0
-  if (parentFeature) {
-    // Calculate x position relative to parent feature
-    x =
-      (reversed
+  const x = parentFeature
+    ? (reversed
         ? parentFeature.get('end') - feature.get('end')
         : feature.get('start') - parentFeature.get('start')) / bpPerPx
-  }
+    : 0
+
   const height = readConfObject(config, 'height', { feature }) as number
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
-  const layoutParent = layout.parent
-  const top = layoutParent ? layoutParent.top : 0
+  const top = layout.parent?.top ?? 0
+
   return layout.addChild(
     feature.id(),
     x,

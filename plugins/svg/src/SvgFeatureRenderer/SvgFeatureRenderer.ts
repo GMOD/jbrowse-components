@@ -13,36 +13,21 @@ export default class SvgFeatureRenderer extends BoxRendererType {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
     const { statusCallback = () => {}, regions, bpPerPx, config } = renderProps
-    const region = regions[0]!
-    const displayMode = readConfObject(config, 'displayMode') as string
 
-    // Perform layout computation upfront in the worker
-    // This populates the layout object with collision detection and positioning
-    // Note: we don't return the SceneGraph objects as they contain React components
-    // and cannot be serialized across the worker boundary
-    await updateStatus(
-      'Computing feature layout',
-      statusCallback as (arg: string) => void,
-      () => {
-        layoutFeatures({
-          features,
-          bpPerPx,
-          region,
-          config,
-          layout,
-          displayMode,
-          extraGlyphs: (renderProps as any).extraGlyphs,
-        })
-      },
-    )
-
-    const result = await super.render({
-      ...renderProps,
-      layout,
+    await updateStatus('Computing feature layout', statusCallback, () => {
+      layoutFeatures({
+        features,
+        bpPerPx,
+        region: regions[0]!,
+        config,
+        layout,
+        displayMode: readConfObject(config, 'displayMode'),
+        extraGlyphs: (renderProps as any).extraGlyphs,
+      })
     })
 
     return {
-      ...result,
+      ...(await super.render({ ...renderProps, layout })),
       layout,
     }
   }

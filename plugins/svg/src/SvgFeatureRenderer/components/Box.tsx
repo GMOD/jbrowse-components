@@ -24,25 +24,15 @@ const Box = observer(function Box(props: {
   colorByCDS: boolean
 }) {
   const theme = useTheme()
-  const {
-    colorByCDS,
-    feature,
-    region,
-    config,
-    featureLayout,
-    bpPerPx,
-    topLevel,
-  } = props
+  const { colorByCDS, feature, region, config, featureLayout, bpPerPx, topLevel } = props
   const { start, end } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
-  const featureStart = feature.get('start')
-  const featureEnd = feature.get('end')
-  const featureType: string | undefined = feature.get('type')
-  const width = (featureEnd - featureStart) / bpPerPx
+  const featureType = feature.get('type') as string | undefined
+  const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const { left = 0 } = featureLayout.absolute
   let { top = 0, height = 0 } = featureLayout.absolute
 
-  if (left + width < 0) {
+  if (left + width < 0 || (feature.parent() && featureType === 'intron')) {
     return null
   }
 
@@ -50,16 +40,9 @@ const Box = observer(function Box(props: {
     top += ((1 - utrHeightFraction) / 2) * height
     height *= utrHeightFraction
   }
+
   const leftWithinBlock = Math.max(left, 0)
-  const diff = leftWithinBlock - left
-  const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
-
-  const fill = getBoxColor({ feature, config, colorByCDS, theme })
-  const stroke = readConfObject(config, 'outline', { feature }) as string
-
-  if (feature.parent() && featureType === 'intron') {
-    return null
-  }
+  const widthWithinBlock = Math.max(2, Math.min(width - (leftWithinBlock - left), screenWidth))
 
   return (
     <>
@@ -70,8 +53,8 @@ const Box = observer(function Box(props: {
         y={top}
         width={widthWithinBlock}
         height={height}
-        {...getFillProps(fill)}
-        {...getStrokeProps(stroke)}
+        {...getFillProps(getBoxColor({ feature, config, colorByCDS, theme }))}
+        {...getStrokeProps(readConfObject(config, 'outline', { feature }))}
       />
     </>
   )

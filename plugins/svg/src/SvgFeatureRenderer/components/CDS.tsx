@@ -66,86 +66,52 @@ const CDS = observer(function CDS(props: {
 
   const fill = getBoxColor({ feature, config, colorByCDS, theme })
   const elements: React.ReactElement[] = []
+  const isReverse = strand * flipper === -1
+  const pxPerBp = 1 / bpPerPx
 
   if (g2p && protein && doRender) {
-    const aggregatedAminoAcids = aggregateAminos(
-      protein,
-      g2p,
-      featureStart,
-      featureEnd,
-      strand,
-    )
+    const aggregatedAminoAcids = aggregateAminos(protein, g2p, featureStart, featureEnd, strand)
+    const fillHex = colord(fill).toHex()
 
     for (let index = 0, l = aggregatedAminoAcids.length; index < l; index++) {
       const aa = aggregatedAminoAcids[index]!
-      const centerIndex = Math.floor((aa.startIndex + aa.endIndex) / 2)
       const isNonTriplet = aa.length % 3 !== 0 || aa.aminoAcid === '&'
-      const fillColor = isNonTriplet ? 'red' : 'black'
+      const bgColor = index % 2 === 1 ? darken(fillHex, 0.1) : lighten(fillHex, 0.2)
 
-      const isAlternate = index % 2 === 1
-      const bgColor = isAlternate
-        ? darken(colord(fill).toHex(), 0.1)
-        : lighten(colord(fill).toHex(), 0.2)
+      const rectX = isReverse
+        ? right - pxPerBp * (aa.endIndex + 1)
+        : left + pxPerBp * aa.startIndex
+      const rectWidth = pxPerBp * (aa.endIndex - aa.startIndex + 1)
+      const textX = isReverse
+        ? right - pxPerBp * (aa.startIndex + aa.endIndex + 1) / 2
+        : left + pxPerBp * ((aa.startIndex + aa.endIndex) / 2 + 0.5)
 
-      if (strand * flipper === -1) {
-        const startX = right - (1 / bpPerPx) * aa.startIndex
-        const endX = right - (1 / bpPerPx) * (aa.endIndex + 1)
-        const x = (startX + endX) / 2
-        const rectWidth = startX - endX
+      const label =
+        isNonTriplet || aa.aminoAcid === '*' || aa.aminoAcid === '&'
+          ? aa.aminoAcid
+          : `${aa.aminoAcid}${aa.proteinIndex + 1}`
 
-        elements.push(
-          <rect
-            key={`${index}-bg-${aa.aminoAcid}-${aa.startIndex}-${aa.endIndex}`}
-            x={endX}
-            y={top}
-            width={rectWidth}
-            height={height}
-            fill={bgColor}
-            stroke="none"
-          />,
-          <text
-            key={`${index}-${aa.aminoAcid}-${aa.startIndex}-${aa.endIndex}`}
-            x={x}
-            y={top + height - 1}
-            fontSize={height}
-            fill={fillColor}
-            textAnchor="middle"
-          >
-            {isNonTriplet || aa.aminoAcid === '*' || aa.aminoAcid === '&'
-              ? aa.aminoAcid
-              : `${aa.aminoAcid}${aa.proteinIndex + 1}`}
-          </text>,
-        )
-      } else {
-        const x = left + (1 / bpPerPx) * centerIndex + 1 / bpPerPx / 2
-        const startX = left + (1 / bpPerPx) * aa.startIndex
-        const endX = left + (1 / bpPerPx) * (aa.endIndex + 1)
-        const rectWidth = endX - startX
-
-        elements.push(
-          <rect
-            key={`${index}-bg-${aa.aminoAcid}-${aa.startIndex}-${aa.endIndex}`}
-            x={startX}
-            y={top}
-            width={rectWidth}
-            height={height}
-            fill={bgColor}
-            stroke="none"
-          />,
-          <text
-            key={`${index}-${aa.aminoAcid}-${aa.startIndex}-${aa.endIndex}`}
-            x={x}
-            y={top + height - 1}
-            fontSize={height}
-            fill={fillColor}
-            textAnchor="middle"
-          >
-            {isNonTriplet || aa.aminoAcid === '*' || aa.aminoAcid === '&'
-              ? aa.aminoAcid
-              : `${aa.aminoAcid}${aa.proteinIndex + 1}`}
-          </text>,
-        )
-      }
+      elements.push(
+        <rect
+          key={`${index}-bg`}
+          x={rectX}
+          y={top}
+          width={rectWidth}
+          height={height}
+          fill={bgColor}
+          stroke="none"
+        />,
+        <text
+          key={`${index}-text`}
+          x={textX}
+          y={top + height - 1}
+          fontSize={height}
+          fill={isNonTriplet ? 'red' : 'black'}
+          textAnchor="middle"
+        >
+          {label}
+        </text>,
+      )
     }
   }
 
