@@ -4,14 +4,24 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Arrow from './Arrow'
-import { getBoxColor } from './util'
 import { isUTR } from './isUTR'
+import { getBoxColor } from './util'
 
 import type { FeatureLayout, RenderConfigContext } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 const utrHeightFraction = 0.65
+
+function getUtrAdjustedDimensions(y: number, height: number, isUtr: boolean) {
+  if (isUtr) {
+    return {
+      top: y + ((1 - utrHeightFraction) / 2) * height,
+      height: height * utrHeightFraction,
+    }
+  }
+  return { top: y, height }
+}
 
 const Box = observer(function Box(props: {
   feature: Feature
@@ -24,24 +34,35 @@ const Box = observer(function Box(props: {
   topLevel?: boolean
 }) {
   const theme = useTheme()
-  const { colorByCDS, feature, region, config, featureLayout, bpPerPx, topLevel } = props
+  const {
+    colorByCDS,
+    feature,
+    region,
+    config,
+    featureLayout,
+    bpPerPx,
+    topLevel,
+  } = props
   const { start, end } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
   const featureType = feature.get('type') as string | undefined
 
-  let { x: left, y: top, width, height } = featureLayout
+  const { x: left, y, width, height: layoutHeight } = featureLayout
 
   if (left + width < 0 || (feature.parent() && featureType === 'intron')) {
     return null
   }
 
-  if (isUTR(feature)) {
-    top += ((1 - utrHeightFraction) / 2) * height
-    height *= utrHeightFraction
-  }
-
+  const { top, height } = getUtrAdjustedDimensions(
+    y,
+    layoutHeight,
+    isUTR(feature),
+  )
   const leftWithinBlock = Math.max(left, 0)
-  const widthWithinBlock = Math.max(2, Math.min(width - (leftWithinBlock - left), screenWidth))
+  const widthWithinBlock = Math.max(
+    2,
+    Math.min(width - (leftWithinBlock - left), screenWidth),
+  )
 
   return (
     <>

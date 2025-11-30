@@ -405,7 +405,12 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
       ListContents
     ) : (
       // Grow is required for cascading sub-menus
-      <Grow in={open} style={{ transformOrigin: '0 0 0' }} timeout={100} ref={ref}>
+      <Grow
+        in={open}
+        style={{ transformOrigin: '0 0 0' }}
+        timeout={100}
+        ref={ref}
+      >
         <Paper
           elevation={8}
           ref={paperRef}

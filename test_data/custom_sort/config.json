@@ -27,7 +27,9 @@
       "type": "FeatureTrack",
       "trackId": "track_apple",
       "name": "Apple track",
-      "category": ["<span style=\"display:none\">2</span>Apple (Second) - <a href=\"https://google.com\">Google</a>"],
+      "category": [
+        "<span style=\"display:none\">2</span>Apple (Second) - <a href=\"https://google.com\">Google</a>"
+      ],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "FromConfigAdapter",
@@ -51,7 +53,10 @@
       "type": "FeatureTrack",
       "trackId": "track_nested_first",
       "name": "First nested track",
-      "category": ["<span style=\"display:none\">4</span>Parent (Fourth)", "<span style=\"display:none\">1</span>Second Child (First)"],
+      "category": [
+        "<span style=\"display:none\">4</span>Parent (Fourth)",
+        "<span style=\"display:none\">1</span>Second Child (First)"
+      ],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "FromConfigAdapter",
@@ -63,7 +68,10 @@
       "type": "FeatureTrack",
       "trackId": "track_nested_second",
       "name": "Second nested track",
-      "category": ["<span style=\"display:none\">4</span>Parent (Fourth)", "<span style=\"display:none\">2</span>First Child (Second)"],
+      "category": [
+        "<span style=\"display:none\">4</span>Parent (Fourth)",
+        "<span style=\"display:none\">2</span>First Child (Second)"
+      ],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "FromConfigAdapter",

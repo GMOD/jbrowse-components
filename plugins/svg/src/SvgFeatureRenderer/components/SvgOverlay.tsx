@@ -33,7 +33,10 @@ function OverlayRect({
 
   const screenWidth = (region.end - region.start) / bpPerPx
   const leftWithinBlock = Math.max(leftPx, 0)
-  const widthWithinBlock = Math.max(1, Math.min(width - (leftWithinBlock - leftPx), screenWidth))
+  const widthWithinBlock = Math.max(
+    1,
+    Math.min(width - (leftWithinBlock - leftPx), screenWidth),
+  )
 
   return (
     <rect
@@ -77,7 +80,8 @@ const SvgOverlay = observer(function ({
   blockKey: string
   movedDuringLastMouseDown?: boolean
 } & FeatureHandlers) {
-  const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } = displayModel
+  const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
+    displayModel
   const mouseoverFeatureId = featureIdUnderMouse || contextMenuFeature?.id()
   const [renderOverlay, setRenderOverlay] = useState(false)
 
@@ -95,7 +99,11 @@ const SvgOverlay = observer(function ({
     }
 
   const handleClick = (event: ME) => {
-    if (!movedDuringLastMouseDown && handlers.onFeatureClick && mouseoverFeatureId) {
+    if (
+      !movedDuringLastMouseDown &&
+      handlers.onFeatureClick &&
+      mouseoverFeatureId
+    ) {
       event.stopPropagation()
       handlers.onFeatureClick(event, mouseoverFeatureId)
     }

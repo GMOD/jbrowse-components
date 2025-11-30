@@ -1,15 +1,15 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { calculateLayoutBounds, measureText, stripAlpha } from '@jbrowse/core/util'
-import { getFrame } from '@jbrowse/core/util'
+import {
+  calculateLayoutBounds,
+  getFrame,
+  measureText,
+  stripAlpha,
+} from '@jbrowse/core/util'
 
 import { getSubparts } from './filterSubparts'
 import { isUTR } from './isUTR'
 
-import type {
-  FeatureLayout,
-  GlyphType,
-  RenderConfigContext,
-} from './types'
+import type { FeatureLayout, GlyphType, RenderConfigContext } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -450,7 +450,10 @@ function createSubfeatureFloatingLabel({
   }
 }
 
-export function buildFeatureMap(features: Map<string, Feature>): Map<string, Feature> {
+export function buildFeatureMap(
+  features: Map<string, Feature>,
+  config: AnyConfigurationModel,
+): Map<string, Feature> {
   const allFeatures = new Map<string, Feature>()
 
   function addFeatureAndSubfeatures(feature: Feature) {
@@ -458,6 +461,11 @@ export function buildFeatureMap(features: Map<string, Feature>): Map<string, Fea
     const subfeatures = feature.get('subfeatures') || []
     for (const sub of subfeatures) {
       addFeatureAndSubfeatures(sub)
+    }
+    // Also add processed subparts (which may include generated UTR features)
+    const subparts = getSubparts(feature, config)
+    for (const sub of subparts) {
+      allFeatures.set(sub.id(), sub)
     }
   }
 
@@ -492,7 +500,7 @@ export function computeLayouts({
     transcriptTypes,
   } = configContext
 
-  const allFeatures = buildFeatureMap(features)
+  const allFeatures = buildFeatureMap(features, config)
 
   for (const feature of features.values()) {
     const featureLayout = layoutFeature({
@@ -529,13 +537,16 @@ export function computeLayouts({
     })
 
     // Add floating labels for transcript subfeatures if subfeatureLabels is enabled
-    const subfeatureFloatingLabels: { id: string; label: FloatingLabelData }[] = []
+    const subfeatureFloatingLabels: { id: string; label: FloatingLabelData }[] =
+      []
     if (subfeatureLabels !== 'none') {
       for (const childLayout of featureLayout.children) {
         const childFeature = allFeatures.get(childLayout.featureId)
         if (childFeature && transcriptTypes.includes(childFeature.get('type'))) {
           const transcriptName = String(
-            readConfObject(config, ['labels', 'name'], { feature: childFeature }) || '',
+            readConfObject(config, ['labels', 'name'], {
+              feature: childFeature,
+            }) || '',
           )
           const label = createSubfeatureFloatingLabel({
             transcriptName,
@@ -576,7 +587,10 @@ export function computeLayouts({
         totalLayoutWidth: featureLayout.totalLayoutWidth + xPadding,
         featureLayout,
         ...(floatingLabels.length > 0
-          ? { floatingLabels, totalFeatureHeight: featureLayout.totalFeatureHeight }
+          ? {
+              floatingLabels,
+              totalFeatureHeight: featureLayout.totalFeatureHeight,
+            }
           : {}),
         ...(subfeatureFloatingLabels.length > 0
           ? { subfeatureFloatingLabels }

@@ -13,8 +13,6 @@ export interface FeatureLayout {
   glyphType: GlyphType
 }
 
-export type FeatureMap = Map<string, Feature>
-
 export type GlyphType =
   | 'Box'
   | 'ProcessedTranscript'

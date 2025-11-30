@@ -12,7 +12,12 @@ import Subfeatures from './Subfeatures'
 import SvgOverlay from './SvgOverlay'
 import { buildFeatureMap, createRenderConfigContext, normalizeColor } from './util'
 
-import type { Coord, DisplayModel, FeatureLayout, RenderConfigContext } from './types'
+import type {
+  Coord,
+  DisplayModel,
+  FeatureLayout,
+  RenderConfigContext,
+} from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -42,7 +47,8 @@ function FeatureGlyph(props: {
   selected?: boolean
   theme: Theme
 }) {
-  const { featureLayout, features, configContext, theme, config, region, topLevel } = props
+  const { featureLayout, features, configContext, theme, config, region, topLevel } =
+    props
   const { glyphType, children } = featureLayout
   const GlyphComponent = GlyphComponents[glyphType]
 
@@ -102,7 +108,9 @@ function SubfeatureLabels({
         }
 
         const name = String(
-          readConfObject(config, ['labels', 'name'], { feature: childFeature }) || '',
+          readConfObject(config, ['labels', 'name'], {
+            feature: childFeature,
+          }) || '',
         )
         if (!/\S/.test(name)) {
           return null
@@ -161,7 +169,13 @@ function RenderedFeatureGlyph(props: {
   }
 
   // getRectangles returns [left, top, right, bottom, serializableData]
-  const [, topPx, , , data] = layoutData as [number, number, number, number, { featureLayout: FeatureLayout }?]
+  const [, topPx, , , data] = layoutData as [
+    number,
+    number,
+    number,
+    number,
+    { featureLayout: FeatureLayout }?,
+  ]
   const featureLayout = data?.featureLayout
   if (!featureLayout) {
     return null
@@ -186,14 +200,21 @@ const RenderedFeatures = observer(function (props: {
   layout: BaseLayout<unknown>
   theme: Theme
 }) {
-  const { features = new Map(), isFeatureDisplayed } = props
-  const allFeatures = buildFeatureMap(features)
+  const { features = new Map(), isFeatureDisplayed, config } = props
+  const allFeatures = buildFeatureMap(features, config)
   return (
     <>
       {[...features.values()]
-        .filter(feature => (isFeatureDisplayed ? isFeatureDisplayed(feature) : true))
+        .filter(feature =>
+          isFeatureDisplayed ? isFeatureDisplayed(feature) : true,
+        )
         .map(feature => (
-          <RenderedFeatureGlyph key={feature.id()} feature={feature} features={allFeatures} {...props} />
+          <RenderedFeatureGlyph
+            key={feature.id()}
+            feature={feature}
+            features={allFeatures}
+            {...props}
+          />
         ))}
     </>
   )
@@ -222,7 +243,13 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   onMouseUp?: React.MouseEventHandler
   onClick?: React.MouseEventHandler
 }) {
-  const { regions = [], config, exportSVG, featureDisplayHandler, configContext: propsConfigContext } = props
+  const {
+    regions = [],
+    config,
+    exportSVG,
+    featureDisplayHandler,
+    configContext: propsConfigContext,
+  } = props
   const region = regions[0]!
   const configContext = propsConfigContext ?? createRenderConfigContext(config)
 
@@ -282,7 +309,8 @@ function Wrapper(props: {
   const width = (region.end - region.start) / bpPerPx
   const ref = useRef<SVGSVGElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(false)
+  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
+    useState(false)
   const [initialMousePos, setInitialMousePos] = useState<Coord>()
 
   return (

@@ -71,20 +71,27 @@ const CDS = observer(function CDS(props: {
   const pxPerBp = 1 / bpPerPx
 
   if (g2p && protein && doRender) {
-    const aggregatedAminoAcids = aggregateAminos(protein, g2p, featureStart, featureEnd, strand)
+    const aggregatedAminoAcids = aggregateAminos(
+      protein,
+      g2p,
+      featureStart,
+      featureEnd,
+      strand,
+    )
     const fillHex = colord(fill).toHex()
 
     for (let index = 0, l = aggregatedAminoAcids.length; index < l; index++) {
       const aa = aggregatedAminoAcids[index]!
       const isNonTriplet = aa.length % 3 !== 0 || aa.aminoAcid === '&'
-      const bgColor = index % 2 === 1 ? darken(fillHex, 0.1) : lighten(fillHex, 0.2)
+      const bgColor =
+        index % 2 === 1 ? darken(fillHex, 0.1) : lighten(fillHex, 0.2)
 
       const rectX = isReverse
         ? right - pxPerBp * (aa.endIndex + 1)
         : left + pxPerBp * aa.startIndex
       const rectWidth = pxPerBp * (aa.endIndex - aa.startIndex + 1)
       const textX = isReverse
-        ? right - pxPerBp * (aa.startIndex + aa.endIndex + 1) / 2
+        ? right - (pxPerBp * (aa.startIndex + aa.endIndex + 1)) / 2
         : left + pxPerBp * ((aa.startIndex + aa.endIndex) / 2 + 0.5)
 
       const label =

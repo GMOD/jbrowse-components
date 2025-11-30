@@ -4,36 +4,66 @@ exports[`click on one feature, and do not re-render 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="100"
+    height="145"
     style="display: block;"
     width="333.3333333333333"
   >
-    <rect
-      data-testid="box-one"
-      fill="#daa520"
-      fill-opacity="1"
-      height="10"
-      width="2"
-      x="0.3"
-      y="0"
+    <g
+      transform="translate(0.3, 0)"
+    >
+      <rect
+        data-testid="box-one"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="2"
+        x="0"
+        y="0"
+      />
+    </g>
+    <g
+      transform="translate(0.3, 15)"
+    >
+      <rect
+        data-testid="box-two"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="2"
+        x="0"
+        y="0"
+      />
+    </g>
+    <g
+      transform="translate(0.3, 30)"
+    >
+      <rect
+        data-testid="box-three"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="2"
+        x="0"
+        y="0"
+      />
+    </g>
+  </svg>
+</div>
+`;
+
+exports[`forward and reverse strand genes 1`] = `
+<div>
+  <svg
+    data-testid="svgfeatures"
+    height="127"
+    style="display: block;"
+    width="200"
+  >
+    <g
+      transform="translate(10, 0)"
     />
-    <rect
-      data-testid="box-two"
-      fill="#daa520"
-      fill-opacity="1"
-      height="10"
-      width="2"
-      x="0.3"
-      y="15"
-    />
-    <rect
-      data-testid="box-three"
-      fill="#daa520"
-      fill-opacity="1"
-      height="10"
-      width="2"
-      x="0.3"
-      y="30"
+    <g
+      transform="translate(110, 0)"
     />
   </svg>
 </div>
@@ -43,30 +73,130 @@ exports[`gene with CDS children 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="100"
+    height="115"
     style="display: block;"
     width="333.3333333333333"
   >
-    <line
-      data-testid="one"
-      stroke="#000000"
-      x1="1991.7"
-      x2="3248.0333333333333"
-      y1="5"
-      y2="5"
+    <g
+      transform="translate(1991.7, 0)"
+    >
+      <line
+        data-testid="one"
+        stroke="#000000"
+        x1="0"
+        x2="1256.3333333333333"
+        y1="5"
+        y2="5"
+      />
+      <line
+        stroke="#000000"
+        x1="1256.3333333333333"
+        x2="1263.3333333333333"
+        y1="5"
+        y2="5"
+      />
+      <polygon
+        fill="#000000"
+        points="1259.8333333333333,2.5 1259.8333333333333,7.5 1263.3333333333333,5"
+        stroke="#000000"
+      />
+    </g>
+  </svg>
+</div>
+`;
+
+exports[`gene with multiple transcripts 1`] = `
+<div>
+  <svg
+    data-testid="svgfeatures"
+    height="139"
+    style="display: block;"
+    width="200"
+  >
+    <g
+      transform="translate(10, 0)"
     />
-    <line
-      stroke="#000000"
-      x1="3248.0333333333333"
-      x2="3255.0333333333333"
-      y1="5"
-      y2="5"
+  </svg>
+</div>
+`;
+
+exports[`gene with transcript and UTRs 1`] = `
+<div>
+  <svg
+    data-testid="svgfeatures"
+    height="127"
+    style="display: block;"
+    width="200"
+  >
+    <g
+      transform="translate(10, 0)"
     />
-    <polygon
-      fill="#000000"
-      points="3251.5333333333333,2.5,3251.5333333333333,7.5,3255.0333333333333,5"
-      stroke="#000000"
+  </svg>
+</div>
+`;
+
+exports[`longest transcript mode 1`] = `
+<div>
+  <svg
+    data-testid="svgfeatures"
+    height="127"
+    style="display: block;"
+    width="200"
+  >
+    <g
+      transform="translate(10, 0)"
     />
+  </svg>
+</div>
+`;
+
+exports[`multiple overlapping features get stacked 1`] = `
+<div>
+  <svg
+    data-testid="svgfeatures"
+    height="154"
+    style="display: block;"
+    width="200"
+  >
+    <g
+      transform="translate(20, 0)"
+    >
+      <rect
+        data-testid="box-test1"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="60"
+        x="0"
+        y="0"
+      />
+    </g>
+    <g
+      transform="translate(60, 27)"
+    >
+      <rect
+        data-testid="box-test2"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="60"
+        x="0"
+        y="0"
+      />
+    </g>
+    <g
+      transform="translate(100, 0)"
+    >
+      <rect
+        data-testid="box-test3"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="80"
+        x="0"
+        y="0"
+      />
+    </g>
   </svg>
 </div>
 `;
@@ -86,48 +216,34 @@ exports[`one feature (compact mode) 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="100"
+    height="122"
     style="display: block;"
     width="333.3333333333333"
   >
-    <line
-      data-testid="one"
-      stroke="#000000"
-      x1="1991.7"
-      x2="3248.0333333333333"
-      y1="2.5"
-      y2="2.5"
-    />
-    <rect
-      data-testid="box-one-0"
-      fill="#357089"
-      fill-opacity="1"
-      height="3.25"
-      width="44.666666666666664"
-      x="1991.7"
-      y="0.875"
-    />
-    <rect
-      data-testid="box-one-15"
-      fill="#357089"
-      fill-opacity="1"
-      height="3.25"
-      width="83"
-      x="3165.0333333333333"
-      y="0.875"
-    />
-    <line
-      stroke="#000000"
-      x1="3248.0333333333333"
-      x2="3255.0333333333333"
-      y1="2.5"
-      y2="2.5"
-    />
-    <polygon
-      fill="#000000"
-      points="3251.5333333333333,0,3251.5333333333333,5,3255.0333333333333,2.5"
-      stroke="#000000"
-    />
+    <g
+      transform="translate(1991.7, 0)"
+    >
+      <line
+        data-testid="one"
+        stroke="#000000"
+        x1="0"
+        x2="1256.3333333333333"
+        y1="2.5"
+        y2="2.5"
+      />
+      <line
+        stroke="#000000"
+        x1="1256.3333333333333"
+        x2="1263.3333333333333"
+        y1="2.5"
+        y2="2.5"
+      />
+      <polygon
+        fill="#000000"
+        points="1259.8333333333333,0 1259.8333333333333,5 1263.3333333333333,2.5"
+        stroke="#000000"
+      />
+    </g>
   </svg>
 </div>
 `;
@@ -136,19 +252,23 @@ exports[`one feature 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="100"
+    height="115"
     style="display: block;"
     width="333.3333333333333"
   >
-    <rect
-      data-testid="box-one"
-      fill="#daa520"
-      fill-opacity="1"
-      height="10"
-      width="2"
-      x="0.3"
-      y="0"
-    />
+    <g
+      transform="translate(0.3, 0)"
+    >
+      <rect
+        data-testid="box-one"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="2"
+        x="0"
+        y="0"
+      />
+    </g>
   </svg>
 </div>
 `;
@@ -157,48 +277,58 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="100"
+    height="139"
     style="display: block;"
     width="333.3333333333333"
   >
-    <line
-      data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0"
-      stroke="#000000"
-      x1="7759845"
-      x2="7766453"
-      y1="5"
-      y2="5"
-    />
-    <rect
-      data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_7"
-      fill="#357089"
-      fill-opacity="1"
-      height="6.5"
-      width="31.666666666666668"
-      x="7766421.333333333"
-      y="1.75"
-    />
-    <rect
-      data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_6"
-      fill="#357089"
-      fill-opacity="1"
-      height="6.5"
-      width="38.333333333333336"
-      x="7766269.666666667"
-      y="1.75"
-    />
-    <line
-      stroke="#000000"
-      x1="7759845"
-      x2="7759838"
-      y1="5"
-      y2="5"
-    />
-    <polygon
-      fill="#000000"
-      points="7759841.5,2.5,7759841.5,7.5,7759838,5"
-      stroke="#000000"
-    />
+    <g
+      transform="translate(7759845, 0)"
+    >
+      <line
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0"
+        stroke="#000000"
+        x1="0"
+        x2="6608"
+        y1="5"
+        y2="5"
+      />
+      <rect
+        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-1"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="327.3333333333333"
+        x="0"
+        y="0"
+      />
+      <rect
+        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-8"
+        fill="goldenrod"
+        height="10"
+        stroke=""
+        width="327.3333333333333"
+        x="0"
+        y="0"
+      />
+      <rect
+        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_7"
+        fill="#357089"
+        fill-opacity="1"
+        height="6.5"
+        width="31.666666666666668"
+        x="6576.333333333333"
+        y="1.75"
+      />
+      <rect
+        data-testid="box-type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_6"
+        fill="#357089"
+        fill-opacity="1"
+        height="6.5"
+        width="38.333333333333336"
+        x="6424.666666666667"
+        y="1.75"
+      />
+    </g>
   </svg>
 </div>
 `;
@@ -207,19 +337,23 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="100"
+    height="115"
     style="display: block;"
     width="333.3333333333333"
   >
-    <rect
-      data-testid="box-one"
-      fill="#daa520"
-      fill-opacity="1"
-      height="10"
-      width="2"
-      x="0.3"
-      y="0"
-    />
+    <g
+      transform="translate(0.3, 0)"
+    >
+      <rect
+        data-testid="box-one"
+        fill="#daa520"
+        fill-opacity="1"
+        height="10"
+        width="2"
+        x="0"
+        y="0"
+      />
+    </g>
   </svg>
 </div>
 `;
@@ -228,47 +362,48 @@ exports[`processed transcript 1`] = `
 <div>
   <svg
     data-testid="svgfeatures"
-    height="100"
+    height="127"
     style="display: block;"
     width="333.3333333333333"
   >
-    <line
-      data-testid="one"
-      stroke="#000000"
-      x1="1991.7"
-      x2="3248.0333333333333"
-      y1="5"
-      y2="5"
-    />
-    <rect
-      data-testid="box-one-0"
-      fill="#357089"
-      fill-opacity="1"
-      height="6.5"
-      width="44.666666666666664"
-      x="1991.7"
-      y="1.75"
-    />
-    <rect
-      data-testid="box-one-15"
-      fill="#357089"
-      fill-opacity="1"
-      height="6.5"
-      width="83"
-      x="3165.0333333333333"
-      y="1.75"
-    />
-    <line
-      stroke="#000000"
-      x1="3248.0333333333333"
-      x2="3255.0333333333333"
-      y1="5"
-      y2="5"
-    />
-    <polygon
-      fill="#000000"
-      points="3251.5333333333333,2.5,3251.5333333333333,7.5,3255.0333333333333,5"
-      stroke="#000000"
+    <g
+      transform="translate(1991.7, 0)"
+    >
+      <line
+        data-testid="one"
+        stroke="#000000"
+        x1="0"
+        x2="1256.3333333333333"
+        y1="5"
+        y2="5"
+      />
+      <line
+        stroke="#000000"
+        x1="1256.3333333333333"
+        x2="1263.3333333333333"
+        y1="5"
+        y2="5"
+      />
+      <polygon
+        fill="#000000"
+        points="1259.8333333333333,2.5 1259.8333333333333,7.5 1263.3333333333333,5"
+        stroke="#000000"
+      />
+    </g>
+  </svg>
+</div>
+`;
+
+exports[`segments feature (no CDS) 1`] = `
+<div>
+  <svg
+    data-testid="svgfeatures"
+    height="127"
+    style="display: block;"
+    width="200"
+  >
+    <g
+      transform="translate(10, 0)"
     />
   </svg>
 </div>
