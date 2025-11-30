@@ -15,6 +15,14 @@ function isImageBitmap(value: unknown): value is ImageBitmap {
   return typeof ImageBitmap !== 'undefined' && value instanceof ImageBitmap
 }
 
+function isArrayBufferLike(value: unknown): value is ArrayBufferLike {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof (value as ArrayBufferLike).byteLength === 'number'
+  )
+}
+
 /**
  * Collect transferable objects from a render result for zero-copy transfer.
  * Handles ImageBitmap, ArrayBuffer (flatbush), and other transferables.
@@ -23,29 +31,26 @@ function isImageBitmap(value: unknown): value is ImageBitmap {
  * This is expected behavior - the data has been moved, not copied.
  */
 export function collectTransferables(result: Record<string, unknown>): Transferable[] {
-  const res = result as {
-    imageData?: unknown
-    flatbush?: ArrayBufferLike
-    subfeatureFlatbush?: ArrayBufferLike
-  }
   const transferables: Transferable[] = []
-  if (isImageBitmap(result.imageData)) {
-    transferables.push(result.imageData)
+  const { imageData, flatbush, subfeatureFlatbush } = result
+
+  if (isImageBitmap(imageData)) {
+    transferables.push(imageData)
   }
-  if (result.flatbush) {
-    if (isDetachedBuffer(result.flatbush)) {
+  if (isArrayBufferLike(flatbush)) {
+    if (isDetachedBuffer(flatbush)) {
       console.warn('flatbush buffer is already detached, cannot transfer')
     } else {
-      transferables.push(result.flatbush)
+      transferables.push(flatbush)
     }
   }
-  if (result.subfeatureFlatbush) {
-    if (isDetachedBuffer(result.subfeatureFlatbush)) {
+  if (isArrayBufferLike(subfeatureFlatbush)) {
+    if (isDetachedBuffer(subfeatureFlatbush)) {
       console.warn(
         'subfeatureFlatbush buffer is already detached, cannot transfer',
       )
     } else {
-      transferables.push(result.subfeatureFlatbush)
+      transferables.push(subfeatureFlatbush)
     }
   }
   return transferables

@@ -10,7 +10,6 @@ import type {
   RenderArgsDeserialized as FeatureRenderArgsDeserialized,
   RenderArgsSerialized as FeatureRenderArgsSerialized,
   RenderResults as FeatureRenderResults,
-  RenderReturn,
   ResultsDeserialized as FeatureResultsDeserialized,
   ResultsSerialized as FeatureResultsSerialized,
 } from './FeatureRendererType'
@@ -123,7 +122,7 @@ export default class BoxRendererType extends FeatureRendererType {
    * Default render method that fetches features and creates layout.
    * Canvas-based renderers should override this and return rpcResult() directly.
    */
-  async render(renderArgs: RenderArgsDeserialized): Promise<RenderReturn> {
+  async render(renderArgs: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderArgs)
     const layout = this.createLayoutInWorker(renderArgs)
     return { features, layout }
@@ -143,8 +142,10 @@ export default class BoxRendererType extends FeatureRendererType {
 
     // Live layouts (BaseLayout) have serializeRegion method, plain objects (SerializedLayout) don't
     const layout =
-      typeof resultLayout?.serializeRegion === 'function'
-        ? resultLayout.serializeRegion(this.getExpandedRegion(region, args))
+      resultLayout && 'serializeRegion' in resultLayout
+        ? (resultLayout as BaseLayout<Feature>).serializeRegion(
+            this.getExpandedRegion(region, args),
+          )
         : (resultLayout as unknown as SerializedLayout)
 
     return {

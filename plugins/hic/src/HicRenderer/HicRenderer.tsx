@@ -30,6 +30,7 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
 
 export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: HicFeature[]
+  statusCallback?: (arg: string) => void
 }
 
 export default class HicRenderer extends ServerSideRendererType {
