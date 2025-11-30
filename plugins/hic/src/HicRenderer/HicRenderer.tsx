@@ -48,10 +48,8 @@ export default class HicRenderer extends ServerSideRendererType {
     )
 
     const serialized = { ...res, height, width }
-    if (isImageBitmap(res.imageData)) {
-      return rpcResult(serialized, [res.imageData])
-    }
-    return serialized
+    const transferables = isImageBitmap(res.imageData) ? [res.imageData] : []
+    return rpcResult(serialized, transferables)
   }
 
   async getFeatures(args: RenderArgsDeserialized) {

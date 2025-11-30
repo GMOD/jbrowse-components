@@ -34,9 +34,17 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       maxHeightReached: layout.maxHeightReached,
     }
 
+    // Collect transferables for zero-copy transfer to main thread
+    const transferables: Transferable[] = []
     if (isImageBitmap(res.imageData)) {
-      return rpcResult(serialized, [res.imageData])
+      transferables.push(res.imageData)
     }
-    return serialized
+    if (res.flatbush) {
+      transferables.push(res.flatbush)
+    }
+    if (res.subfeatureFlatbush) {
+      transferables.push(res.subfeatureFlatbush)
+    }
+    return rpcResult(serialized, transferables)
   }
 }

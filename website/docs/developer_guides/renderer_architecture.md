@@ -187,6 +187,9 @@ async renderInWorker(args) {
 }
 ```
 
+The `rpcResult` wrapper is automatically unwrapped in `RpcMethodType.deserializeReturn()`,
+so downstream code receives the actual value regardless of whether a web worker was used.
+
 ## Feature handling
 
 ### Fetching features

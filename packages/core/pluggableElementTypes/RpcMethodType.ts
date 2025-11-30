@@ -99,6 +99,16 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       }
       throw error
     }
+    // Unwrap rpcResult if present (needed for MainThreadRpcDriver where the
+    // rpcResult wrapper isn't stripped by the worker message handler)
+    if (
+      typeof r === 'object' &&
+      r !== null &&
+      '__rpcResult' in r &&
+      (r as { __rpcResult: boolean }).__rpcResult === true
+    ) {
+      return (r as { value: unknown }).value
+    }
     return r
   }
 

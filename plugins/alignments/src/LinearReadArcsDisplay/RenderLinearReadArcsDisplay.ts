@@ -270,9 +270,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
     // Include the offsetPx in the result so the main thread can position the
     // canvas correctly
     const serialized = { ...result, offsetPx }
-    if (isImageBitmap(result.imageData)) {
-      return rpcResult(serialized, [result.imageData])
-    }
-    return serialized
+    const transferables = isImageBitmap(result.imageData) ? [result.imageData] : []
+    return rpcResult(serialized, transferables)
   }
 }

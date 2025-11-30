@@ -151,4 +151,14 @@ export default class FeatureRendererType extends ServerSideRendererType {
       ? renderArgs.filters.passes(feature, renderArgs)
       : true
   }
+
+  /**
+   * Default render method that fetches features and passes them to the React component.
+   * Canvas-based renderers override this and return rpcResult() directly.
+   */
+  async render(renderArgs: RenderArgsDeserialized): Promise<RenderResults> {
+    const features = await this.getFeatures(renderArgs)
+    const result = await super.render({ ...renderArgs, features })
+    return { ...result, features }
+  }
 }

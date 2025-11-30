@@ -42,9 +42,7 @@ export default class LinearVariantMatrixRenderer extends FeatureRendererType {
       rowHeight,
     }
 
-    if (isImageBitmap(rest.imageData)) {
-      return rpcResult(serialized, [rest.imageData])
-    }
-    return serialized
+    const transferables = isImageBitmap(rest.imageData) ? [rest.imageData] : []
+    return rpcResult(serialized, transferables)
   }
 }

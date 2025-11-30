@@ -97,9 +97,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
       bpPerPxY: views[1]!.bpPerPx,
     }
 
-    if (isImageBitmap(ret.imageData)) {
-      return rpcResult(serialized, [ret.imageData])
-    }
-    return serialized
+    const transferables = isImageBitmap(ret.imageData) ? [ret.imageData] : []
+    return rpcResult(serialized, transferables)
   }
 }

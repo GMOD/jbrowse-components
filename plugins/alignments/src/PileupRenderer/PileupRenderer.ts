@@ -99,10 +99,14 @@ export default class PileupRenderer extends BoxRendererType {
       maxHeightReached: layout.maxHeightReached,
     }
 
+    const transferables: Transferable[] = []
     if (isImageBitmap(res.imageData)) {
-      return rpcResult(serialized, [res.imageData])
+      transferables.push(res.imageData)
     }
-    return serialized
+    if (res.flatbush) {
+      transferables.push(res.flatbush)
+    }
+    return rpcResult(serialized, transferables)
   }
 
   createLayoutSession(args: PileupLayoutSessionProps) {

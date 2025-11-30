@@ -76,10 +76,8 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
       width,
     }
 
-    if (isImageBitmap(rest.imageData)) {
-      return rpcResult(serialized, [rest.imageData])
-    }
-    return serialized
+    const transferables = isImageBitmap(rest.imageData) ? [rest.imageData] : []
+    return rpcResult(serialized, transferables)
   }
 
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(

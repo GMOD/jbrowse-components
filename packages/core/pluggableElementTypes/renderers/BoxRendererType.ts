@@ -140,7 +140,7 @@ export default class BoxRendererType extends FeatureRendererType {
     const region = args.regions[0]!
     const resultLayout = results.layout
 
-    // Layout may already be serialized (e.g., from canvas renderers during SVG export)
+    // Live layouts (BaseLayout) have serializeRegion method, plain objects (SerializedLayout) don't
     const layout =
       typeof resultLayout?.serializeRegion === 'function'
         ? resultLayout.serializeRegion(this.getExpandedRegion(region, args))

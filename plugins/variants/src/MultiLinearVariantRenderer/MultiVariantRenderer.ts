@@ -40,9 +40,13 @@ export default class MultiVariantRenderer extends FeatureRendererType {
       origScrollTop: scrollTop,
     }
 
+    const transferables: Transferable[] = []
     if (isImageBitmap(ret.imageData)) {
-      return rpcResult(serialized, [ret.imageData])
+      transferables.push(ret.imageData)
     }
-    return serialized
+    if (ret.flatbush) {
+      transferables.push(ret.flatbush)
+    }
+    return rpcResult(serialized, transferables)
   }
 }
