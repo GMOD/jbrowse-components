@@ -245,10 +245,13 @@ export async function makeImageData({
     stopToken,
   }
 
-  const arr = await updateStatus('Drawing variant matrix', statusCallback, () =>
-    renderingMode === 'phased'
-      ? drawPhasedMode(drawParams)
-      : drawAlleleCountMode(drawParams),
+  const arr = await updateStatus(
+    'Drawing variant matrix',
+    statusCallback,
+    () =>
+      renderingMode === 'phased'
+        ? drawPhasedMode(drawParams)
+        : drawAlleleCountMode(drawParams),
   )
 
   const featureData = mafs.map(({ feature }) => ({
