@@ -12,6 +12,7 @@ export type RenderProps = Record<string, unknown>
 export interface RenderResults {
   reactElement?: React.ReactElement
   html?: string
+  [key: string]: unknown
 }
 
 export type RenderReturn = RenderResults | RpcResult

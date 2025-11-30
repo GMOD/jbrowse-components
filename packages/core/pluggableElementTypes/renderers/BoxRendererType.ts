@@ -13,6 +13,7 @@ import type {
   ResultsDeserialized as FeatureResultsDeserialized,
   ResultsSerialized as FeatureResultsSerialized,
 } from './FeatureRendererType'
+import type { RenderReturn } from './RendererType'
 import type { LayoutSessionProps } from './LayoutSession'
 import type RpcManager from '../../rpc/RpcManager'
 import type { Feature, Region } from '../../util'
@@ -122,7 +123,7 @@ export default class BoxRendererType extends FeatureRendererType {
    * Default render method that fetches features and creates layout.
    * Canvas-based renderers should override this and return rpcResult() directly.
    */
-  async render(renderArgs: RenderArgsDeserialized) {
+  async render(renderArgs: RenderArgsDeserialized): Promise<RenderReturn> {
     const features = await this.getFeatures(renderArgs)
     const layout = this.createLayoutInWorker(renderArgs)
     return { features, layout }
