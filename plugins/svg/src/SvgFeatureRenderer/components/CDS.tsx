@@ -64,7 +64,9 @@ const CDS = observer(function CDS(props: {
       genomeToTranscriptSeqMapping(parent.toJSON()).g2p
     : undefined
 
+  const fill = getBoxColor({ feature, config, colorByCDS, theme })
   const elements: React.ReactElement[] = []
+
   if (g2p && protein && doRender) {
     const aggregatedAminoAcids = aggregateAminos(
       protein,
@@ -74,13 +76,6 @@ const CDS = observer(function CDS(props: {
       strand,
     )
 
-    const baseColor = getBoxColor({
-      feature,
-      config,
-      colorByCDS,
-      theme,
-    })
-
     for (let index = 0, l = aggregatedAminoAcids.length; index < l; index++) {
       const aa = aggregatedAminoAcids[index]!
       const centerIndex = Math.floor((aa.startIndex + aa.endIndex) / 2)
@@ -89,8 +84,8 @@ const CDS = observer(function CDS(props: {
 
       const isAlternate = index % 2 === 1
       const bgColor = isAlternate
-        ? darken(colord(baseColor).toHex(), 0.1)
-        : lighten(colord(baseColor).toHex(), 0.2)
+        ? darken(colord(fill).toHex(), 0.1)
+        : lighten(colord(fill).toHex(), 0.2)
 
       if (strand * flipper === -1) {
         const startX = right - (1 / bpPerPx) * aa.startIndex
@@ -154,7 +149,11 @@ const CDS = observer(function CDS(props: {
     }
   }
 
-  return dontRenderRect ? null : (
+  if (dontRenderRect) {
+    return null
+  }
+
+  return (
     <>
       {topLevel ? <Arrow {...props} /> : null}
       <rect
@@ -163,12 +162,7 @@ const CDS = observer(function CDS(props: {
         y={top}
         width={widthWithinBlock}
         height={height}
-        fill={getBoxColor({
-          feature,
-          config,
-          colorByCDS,
-          theme,
-        })}
+        fill={fill}
         stroke={readConfObject(config, 'outline', { feature }) as string}
       />
       {elements}

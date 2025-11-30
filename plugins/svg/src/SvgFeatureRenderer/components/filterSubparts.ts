@@ -6,19 +6,16 @@ import { makeUTRs } from './makeUTRs'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
-// returns a callback that will filter features features according to the
-// subParts conf var
+// returns a callback that will filter features according to the subParts conf var
 function makeSubpartsFilter(
   confKey: string | string[],
   config: AnyConfigurationModel,
 ) {
   const filter = readConfObject(config, confKey) as string[] | string
   const ret = typeof filter === 'string' ? filter.split(/\s*,\s*/) : filter
+  const lowerRet = new Set(ret.map(t => t.toLowerCase()))
 
-  return (feature: Feature) =>
-    ret
-      .map(typeName => typeName.toLowerCase())
-      .includes(feature.get('type').toLowerCase())
+  return (feature: Feature) => lowerRet.has(feature.get('type').toLowerCase())
 }
 
 export function filterSubpart(feature: Feature, config: AnyConfigurationModel) {

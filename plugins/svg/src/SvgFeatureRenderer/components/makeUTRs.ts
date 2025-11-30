@@ -3,27 +3,18 @@ import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 import { isUTR } from './isUTR'
 
 export function makeUTRs(parent: Feature, subs: Feature[]) {
-  // based on Lincoln's UTR-making code in
-  // Bio::Graphics::Glyph::processed_transcript
   const subparts = [...subs]
-
   let codeStart = Number.POSITIVE_INFINITY
   let codeEnd = Number.NEGATIVE_INFINITY
-
   let haveLeftUTR: boolean | undefined
   let haveRightUTR: boolean | undefined
 
-  // gather exons, find coding start and end, and look for UTRs
   const exons = []
   for (const subpart of subparts) {
     const type = subpart.get('type')
     if (/^cds/i.test(type)) {
-      if (codeStart > subpart.get('start')) {
-        codeStart = subpart.get('start')
-      }
-      if (codeEnd < subpart.get('end')) {
-        codeEnd = subpart.get('end')
-      }
+      codeStart = Math.min(codeStart, subpart.get('start'))
+      codeEnd = Math.max(codeEnd, subpart.get('end'))
     } else if (/exon/i.test(type)) {
       exons.push(subpart)
     } else if (isUTR(subpart)) {
@@ -32,7 +23,6 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
     }
   }
 
-  // bail if we don't have exons and CDS
   if (
     !(
       exons.length &&
@@ -43,14 +33,12 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
     return subparts
   }
 
-  // make sure the exons are sorted by coord
   exons.sort((a, b) => a.get('start') - b.get('start'))
-
   const strand = parent.get('strand')
 
-  // make the left-hand UTRs
   let start: number | undefined
   let end: number | undefined
+
   if (!haveLeftUTR) {
     for (const [i, exon] of exons.entries()) {
       start = exon.get('start')
@@ -69,14 +57,12 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
     }
   }
 
-  // make the right-hand UTRs
   if (!haveRightUTR) {
     for (let i = exons.length - 1; i >= 0; i--) {
       end = exons[i]!.get('end')
       if (end <= codeEnd) {
         break
       }
-
       start = Math.max(codeEnd, exons[i]!.get('start'))
       const type = strand >= 0 ? 'three_prime_UTR' : 'five_prime_UTR'
       subparts.push(

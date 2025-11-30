@@ -1,25 +1,25 @@
 import { useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { bpToPx, calculateLayoutBounds, measureText } from '@jbrowse/core/util'
+import { bpToPx, calculateLayoutBounds } from '@jbrowse/core/util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 import { observer } from 'mobx-react'
 
 import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
-import { chooseGlyphComponent, layOut } from './util'
+import {
+  chooseGlyphComponent,
+  computeLabelLayout,
+  layOut,
+  xPadding,
+  yPadding,
+} from './util'
 
 import type { Coord, DisplayModel, ExtraGlyphValidator } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
-// used to make features have a little padding for their labels
-const xPadding = 3
-const yPadding = 5
-
-// used so that user can click-away-from-feature below the laid out features
-// (issue #1248)
 const svgHeightPadding = 100
 
 function RenderedFeatureGlyph(props: {
@@ -35,24 +35,14 @@ function RenderedFeatureGlyph(props: {
   displayModel?: DisplayModel
   detectRerender?: () => void
 }) {
-  const {
-    feature,
-    detectRerender,
-    bpPerPx,
-    region,
-    config,
-    displayMode,
-    layout,
-    extraGlyphs,
-  } = props
+  const { feature, detectRerender, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
+    props
 
-  // used for unit testing, difficult to mock out so it is in actual source code
   detectRerender?.()
 
   const { reversed } = region
   const start = feature.get(reversed ? 'end' : 'start')
   const startPx = bpToPx(start, region, bpPerPx)
-  const labelAllowed = displayMode !== 'collapsed'
 
   const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
   const GlyphComponent = chooseGlyphComponent({ config, feature, extraGlyphs })
@@ -64,60 +54,16 @@ function RenderedFeatureGlyph(props: {
     config,
     extraGlyphs,
   })
-  let shouldShowName = false
-  let shouldShowDescription = false
-  let name = ''
-  let description = ''
-  let fontHeight = 0
-  let expansion = 0
-  if (labelAllowed) {
-    const showLabels = readConfObject(config, 'showLabels')
-    const showDescriptions = readConfObject(config, 'showDescriptions')
-    fontHeight = readConfObject(config, ['labels', 'fontSize'], { feature })
-    expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
-    name = String(readConfObject(config, ['labels', 'name'], { feature }) || '')
-    shouldShowName = /\S/.test(name) && showLabels
 
-    const getWidth = (text: string) => {
-      const glyphWidth = rootLayout.width + expansion
-      const textWidth = measureText(text, fontHeight)
-      return Math.round(Math.min(textWidth, glyphWidth))
-    }
+  const { name, description, shouldShowName, shouldShowDescription, fontHeight, expansion } =
+    computeLabelLayout({
+      feature,
+      config,
+      rootLayout,
+      featureLayout,
+      displayMode,
+    })
 
-    description = String(
-      readConfObject(config, ['labels', 'description'], { feature }) || '',
-    )
-    shouldShowDescription = /\S/.test(description) && showDescriptions
-
-    if (shouldShowName) {
-      rootLayout.addChild(
-        'nameLabel',
-        0,
-        featureLayout.bottom,
-        getWidth(name),
-        fontHeight,
-      )
-    }
-
-    if (shouldShowDescription) {
-      const aboveLayout = shouldShowName
-        ? rootLayout.getSubRecord('nameLabel')
-        : featureLayout
-      if (!aboveLayout) {
-        throw new Error('failed to layout nameLabel')
-      }
-
-      rootLayout.addChild(
-        'descriptionLabel',
-        0,
-        aboveLayout.bottom,
-        getWidth(description),
-        fontHeight,
-      )
-    }
-  }
-
-  // Use calculateLayoutBounds to handle reversed regions correctly
   const layoutWidthBp = rootLayout.width * bpPerPx + xPadding * bpPerPx
   const [layoutStart, layoutEnd] = calculateLayoutBounds(
     feature.get('start'),
@@ -125,6 +71,7 @@ function RenderedFeatureGlyph(props: {
     layoutWidthBp,
     reversed,
   )
+
   const topPx = layout.addRect(
     feature.id(),
     layoutStart,
@@ -138,26 +85,27 @@ function RenderedFeatureGlyph(props: {
       totalLayoutWidth: rootLayout.width + xPadding,
     },
   )
+
   if (topPx === null) {
     return null
-  } else {
-    rootLayout.move(startPx, topPx)
-
-    return (
-      <FeatureGlyph
-        rootLayout={rootLayout}
-        name={name}
-        shouldShowName={shouldShowName}
-        description={description}
-        shouldShowDescription={shouldShowDescription}
-        fontHeight={fontHeight}
-        allowedWidthExpansion={expansion}
-        reversed={region.reversed}
-        topLevel={true}
-        {...props}
-      />
-    )
   }
+
+  rootLayout.move(startPx, topPx)
+
+  return (
+    <FeatureGlyph
+      rootLayout={rootLayout}
+      name={name}
+      shouldShowName={shouldShowName}
+      description={description}
+      shouldShowDescription={shouldShowDescription}
+      fontHeight={fontHeight}
+      allowedWidthExpansion={expansion}
+      reversed={region.reversed}
+      topLevel={true}
+      {...props}
+    />
+  )
 }
 
 const RenderedFeatures = observer(function (props: {
@@ -242,12 +190,7 @@ function Wrapper(props: {
   blockKey: string
   regions: Region[]
   bpPerPx: number
-  detectRerender?: () => void
-  config: AnyConfigurationModel
-  colorByCDS: boolean
-  features: Map<string, Feature>
   displayModel?: DisplayModel
-  extraGlyphs?: ExtraGlyphValidator[]
   onMouseOut?: React.MouseEventHandler
   onMouseDown?: React.MouseEventHandler
   onMouseLeave?: React.MouseEventHandler
@@ -278,35 +221,26 @@ function Wrapper(props: {
   const width = (region.end - region.start) / bpPerPx
   const ref = useRef<SVGSVGElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
-    useState(false)
+  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(false)
   const [initialMousePos, setInitialMousePos] = useState<Coord>()
-
-  const height = layout.getTotalHeight()
 
   return (
     <svg
       ref={ref}
       data-testid="svgfeatures"
       width={width}
-      height={height + svgHeightPadding}
-      style={{
-        // use block because svg by default is inline, which adds a margin
-        display: 'block',
-      }}
+      height={layout.getTotalHeight() + svgHeightPadding}
+      style={{ display: 'block' }}
       onMouseDown={event => {
         setMouseIsDown(true)
         setMovedDuringLastMouseDown(false)
-        setInitialMousePos({
-          x: event.clientX,
-          y: event.clientY,
-        })
-        return onMouseDown?.(event)
+        setInitialMousePos({ x: event.clientX, y: event.clientY })
+        onMouseDown?.(event)
       }}
       onMouseUp={event => {
         setMouseIsDown(false)
         setInitialMousePos(undefined)
-        return onMouseUp?.(event)
+        onMouseUp?.(event)
       }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -328,20 +262,15 @@ function Wrapper(props: {
         const offsetY = event.clientY - top
         const px = region.reversed ? width - offsetX : offsetX
         const clientBp = region.start + bpPerPx * px
-
-        const featureIdCurrentlyUnderMouse =
-          displayModel.getFeatureOverlapping?.(blockKey, clientBp, offsetY)
-
-        if (onMouseMove) {
-          onMouseMove(event, featureIdCurrentlyUnderMouse)
-        }
+        onMouseMove?.(
+          event,
+          displayModel.getFeatureOverlapping?.(blockKey, clientBp, offsetY),
+        )
       }}
       onClick={event => {
-        // don't select a feature if we are clicking and dragging
-        if (movedDuringLastMouseDown) {
-          return
+        if (!movedDuringLastMouseDown) {
+          onClick?.(event)
         }
-        onClick?.(event)
       }}
     >
       {children}

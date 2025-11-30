@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Arrow from './Arrow'
+import { normalizeColor } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -24,16 +25,17 @@ const Segments = observer(function Segments(props: {
     featureLayout,
     selected,
     config,
-    // some subfeatures may be computed e.g. makeUTRs,
-    // so these are passed as a prop, or feature.get('subfeatures') by default
     subfeatures = feature.get('subfeatures'),
   } = props
 
   const theme = useTheme()
-  const c = readConfObject(config, 'color2', { feature })
-  const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
+  const color2 = normalizeColor(
+    readConfObject(config, 'color2', { feature }),
+    stripAlpha(theme.palette.text.secondary),
+  )
   const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
   const y = top + height / 2
+
   return (
     <>
       <line
@@ -45,11 +47,8 @@ const Segments = observer(function Segments(props: {
         stroke={color2}
       />
       {subfeatures?.map(subfeature => {
-        // bad or old code might not be a string id but try to assume it is
-
         const subfeatureId = String(subfeature.id())
         const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
-        // This subfeature got filtered out
         if (!subfeatureLayout) {
           return null
         }

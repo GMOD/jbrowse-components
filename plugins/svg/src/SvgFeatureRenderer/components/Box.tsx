@@ -54,17 +54,14 @@ const Box = observer(function Box(props: {
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
 
-  const fill = getBoxColor({
-    feature,
-    config,
-    colorByCDS,
-    theme,
-  })
+  const fill = getBoxColor({ feature, config, colorByCDS, theme })
   const stroke = readConfObject(config, 'outline', { feature }) as string
-  // if feature has parent and type is intron, then don't render the intron
-  // subfeature (if it doesn't have a parent, then maybe the introns are
-  // separately displayed features that should be displayed)
-  return feature.parent() && featureType === 'intron' ? null : (
+
+  if (feature.parent() && featureType === 'intron') {
+    return null
+  }
+
+  return (
     <>
       {topLevel ? <Arrow {...props} /> : null}
       <rect
