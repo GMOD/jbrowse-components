@@ -121,8 +121,6 @@ module.exports = function webpackBuilder(webpackEnv) {
         : info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     },
     resolve: {
-      conditionNames: ['mui-modern', '...'],
-      modules: ['node_modules'],
       extensions: moduleFileExtensions,
     },
     module: {

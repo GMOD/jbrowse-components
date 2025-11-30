@@ -18,6 +18,63 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
+interface FloatingLabelData {
+  text: string
+  relativeY: number
+  color: string
+}
+
+const MAX_LABEL_LENGTH = 50
+
+function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
+}
+
+function normalizeColor(color: string) {
+  return color === '#f0f' ? 'black' : color
+}
+
+function createFeatureFloatingLabels({
+  name,
+  description,
+  showLabels,
+  showDescriptions,
+  fontHeight,
+  nameColor,
+  descriptionColor,
+}: {
+  name: string
+  description: string
+  showLabels: boolean
+  showDescriptions: boolean
+  fontHeight: number
+  nameColor: string
+  descriptionColor: string
+}): FloatingLabelData[] {
+  const floatingLabels: FloatingLabelData[] = []
+  const truncatedName = truncateLabel(name)
+  const truncatedDesc = truncateLabel(description)
+  const shouldShowName = showLabels && /\S/.test(truncatedName)
+  const shouldShowDesc = showDescriptions && /\S/.test(truncatedDesc)
+
+  if (shouldShowName) {
+    floatingLabels.push({
+      text: truncatedName,
+      relativeY: 0,
+      color: normalizeColor(nameColor),
+    })
+  }
+  if (shouldShowDesc) {
+    floatingLabels.push({
+      text: truncatedDesc,
+      relativeY: shouldShowName ? fontHeight : 0,
+      color: normalizeColor(descriptionColor),
+    })
+  }
+
+  return floatingLabels
+}
+
 // used to make features have a little padding for their labels
 const xPadding = 3
 const yPadding = 5
@@ -232,14 +289,30 @@ export function layoutFeatures({
     })
 
     let expansion = 0
+    let name = ''
+    let description = ''
+    let floatingLabels: FloatingLabelData[] = []
+    const totalFeatureHeight = featureLayout.height
+
     if (labelAllowed) {
-      const showLabels = readConfObject(config, 'showLabels')
-      const showDescriptions = readConfObject(config, 'showDescriptions')
+      const showLabels = readConfObject(config, 'showLabels') as boolean
+      const showDescriptions = readConfObject(
+        config,
+        'showDescriptions',
+      ) as boolean
       const fontHeight = readConfObject(config, ['labels', 'fontSize'], {
         feature,
-      })
+      }) as number
+      const nameColor = readConfObject(config, ['labels', 'nameColor'], {
+        feature,
+      }) as string
+      const descriptionColor = readConfObject(
+        config,
+        ['labels', 'descriptionColor'],
+        { feature },
+      ) as string
       expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
-      const name = String(
+      name = String(
         readConfObject(config, ['labels', 'name'], { feature }) || '',
       )
       const shouldShowName = /\S/.test(name) && showLabels
@@ -250,7 +323,7 @@ export function layoutFeatures({
         return Math.round(Math.min(textWidth, glyphWidth))
       }
 
-      const description = String(
+      description = String(
         readConfObject(config, ['labels', 'description'], { feature }) || '',
       )
       const shouldShowDescription = /\S/.test(description) && showDescriptions
@@ -281,6 +354,16 @@ export function layoutFeatures({
           fontHeight,
         )
       }
+
+      floatingLabels = createFeatureFloatingLabels({
+        name,
+        description,
+        showLabels,
+        showDescriptions,
+        fontHeight,
+        nameColor,
+        descriptionColor,
+      })
     }
 
     // Perform collision detection and positioning
@@ -300,10 +383,14 @@ export function layoutFeatures({
       rootLayout.height + yPadding,
       feature,
       {
-        label: feature.get('name') || feature.get('id'),
-        description: feature.get('description') || feature.get('note'),
+        label: name || feature.get('name') || feature.get('id'),
+        description:
+          description || feature.get('description') || feature.get('note'),
         refName: feature.get('refName'),
         totalLayoutWidth: rootLayout.width + xPadding,
+        ...(floatingLabels.length > 0
+          ? { floatingLabels, totalFeatureHeight }
+          : {}),
       },
     )
   }
