@@ -118,6 +118,16 @@ export default class BoxRendererType extends FeatureRendererType {
     return layout.serializeRegion(this.getExpandedRegion(region, args))
   }
 
+  /**
+   * Default render method that fetches features and creates layout.
+   * Canvas-based renderers should override this and return rpcResult() directly.
+   */
+  async render(renderArgs: RenderArgsDeserialized): Promise<RenderResults> {
+    const features = await this.getFeatures(renderArgs)
+    const layout = this.createLayoutInWorker(renderArgs)
+    return { features, layout }
+  }
+
   serializeResultsInWorker(
     results: RenderResults,
     args: RenderArgsDeserialized,

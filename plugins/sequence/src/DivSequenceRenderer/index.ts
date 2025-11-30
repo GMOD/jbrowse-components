@@ -5,6 +5,10 @@ import ReactComponent from './components/DivSequenceRendering'
 import configSchema from './configSchema'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  RenderArgsDeserialized,
+  RenderResults,
+} from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { Region } from '@jbrowse/core/util/types'
 
 class DivSequenceRenderer extends FeatureRendererType {
@@ -12,6 +16,12 @@ class DivSequenceRenderer extends FeatureRendererType {
 
   getExpandedRegion(region: Region) {
     return expandRegion(region, 3)
+  }
+
+  async render(renderArgs: RenderArgsDeserialized): Promise<RenderResults> {
+    const features = await this.getFeatures(renderArgs)
+    const result = await super.render({ ...renderArgs, features })
+    return { ...result, features }
   }
 }
 
