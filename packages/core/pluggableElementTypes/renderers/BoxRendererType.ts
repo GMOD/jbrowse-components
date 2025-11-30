@@ -137,6 +137,11 @@ export default class BoxRendererType extends FeatureRendererType {
     return layout.getSublayout(regions[0]!.refName)
   }
 
+  serializeLayout(layout: BaseLayout<unknown>, args: RenderArgsDeserialized) {
+    const region = args.regions[0]!
+    return layout.serializeRegion(this.getExpandedRegion(region, args))
+  }
+
   serializeResultsInWorker(
     results: RenderResults,
     args: RenderArgsDeserialized,

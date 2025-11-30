@@ -28,16 +28,7 @@ export default class LinearVariantMatrixRenderer extends FeatureRendererType {
         }),
     )
 
-    const results = await super.render({
-      ...renderProps,
-      ...rest,
-      features,
-      height,
-      width,
-    })
-
     const serialized = {
-      ...results,
       ...rest,
       features: new Map<string, Feature>(),
       simplifiedFeatures: mafs.map(

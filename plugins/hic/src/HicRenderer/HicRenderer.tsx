@@ -68,22 +68,8 @@ export default class HicRenderer extends ServerSideRendererType {
         pluginManager: this.pluginManager,
       }),
     )
-    const results = await super.render({
-      ...renderProps,
-      ...res,
-      features,
-      region: renderProps.regions[0],
-      height,
-      width,
-    })
 
-    const serialized = {
-      ...results,
-      ...res,
-      height,
-      width,
-    }
-
+    const serialized = { ...res, height, width }
     if (res.imageData instanceof ImageBitmap) {
       return rpcResult(serialized, [res.imageData])
     }
@@ -103,9 +89,7 @@ export default class HicRenderer extends ServerSideRendererType {
         .pipe(toArray()),
     )
 
-    // cast to any to avoid return-type conflict, because the types of features
-    // returned by our getFeatures are quite different from the base interface
-    return features as any
+    return features as HicFeature[]
   }
 }
 

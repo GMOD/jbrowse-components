@@ -44,7 +44,6 @@ export default class PileupRenderer extends BoxRendererType {
     const bpExpansion = showSoftClip ? Math.round(maxClippingSize) : 0
 
     return {
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       ...(region as Omit<typeof region, symbol>),
       start: Math.floor(Math.max(start - bpExpansion, 0)),
       end: Math.ceil(end + bpExpansion),
@@ -94,20 +93,12 @@ export default class PileupRenderer extends BoxRendererType {
       },
     )
 
-    const results = await super.render({
-      ...renderProps,
-      ...res,
-      features,
-      layout,
-      height,
-      width,
-    })
+    const serializedLayout = this.serializeLayout(layout, renderProps)
 
     const serialized = {
-      ...results,
       ...res,
       features: new Map(),
-      layout,
+      layout: serializedLayout,
       height,
       width,
       maxHeightReached: layout.maxHeightReached,

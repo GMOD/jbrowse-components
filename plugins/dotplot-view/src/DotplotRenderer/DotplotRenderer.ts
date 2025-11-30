@@ -83,15 +83,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
       drawDotplot(ctx, { ...renderProps, views }),
     )
 
-    const results = await super.render({
-      ...renderProps,
-      ...ret,
-      height,
-      width,
-    })
-
     const serialized = {
-      ...results,
       ...ret,
       height,
       width,

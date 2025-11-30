@@ -68,20 +68,11 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
         ),
     )
 
-    const results = await super.render({
-      ...renderProps,
-      ...rest,
-      features,
-      height,
-      width,
-    })
-
     const serialized = {
-      ...results,
       ...rest,
       features: reducedFeatures
         ? new Map<string, Feature>(reducedFeatures.map(r => [r.id(), r]))
-        : results.features,
+        : new Map<string, Feature>(),
       height,
       width,
     }
@@ -92,10 +83,6 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     return serialized
   }
 
-  /**
-   * draw features to context given props, to be used by derived renderer
-   * classes
-   */
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(
     ctx: CanvasRenderingContext2D,
     props: T,

@@ -33,16 +33,7 @@ export default class MultiVariantRenderer extends FeatureRendererType {
       },
     )
 
-    const results = await super.render({
-      ...renderProps,
-      ...ret,
-      features,
-      height,
-      width,
-    })
-
     const serialized = {
-      ...results,
       ...ret,
       features: new Map<string, Feature>(),
       height,

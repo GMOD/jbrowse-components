@@ -15,7 +15,6 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     const region = regions[0]!
     const width = Math.max(1, (region.end - region.start) / bpPerPx)
 
-    // Render to canvas
     const res = await doAll({
       pluginManager: this.pluginManager,
       renderProps,
@@ -24,21 +23,12 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     })
 
     const height = Math.max(1, layout.getTotalHeight())
-
-    const result = await super.render({
-      ...renderProps,
-      ...res,
-      features,
-      layout,
-      height,
-      width,
-    })
+    const serializedLayout = this.serializeLayout(layout, renderProps)
 
     const serialized = {
-      ...result,
       ...res,
       features: new Map(),
-      layout,
+      layout: serializedLayout,
       height,
       width,
       maxHeightReached: layout.maxHeightReached,
