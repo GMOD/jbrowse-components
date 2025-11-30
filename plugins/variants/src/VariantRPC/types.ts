@@ -17,7 +17,7 @@ export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sources: Source[]
 }
 
-export interface GetSimplifiedFeaturesArgs extends BaseVariantRpcArgs {}
+export type GetSimplifiedFeaturesArgs = BaseVariantRpcArgs
 
 export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
   statusCallback: (arg: string) => void

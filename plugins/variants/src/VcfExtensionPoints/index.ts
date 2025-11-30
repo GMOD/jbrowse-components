@@ -12,7 +12,7 @@ import type {
 } from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-export default function ExtensionPointsF(pluginManager: PluginManager) {
+export default function VcfExtensionPointsF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-guessAdapterForLocation',
     (adapterGuesser: AdapterGuesser) => {

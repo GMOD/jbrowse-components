@@ -9,8 +9,7 @@ export default class LinearVariantMatrixRenderer extends FeatureRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { height, sources, regions, bpPerPx, scrollTop, rowHeight } =
-      renderProps
+    const { height, regions, bpPerPx, scrollTop, rowHeight } = renderProps
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
@@ -24,11 +23,7 @@ export default class LinearVariantMatrixRenderer extends FeatureRendererType {
           ctx,
           canvasWidth: width,
           canvasHeight: height,
-          renderArgs: {
-            ...renderProps,
-            features,
-            sources,
-          },
+          renderArgs: { ...renderProps, features },
         }),
     )
 

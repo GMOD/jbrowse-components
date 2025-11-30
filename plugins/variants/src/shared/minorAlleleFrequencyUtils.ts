@@ -8,11 +8,11 @@ export function calculateAlleleCounts(
 ) {
   const alleleCounts = {} as Record<string, number>
   const vals = Object.values(genotypes)
-  for (let i = 0; i < vals.length; i++) {
-    const genotype = vals[i]!
-    const alleles = (cacheSplit[genotype] ||= genotype.split(/[/|]/))
-    for (let j = 0; j < alleles.length; j++) {
-      const a = alleles[j]!
+  for (const val of vals) {
+    const genotype = val
+    const alleles = cacheSplit[genotype] ?? (cacheSplit[genotype] = genotype.split(/[/|]/))
+    for (const allele of alleles) {
+      const a = allele
       alleleCounts[a] = (alleleCounts[a] || 0) + 1
     }
   }
@@ -55,19 +55,20 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   lengthCutoffFilter,
   stopToken,
   genotypesCache,
+  splitCache = {},
 }: {
   features: Iterable<Feature>
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
   stopToken?: string
   genotypesCache?: Map<string, Record<string, string>>
+  splitCache?: Record<string, string[]>
 }) {
   const results = [] as {
     feature: Feature
     mostFrequentAlt: string
     alleleCounts: Record<string, number>
   }[]
-  const cacheSplit = {} as Record<string, string[]>
 
   forEachWithStopTokenCheck(features, stopToken, feature => {
     if (feature.get('end') - feature.get('start') <= lengthCutoffFilter) {
@@ -78,7 +79,7 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
         genotypesCache?.set(featureId, genotypes)
       }
 
-      const alleleCounts = calculateAlleleCounts(genotypes, cacheSplit)
+      const alleleCounts = calculateAlleleCounts(genotypes, splitCache)
       if (
         calculateMinorAlleleFrequency(alleleCounts) >=
         minorAlleleFrequencyFilter
