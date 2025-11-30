@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { CascadingMenuButton } from '@jbrowse/core/ui'
+import { CascadingMenuButton, SanitizedHTML } from '@jbrowse/core/ui'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
@@ -62,7 +62,7 @@ const TrackCategory = observer(function ({
     >
       <Typography data-testid={`htsCategory-${name}`}>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-        {name}
+        <SanitizedHTML html={name} />
         <CascadingMenuButton
           menuItems={[
             {
