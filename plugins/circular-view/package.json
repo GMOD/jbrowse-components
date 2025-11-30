@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.7.0",
-    "@jbrowse/mobx-state-tree": "^5.4.6",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "@types/file-saver-es": "^2.0.0",
