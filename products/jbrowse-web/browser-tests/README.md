@@ -46,20 +46,15 @@ yarn test:update
    - Wait for elements to appear
    - Capture and compare canvas snapshots
 
-## Canvas Snapshot Testing
+## Screenshot Testing
 
-The test runner supports visual regression testing for canvas elements:
+The test runner supports visual regression testing using full page screenshots:
 
 ```typescript
-runner.test('my canvas test', async (page) => {
-  // ... setup code to render canvas ...
+runner.test('my screenshot test', async (page) => {
+  // ... setup code to render the page ...
 
-  const result = await captureCanvasSnapshot(
-    page,
-    '[data-testid="my-canvas"]',  // CSS selector for canvas
-    'my-snapshot-name',            // Name for the snapshot file
-    { threshold: 0.01 }            // 1% pixel difference threshold
-  )
+  const result = await capturePageSnapshot(page, 'my-snapshot-name')
 
   if (!result.passed) {
     throw new Error(result.message)
@@ -67,7 +62,7 @@ runner.test('my canvas test', async (page) => {
 })
 ```
 
-Snapshots are stored in `__snapshots__/` directory. On first run, snapshots are created automatically. On subsequent runs, the current canvas is compared against the stored snapshot.
+Snapshots are stored in `__snapshots__/` directory. On first run, snapshots are created automatically. On subsequent runs, the current screenshot is compared against the stored snapshot.
 
 Use `yarn test:update` or `yarn test -u` to update snapshots when intentional visual changes are made.
 
@@ -96,4 +91,4 @@ runner.describe('My Test Suite', () => {
 - `findByText(page, text, options)` - Find element containing text (string or RegExp)
 - `clickByText(page, text, options)` - Find and click element by text
 - `delay(ms)` - Wait for specified milliseconds
-- `captureCanvasSnapshot(page, selector, name, options)` - Capture and compare canvas snapshot
+- `capturePageSnapshot(page, name)` - Capture and compare full page screenshot
