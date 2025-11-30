@@ -1337,64 +1337,6 @@
       }
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "Genes_svg",
-      "name": "GFF3 genes - SvgFeatureRenderer",
-      "assemblyNames": ["volvox"],
-      "category": ["Miscellaneous"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox.sort.gff3.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:get(feature,'type')=='gene'?'green':'purple'"
-          }
-        }
-      ]
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "Genes_canvas",
-      "name": "GFF3 genes - CanvasFeatureRenderer",
-      "assemblyNames": ["volvox"],
-      "category": ["Miscellaneous"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox.sort.gff3.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'type')=='gene'?'green':'purple'"
-          }
-        }
-      ]
-    },
-    {
       "type": "QuantitativeTrack",
       "trackId": "VUyE25kYsQo",
       "name": "Volvox microarray",
@@ -1648,8 +1590,8 @@
     },
     {
       "type": "VariantTrack",
-      "trackId": "variant_colors_svg",
-      "name": "volvox filtered vcf - SvgFeatureRenderer (green snp, purple indel)",
+      "trackId": "variant_colors",
+      "name": "volvox filtered vcf (green snp, purple indel)",
       "category": ["Variants"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -1667,38 +1609,18 @@
       },
       "displays": [
         {
+          "type": "ChordVariantDisplay",
+          "displayId": "volvox_filtered_vcf_color-ChordVariantDisplay",
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
           "type": "LinearVariantDisplay",
+          "maxFeatureScreenDensity": 0.0006,
+          "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "renderer": {
             "type": "SvgFeatureRenderer",
-            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
-          }
-        }
-      ]
-    },
-    {
-      "type": "VariantTrack",
-      "trackId": "variant_colors_canvas",
-      "name": "volvox filtered vcf - CanvasFeatureRenderer (green snp, purple indel)",
-      "category": ["Variants"],
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "volvox.filtered.vcf.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox.filtered.vcf.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearVariantDisplay",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
             "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
           }
         }

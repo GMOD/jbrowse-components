@@ -1,0 +1,167 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "../volvox/volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "SVG vs Canvas comparison",
+    "views": [
+      {
+        "id": "svg_vs_canvas_view",
+        "type": "LinearGenomeView",
+        "offsetPx": 2000,
+        "bpPerPx": 0.05,
+        "displayedRegions": [
+          {
+            "refName": "ctgA",
+            "start": 0,
+            "end": 50001,
+            "assemblyName": "volvox"
+          }
+        ]
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "filterText": "",
+        "view": "svg_vs_canvas_view"
+      }
+    },
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    }
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "Genes_svg",
+      "name": "GFF3 genes - SvgFeatureRenderer",
+      "assemblyNames": ["volvox"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "../volvox/volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "../volvox/volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:get(feature,'type')=='gene'?'green':'purple'"
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Genes_canvas",
+      "name": "GFF3 genes - CanvasFeatureRenderer",
+      "assemblyNames": ["volvox"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "../volvox/volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "../volvox/volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "renderer": {
+            "type": "CanvasFeatureRenderer",
+            "color1": "jexl:get(feature,'type')=='gene'?'green':'purple'"
+          }
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variant_colors_svg",
+      "name": "volvox filtered vcf - SvgFeatureRenderer (green snp, purple indel)",
+      "category": ["Variants"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "../volvox/volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "../volvox/volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+          }
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variant_colors_canvas",
+      "name": "volvox filtered vcf - CanvasFeatureRenderer (green snp, purple indel)",
+      "category": ["Variants"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "../volvox/volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "../volvox/volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "renderer": {
+            "type": "CanvasFeatureRenderer",
+            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+          }
+        }
+      ]
+    }
+  ]
+}

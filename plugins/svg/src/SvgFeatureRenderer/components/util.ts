@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
+  bpToPx,
   calculateLayoutBounds,
   getFrame,
   measureText,
@@ -496,7 +497,11 @@ export function addSubfeaturesToLayoutAndFlatbush({
     const isTranscript = transcriptTypes.includes(childType)
 
     if (!isTranscript) {
-      addNestedSubfeaturesToLayout({ layout, featureLayout: child, allFeatures })
+      addNestedSubfeaturesToLayout({
+        layout,
+        featureLayout: child,
+        allFeatures,
+      })
       continue
     }
 
@@ -554,7 +559,11 @@ export function addSubfeaturesToLayoutAndFlatbush({
     )
 
     if (child.children.length > 0) {
-      addNestedSubfeaturesToLayout({ layout, featureLayout: child, allFeatures })
+      addNestedSubfeaturesToLayout({
+        layout,
+        featureLayout: child,
+        allFeatures,
+      })
     }
   }
 }
@@ -588,7 +597,11 @@ export function addNestedSubfeaturesToLayout({
     )
 
     if (child.children.length > 0) {
-      addNestedSubfeaturesToLayout({ layout, featureLayout: child, allFeatures })
+      addNestedSubfeaturesToLayout({
+        layout,
+        featureLayout: child,
+        allFeatures,
+      })
     }
   }
 }
@@ -726,11 +739,15 @@ export function computeLayouts({
       return childFeature && transcriptTypes.includes(childFeature.get('type'))
     })
 
-    // Adjust child positions to absolute coordinates
+    // Adjust child positions to absolute coordinates (like canvas makeImageData.ts)
+    const start = feature.get(reversed ? 'end' : 'start')
+    const startPx = bpToPx(start, region, bpPerPx)
+
     const adjustedLayout = {
       ...featureLayout,
+      x: startPx + featureLayout.x,
       y: topPx + featureLayout.y,
-      children: adjustChildPositions(featureLayout.children, 0, topPx),
+      children: adjustChildPositions(featureLayout.children, startPx, topPx),
     }
 
     if (isGene && hasTranscriptChildren) {
