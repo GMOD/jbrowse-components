@@ -1162,6 +1162,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * perform animated zoom
        */
       function zoom(targetBpPerPx: number) {
+        cancelLastAnimation()
+        self.setScaleFactor(1)
         self.zoomTo(self.bpPerPx)
         if (
           // already zoomed all the way in
@@ -1181,7 +1183,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             self.setScaleFactor(1)
           },
         )
-        cancelLastAnimation()
         cancelLastAnimation = cancelAnimation!
         animate!()
       }
@@ -1874,10 +1875,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
             } else if (e.code === 'ArrowRight') {
               e.preventDefault()
               self.slide(0.9)
-            } else if (e.code === 'ArrowUp' && self.scaleFactor === 1) {
+            } else if (e.code === 'ArrowUp') {
               e.preventDefault()
               self.zoom(self.bpPerPx / 2)
-            } else if (e.code === 'ArrowDown' && self.scaleFactor === 1) {
+            } else if (e.code === 'ArrowDown') {
               e.preventDefault()
               self.zoom(self.bpPerPx * 2)
             }
