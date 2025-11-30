@@ -22,9 +22,7 @@ export class MultiVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersA
       data: Object.values(matrix),
       sampleLabels,
       stopToken: deserializedArgs.stopToken,
-      onProgress: progress => {
-        deserializedArgs.statusCallback(progress)
-      },
+      onProgress: deserializedArgs.statusCallback,
     })
     return {
       order: result.order,

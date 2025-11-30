@@ -1,5 +1,5 @@
-import { getMultiVariantFeaturesAutorun } from '../getMultiVariantFeaturesAutorun'
-import { getMultiVariantSourcesAutorun } from '../getMultiVariantSourcesAutorun'
+import { getMultiVariantFeaturesAutorun } from './getMultiVariantFeaturesAutorun'
+import { getMultiVariantSourcesAutorun } from './getMultiVariantSourcesAutorun'
 import { setupTreeDrawingAutorun } from './treeDrawingAutorun'
 
 import type { MultiVariantBaseModel } from './MultiVariantBaseModel'

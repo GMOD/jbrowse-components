@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/MultiVariantBaseModel.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/MultiVariantBaseModel.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/MultiVariantBaseModel.md)
 
@@ -180,13 +180,6 @@ boolean
 any
 ```
 
-#### getter: preSources
-
-```js
-// type
-Source[]
-```
-
 #### getter: sources
 
 ```js
@@ -222,13 +215,6 @@ number
 ```js
 // type
 number
-```
-
-#### getter: totalHeight
-
-```js
-// type
-any
 ```
 
 #### getter: rowHeight
@@ -273,16 +259,6 @@ boolean
 ```js
 // type signature
 adapterProps: () => any
-```
-
-#### method: renderingProps
-
-props for the renderer's React "Rendering" component - client-side only, never
-sent to the worker
-
-```js
-// type signature
-renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _...
 ```
 
 #### method: trackMenuItems

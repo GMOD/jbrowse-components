@@ -5,9 +5,8 @@ import {
   DialogContent,
   DialogContentText,
 } from '@mui/material'
-import { observer } from 'mobx-react'
 
-const ClearTreeWarningDialog = observer(function ClearTreeWarningDialog({
+export default function ClearTreeWarningDialog({
   handleClose,
   onConfirm,
 }: {
@@ -39,6 +38,4 @@ const ClearTreeWarningDialog = observer(function ClearTreeWarningDialog({
       </DialogActions>
     </Dialog>
   )
-})
-
-export default ClearTreeWarningDialog
+}

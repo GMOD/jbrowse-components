@@ -346,13 +346,6 @@ export default function MultiVariantBaseModelF(
           getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
         )
       },
-      /**
-       * #getter
-       */
-      get preSources() {
-        return self.layout.length ? self.layout : self.sourcesVolatile
-      },
-
       get sourcesWithoutLayout() {
         return self.sourcesVolatile
           ? getSources({
@@ -394,10 +387,7 @@ export default function MultiVariantBaseModelF(
       },
     }))
     .views(self => {
-      const {
-        renderProps: superRenderProps,
-        renderingProps: superRenderingProps,
-      } = self
+      const { renderProps: superRenderProps } = self
 
       return {
         /**
@@ -427,14 +417,6 @@ export default function MultiVariantBaseModelF(
         /**
          * #getter
          */
-        get totalHeight() {
-          return self.rowHeightMode === 'auto'
-            ? this.availableHeight
-            : this.nrow * self.rowHeightMode
-        },
-        /**
-         * #getter
-         */
         get rowHeight() {
           return self.rowHeightMode === 'auto'
             ? this.availableHeight / this.nrow
@@ -445,36 +427,24 @@ export default function MultiVariantBaseModelF(
          */
         get hierarchy() {
           const r = self.root
-          if (r) {
-            const clust = cluster()
-              .size([this.totalHeight, self.treeAreaWidth])!
-              // @ts-expect-error
-              .separation(() => 1)
-            clust(r)
-            return r
-          } else {
+          if (!r) {
             return undefined
           }
+          const clust = cluster()
+            .size([this.rowHeight * this.nrow, self.treeAreaWidth])!
+            // @ts-expect-error
+            .separation(() => 1)
+          clust(r)
+          return r
         },
         /**
          * #method
          */
         adapterProps() {
-          const superProps = superRenderProps()
           return {
-            ...superProps,
+            ...superRenderProps(),
             rpcDriverName: self.rpcDriverName,
             config: self.rendererConfig,
-          }
-        },
-        /**
-         * #method
-         * props for the renderer's React "Rendering" component - client-side
-         * only, never sent to the worker
-         */
-        renderingProps() {
-          return {
-            ...superRenderingProps(),
           }
         },
       }
@@ -574,11 +544,9 @@ export default function MultiVariantBaseModelF(
               type: 'checkbox',
               checked: self.referenceDrawingMode === 'skip',
               onClick: () => {
-                if (self.referenceDrawingMode === 'skip') {
-                  self.setReferenceDrawingMode('draw')
-                } else {
-                  self.setReferenceDrawingMode('skip')
-                }
+                self.setReferenceDrawingMode(
+                  self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
+                )
               },
             },
             {

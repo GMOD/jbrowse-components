@@ -12,6 +12,158 @@ import { drawPhased } from '../shared/drawPhased'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
 
 import type { MultiRenderArgsDeserialized } from './types'
+import type { Source } from '../shared/types'
+import type { Feature, Region } from '@jbrowse/core/util'
+
+interface Maf {
+  feature: Feature
+  mostFrequentAlt: string
+}
+
+interface DrawContext {
+  ctx: CanvasRenderingContext2D
+  sources: Source[]
+  region: Region
+  bpPerPx: number
+  startRow: number
+  endRow: number
+  h: number
+  drawH: number
+  scrollTop: number
+  splitCache: Record<string, string[]>
+  drawRef: boolean
+  genotypesCache: Map<string, Record<string, string>>
+  stopToken?: string
+}
+
+interface ItemData {
+  items: { name: string; genotype: string; featureId: string; bpLen: number }[]
+  coords: number[]
+}
+
+function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
+  const {
+    ctx,
+    sources,
+    region,
+    bpPerPx,
+    startRow,
+    endRow,
+    h,
+    drawH,
+    scrollTop,
+    splitCache,
+    drawRef,
+    genotypesCache,
+    stopToken,
+  } = drawCtx
+  const { items, coords } = itemData
+
+  forEachWithStopTokenCheck(mafs, stopToken, ({ feature }) => {
+    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const featureId = feature.id()
+    const bpLen = feature.get('end') - feature.get('start')
+    const w = Math.max(Math.round(rightPx - leftPx), 2)
+    const x = Math.floor(leftPx)
+    let samp = genotypesCache.get(featureId)
+    if (!samp) {
+      samp = feature.get('genotypes') as Record<string, string>
+      genotypesCache.set(featureId, samp)
+    }
+
+    for (let j = startRow; j < endRow; j++) {
+      const y = j * h - scrollTop
+      const { name, HP } = sources[j]!
+      const genotype = samp[name]
+      if (genotype) {
+        const isPhased = genotype.includes('|')
+        if (isPhased) {
+          const alleles =
+            splitCache[genotype] ?? (splitCache[genotype] = genotype.split('|'))
+          if (
+            drawPhased(alleles, ctx, x, y, w, drawH, HP!, undefined, drawRef)
+          ) {
+            items.push({ name, genotype, featureId, bpLen })
+            coords.push(x, y, x + w, y + drawH)
+          }
+        } else {
+          ctx.fillStyle = 'black'
+          ctx.fillRect(x - f2, y - f2, w + f2, drawH + f2)
+        }
+      }
+    }
+  })
+}
+
+function drawAlleleCountMode(
+  drawCtx: DrawContext,
+  itemData: ItemData,
+  mafs: Maf[],
+  colorCache: Record<string, string | undefined>,
+) {
+  const {
+    ctx,
+    sources,
+    region,
+    bpPerPx,
+    startRow,
+    endRow,
+    h,
+    drawH,
+    scrollTop,
+    splitCache,
+    drawRef,
+    genotypesCache,
+    stopToken,
+  } = drawCtx
+  const { items, coords } = itemData
+
+  forEachWithStopTokenCheck(mafs, stopToken, ({ mostFrequentAlt, feature }) => {
+    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const featureId = feature.id()
+    const bpLen = feature.get('end') - feature.get('start')
+    const w = Math.max(Math.round(rightPx - leftPx), 2)
+    const x = Math.floor(leftPx)
+    let samp = genotypesCache.get(featureId)
+    if (!samp) {
+      samp = feature.get('genotypes') as Record<string, string>
+      genotypesCache.set(featureId, samp)
+    }
+    const featureType = feature.get('type')
+    const featureStrand = feature.get('strand')
+    const alpha = bpLen > 5 ? 0.75 : 1
+
+    for (let j = startRow; j < endRow; j++) {
+      const y = j * h - scrollTop
+      const { name } = sources[j]!
+      const genotype = samp[name]
+      if (genotype) {
+        const c = getAlleleColor(
+          genotype,
+          mostFrequentAlt,
+          colorCache,
+          splitCache,
+          drawRef,
+        )
+        if (c) {
+          drawColorAlleleCount(
+            c,
+            ctx,
+            x,
+            y,
+            w,
+            drawH,
+            featureType,
+            featureStrand,
+            alpha,
+          )
+          items.push({ name, genotype, featureId, bpLen })
+          coords.push(x, y, x + w, y + drawH)
+        }
+      }
+    }
+  })
+}
 
 export async function makeImageData(
   ctx: CanvasRenderingContext2D,
@@ -30,23 +182,29 @@ export async function makeImageData(
     stopToken,
     lengthCutoffFilter,
     referenceDrawingMode,
+    statusCallback = () => {},
   } = props
   const region = regions[0]!
-  const { statusCallback = () => {} } = props
   checkStopToken(stopToken)
 
   const coords = [] as number[]
-  const items = [] as any[]
+  const items = [] as {
+    name: string
+    genotype: string
+    featureId: string
+    bpLen: number
+  }[]
   const colorCache = {} as Record<string, string | undefined>
   const splitCache = {} as Record<string, string[]>
   const genotypesCache = new Map<string, Record<string, string>>()
   const drawRef = referenceDrawingMode === 'draw'
   const h = rowHeight
-  // Use at least 1px for drawing operations to avoid insanely small subpixel rendering
   const drawH = Math.max(rowHeight, 1)
-  const sln = sources.length
-  const startRow = scrollTop > 0 ? Math.floor(scrollTop / h) : 0
-  const endRow = Math.min(sln, Math.ceil((scrollTop + canvasHeight) / h))
+  const startRow = Math.floor(scrollTop / h)
+  const endRow = Math.min(
+    sources.length,
+    Math.ceil((scrollTop + canvasHeight) / h),
+  )
 
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
@@ -55,108 +213,34 @@ export async function makeImageData(
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
       genotypesCache,
+      splitCache,
     }),
   )
   checkStopToken(stopToken)
 
+  const drawCtx: DrawContext = {
+    ctx,
+    sources,
+    region,
+    bpPerPx,
+    startRow,
+    endRow,
+    h,
+    drawH,
+    scrollTop,
+    splitCache,
+    drawRef,
+    genotypesCache,
+    stopToken,
+  }
+  const itemData: ItemData = { items, coords }
+
   await updateStatus('Drawing variants', statusCallback, () => {
-    forEachWithStopTokenCheck(
-      mafs,
-      stopToken,
-      ({ mostFrequentAlt, feature }) => {
-        const start = feature.get('start')
-        const end = feature.get('end')
-        const bpLen = end - start
-        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-        const featureId = feature.id()
-        const w = Math.max(Math.round(rightPx - leftPx), 2)
-        let samp = genotypesCache.get(featureId)
-        if (!samp) {
-          samp = feature.get('genotypes') as Record<string, string>
-          genotypesCache.set(featureId, samp)
-        }
-        const featureType = feature.get('type')
-        const featureStrand = feature.get('strand')
-        const alpha = bpLen > 5 ? 0.75 : 1
-        const x = Math.floor(leftPx)
-
-        if (renderingMode === 'phased') {
-          for (let j = startRow; j < endRow; j++) {
-            const y = j * h - scrollTop
-            const { name, HP } = sources[j]!
-            const genotype = samp[name]
-            if (genotype) {
-              const isPhased = genotype.includes('|')
-              if (isPhased) {
-                const alleles =
-                  splitCache[genotype] ||
-                  (splitCache[genotype] = genotype.split('|'))
-                if (
-                  drawPhased(
-                    alleles,
-                    ctx,
-                    x,
-                    y,
-                    w,
-                    drawH,
-                    HP!,
-                    undefined,
-                    drawRef,
-                  )
-                ) {
-                  items.push({
-                    name,
-                    genotype,
-                    featureId,
-                    bpLen,
-                  })
-                  coords.push(x, y, x + w, y + drawH)
-                }
-              } else {
-                ctx.fillStyle = 'black'
-                ctx.fillRect(x - f2, y - f2, w + f2, drawH + f2)
-              }
-            }
-          }
-        } else {
-          for (let j = startRow; j < endRow; j++) {
-            const y = j * h - scrollTop
-            const { name } = sources[j]!
-            const genotype = samp[name]
-            if (genotype) {
-              const c = getAlleleColor(
-                genotype,
-                mostFrequentAlt,
-                colorCache,
-                splitCache,
-                drawRef,
-              )
-              if (c) {
-                drawColorAlleleCount(
-                  c,
-                  ctx,
-                  x,
-                  y,
-                  w,
-                  drawH,
-                  featureType,
-                  featureStrand,
-                  alpha,
-                )
-
-                items.push({
-                  name,
-                  genotype,
-                  featureId,
-                  bpLen,
-                })
-                coords.push(x, y, x + w, y + drawH)
-              }
-            }
-          }
-        }
-      },
-    )
+    if (renderingMode === 'phased') {
+      drawPhasedMode(drawCtx, itemData, mafs)
+    } else {
+      drawAlleleCountMode(drawCtx, itemData, mafs, colorCache)
+    }
   })
 
   const flatbush = new Flatbush(Math.max(items.length, 1))
