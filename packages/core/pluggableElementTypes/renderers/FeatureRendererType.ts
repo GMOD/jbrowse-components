@@ -38,8 +38,7 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   blockKey: string
 }
 
-export interface RenderArgsDeserialized
-  extends ServerSideRenderArgsDeserialized {
+export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized {
   displayModel: { id: string; selectedFeatureId?: string }
   regions: Region[]
   blockKey: string

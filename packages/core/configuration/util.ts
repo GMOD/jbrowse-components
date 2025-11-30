@@ -9,7 +9,7 @@ import {
   isStateTreeNode,
   isType,
   isUnionType,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import {
   getDefaultValue,

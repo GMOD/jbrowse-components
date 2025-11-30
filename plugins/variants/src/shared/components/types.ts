@@ -10,3 +10,10 @@ export interface TreeSidebarModel {
   setHoveredTreeNode: (node?: { node: any; descendantNames: string[] }) => void
   setTreeAreaWidth: (width: number) => void
 }
+
+export interface MouseState {
+  x: number
+  y: number
+  offsetX: number
+  offsetY: number
+}

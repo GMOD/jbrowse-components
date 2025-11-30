@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config HTTPBasicInternetAccount

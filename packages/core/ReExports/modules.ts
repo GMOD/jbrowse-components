@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import * as mst from '@jbrowse/mobx-state-tree'
 import { alpha, createTheme, useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
@@ -10,7 +11,6 @@ import {
 } from '@mui/x-data-grid'
 import * as mobx from 'mobx'
 import * as mxreact from 'mobx-react'
-import * as mst from 'mobx-state-tree'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import * as ReactDomClient from 'react-dom/client'
@@ -50,6 +50,7 @@ import * as mstTypes from '../util/types/mst'
 
 const libs = {
   mobx,
+  '@jbrowse/mobx-state-tree': mst,
   'mobx-state-tree': mst,
   react: React,
   'react/jsx-runtime': ReactJSXRuntime,

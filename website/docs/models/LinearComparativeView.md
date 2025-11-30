@@ -3,8 +3,8 @@ id: linearcomparativeview
 title: LinearComparativeView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -93,9 +93,9 @@ showDynamicControls: true
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: IType<string, string, string>; tracks: IArrayType<IAnyType>; height: IType<...>; level: ISimpleType<...>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IAnyModelType>
 // code
-levels: types.array(LinearSyntenyViewHelper)
+levels: types.array(LinearSyntenyViewHelper!)
 ```
 
 #### property: views
@@ -202,7 +202,7 @@ removeView: (view: { id: string; displayName: string; minimized: boolean; type: 
 
 ```js
 // type signature
-setLevelHeight: (newHeight: number, level?: number) => number
+setLevelHeight: (newHeight: number, level?: number) => any
 ```
 
 #### action: setLinkViews

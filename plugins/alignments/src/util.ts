@@ -1,5 +1,5 @@
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive } from 'mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -7,8 +7,8 @@ import { modificationData } from './shared/modificationData'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AugmentedRegion, Feature } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { IAutorunOptions } from 'mobx'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications
@@ -108,7 +108,7 @@ export async function fetchSequence(
   return feats[0]?.get('seq')
 }
 
-type DisplayModel = IAnyStateTreeNode & { setError: (arg: unknown) => void }
+type DisplayModel = IAnyStateTreeNode & { setError?: (arg: unknown) => void }
 
 export function createAutorun(
   self: DisplayModel,
@@ -122,7 +122,7 @@ export function createAutorun(
         await cb()
       } catch (e) {
         if (isAlive(self)) {
-          self.setError(e)
+          self.setError?.(e)
         }
       }
     }, opts),

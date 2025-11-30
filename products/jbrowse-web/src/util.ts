@@ -11,7 +11,7 @@ import {
   isModelType,
   isReferenceType,
   isValidReference,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type {
@@ -19,7 +19,7 @@ import type {
   IAnyType,
   Instance,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
@@ -86,6 +86,7 @@ type MSTMap = Instance<ReturnType<typeof types.map>>
 // it encounters undefined refs in model properties
 export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
   // makes it work with session sharing
+
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (node === undefined) {
     return

@@ -4,7 +4,7 @@ import {
   isStateTreeNode,
   isType,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import ConfigSlot from './configurationSlot'
 import { isConfigurationSchemaType } from './util'
@@ -12,7 +12,7 @@ import { ElementId } from '../util/types/mst'
 
 import type { ConfigSlotDefinition } from './configurationSlot'
 import type { AnyConfigurationSchemaType } from './types'
-import type { IAnyType, SnapshotOut } from 'mobx-state-tree'
+import type { IAnyType, SnapshotOut } from '@jbrowse/mobx-state-tree'
 
 export type {
   AnyConfigurationModel,

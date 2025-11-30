@@ -11,7 +11,8 @@ export const CIGAR_X = 8
 
 // Bitmasks for checking multiple ops: use ((1 << op) & MASK) !== 0
 // M(0), =(7), X(8) - alignment match ops
-export const CIGAR_MATCH_MASK = (1 << CIGAR_M) | (1 << CIGAR_EQ) | (1 << CIGAR_X) // 385
+export const CIGAR_MATCH_MASK =
+  (1 << CIGAR_M) | (1 << CIGAR_EQ) | (1 << CIGAR_X) // 385
 // D(2), N(3) - deletion ops (consume reference only)
 export const CIGAR_DEL_MASK = (1 << CIGAR_D) | (1 << CIGAR_N) // 12
 // I(1), D(2), N(3) - insertion/deletion ops

@@ -10,8 +10,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   scaleOpts: ScaleOpts
 }
 
-export interface RenderArgsDeserializedWithFeatures
-  extends RenderArgsDeserialized {
+export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean

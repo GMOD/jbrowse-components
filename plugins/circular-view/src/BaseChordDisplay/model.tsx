@@ -13,7 +13,7 @@ import {
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
-import { getParent, isAlive, types } from 'mobx-state-tree'
+import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { baseChordDisplayConfig } from './configSchema'
 import { renderReactionData, renderReactionEffect } from './renderReaction'

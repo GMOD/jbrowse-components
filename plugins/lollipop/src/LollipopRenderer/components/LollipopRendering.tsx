@@ -1,5 +1,5 @@
 import type { FocusEvent, MouseEvent } from 'react'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useMemo } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx } from '@jbrowse/core/util'
@@ -75,11 +75,6 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
     const { onClick: handler } = props
     return handler?.(event)
   }
-  const [client, setClient] = useState(false)
-  useEffect(() => {
-    setClient(true)
-  }, [])
-
   const {
     regions,
     bpPerPx,
@@ -117,31 +112,32 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
       onBlur={onMouseLeave}
       onClick={onClick}
     >
-      {client ? (
-        <>
-          {records.map(layoutRecord => {
-            const feature = features.get(layoutRecord.data.featureId)
-            return (
-              <Fragment key={feature.id()}>
-                <Stick
-                  key={`stick-${feature.id()}`}
-                  {...props}
-                  config={config}
-                  layoutRecord={layoutRecord}
-                  feature={feature}
-                />
-                <Lollipop
-                  key={`body-${feature.id()}`}
-                  {...props}
-                  layoutRecord={layoutRecord}
-                  feature={feature}
-                  selectedFeatureId={selectedFeatureId}
-                />
-              </Fragment>
-            )
-          })}
-        </>
-      ) : null}
+      {records.map(layoutRecord => {
+        const feature = features.get(layoutRecord.data.featureId)
+        return (
+          <Fragment key={feature.id()}>
+            <Stick
+              config={config}
+              layoutRecord={layoutRecord}
+              feature={feature}
+            />
+            <Lollipop
+              config={config}
+              layoutRecord={layoutRecord}
+              feature={feature}
+              selectedFeatureId={selectedFeatureId}
+              onFeatureMouseDown={props.onFeatureMouseDown}
+              onFeatureMouseEnter={props.onFeatureMouseEnter}
+              onFeatureMouseOut={props.onFeatureMouseOut}
+              onFeatureMouseOver={props.onFeatureMouseOver}
+              onFeatureMouseUp={props.onFeatureMouseUp}
+              onFeatureMouseLeave={props.onFeatureMouseLeave}
+              onFeatureMouseMove={props.onFeatureMouseMove}
+              onFeatureClick={props.onFeatureClick}
+            />
+          </Fragment>
+        )
+      })}
     </svg>
   )
 })

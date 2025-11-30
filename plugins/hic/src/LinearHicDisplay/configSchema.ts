@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config LinearHicDisplay

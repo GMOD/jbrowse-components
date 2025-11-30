@@ -1,5 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
+import { truncateLabel } from './util'
+
 import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -23,21 +25,22 @@ export function createFeatureFloatingLabels({
   configContext,
   nameColor,
   descriptionColor,
+  name: rawName,
+  description: rawDescription,
 }: {
   feature: Feature
   config: AnyConfigurationModel
   configContext: RenderConfigContext
   nameColor: string
   descriptionColor: string
+  name: string
+  description: string
 }): FloatingLabelData[] {
-  const { showLabels, showDescriptions, fontHeight } = configContext
+  const { showLabels, showDescriptions, fontHeight, isFontHeightCallback } =
+    configContext
 
-  const name = String(
-    readConfObject(config, ['labels', 'name'], { feature }) || '',
-  )
-  const description = String(
-    readConfObject(config, ['labels', 'description'], { feature }) || '',
-  )
+  const name = truncateLabel(rawName)
+  const description = truncateLabel(rawDescription)
 
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
@@ -46,10 +49,9 @@ export function createFeatureFloatingLabels({
     return []
   }
 
-  // Only re-read fontHeight if it's a callback (feature-dependent)
-  const actualFontHeight =
-    fontHeight ??
-    (readConfObject(config, ['labels', 'fontSize'], { feature }) as number)
+  const actualFontHeight = isFontHeightCallback
+    ? (readConfObject(config, ['labels', 'fontSize'], { feature }) as number)
+    : fontHeight
 
   const floatingLabels: FloatingLabelData[] = []
 
@@ -92,27 +94,29 @@ export function createFeatureFloatingLabels({
 export function createTranscriptFloatingLabel({
   transcriptName,
   featureHeight,
-  subfeatureLabelPosition,
+  subfeatureLabels,
   color,
 }: {
   transcriptName: string
   featureHeight: number
-  subfeatureLabelPosition: string
+  subfeatureLabels: string
   color: string
 }): FloatingLabelData | null {
   if (!transcriptName) {
     return null
   }
 
+  const truncatedName = truncateLabel(transcriptName)
+
   // For 'overlay' mode, position label at top of feature (negative relativeY)
   // For 'below' mode, position label at bottom of feature (relativeY = 0)
   // The label Y formula is: featureTop + totalFeatureHeight + relativeY
   // For overlay: we want featureTop + 2, so relativeY = 2 - totalFeatureHeight
-  const isOverlay = subfeatureLabelPosition === 'overlay'
+  const isOverlay = subfeatureLabels === 'overlay'
   const relativeY = isOverlay ? 2 - featureHeight : 0
 
   return {
-    text: transcriptName,
+    text: truncatedName,
     relativeY,
     color,
     isOverlay,

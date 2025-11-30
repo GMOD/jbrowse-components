@@ -140,10 +140,7 @@ export function drawLocationMarkers(
   // Aim for markers at consistent pixel spacing for even visual density
   // Target spacing of ~20 pixels between markers regardless of feature size
   const targetPixelSpacing = 20
-  const numMarkers = Math.max(
-    2,
-    ((averageWidth / targetPixelSpacing) | 0) + 1,
-  )
+  const numMarkers = Math.max(2, ((averageWidth / targetPixelSpacing) | 0) + 1)
 
   const prevStrokeStyle = ctx.strokeStyle
   const prevLineWidth = ctx.lineWidth

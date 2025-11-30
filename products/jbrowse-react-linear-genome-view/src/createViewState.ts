@@ -1,11 +1,11 @@
 import { assembleLocString, parseLocString } from '@jbrowse/core/util'
-import { onPatch } from 'mobx-state-tree'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel'
 
 import type { createConfigModel, createSessionModel } from './createModel'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { IJsonPatch, SnapshotIn } from 'mobx-state-tree'
+import type { IJsonPatch, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>

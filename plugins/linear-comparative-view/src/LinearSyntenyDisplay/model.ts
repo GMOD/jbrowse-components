@@ -1,11 +1,11 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface Pos {
   offsetPx: number

@@ -17,8 +17,7 @@ export interface RenderArgsDeserializedWithFeatures extends RenderArgs {
   features: Map<string, Feature>
 }
 
-export interface MultiRenderArgsDeserialized
-  extends RenderArgsDeserializedWithFeatures {
+export interface MultiRenderArgsDeserialized extends RenderArgsDeserializedWithFeatures {
   sources: Source[]
 }
 

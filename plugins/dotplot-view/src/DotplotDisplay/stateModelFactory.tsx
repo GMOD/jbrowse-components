@@ -6,15 +6,15 @@ import {
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
-import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel DotplotDisplay

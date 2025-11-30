@@ -3,8 +3,8 @@ id: breakpointsplitview
 title: BreakpointSplitView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -140,7 +140,7 @@ e.g. they are one sided
 
 ```js
 // type signature
-hasTranslocations: (trackConfigId: string) => any
+hasTranslocations: (trackConfigId: string) => boolean
 ```
 
 #### method: hasPairedFeatures
@@ -149,7 +149,7 @@ Paired features similar to breakends, but simpler, like BEDPE
 
 ```js
 // type signature
-hasPairedFeatures: (trackConfigId: string) => any
+hasPairedFeatures: (trackConfigId: string) => boolean
 ```
 
 #### method: getTrackFeatures

@@ -118,10 +118,11 @@ for a full list of packages accessible through `jbrequire`. Using `jbrequire`
 might look like this:
 
 ```typescript
-const { types } = pluginManager.jbrequire('mobx-state-tree')
+const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 ```
 
-This would provide the functionality of mobx-state-tree through that value.
+This would provide the functionality of @jbrowse/mobx-state-tree through that
+value.
 
 ## Complete example
 
@@ -145,7 +146,7 @@ export default class MyPlugin {
     const { ElementId } = pluginManager.jbrequire(
       '@jbrowse/core/util/types/mst',
     )
-    const { types } = pluginManager.jbrequire('mobx-state-tree')
+    const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 
     const React = pluginManager.jbrequire('react')
 

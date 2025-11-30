@@ -5,7 +5,7 @@ import {
   ReactRendering,
   getSerializedSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type {

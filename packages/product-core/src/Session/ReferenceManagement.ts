@@ -13,14 +13,14 @@ import {
   isReferenceType,
   types,
   walk,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { TrackViewModel } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 export interface ReferringNode {
   node: IAnyStateTreeNode

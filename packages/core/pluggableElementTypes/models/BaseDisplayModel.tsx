@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { getParent, isRoot, types } from 'mobx-state-tree'
+import { getParent, isRoot, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration'
 import { getContainingView, getEnv } from '../../util'
@@ -8,7 +8,7 @@ import { getParentRenderProps } from '../../util/tracks'
 import { ElementId } from '../../util/types/mst'
 
 import type { MenuItem } from '../../ui'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseDisplay

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { isModelType, isType, types } from 'mobx-state-tree'
+import { isModelType, isType, types } from '@jbrowse/mobx-state-tree'
 
 import CorePlugin from './CorePlugin'
 import PhasedScheduler from './PhasedScheduler'
@@ -26,7 +26,7 @@ import type { PluginDefinition } from './PluginLoader'
 import type { PluggableElementType } from './pluggableElementTypes'
 import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import type { AbstractRootModel } from './util'
-import type { IAnyModelType, IAnyType } from 'mobx-state-tree'
+import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
 
 type PluggableElementTypeGroup =
   | 'renderer'

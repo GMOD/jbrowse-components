@@ -1,15 +1,20 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { getBoxColor, isUTR } from './util'
+import { getBoxColor, isOffScreen, isUTR } from './util'
 
-import type { DrawFeatureArgs, DrawingResult, FlatbushItem } from './types'
+import type { DrawFeatureArgs } from './types'
+
+function getOutline(args: DrawFeatureArgs) {
+  const { feature, config, configContext } = args
+  const { outline, isOutlineCallback } = configContext
+  return isOutlineCallback
+    ? (readConfObject(config, 'outline', { feature }) as string)
+    : outline!
+}
 
 const utrHeightFraction = 0.65
 
-/**
- * Draw a box (rectangle) feature on the canvas
- */
-export function drawBox(args: DrawFeatureArgs): DrawingResult {
+export function drawBox(args: DrawFeatureArgs) {
   const {
     ctx,
     feature,
@@ -17,25 +22,25 @@ export function drawBox(args: DrawFeatureArgs): DrawingResult {
     region,
     bpPerPx,
     config,
+    configContext,
     theme,
+    canvasWidth,
     colorByCDS = false,
   } = args
   const { start, end } = region
   const screenWidth = Math.ceil((end - start) / bpPerPx)
-  const featureType: string | undefined = feature.get('type')
   const width = featureLayout.width
   const left = featureLayout.x
   let top = featureLayout.y
   let height = featureLayout.height
 
-  const coords: number[] = []
-  const items: FlatbushItem[] = []
-
-  if (left + width < 0) {
-    return { coords, items }
+  if (
+    isOffScreen(left, width, canvasWidth) ||
+    (feature.parent() && feature.get('type') === 'intron')
+  ) {
+    return
   }
 
-  // Adjust height for UTRs
   if (isUTR(feature)) {
     top += ((1 - utrHeightFraction) / 2) * height
     height *= utrHeightFraction
@@ -48,49 +53,17 @@ export function drawBox(args: DrawFeatureArgs): DrawingResult {
   const fill = getBoxColor({
     feature,
     config,
+    configContext,
     colorByCDS,
     theme,
-    color1: args.color1,
-    color3: args.color3,
-    isColor1Callback: args.isColor1Callback,
-    isColor3Callback: args.isColor3Callback,
   })
-  const stroke = readConfObject(config, 'outline', { feature }) as string
+  const stroke = getOutline(args)
 
-  // Don't render intron subfeatures if they have a parent
-  if (feature.parent() && featureType === 'intron') {
-    return { coords, items }
-  }
-
-  // Draw the rectangle
   ctx.fillStyle = fill
+  ctx.fillRect(leftWithinBlock, top, widthWithinBlock, height)
   if (stroke) {
     ctx.strokeStyle = stroke
     ctx.lineWidth = 1
-  }
-
-  ctx.fillRect(leftWithinBlock, top, widthWithinBlock, height)
-  if (stroke) {
     ctx.strokeRect(leftWithinBlock, top, widthWithinBlock, height)
   }
-
-  // Add to spatial index
-  coords.push(
-    leftWithinBlock,
-    top,
-    leftWithinBlock + widthWithinBlock,
-    top + height,
-  )
-  items.push({
-    featureId: feature.id(),
-    type: 'box',
-    startBp: feature.get('start'),
-    endBp: feature.get('end'),
-    leftPx: leftWithinBlock,
-    rightPx: leftWithinBlock + widthWithinBlock,
-    topPx: top,
-    bottomPx: top + height,
-  })
-
-  return { coords, items }
 }

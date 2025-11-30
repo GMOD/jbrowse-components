@@ -3,8 +3,8 @@ id: lineargenomeview
 title: LinearGenomeView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -538,6 +538,13 @@ same as visibleLocStrings, but only updated every 300ms
 string
 ```
 
+#### getter: coarseTotalBpDisplayStr
+
+```js
+// type
+string
+```
+
 #### getter: centerLineInfo
 
 ```js
@@ -614,7 +621,7 @@ were selected by the rubberband
 
 ```js
 // type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { start: number; end: number; type: string; regionNumber?: number; reversed?: boolean; refName: string; assemblyName: string; ... 4 more ...; isLeftEndOfDisplayedRegion?: boolean; }[]
+getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { assemblyName: string; refName: string; start: number; end: number; }[]
 ```
 
 #### method: exportSvg

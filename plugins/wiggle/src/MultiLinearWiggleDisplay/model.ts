@@ -9,8 +9,8 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
-import { isAlive, types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
@@ -20,11 +20,11 @@ import type { Source } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))

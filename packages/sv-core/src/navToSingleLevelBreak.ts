@@ -1,5 +1,5 @@
 import { gatherOverlaps, getSession, when } from '@jbrowse/core/util'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { getBreakendCoveringRegions, makeTitle, stripIds } from './util'
 

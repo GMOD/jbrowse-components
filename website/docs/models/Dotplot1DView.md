@@ -3,8 +3,8 @@ id: dotplot1dview
 title: Dotplot1DView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -20,8 +20,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used
-here
+ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state
+used here
 
 ### Dotplot1DView - Getters
 

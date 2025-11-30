@@ -3,8 +3,8 @@ id: multivariantbasemodel
 title: MultiVariantBaseModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -66,9 +66,18 @@ minorAlleleFrequencyFilter: types.optional(types.number, 0)
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showSidebarLabelsSetting: true
+showSidebarLabelsSetting: types.optional(types.boolean, true)
+```
+
+#### property: showTree
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showTree: types.optional(types.boolean, true)
 ```
 
 #### property: showTree
@@ -89,35 +98,31 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 renderingMode: types.optional(types.string, 'alleleCount')
 ```
 
-#### property: rowHeightSetting
+#### property: rowHeightMode
 
-used only if autoHeight is false
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-rowHeightSetting: types.optional(types.number, 8)
-```
-
-#### property: autoHeight
-
-used only if autoHeight is false
+Controls row height: 'auto' calculates from available height, or a number
+specifies manual pixel height per row
 
 ```js
 // type signature
-true
+IOptionalIType<ITypeUnion<number | "auto", number | "auto", number | "auto">, [undefined]>
 // code
-autoHeight: true
+rowHeightMode: types.optional(
+          types.union(types.literal('auto'), types.number),
+          'auto',
+        )
 ```
 
 #### property: lengthCutoffFilter
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-lengthCutoffFilter: Number.MAX_SAFE_INTEGER
+lengthCutoffFilter: types.optional(
+          types.number,
+          Number.MAX_SAFE_INTEGER,
+        )
 ```
 
 #### property: jexlFilters
@@ -133,9 +138,39 @@ jexlFilters: types.maybe(types.array(types.string))
 
 ```js
 // type signature
-string
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-referenceDrawingMode: 'skip'
+referenceDrawingMode: types.optional(types.string, 'skip')
+```
+
+#### property: clusterTree
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+clusterTree: types.maybe(types.string)
+```
+
+#### property: treeAreaWidth
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+treeAreaWidth: types.optional(types.number, 80)
+```
+
+#### property: lineZoneHeight
+
+Height reserved for elements above the main display (e.g., connecting lines in
+matrix view)
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+lineZoneHeight: types.optional(types.number, 0)
 ```
 
 #### property: clusterTree
@@ -157,6 +192,13 @@ treeAreaWidth: 80
 ```
 
 ### MultiVariantBaseModel - Getters
+
+#### getter: autoHeight
+
+```js
+// type
+boolean
+```
 
 #### getter: activeFilters
 
@@ -193,7 +235,16 @@ any
 any
 ```
 
-#### getter: rowHeight
+#### getter: availableHeight
+
+Available height for rows (total height minus lineZoneHeight)
+
+```js
+// type
+number
+```
+
+#### getter: nrow
 
 ```js
 // type
@@ -201,6 +252,13 @@ number
 ```
 
 #### getter: totalHeight
+
+```js
+// type
+any
+```
+
+#### getter: rowHeight
 
 ```js
 // type
@@ -244,6 +302,16 @@ boolean
 adapterProps: () => any
 ```
 
+#### method: renderingProps
+
+props for the renderer's React "Rendering" component - client-side only, never
+sent to the worker
+
+```js
+// type signature
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _...
+```
+
 #### method: trackMenuItems
 
 ```js
@@ -278,7 +346,7 @@ setJexlFilters: (f?: string[]) => void
 
 ```js
 // type signature
-setRowHeight: (arg: number) => void
+setRowHeight: (arg: number | "auto") => void
 ```
 
 #### action: setHoveredGenotype
@@ -395,9 +463,11 @@ setPhasedMode: (arg: string) => void
 
 #### action: setAutoHeight
 
+Toggle auto height mode. When turning off, uses default of 10px per row.
+
 ```js
 // type signature
-setAutoHeight: (arg: boolean) => void
+setAutoHeight: (auto: boolean) => void
 ```
 
 #### action: setHasPhased

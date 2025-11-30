@@ -4,13 +4,13 @@ import {
   localStorageSetItem,
 } from '@jbrowse/core/util'
 import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, cast, types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
+import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { IMSTArray, Instance, SnapshotIn } from 'mobx-state-tree'
 
 const LabeledRegionModel = types
   .compose(
@@ -40,8 +40,9 @@ export interface IExtendedLGV extends LinearGenomeViewModel {
   setBookmarkLabelsVisible: (arg: boolean) => void
 }
 
-export interface ILabeledRegionModel
-  extends SnapshotIn<typeof LabeledRegionModel> {
+export interface ILabeledRegionModel extends SnapshotIn<
+  typeof LabeledRegionModel
+> {
   refName: string
   start: number
   end: number

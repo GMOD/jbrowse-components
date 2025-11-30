@@ -1,5 +1,5 @@
+import { types } from '@jbrowse/mobx-state-tree'
 import { ConnectionManagementSessionMixin } from '@jbrowse/product-core'
-import { types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

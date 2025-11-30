@@ -1,7 +1,7 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, reaction } from 'mobx'
-import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
 import { parseCigar } from '../cigarUtils'
 import { drawMouseoverClickMap, drawSynteny } from './drawSynteny'
