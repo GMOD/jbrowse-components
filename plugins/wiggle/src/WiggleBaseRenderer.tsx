@@ -1,5 +1,6 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import { rpcResult } from 'librpc-web-mod'
 
 import type { ScaleOpts, Source } from './util'
 import type {
@@ -75,7 +76,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
       width,
     })
 
-    return {
+    const serialized = {
       ...results,
       ...rest,
       features: reducedFeatures
@@ -84,6 +85,11 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
       height,
       width,
     }
+
+    if (rest.imageData instanceof ImageBitmap) {
+      return rpcResult(serialized, [rest.imageData])
+    }
+    return serialized
   }
 
   /**
