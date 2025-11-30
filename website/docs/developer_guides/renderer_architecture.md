@@ -187,8 +187,9 @@ async renderInWorker(args) {
 }
 ```
 
-The `rpcResult` wrapper is automatically unwrapped in `RpcMethodType.deserializeReturn()`,
-so downstream code receives the actual value regardless of whether a web worker was used.
+The `rpcResult` wrapper is automatically unwrapped in
+`RpcMethodType.deserializeReturn()`, so downstream code receives the actual
+value regardless of whether a web worker was used.
 
 ## Feature handling
 
@@ -342,6 +343,7 @@ return rpcResult(serialized, collectTransferables(res))
 ```
 
 This handles:
+
 - `ImageBitmap` (canvas image data)
 - `flatbush` ArrayBuffer (spatial index)
 - `subfeatureFlatbush` ArrayBuffer (secondary spatial index)

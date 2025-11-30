@@ -5,8 +5,6 @@ import {
   featureSpanPx,
   forEachWithStopTokenCheck,
 } from '@jbrowse/core/util'
-
-import type { Feature } from '@jbrowse/core/util'
 import {
   YSCALEBAR_LABEL_OFFSET,
   getOrigin,
@@ -17,6 +15,7 @@ import { alphaColor } from '../shared/util'
 
 import type { RenderArgsDeserializedWithFeatures } from './types'
 import type { BaseCoverageBin } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
@@ -444,7 +443,7 @@ export async function makeImage(
     if (feature.get('type') === 'skip') {
       continue
     }
-    const start = feature.get('start') as number
+    const start = feature.get('start')
     const leftPx = (start - region.start) / bpPerPx
     // Only keep one feature per pixel
     if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {

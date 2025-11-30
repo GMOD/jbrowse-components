@@ -51,7 +51,7 @@
     "file-saver-es": "^2.0.0",
     "generic-filehandle2": "^2.0.1",
     "jexl": "^2.3.0",
-    "librpc-web-mod": "^2.0.0",
+    "librpc-web-mod": "^2.0.1",
     "load-script": "^2.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",

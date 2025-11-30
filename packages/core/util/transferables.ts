@@ -40,7 +40,9 @@ export function collectTransferables(result: {
   }
   if (result.subfeatureFlatbush) {
     if (isDetachedBuffer(result.subfeatureFlatbush)) {
-      console.warn('subfeatureFlatbush buffer is already detached, cannot transfer')
+      console.warn(
+        'subfeatureFlatbush buffer is already detached, cannot transfer',
+      )
     } else {
       transferables.push(result.subfeatureFlatbush)
     }
