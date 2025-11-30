@@ -3,7 +3,7 @@ import {
   renameRegionsIfNeeded,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
-import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import { Dotplot1DView } from '../DotplotView/model'
@@ -97,7 +97,6 @@ export default class DotplotRenderer extends ComparativeRenderer {
       bpPerPxY: views[1]!.bpPerPx,
     }
 
-    const transferables = isImageBitmap(ret.imageData) ? [ret.imageData] : []
-    return rpcResult(serialized, transferables)
+    return rpcResult(serialized, collectTransferables(ret))
   }
 }

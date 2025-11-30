@@ -1,6 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import {
+  collectTransferables,
   dedupe,
   groupBy,
   max,
@@ -11,7 +12,6 @@ import {
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
-import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { rpcResult } from 'librpc-web-mod'
@@ -349,7 +349,6 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
 
     // Include the offsetPx in the result so the main thread can position the canvas correctly
     const serialized = { ...result, offsetPx }
-    const transferables = isImageBitmap(result.imageData) ? [result.imageData] : []
-    return rpcResult(serialized, transferables)
+    return rpcResult(serialized, collectTransferables(result))
   }
 }

@@ -1,6 +1,6 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
-import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import type { ScaleOpts, Source } from './util'
@@ -76,8 +76,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
       width,
     }
 
-    const transferables = isImageBitmap(rest.imageData) ? [rest.imageData] : []
-    return rpcResult(serialized, transferables)
+    return rpcResult(serialized, collectTransferables(rest))
   }
 
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(

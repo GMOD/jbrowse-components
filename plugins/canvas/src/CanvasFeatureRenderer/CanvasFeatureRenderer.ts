@@ -1,5 +1,5 @@
 import { BoxRendererType } from '@jbrowse/core/pluggableElementTypes'
-import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import { doAll } from './doAll'
@@ -34,17 +34,6 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       maxHeightReached: layout.maxHeightReached,
     }
 
-    // Collect transferables for zero-copy transfer to main thread
-    const transferables: Transferable[] = []
-    if (isImageBitmap(res.imageData)) {
-      transferables.push(res.imageData)
-    }
-    if (res.flatbush) {
-      transferables.push(res.flatbush)
-    }
-    if (res.subfeatureFlatbush) {
-      transferables.push(res.subfeatureFlatbush)
-    }
-    return rpcResult(serialized, transferables)
+    return rpcResult(serialized, collectTransferables(res))
   }
 }

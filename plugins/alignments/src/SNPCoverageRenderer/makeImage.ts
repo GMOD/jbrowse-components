@@ -432,4 +432,17 @@ export async function makeImage(
       ctx.stroke()
     }
   }
+
+  // Return reducedFeatures for tooltip functionality
+  // Create reduced features, avoiding multiple features per px
+  let prevLeftPx = Number.NEGATIVE_INFINITY
+  const reducedFeatures = []
+  for (const feature of features.values()) {
+    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
+      reducedFeatures.push(feature)
+      prevLeftPx = leftPx
+    }
+  }
+  return { reducedFeatures }
 }

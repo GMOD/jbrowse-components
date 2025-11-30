@@ -24,6 +24,9 @@ export function isImageBitmap(value: unknown): value is ImageBitmap {
   return typeof ImageBitmap !== 'undefined' && value instanceof ImageBitmap
 }
 
+// Re-export collectTransferables for convenience
+export { collectTransferables } from './transferables'
+
 export function drawImageOntoCanvasContext(
   imageData: any,
   context: CanvasRenderingContext2D,

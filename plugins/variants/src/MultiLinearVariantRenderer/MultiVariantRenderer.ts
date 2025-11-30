@@ -1,6 +1,6 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
-import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import type { MultiRenderArgsDeserialized } from './types'
@@ -40,13 +40,6 @@ export default class MultiVariantRenderer extends FeatureRendererType {
       origScrollTop: scrollTop,
     }
 
-    const transferables: Transferable[] = []
-    if (isImageBitmap(ret.imageData)) {
-      transferables.push(ret.imageData)
-    }
-    if (ret.flatbush) {
-      transferables.push(ret.flatbush)
-    }
-    return rpcResult(serialized, transferables)
+    return rpcResult(serialized, collectTransferables(ret))
   }
 }
