@@ -4,17 +4,10 @@ import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { type Browser, type ElementHandle, type Page, launch } from 'puppeteer'
+import { type Page, launch } from 'puppeteer'
 import handler from 'serve-handler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-interface TestResult {
-  name: string
-  passed: boolean
-  error?: string
-  duration: number
-}
 
 interface TestSuite {
   name: string
@@ -60,76 +53,30 @@ function startServer(port: number): Promise<http.Server> {
 }
 
 async function findByTestId(page: Page, testId: string, timeout = 30000) {
-  const el = await page.waitForSelector(`[data-testid="${testId}"]`, {
+  return page.waitForSelector(`[data-testid="${testId}"]`, {
     timeout,
     visible: true,
   })
-  if (!el) {
-    throw new Error(`Element not found: ${testId}`)
-  }
-  return el
 }
 
-async function findByText(
-  page: Page,
-  text: string | RegExp,
-  { timeout = 30000, exact = false } = {},
-): Promise<ElementHandle> {
-  const start = Date.now()
+async function findByText(page: Page, text: string | RegExp, timeout = 30000) {
+  const searchText = typeof text === 'string' ? text : text.source
+  return page.waitForSelector(`::-p-text(${searchText})`, {
+    timeout,
+    visible: true,
+  })
+}
 
-  while (Date.now() - start < timeout) {
-    const elements = await page.$$('body *:not(script):not(style)')
-
-    for (const element of elements) {
-      const result = await element.evaluate(
-        (el, searchText, exactMatch) => {
-          const getTextContent = () => {
-            if (el.children.length > 0) {
-              const directText = Array.from(el.childNodes)
-                .filter(node => node.nodeType === Node.TEXT_NODE)
-                .map(node => node.textContent)
-                .join('')
-                .trim()
-              if (directText) {
-                return directText
-              }
-            }
-            return el.textContent.trim()
-          }
-
-          const textContent = getTextContent()
-          if (!textContent) {
-            return false
-          }
-
-          const style = window.getComputedStyle(el)
-          const isVisible =
-            style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
-            style.opacity !== '0'
-          if (!isVisible) {
-            return false
-          }
-
-          if (typeof searchText === 'string') {
-            return exactMatch
-              ? textContent === searchText
-              : textContent.includes(searchText)
-          }
-          return new RegExp(searchText).test(textContent)
-        },
-        typeof text === 'string' ? text : text.source,
-        exact,
-      )
-
-      if (result) {
-        return element
-      }
-    }
-    await delay(100)
+function uint8ArrayEquals(a: Uint8Array, b: Uint8Array) {
+  if (a.length !== b.length) {
+    return false
   }
-
-  throw new Error(`Could not find element with text: ${text}`)
+  for (const [i, element] of a.entries()) {
+    if (element !== b[i]) {
+      return false
+    }
+  }
+  return true
 }
 
 async function capturePageSnapshot(page: Page, name: string) {
@@ -138,164 +85,147 @@ async function capturePageSnapshot(page: Page, name: string) {
   }
 
   const screenshot = await page.screenshot({ fullPage: true })
-  const currentBuffer = Buffer.from(screenshot)
   const snapshotPath = path.join(snapshotsDir, `${name}.png`)
 
   if (updateSnapshots || !fs.existsSync(snapshotPath)) {
-    fs.writeFileSync(snapshotPath, currentBuffer)
+    fs.writeFileSync(snapshotPath, screenshot)
     return {
       passed: true,
       message: updateSnapshots ? 'Snapshot updated' : 'Snapshot created',
     }
   }
 
-  const expectedBuffer = fs.readFileSync(snapshotPath)
-  if (currentBuffer.equals(expectedBuffer)) {
+  const expectedBuffer = new Uint8Array(fs.readFileSync(snapshotPath))
+  if (uint8ArrayEquals(screenshot, expectedBuffer)) {
     return { passed: true, message: 'Snapshot matches' }
   }
 
-  fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), currentBuffer)
+  fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
   return { passed: false, message: 'Snapshot differs' }
 }
 
-// Navigate to app with config
-async function navigateToApp(page: Page, baseUrl: string) {
-  await page.goto(`${baseUrl}/?config=test_data/volvox/config.json`, {
-    waitUntil: 'networkidle0',
-    timeout: 60000,
-  })
-  await findByText(page, 'ctgA', { timeout: 30000 })
+async function navigateToApp(page: Page) {
+  await page.goto(
+    `http://localhost:${PORT}/?config=test_data/volvox/config.json`,
+    {
+      waitUntil: 'networkidle0',
+      timeout: 60000,
+    },
+  )
+  await findByText(page, 'ctgA')
 }
 
-// Click a track in the track selector
 async function openTrack(page: Page, trackId: string) {
   const trackLabel = await findByTestId(
     page,
     `htsTrackLabel-Tracks,${trackId}`,
     10000,
   )
-  await trackLabel.click()
+  await trackLabel?.click()
 }
 
-// Test definitions
-function defineTests(baseUrl: string): TestSuite[] {
-  return [
-    {
-      name: 'BasicLinearGenomeView',
-      tests: [
-        {
-          name: 'loads the application',
-          fn: async page => {
-            await navigateToApp(page, baseUrl)
-            await findByText(page, 'Help', { timeout: 10000 })
-          },
+const testSuites: TestSuite[] = [
+  {
+    name: 'BasicLinearGenomeView',
+    tests: [
+      {
+        name: 'loads the application',
+        fn: async page => {
+          await navigateToApp(page)
+          await findByText(page, 'Help', 10000)
         },
-        {
-          name: 'opens track selector and loads a track',
-          fn: async page => {
-            await navigateToApp(page, baseUrl)
-            await openTrack(page, 'volvox_refseq')
-            await findByTestId(
-              page,
-              'display-volvox_refseq-LinearReferenceSequenceDisplay',
-              30000,
-            )
-          },
+      },
+      {
+        name: 'opens track selector and loads a track',
+        fn: async page => {
+          await navigateToApp(page)
+          await openTrack(page, 'volvox_refseq')
+          await findByTestId(
+            page,
+            'display-volvox_refseq-LinearReferenceSequenceDisplay',
+          )
         },
-        {
-          name: 'can zoom in and out',
-          fn: async page => {
-            await navigateToApp(page, baseUrl)
-            const zoomIn = await findByTestId(page, 'zoom_in', 10000)
-            await zoomIn.click()
-            await delay(500)
-            const zoomOut = await findByTestId(page, 'zoom_out', 10000)
-            await zoomOut.click()
-          },
+      },
+      {
+        name: 'can zoom in and out',
+        fn: async page => {
+          await navigateToApp(page)
+          const zoomIn = await findByTestId(page, 'zoom_in', 10000)
+          await zoomIn?.click()
+          await delay(500)
+          const zoomOut = await findByTestId(page, 'zoom_out', 10000)
+          await zoomOut?.click()
         },
-        {
-          name: 'can access About dialog',
-          fn: async page => {
-            await navigateToApp(page, baseUrl)
-            const helpButton = await findByText(page, 'Help', {
-              timeout: 10000,
-              exact: true,
-            })
-            await helpButton.click()
-            await delay(300)
-            const aboutMenuItem = await findByText(page, 'About', {
-              timeout: 10000,
-              exact: true,
-            })
-            await aboutMenuItem.click()
-            await findByText(page, /The Evolutionary Software Foundation/i, {
-              timeout: 10000,
-            })
-          },
+      },
+      {
+        name: 'can access About dialog',
+        fn: async page => {
+          await navigateToApp(page)
+          const helpButton = await findByText(page, 'Help', 10000)
+          await helpButton?.click()
+          await delay(300)
+          const aboutMenuItem = await findByText(page, 'About', 10000)
+          await aboutMenuItem?.click()
+          await findByText(page, /The Evolutionary Software Foundation/i, 10000)
         },
-        {
-          name: 'can search for a location',
-          fn: async page => {
-            await navigateToApp(page, baseUrl)
-            const searchInput = await page.waitForSelector(
-              'input[placeholder="Search for location"]',
-              { timeout: 30000 },
-            )
-            if (!searchInput) {
-              throw new Error('Search input not found')
-            }
-            await searchInput.click()
-            await searchInput.type('ctgA:1000..2000')
-            await page.keyboard.press('Enter')
-            await delay(1000)
-          },
+      },
+      {
+        name: 'can search for a location',
+        fn: async page => {
+          await navigateToApp(page)
+          const searchInput = await page.waitForSelector(
+            'input[placeholder="Search for location"]',
+            { timeout: 30000 },
+          )
+          await searchInput?.click()
+          await searchInput?.type('ctgA:1000..2000')
+          await page.keyboard.press('Enter')
+          await delay(1000)
         },
-      ],
-    },
-    {
-      name: 'Alignments Track',
-      tests: [
-        {
-          name: 'loads BAM track',
-          fn: async page => {
-            await navigateToApp(page, baseUrl)
-            await openTrack(page, 'volvox_alignments')
-            await findByTestId(page, 'Blockset-pileup', 60000)
-          },
+      },
+    ],
+  },
+  {
+    name: 'Alignments Track',
+    tests: [
+      {
+        name: 'loads BAM track',
+        fn: async page => {
+          await navigateToApp(page)
+          await openTrack(page, 'volvox_alignments')
+          await findByTestId(page, 'Blockset-pileup', 60000)
         },
-        {
-          name: 'loads CRAM track',
-          fn: async page => {
-            await navigateToApp(page, baseUrl)
-            await openTrack(page, 'volvox_cram_alignments')
-            await findByTestId(page, 'Blockset-pileup', 60000)
-          },
+      },
+      {
+        name: 'loads CRAM track',
+        fn: async page => {
+          await navigateToApp(page)
+          await openTrack(page, 'volvox_cram_alignments')
+          await findByTestId(page, 'Blockset-pileup', 60000)
         },
-        {
-          name: 'BAM track screenshot',
-          fn: async page => {
-            await navigateToApp(page, baseUrl)
-            await openTrack(page, 'volvox_alignments')
-            await findByTestId(page, 'Blockset-pileup', 60000)
-            await delay(2000)
-            const result = await capturePageSnapshot(page, 'alignments-bam')
-            if (!result.passed) {
-              throw new Error(result.message)
-            }
-          },
+      },
+      {
+        name: 'BAM track screenshot',
+        fn: async page => {
+          await navigateToApp(page)
+          await openTrack(page, 'volvox_alignments')
+          await findByTestId(page, 'Blockset-pileup', 60000)
+          await delay(2000)
+          const result = await capturePageSnapshot(page, 'alignments-bam')
+          if (!result.passed) {
+            throw new Error(result.message)
+          }
         },
-      ],
-    },
-  ]
-}
+      },
+    ],
+  },
+]
 
-async function runTests(
-  suites: TestSuite[],
-  page: Page,
-): Promise<TestResult[]> {
-  const results: TestResult[] = []
+async function runTests(page: Page) {
+  let passed = 0
+  let failed = 0
 
-  for (const suite of suites) {
+  for (const suite of testSuites) {
     console.log(`\n  ${suite.name}`)
 
     for (const test of suite.tests) {
@@ -307,25 +237,28 @@ async function runTests(
         await test.fn(page)
 
         const duration = performance.now() - start
-        results.push({ name: test.name, passed: true, duration })
+        passed++
 
-        process.stdout.clearLine(0)
-        process.stdout.cursorTo(0)
+        if (process.stdout.isTTY) {
+          process.stdout.clearLine(0)
+          process.stdout.cursorTo(0)
+        }
         console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
       } catch (e) {
-        const duration = performance.now() - start
+        failed++
         const error = e instanceof Error ? e.message : String(e)
-        results.push({ name: test.name, passed: false, error, duration })
 
-        process.stdout.clearLine(0)
-        process.stdout.cursorTo(0)
+        if (process.stdout.isTTY) {
+          process.stdout.clearLine(0)
+          process.stdout.cursorTo(0)
+        }
         console.log(`    ✗ ${test.name}`)
         console.log(`      Error: ${error}`)
       }
     }
   }
 
-  return results
+  return { passed, failed }
 }
 
 async function main() {
@@ -339,7 +272,7 @@ async function main() {
   console.log('Starting test server...')
   const server = await startServer(PORT)
 
-  let browser: Browser | undefined
+  let browser: Awaited<ReturnType<typeof launch>> | undefined
 
   try {
     console.log(`Launching browser (headed: ${headed})...`)
@@ -361,12 +294,8 @@ async function main() {
       }
     })
 
-    const suites = defineTests(`http://localhost:${PORT}`)
     console.log('\nRunning browser tests...')
-    const results = await runTests(suites, page)
-
-    const passed = results.filter(r => r.passed).length
-    const failed = results.filter(r => !r.passed).length
+    const { passed, failed } = await runTests(page)
 
     console.log(`\n${'─'.repeat(50)}`)
     console.log(`  Tests: ${passed} passed, ${failed} failed`)

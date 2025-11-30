@@ -8,13 +8,5 @@
     "test:headed": "node --experimental-strip-types runner.ts --headed",
     "test:debug": "node --experimental-strip-types runner.ts --headed --slow-mo=100",
     "test:update": "node --experimental-strip-types runner.ts --update-snapshots"
-  },
-  "dependencies": {
-    "puppeteer": "^24.0.0",
-    "serve-handler": "^6.1.5"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/serve-handler": "^6.1.4"
   }
 }
