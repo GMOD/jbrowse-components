@@ -167,18 +167,4 @@ export default class BoxRendererType extends FeatureRendererType {
           : features,
     }
   }
-
-  async render(props: RenderArgsDeserialized): Promise<RenderResults> {
-    const layout =
-      (props.layout as undefined | BaseLayout<unknown>) ||
-      this.createLayoutInWorker(props)
-    const result = await super.render({
-      ...props,
-      layout,
-    })
-    return {
-      ...result,
-      layout,
-    }
-  }
 }

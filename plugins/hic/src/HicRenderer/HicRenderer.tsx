@@ -7,12 +7,7 @@ import { toArray } from 'rxjs/operators'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type {
-  RenderArgs as ServerSideRenderArgs,
-  RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
-  ResultsDeserialized as ServerSideResultsDeserialized,
-  ResultsSerialized as ServerSideResultsSerialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import type { RenderArgsDeserialized as ServerSideRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
 
 interface HicFeature {
@@ -21,32 +16,14 @@ interface HicFeature {
   counts: number
 }
 
-interface HicDataAdapter extends BaseFeatureDataAdapter {
-  getResolution: (bp: number) => Promise<number>
-}
-
-export interface RenderArgs extends ServerSideRenderArgs {
-  regions: Region[]
-}
-
 export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized {
   regions: Region[]
-  dataAdapter: HicDataAdapter
   bpPerPx: number
   highResolutionScaling: number
   resolution: number
   adapterConfig: AnyConfigurationModel
   displayHeight?: number
 }
-
-export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
-  features: HicFeature[]
-  statusCallback?: (arg: string) => void
-}
-
-export type ResultsSerialized = ServerSideResultsSerialized
-
-export type ResultsDeserialized = ServerSideResultsDeserialized
 
 export default class HicRenderer extends ServerSideRendererType {
   supportsSVG = true
@@ -92,8 +69,3 @@ export default class HicRenderer extends ServerSideRendererType {
     return features as HicFeature[]
   }
 }
-
-export type {
-  RenderArgsSerialized,
-  RenderResults,
-} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'

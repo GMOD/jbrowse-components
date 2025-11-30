@@ -58,6 +58,13 @@ export interface ResultsDeserialized extends ServerSideResultsDeserialized {
   blockKey: string
 }
 
+/**
+ * FeatureRendererType provides feature fetching and serialization for renderers
+ * that need to return features to the client (e.g., SvgFeatureRenderer for click handling).
+ *
+ * Canvas-based renderers that return rpcResult() with ImageBitmap bypass the feature
+ * serialization and can use getFeatures() directly without going through render().
+ */
 export default class FeatureRendererType extends ServerSideRendererType {
   serializeArgsInClient(args: RenderArgs) {
     return super.serializeArgsInClient({
@@ -72,7 +79,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
     args: RenderArgs,
   ): ResultsDeserialized {
     const deserializedFeatures = new Map<string, SimpleFeature>(
-      result.features.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]),
+      result.features?.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]) ?? [],
     )
 
     const deserialized = super.deserializeResultsInClient(
@@ -97,7 +104,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
     const { features } = result
     return {
       ...serialized,
-      features: iterMap(features.values(), f => f.toJSON(), features.size),
+      features: features ? iterMap(features.values(), f => f.toJSON(), features.size) : [],
     }
   }
 
@@ -137,19 +144,5 @@ export default class FeatureRendererType extends ServerSideRendererType {
     return renderArgs.filters
       ? renderArgs.filters.passes(feature, renderArgs)
       : true
-  }
-
-  async render(
-    props: RenderArgsDeserialized & { features?: Map<string, Feature> },
-  ): Promise<RenderResults> {
-    const features = props.features || (await this.getFeatures(props))
-    const result = await super.render({
-      ...props,
-      features,
-    })
-    return {
-      ...result,
-      features,
-    }
   }
 }
