@@ -17,7 +17,6 @@ export interface WorkerHandle {
     args?: unknown,
     options?: {
       statusCallback?(message: string): void
-      timeout?: number
       rpcDriverClassName: string
     },
   ): Promise<unknown>
@@ -106,7 +105,7 @@ export default abstract class BaseRpcDriver {
     await worker.call(
       functionName,
       { stopTokenId },
-      { timeout: 1000000, rpcDriverClassName: this.name },
+      { rpcDriverClassName: this.name },
     )
   }
 
@@ -172,7 +171,6 @@ export default abstract class BaseRpcDriver {
 
     // now actually call the worker
     const call = await worker.call(functionName, filteredAndSerializedArgs, {
-      timeout: 5 * 60 * 1000, // 5 minutes
       statusCallback: args.statusCallback,
       rpcDriverClassName: this.name,
       ...options,

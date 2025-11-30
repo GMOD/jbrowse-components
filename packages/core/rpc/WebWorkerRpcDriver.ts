@@ -21,6 +21,10 @@ class WebWorkerHandle {
 
   constructor(public worker: Worker) {
     this.client = new RpcClient(worker)
+    // Listen for worker errors that might not be caught by RpcClient
+    this.client.on('error', error => {
+      console.error('[WebWorker RPC Error]', error)
+    })
   }
 
   destroy() {
@@ -34,13 +38,16 @@ class WebWorkerHandle {
       statusCallback?.(message)
     }
     this.client.on(channel, listener)
-    const result = await this.client.call(funcName, {
-      ...args,
-      channel,
-      rpcDriverClassName,
-    })
-    this.client.off(channel, listener)
-    return result
+    try {
+      const result = await this.client.call(funcName, {
+        ...args,
+        channel,
+        rpcDriverClassName,
+      })
+      return result
+    } finally {
+      this.client.off(channel, listener)
+    }
   }
 }
 

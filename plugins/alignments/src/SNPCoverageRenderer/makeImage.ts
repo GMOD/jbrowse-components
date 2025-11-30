@@ -5,6 +5,8 @@ import {
   featureSpanPx,
   forEachWithStopTokenCheck,
 } from '@jbrowse/core/util'
+
+import type { Feature } from '@jbrowse/core/util'
 import {
   YSCALEBAR_LABEL_OFFSET,
   getOrigin,
@@ -434,12 +436,18 @@ export async function makeImage(
   }
 
   // Return reducedFeatures for tooltip functionality
-  // Create reduced features, avoiding multiple features per px
+  // Create reduced features, keeping only one feature per pixel to avoid
+  // serializing thousands of per-base features
   let prevLeftPx = Number.NEGATIVE_INFINITY
-  const reducedFeatures = []
+  const reducedFeatures: Feature[] = []
   for (const feature of features.values()) {
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
+    if (feature.get('type') === 'skip') {
+      continue
+    }
+    const start = feature.get('start') as number
+    const leftPx = (start - region.start) / bpPerPx
+    // Only keep one feature per pixel
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
       reducedFeatures.push(feature)
       prevLeftPx = leftPx
     }

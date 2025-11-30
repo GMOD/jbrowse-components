@@ -10067,10 +10067,10 @@ libnpmpublish@11.1.2:
     sigstore "^4.0.0"
     ssri "^12.0.0"
 
-librpc-web-mod@^1.0.0, librpc-web-mod@^1.1.5:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/librpc-web-mod/-/librpc-web-mod-1.3.0.tgz#b29dfb50df60ee5ee4c256922de947f2a860112c"
-  integrity sha512-5Yy20m+1gC0cy1NXaKCyhHzoB2Gb98G5UtYSScDNNn5k6w3PR25qLPzsAilNKC22JCbIih/GtI9Sqd+wtk6nCw==
+librpc-web-mod@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/librpc-web-mod/-/librpc-web-mod-2.0.0.tgz#9e2c7b7c354292bb86e4bd8911128c5d0b5e3681"
+  integrity sha512-1RT+0AzaTUeYOJKX8kbOB5016hHFfyzfUlEaA2X2jPMJfKo+Vfq42qCLef94fTpNKr6TxoeuR2eoRn8AyEZQZQ==
   dependencies:
     serialize-error "^8.1.0"
 

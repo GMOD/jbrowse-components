@@ -1,5 +1,6 @@
 import PluggableElementBase from './PluggableElementBase'
 import mapObject from '../util/map-obj'
+import { isRpcResult } from '../util/rpc'
 import { getBlobMap, setBlobMap } from '../util/tracks'
 import {
   RetryError,
@@ -101,13 +102,8 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
     // Unwrap rpcResult if present (needed for MainThreadRpcDriver where the
     // rpcResult wrapper isn't stripped by the worker message handler)
-    if (
-      typeof r === 'object' &&
-      r !== null &&
-      '__rpcResult' in r &&
-      (r as { __rpcResult: boolean }).__rpcResult === true
-    ) {
-      return (r as { value: unknown }).value
+    if (isRpcResult(r)) {
+      return r.value
     }
     return r
   }

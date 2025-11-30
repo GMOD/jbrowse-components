@@ -78,6 +78,14 @@ export async function initializeWorker(
     fetchCJS?: (url: string) => Promise<LoadedPlugin>
   },
 ) {
+  // Add global error handler to catch uncaught errors in the worker
+  self.addEventListener('error', event => {
+    console.error('[Worker uncaught error]', event.error || event.message)
+  })
+  self.addEventListener('unhandledrejection', event => {
+    console.error('[Worker unhandled rejection]', event.reason)
+  })
+
   try {
     const pluginManager = await getPluginManager(corePlugins, opts)
     const rpcConfig = Object.fromEntries(

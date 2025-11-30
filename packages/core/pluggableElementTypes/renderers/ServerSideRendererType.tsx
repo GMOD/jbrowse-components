@@ -3,6 +3,7 @@ import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 import { getSerializedSvg, updateStatus } from '../../util'
+import { isRpcResult } from '../../util/rpc'
 import { checkStopToken } from '../../util/stopToken'
 
 import type { RenderProps, RenderResults } from './RendererType'
@@ -185,11 +186,7 @@ export default class ServerSideRenderer extends RendererType {
     checkStopToken(stopToken)
 
     // If render() returned an rpcResult, it's already serialized - pass through
-    if (
-      typeof results === 'object' &&
-      '__rpcResult' in results &&
-      results.__rpcResult === true
-    ) {
+    if (isRpcResult(results)) {
       return results as unknown as ResultsSerialized
     }
 

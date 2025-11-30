@@ -330,32 +330,46 @@ getExpandedRegion(region, renderArgs) {
 }
 ```
 
-### isImageBitmap
+### collectTransferables
 
-Safe check for ImageBitmap that works in Node.js:
+Helper to collect all transferable objects from a render result:
 
 ```typescript
-import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { collectTransferables } from '@jbrowse/core/util'
 
-// Don't use: instanceof ImageBitmap (fails in Node.js)
-// Do use:
-if (isImageBitmap(res.imageData)) {
-  return rpcResult(serialized, [res.imageData])
-}
+const serialized = { ...res, layout, height, width }
+return rpcResult(serialized, collectTransferables(res))
 ```
+
+This handles:
+- `ImageBitmap` (canvas image data)
+- `flatbush` ArrayBuffer (spatial index)
+- `subfeatureFlatbush` ArrayBuffer (secondary spatial index)
+
+### Verifying transfers work
+
+After transfer, ArrayBuffers become "detached" (byteLength = 0) in the worker.
+You can verify transfers are working by checking:
+
+```typescript
+import { isDetachedBuffer } from '@jbrowse/core/util/transferables'
+
+// In worker, after rpcResult returns:
+console.log('Buffer detached:', isDetachedBuffer(flatbush.data))
+// Should be true if transfer worked
+```
+
+In Chrome DevTools, the Performance panel shows `postMessage` events and whether
+transferables were used (look for "Transferable" in the details).
 
 ## SVG export
 
-During SVG export, renderers may be called without a web worker. Canvas
-renderers handle this by checking for `ImageBitmap`:
+During SVG export, there's no `ImageBitmap` available. Canvas renderers handle
+this by always using `rpcResult()` with `collectTransferables()`:
 
 ```typescript
-if (isImageBitmap(res.imageData)) {
-  // Browser with OffscreenCanvas - transfer the bitmap
-  return rpcResult(serialized, [res.imageData])
-}
-// SVG export or fallback - return serialized data directly
-return serialized
+// collectTransferables returns [] when no ImageBitmap
+return rpcResult(serialized, collectTransferables(res))
 ```
 
 The serialization methods handle both cases:
