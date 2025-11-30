@@ -34,6 +34,25 @@ export interface RenderConfigContext {
   isHeightCallback: boolean
 }
 
+export interface FloatingLabelData {
+  text: string
+  relativeY: number
+  color: string
+  isOverlay?: boolean
+}
+
+export interface SubfeatureInfo {
+  subfeatureId: string
+  parentFeatureId: string
+  type: string
+  name: string
+}
+
+export interface ComputeLayoutsResult {
+  subfeatureCoords: number[]
+  subfeatureInfos: SubfeatureInfo[]
+}
+
 export interface Coord {
   x: number
   y: number

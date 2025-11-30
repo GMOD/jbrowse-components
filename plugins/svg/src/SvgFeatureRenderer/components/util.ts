@@ -9,7 +9,14 @@ import {
 import { getSubparts } from './filterSubparts'
 import { isUTR } from './isUTR'
 
-import type { FeatureLayout, GlyphType, RenderConfigContext } from './types'
+import type {
+  ComputeLayoutsResult,
+  FeatureLayout,
+  FloatingLabelData,
+  GlyphType,
+  RenderConfigContext,
+  SubfeatureInfo,
+} from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -375,13 +382,6 @@ export function layoutFeature(args: {
   return layout
 }
 
-interface FloatingLabelData {
-  text: string
-  relativeY: number
-  color: string
-  isOverlay?: boolean
-}
-
 function createFeatureFloatingLabels({
   name,
   description,
@@ -450,6 +450,149 @@ function createSubfeatureFloatingLabel({
   }
 }
 
+export function adjustChildPositions(
+  children: FeatureLayout[],
+  xOffset: number,
+  yOffset: number,
+): FeatureLayout[] {
+  return children.map(child => ({
+    ...child,
+    x: child.x + xOffset,
+    y: child.y + yOffset,
+    children: adjustChildPositions(child.children, xOffset, yOffset),
+  }))
+}
+
+export function addSubfeaturesToLayoutAndFlatbush({
+  layout,
+  featureLayout,
+  parentFeatureId,
+  subfeatureCoords,
+  subfeatureInfos,
+  config,
+  subfeatureLabels,
+  transcriptTypes,
+  labelColor,
+  allFeatures,
+}: {
+  layout: BaseLayout<unknown>
+  featureLayout: FeatureLayout
+  parentFeatureId: string
+  subfeatureCoords: number[]
+  subfeatureInfos: SubfeatureInfo[]
+  config: AnyConfigurationModel
+  subfeatureLabels: string
+  transcriptTypes: string[]
+  labelColor: string
+  allFeatures: Map<string, Feature>
+}) {
+  const showSubfeatureLabels = subfeatureLabels !== 'none'
+  for (const child of featureLayout.children) {
+    const childFeature = allFeatures.get(child.featureId)
+    if (!childFeature) {
+      continue
+    }
+    const childType = childFeature.get('type')
+    const isTranscript = transcriptTypes.includes(childType)
+
+    if (!isTranscript) {
+      addNestedSubfeaturesToLayout({ layout, featureLayout: child, allFeatures })
+      continue
+    }
+
+    const childStart = childFeature.get('start')
+    const childEnd = childFeature.get('end')
+
+    const childLeftPx = child.x
+    const childRightPx = child.x + child.totalLayoutWidth
+    const topPx = child.y
+    const bottomPx = child.y + child.totalLayoutHeight
+    subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
+
+    const transcriptName = String(
+      readConfObject(config, ['labels', 'name'], { feature: childFeature }) ||
+        '',
+    )
+
+    subfeatureInfos.push({
+      subfeatureId: childFeature.id(),
+      parentFeatureId,
+      type: childType,
+      name: transcriptName,
+    })
+
+    const floatingLabels: FloatingLabelData[] = []
+    if (showSubfeatureLabels) {
+      const label = createSubfeatureFloatingLabel({
+        transcriptName,
+        featureHeight: child.height,
+        subfeatureLabels,
+        color: labelColor,
+      })
+      if (label) {
+        floatingLabels.push(label)
+      }
+    }
+
+    layout.addRect(
+      childFeature.id(),
+      childStart,
+      childEnd,
+      bottomPx - topPx,
+      childFeature,
+      {
+        refName: childFeature.get('refName'),
+        ...(showSubfeatureLabels && floatingLabels.length > 0
+          ? {
+              floatingLabels,
+              totalFeatureHeight: child.height,
+              totalLayoutWidth: child.totalLayoutWidth,
+              actualTopPx: topPx,
+            }
+          : {}),
+      },
+    )
+
+    if (child.children.length > 0) {
+      addNestedSubfeaturesToLayout({ layout, featureLayout: child, allFeatures })
+    }
+  }
+}
+
+export function addNestedSubfeaturesToLayout({
+  layout,
+  featureLayout,
+  allFeatures,
+}: {
+  layout: BaseLayout<unknown>
+  featureLayout: FeatureLayout
+  allFeatures: Map<string, Feature>
+}) {
+  for (const child of featureLayout.children) {
+    const childFeature = allFeatures.get(child.featureId)
+    if (!childFeature) {
+      continue
+    }
+    const childStart = childFeature.get('start')
+    const childEnd = childFeature.get('end')
+
+    layout.addRect(
+      childFeature.id(),
+      childStart,
+      childEnd,
+      child.height,
+      childFeature,
+      {
+        refName: childFeature.get('refName'),
+      },
+    )
+
+    if (child.children.length > 0) {
+      addNestedSubfeaturesToLayout({ layout, featureLayout: child, allFeatures })
+    }
+  }
+}
+
 export function buildFeatureMap(
   features: Map<string, Feature>,
   config: AnyConfigurationModel,
@@ -483,6 +626,7 @@ export function computeLayouts({
   config,
   configContext,
   layout,
+  labelColor = 'black',
 }: {
   features: Map<string, Feature>
   bpPerPx: number
@@ -490,7 +634,8 @@ export function computeLayouts({
   config: AnyConfigurationModel
   configContext: RenderConfigContext
   layout: BaseLayout<unknown>
-}): void {
+  labelColor?: string
+}): ComputeLayoutsResult {
   const reversed = region.reversed || false
   const {
     showLabels,
@@ -501,6 +646,8 @@ export function computeLayouts({
   } = configContext
 
   const allFeatures = buildFeatureMap(features, config)
+  const subfeatureCoords: number[] = []
+  const subfeatureInfos: SubfeatureInfo[] = []
 
   for (const feature of features.values()) {
     const featureLayout = layoutFeature({
@@ -536,34 +683,6 @@ export function computeLayouts({
       descriptionColor,
     })
 
-    // Add floating labels for transcript subfeatures if subfeatureLabels is enabled
-    const subfeatureFloatingLabels: { id: string; label: FloatingLabelData }[] =
-      []
-    if (subfeatureLabels !== 'none') {
-      for (const childLayout of featureLayout.children) {
-        const childFeature = allFeatures.get(childLayout.featureId)
-        if (childFeature && transcriptTypes.includes(childFeature.get('type'))) {
-          const transcriptName = String(
-            readConfObject(config, ['labels', 'name'], {
-              feature: childFeature,
-            }) || '',
-          )
-          const label = createSubfeatureFloatingLabel({
-            transcriptName,
-            featureHeight: childLayout.height,
-            subfeatureLabels,
-            color: nameColor,
-          })
-          if (label) {
-            subfeatureFloatingLabels.push({
-              id: childLayout.featureId,
-              label,
-            })
-          }
-        }
-      }
-    }
-
     const layoutWidthBp =
       featureLayout.totalLayoutWidth * bpPerPx + xPadding * bpPerPx
     const [layoutStart, layoutEnd] = calculateLayoutBounds(
@@ -592,10 +711,41 @@ export function computeLayouts({
               totalFeatureHeight: featureLayout.totalFeatureHeight,
             }
           : {}),
-        ...(subfeatureFloatingLabels.length > 0
-          ? { subfeatureFloatingLabels }
-          : {}),
       },
     )
+
+    // Add subfeatures to layout with flatbush data for hit detection
+    const featureType = feature.get('type')
+    const isGene = featureType === 'gene'
+    const hasTranscriptChildren = featureLayout.children.some(child => {
+      const childFeature = allFeatures.get(child.featureId)
+      return childFeature && transcriptTypes.includes(childFeature.get('type'))
+    })
+
+    if (isGene && hasTranscriptChildren) {
+      addSubfeaturesToLayoutAndFlatbush({
+        layout,
+        featureLayout,
+        parentFeatureId: feature.id(),
+        subfeatureCoords,
+        subfeatureInfos,
+        config,
+        subfeatureLabels,
+        transcriptTypes,
+        labelColor,
+        allFeatures,
+      })
+    } else if (featureLayout.children.length > 0) {
+      addNestedSubfeaturesToLayout({
+        layout,
+        featureLayout,
+        allFeatures,
+      })
+    }
+  }
+
+  return {
+    subfeatureCoords,
+    subfeatureInfos,
   }
 }

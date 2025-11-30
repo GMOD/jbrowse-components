@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -10,7 +9,7 @@ import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
 import SvgOverlay from './SvgOverlay'
-import { buildFeatureMap, createRenderConfigContext, normalizeColor } from './util'
+import { buildFeatureMap, createRenderConfigContext } from './util'
 
 import type {
   Coord,
@@ -47,8 +46,7 @@ function FeatureGlyph(props: {
   selected?: boolean
   theme: Theme
 }) {
-  const { featureLayout, features, configContext, theme, config, region, topLevel } =
-    props
+  const { featureLayout, features } = props
   const { glyphType, children } = featureLayout
   const GlyphComponent = GlyphComponents[glyphType]
 
@@ -68,74 +66,6 @@ function FeatureGlyph(props: {
             featureLayout={childLayout}
             topLevel={false}
           />
-        )
-      })}
-      {topLevel && configContext.subfeatureLabels !== 'none' && (
-        <SubfeatureLabels
-          featureLayout={featureLayout}
-          features={features}
-          config={config}
-          configContext={configContext}
-          theme={theme}
-          region={region}
-        />
-      )}
-    </>
-  )
-}
-
-function SubfeatureLabels({
-  featureLayout,
-  features,
-  config,
-  configContext,
-}: {
-  featureLayout: FeatureLayout
-  features: Map<string, Feature>
-  config: AnyConfigurationModel
-  configContext: RenderConfigContext
-  theme: Theme
-  region: Region
-}) {
-  const { subfeatureLabels, transcriptTypes, fontHeight } = configContext
-
-  return (
-    <>
-      {featureLayout.children.map(childLayout => {
-        const childFeature = features.get(childLayout.featureId)
-        if (!childFeature || !transcriptTypes.includes(childFeature.get('type'))) {
-          return null
-        }
-
-        const name = String(
-          readConfObject(config, ['labels', 'name'], {
-            feature: childFeature,
-          }) || '',
-        )
-        if (!/\S/.test(name)) {
-          return null
-        }
-
-        const nameColor = readConfObject(config, ['labels', 'nameColor'], {
-          feature: childFeature,
-        }) as string
-        const color = normalizeColor(nameColor)
-
-        const isOverlay = subfeatureLabels === 'overlay'
-        const labelY = isOverlay
-          ? childLayout.y + 2 + fontHeight
-          : childLayout.y + childLayout.height + fontHeight
-
-        return (
-          <text
-            key={`label-${childLayout.featureId}`}
-            x={childLayout.x}
-            y={labelY}
-            fontSize={fontHeight}
-            fill={color}
-          >
-            {name}
-          </text>
         )
       })}
     </>
