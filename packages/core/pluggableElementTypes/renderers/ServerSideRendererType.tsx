@@ -6,7 +6,7 @@ import { getSerializedSvg, updateStatus } from '../../util'
 import { isRpcResult } from '../../util/rpc'
 import { checkStopToken } from '../../util/stopToken'
 
-import type { RenderProps, RenderResults } from './RendererType'
+import type { RenderProps, RenderResults, RenderReturn } from './RendererType'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { SerializedFilterChain } from './util/serializableFilterChain'
 import type RpcManager from '../../rpc/RpcManager'
@@ -203,4 +203,4 @@ export default class ServerSideRenderer extends RendererType {
   }
 }
 
-export { type RenderResults } from './RendererType'
+export { type RenderResults, type RenderReturn } from './RendererType'

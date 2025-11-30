@@ -10,6 +10,7 @@ import type {
   RenderArgsDeserialized as FeatureRenderArgsDeserialized,
   RenderArgsSerialized as FeatureRenderArgsSerialized,
   RenderResults as FeatureRenderResults,
+  RenderReturn,
   ResultsDeserialized as FeatureResultsDeserialized,
   ResultsSerialized as FeatureResultsSerialized,
 } from './FeatureRendererType'
@@ -78,11 +79,11 @@ export default class BoxRendererType extends FeatureRendererType {
     return expandRegion(region, bpExpansion)
   }
 
-  freeResources(args: Record<string, string>) {
+  freeResources(args: RenderArgs) {
     const key = getLayoutId(args)
     const session = this.layoutSessions[key]
     if (session) {
-      const region = (args as unknown as RenderArgs).regions[0]!
+      const region = args.regions[0]!
       session.layout.discardRange(region.refName, region.start, region.end)
     }
   }
@@ -122,7 +123,7 @@ export default class BoxRendererType extends FeatureRendererType {
    * Default render method that fetches features and creates layout.
    * Canvas-based renderers should override this and return rpcResult() directly.
    */
-  async render(renderArgs: RenderArgsDeserialized): Promise<RenderResults> {
+  async render(renderArgs: RenderArgsDeserialized): Promise<RenderReturn> {
     const features = await this.getFeatures(renderArgs)
     const layout = this.createLayoutInWorker(renderArgs)
     return { features, layout }

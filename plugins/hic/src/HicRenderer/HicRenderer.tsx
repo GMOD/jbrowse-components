@@ -11,7 +11,7 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { RenderArgsDeserialized as ServerSideRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
 
-interface HicFeature {
+export interface HicFeature {
   bin1: number
   bin2: number
   counts: number
@@ -24,6 +24,12 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
   resolution: number
   adapterConfig: AnyConfigurationModel
   displayHeight?: number
+  useLogScale?: boolean
+  colorScheme?: string
+}
+
+export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
+  features: HicFeature[]
 }
 
 export default class HicRenderer extends ServerSideRendererType {
@@ -64,6 +70,6 @@ export default class HicRenderer extends ServerSideRendererType {
         .pipe(toArray()),
     )
 
-    return features as HicFeature[]
+    return features as unknown as HicFeature[]
   }
 }

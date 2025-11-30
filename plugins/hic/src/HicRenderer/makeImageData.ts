@@ -11,7 +11,7 @@ import {
 
 import interpolateViridis from './viridis'
 
-import type { RenderArgsDeserializedWithFeatures } from './HicRenderer'
+import type { HicFeature, RenderArgsDeserializedWithFeatures } from './HicRenderer'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
@@ -108,7 +108,8 @@ export async function makeImageData(
       ctx.translate(-width, 0)
     }
     ctx.rotate(-Math.PI / 4)
-    forEachWithStopTokenCheck(features, stopToken, ({ bin1, bin2, counts }) => {
+    forEachWithStopTokenCheck(features, stopToken, (f: HicFeature) => {
+      const { bin1, bin2, counts } = f
       ctx.fillStyle = readConfObject(config, 'color', {
         count: counts,
         maxScore,

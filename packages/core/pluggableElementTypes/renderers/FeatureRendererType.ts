@@ -13,6 +13,7 @@ import type {
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderResults as ServerSideRenderResults,
+  RenderReturn,
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
@@ -156,9 +157,11 @@ export default class FeatureRendererType extends ServerSideRendererType {
    * Default render method that fetches features and passes them to the React component.
    * Canvas-based renderers override this and return rpcResult() directly.
    */
-  async render(renderArgs: RenderArgsDeserialized): Promise<RenderResults> {
+  async render(renderArgs: RenderArgsDeserialized): Promise<RenderReturn> {
     const features = await this.getFeatures(renderArgs)
     const result = await super.render({ ...renderArgs, features })
-    return { ...result, features }
+    return { ...result, features } as RenderResults
   }
 }
+
+export { type RenderReturn }

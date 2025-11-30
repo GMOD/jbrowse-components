@@ -22,11 +22,12 @@ function isImageBitmap(value: unknown): value is ImageBitmap {
  * After transfer, ArrayBuffers become "detached" (byteLength = 0) in the sender.
  * This is expected behavior - the data has been moved, not copied.
  */
-export function collectTransferables(result: {
-  imageData?: unknown
-  flatbush?: ArrayBufferLike
-  subfeatureFlatbush?: ArrayBufferLike
-}): Transferable[] {
+export function collectTransferables(result: Record<string, unknown>): Transferable[] {
+  const res = result as {
+    imageData?: unknown
+    flatbush?: ArrayBufferLike
+    subfeatureFlatbush?: ArrayBufferLike
+  }
   const transferables: Transferable[] = []
   if (isImageBitmap(result.imageData)) {
     transferables.push(result.imageData)

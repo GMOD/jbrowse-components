@@ -6,6 +6,12 @@ import { serializeError } from 'serialize-error'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
 
+declare global {
+  interface Window {
+    rpcServer?: RpcServer
+  }
+}
+
 interface WorkerConfiguration {
   plugins: PluginDefinition[]
   windowHref: string
@@ -53,17 +59,17 @@ interface WrappedFuncArgs {
   [key: string]: unknown
 }
 
-type RpcFunc = (args: unknown, rpcDriverClassName: string) => unknown
+type RpcFunc = (args: unknown, rpcDriverClassName: string) => Promise<unknown>
 
 function wrapForRpc(func: RpcFunc) {
-  return (args: WrappedFuncArgs) => {
-    const { channel, rpcDriverClassName } = args
+  return (args: unknown) => {
+    const wrappedArgs = args as WrappedFuncArgs
+    const { channel, rpcDriverClassName } = wrappedArgs
     return func(
       {
-        ...args,
+        ...wrappedArgs,
         statusCallback: (message: string) => {
-          // @ts-expect-error
-          self.rpcServer.emit(channel, message)
+          self.rpcServer?.emit(channel, message)
         },
       },
       rpcDriverClassName,

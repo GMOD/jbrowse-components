@@ -5,6 +5,7 @@ import PluggableElementBase from '../PluggableElementBase'
 import type PluginManager from '../../PluginManager'
 import type { AnyConfigurationSchemaType } from '../../configuration'
 import type { AnyReactComponentType } from '../../util'
+import type { RpcResult } from 'librpc-web-mod'
 
 export type RenderProps = Record<string, unknown>
 
@@ -12,6 +13,8 @@ export interface RenderResults {
   reactElement?: React.ReactElement
   html?: string
 }
+
+export type RenderReturn = RenderResults | RpcResult
 
 export default class RendererType extends PluggableElementBase {
   ReactComponent: AnyReactComponentType
@@ -35,7 +38,7 @@ export default class RendererType extends PluggableElementBase {
     this.pluginManager = stuff.pluginManager
   }
 
-  async render(props: RenderProps): Promise<RenderResults> {
+  async render(props: RenderProps): Promise<RenderReturn> {
     return {
       reactElement: <this.ReactComponent {...props} />,
     }

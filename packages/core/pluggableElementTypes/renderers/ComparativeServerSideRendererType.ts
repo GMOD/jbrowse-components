@@ -94,4 +94,4 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   }
 }
 
-export { type RenderResults } from './ServerSideRendererType'
+export { type RenderResults, type RenderReturn } from './ServerSideRendererType'
