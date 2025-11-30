@@ -20,7 +20,10 @@ const useStyles = makeStyles()({
 
 function validateJexl(data: string) {
   try {
-    for (const line of data.split('\n').map(l => l.trim()).filter(Boolean)) {
+    for (const line of data
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean)) {
       stringToJexlExpression(line)
     }
     return undefined

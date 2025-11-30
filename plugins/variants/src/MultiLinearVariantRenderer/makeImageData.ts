@@ -78,7 +78,8 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
       if (genotype) {
         const isPhased = genotype.includes('|')
         if (isPhased) {
-          const alleles = splitCache[genotype] ?? (splitCache[genotype] = genotype.split('|'))
+          const alleles =
+            splitCache[genotype] ?? (splitCache[genotype] = genotype.split('|'))
           if (
             drawPhased(alleles, ctx, x, y, w, drawH, HP!, undefined, drawRef)
           ) {

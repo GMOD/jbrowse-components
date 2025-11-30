@@ -10,7 +10,8 @@ export function calculateAlleleCounts(
   const vals = Object.values(genotypes)
   for (const val of vals) {
     const genotype = val
-    const alleles = cacheSplit[genotype] ?? (cacheSplit[genotype] = genotype.split(/[/|]/))
+    const alleles =
+      cacheSplit[genotype] ?? (cacheSplit[genotype] = genotype.split(/[/|]/))
     for (const allele of alleles) {
       const a = allele
       alleleCounts[a] = (alleleCounts[a] || 0) + 1

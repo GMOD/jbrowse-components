@@ -16,7 +16,8 @@ export function getAlleleColor(
     let uncalled = 0
     let alt2 = 0
     let ref = 0
-    const alleles = splitCache[genotype] ?? (splitCache[genotype] = genotype.split(/[/|]/))
+    const alleles =
+      splitCache[genotype] ?? (splitCache[genotype] = genotype.split(/[/|]/))
     const total = alleles.length
 
     for (let i = 0; i < total; i++) {

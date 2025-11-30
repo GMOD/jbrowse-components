@@ -67,7 +67,9 @@ function drawPhasedMode(drawCtx: DrawContext, mafs: Maf[]) {
             const isPhased = genotype.includes('|')
             if (isPhased) {
               const PS = s.PS?.[0]
-              const alleles = splitCache[genotype] ?? (splitCache[genotype] = genotype.split('|'))
+              const alleles =
+                splitCache[genotype] ??
+                (splitCache[genotype] = genotype.split('|'))
               drawPhased(alleles, ctx, x, y, w, h, HP!, PS)
             } else {
               ctx.fillStyle = 'black'
@@ -91,7 +93,9 @@ function drawPhasedMode(drawCtx: DrawContext, mafs: Maf[]) {
           arr2.push(genotype)
           const isPhased = genotype.includes('|')
           if (isPhased) {
-            const alleles = splitCache[genotype] ?? (splitCache[genotype] = genotype.split('|'))
+            const alleles =
+              splitCache[genotype] ??
+              (splitCache[genotype] = genotype.split('|'))
             drawPhased(alleles, ctx, x, y, w, h, HP!)
           } else {
             ctx.fillStyle = 'black'
