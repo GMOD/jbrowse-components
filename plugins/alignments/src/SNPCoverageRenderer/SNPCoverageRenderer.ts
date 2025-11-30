@@ -1,20 +1,37 @@
-import { updateStatus } from '@jbrowse/core/util'
-import {
-  WiggleBaseRenderer,
-  type RenderArgsDeserializedWithFeatures as WiggleRenderArgs,
-} from '@jbrowse/plugin-wiggle'
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { rpcResult } from 'librpc-web-mod'
 
-import type { RenderArgsDeserializedWithFeatures } from './types'
+import type { RenderArgsDeserialized } from './types'
 
-export default class SNPCoverageRenderer extends WiggleBaseRenderer {
-  // note: the snps are drawn on linear scale even if the data is drawn in log
-  // scape hence the two different scales being used
-  async draw<T extends WiggleRenderArgs>(ctx: CanvasRenderingContext2D, props: T) {
-    const p = props as unknown as RenderArgsDeserializedWithFeatures
-    const { statusCallback = () => {} } = p
+export default class SNPCoverageRenderer extends FeatureRendererType {
+  supportsSVG = true
+
+  async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
+    const { height, regions, bpPerPx, statusCallback = () => {} } = renderProps
+
+    const region = regions[0]!
+    const width = (region.end - region.start) / bpPerPx
+
     const { makeImage } = await import('./makeImage')
-    return updateStatus('Rendering coverage', statusCallback, () =>
-      makeImage(ctx, p),
+    const { reducedFeatures, ...rest } = await updateStatus(
+      'Rendering coverage',
+      statusCallback,
+      () =>
+        renderToAbstractCanvas(width, height, renderProps, ctx =>
+          makeImage(ctx, { ...renderProps, features }),
+        ),
     )
+
+    const serialized = {
+      ...rest,
+      features: reducedFeatures?.map(f => f.toJSON()),
+      height,
+      width,
+    }
+
+    return rpcResult(serialized, collectTransferables(rest))
   }
 }

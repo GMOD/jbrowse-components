@@ -30,7 +30,9 @@ function isArrayBufferLike(value: unknown): value is ArrayBufferLike {
  * After transfer, ArrayBuffers become "detached" (byteLength = 0) in the sender.
  * This is expected behavior - the data has been moved, not copied.
  */
-export function collectTransferables(result: Record<string, unknown>): Transferable[] {
+export function collectTransferables(
+  result: Record<string, unknown>,
+): Transferable[] {
   const transferables: Transferable[] = []
   const { imageData, flatbush, subfeatureFlatbush } = result
 

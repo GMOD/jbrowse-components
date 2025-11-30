@@ -88,7 +88,7 @@ export type { TooltipContentsComponent } from './Tooltip'
 
 export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'
 export type {
-  RenderArgsDeserializedWithFeatures,
   MultiRenderArgsDeserialized,
   RenderArgsDeserialized,
+  RenderArgsDeserializedWithFeatures,
 } from './WiggleBaseRenderer'

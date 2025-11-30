@@ -13,8 +13,8 @@ import type {
   ResultsDeserialized as FeatureResultsDeserialized,
   ResultsSerialized as FeatureResultsSerialized,
 } from './FeatureRendererType'
-import type { RenderReturn } from './RendererType'
 import type { LayoutSessionProps } from './LayoutSession'
+import type { RenderReturn } from './RendererType'
 import type RpcManager from '../../rpc/RpcManager'
 import type { Feature, Region } from '../../util'
 import type {
@@ -144,9 +144,7 @@ export default class BoxRendererType extends FeatureRendererType {
     // Live layouts (BaseLayout) have serializeRegion method, plain objects (SerializedLayout) don't
     const layout =
       resultLayout && 'serializeRegion' in resultLayout
-        ? (resultLayout as BaseLayout<Feature>).serializeRegion(
-            this.getExpandedRegion(region, args),
-          )
+        ? resultLayout.serializeRegion(this.getExpandedRegion(region, args))
         : (resultLayout as unknown as SerializedLayout)
 
     return {

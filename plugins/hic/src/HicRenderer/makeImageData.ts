@@ -11,7 +11,10 @@ import {
 
 import interpolateViridis from './viridis'
 
-import type { HicFeature, RenderArgsDeserializedWithFeatures } from './HicRenderer'
+import type {
+  HicFeature,
+  RenderArgsDeserializedWithFeatures,
+} from './HicRenderer'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
