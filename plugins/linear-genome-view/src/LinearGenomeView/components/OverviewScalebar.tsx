@@ -37,7 +37,6 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     height: HEADER_OVERVIEW_HEIGHT,
     overflow: 'hidden',
-    willChange: 'transform',
   },
   scalebarContigForward: {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
@@ -54,7 +53,6 @@ const useStyles = makeStyles()(theme => ({
     fontWeight: 'bold',
     pointerEvents: 'none',
     zIndex: 100,
-    willChange: 'transform',
   },
   scalebarVisibleRegion: {
     position: 'absolute',
@@ -63,7 +61,6 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 100,
     border: '1px solid',
     left: 0,
-    willChange: 'transform, width',
   },
   overview: {
     height: HEADER_BAR_HEIGHT,
