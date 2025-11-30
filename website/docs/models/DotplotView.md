@@ -3,8 +3,8 @@ id: dotplotview
 title: DotplotView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -147,11 +147,9 @@ vview: types.optional(DotplotVView, {})
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; configuration: AnyConfigurationSchemaType; minimized: IType<...>; pinned: IType<...>; displays: IArrayType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IAnyType>
 // code
-tracks: types.array(
-          pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
-        )
+tracks: types.array(pm.pluggableMstType('track', 'stateModel'))
 ```
 
 #### property: viewTrackConfigs
@@ -426,6 +424,18 @@ zooms into clicked and dragged region
 ```js
 // type signature
 zoomInToMouseCoords: (mousedown: Coord, mouseup: Coord) => void
+```
+
+#### action: calculateBorders
+
+Calculate borders synchronously for a given zoom level
+
+```js
+// type signature
+calculateBorders: () => {
+  borderX: number
+  borderY: number
+}
 ```
 
 #### action: showAllRegions

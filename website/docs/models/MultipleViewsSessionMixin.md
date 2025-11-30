@@ -3,8 +3,8 @@ id: multipleviewssessionmixin
 title: MultipleViewsSessionMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -88,7 +88,7 @@ addView: (typeName: string, initialState?: {}) => any
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; } & NonEmptyObject & { width: number; } & { menuItems(): MenuItem[]; } & { setDisplayName(name: string): void; setWidth(newWidth: number): void; setMinimized(flag: boolean): void; } & IStateTreeNode<...>) => void
+removeView: (view: IBaseViewModel) => void
 ```
 
 #### action: setStickyViewHeaders

@@ -3,8 +3,8 @@ id: connectionmanagementsessionmixin
 title: ConnectionManagementSessionMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -26,13 +26,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IArrayType<IModelType<{ name: ISimpleType<string>; tracks: IArrayType<IAnyModelType>; configuration: ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IAnyType>
 // code
 connectionInstances: types.array(
-        pluginManager.pluggableMstType(
-          'connection',
-          'stateModel',
-        ) as BaseConnectionModel,
+        pluginManager.pluggableMstType('connection', 'stateModel'),
       )
 ```
 
@@ -51,7 +48,7 @@ connectionInstances: types.array(
 
 ```js
 // type signature
-makeConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => { ...; } & ... 3 more ... & IStateTreeNode<...>
+makeConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => any
 ```
 
 #### action: prepareToBreakConnection

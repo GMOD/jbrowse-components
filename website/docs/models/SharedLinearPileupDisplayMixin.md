@@ -3,8 +3,8 @@ id: sharedlinearpileupdisplaymixin
 title: SharedLinearPileupDisplayMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -201,7 +201,7 @@ uses copy-to-clipboard and generates notification
 
 ```js
 // type signature
-copyFeatureToClipboard: (feature: Feature) => void
+copyFeatureToClipboard: (feature: Feature) => Promise<void>
 ```
 
 #### method: contextMenuItems
@@ -216,6 +216,13 @@ contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeM
 ```js
 // type signature
 renderPropsPre: () => any
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onClick(): void; onMismatchClick(_: unknown, item: { type: string; seq: string; modType?: string; probability?: number; }, featureId?: string): Promise<...>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<...>; displayModel: { ...;...
 ```
 
 #### method: colorSchemeSubMenuItems
