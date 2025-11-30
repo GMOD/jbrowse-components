@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`GenBank export can export a feature with subfeatures (mRNA, CDS, exon) 1`] = `
+exports[`GenBank export > can export a feature with subfeatures (mRNA, CDS, exon) 1`] = `
 "LOCUS       chr1:1001..2000      1000 bp        DNA       linear    UNK 10-JAN-1970
 FEATURES             Location/Qualifiers
      gene            1..1000
@@ -17,7 +17,7 @@ ORIGIN
 //"
 `;
 
-exports[`GenBank export can export a simple feature 1`] = `
+exports[`GenBank export > can export a simple feature 1`] = `
 "LOCUS       chr1:101..200        100 bp         DNA       linear    UNK 10-JAN-1970
 FEATURES             Location/Qualifiers
      gene            1..100
@@ -30,7 +30,7 @@ ORIGIN
 //"
 `;
 
-exports[`GenBank export handles custom attributes 1`] = `
+exports[`GenBank export > handles custom attributes 1`] = `
 "LOCUS       chr1:701..800        100 bp         DNA       linear    UNK 10-JAN-1970
 FEATURES             Location/Qualifiers
      gene            1..100
@@ -46,7 +46,7 @@ ORIGIN
 //"
 `;
 
-exports[`GenBank export handles features on negative strand 1`] = `
+exports[`GenBank export > handles features on negative strand 1`] = `
 "LOCUS       chr1:501..600        100 bp         DNA       linear    UNK 10-JAN-1970
 FEATURES             Location/Qualifiers
      gene            complement(1..100)
@@ -63,7 +63,7 @@ ORIGIN
 //"
 `;
 
-exports[`GenBank export handles multiple top-level features 1`] = `
+exports[`GenBank export > handles multiple top-level features 1`] = `
 "LOCUS       chr1:101..400        300 bp         DNA       linear    UNK 10-JAN-1970
 FEATURES             Location/Qualifiers
      gene            1..100

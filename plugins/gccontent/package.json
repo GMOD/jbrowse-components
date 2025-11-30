@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.7.0",
-    "@jbrowse/mobx-state-tree": "^5.4.6",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@jbrowse/plugin-sequence": "^3.7.0",
     "@jbrowse/plugin-wiggle": "^3.7.0",

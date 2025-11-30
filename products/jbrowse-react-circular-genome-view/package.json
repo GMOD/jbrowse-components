@@ -40,6 +40,7 @@
     "@emotion/styled": "^11.8.1",
     "@jbrowse/core": "^3.7.0",
     "@jbrowse/embedded-core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
     "@jbrowse/plugin-authentication": "^3.7.0",
     "@jbrowse/plugin-circular-view": "^3.7.0",
     "@jbrowse/plugin-config": "^3.7.0",
@@ -51,8 +52,7 @@
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "mobx": "^6.6.0",
-    "mobx-react": "^9.0.0",
-    "@jbrowse/mobx-state-tree": "^5.0.0"
+    "mobx-react": "^9.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

@@ -1,4 +1,34 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GFF3 export > can export a feature with a subfeature 1`] = `
+"##gff-version 3
+chr1	.	gene	101	900	.	.	.	ID=gene1
+chr1	.	exon	101	200	.	.	.	Parent=gene1;ID=exon1
+chr1	.	exon	801	900	.	.	.	Parent=gene1;ID=exon2"
+`;
+
+exports[`GFF3 export > can export a feature with multiple levels of subfeatures 1`] = `
+"##gff-version 3
+chr1	.	gene	101	900	.	.	.	ID=gene1
+chr1	.	mRNA	101	900	.	.	.	Parent=gene1;ID=mrna1
+chr1	.	exon	101	200	.	.	.	Parent=mrna1;ID=exon1
+chr1	.	exon	801	900	.	.	.	Parent=mrna1;ID=exon2"
+`;
+
+exports[`GFF3 export > can export a feature with score and strand 1`] = `
+"##gff-version 3
+chr1	.	gene	101	200	100	-	.	ID=test2"
+`;
+
+exports[`GFF3 export > can export a simple feature 1`] = `
+"##gff-version 3
+chr1	test	gene	101	200	.	.	.	ID=test;Name=gene1"
+`;
+
+exports[`GFF3 export > handles various attribute types 1`] = `
+"##gff-version 3
+chr1	.	tf_binding_site	101	200	.	.	.	ID=test3;Note=some note;Alias=a,b;custom={"foo":"bar"}"
+`;
 
 exports[`GFF3 export can export a feature with a subfeature 1`] = `
 "##gff-version 3

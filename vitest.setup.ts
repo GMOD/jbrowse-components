@@ -81,7 +81,9 @@ vi.mock('@jbrowse/core/util/useMeasure', async () => {
 
 // Mock CascadingMenu to flatten submenus for easier testing
 vi.mock('@jbrowse/core/ui/CascadingMenu', async () => {
-  const actual = await vi.importActual('@jbrowse/core/ui/Menu')
+  const actual = (await vi.importActual('@jbrowse/core/ui/Menu')) as {
+    default: React.ComponentType<any>
+  }
   const React = await import('react')
 
   return {
@@ -93,7 +95,9 @@ vi.mock('@jbrowse/core/ui/CascadingMenu', async () => {
 
 // Mock CascadingMenuButton to flatten submenus for easier testing
 vi.mock('@jbrowse/core/ui/CascadingMenuButton', async () => {
-  const actual = await vi.importActual('@jbrowse/core/ui/MenuButton')
+  const actual = (await vi.importActual('@jbrowse/core/ui/MenuButton')) as {
+    default: React.ComponentType<any>
+  }
   const React = await import('react')
 
   return {

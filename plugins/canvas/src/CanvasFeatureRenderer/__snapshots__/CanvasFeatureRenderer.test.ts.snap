@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CanvasFeatureRenderer makeImageData snapshot of flatbush items structure 1`] = `
+exports[`CanvasFeatureRenderer > makeImageData > snapshot of flatbush items structure 1`] = `
 [
   {
     "bottomPx": 34,
@@ -18,4 +18,4 @@ exports[`CanvasFeatureRenderer makeImageData snapshot of flatbush items structur
 ]
 `;
 
-exports[`CanvasFeatureRenderer makeImageData snapshot of flatbush items structure 2`] = `[]`;
+exports[`CanvasFeatureRenderer > makeImageData > snapshot of flatbush items structure 2`] = `[]`;

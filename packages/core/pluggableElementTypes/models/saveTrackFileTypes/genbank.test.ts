@@ -2,18 +2,20 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { fetchSequence } from './fetchSequence'
 import { stringifyGBK } from './genbank' // Only import stringifyGBK
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // Mock the fetchSequence function from its new module
-jest.mock('./fetchSequence', () => {
-  const SimpleFeature = jest.requireActual(
-    '@jbrowse/core/util/simpleFeature',
-  ).default
+vi.mock('./fetchSequence', async () => {
+  const SimpleFeature = await vi
+    .importActual('@jbrowse/core/util/simpleFeature')
+    .then(t => t.default)
   return {
-    fetchSequence: jest.fn(async ({ regions }) => {
+    fetchSequence: vi.fn(async ({ regions }) => {
       const { start, end, refName } = regions[0]
       return [
+        // @ts-expect-error
         new SimpleFeature({
           id: 'sequence-mock',
           data: {
@@ -43,8 +45,8 @@ const mockSession = {
   id: 'testSessionId',
   rpcManager: {} as any,
   assemblyManager: {
-    get: jest.fn(() => ({
-      getCanonicalRefName: jest.fn(refName => refName),
+    get: vi.fn(() => ({
+      getCanonicalRefName: vi.fn(refName => refName),
     })),
   } as any,
 } as AbstractSessionModel
@@ -56,7 +58,8 @@ describe('GenBank export', () => {
   beforeEach(() => {
     // Clear mock calls before each test
     // Need to get the mocked fetchSequence to clear it
-    ;(fetchSequence as jest.Mock).mockClear()
+    // @ts-expect-error
+    fetchSequence.mockClear()
   })
 
   it('can export a simple feature', async () => {
