@@ -184,6 +184,16 @@ export default class ServerSideRenderer extends RendererType {
     )
     checkStopToken(stopToken)
 
+    // If render() returned an rpcResult, it's already serialized - pass through
+    if (
+      results &&
+      typeof results === 'object' &&
+      '__rpcResult' in results &&
+      results.__rpcResult === true
+    ) {
+      return results as unknown as ResultsSerialized
+    }
+
     return updateStatus('Serializing results', statusCallback, () =>
       this.serializeResultsInWorker(results, args2),
     )

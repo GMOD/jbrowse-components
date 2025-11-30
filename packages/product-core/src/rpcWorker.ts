@@ -1,6 +1,6 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
-import RpcServer from 'librpc-web-mod'
+import { RpcServer } from 'librpc-web-mod'
 import { serializeError } from 'serialize-error'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
@@ -86,8 +86,7 @@ export async function initializeWorker(
         .map(e => [e.name, wrapForRpc(e.execute.bind(e))]),
     )
 
-    // @ts-expect-error
-    self.rpcServer = new RpcServer.Server(rpcConfig)
+    self.rpcServer = new RpcServer(rpcConfig)
     postMessage({ message: 'ready' })
   } catch (e) {
     postMessage({ message: 'error', error: serializeError(e) })

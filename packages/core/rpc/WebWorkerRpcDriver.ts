@@ -1,4 +1,4 @@
-import Rpc from 'librpc-web-mod'
+import { RpcClient } from 'librpc-web-mod'
 import { deserializeError } from 'serialize-error'
 
 import BaseRpcDriver from './BaseRpcDriver'
@@ -16,9 +16,15 @@ interface Options {
   rpcDriverClassName: string
 }
 
-class WebWorkerHandle extends Rpc.Client {
-  destroy(): void {
-    this.workers[0]!.terminate()
+class WebWorkerHandle {
+  private client: RpcClient
+
+  constructor(public worker: Worker) {
+    this.client = new RpcClient(worker)
+  }
+
+  destroy() {
+    this.worker.terminate()
   }
 
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
@@ -27,13 +33,13 @@ class WebWorkerHandle extends Rpc.Client {
     const listener = (message: unknown) => {
       statusCallback?.(message)
     }
-    this.on(channel, listener)
-    const result = await super.call(
-      funcName,
-      { ...args, channel, rpcDriverClassName },
-      opts,
-    )
-    this.off(channel, listener)
+    this.client.on(channel, listener)
+    const result = await this.client.call(funcName, {
+      ...args,
+      channel,
+      rpcDriverClassName,
+    })
+    this.client.off(channel, listener)
     return result
   }
 }
@@ -59,7 +65,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     // one for each worker, because we want to do our own state-group-aware
     // load balancing rather than using librpc's builtin round-robin
     const instance = this.makeWorkerInstance()
-    const worker = new WebWorkerHandle({ workers: [instance] })
+    const handle = new WebWorkerHandle(instance)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     if (isSafari) {
       // xref https://github.com/GMOD/jbrowse-components/issues/3245
@@ -75,12 +81,12 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
       const listener = (e: MessageEvent) => {
         switch (e.data.message) {
           case 'ready': {
-            resolve(worker)
-            worker.workers[0]!.removeEventListener('message', listener)
+            resolve(handle)
+            instance.removeEventListener('message', listener)
             break
           }
           case 'readyForConfig': {
-            worker.workers[0]!.postMessage({
+            instance.postMessage({
               message: 'config',
               config: this.workerBootConfiguration,
             })
@@ -93,7 +99,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
           // No default
         }
       }
-      worker.workers[0]!.addEventListener('message', listener)
+      instance.addEventListener('message', listener)
     })
   }
 }
