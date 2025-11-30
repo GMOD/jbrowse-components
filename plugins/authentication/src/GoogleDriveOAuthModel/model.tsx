@@ -1,5 +1,5 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 import { GoogleDriveFile } from './GoogleDriveFilehandle'
@@ -9,7 +9,7 @@ import baseModel from '../OAuthModel/model'
 
 import type { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
 import type { UriLocation } from '@jbrowse/core/util/types'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface RequestInitWithMetadata extends RequestInit {
   metadataOnly?: boolean

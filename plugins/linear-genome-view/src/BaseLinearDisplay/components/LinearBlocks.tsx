@@ -1,4 +1,7 @@
+import { useEffect, useRef } from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -12,8 +15,10 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     position: 'absolute',
+    left: 0,
     minHeight: '100%',
     display: 'flex',
+    willChange: 'transform',
   },
 })
 
@@ -23,15 +28,29 @@ const LinearBlocks = observer(function ({
   model: BaseLinearDisplayModel
 }) {
   const { classes } = useStyles()
-  const { blockDefinitions } = model
+  const ref = useRef<HTMLDivElement>(null)
   const viewModel = getContainingView(model) as LinearGenomeViewModel
+
+  useEffect(() => {
+    return autorun(
+      function linearBlocksTransformAutorun() {
+        try {
+          const { blockDefinitions } = model
+          const { offsetPx } = viewModel
+          const div = ref.current
+          if (div) {
+            div.style.transform = `translateX(${blockDefinitions.offsetPx - offsetPx}px)`
+          }
+        } catch (e) {
+          // may error during cleanup
+        }
+      },
+      { name: 'LinearBlocksTransform' },
+    )
+  }, [model, viewModel])
+
   return (
-    <div
-      className={classes.linearBlocks}
-      style={{
-        left: blockDefinitions.offsetPx - viewModel.offsetPx,
-      }}
-    >
+    <div ref={ref} className={classes.linearBlocks}>
       <RenderedBlocks model={model} />
     </div>
   )

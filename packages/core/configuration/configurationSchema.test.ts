@@ -1,9 +1,13 @@
-import { getSnapshot, types } from 'mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { expect, test } from 'vitest'
 
 import { getConf, readConfObject } from '.'
+import PluginManager from '../PluginManager'
 import { ConfigurationSchema } from './configurationSchema'
 import { isConfigurationModel } from './util'
+
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
 
 test('can make a schema with a color', () => {
   const container = types.model({
@@ -21,7 +25,7 @@ test('can make a schema with a color', () => {
     }),
   })
 
-  const model = container.create()
+  const model = container.create(undefined, { pluginManager })
 
   expect(isConfigurationModel(model.configuration)).toBe(true)
   expect(getConf(model, 'backgroundColor')).toBe('#eee')
@@ -66,7 +70,7 @@ test('can nest an array of configuration schemas', () => {
     }),
   })
 
-  const model = container.create()
+  const model = container.create(undefined, { pluginManager })
   expect(getConf(model, 'someInteger')).toBe(12)
   // expect(getConf(model, 'myArrayOfSubConfigurations')).toBe(undefined)
 })
@@ -89,7 +93,7 @@ test('can nest a single subconfiguration schema', () => {
     }),
   })
 
-  const model = container.create()
+  const model = container.create(undefined, { pluginManager })
   expect(isConfigurationModel(model.configuration)).toBe(true)
   expect(getConf(model, 'someInteger')).toBe(12)
   // expect(getConf(model, 'mySubConfiguration.someNumber')).toBe(4.3)
@@ -124,7 +128,7 @@ test('a schema can inherit from another base schema', () => {
     },
   )
 
-  const model = child.create()
+  const model = child.create(undefined, { pluginManager })
   expect(isConfigurationModel(model)).toBe(true)
   expect(readConfObject(model, 'someInteger')).toBe(12)
 
@@ -147,15 +151,19 @@ test('can snapshot a simple schema', () => {
     }),
   })
 
-  const model = container.create({ configuration: { someInteger: 42 } })
+  const model = container.create(
+    { configuration: { someInteger: 42 } },
+    { pluginManager },
+  )
   expect(getConf(model, 'someInteger')).toEqual(42)
   expect(getSnapshot(model)).toEqual({ configuration: { someInteger: 42 } })
   expect(getConf(model, 'someInteger')).toEqual(42)
 
-  const model2 = container.create({ configuration: {} })
+  const model2 = container.create({ configuration: {} }, { pluginManager })
   expect(getSnapshot(model2)).toEqual({ configuration: {} })
   expect(getConf(model2, 'someInteger')).toEqual(12)
 })
+
 test('can snapshot a nested schema 1', () => {
   const container = types.model({
     configuration: ConfigurationSchema('Foo', {
@@ -183,13 +191,16 @@ test('can snapshot a nested schema 1', () => {
     }),
   })
 
-  const model = container.create({
-    configuration: {
-      someInteger: 42,
-      mySubConfiguration: {},
-      myArrayOfSubConfigurations: [{ someNumber: 3.5 }, { someNumber: 11.1 }],
+  const model = container.create(
+    {
+      configuration: {
+        someInteger: 42,
+        mySubConfiguration: {},
+        myArrayOfSubConfigurations: [{ someNumber: 3.5 }, { someNumber: 11.1 }],
+      },
     },
-  })
+    { pluginManager },
+  )
   expect(getSnapshot(model)).toEqual({
     configuration: {
       someInteger: 42,
@@ -198,6 +209,7 @@ test('can snapshot a nested schema 1', () => {
     },
   })
 })
+
 test('can snapshot a nested schema 2', () => {
   const container = types.model({
     configuration: ConfigurationSchema('Foo', {
@@ -234,13 +246,16 @@ test('can snapshot a nested schema 2', () => {
     }),
   })
 
-  const model = container.create({
-    configuration: {
-      someInteger: 12,
-      myConfigurationMap: { nog: {} },
-      mySubConfiguration: { someNumber: 12 },
+  const model = container.create(
+    {
+      configuration: {
+        someInteger: 12,
+        myConfigurationMap: { nog: {} },
+        mySubConfiguration: { someNumber: 12 },
+      },
     },
-  })
+    { pluginManager },
+  )
   expect(getSnapshot(model)).toEqual({
     configuration: {
       myConfigurationMap: { nog: {} },
@@ -287,7 +302,7 @@ test('re-check instantiation of slots (issue #797)', () => {
     },
     { explicitlyTyped: true },
   )
-  const tester = configSchema.create()
+  const tester = configSchema.create(undefined, { pluginManager })
   expect(readConfObject(tester, 'dontRedispatch')[0]).toBe('chromosome')
   expect(readConfObject(tester, 'thisShouldGetInstantiated')).toBe(
     'Not instantiated',

@@ -7,24 +7,29 @@ import {
   notEmpty,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
 
 import { facetedStateTreeF } from './facetedModel'
 import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
 
+import type { TreeNode } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { GridRowId } from '@mui/x-data-grid'
-import type { Instance } from 'mobx-state-tree'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
 type MaybeBoolean = boolean | undefined
 
 type MaybeCollapsedKeys = [string, boolean][] | undefined
+
+const defaultItemHeight = 22
+const categoryItemHeight = 40
+const overscan = 5
 
 // for settings that are config dependent
 function keyConfigPostFix() {
@@ -36,6 +41,10 @@ function keyConfigPostFix() {
         .filter(f => !!f)
         .join('-')
     : 'empty'
+}
+
+export function getItemHeight(item: TreeNode) {
+  return item.type === 'category' ? categoryItemHeight : defaultItemHeight
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -473,14 +482,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return {
           name: 'Root',
           id: 'Root',
-          isOpenByDefault: true,
           type: 'category' as const,
           children: self.allTracks.map(s => ({
             name: s.group,
             id: s.group,
             type: 'category' as const,
-            isOpenByDefault: !self.collapsed.get(s.group),
             menuItems: s.menuItems,
+            nestingLevel: 0,
             children: generateHierarchy({
               model: self,
               trackConfs: s.tracks,
@@ -488,6 +496,88 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               noCategories: s.noCategories,
             }),
           })),
+        }
+      },
+    }))
+    .views(self => ({
+      get flattenedItems() {
+        const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
+          for (const item of items) {
+            result.push(item)
+            if (item.children.length > 0 && !self.collapsed.get(item.id)) {
+              flatten(item.children, result)
+            }
+          }
+          return result
+        }
+
+        return flatten(self.hierarchy.children)
+      },
+      get flattenedItemOffsets() {
+        const offsets: number[] = []
+        let cumulativeHeight = 0
+
+        for (let i = 0, l = this.flattenedItems.length; i < l; i++) {
+          offsets.push(cumulativeHeight)
+          cumulativeHeight += getItemHeight(this.flattenedItems[i]!)
+        }
+        return { cumulativeHeight, offsets }
+      },
+    }))
+    .views(self => ({
+      itemOffsets(height: number, scrollTop: number) {
+        const { flattenedItems, flattenedItemOffsets } = self
+        const { cumulativeHeight, offsets } = flattenedItemOffsets
+
+        if (offsets.length === 0) {
+          return {
+            startIndex: 0,
+            endIndex: 0,
+            totalHeight: 0,
+            itemOffsets: offsets,
+          }
+        }
+
+        // Binary search to find the start index based on scroll position
+        const findIndexAtOffset = (offset: number) => {
+          let low = 0
+          let high = offsets.length - 1
+
+          while (low <= high) {
+            const mid = Math.floor((low + high) / 2)
+            if (
+              offsets[mid]! <= offset &&
+              (mid === offsets.length - 1 || offsets[mid + 1]! > offset)
+            ) {
+              return mid
+            } else if (offsets[mid]! < offset) {
+              low = mid + 1
+            } else {
+              high = mid - 1
+            }
+          }
+
+          return 0
+        }
+
+        const start = Math.max(0, findIndexAtOffset(scrollTop) - overscan)
+        const targetHeight = scrollTop + height + overscan * defaultItemHeight
+
+        let end = start
+        let currentHeight = offsets[start]!
+        while (
+          end < flattenedItems.length - 1 &&
+          currentHeight < targetHeight
+        ) {
+          end++
+          currentHeight = offsets[end]! + getItemHeight(flattenedItems[end]!)
+        }
+
+        return {
+          startIndex: start,
+          endIndex: end,
+          totalHeight: cumulativeHeight,
+          itemOffsets: offsets,
         }
       },
     }))
@@ -532,59 +622,65 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         // this should be the first autorun to properly initialize
         addDisposer(
           self,
-          autorun(() => {
-            const { assemblyNames, view } = self
-            self.setRecentlyUsed(
-              localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
-            )
-            if (view) {
-              const lc = localStorageGetJSON<MaybeCollapsedKeys>(
-                collapsedK(assemblyNames, view.type),
-                undefined,
+          autorun(
+            function trackSelectorInitAutorun() {
+              const { assemblyNames, view } = self
+              self.setRecentlyUsed(
+                localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
               )
-              const r = ['hierarchical', 'defaultCollapsed']
-              const session = getSession(self)
-              if (!lc) {
-                self.expandAllCategories()
-                if (getConf(session, [...r, 'topLevelCategories'])) {
-                  self.collapseTopLevelCategories()
+              if (view) {
+                const lc = localStorageGetJSON<MaybeCollapsedKeys>(
+                  collapsedK(assemblyNames, view.type),
+                  undefined,
+                )
+                const r = ['hierarchical', 'defaultCollapsed']
+                const session = getSession(self)
+                if (!lc) {
+                  self.expandAllCategories()
+                  if (getConf(session, [...r, 'topLevelCategories'])) {
+                    self.collapseTopLevelCategories()
+                  }
+                  if (getConf(session, [...r, 'subCategories'])) {
+                    self.collapseSubCategories()
+                  }
+                  for (const elt of getConf(session, [...r, 'categoryNames'])) {
+                    self.setCategoryCollapsed(`Tracks-${elt}`, true)
+                  }
+                } else {
+                  self.setCollapsedCategories(lc)
                 }
-                if (getConf(session, [...r, 'subCategories'])) {
-                  self.collapseSubCategories()
-                }
-                for (const elt of getConf(session, [...r, 'categoryNames'])) {
-                  self.setCategoryCollapsed(`Tracks-${elt}`, true)
-                }
-              } else {
-                self.setCollapsedCategories(lc)
               }
-            }
-          }),
+            },
+            { name: 'TrackSelectorInit' },
+          ),
         )
         // this should be the second autorun
         addDisposer(
           self,
-          autorun(() => {
-            const {
-              sortTrackNames,
-              sortCategories,
-              favorites,
-              recentlyUsed,
-              assemblyNames,
-              collapsed,
-              view,
-            } = self
-            localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
-            localStorageSetJSON(favoritesK(), favorites)
-            localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
-            localStorageSetJSON(sortCategoriesK(), sortCategories)
-            if (view) {
-              localStorageSetJSON(
-                collapsedK(assemblyNames, view.type),
+          autorun(
+            function trackSelectorLocalStorageAutorun() {
+              const {
+                sortTrackNames,
+                sortCategories,
+                favorites,
+                recentlyUsed,
+                assemblyNames,
                 collapsed,
-              )
-            }
-          }),
+                view,
+              } = self
+              localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
+              localStorageSetJSON(favoritesK(), favorites)
+              localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
+              localStorageSetJSON(sortCategoriesK(), sortCategories)
+              if (view) {
+                localStorageSetJSON(
+                  collapsedK(assemblyNames, view.type),
+                  collapsed,
+                )
+              }
+            },
+            { name: 'TrackSelectorLocalStorage' },
+          ),
         )
       },
     }))

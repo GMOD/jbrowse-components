@@ -1,6 +1,5 @@
-import { vi, afterEach, beforeAll } from 'vitest'
-import { useRef } from 'react'
 import { cleanup } from '@testing-library/react'
+import { afterEach, beforeAll, vi } from 'vitest'
 
 import '@testing-library/jest-dom/vitest'
 import { LocalFile } from './packages/__mocks__/generic-filehandle2'
@@ -70,12 +69,15 @@ vi.mock('./packages/core/util/idMaker', () => ({
   default: () => 'test',
 }))
 
-vi.mock('@jbrowse/core/util/useMeasure', () => ({
-  default: () => {
-    const ref = useRef<HTMLDivElement>(null)
-    return [ref, { width: 808 }] as const
-  },
-}))
+vi.mock('@jbrowse/core/util/useMeasure', async () => {
+  const React = await import('react')
+  return {
+    default: () => {
+      const ref = React.useRef<HTMLDivElement>(null)
+      return [ref, { width: 808 }] as const
+    },
+  }
+})
 
 // Mock CascadingMenu to flatten submenus for easier testing
 vi.mock('@jbrowse/core/ui/CascadingMenu', async () => {

@@ -1,9 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 import { afterEach, expect, test } from 'vitest'
 
 import ReactComponent from './AlignmentsFeatureDetail'

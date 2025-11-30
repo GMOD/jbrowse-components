@@ -1,67 +1,62 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { getSubparts } from './filterSubparts'
-import { chooseGlyphType } from './util'
+import { chooseGlyphType, getChildFeatures, truncateLabel } from './util'
 
+import type { RenderConfigContext } from './renderConfig'
 import type { FeatureLayout } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
-// Padding between transcripts in pixels
 const TRANSCRIPT_PADDING = 2
+const CODING_TYPES = new Set(['CDS', 'cds'])
 
-/**
- * Create layout for a feature and its subfeatures using simple coordinate tracking
- */
+function hasCodingSubfeature(feature: Feature): boolean {
+  const subfeatures = feature.get('subfeatures') || []
+  return subfeatures.some(
+    (sub: Feature) =>
+      CODING_TYPES.has(sub.get('type')) || hasCodingSubfeature(sub),
+  )
+}
+
 export function layoutFeature(args: {
   feature: Feature
   bpPerPx: number
   reversed: boolean
   config: AnyConfigurationModel
+  configContext: RenderConfigContext
   parentX?: number
   parentY?: number
   isNested?: boolean
-  displayMode?: string
-  transcriptTypes?: string[]
-  containerTypes?: string[]
-  showLabels?: boolean
-  showDescriptions?: boolean
-  fontHeight?: number
-  labelAllowed?: boolean
+  isTranscriptChild?: boolean
 }): FeatureLayout {
   const {
     feature,
     bpPerPx,
     reversed,
     config,
+    configContext,
     parentX = 0,
     parentY = 0,
     isNested = false,
-    displayMode: displayModeArg,
-    transcriptTypes: transcriptTypesArg,
-    containerTypes: containerTypesArg,
-    showLabels: showLabelsArg,
-    showDescriptions: showDescriptionsArg,
-    fontHeight: fontHeightArg,
-    labelAllowed: labelAllowedArg,
+    isTranscriptChild = false,
   } = args
 
-  // Pre-read config values once (use provided args to avoid repeated readConfObject calls)
-  const displayMode =
-    displayModeArg ?? (readConfObject(config, 'displayMode') as string)
-  const transcriptTypes =
-    transcriptTypesArg ?? readConfObject(config, 'transcriptTypes')
-  const containerTypes =
-    containerTypesArg ?? readConfObject(config, 'containerTypes')
-
-  const glyphType = chooseGlyphType({
-    feature,
+  const {
+    displayMode,
     transcriptTypes,
-    containerTypes,
-  })
+    showLabels,
+    showDescriptions,
+    subfeatureLabels,
+    fontHeight,
+    labelAllowed,
+    geneGlyphMode,
+    featureHeight,
+    isHeightCallback,
+  } = configContext
 
-  // Calculate x position
+  const glyphType = chooseGlyphType({ feature, configContext })
+
   const parentFeature = feature.parent()
   let x = parentX
   if (parentFeature) {
@@ -71,12 +66,11 @@ export function layoutFeature(args: {
     x = parentX + relativeX / bpPerPx
   }
 
-  // Calculate dimensions
-  const height = readConfObject(config, 'height', { feature }) as number
+  const height = isHeightCallback
+    ? (readConfObject(config, 'height', { feature }) as number)
+    : featureHeight
   const actualHeight = displayMode === 'compact' ? height / 2 : height
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
-
-  // Start with feature at parent's y position
   const y = parentY
 
   const layout: FeatureLayout = {
@@ -85,107 +79,127 @@ export function layoutFeature(args: {
     y,
     width,
     height: actualHeight,
-    totalFeatureHeight: actualHeight, // Visual height (will be updated for stacked children)
-    totalLayoutHeight: actualHeight, // Layout height including label space (will be updated below)
-    totalLayoutWidth: width, // Layout width including label space (will be updated below)
+    totalFeatureHeight: actualHeight,
+    totalLayoutHeight: actualHeight,
+    totalLayoutWidth: width,
     children: [],
   }
 
-  // Handle subfeatures
   const subfeatures = feature.get('subfeatures') || []
   if (subfeatures.length > 0 && displayMode !== 'reducedRepresentation') {
     if (glyphType === 'Subfeatures') {
-      // Stack subfeatures vertically (for genes with multiple transcripts)
+      let sortedSubfeatures = [...subfeatures].sort((a, b) => {
+        const aHasCDS = hasCodingSubfeature(a)
+        const bHasCDS = hasCodingSubfeature(b)
+        if (aHasCDS && !bHasCDS) {
+          return -1
+        }
+        if (!aHasCDS && bHasCDS) {
+          return 1
+        }
+        return 0
+      })
+
+      if (
+        (geneGlyphMode === 'longest' || geneGlyphMode === 'longestCoding') &&
+        sortedSubfeatures.length > 1
+      ) {
+        const transcriptSubfeatures = sortedSubfeatures.filter(sub =>
+          transcriptTypes.includes(sub.get('type')),
+        )
+        let candidates =
+          transcriptSubfeatures.length > 0
+            ? transcriptSubfeatures
+            : sortedSubfeatures
+
+        if (geneGlyphMode === 'longestCoding') {
+          const codingCandidates = candidates.filter(hasCodingSubfeature)
+          if (codingCandidates.length > 0) {
+            candidates = codingCandidates
+          }
+        }
+
+        const longest = candidates.reduce((a, b) =>
+          a.get('end') - a.get('start') > b.get('end') - b.get('start') ? a : b,
+        )
+        sortedSubfeatures = [longest]
+      }
+
       let currentY = parentY
-      for (let i = 0; i < subfeatures.length; i++) {
-        const subfeature = subfeatures[i]!
+      for (let i = 0; i < sortedSubfeatures.length; i++) {
+        const subfeature = sortedSubfeatures[i]!
+        const childType = subfeature.get('type')
+        const isChildTranscript = transcriptTypes.includes(childType)
         const childLayout = layoutFeature({
           feature: subfeature,
           bpPerPx,
           reversed,
           config,
+          configContext,
           parentX: x,
           parentY: currentY,
           isNested: true,
-          displayMode,
-          transcriptTypes,
-          containerTypes,
+          isTranscriptChild: isChildTranscript,
         })
         layout.children.push(childLayout)
-        // Use visual height for stacking (not totalHeight with label space)
-        currentY += childLayout.height
-        // Add padding between transcripts (but not after the last one)
-        if (i < subfeatures.length - 1) {
+        const useExtraHeightForLabels =
+          subfeatureLabels === 'below' && isChildTranscript
+        const heightForStacking = useExtraHeightForLabels
+          ? childLayout.totalLayoutHeight
+          : childLayout.height
+        currentY += heightForStacking
+        if (i < sortedSubfeatures.length - 1) {
           currentY += TRANSCRIPT_PADDING
         }
       }
-      // Update heights to include all stacked children
       const totalStackedHeight = currentY - parentY
       layout.height = totalStackedHeight
       layout.totalFeatureHeight = totalStackedHeight
       layout.totalLayoutHeight = totalStackedHeight
-    } else if (glyphType === 'ProcessedTranscript') {
-      // Overlay subfeatures (CDS, UTR on transcript)
-      const subparts = getSubparts(feature, config)
-      for (const subfeature of subparts) {
-        const childLayout = layoutFeature({
-          feature: subfeature,
-          bpPerPx,
-          reversed,
-          config,
-          parentX: x,
-          parentY,
-          isNested: true,
-          displayMode,
-          transcriptTypes,
-          containerTypes,
-        })
-        layout.children.push(childLayout)
-      }
     } else {
-      // Overlay subfeatures (default for Segments, etc.)
-      for (const subfeature of subfeatures) {
-        const childLayout = layoutFeature({
-          feature: subfeature,
-          bpPerPx,
-          reversed,
-          config,
-          parentX: x,
-          parentY,
-          isNested: true,
-          displayMode,
-          transcriptTypes,
-          containerTypes,
-        })
-        layout.children.push(childLayout)
+      for (const subfeature of getChildFeatures({
+        feature,
+        glyphType,
+        config,
+      })) {
+        layout.children.push(
+          layoutFeature({
+            feature: subfeature,
+            bpPerPx,
+            reversed,
+            config,
+            configContext,
+            parentX: x,
+            parentY,
+            isNested: true,
+          }),
+        )
       }
     }
   }
 
-  // Add extra height and width for labels (name and description)
-  // Labels are drawn by floating label system, but we need to reserve space
-  const labelAllowed = labelAllowedArg ?? displayMode !== 'collapsed'
-  if (labelAllowed && !isNested) {
-    // Only add label space for top-level features (not nested subfeatures)
-    // Use pre-read values if provided to avoid repeated readConfObject calls
-    const showLabels = showLabelsArg ?? readConfObject(config, 'showLabels')
-    const showDescriptions =
-      showDescriptionsArg ?? readConfObject(config, 'showDescriptions')
-    const fontHeight =
-      fontHeightArg ??
-      (readConfObject(config, ['labels', 'fontSize'], {
-        feature,
-      }) as number)
+  const showSubfeatureLabels = subfeatureLabels !== 'none'
+  const shouldCalculateLabels =
+    labelAllowed && (!isNested || (isTranscriptChild && showSubfeatureLabels))
 
-    const name = String(
-      readConfObject(config, ['labels', 'name'], { feature }) || '',
-    )
-    const shouldShowName = /\S/.test(name) && showLabels
+  if (shouldCalculateLabels) {
+    const effectiveShowLabels = isTranscriptChild ? true : showLabels
+    const effectiveShowDescriptions = isTranscriptChild
+      ? false
+      : showDescriptions
 
-    const description = String(
-      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    const name = truncateLabel(
+      String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
     )
-    const shouldShowDescription = /\S/.test(description) && showDescriptions
+    const shouldShowName = /\S/.test(name) && effectiveShowLabels
+
+    const description = truncateLabel(
+      String(
+        readConfObject(config, ['labels', 'description'], { feature }) || '',
+      ),
+    )
+    const shouldShowDescription =
+      /\S/.test(description) && effectiveShowDescriptions
 
     let extraHeight = 0
     let maxLabelWidth = 0
@@ -201,75 +215,13 @@ export function layoutFeature(args: {
       )
     }
 
-    // totalFeatureHeight stays as visual height (without labels)
-    // Add label height to totalLayoutHeight for vertical collision detection
-    layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
+    const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
+    if (!isOverlayMode) {
+      layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
+    }
 
-    // IMPORTANT: totalLayoutWidth is the MAX of feature width or label width, not the sum.
-    // Labels are displayed below the feature, horizontally aligned with the feature start
-    // (but clamped to stay within the viewport). The layout width determines the horizontal
-    // space needed for collision detection:
-    // 1. Short features with long labels: layout width = label width (label may extend past feature)
-    // 2. Long features with short labels: layout width = feature width (label fits within)
-    // The collision detection uses this width to prevent labels from overlapping vertically
-    // when features are stacked, while allowing horizontal label overlap across rows.
     layout.totalLayoutWidth = Math.max(layout.width, maxLabelWidth)
   }
 
   return layout
-}
-
-/**
- * Get layout for a specific feature by ID from the tree
- */
-export function findFeatureLayout(
-  layout: FeatureLayout,
-  featureId: string,
-): FeatureLayout | null {
-  if (layout.feature.id() === featureId) {
-    return layout
-  }
-  for (const child of layout.children) {
-    const found = findFeatureLayout(child, featureId)
-    if (found) {
-      return found
-    }
-  }
-  return null
-}
-
-/**
- * Calculate total layout width including label width
- * For top-level features, this should return totalLayoutWidth
- */
-export function getLayoutWidth(layout: FeatureLayout): number {
-  if (layout.children.length === 0) {
-    return layout.totalLayoutWidth
-  }
-
-  // For features with children, find the max x+totalLayoutWidth among all children
-  let maxRight = layout.totalLayoutWidth
-  for (const child of layout.children) {
-    const childRight = child.x + getLayoutWidth(child)
-    maxRight = Math.max(maxRight, childRight)
-  }
-  return maxRight
-}
-
-/**
- * Calculate visual height of layout for label positioning
- * Always returns visual height (without label space)
- */
-export function getLayoutHeight(layout: FeatureLayout): number {
-  if (layout.children.length === 0) {
-    return layout.height
-  }
-
-  // For features with children, find the max y+height among all children
-  let maxBottom = layout.height
-  for (const child of layout.children) {
-    const childBottom = child.y + getLayoutHeight(child)
-    maxBottom = Math.max(maxBottom, childBottom)
-  }
-  return maxBottom
 }

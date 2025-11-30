@@ -12,8 +12,6 @@ import * as sessionSharing from '../sessionSharing'
 import TestPlugin from './TestPlugin'
 import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 
-
-
 setup()
 
 const delay = { timeout: 30000 }

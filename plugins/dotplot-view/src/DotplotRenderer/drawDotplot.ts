@@ -3,8 +3,8 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { category10 } from '@jbrowse/core/ui/colors'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { colord } from '@jbrowse/core/util/colord'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { getSnapshot } from 'mobx-state-tree'
 
 import { type Warning, clampWithWarnX, clampWithWarnY } from './clamp'
 

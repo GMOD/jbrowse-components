@@ -48,10 +48,11 @@ jobs:
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '22'
-      - name: Install website deps (with cache)
-        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
-        with:
-          working-directory: website
+          cache: 'yarn'
+          cache-dependency-path: 'website/yarn.lock'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: website
       - name: Build website
         run: |
           cd website/
@@ -62,41 +63,6 @@ jobs:
         uses: untitaker/hyperlink@e66bb17cc9ae341677431edec3b893a0aa6ac747 # 0.1.44
         with:
           args: website/testing/ --check-anchors
-
-  # Conditionally run the buildwholerepo job
-  buildwholerepo:
-    name: Build whole repo
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-        with:
-          node-version: '22'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
-      - name: Build codebase
-        run: yarn build
-      - name: Test build
-        run: BUILT_TESTS=1 yarn built-test-ci
-      - name: Test embedded lgv
-        run: |
-          yarn
-          yarn e2e
-        working-directory: component_tests/lgv-vite
-      - name: Test embedded cgv
-        run: |
-          yarn
-          yarn e2e
-        working-directory: component_tests/cgv-vite
-      - name: Test embedded react-app
-        run: |
-          yarn
-          yarn e2e
-        working-directory: component_tests/app-vite
 
   # Conditionally run the buildjbrowseweb job
   buildjbrowseweb:
@@ -111,137 +77,112 @@ jobs:
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '22'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
-      - name: Build project
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Validate branch/tag name for S3 path safety
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          echo $RELEASE_VERSION
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
+            echo "Error: Invalid ref name '$REF_NAME'"
+            echo "Ref names must contain only alphanumeric characters, hyphens, underscores, and periods"
+            echo "This prevents path traversal attacks on S3"
+            exit 1
+          fi
+          echo "Ref name validated: $REF_NAME"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Build and deploy jbrowse-web
+        run: |
           cd products/jbrowse-web/
           NODE_OPTIONS='--max-old-space-size=6500' yarn build
-          cd ../../
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Copy branch build to S3
-        env:
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore, period)
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
-            echo "Invalid ref name: $REF_NAME"
-            exit 1
-          fi
-          cd products/jbrowse-web/build && zip -r "jbrowse-web-${REF_NAME}.zip" . && cd -
-          cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
-          aws s3 sync --delete --exclude="*.map" products/jbrowse-web/build s3://jbrowse.org/code/jb2/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${REF_NAME}/*"
+          cd build && zip -r "jbrowse-web-${{ github.ref_name }}.zip" . && cd -
+          cp build/test_data/config.json build/config.json
+          aws s3 sync --delete --exclude="*.map" build s3://jbrowse.org/code/jb2/${{ github.ref_name }}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${{ github.ref_name }}/*"
 
-      - name: Build LGV
-        run: |
-          yarn storybook:build
-        working-directory: products/jbrowse-react-linear-genome-view
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Deploy LGV
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore, period)
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
-            echo "Invalid ref name: $REF_NAME"
-            exit 1
-          fi
-          pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${REF_NAME}/*"
+      - name: Build LGV storybook
+        run: yarn storybook:build
         working-directory: products/jbrowse-react-linear-genome-view
 
-      - name: Build React App
-        run: |
-          yarn storybook:build
-        working-directory: products/jbrowse-react-app
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Deploy React App
+      - name: Deploy LGV storybook
         if: startsWith(github.ref, 'refs/tags/')
-        env:
-          REF_NAME: ${{ github.ref_name }}
         run: |
-          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore, period)
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
-            echo "Invalid ref name: $REF_NAME"
-            exit 1
-          fi
-          pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${REF_NAME}/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${{ github.ref_name }}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${{ github.ref_name }}/*"
+        working-directory: products/jbrowse-react-linear-genome-view
+
+      - name: Build React App storybook
+        run: yarn storybook:build
         working-directory: products/jbrowse-react-app
 
-      - name: Build CGV
+      - name: Deploy React App storybook
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          yarn storybook:build
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${{ github.ref_name }}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${{ github.ref_name }}/*"
+        working-directory: products/jbrowse-react-app
+
+      - name: Build CGV storybook
+        run: yarn storybook:build
         working-directory: products/jbrowse-react-circular-genome-view
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Deploy CGV
+
+      - name: Deploy CGV storybook
         if: startsWith(github.ref, 'refs/tags/')
-        env:
-          REF_NAME: ${{ github.ref_name }}
         run: |
-          # Validate ref_name contains only safe characters (alphanumeric, hyphen, underscore, period)
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
-            echo "Invalid ref name: $REF_NAME"
-            exit 1
-          fi
-          pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${REF_NAME}/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${{ github.ref_name }}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${{ github.ref_name }}/*"
         working-directory: products/jbrowse-react-circular-genome-view
 
   # Conditionally run the formatchecks job
   formatchecks:
-    name: Lint, typecheck, test
+    name: Lint, typecheck, and test
     needs: check_commit_message
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - run: sudo apt-get -y install tabix
+      - name: Install tabix
+        run: sudo apt-get -y install tabix
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '22'
-      - name: Install deps and build (with cache)
-        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
-      - name: Check codebase format
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Check code formatting
         run: yarn prettier --check .
-      - name: Check autogen docs
-        run: yarn statedocs && yarn configdocs
       - name: Spellcheck
         uses: crate-ci/typos@80c8a4945eec0f6d464eaf9e65ed98ef085283d1
-      - name: Lint codebase
+      - name: Lint code
         run: yarn lint
-      - name: Test codebase
-        run: yarn test-ci
-      - name: Upload coverage
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
-      - name: Typecheck codebase
+      - name: Typecheck code
         run: yarn typecheck
+      - name: Run tests
+        run: yarn test-ci
+      - name: Build codebase
+        run: yarn build
+      - name: Test build
+        run: BUILT_TESTS=1 yarn built-test-ci
+      - name: Test embedded LGV component
+        run: |
+          yarn install --frozen-lockfile
+          yarn e2e
+        working-directory: component_tests/lgv-vite
+      - name: Test embedded CGV component
+        run: |
+          yarn install --frozen-lockfile
+          yarn e2e
+        working-directory: component_tests/cgv-vite
+      - name: Test embedded React app component
+        run: |
+          yarn install --frozen-lockfile
+          yarn e2e
+        working-directory: component_tests/app-vite

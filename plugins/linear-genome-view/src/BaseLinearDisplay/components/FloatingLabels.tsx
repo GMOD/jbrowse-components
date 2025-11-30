@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import {
   clamp,
@@ -6,39 +6,13 @@ import {
   getSession,
   measureText,
 } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
+import { autorun, untracked } from 'mobx'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FloatingLabelData, LayoutRecord } from '../model'
 
-interface LabelItem {
-  key: string
-  text: string
-  x: number
-  y: number
-  color: string
-}
-
-function calculateLabelWidth(text: string, fontSize: number) {
-  return measureText(text, fontSize)
-}
-
-function calculateClampedLabelPosition(
-  layoutLeftPx: number,
-  layoutRightPx: number | undefined,
-  viewOffsetPx: number,
-  labelWidth: number,
-) {
-  const minPosition = 0
-  const naturalPosition = layoutLeftPx - viewOffsetPx
-  const maxPosition =
-    layoutRightPx !== undefined
-      ? layoutRightPx - viewOffsetPx - labelWidth
-      : Number.POSITIVE_INFINITY
-
-  return clamp(minPosition, naturalPosition, maxPosition)
-}
+const fontSize = 11
 
 interface PixelPositions {
   leftPx: number
@@ -67,23 +41,24 @@ function calculateFeaturePixelPositions(
     coord: right,
   })?.offsetPx
 
-  // Handle partially visible features in multi-region views:
-  // - If left is visible, use it; if right is in collapsed region, calculate it
-  // - If left is in collapsed region but right is visible, calculate left from right
-  // - If neither is visible, return undefined
   if (leftBpPx !== undefined) {
-    // Left edge is visible
-    const leftPx = leftBpPx
-    const rightPx =
-      rightBpPx !== undefined ? rightBpPx : leftPx + (right - left) / bpPerPx
-    return { leftPx, rightPx }
+    const px1 = leftBpPx
+    const px2 =
+      rightBpPx !== undefined ? rightBpPx : px1 + (right - left) / bpPerPx
+
+    return {
+      leftPx: Math.min(px1, px2),
+      rightPx: Math.max(px1, px2),
+    }
   } else if (rightBpPx !== undefined) {
-    // Right edge is visible but left is not (feature starts in collapsed region)
-    const rightPx = rightBpPx
-    const leftPx = rightPx - (right - left) / bpPerPx
-    return { leftPx, rightPx }
+    const px2 = rightBpPx
+    const px1 = px2 - (right - left) / bpPerPx
+
+    return {
+      leftPx: Math.min(px1, px2),
+      rightPx: Math.max(px1, px2),
+    }
   } else {
-    // Neither edge is visible
     return undefined
   }
 }
@@ -94,7 +69,6 @@ interface FeatureLabelData {
   topPx: number
   totalFeatureHeight: number
   floatingLabels: FloatingLabelData[]
-  totalLayoutWidth?: number
 }
 
 function deduplicateFeatureLabels(
@@ -118,10 +92,11 @@ function deduplicateFeatureLabels(
       refName = '',
       floatingLabels,
       totalFeatureHeight,
-      totalLayoutWidth,
+      actualTopPx,
     } = feature
 
-    // Skip if no floating labels
+    const effectiveTopPx = actualTopPx ?? topPx
+
     if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
       continue
     }
@@ -140,16 +115,14 @@ function deduplicateFeatureLabels(
 
     const { leftPx, rightPx } = positions
 
-    // De-duplicate: keep the left-most position for each feature
     const existing = featureLabels.get(key)
     if (!existing || leftPx < existing.leftPx) {
       featureLabels.set(key, {
         leftPx,
         rightPx,
-        topPx,
+        topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
-        totalLayoutWidth,
       })
     }
   }
@@ -157,148 +130,165 @@ function deduplicateFeatureLabels(
   return featureLabels
 }
 
-const FloatingLabels = observer(function FloatingLabels({
+// Data stored per label element for fast offset updates
+interface LabelPositionData {
+  featureLeftPx: number
+  featureRightPx: number
+  labelWidth: number
+  y: number
+  lastX?: number
+}
+
+function FloatingLabels({
   model,
 }: {
   model: FeatureTrackModel
-}): React.ReactElement | null {
+}): React.ReactElement {
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)
-  const { offsetPx } = view
   const assemblyName = view.assemblyNames[0]
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
   const containerRef = useRef<HTMLDivElement>(null)
   const domElementsRef = useRef<Map<string, HTMLDivElement>>(new Map())
-  const { layoutFeatures } = model
+  const labelPositionsRef = useRef<Map<string, LabelPositionData>>(new Map())
 
-  // Memoize the processed label data to avoid recalculating positions
-  const labelData = useMemo(() => {
-    if (!assembly) {
-      return []
-    }
-
-    const fontSize = 11
-    const result: LabelItem[] = []
-
-    // First pass: de-duplicate features and get left-most positions
-    const featureLabels = deduplicateFeatureLabels(
-      layoutFeatures,
-      view,
-      assembly,
-    )
-
-    // Second pass: create label items from de-duplicated features
-    for (const [
-      key,
-      {
-        leftPx,
-        rightPx,
-        topPx,
-        totalFeatureHeight,
-        floatingLabels,
-        totalLayoutWidth,
-      },
-    ] of featureLabels.entries()) {
-      // Calculate the bottom of the visual feature (not including label space)
-      const featureVisualBottom = topPx + totalFeatureHeight
-
-      // Process each floating label
-      for (const [i, floatingLabel] of floatingLabels.entries()) {
-        const labelItem = floatingLabel
-        const { text, relativeY, color } = labelItem
-
-        // Calculate label width for this specific text
-        const labelWidth = calculateLabelWidth(text, fontSize)
-
-        // Only show labels that fit within the layout bounds
-        // Use totalLayoutWidth if available (includes label space), otherwise fall back to rect width
-        const layoutWidth = totalLayoutWidth ?? rightPx - leftPx
-        if (labelWidth > layoutWidth) {
-          continue
-        }
-
-        // Calculate clamped horizontal position
-        // Use totalLayoutWidth if available to determine the right edge for clamping
-        const effectiveRightPx =
-          totalLayoutWidth !== undefined ? leftPx + totalLayoutWidth : rightPx
-        const x = calculateClampedLabelPosition(
-          leftPx,
-          effectiveRightPx,
-          offsetPx,
-          labelWidth,
-        )
-
-        // Convert relative Y to absolute Y
-        const y = featureVisualBottom + relativeY
-
-        result.push({
-          key: `${key}-${i}`,
-          text,
-          x,
-          y,
-          color,
-        })
-      }
-    }
-
-    return result
-  }, [layoutFeatures, view, assembly, offsetPx])
-
-  // Render labels with minimal DOM manipulation
+  // Autorun 1: Rebuild DOM elements when layoutFeatures changes
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) {
+    if (!assembly) {
       return
     }
 
-    const domElements = domElementsRef.current
-    const newKeys = new Set<string>()
-
-    for (const { key, text, x, y, color } of labelData) {
-      newKeys.add(key)
-      let element = domElements.get(key)
-
-      if (!element) {
-        element = document.createElement('div')
-        element.style.position = 'absolute'
-        element.style.fontSize = '11px'
-        element.style.pointerEvents = 'none'
-        element.style.willChange = 'transform'
-        container.append(element)
-        domElements.set(key, element)
-      }
-
-      if (element.textContent !== text) {
-        element.textContent = text
-      }
-      if (element.style.color !== color) {
-        element.style.color = color
-      }
-      element.style.transform = `translate(${x}px, ${y}px)`
-    }
-
-    // Remove elements that are no longer needed
-    for (const [key, element] of domElements.entries()) {
-      if (!newKeys.has(key)) {
-        if (element.parentNode === container) {
-          element.remove()
+    return autorun(
+      function floatingLabelsLayoutAutorun() {
+        const container = containerRef.current
+        if (!container) {
+          return
         }
-        domElements.delete(key)
-      }
-    }
 
-    return () => {
-      for (const [key, element] of domElements.entries()) {
-        if (element.parentNode === container) {
-          element.remove()
+        const { layoutFeatures } = model
+        const domElements = domElementsRef.current
+        const labelPositions = labelPositionsRef.current
+        const newKeys = new Set<string>()
+
+        const featureLabels = deduplicateFeatureLabels(
+          layoutFeatures,
+          view,
+          assembly,
+        )
+
+        for (const [
+          key,
+          { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels },
+        ] of featureLabels.entries()) {
+          const featureVisualBottom = topPx + totalFeatureHeight
+          const featureWidth = rightPx - leftPx
+
+          for (let i = 0, l = floatingLabels.length; i < l; i++) {
+            const floatingLabel = floatingLabels[i]!
+            const { text, relativeY, color, isOverlay } = floatingLabel
+
+            const labelWidth = measureText(text, fontSize)
+            if (labelWidth > featureWidth) {
+              continue
+            }
+
+            const featureVisualLeftPx = leftPx
+            const y = featureVisualBottom + relativeY
+
+            const labelKey = `${key}-${i}`
+            newKeys.add(labelKey)
+
+            // Store position data for fast offset updates
+            // Use rightPx (actual feature bounds) to constrain labels within feature width
+            labelPositions.set(labelKey, {
+              featureLeftPx: featureVisualLeftPx,
+              featureRightPx: rightPx,
+              labelWidth,
+              y,
+            })
+
+            let element = domElements.get(labelKey)
+
+            if (!element) {
+              element = document.createElement('div')
+              element.style.position = 'absolute'
+              element.style.fontSize = '11px'
+              element.style.pointerEvents = 'none'
+              element.style.willChange = 'transform'
+              container.append(element)
+              domElements.set(labelKey, element)
+            }
+
+            if (element.textContent !== text) {
+              element.textContent = text
+            }
+            if (element.style.color !== color) {
+              element.style.color = color
+            }
+            const bgColor = isOverlay ? 'rgba(255, 255, 255, 0.8)' : ''
+            if (element.style.backgroundColor !== bgColor) {
+              element.style.backgroundColor = bgColor
+            }
+            const lineHeight = isOverlay ? '1' : ''
+            if (element.style.lineHeight !== lineHeight) {
+              element.style.lineHeight = lineHeight
+            }
+
+            // Set initial transform (offset autorun will update x on scroll)
+            // Use untracked to avoid this autorun re-running on offsetPx changes
+            const offsetPx = untracked(() => view.offsetPx)
+            const naturalX = featureVisualLeftPx - offsetPx
+            const maxX = rightPx - offsetPx - labelWidth
+            const x = clamp(0, naturalX, maxX)
+            element.style.transform = `translate(${x}px, ${y}px)`
+          }
         }
-        domElements.delete(key)
-      }
-    }
-  }, [labelData])
 
-  return labelData.length > 0 ? (
+        // Remove stale elements
+        for (const [key, element] of domElements.entries()) {
+          if (!newKeys.has(key)) {
+            element.remove()
+            domElements.delete(key)
+            labelPositions.delete(key)
+          }
+        }
+      },
+      { name: 'FloatingLabelsLayout' },
+    )
+  }, [assembly, model, view])
+
+  // Autorun 2: Update transforms when offsetPx changes (fast path)
+  useEffect(() => {
+    return autorun(
+      function floatingLabelsOffsetAutorun() {
+        const { offsetPx } = view
+        const domElements = domElementsRef.current
+        const labelPositions = labelPositionsRef.current
+
+        for (const [key, element] of domElements.entries()) {
+          const pos = labelPositions.get(key)
+          if (!pos) {
+            continue
+          }
+
+          const { featureLeftPx, featureRightPx, labelWidth, y } = pos
+          const naturalX = featureLeftPx - offsetPx
+          const maxX = featureRightPx - offsetPx - labelWidth
+          const x = clamp(0, naturalX, maxX)
+
+          // Only update DOM if x position changed
+          if (pos.lastX !== x) {
+            pos.lastX = x
+            element.style.transform = `translate(${x}px, ${y}px)`
+          }
+        }
+      },
+      { name: 'FloatingLabelsOffset' },
+    )
+  }, [view])
+
+  return (
     <div
       ref={containerRef}
       style={{
@@ -308,9 +298,10 @@ const FloatingLabels = observer(function FloatingLabels({
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
+        zIndex: 5,
       }}
     />
-  ) : null
-})
+  )
+}
 
 export default FloatingLabels

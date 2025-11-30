@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { SimpleFeature, assembleLocStringFast } from '@jbrowse/core/util'
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
-import { getEnv } from 'mobx-state-tree'
 
 import { locationLinkClick } from '../util'
 

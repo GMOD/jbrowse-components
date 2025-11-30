@@ -12,12 +12,11 @@ import { calculateLabelPositions, getId } from './util'
 import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { ExportSvgOptions } from '../../LinearGenomeView/types'
 import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from '../model'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
-  opts: ExportSvgOptions & ExportSvgDisplayOptions,
+  opts: ExportSvgDisplayOptions,
 ) {
   const { height, id } = self
   const { overrideHeight } = opts
@@ -57,14 +56,20 @@ export async function renderBaseLinearDisplaySvg(
         ] as const
       }
 
-      const { rpcManager, renderArgs, renderProps, rendererType } =
-        renderBlockData(blockState, self)
+      const {
+        rpcManager,
+        renderArgs,
+        renderProps,
+        renderingProps,
+        rendererType,
+      } = renderBlockData(blockState, self)
 
       return [
         block,
         await rendererType.renderInClient(rpcManager, {
           ...renderArgs,
           ...renderProps,
+          renderingProps,
           viewParams: getViewParams(self, true),
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,
@@ -79,6 +84,9 @@ export async function renderBaseLinearDisplaySvg(
   const assemblyName = view.assemblyNames[0]
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const labelData = calculateLabelPositions(self, view, assembly, offsetPx)
+
+  // Create a clip path ID for the labels that covers the entire view
+  const labelsClipId = getId(id, 'labels')
 
   return (
     <>
@@ -107,31 +115,41 @@ export async function renderBaseLinearDisplaySvg(
           </Fragment>
         )
       })}
-      {/* Render floating labels */}
-      {labelData.map(({ key, label, description, leftPos, topPos }) => (
-        <g key={`label-${key}`} transform={`translate(${leftPos}, ${topPos})`}>
-          <text
-            x={0}
-            y={11}
-            fontSize={11}
-            fill="currentColor"
-            style={{ pointerEvents: 'none' }}
+      {/* Render floating labels with clipping */}
+      <defs>
+        <clipPath id={labelsClipId}>
+          <rect x={0} y={0} width={width} height={overrideHeight || height} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${labelsClipId})`}>
+        {labelData.map(({ key, label, description, leftPos, topPos }) => (
+          <g
+            key={`label-${key}`}
+            transform={`translate(${leftPos}, ${topPos})`}
           >
-            {label}
-          </text>
-          {description ? (
             <text
               x={0}
-              y={25}
+              y={11}
               fontSize={11}
-              fill="blue"
+              fill="currentColor"
               style={{ pointerEvents: 'none' }}
             >
-              {description}
+              {label}
             </text>
-          ) : null}
-        </g>
-      ))}
+            {description ? (
+              <text
+                x={0}
+                y={25}
+                fontSize={11}
+                fill="blue"
+                style={{ pointerEvents: 'none' }}
+              >
+                {description}
+              </text>
+            ) : null}
+          </g>
+        ))}
+      </g>
     </>
   )
 }

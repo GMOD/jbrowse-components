@@ -2,7 +2,7 @@
 
 import { isValidElement } from 'react'
 
-import { CanvasSequence } from 'canvas-sequencer'
+import { CanvasSequence } from 'canvas-sequencer-ts'
 
 import { blobToDataURL } from './blobToDataURL'
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
@@ -37,7 +37,7 @@ export async function renderToAbstractCanvas<
   if (exportSVG) {
     if (!exportSVG.rasterizeLayers) {
       const fakeCtx = new CanvasSequence()
-      const callbackResult = await cb(fakeCtx)
+      const callbackResult = await cb(fakeCtx as any)
       return {
         ...callbackResult,
         canvasRecordedData: fakeCtx.toJSON() as Record<string, unknown>,
@@ -99,7 +99,7 @@ export async function getSerializedSvg(results: {
   // @ts-ignore needs to be ignore not expect error, produces error in build step
   const C2S = await import('canvas2svg')
   const ctx = new C2S.default(width, height)
-  const seq = new CanvasSequence(canvasRecordedData)
+  const seq = new CanvasSequence(canvasRecordedData as any)
   seq.execute(ctx)
 
   // innerHTML strips the outer <svg> element from returned data, we add

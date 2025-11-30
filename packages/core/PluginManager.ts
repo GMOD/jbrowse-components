@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { isModelType, isType, types } from 'mobx-state-tree'
+import { isModelType, isType, types } from '@jbrowse/mobx-state-tree'
 
 import CorePlugin from './CorePlugin'
 import PhasedScheduler from './PhasedScheduler'
@@ -23,13 +23,10 @@ import createJexlInstance from './util/jexl'
 
 import type Plugin from './Plugin'
 import type { PluginDefinition } from './PluginLoader'
-import type {
-  PluggableElementMember,
-  PluggableElementType,
-} from './pluggableElementTypes'
+import type { PluggableElementType } from './pluggableElementTypes'
 import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import type { AbstractRootModel } from './util'
-import type { IAnyModelType, IAnyType } from 'mobx-state-tree'
+import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
 
 type PluggableElementTypeGroup =
   | 'renderer'
@@ -376,7 +373,7 @@ export default class PluginManager {
   /** get a MST type for the union of all specified pluggable MST types */
   pluggableMstType(
     groupName: PluggableElementTypeGroup,
-    fieldName: PluggableElementMember,
+    fieldName: string,
     fallback: IAnyType = types.maybe(types.null),
   ) {
     const pluggableTypes = this.getElementTypeRecord(groupName)
@@ -399,7 +396,7 @@ export default class PluginManager {
   /** get a MST type for the union of all specified pluggable config schemas */
   pluggableConfigSchemaType(
     typeGroup: PluggableElementTypeGroup,
-    fieldName: PluggableElementMember = 'configSchema',
+    fieldName = 'configSchema',
   ) {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()

@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 import { render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 import { expect, test } from 'vitest'
 
 import AboutWidget from './AboutWidget'

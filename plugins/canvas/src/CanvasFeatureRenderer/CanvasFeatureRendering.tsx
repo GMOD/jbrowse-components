@@ -16,9 +16,9 @@ const CanvasFeatureRendering = observer(function (props: {
   regions: Region[]
   bpPerPx: number
   items: FlatbushItem[]
-  flatbush: any
+  flatbush: ArrayBufferLike
   subfeatureInfos?: SubfeatureInfo[]
-  subfeatureFlatbush?: any
+  subfeatureFlatbush?: ArrayBufferLike
   onMouseMove?: (e: React.MouseEvent, featId?: string, extra?: string) => void
   onMouseLeave?: (e: React.MouseEvent) => void
   onFeatureClick?: (e: React.MouseEvent, featId: string) => void
@@ -140,23 +140,38 @@ const CanvasFeatureRendering = observer(function (props: {
         const item = search.length ? items[search[0]!] : undefined
         const featureId = item?.featureId
 
-        // Search secondary flatbush for subfeature info
+        // Build extra tooltip info - prioritize _mouseOver if set
         let extra: string | undefined
-        if (subfeatureFlatbush2 && subfeatureInfos.length) {
-          const subfeatureSearch = subfeatureFlatbush2.search(
-            offsetX,
-            offsetY,
-            offsetX + 1,
-            offsetY + 1,
-          )
-          if (subfeatureSearch.length) {
-            const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
-            if (subfeatureInfo) {
-              extra = subfeatureInfo.name
+        if (item?.mouseOver) {
+          extra = item.mouseOver
+        } else {
+          const parts: string[] = []
+          if (item?.label) {
+            parts.push(item.label)
+          }
+          if (item?.description) {
+            parts.push(item.description)
+          }
+
+          // Search secondary flatbush for subfeature info (transcript tooltips)
+          if (subfeatureFlatbush2 && subfeatureInfos.length) {
+            const subfeatureSearch = subfeatureFlatbush2.search(
+              offsetX,
+              offsetY,
+              offsetX + 1,
+              offsetY + 1,
+            )
+            if (subfeatureSearch.length) {
+              const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
+              if (subfeatureInfo) {
+                const { name, type } = subfeatureInfo
+                parts.push(name ? `${name} (${type})` : type)
+              }
             }
           }
-        }
 
+          extra = parts.length > 0 ? parts.join('<br/>') : undefined
+        }
         onMouseMove?.(event, featureId, extra)
       }}
       onClick={event => {
@@ -184,8 +199,10 @@ const CanvasFeatureRendering = observer(function (props: {
         <div
           style={{
             position: 'absolute',
-            backgroundColor: '#0003',
+            backgroundColor: '#d0d0d0',
             pointerEvents: 'none',
+            mixBlendMode: 'multiply',
+            zIndex: 10,
             ...highlight,
           }}
         />

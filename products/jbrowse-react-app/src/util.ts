@@ -6,14 +6,14 @@ import {
   isModelType,
   isReferenceType,
   isValidReference,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
@@ -77,11 +77,10 @@ type MSTMap = Instance<ReturnType<typeof types.map>>
 // attempts to remove undefined references from the given MST model. can only
 // actually remove them from arrays and maps. throws MST undefined ref error if
 // it encounters undefined refs in model properties
-export function filterSessionInPlace(
-  node: IAnyStateTreeNode | undefined,
-  type: IAnyType,
-) {
+export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
   // makes it work with session sharing
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (node === undefined) {
     return
   }
@@ -120,7 +119,6 @@ export function filterSessionInPlace(
     const { properties } = getPropertyMembers(node)
 
     for (const [pname, ptype] of Object.entries(properties)) {
-      // @ts-ignore
       filterSessionInPlace(node[pname], ptype)
     }
   }

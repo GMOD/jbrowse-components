@@ -5,7 +5,6 @@ import { cleanup, render } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 
 import HierarchicalTrackSelector2 from './HierarchicalTrackSelector'
-
 // test data
 import conf from '../../../../../test_data/test_order/config.json'
 

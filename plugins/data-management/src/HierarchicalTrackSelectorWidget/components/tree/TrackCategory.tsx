@@ -1,28 +1,17 @@
 import { useState } from 'react'
 
-import { CascadingMenuButton } from '@jbrowse/core/ui'
+import { CascadingMenuButton, SanitizedHTML } from '@jbrowse/core/ui'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import { getAllChildren, treeToMap } from '../util'
 
-import type { TreeNode } from '../../generateHierarchy'
-import type { NodeData } from '../util'
-
-function getAllSubcategories(node: TreeNode): string[] {
-  const categoryIds: string[] = []
-  if (node.type === 'category') {
-    for (const child of node.children) {
-      if (child.type === 'category') {
-        categoryIds.push(child.id, ...getAllSubcategories(child))
-      }
-    }
-  }
-  return categoryIds
-}
+import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { TreeCategoryNode } from '../../types'
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
@@ -37,21 +26,29 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function Category({
-  isOpen,
-  setOpen,
-  data,
+function getAllSubcategories(node: TreeCategoryNode): string[] {
+  const categoryIds: string[] = []
+  for (const child of node.children) {
+    if (child.type === 'category') {
+      categoryIds.push(child.id, ...getAllSubcategories(child))
+    }
+  }
+  return categoryIds
+}
+
+const TrackCategory = observer(function ({
+  item,
+  model,
 }: {
-  isOpen: boolean
-  setOpen: (arg: boolean) => void
-  data: NodeData
+  item: TreeCategoryNode
+  model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
   const [menuOpen, setMenuOpen] = useState(false)
-  const { menuItems = [], name, model, id, tree } = data
+  const { name, id } = item
+  const isOpen = !model.collapsed.get(id)
 
-  const currentNode = treeToMap(tree).get(id)
-  const subcategoryIds = currentNode ? getAllSubcategories(currentNode) : []
+  const subcategoryIds = getAllSubcategories(item)
   const hasSubcategories = subcategoryIds.length > 0
 
   return (
@@ -59,20 +56,19 @@ export default function Category({
       className={classes.accordionText}
       onClick={() => {
         if (!menuOpen) {
-          data.toggleCollapse(id)
-          setOpen(!isOpen)
+          model.toggleCategory(id)
         }
       }}
     >
       <Typography data-testid={`htsCategory-${name}`}>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-        {name}
+        <SanitizedHTML html={name} />
         <CascadingMenuButton
           menuItems={[
             {
               label: 'Add to selection',
               onClick: () => {
-                const r = treeToMap(tree).get(id)
+                const r = treeToMap(item).get(id)
                 model.addToSelection(getAllChildren(r))
               },
               helpText:
@@ -81,7 +77,7 @@ export default function Category({
             {
               label: 'Remove from selection',
               onClick: () => {
-                const r = treeToMap(tree).get(id)
+                const r = treeToMap(item).get(id)
                 model.removeFromSelection(getAllChildren(r))
               },
               helpText:
@@ -90,7 +86,7 @@ export default function Category({
             {
               label: 'Show all',
               onClick: () => {
-                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                for (const entry of treeToMap(item).get(id)?.children || []) {
                   if (entry.type === 'track') {
                     model.view.showTrack(entry.trackId)
                   }
@@ -102,7 +98,7 @@ export default function Category({
             {
               label: 'Hide all',
               onClick: () => {
-                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                for (const entry of treeToMap(item).get(id)?.children || []) {
                   if (entry.type === 'track') {
                     model.view.hideTrack(entry.trackId)
                   }
@@ -141,7 +137,6 @@ export default function Category({
                   },
                 ]
               : []),
-            ...menuItems,
           ]}
           className={classes.contrastColor}
           stopPropagation
@@ -152,4 +147,6 @@ export default function Category({
       </Typography>
     </div>
   )
-}
+})
+
+export default TrackCategory

@@ -1,5 +1,5 @@
+import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
-import { addDisposer, getParent, types } from 'mobx-state-tree'
 
 import { readConfObject } from '../configuration'
 import { when } from '../util'
@@ -9,7 +9,7 @@ import type { AnyConfigurationModel } from '../configuration'
 import type { Assembly } from './assembly'
 import type PluginManager from '../PluginManager'
 import type RpcManager from '../rpc/RpcManager'
-import type { IAnyType, Instance } from 'mobx-state-tree'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 

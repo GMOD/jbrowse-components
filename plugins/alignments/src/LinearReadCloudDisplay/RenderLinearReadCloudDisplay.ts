@@ -12,7 +12,7 @@ import {
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -101,15 +101,12 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     }
   }
 
-  deserializeArguments(args: any, rpcDriver: string) {
+  deserializeArguments(args: any, _rpcDriver: string) {
     return {
       ...args,
-      config:
-        rpcDriver !== 'MainThreadRpcDriver'
-          ? configSchema(this.pluginManager).create(args.config, {
-              pluginManager: this.pluginManager,
-            })
-          : args.config,
+      config: configSchema(this.pluginManager).create(args.config, {
+        pluginManager: this.pluginManager,
+      }),
     }
   }
 

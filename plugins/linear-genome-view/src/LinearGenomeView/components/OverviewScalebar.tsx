@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 // core
 import { getEnv, getSession } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { Typography, alpha, useTheme } from '@mui/material'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -24,6 +25,7 @@ const wholeSeqSpacer = 2
 const useStyles = makeStyles()(theme => ({
   scalebar: {
     height: HEADER_OVERVIEW_HEIGHT,
+    contain: 'layout style',
   },
   scalebarBorder: {
     border: '1px solid',
@@ -32,8 +34,10 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.background.default,
     position: 'absolute',
     top: 0,
+    left: 0,
     height: HEADER_OVERVIEW_HEIGHT,
     overflow: 'hidden',
+    willChange: 'transform',
   },
   scalebarContigForward: {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
@@ -46,9 +50,11 @@ const useStyles = makeStyles()(theme => ({
 
   scalebarRefName: {
     position: 'absolute',
+    left: 0,
     fontWeight: 'bold',
     pointerEvents: 'none',
     zIndex: 100,
+    willChange: 'transform',
   },
   scalebarVisibleRegion: {
     position: 'absolute',
@@ -56,6 +62,8 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     zIndex: 100,
     border: '1px solid',
+    left: 0,
+    willChange: 'transform, width',
   },
   overview: {
     height: HEADER_BAR_HEIGHT,
@@ -97,7 +105,7 @@ const OverviewBox = observer(function ({
       {/* name of sequence */}
       <Typography
         style={{
-          left: block.offsetPx + 3,
+          transform: `translateX(${block.offsetPx + 3}px)`,
           color: canDisplayCytobands
             ? theme.palette.text.primary
             : refNameColor,
@@ -117,7 +125,7 @@ const OverviewBox = observer(function ({
           !canDisplayCytobands ? classes.scalebarBorder : undefined,
         )}
         style={{
-          left: block.offsetPx + cytobandOffset,
+          transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
           width: block.widthPx,
           borderColor: refNameColor,
         }}
@@ -139,6 +147,58 @@ const OverviewBox = observer(function ({
   )
 })
 
+function VisibleRegionBox({
+  model,
+  overview,
+  className,
+}: {
+  model: LGV
+  overview: Base1DViewModel
+  className: string
+}) {
+  const theme = useTheme()
+  const boxRef = useRef<HTMLDivElement>(null)
+  const scalebarColor = theme.palette.tertiary.light
+
+  useEffect(() => {
+    return autorun(
+      function overviewRubberBandAutorun() {
+        const { dynamicBlocks, showCytobands, cytobandOffset } = model
+        const visibleRegions = dynamicBlocks.contentBlocks
+        const box = boxRef.current
+        if (!box || !visibleRegions.length) {
+          return
+        }
+
+        const first = visibleRegions.at(0)!
+        const last = visibleRegions.at(-1)!
+        const firstOverviewPx =
+          overview.bpToPx({
+            refName: first.refName,
+            coord: first.reversed ? first.end : first.start,
+          }) || 0
+        const lastOverviewPx =
+          overview.bpToPx({
+            refName: last.refName,
+            coord: last.reversed ? last.start : last.end,
+          }) || 0
+
+        const color = showCytobands ? '#f00' : scalebarColor
+        const transparency = showCytobands ? 0.1 : 0.3
+        const left = firstOverviewPx + cytobandOffset
+
+        box.style.width = `${lastOverviewPx - firstOverviewPx}px`
+        box.style.transform = `translateX(${left}px)`
+        box.style.background = alpha(color, transparency)
+        box.style.borderColor = color
+      },
+      { name: 'OverviewRubberBand' },
+    )
+  }, [model, overview, scalebarColor])
+
+  return <div ref={boxRef} className={className} />
+}
+
 const Scalebar = observer(function ({
   model,
   scale,
@@ -149,36 +209,8 @@ const Scalebar = observer(function ({
   scale: number
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
-  const { dynamicBlocks, showCytobands, cytobandOffset } = model
   const { pluginManager } = getEnv(model)
-  const visibleRegions = dynamicBlocks.contentBlocks
   const overviewVisibleRegions = overview.dynamicBlocks
-  const scalebarColor = theme.palette.tertiary.light
-  // catches possible null from at's below
-  if (!visibleRegions.length) {
-    return null
-  }
-
-  const first = visibleRegions.at(0)!
-  const last = visibleRegions.at(-1)!
-
-  const firstOverviewPx =
-    overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...first,
-      coord: first.reversed ? first.end : first.start,
-    }) || 0
-
-  const lastOverviewPx =
-    overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...last,
-      coord: last.reversed ? last.start : last.end,
-    }) || 0
-
-  const color = showCytobands ? '#f00' : scalebarColor
-  const transparency = showCytobands ? 0.1 : 0.3
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-OverviewScalebarComponent',
@@ -188,14 +220,10 @@ const Scalebar = observer(function ({
 
   return (
     <div className={classes.scalebar}>
-      <div
+      <VisibleRegionBox
+        model={model}
+        overview={overview}
         className={classes.scalebarVisibleRegion}
-        style={{
-          width: lastOverviewPx - firstOverviewPx,
-          left: firstOverviewPx + cytobandOffset,
-          background: alpha(color, transparency),
-          borderColor: color,
-        }}
       />
       {/* this is the entire scale bar */}
       {overviewVisibleRegions.map((block, idx) => {
@@ -205,7 +233,7 @@ const Scalebar = observer(function ({
             className={classes.scalebarContig}
             style={{
               width: block.widthPx,
-              left: block.offsetPx,
+              transform: `translateX(${block.offsetPx}px)`,
               backgroundColor: '#999',
               backgroundImage:
                 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',

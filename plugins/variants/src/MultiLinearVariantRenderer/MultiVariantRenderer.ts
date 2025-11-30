@@ -4,12 +4,13 @@ import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import type { MultiRenderArgsDeserialized } from './types'
 import type { Feature } from '@jbrowse/core/util'
 
-export default class MultiVariantBaseRenderer extends FeatureRendererType {
+export default class MultiVariantRenderer extends FeatureRendererType {
   supportsSVG = true
 
   async render(renderProps: MultiRenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { height, referenceDrawingMode, regions, bpPerPx } = renderProps
+    const { height, referenceDrawingMode, regions, bpPerPx, scrollTop } =
+      renderProps
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
@@ -45,6 +46,7 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
       features: new Map<string, Feature>(),
       height,
       width,
+      origScrollTop: scrollTop,
       containsNoTransferables: true,
     }
   }

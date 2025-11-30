@@ -139,16 +139,14 @@ test('adapter can fetch bed with header', async () => {
   const adapter = new BedTabixAdapter(
     MyConfigSchema.create({
       bedGzLocation: {
-        localPath: require.resolve(
-          './test_data/volvox.sort.with.header.bed.gz',
-        ),
+        localPath:
+          require.resolve('./test_data/volvox.sort.with.header.bed.gz'),
         locationType: 'LocalPathLocation',
       },
       index: {
         location: {
-          localPath: require.resolve(
-            './test_data/volvox.sort.with.header.bed.gz.tbi',
-          ),
+          localPath:
+            require.resolve('./test_data/volvox.sort.with.header.bed.gz.tbi'),
           locationType: 'LocalPathLocation',
         },
       },

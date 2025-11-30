@@ -1,11 +1,11 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import { types } from '@jbrowse/mobx-state-tree'
 import Alignments from '@jbrowse/plugin-alignments'
 import Hic from '@jbrowse/plugin-hic'
 import SVG from '@jbrowse/plugin-svg'
 import Variants from '@jbrowse/plugin-variants'
-import { types } from 'mobx-state-tree'
 import { expect, test } from 'vitest'
 
 import stateModelFactory from './model'
@@ -50,10 +50,10 @@ function standardInitializer() {
   )
 }
 
-const realLocation = window.location
+const _realLocation = window.location
 
 // https://stackoverflow.com/a/60110508/2129219
-function setWindowLoc(loc: string) {
+function _setWindowLoc(loc: string) {
   // @ts-expect-error
   // biome-ignore lint/performance/noDelete:
   delete window.location

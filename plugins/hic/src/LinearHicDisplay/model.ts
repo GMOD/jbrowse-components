@@ -1,8 +1,8 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
+import { addDisposer, getEnv, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
-import { addDisposer, getEnv, types } from 'mobx-state-tree'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
@@ -94,7 +94,6 @@ export default function stateModelFactory(
             displayHeight: self.mode === 'adjust' ? self.height : undefined,
             normalization: self.activeNormalization,
             rpcDriverName: self.rpcDriverName,
-            displayModel: self,
             resolution: self.resolution,
             useLogScale: self.useLogScale,
             colorScheme: self.colorScheme,

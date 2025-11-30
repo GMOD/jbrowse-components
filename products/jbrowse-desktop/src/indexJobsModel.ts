@@ -3,16 +3,21 @@ import path from 'path'
 
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import {
+  addDisposer,
+  getParent,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import {
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
-import { addDisposer, getParent, getSnapshot, types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
-import type { Instance } from 'mobx-state-tree'
+import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { JobsListModel } from '@jbrowse/plugin-jobs-management/src/JobsListWidget/model'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -90,8 +95,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get session() {
-        return getParent<any>(self).session as AbstractSessionModel &
-          SessionWithDrawerWidgets
+        return getParent<{ session: SessionWithDrawerWidgets }>(self).session
       },
       /**
        * #getter
@@ -113,7 +117,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         if (!jobStatusWidget) {
           jobStatusWidget = session.addWidget('JobsListWidget', 'JobsList')
         }
-        return jobStatusWidget
+        return jobStatusWidget as JobsListModel
       },
     }))
     .actions(self => ({
@@ -185,7 +189,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             name,
             statusMessage,
             progressPct,
-            cancelCallback,
+            cancelCallback: cancelCallback!,
+            setStatusMessage: () => {},
           })
         }
         self.jobsQueue.push(props)
@@ -298,7 +303,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 name,
                 statusMessage: statusMessage || 'done',
                 progressPct: progressPct || 100,
-                cancelCallback,
+                cancelCallback: cancelCallback!,
+                setStatusMessage: () => {},
               })
             }
           }
@@ -339,7 +345,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               name,
               statusMessage: statusMessage || '',
               progressPct: progressPct || 0,
-              cancelCallback,
+              cancelCallback: cancelCallback!,
+              setStatusMessage: () => {},
             })
             jobStatusWidget.removeQueuedJob(name)
           }

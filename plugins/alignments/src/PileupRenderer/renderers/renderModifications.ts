@@ -107,22 +107,23 @@ export function renderModifications({
         fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
       }
 
-      // Add to flatbush for mouseover with strand-specific info showing all modifications
-      const modsAtPos = modsByPosition.get(pos) || []
-      const strandInfo = modsAtPos
-        .map(
-          m =>
-            `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
-        )
-        .join('<br/>')
+      if (rightPx - leftPx >= 0.05) {
+        const modsAtPos = modsByPosition.get(pos) || []
+        const strandInfo = modsAtPos
+          .map(
+            m =>
+              `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
+          )
+          .join('<br/>')
 
-      items.push({
-        type: 'modification',
-        seq: strandInfo || mod.base,
-        modType: type,
-        probability: prob,
-      })
-      coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+        items.push({
+          type: 'modification',
+          seq: strandInfo || mod.base,
+          modType: type,
+          probability: prob,
+        })
+        coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+      }
 
       pos++
     },

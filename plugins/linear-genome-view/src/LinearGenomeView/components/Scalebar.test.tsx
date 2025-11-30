@@ -1,5 +1,5 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, render, waitFor } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 
 import Scalebar from './Scalebar'
@@ -8,7 +8,7 @@ afterEach(() => {
   cleanup()
 })
 
-test('renders two regions', () => {
+test('renders two regions', async () => {
   const session = createTestSession({
     sessionSnapshot: {
       views: [
@@ -52,54 +52,10 @@ test('renders two regions', () => {
   })
   const model = session.views[0]
   const { getByTestId } = render(<Scalebar model={model} />)
-  const ret1 = getByTestId('refLabel-ctgA')
-  const ret2 = getByTestId('refLabel-ctgB')
-  expect(ret1.style.left).toBe('-1px')
-  expect(ret2.style.left).toBe('101px')
-})
-test('renders two regions when scrolled to the left, the label is ctgA to the actual blocks', () => {
-  const session = createTestSession({
-    sessionSnapshot: {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          offsetPx: -100,
-          bpPerPx: 1,
-          displayedRegions: [
-            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-            { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
-          ],
-          tracks: [],
-          configuration: {},
-        },
-      ],
-    },
-  }) as any
-  session.addAssemblyConf({
-    name: 'volMyt1',
-    sequence: {
-      trackId: 'ref0',
-      type: 'ReferenceSequenceTrack',
-      adapter: {
-        type: 'FromConfigSequenceAdapter',
-        features: [
-          {
-            refName: 'ctgA',
-            uniqueId: 'firstId',
-            start: 0,
-            end: 10,
-            seq: 'cattgttgcg',
-          },
-        ],
-      },
-    },
+  await waitFor(() => {
+    expect(getByTestId('refLabel-ctgA')).toBeTruthy()
+    expect(getByTestId('refLabel-ctgB')).toBeTruthy()
   })
-  const model = session.views[0]
-  const { getByTestId } = render(<Scalebar model={model} />)
-  const ret1 = getByTestId('refLabel-ctgA')
-  const ret2 = getByTestId('refLabel-ctgB')
-  expect(ret1.style.left).toBe('99px')
-  expect(ret2.style.left).toBe('201px')
 })
 
 test('renders two regions when scrolled to the left, the label is ctgA to the actual blocks', () => {

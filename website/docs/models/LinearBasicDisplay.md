@@ -3,8 +3,8 @@ id: linearbasicdisplay
 title: LinearBasicDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -74,6 +74,24 @@ IMaybe<ISimpleType<number>>
 trackMaxHeight: types.maybe(types.number)
 ```
 
+#### property: trackSubfeatureLabels
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+trackSubfeatureLabels: types.maybe(types.string)
+```
+
+#### property: trackGeneGlyphMode
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+trackGeneGlyphMode: types.maybe(types.string)
+```
+
 #### property: configuration
 
 ```js
@@ -136,11 +154,35 @@ any
 any
 ```
 
+#### getter: subfeatureLabels
+
+```js
+// type
+any
+```
+
+#### getter: geneGlyphMode
+
+```js
+// type
+any
+```
+
 #### getter: rendererConfig
 
 ```js
 // type
 { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+```
+
+#### getter: featureUnderMouse
+
+Override featureUnderMouse to return the volatile feature which is fetched
+asynchronously via CoreGetFeatureDetails
+
+```js
+// type
+Feature
 ```
 
 ### LinearBasicDisplay - Methods
@@ -149,7 +191,14 @@ any
 
 ```js
 // type signature
-renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; filters: SerializableFilterChain; }
+renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; filters: SerializableFilterChain; sequenceAdapter: any; }
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
@@ -168,6 +217,13 @@ trackMenuItems: () => MenuItem[]
 setJexlFilters: (f?: string[]) => void
 ```
 
+#### action: setFeatureUnderMouse
+
+```js
+// type signature
+setFeatureUnderMouse: (feat?: Feature) => void
+```
+
 #### action: toggleShowLabels
 
 ```js
@@ -182,6 +238,13 @@ toggleShowLabels: () => void
 toggleShowDescriptions: () => void
 ```
 
+#### action: setSubfeatureLabels
+
+```js
+// type signature
+setSubfeatureLabels: (val: string) => void
+```
+
 #### action: setDisplayMode
 
 ```js
@@ -194,4 +257,11 @@ setDisplayMode: (val: string) => void
 ```js
 // type signature
 setMaxHeight: (val?: number) => void
+```
+
+#### action: setGeneGlyphMode
+
+```js
+// type signature
+setGeneGlyphMode: (val: string) => void
 ```

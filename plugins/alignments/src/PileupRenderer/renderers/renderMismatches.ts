@@ -70,12 +70,15 @@ export function renderMismatches({
     const mbase = mismatch.base
     const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
+    const w = rightPx - leftPx
     if (mismatch.type === 'mismatch') {
-      items.push({
-        type: 'mismatch',
-        seq: mismatch.base,
-      })
-      coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+      if (w >= 0.2) {
+        items.push({
+          type: 'mismatch',
+          seq: mismatch.base,
+        })
+        coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+      }
 
       if (!drawSNPsMuted) {
         const baseColor = colorMap[mismatch.base] || '#888'
@@ -126,11 +129,13 @@ export function renderMismatches({
           canvasWidth,
           colorMap.deletion,
         )
-        items.push({
-          type: 'deletion',
-          seq: `${mismatch.length}`,
-        })
-        coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+        if (bpPerPx < 3) {
+          items.push({
+            type: 'deletion',
+            seq: `${mismatch.length}`,
+          })
+          coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+        }
         const txt = `${mismatch.length}`
         const rwidth = measureText(txt, 10)
         if (widthPx >= rwidth && heightPx >= heightLim) {
@@ -158,16 +163,17 @@ export function renderMismatches({
             colorMap.insertion,
           )
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
+            const l = Math.round(pos - insW)
+            fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
+            fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
+            ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
+          }
+          if (bpPerPx < 3) {
             items.push({
               type: 'insertion',
               seq: mismatch.insertedBases || 'unknown',
             })
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, topPx + heightPx)
-
-            const l = Math.round(pos - insW)
-            fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
-            fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
-            ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
           }
         }
       }
@@ -176,6 +182,11 @@ export function renderMismatches({
       const c = colorMap[mismatch.type]
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       fillRect(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
+      items.push({
+        type: mismatch.type,
+        seq: mismatch.base,
+      })
+      coords.push(pos - clipW, topPx, pos + clipW * 2, topPx + heightPx)
       if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
         const l = pos - clipW
         fillRect(ctx, l, topPx, clipW * 3, 1, canvasWidth)
@@ -212,8 +223,8 @@ export function renderMismatches({
           type: 'insertion',
           seq: mismatch.insertedBases || 'unknown',
         })
-        coords.push(leftPx - 3, topPx, leftPx + 4, topPx + heightPx)
         if (bpPerPx > largeInsertionIndicatorScale) {
+          coords.push(leftPx - 1, topPx, leftPx + 1, topPx + heightPx)
           fillRect(
             ctx,
             leftPx - 1,
@@ -226,6 +237,12 @@ export function renderMismatches({
         } else if (heightPx > charHeight) {
           const rwidth = measureText(txt)
           const padding = 5
+          coords.push(
+            leftPx - rwidth / 2 - padding,
+            topPx,
+            leftPx + rwidth / 2 + padding,
+            topPx + heightPx,
+          )
           fillRect(
             ctx,
             leftPx - rwidth / 2 - padding,
@@ -239,6 +256,12 @@ export function renderMismatches({
           ctx.fillText(txt, leftPx - rwidth / 2, topPx + heightPx)
         } else {
           const padding = 2
+          coords.push(
+            leftPx - padding,
+            topPx,
+            leftPx + padding,
+            topPx + heightPx,
+          )
           fillRect(
             ctx,
             leftPx - padding,

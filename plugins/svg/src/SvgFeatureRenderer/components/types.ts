@@ -21,18 +21,17 @@ export interface Coord {
  * feature with optional layout capabilities. It combines rendering and layout
  * logic.
  */
-export interface Glyph
-  extends React.FC<{
-    colorByCDS: boolean
-    feature: Feature
-    featureLayout: SceneGraph
-    selected?: boolean
-    config: AnyConfigurationModel
-    displayModel: any
-    region: Region
-    bpPerPx: number
-    topLevel?: boolean
-  }> {
+export interface Glyph extends React.FC<{
+  colorByCDS: boolean
+  feature: Feature
+  featureLayout: SceneGraph
+  selected?: boolean
+  config: AnyConfigurationModel
+  displayModel: any
+  region: Region
+  bpPerPx: number
+  topLevel?: boolean
+}> {
   layOut?: (arg: FeatureLayOutArgs) => SceneGraph
 }
 

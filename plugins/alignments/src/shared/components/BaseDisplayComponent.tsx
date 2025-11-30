@@ -1,13 +1,13 @@
-import type React from 'react'
+import React, { Suspense, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'
-import { Button, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const BlockErrorMessage = lazy(() => import('./BlockErrorMessage'))
 
 // Duck-typed interface to avoid circular dependencies
 interface BaseDisplayModel {
@@ -42,28 +42,6 @@ const useStyles = makeStyles()({
   },
 })
 
-const BlockError = observer(function ({ model }: { model: BaseDisplayModel }) {
-  const { error } = model
-  return (
-    <BlockMsg
-      message={`${error}`}
-      severity="error"
-      action={
-        <Tooltip title="Reload">
-          <Button
-            data-testid="reload_button"
-            onClick={() => {
-              model.reload()
-            }}
-          >
-            Reload
-          </Button>
-        </Tooltip>
-      }
-    />
-  )
-})
-
 const BaseDisplayComponent = observer(function ({
   model,
   children,
@@ -73,7 +51,9 @@ const BaseDisplayComponent = observer(function ({
 }) {
   const { error, regionTooLarge } = model
   return error ? (
-    <BlockError model={model} />
+    <Suspense fallback={null}>
+      <BlockErrorMessage model={model} />
+    </Suspense>
   ) : regionTooLarge ? (
     model.regionCannotBeRendered()
   ) : (

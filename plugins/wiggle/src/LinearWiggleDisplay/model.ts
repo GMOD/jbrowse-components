@@ -2,10 +2,10 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
@@ -14,11 +14,11 @@ import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -121,7 +121,6 @@ function stateModelFactory(
           return {
             ...superProps,
             rpcDriverName: self.rpcDriverName,
-            displayModel: self,
             config: self.rendererConfig,
             displayCrossHatches: self.displayCrossHatchesSetting,
             scaleOpts,
@@ -300,9 +299,8 @@ function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { getQuantitativeStatsAutorun } = await import(
-              '../getQuantitativeStatsAutorun'
-            )
+            const { getQuantitativeStatsAutorun } =
+              await import('../getQuantitativeStatsAutorun')
             getQuantitativeStatsAutorun(self)
           })()
         },

@@ -4,6 +4,7 @@ import {
   getSession,
   parseLocString,
 } from '@jbrowse/core/util'
+import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   Paper,
@@ -14,7 +15,6 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 
 import { navToOption } from '../../searchUtils'
 

@@ -1,5 +1,5 @@
+import { clusterData, toNewick } from '@gmod/hclust'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { clusterData } from '@jbrowse/core/util/cluster'
 
 import { getGenotypeMatrix } from './getGenotypeMatrix'
 
@@ -17,12 +17,16 @@ export class MultiVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersA
       pluginManager: this.pluginManager,
       args: deserializedArgs,
     })
-    return clusterData({
+    const sampleLabels = Object.keys(matrix)
+    const result = await clusterData({
       data: Object.values(matrix),
+      sampleLabels,
       stopToken: deserializedArgs.stopToken,
-      onProgress: progress => {
-        deserializedArgs.statusCallback(progress)
-      },
+      onProgress: deserializedArgs.statusCallback,
     })
+    return {
+      order: result.order,
+      tree: toNewick(result.tree),
+    }
   }
 }

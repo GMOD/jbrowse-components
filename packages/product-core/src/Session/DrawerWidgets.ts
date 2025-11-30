@@ -1,13 +1,13 @@
 import { isConfigurationModel } from '@jbrowse/core/configuration'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
 import { isBaseSession } from './BaseSession'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const minDrawerWidth = 128
 
@@ -188,9 +188,12 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem('drawerPosition', self.drawerPosition)
-          }),
+          autorun(
+            function drawerPositionAutorun() {
+              localStorageSetItem('drawerPosition', self.drawerPosition)
+            },
+            { name: 'DrawerPosition' },
+          ),
         )
       },
     }))

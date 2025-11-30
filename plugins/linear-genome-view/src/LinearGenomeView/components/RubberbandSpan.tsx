@@ -14,9 +14,11 @@ const useStyles = makeStyles()(theme => {
       height: '100%',
       background,
       position: 'absolute',
+      left: 0,
       zIndex: 830,
       textAlign: 'center',
       cursor: 'crosshair',
+      willChange: 'transform, width',
     },
 
     rubberbandText: {
@@ -66,7 +68,10 @@ export default function RubberbandSpan({
           />
         </>
       ) : null}
-      <div className={classes.rubberband} style={{ left, width }}>
+      <div
+        className={classes.rubberband}
+        style={{ transform: `translateX(${left}px)`, width }}
+      >
         {numOfBpSelected ? (
           <Typography
             ref={el => {

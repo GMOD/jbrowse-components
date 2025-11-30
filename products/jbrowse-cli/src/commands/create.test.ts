@@ -5,13 +5,27 @@
 import fs from 'fs'
 import path from 'path'
 
-import nock from 'nock'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
+import { mockFetch, runCommand, runInTmpDir } from '../testUtil'
 
-import { runCommand, runInTmpDir } from '../testUtil'
+vi.mock('../fetchWithProxy')
 
 const { readdir } = fs.promises
+
+const testZipPath = path.join(
+  __dirname,
+  '..',
+  '..',
+  'test',
+  'data',
+  'JBrowse2.zip',
+)
+
+function readZipAsArrayBuffer() {
+  const buf = fs.readFileSync(testZipPath)
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+}
 
 const releaseArray = [
   {
@@ -25,16 +39,6 @@ const releaseArray = [
     ],
   },
 ]
-
-function mockZip() {
-  nock('https://example.com')
-    .get('/jbrowse-web-v0.0.1.zip')
-    .replyWithFile(
-      200,
-      path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
-      { 'Content-Type': 'application/zip' },
-    )
-}
 
 test('fails if no path is provided to the command', async () => {
   await runInTmpDir(async () => {
@@ -54,11 +58,10 @@ test('fails if user selects a directory that has existing files', async () => {
   const { error } = await runCommand(['create', '.'])
   expect(error?.message).toMatchSnapshot()
 })
+
 test('fails if the fetch does not return the right file', async () => {
   await runInTmpDir(async () => {
-    nock('https://example.com')
-      .get('/jbrowse-web-v0.0.1.zip')
-      .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
+    mockFetch({ headers: { 'content-type': 'application/json' } })
     const { error } = await runCommand([
       'create',
       'jbrowse',
@@ -71,10 +74,15 @@ test('fails if the fetch does not return the right file', async () => {
 
 test('download and unzips to new directory', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://api.github.com')
-      .get('/repos/GMOD/jbrowse-components/releases?page=1')
-      .reply(200, releaseArray)
-    mockZip()
+    mockFetch(url => {
+      if (url.includes('api.github.com')) {
+        return { json: releaseArray }
+      }
+      return {
+        headers: { 'content-type': 'application/zip' },
+        arrayBuffer: readZipAsArrayBuffer(),
+      }
+    })
     await runCommand(['create', 'jbrowse'])
     expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
       'manifest.json',
@@ -84,7 +92,10 @@ test('download and unzips to new directory', async () => {
 
 test('downloads from a url', async () => {
   await runInTmpDir(async ctx => {
-    mockZip()
+    mockFetch({
+      headers: { 'content-type': 'application/zip' },
+      arrayBuffer: readZipAsArrayBuffer(),
+    })
     await runCommand([
       'create',
       'jbrowse',
@@ -99,10 +110,15 @@ test('downloads from a url', async () => {
 
 test('overwrites and succeeds in download in a non-empty directory with tag', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://api.github.com')
-      .get('/repos/GMOD/jbrowse-components/releases/tags/v0.0.1')
-      .reply(200, releaseArray[0])
-    mockZip()
+    mockFetch(url => {
+      if (url.includes('api.github.com')) {
+        return { json: releaseArray[0] }
+      }
+      return {
+        headers: { 'content-type': 'application/zip' },
+        arrayBuffer: readZipAsArrayBuffer(),
+      }
+    })
     await runCommand(['create', 'jbrowse', '--tag', 'v0.0.1', '--force'])
     expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
       'manifest.json',
@@ -112,9 +128,7 @@ test('overwrites and succeeds in download in a non-empty directory with tag', as
 
 test('fails to download a version that does not exist', async () => {
   await runInTmpDir(async () => {
-    nock('https://api.github.com')
-      .get('/repos/GMOD/jbrowse-components/releases/tags/v999.999.999')
-      .reply(404, {})
+    mockFetch({ ok: false, status: 404 })
     const { error } = await runCommand([
       'create',
       'jbrowse',
@@ -128,10 +142,15 @@ test('fails to download a version that does not exist', async () => {
 
 test('fails because this directory is already set up', async () => {
   await runInTmpDir(async () => {
-    nock('https://api.github.com')
-      .get('/repos/GMOD/jbrowse-components/releases?page=1')
-      .reply(200, releaseArray)
-    mockZip()
+    mockFetch(url => {
+      if (url.includes('api.github.com')) {
+        return { json: releaseArray }
+      }
+      return {
+        headers: { 'content-type': 'application/zip' },
+        arrayBuffer: readZipAsArrayBuffer(),
+      }
+    })
     await runCommand(['create', 'jbrowse'])
     const { error } = await runCommand(['create', 'jbrowse'])
     expect(error?.message).toMatchSnapshot()
@@ -140,11 +159,14 @@ test('fails because this directory is already set up', async () => {
 
 test('lists versions', async () => {
   await runInTmpDir(async () => {
-    nock('https://api.github.com')
-      .get('/repos/GMOD/jbrowse-components/releases?page=1')
-      .reply(200, releaseArray)
-      .get('/repos/GMOD/jbrowse-components/releases?page=2')
-      .reply(200, [])
+    let page = 1
+    mockFetch(() => {
+      if (page === 1) {
+        page++
+        return { json: releaseArray }
+      }
+      return { json: [] }
+    })
     const { stdout } = await runCommand(['create', '--listVersions'])
     expect(stdout).toMatchSnapshot()
   })

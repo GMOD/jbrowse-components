@@ -1,3 +1,4 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -7,6 +8,11 @@ import { expect, test } from 'vitest'
 import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 import SvgOverlay from './SvgOverlay'
+
+import '@testing-library/jest-dom'
+
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
 
 test('no features', () => {
   const { container } = render(
@@ -24,7 +30,7 @@ test('no features', () => {
           maxHeightReached: false,
         })
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
@@ -54,7 +60,7 @@ test('one feature', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
@@ -103,7 +109,7 @@ test('click on one feature, and do not re-render', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
       detectRerender={() => counter++}
     />,
@@ -115,7 +121,10 @@ test('click on one feature, and do not re-render', () => {
 })
 
 test('one feature (compact mode)', () => {
-  const config = SvgRendererConfigSchema.create({ displayMode: 'compact' })
+  const config = SvgRendererConfigSchema.create(
+    { displayMode: 'compact' },
+    { pluginManager },
+  )
 
   const { container } = render(
     <Rendering
@@ -294,9 +303,10 @@ test('one feature (compact mode)', () => {
 })
 
 test('processed transcript (reducedRepresentation mode)', () => {
-  const config = SvgRendererConfigSchema.create({
-    displayMode: 'reducedRepresentation',
-  })
+  const config = SvgRendererConfigSchema.create(
+    { displayMode: 'reducedRepresentation' },
+    { pluginManager },
+  )
   const { container } = render(
     <Rendering
       blockKey="hello"
@@ -494,7 +504,7 @@ test('processed transcript', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
@@ -1124,7 +1134,7 @@ test('processed transcript (exons + impliedUTR)', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )
@@ -1200,7 +1210,7 @@ test('gene with CDS children', () => {
           ],
         ])
       }
-      config={SvgRendererConfigSchema.create({})}
+      config={SvgRendererConfigSchema.create(undefined, { pluginManager })}
       bpPerPx={3}
     />,
   )

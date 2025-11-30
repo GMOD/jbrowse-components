@@ -10,12 +10,13 @@ import {
   hasParent,
   isAlive,
   isStateTreeNode,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
 import { coarseStripHTML } from './coarseStripHTML'
 import { colord } from './colord'
+import { parseLocString } from './locString'
 import { checkStopToken } from './stopToken'
 import {
   isDisplayModel,
@@ -25,18 +26,19 @@ import {
   isViewModel,
 } from './types'
 
+import type { ParsedLocString } from './locString'
 import type PluginManager from '../PluginManager'
 import type { BaseBlock } from './blockTypes'
 import type { Feature } from './simpleFeature'
 import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import type { Region as MUIRegion } from './types/mst'
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
-import type { GenericFilehandle } from 'generic-filehandle2'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   Instance,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 export * from './types'
 export * from './when'
@@ -135,7 +137,9 @@ export function findParentThat(
   if (!hasParent(node)) {
     throw new Error('node does not have parent')
   }
-  let currentNode: IAnyStateTreeNode | undefined = getParent<any>(node)
+  let currentNode = getParent<IAnyStateTreeNode>(node)
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (currentNode && isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode
@@ -174,7 +178,7 @@ export function springAnimate(
   let animationFrameId: number
 
   function update(animation: Animation) {
-    const time = Date.now()
+    const time = performance.now()
     let position = animation.lastPosition
     let lastTime = animation.lastTime || time
     let velocity = animation.lastVelocity || 0
@@ -233,8 +237,8 @@ export function springAnimate(
 export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
   predicate: T,
-): TypeTestedByPredicate<T> {
-  return findParentThat(node, predicate)
+) {
+  return findParentThat(node, predicate) as TypeTestedByPredicate<T>
 }
 
 /**
@@ -352,169 +356,6 @@ export function assembleLocStringFast(
   }
   return `${assemblyNameString}${refName}${startString}${endString}${rev}`
 }
-
-export interface ParsedLocString {
-  assemblyName?: string
-  refName: string
-  start?: number
-  end?: number
-  reversed?: boolean
-}
-
-export function parseLocStringOneBased(
-  locString: string,
-  isValidRefName: (refName: string, assemblyName?: string) => boolean,
-): ParsedLocString {
-  if (!locString) {
-    throw new Error('no location string provided, could not parse')
-  }
-  let reversed = false
-  if (locString.endsWith('[rev]')) {
-    reversed = true
-    locString = locString.replace(/\[rev]$/, '')
-  }
-  // remove any whitespace
-  locString = locString.replace(/\s/, '')
-  // refNames can have colons, refer to
-  // https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
-  const assemblyMatch = /({(.+)})?(.+)/.exec(locString)
-  if (!assemblyMatch) {
-    throw new Error(`invalid location string: "${locString}"`)
-  }
-  const [, , assemblyName2, location2] = assemblyMatch
-  const assemblyName = assemblyName2!
-  const location = location2!
-  if (!assemblyName && location.startsWith('{}')) {
-    throw new Error(`no assembly name was provided in location "${location}"`)
-  }
-  const lastColonIdx = location.lastIndexOf(':')
-  if (lastColonIdx === -1) {
-    if (isValidRefName(location, assemblyName)) {
-      return {
-        assemblyName,
-        refName: location,
-        reversed,
-      }
-    }
-    throw new Error(`Unknown reference sequence "${location}"`)
-  }
-  const prefix = location.slice(0, lastColonIdx)
-  const suffix = location.slice(lastColonIdx + 1)
-  if (
-    isValidRefName(prefix, assemblyName) &&
-    isValidRefName(location, assemblyName)
-  ) {
-    throw new Error(`ambiguous location string: "${locString}"`)
-  } else if (isValidRefName(prefix, assemblyName)) {
-    if (suffix) {
-      // see if it's a range
-      const rangeMatch =
-        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/.exec(
-          suffix,
-        )
-      // see if it's a single point
-      const singleMatch = /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/.exec(suffix)
-      if (rangeMatch) {
-        const [, start, , , , end] = rangeMatch
-        if (start !== undefined && end !== undefined) {
-          return {
-            assemblyName,
-            refName: prefix,
-            start: +start.replaceAll(',', ''),
-            end: +end.replaceAll(',', ''),
-            reversed,
-          }
-        }
-      } else if (singleMatch) {
-        const [, start, , , separator] = singleMatch
-        if (start !== undefined) {
-          if (separator) {
-            // indefinite end
-            return {
-              assemblyName,
-              refName: prefix,
-              start: +start.replaceAll(',', ''),
-              reversed,
-            }
-          }
-          return {
-            assemblyName,
-            refName: prefix,
-            start: +start.replaceAll(',', ''),
-            end: +start.replaceAll(',', ''),
-            reversed,
-          }
-        }
-      } else {
-        throw new Error(
-          `could not parse range "${suffix}" on location "${locString}"`,
-        )
-      }
-    } else {
-      return {
-        assemblyName,
-        refName: prefix,
-        reversed,
-      }
-    }
-  } else if (isValidRefName(location, assemblyName)) {
-    return {
-      assemblyName,
-      refName: location,
-      reversed,
-    }
-  }
-  throw new Error(`unknown reference sequence name in location "${locString}"`)
-}
-
-/**
- * Parse a 1-based location string into an interbase genomic location
- * @param locString - Location string
- * @param isValidRefName - Function that checks if a refName exists in the set
- * of all known refNames, or in the set of refNames for an assembly if
- * assemblyName is given
- * @example
- * ```ts
- * parseLocString('chr1:1..100', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0, end: 100 }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1:1-100', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0, end: 100 }
- * ```
- * @example
- * ```ts
- * parseLocString(`{hg19}chr1:1..100`, isValidRefName)
- * // ↳ { assemblyName: 'hg19', refName: 'chr1', start: 0, end: 100 }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1', isValidRefName)
- * // ↳ { refName: 'chr1' }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1:1', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0, end: 1 }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1:1..', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0}
- * ```
- */
-export function parseLocString(
-  locString: string,
-  isValidRefName: (refName: string, assemblyName?: string) => boolean,
-) {
-  const parsed = parseLocStringOneBased(locString, isValidRefName)
-  if (typeof parsed.start === 'number') {
-    parsed.start -= 1
-  }
-  return parsed
-}
-
 export function compareLocs(locA: ParsedLocString, locB: ParsedLocString) {
   const assemblyComp =
     locA.assemblyName || locB.assemblyName
@@ -644,6 +485,37 @@ export function bpSpanPx(
   const start = bpToPx(leftBp, region, bpPerPx)
   const end = bpToPx(rightBp, region, bpPerPx)
   return region.reversed ? ([end, start] as const) : ([start, end] as const)
+}
+
+/**
+ * Calculate layout bounds for a feature, accounting for reversed regions.
+ *
+ * When labels are wider than features, the layout needs extra space:
+ * - Normal: extend towards higher genomic coords (visual right)
+ * - Reversed: extend towards lower genomic coords (visual right when reversed)
+ *
+ * This ensures labels always extend towards visual right of the feature.
+ *
+ * @param featureStart - Feature's genomic start coordinate
+ * @param featureEnd - Feature's genomic end coordinate
+ * @param layoutWidthBp - Total layout width in base pairs (may include label space)
+ * @param reversed - Whether the region is reversed
+ * @returns [layoutStart, layoutEnd] in genomic coordinates
+ */
+export function calculateLayoutBounds(
+  featureStart: number,
+  featureEnd: number,
+  layoutWidthBp: number,
+  reversed?: boolean,
+): [number, number] {
+  const featureWidthBp = featureEnd - featureStart
+  const labelOverhangBp = Math.max(0, layoutWidthBp - featureWidthBp)
+
+  // When reversed, extend towards lower genomic coords (visual right when reversed)
+  // When normal, extend towards higher genomic coords (visual right when normal)
+  return reversed
+    ? [featureStart - labelOverhangBp, featureEnd]
+    : [featureStart, featureStart + layoutWidthBp]
 }
 
 // do an array map of an iterable
@@ -884,15 +756,14 @@ export const rIC =
 
 // prettier-ignore
 const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
+const avgWidth = 0.5279276315789471
 
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
 export function measureText(str: unknown, fontSize = 10) {
-  const avg = 0.5279276315789471
   const s = String(str)
   let total = 0
-  for (let i = 0; i < s.length; i++) {
-    const code = s.charCodeAt(i)
-    total += widths[code] ?? avg
+  for (let i = 0, l = s.length; i < l; i++) {
+    total += widths[s.charCodeAt(i)] ?? avgWidth
   }
   return total * fontSize
 }
@@ -1056,6 +927,7 @@ export function objectHash(obj: Record<string, any>) {
 interface VirtualOffset {
   blockPosition: number
 }
+
 interface Block {
   minv: VirtualOffset
   maxv: VirtualOffset
@@ -1075,13 +947,13 @@ export async function bytesForRegions(
     regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
   )
 
-  return blockResults
-    .flat()
-    .map(block => ({
-      start: block.minv.blockPosition,
-      end: block.maxv.blockPosition + 65535,
-    }))
-    .reduce((a, b) => a + b.end - b.start, 0)
+  return sum(
+    blockResults
+      .flat()
+      .map(
+        block => block.maxv.blockPosition + 65535 - block.minv.blockPosition,
+      ),
+  )
 }
 
 export interface ViewSnap {
@@ -1100,7 +972,7 @@ export interface ViewSnap {
   })[]
 }
 
-// supported adapter types by text indexer ensure that this matches the method
+// Supported adapter types by text indexer ensure that this matches the method
 // found in @jbrowse/text-indexing/util
 export function isSupportedIndexingAdapter(type = '') {
   return [
@@ -1485,15 +1357,18 @@ export function forEachWithStopTokenCheck<T>(
   stopToken: string | undefined,
   arg: (arg: T, idx: number) => void,
   durationMs = 400,
+  iters = 100,
 ) {
   let start = performance.now()
   let i = 0
   for (const t of iter) {
-    if (performance.now() - start > durationMs) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
     arg(t, i++)
+    if (iters % i === 0) {
+      if (performance.now() - start > durationMs) {
+        checkStopToken(stopToken)
+        start = performance.now()
+      }
+    }
   }
 }
 
@@ -1517,3 +1392,5 @@ export {
 export { blobToDataURL } from './blobToDataURL'
 export { makeAbortableReaction } from './makeAbortableReaction'
 export * from './aborting'
+export * from './linkify'
+export * from './locString'

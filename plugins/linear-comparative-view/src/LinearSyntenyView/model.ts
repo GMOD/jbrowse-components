@@ -1,20 +1,20 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable, transaction } from 'mobx'
-import { types } from 'mobx-state-tree'
 
 import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 
 import type { ExportSvgOptions, ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -121,9 +121,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       async exportSvg(opts: ExportSvgOptions) {
-        const { renderToSvg } = await import(
-          './svgcomponents/SVGLinearSyntenyView'
-        )
+        const { renderToSvg } =
+          await import('./svgcomponents/SVGLinearSyntenyView')
         const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')

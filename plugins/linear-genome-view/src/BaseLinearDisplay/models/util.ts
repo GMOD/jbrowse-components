@@ -5,14 +5,14 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { BaseLinearDisplayModel } from '../model'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface RenderProps {
   rendererType: any
@@ -38,7 +38,7 @@ export function getDisplayStr(totalBytes: number) {
 }
 
 // stabilize clipid under test for snapshot
-export function getId(id: string, index: number) {
+export function getId(id: string, index: string | number) {
   const notJest = typeof jest === 'undefined'
   return ['clip', notJest ? id : 'jest', index, notJest ? Math.random() : '']
     .filter(f => !!f)
@@ -127,35 +127,43 @@ export function calculateLabelPositions(
     }
 
     const [left, , right, bottom, feature] = val
-    const { refName = '', description, label } = feature
+    const { refName = '', description, label, totalLayoutWidth } = feature
 
     if (!label) {
       continue
     }
 
-    const r0 = assembly.getCanonicalRefName(refName) || refName
-    const r = view.bpToPx({
+    const r0 = assembly.getCanonicalRefName2(refName)
+    const px1 = view.bpToPx({
       refName: r0,
       coord: left,
     })?.offsetPx
-    const r2 = view.bpToPx({
+    const px2 = view.bpToPx({
       refName: r0,
       coord: right,
     })?.offsetPx
 
-    if (r === undefined) {
+    if (px1 === undefined) {
       continue
     }
+
+    // Normalize pixel positions: leftPx is always visual left, rightPx is visual right
+    // When region is reversed, genomic left maps to visual right (px1 > px2)
+    const leftPx = px2 !== undefined ? Math.min(px1, px2) : px1
+    const rightPx = px2 !== undefined ? Math.max(px1, px2) : px1
 
     // Cache text measurement
     const labelWidth = getCachedMeasureText(label, fontSize)
 
     // Calculate clamped position - this is the "floating" behavior
     // Labels stick to the left edge (0) when features scroll off-screen
+    // Use totalLayoutWidth if available to determine the effective right edge
+    const effectiveRightPx =
+      totalLayoutWidth !== undefined ? leftPx + totalLayoutWidth : rightPx
     const leftPos = clamp(
       0,
-      r - offsetPx,
-      r2 !== undefined ? r2 - offsetPx - labelWidth : Number.POSITIVE_INFINITY,
+      leftPx - offsetPx,
+      effectiveRightPx - offsetPx - labelWidth,
     )
 
     const topPos = bottom - 14 * (+!!description + +!!label)

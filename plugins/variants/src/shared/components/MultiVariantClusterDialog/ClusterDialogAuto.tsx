@@ -8,9 +8,9 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
 
 import type { ReducedModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -88,7 +88,7 @@ const ClusterDialogAuto = observer(function ({
                       setProgress(arg)
                     },
                   },
-                )) as { order: number[] }
+                )) as { order: number[]; tree: string }
 
                 model.setLayout(
                   ret.order.map(idx => {
@@ -98,7 +98,9 @@ const ClusterDialogAuto = observer(function ({
                     }
                     return ret
                   }),
+                  false,
                 )
+                model.setClusterTree(ret.tree)
               }
               handleClose()
             } catch (e) {

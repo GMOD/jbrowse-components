@@ -5,19 +5,15 @@ import { LocalFile } from 'generic-filehandle2'
 import { handleRequest } from './generateReadBuffer'
 import { App } from './loaderUtil'
 
-
-
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
 const getFile = (url: string) =>
   new LocalFile(
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
-
-
 
 const delay = { timeout: 20000 }
 

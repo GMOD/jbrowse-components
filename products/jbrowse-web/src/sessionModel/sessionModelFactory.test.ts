@@ -1,9 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSnapshot, types } from 'mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import sessionModelFactory from '.'
 import { createTestSession } from '../rootModel'
-
 
 describe('JBrowseWebSessionModel', () => {
   it('creates with no parent and just a name', () => {

@@ -6,8 +6,8 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { types } from '@jbrowse/mobx-state-tree'
 import { cleanup, waitFor } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 import { afterEach, beforeEach, describe, expect, it, test, vi } from 'vitest'
 
 import { stateModelFactory } from '.'

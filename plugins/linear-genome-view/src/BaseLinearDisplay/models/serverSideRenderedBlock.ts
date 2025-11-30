@@ -15,13 +15,13 @@ import {
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
 import { isRetryException } from '@jbrowse/core/util/types'
-import { cast, getParent, isAlive, types } from 'mobx-state-tree'
+import { cast, getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface RenderedProps {
   reactElement: React.ReactElement
@@ -112,26 +112,7 @@ const blockState = types
     doReload() {
       self.reloadFlag = self.reloadFlag + 1
     },
-    afterAttach() {
-      const display = getContainingDisplay(self)
-      setTimeout(() => {
-        if (isAlive(self)) {
-          makeAbortableReaction(
-            self as any,
-            renderBlockData,
-            renderBlockEffect,
-            {
-              name: `${display.id}/${assembleLocString(self.region)} rendering`,
-              delay: display.renderDelay,
-              fireImmediately: true,
-            },
-            this.setLoading,
-            this.setRendered,
-            this.setError,
-          )
-        }
-      }, display.renderDelay)
-    },
+
     /**
      * #action
      */
@@ -255,6 +236,28 @@ const blockState = types
       })()
     },
   }))
+  .actions(self => ({
+    afterAttach() {
+      const display = getContainingDisplay(self)
+      setTimeout(() => {
+        if (isAlive(self)) {
+          makeAbortableReaction(
+            self as BlockModel,
+            renderBlockData,
+            renderBlockEffect,
+            {
+              name: `${display.id}/${assembleLocString(self.region)} rendering`,
+              delay: display.renderDelay,
+              fireImmediately: true,
+            },
+            self.setLoading,
+            self.setRendered,
+            self.setError,
+          )
+        }
+      }, display.renderDelay)
+    },
+  }))
 
 export default blockState
 export type BlockStateModel = typeof blockState
@@ -282,6 +285,9 @@ export function renderBlockData(
     }
 
     const renderProps = display.renderProps()
+    const renderingProps = display.renderingProps?.() as
+      | Record<string, unknown>
+      | undefined
     const { config } = renderProps
 
     // This line is to trigger the mobx reaction when the config changes It
@@ -296,6 +302,7 @@ export function renderBlockData(
       rendererType,
       rpcManager,
       renderProps,
+      renderingProps,
       cannotBeRenderedReason,
       displayError: error,
       renderArgs: {
@@ -331,6 +338,7 @@ async function renderBlockEffect(
   const {
     rendererType,
     renderProps,
+    renderingProps,
     rpcManager,
     renderArgs,
     cannotBeRenderedReason,
@@ -353,6 +361,7 @@ async function renderBlockEffect(
       await rendererType.renderInClient(rpcManager, {
         ...renderArgs,
         ...renderProps,
+        renderingProps,
         viewParams: getViewParams(self),
         stopToken,
       })

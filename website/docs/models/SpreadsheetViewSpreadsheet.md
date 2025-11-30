@@ -3,8 +3,8 @@ id: spreadsheetviewspreadsheet
 title: SpreadsheetViewSpreadsheet
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -82,7 +82,7 @@ boolean
 
 ```js
 // type
-({ field: string; width: number; type: "number"; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<{ id: number; feature: SimpleFeatureSerialized; }, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; }...
+({ field: string; width: number; type: "number"; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[]
 ```
 
 ### SpreadsheetViewSpreadsheet - Actions

@@ -13,16 +13,20 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     zIndex: 4, // above the track but under menu
     position: 'absolute',
+    left: 0,
     border: `1px ${theme.palette.action.active} dashed`,
     borderTop: 'none',
     borderBottom: 'none',
     pointerEvents: 'none',
+    willChange: 'transform',
   },
   centerLineText: {
     position: 'absolute',
+    left: 0,
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
     fontWeight: 'bold',
+    willChange: 'transform',
   },
 }))
 
@@ -39,7 +43,7 @@ const CenterLine = observer(function ({ model }: { model: LGV }) {
       role="presentation"
       ref={ref}
       style={{
-        left: `${startingPosition}px`,
+        transform: `translateX(${startingPosition}px)`,
         width: Math.max(1 / bpPerPx, 1),
       }}
     >
@@ -51,7 +55,7 @@ const CenterLine = observer(function ({ model }: { model: LGV }) {
           className={classes.centerLineText}
           role="presentation"
           style={{
-            left: Math.max(1 / bpPerPx, 1) + 5,
+            transform: `translateX(${Math.max(1 / bpPerPx, 1) + 5}px)`,
             top: trackHeights,
           }}
         >

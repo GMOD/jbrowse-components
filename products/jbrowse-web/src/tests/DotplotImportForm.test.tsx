@@ -3,8 +3,6 @@ import { fireEvent, within } from '@testing-library/react'
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
 setup()
 
-
-
 const delay = { timeout: 50000 }
 beforeEach(() => {
   doBeforeEach()

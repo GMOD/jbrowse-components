@@ -17,11 +17,16 @@ import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, when } from 'mobx'
-import { addDisposer, getSnapshot, isAlive, types } from 'mobx-state-tree'
 
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
@@ -33,8 +38,8 @@ import type { ExportSvgOptions } from '../LinearGenomeView/types'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
-import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -53,6 +58,7 @@ export interface FloatingLabelData {
   text: string
   relativeY: number
   color: string
+  isOverlay?: boolean
 }
 
 export type LayoutRecord =
@@ -69,6 +75,8 @@ export type LayoutRecord =
         floatingLabels?: FloatingLabelData[]
         totalFeatureHeight?: number
         totalLayoutWidth?: number
+        featureWidth?: number
+        actualTopPx?: number
       },
     ]
 
@@ -217,8 +225,10 @@ function stateModelFactory() {
       get layoutFeatures() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block.layout) {
-            featureMaps.push(block.layout.rectangles)
+          if (block.layout?.getRectangles) {
+            // Use getRectangles() to get consistent tuple format [left, top, right, bottom, data]
+            // This works for both GranularRectLayout (raw) and PrecomputedLayout (serialized)
+            featureMaps.push(block.layout.getRectangles())
           }
         }
         return new CompositeMap<string, LayoutRecord>(featureMaps)
@@ -481,13 +491,11 @@ function stateModelFactory() {
       },
       /**
        * #method
+       * props for the renderer's React "Rendering" component - client-side
+       * only, never sent to the worker. includes displayModel and callbacks
        */
-      renderProps() {
+      renderingProps() {
         return {
-          ...getParentRenderProps(self),
-          notReady: !self.featureDensityStatsReady,
-          rpcDriverName: self.rpcDriverName,
-
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse
@@ -531,15 +539,24 @@ function stateModelFactory() {
           },
         }
       },
+      /**
+       * #method
+       * props sent to the worker for server-side rendering
+       */
+      renderProps() {
+        return {
+          ...getParentRenderProps(self),
+          notReady: !self.featureDensityStatsReady,
+          rpcDriverName: self.rpcDriverName,
+        }
+      },
     }))
     .actions(self => ({
       /**
        * #method
        */
       async renderSvg(opts: ExportSvgDisplayOptions) {
-        const { renderBaseLinearDisplaySvg } = await import(
-          './models/renderSvg'
-        )
+        const { renderBaseLinearDisplaySvg } = await import('./renderSvg')
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
       afterAttach() {
@@ -548,24 +565,35 @@ function stateModelFactory() {
         // deleting to match the parent blocks)
         addDisposer(
           self,
-          autorun(() => {
-            const blocksPresent: Record<string, boolean> = {}
-            const view = getContainingView(self) as LGV
-            if (!view.initialized) {
-              return
-            }
-            for (const block of self.blockDefinitions.contentBlocks) {
-              blocksPresent[block.key] = true
-              if (!self.blockState.has(block.key)) {
-                self.addBlock(block.key, block)
+          autorun(
+            function blockDefinitionsAutorun() {
+              try {
+                if (!isAlive(self)) {
+                  return
+                }
+                const blocksPresent: Record<string, boolean> = {}
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                for (const block of self.blockDefinitions.contentBlocks) {
+                  blocksPresent[block.key] = true
+                  if (!self.blockState.has(block.key)) {
+                    self.addBlock(block.key, block)
+                  }
+                }
+                for (const key of self.blockState.keys()) {
+                  if (!blocksPresent[key]) {
+                    self.deleteBlock(key)
+                  }
+                }
+              } catch (e) {
+                // catch errors that may occur during test cleanup or when
+                // the display is not properly attached to a view
               }
-            }
-            for (const key of self.blockState.keys()) {
-              if (!blocksPresent[key]) {
-                self.deleteBlock(key)
-              }
-            }
-          }),
+            },
+            { name: 'BaseLinearDisplayBlockDefinitions' },
+          ),
         )
       },
     }))
@@ -581,7 +609,7 @@ function stateModelFactory() {
       return { heightPreConfig: height, ...rest }
     })
     .postProcessSnapshot(snap => {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       const r = snap as Omit<typeof snap, symbol>
       const { blockState, ...rest } = r
       return rest

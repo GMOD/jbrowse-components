@@ -31,31 +31,47 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
       adapterConfig,
     )
 
+    const rawFeatures = await firstValueFrom(
+      (dataAdapter as BaseFeatureDataAdapter)
+        .getFeaturesInMultipleRegions(regions, deserializedArgs)
+        .pipe(toArray()),
+    )
+
+    const sampleInfo = {} as Record<string, SampleInfo>
+    const genotypesCache = new Map<string, Record<string, string>>()
+    let hasPhased = false
+
     const features = getFeaturesThatPassMinorAlleleFrequencyFilter({
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
       stopToken,
-      features: await firstValueFrom(
-        (dataAdapter as BaseFeatureDataAdapter)
-          .getFeaturesInMultipleRegions(regions, deserializedArgs)
-          .pipe(toArray()),
-      ),
+      features: rawFeatures,
+      genotypesCache,
     })
 
-    const sampleInfo = {} as Record<string, SampleInfo>
-    let hasPhased = false
-
     forEachWithStopTokenCheck(features, stopToken, ({ feature }) => {
-      const samp = feature.get('genotypes') as Record<string, string>
+      const featureId = feature.id()
+      let samp = genotypesCache.get(featureId)
+      if (!samp) {
+        samp = feature.get('genotypes') as Record<string, string>
+        genotypesCache.set(featureId, samp)
+      }
+
       for (const [key, val] of Object.entries(samp)) {
         const isPhased = val.includes('|')
         hasPhased ||= isPhased
+        let ploidy = 1
+        if (isPhased) {
+          for (const char of val) {
+            if (char === '|') {
+              ploidy++
+            }
+          }
+        }
+        const existing = sampleInfo[key]
         sampleInfo[key] = {
-          maxPloidy: Math.max(
-            sampleInfo[key]?.maxPloidy || 0,
-            val.split('|').length,
-          ),
-          isPhased: sampleInfo[key]?.isPhased || isPhased,
+          maxPloidy: Math.max(existing?.maxPloidy ?? 0, ploidy),
+          isPhased: existing?.isPhased || isPhased,
         }
       }
     })

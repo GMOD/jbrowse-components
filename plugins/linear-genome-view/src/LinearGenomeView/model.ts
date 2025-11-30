@@ -9,6 +9,7 @@ import {
   assembleLocString,
   clamp,
   findLast,
+  getBpDisplayStr,
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
@@ -25,6 +26,15 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import {
+  addDisposer,
+  cast,
+  getParent,
+  getRoot,
+  getSnapshot,
+  resolveIdentifier,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
@@ -36,15 +46,6 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import { autorun, transaction, when } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getRoot,
-  getSnapshot,
-  resolveIdentifier,
-  types,
-} from 'mobx-state-tree'
 
 import Header from './components/Header'
 import {
@@ -77,7 +78,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
 import type { Region, Region as IRegion } from '@jbrowse/core/util/types'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -1008,8 +1009,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         simView.moveTo(leftOffset, rightOffset)
 
         return simView.dynamicBlocks.contentBlocks.map(region => ({
-          // eslint-disable-next-line @typescript-eslint/no-misused-spread
-          ...region,
+          assemblyName: region.assemblyName,
+          refName: region.refName,
           start: Math.floor(region.start),
           end: Math.ceil(region.end),
         }))
@@ -1101,7 +1102,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.tracks.clear()
         // it is necessary to run these after setting displayed regions empty
         // or else model.offsetPx gets set to Infinity and breaks
-        // mobx-state-tree snapshot
+        // @jbrowse/mobx-state-tree snapshot
         self.scrollTo(0)
         self.zoomTo(10)
       },
@@ -1118,9 +1119,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        const { renderToSvg } = await import(
-          './svgcomponents/SVGLinearGenomeView'
-        )
+        const { renderToSvg } =
+          await import('./svgcomponents/SVGLinearGenomeView')
         const html = await renderToSvg(self as LinearGenomeViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
@@ -1478,6 +1478,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get coarseVisibleLocStrings() {
           return calculateVisibleLocStrings(self.coarseDynamicBlocks)
         },
+
+        /**
+         * #getter
+         */
+        get coarseTotalBpDisplayStr() {
+          return getBpDisplayStr(self.coarseTotalBp)
+        },
       }
     })
     .actions(self => ({
@@ -1794,7 +1801,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               getSession(self).queueDialog(handleClose => [
                 GetSequenceDialog,
 
-                { model: self as any, handleClose },
+                { model: self, handleClose },
               ])
             },
           },
@@ -1851,6 +1858,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ? this.pxToBp(self.width / 2)
           : undefined
       },
+
+      get visibleRegions() {
+        return self.dynamicBlocks.contentBlocks
+      },
     }))
     .actions(self => ({
       afterCreate() {
@@ -1881,44 +1892,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const { init } = self
-            if (init) {
-              self
-                .navToLocString(init.loc, init.assembly)
-                .catch((e: unknown) => {
-                  console.error(init, e)
-                  getSession(self).notifyError(`${e}`, e)
-                })
+          autorun(
+            function initAutorun() {
+              const { init } = self
+              if (init) {
+                self
+                  .navToLocString(init.loc, init.assembly)
+                  .catch((e: unknown) => {
+                    console.error(init, e)
+                    getSession(self).notifyError(`${e}`, e)
+                  })
 
-              init.tracks?.map(t => self.showTrack(t))
+                init.tracks?.map(t => self.showTrack(t))
 
-              // clear init state
-              self.setInit(undefined)
-            }
-          }),
+                // clear init state
+                self.setInit(undefined)
+              }
+            },
+            { name: 'LGVInit' },
+          ),
         )
         addDisposer(
           self,
           autorun(
-            () => {
+            function coarseDynamicBlocksAutorun() {
               if (self.initialized) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
               }
             },
-            { delay: 500 },
+            { delay: 100, name: 'LGVCoarseDynamicBlocks' },
           ),
         )
 
         addDisposer(
           self,
-          autorun(() => {
-            const s = (s: unknown) => JSON.stringify(s)
-            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
-            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
-            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
-            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
-          }),
+          autorun(
+            function localStorageAutorun() {
+              const s = (s: unknown) => JSON.stringify(s)
+              const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+              localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+              localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
+              localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
+            },
+            { name: 'LGVLocalStorage' },
+          ),
         )
       },
     }))

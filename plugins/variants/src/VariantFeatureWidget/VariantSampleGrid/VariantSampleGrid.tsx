@@ -5,10 +5,15 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { measureGridWidth } from '@jbrowse/core/util'
-import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import {
+  Checkbox,
+  FormControlLabel,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import Checkbox2 from '../Checkbox2'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
 import SampleFilters from './VariantSampleFilters'
 import { getSampleGridRows } from './getSampleGridRows'
@@ -17,8 +22,10 @@ import type { Filters, InfoFields, VariantFieldDescriptions } from './types'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
 
-// Define a type for the column display mode
 type ColumnDisplayMode = 'all' | 'gtOnly' | 'genotypeOnly'
+
+const gtOnlyFields = new Set(['sample', 'GT'])
+const genotypeFields = new Set(['sample', 'GT', 'genotype'])
 
 export default function VariantSampleGrid(props: {
   feature: SimpleFeatureSerialized
@@ -33,24 +40,17 @@ export default function VariantSampleGrid(props: {
   const ALT = feature.ALT as string[]
   const REF = feature.REF as string
 
-  // Use the getSampleGridRows function to process the data
   const { rows, error } = getSampleGridRows(samples, REF, ALT, filter)
 
-  const colKeySet = new Set(['sample', ...Object.keys(rows[0] || {})])
-  colKeySet.delete('id')
-  const keys = [...colKeySet]
-  const widths = keys.map(e => measureGridWidth(rows.map(r => r[e])))
+  const keys = ['sample', ...Object.keys(rows[0] || {})].filter(k => k !== 'id')
   const columns = keys.map(
-    (field, index) =>
+    field =>
       ({
         field,
         description: descriptions?.FORMAT?.[field]?.Description,
-        width: widths[index],
+        width: measureGridWidth(rows.map(r => r[field])),
       }) satisfies GridColDef<(typeof rows)[0]>,
   )
-
-  const s1 = new Set(['sample', 'GT'])
-  const s2 = new Set(['sample', 'GT', 'genotype'])
 
   return !rows.length ? null : (
     <>
@@ -62,12 +62,16 @@ export default function VariantSampleGrid(props: {
       <BaseCard {...props} title="Samples">
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
         <div>
-          <Checkbox2
-            label="Show filters"
-            checked={showFilters}
-            onChange={event => {
-              setShowFilters(event.target.checked)
-            }}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showFilters}
+                onChange={event => {
+                  setShowFilters(event.target.checked)
+                }}
+              />
+            }
+            label={<Typography variant="body2">Show filters</Typography>}
           />
           <ToggleButtonGroup
             value={columnDisplayMode}
@@ -101,9 +105,9 @@ export default function VariantSampleGrid(props: {
             hideFooter={rows.length < 100}
             columns={
               columnDisplayMode === 'gtOnly'
-                ? columns.filter(f => s1.has(f.field))
+                ? columns.filter(f => gtOnlyFields.has(f.field))
                 : columnDisplayMode === 'genotypeOnly'
-                  ? columns.filter(f => s2.has(f.field))
+                  ? columns.filter(f => genotypeFields.has(f.field))
                   : columns
             }
             rowHeight={25}

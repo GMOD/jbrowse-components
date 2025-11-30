@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseStringSync } from 'gff-nostream'
+import { parseRecordsSync } from 'gff-nostream'
 
 import { featureData } from '../featureData'
 
@@ -24,14 +24,14 @@ interface LineFeature {
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   private configured?: Promise<{
     gff: TabixIndexedFile
-    dontRedispatch: string[]
+    dontRedispatchSet: Set<string>
   }>
 
   private async configurePre(_opts?: BaseOptions) {
     const gffGzLocation = this.getConf('gffGzLocation')
     const indexType = this.getConf(['index', 'indexType'])
     const loc = this.getConf(['index', 'location'])
-    const dontRedispatch = this.getConf('dontRedispatch')
+    const dontRedispatch = this.getConf('dontRedispatch') as string[]
     const gff = new TabixIndexedFile({
       filehandle: openLocation(gffGzLocation, this.pluginManager),
       csiFilehandle:
@@ -39,12 +39,11 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       tbiFilehandle:
         indexType !== 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
-      renameRefSeqs: (n: string) => n,
     })
 
     return {
       gff,
-      dontRedispatch,
+      dontRedispatchSet: new Set(dontRedispatch),
       header: await gff.getHeader(),
     }
   }
@@ -95,17 +94,26 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     try {
       const lines: LineFeature[] = []
 
-      const { dontRedispatch, gff } = await this.configure(opts)
+      const { dontRedispatchSet, gff } = await this.configure(opts)
+      const { start: startCol, end: endCol } = metadata.columnNumbers
       await updateStatus('Downloading features', statusCallback, () =>
         gff.getLines(
           query.refName,
           query.start,
           query.end,
           (line, fileOffset) => {
-            lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
+            const fields = line.split('\t')
+            lines.push({
+              // note: index column numbers are 1-based
+              start: +fields[startCol - 1]!,
+              end: +fields[endCol - 1]!,
+              lineHash: fileOffset,
+              fields,
+            })
           },
         ),
       )
+
       if (allowRedispatch && lines.length) {
         let minStart = Number.POSITIVE_INFINITY
         let maxEnd = Number.NEGATIVE_INFINITY
@@ -113,7 +121,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           const featureType = line.fields[2]!
           // only expand redispatch range if feature is not a "dontRedispatch"
           // type skips large regions like chromosome,region
-          if (!dontRedispatch.includes(featureType)) {
+          if (!dontRedispatchSet.has(featureType)) {
             const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
               minStart = start
@@ -138,56 +146,28 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      const gff3 = lines
-        .map(lineRecord => {
-          if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
-            if (!lineRecord.fields[8].includes('_lineHash')) {
-              lineRecord.fields[8] += `;_lineHash=${lineRecord.lineHash}`
-            }
-          } else {
-            lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
-          }
-          return lineRecord.fields.join('\t')
-        })
-        .join('\n')
-
-      for (const featureLocs of parseStringSync(gff3)) {
+      for (const featureLocs of parseRecordsSync(lines)) {
         for (const featureLoc of featureLocs) {
-          const f = new SimpleFeature({
-            data: featureData(featureLoc),
-            id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
-          })
+          // Check intersection before creating SimpleFeature to avoid
+          // unnecessary allocations GFF3 coordinates are 1-based, so subtract
+          // 1 from start for 0-based
+          const start = featureLoc.start! - 1
+          const end = featureLoc.end!
           if (
-            doesIntersect2(
-              f.get('start'),
-              f.get('end'),
-              originalQuery.start,
-              originalQuery.end,
-            )
+            doesIntersect2(start, end, originalQuery.start, originalQuery.end)
           ) {
-            observer.next(f)
+            observer.next(
+              new SimpleFeature({
+                data: featureData(featureLoc),
+                id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
+              }),
+            )
           }
         }
       }
       observer.complete()
     } catch (e) {
       observer.error(e)
-    }
-  }
-
-  private parseLine(
-    columnNumbers: { start: number; end: number },
-    line: string,
-    fileOffset: number,
-  ) {
-    const fields = line.split('\t')
-
-    // note: index column numbers are 1-based
-    return {
-      start: +fields[columnNumbers.start - 1]!,
-      end: +fields[columnNumbers.end - 1]!,
-      lineHash: fileOffset,
-      fields,
     }
   }
 }

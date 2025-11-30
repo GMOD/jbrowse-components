@@ -1,4 +1,3 @@
-import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -10,6 +9,7 @@ const useStyles = makeStyles()(theme => ({
     boxSizing: 'border-box',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
+    contain: 'layout style',
   },
   elidedBlock: {
     minHeight: '100%',
@@ -28,7 +28,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ContentBlock = observer(function ({
+function ContentBlock({
   block,
   children,
 }: {
@@ -36,13 +36,12 @@ const ContentBlock = observer(function ({
   children: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const { widthPx } = block
   return (
-    <div style={{ width: widthPx }} className={classes.contentBlock}>
+    <div style={{ width: block.widthPx }} className={classes.contentBlock}>
       {children}
     </div>
   )
-})
+}
 
 function ElidedBlock({ width }: { width: number }) {
   const { classes } = useStyles()

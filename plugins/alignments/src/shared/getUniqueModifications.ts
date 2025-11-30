@@ -1,6 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { type IAnyStateTreeNode, isAlive } from 'mobx-state-tree'
+import { type IAnyStateTreeNode, isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { ModificationType } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

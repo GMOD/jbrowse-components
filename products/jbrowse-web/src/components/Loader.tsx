@@ -2,14 +2,8 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { destroy } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
-import { destroy } from 'mobx-state-tree'
-import {
-  QueryParamProvider,
-  StringParam,
-  useQueryParam,
-} from 'use-query-params'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 import '@fontsource/roboto'
 
@@ -18,6 +12,7 @@ import Loading from './Loading'
 import SessionLoader from '../SessionLoader'
 import { createPluginManager } from '../createPluginManager'
 import factoryReset from '../factoryReset'
+import { deleteQueryParams, readQueryParams } from '../useQueryParam'
 
 import type { SessionLoaderModel } from '../SessionLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -25,11 +20,17 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 const SessionTriaged = lazy(() => import('./SessionTriaged'))
 const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
 
-// return value if defined, else convert null to undefined for use with
-// types.maybe
-function normalize<T>(param: T | null | undefined) {
-  return param === null ? undefined : param
-}
+const paramsToDelete = [
+  'loc',
+  'tracks',
+  'assembly',
+  'password',
+  'sessionTracks',
+  'hubURL',
+  'tracklist',
+  'nav',
+  'highlight',
+] as const
 
 export function Loader({
   initialTimestamp: initialTimestampProp,
@@ -37,58 +38,56 @@ export function Loader({
   initialTimestamp?: number
 }) {
   const [initialTimestamp] = useState(() => initialTimestampProp ?? Date.now())
-  const Str = StringParam
 
-  const [config] = useQueryParam('config', Str)
-  const [session] = useQueryParam('session', Str)
-  const [adminKey] = useQueryParam('adminKey', Str)
-  const [password, setPassword] = useQueryParam('password', Str)
-  const [loc, setLoc] = useQueryParam('loc', Str)
-  const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
-  const [hubURL, setHubURL] = useQueryParam('hubURL', Str)
-  const [assembly, setAssembly] = useQueryParam('assembly', Str)
-  const [tracks, setTracks] = useQueryParam('tracks', Str)
-  const [highlight, setHighlight] = useQueryParam('highlight', Str)
-  const [nav, setNav] = useQueryParam('nav', Str)
-  const [tracklist, setTrackList] = useQueryParam('tracklist', Str)
+  const [loader] = useState(() => {
+    const {
+      config,
+      session,
+      adminKey,
+      password,
+      loc,
+      assembly,
+      tracks,
+      sessionTracks,
+      tracklist,
+      highlight,
+      nav,
+      hubURL,
+    } = readQueryParams([
+      'config',
+      'session',
+      'adminKey',
+      'password',
+      'loc',
+      'assembly',
+      'tracks',
+      'sessionTracks',
+      'tracklist',
+      'highlight',
+      'nav',
+      'hubURL',
+    ])
 
-  const loader = SessionLoader.create({
-    configPath: normalize(config),
-    sessionQuery: normalize(session),
-    password: normalize(password),
-    adminKey: normalize(adminKey),
-    loc: normalize(loc),
-    assembly: normalize(assembly),
-    tracks: normalize(tracks),
-    sessionTracks: normalize(sessionTracks),
-    tracklist: JSON.parse(normalize(tracklist) || 'false'),
-    highlight: normalize(highlight),
-    nav: JSON.parse(normalize(nav) || 'true'),
-    hubURL: normalize(hubURL?.split(',')),
-    initialTimestamp,
+    return SessionLoader.create({
+      configPath: config,
+      sessionQuery: session,
+      password,
+      adminKey,
+      loc,
+      assembly,
+      tracks,
+      sessionTracks,
+      tracklist: JSON.parse(tracklist || 'false'),
+      highlight,
+      nav: JSON.parse(nav || 'true'),
+      hubURL: hubURL?.split(','),
+      initialTimestamp,
+    })
   })
 
   useEffect(() => {
-    setLoc(undefined, 'replaceIn')
-    setTracks(undefined, 'replaceIn')
-    setAssembly(undefined, 'replaceIn')
-    setPassword(undefined, 'replaceIn')
-    setSessionTracks(undefined, 'replaceIn')
-    setHubURL(undefined, 'replaceIn')
-    setTrackList(undefined, 'replaceIn')
-    setNav(undefined, 'replaceIn')
-    setHighlight(undefined, 'replaceIn')
-  }, [
-    setAssembly,
-    setHighlight,
-    setLoc,
-    setNav,
-    setPassword,
-    setSessionTracks,
-    setHubURL,
-    setTrackList,
-    setTracks,
-  ])
+    deleteQueryParams([...paramsToDelete])
+  }, [])
 
   return <Renderer loader={loader} />
 }
@@ -179,9 +178,7 @@ function LoaderWrapper({ initialTimestamp }: { initialTimestamp: number }) {
         />
       )}
     >
-      <QueryParamProvider adapter={WindowHistoryAdapter}>
-        <Loader initialTimestamp={initialTimestamp} />
-      </QueryParamProvider>
+      <Loader initialTimestamp={initialTimestamp} />
     </ErrorBoundary>
   )
 }

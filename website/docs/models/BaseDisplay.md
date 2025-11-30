@@ -3,8 +3,8 @@ id: basedisplay
 title: BaseDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -110,11 +110,22 @@ MenuItem[]
 #### method: renderProps
 
 the react props that are passed to the Renderer when data is rendered in this
-display
+display. these are serialized and sent to the worker for server-side rendering
 
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderingProps
+
+props passed to the renderer's React "Rendering" component. these are
+client-side only and never sent to the worker. includes displayModel and
+callbacks
+
+```js
+// type signature
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _...
 ```
 
 #### method: trackMenuItems

@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
-import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
@@ -13,18 +12,28 @@ const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-
   error: {
     color: 'red',
     fontSize: '0.8em',
   },
 })
 
-function checkJexl(code: string) {
-  stringToJexlExpression(code)
+function validateJexl(data: string) {
+  try {
+    for (const line of data
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean)) {
+      stringToJexlExpression(line)
+    }
+    return undefined
+  } catch (e) {
+    console.error(e)
+    return e
+  }
 }
 
-const AddFiltersDialog = observer(function ({
+export default function AddFiltersDialog({
   model,
   handleClose,
 }: {
@@ -38,23 +47,7 @@ const AddFiltersDialog = observer(function ({
   const { classes } = useStyles()
   const { activeFilters } = model
   const [data, setData] = useState(activeFilters.join('\n'))
-  const [error, setError] = useState<unknown>()
-
-  useEffect(() => {
-    try {
-      data
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => !!line)
-        .map(line => {
-          checkJexl(line.trim())
-        })
-      setError(undefined)
-    } catch (e) {
-      console.error(e)
-      setError(e)
-    }
-  }, [data])
+  const error = useMemo(() => validateJexl(data), [data])
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Add track filters">
@@ -119,18 +112,10 @@ const AddFiltersDialog = observer(function ({
         >
           Submit
         </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
+        <Button variant="contained" color="secondary" onClick={handleClose}>
           Cancel
         </Button>
       </DialogActions>
     </Dialog>
   )
-})
-
-export default AddFiltersDialog
+}

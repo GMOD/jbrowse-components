@@ -6,15 +6,15 @@ import {
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
-import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel DotplotDisplay
@@ -108,11 +108,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return {
           ...getParentRenderProps(self),
           rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           config: self.configuration.renderer,
-          statusCallback: (message: string) => {
-            self.setMessage(message)
-          },
         }
       },
     }))
@@ -126,9 +122,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return null
         }
 
-        const { rendererType, rpcManager, renderProps } = props
+        const { rendererType, rpcManager, renderProps, renderingProps } = props
         const rendering = await rendererType.renderInClient(rpcManager, {
           ...renderProps,
+          renderingProps,
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,
         })

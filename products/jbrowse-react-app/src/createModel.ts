@@ -5,7 +5,7 @@ import createRootModel from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export default function createModel({
   runtimePlugins,

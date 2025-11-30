@@ -4,14 +4,10 @@ import { LocalFile } from 'generic-filehandle2'
 import { handleRequest } from './generateReadBuffer'
 import { App } from './loaderUtil'
 
-
-
 const getFile = (url: string) =>
   new LocalFile(
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
-
-
 
 const delay = { timeout: 20000 }
 
