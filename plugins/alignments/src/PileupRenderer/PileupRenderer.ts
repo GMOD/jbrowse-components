@@ -3,6 +3,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { expandRegion } from '@jbrowse/core/pluggableElementTypes/renderers/util'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import { PileupLayoutSession } from './PileupLayoutSession'
@@ -98,7 +99,7 @@ export default class PileupRenderer extends BoxRendererType {
       maxHeightReached: layout.maxHeightReached,
     }
 
-    if (res.imageData instanceof ImageBitmap) {
+    if (isImageBitmap(res.imageData)) {
       return rpcResult(serialized, [res.imageData])
     }
     return serialized

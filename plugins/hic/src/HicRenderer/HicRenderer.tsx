@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { rpcResult } from 'librpc-web-mod'
 import { firstValueFrom } from 'rxjs'
@@ -47,7 +48,7 @@ export default class HicRenderer extends ServerSideRendererType {
     )
 
     const serialized = { ...res, height, width }
-    if (res.imageData instanceof ImageBitmap) {
+    if (isImageBitmap(res.imageData)) {
       return rpcResult(serialized, [res.imageData])
     }
     return serialized

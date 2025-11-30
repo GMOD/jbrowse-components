@@ -1,4 +1,5 @@
 import { BoxRendererType } from '@jbrowse/core/pluggableElementTypes'
+import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import { doAll } from './doAll'
@@ -33,7 +34,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       maxHeightReached: layout.maxHeightReached,
     }
 
-    if (res.imageData instanceof ImageBitmap) {
+    if (isImageBitmap(res.imageData)) {
       return rpcResult(serialized, [res.imageData])
     }
     return serialized

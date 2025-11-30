@@ -1,5 +1,6 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
+import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import type { RenderArgsDeserialized } from './types'
@@ -41,7 +42,7 @@ export default class LinearVariantMatrixRenderer extends FeatureRendererType {
       rowHeight,
     }
 
-    if (rest.imageData instanceof ImageBitmap) {
+    if (isImageBitmap(rest.imageData)) {
       return rpcResult(serialized, [rest.imageData])
     }
     return serialized

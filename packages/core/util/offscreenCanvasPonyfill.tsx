@@ -16,6 +16,14 @@ export let createImageBitmap: (
 /** the JS class (constructor) for offscreen-generated image bitmap data */
 export let ImageBitmapType: unknown
 
+/**
+ * Safely check if a value is an ImageBitmap.
+ * Works in both browser and Node.js environments.
+ */
+export function isImageBitmap(value: unknown): value is ImageBitmap {
+  return typeof ImageBitmap !== 'undefined' && value instanceof ImageBitmap
+}
+
 export function drawImageOntoCanvasContext(
   imageData: any,
   context: CanvasRenderingContext2D,
