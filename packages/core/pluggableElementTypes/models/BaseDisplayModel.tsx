@@ -92,7 +92,10 @@ function stateModelFactory() {
           // Check if immediate parent looks like a display
           // (has type property ending with 'Display')
           const parentType = parent?.type
-          if (typeof parentType === 'string' && parentType.endsWith('Display')) {
+          if (
+            typeof parentType === 'string' &&
+            parentType.endsWith('Display')
+          ) {
             return parent
           }
         } catch {

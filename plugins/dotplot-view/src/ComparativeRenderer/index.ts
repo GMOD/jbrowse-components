@@ -6,8 +6,8 @@ import type {
   RenderArgsSerialized,
   ResultsSerialized,
 } from '../DotplotRenderer/DotplotRenderer'
-import type { RenderResults } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type DotplotRenderer from '../DotplotRenderer/DotplotRenderer'
+import type { RenderResults } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 
 interface RenderArgs extends DotplotRenderArgs {
   rendererType: string

@@ -82,8 +82,24 @@ export function LinearAlignmentsDisplayMixin(
        */
       get filterBy(): FilterBy {
         return (
-          self.filterBySetting ?? getConf(self, 'filterBy') ?? defaultFilterFlags
+          self.filterBySetting ??
+          getConf(self, 'filterBy') ??
+          defaultFilterFlags
         )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get modificationThreshold() {
+        return self.colorBy?.modifications?.threshold ?? 10
+      },
+      /**
+       * #getter
+       */
+      get visibleModificationTypes() {
+        return [...self.visibleModifications.keys()]
       },
     }))
     .actions(self => ({

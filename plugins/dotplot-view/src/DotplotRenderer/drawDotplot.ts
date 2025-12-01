@@ -8,9 +8,9 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import { type Warning, clampWithWarnX, clampWithWarnY } from './clamp'
 
+import type { RenderArgsDeserialized } from './DotplotRenderer'
 import type { Dotplot1DViewModel } from '../DotplotView/model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { RenderArgsDeserialized } from './DotplotRenderer'
 
 const { parseCigar } = MismatchParser
 

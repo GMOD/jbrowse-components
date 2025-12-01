@@ -7,8 +7,8 @@ import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun } from '../util'
 
 import type { ColorBy, FilterBy } from '../shared/types'

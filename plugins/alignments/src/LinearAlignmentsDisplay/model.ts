@@ -9,8 +9,8 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
-import ColorLensIcon from '@mui/icons-material/ColorLens'
 import FilterListIcon from '@mui/icons-material/ClearAll'
+import ColorLensIcon from '@mui/icons-material/ColorLens'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
@@ -326,21 +326,6 @@ function stateModelFactory(
         return renderSvg(self, opts)
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get modificationThreshold() {
-        return self.colorBy?.modifications?.threshold ?? 10
-      },
-
-      /**
-       * #getter
-       */
-      get visibleModificationTypes() {
-        return [...self.visibleModifications.keys()]
-      },
-    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
@@ -411,38 +396,44 @@ function stateModelFactory(
               type: 'radio' as const,
               label: `All modifications (>= ${threshold}% prob)`,
               checked: isModsSelected({}),
-              onClick: () =>
+              onClick: () => {
                 self.setColorScheme({
                   type: 'modifications',
                   modifications: { threshold },
-                }),
+                })
+              },
             },
             ...self.visibleModificationTypes.map(key => ({
               type: 'radio' as const,
               label: `Show only ${modificationData[key]?.name || key} (>= ${threshold}% prob)`,
               checked: isModsSelected({ isolatedModification: key }),
-              onClick: () =>
+              onClick: () => {
                 self.setColorScheme({
                   type: 'modifications',
                   modifications: { isolatedModification: key, threshold },
-                }),
+                })
+              },
             })),
             { type: 'divider' } as MenuItem,
             {
               type: 'radio' as const,
               label: 'All modifications (<50% prob colored blue)',
               checked: isModsSelected({ twoColor: true }),
-              onClick: () =>
+              onClick: () => {
                 self.setColorScheme({
                   type: 'modifications',
                   modifications: { twoColor: true, threshold },
-                }),
+                })
+              },
             },
             ...self.visibleModificationTypes.map(key => ({
               type: 'radio' as const,
               label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
-              checked: isModsSelected({ twoColor: true, isolatedModification: key }),
-              onClick: () =>
+              checked: isModsSelected({
+                twoColor: true,
+                isolatedModification: key,
+              }),
+              onClick: () => {
                 self.setColorScheme({
                   type: 'modifications',
                   modifications: {
@@ -450,18 +441,20 @@ function stateModelFactory(
                     twoColor: true,
                     threshold,
                   },
-                }),
+                })
+              },
             })),
             { type: 'divider' } as MenuItem,
             {
               type: 'radio' as const,
               label: 'All reference CpGs',
               checked: currentType === 'methylation',
-              onClick: () =>
+              onClick: () => {
                 self.setColorScheme({
                   type: 'methylation',
                   modifications: { threshold },
-                }),
+                })
+              },
             },
             { type: 'divider' } as MenuItem,
             {

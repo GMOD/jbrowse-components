@@ -76,7 +76,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
    */
   async executeDirect(
     _args: Record<string, unknown>,
-  ): Promise<unknown | undefined> {
+  ): Promise<unknown> {
     return undefined
   }
 

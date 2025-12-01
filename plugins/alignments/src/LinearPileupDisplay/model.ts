@@ -312,7 +312,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                             })),
                             { type: 'divider' },
                             {
-                              label: 'All modifications (<50% prob colored blue)',
+                              label:
+                                'All modifications (<50% prob colored blue)',
                               onClick: () => {
                                 self.setColorScheme({
                                   type: 'modifications',
