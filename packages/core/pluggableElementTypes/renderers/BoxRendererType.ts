@@ -151,7 +151,7 @@ export default class BoxRendererType extends FeatureRendererType {
       ...rest,
       layout,
       maxHeightReached: layout.maxHeightReached,
-      // Filter features to only those visible in the layout (if features exist)
+      // Filter features to only those visible in the layout
       features:
         features && layout.rectangles
           ? features.filter(f => !!layout.rectangles[f.uniqueId])

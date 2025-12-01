@@ -16,7 +16,6 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   statusCallback?: (arg: string) => void
 }
 
-export interface RenderArgsDeserializedWithFeatures
-  extends RenderArgsDeserialized {
+export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: Map<string, Feature>
 }

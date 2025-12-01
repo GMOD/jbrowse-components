@@ -65,7 +65,7 @@ export default class MultiRowXYPlotRenderer extends FeatureRendererType {
 
     const serialized = {
       ...rest,
-      features: reducedFeatures?.map(f => f.toJSON()),
+      features: reducedFeatures.map(f => f.toJSON()),
       height,
       width,
     }

@@ -6,7 +6,7 @@ import { getSerializedSvg, updateStatus } from '../../util'
 import { isRpcResult } from '../../util/rpc'
 import { checkStopToken } from '../../util/stopToken'
 
-import type { RenderProps, RenderResults, RenderReturn } from './RendererType'
+import type { RenderProps, RenderResults } from './RendererType'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { SerializedFilterChain } from './util/serializableFilterChain'
 import type RpcManager from '../../rpc/RpcManager'

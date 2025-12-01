@@ -14,8 +14,13 @@ export default class LinePlotRenderer extends FeatureRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { config, height, regions, bpPerPx, statusCallback = () => {} } =
-      renderProps
+    const {
+      config,
+      height,
+      regions,
+      bpPerPx,
+      statusCallback = () => {},
+    } = renderProps
 
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
@@ -43,7 +48,7 @@ export default class LinePlotRenderer extends FeatureRendererType {
 
     const serialized = {
       ...rest,
-      features: reducedFeatures?.map(f => f.toJSON()),
+      features: reducedFeatures.map(f => f.toJSON()),
       height,
       width,
     }
