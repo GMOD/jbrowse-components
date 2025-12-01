@@ -1,18 +1,12 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  addDisposer,
-  getSnapshot,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
 
-import type { FilterBy } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
@@ -24,40 +18,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 const minDisplayHeight = 20
-
-function preCheck(self: LinearAlignmentsDisplayModel) {
-  const { PileupDisplay, SNPCoverageDisplay } = self
-  return (
-    PileupDisplay ||
-    isAlive(PileupDisplay) ||
-    SNPCoverageDisplay ||
-    isAlive(SNPCoverageDisplay)
-  )
-}
-
-function propagateColorBy(self: LinearAlignmentsDisplayModel) {
-  const { PileupDisplay, SNPCoverageDisplay } = self
-  if (!preCheck(self) || !PileupDisplay.colorBy) {
-    return
-  }
-  if (!deepEqual(PileupDisplay.colorBy, SNPCoverageDisplay.colorBy)) {
-    SNPCoverageDisplay.setColorScheme({
-      ...PileupDisplay.colorBy,
-    })
-  }
-}
-
-function propagateFilterBy(self: LinearAlignmentsDisplayModel) {
-  const { PileupDisplay, SNPCoverageDisplay } = self
-  if (!preCheck(self) || !PileupDisplay.filterBy) {
-    return
-  }
-  if (!deepEqual(PileupDisplay.filterBy, SNPCoverageDisplay.filterBy)) {
-    SNPCoverageDisplay.setFilterBy({
-      ...PileupDisplay.filterBy,
-    })
-  }
-}
 
 /**
  * #stateModel LinearAlignmentsDisplay
@@ -191,7 +151,6 @@ function stateModelFactory(
           type: 'LinearSNPCoverageDisplay',
           configuration,
           height: self.snpCovHeight,
-          rpcDriverName: self.effectiveRpcDriverName,
         }
       },
       /**
@@ -209,7 +168,6 @@ function stateModelFactory(
         self.PileupDisplay = {
           type: configuration.type || 'LinearPileupDisplay',
           configuration,
-          rpcDriverName: self.effectiveRpcDriverName,
         }
       },
       /**
@@ -218,13 +176,6 @@ function stateModelFactory(
       setHeight(n: number) {
         self.heightPreConfig = Math.max(n, minDisplayHeight)
         return self.heightPreConfig
-      },
-      /**
-       * #action
-       */
-      setFilterBy(filter: FilterBy) {
-        self.PileupDisplay.setFilterBy(filter)
-        self.SNPCoverageDisplay.setFilterBy(filter)
       },
       /**
        * #action
@@ -276,28 +227,8 @@ function stateModelFactory(
               ) {
                 PileupDisplay.setConfig(self.pileupConf)
               }
-
-              propagateColorBy(self as LinearAlignmentsDisplayModel)
-              propagateFilterBy(self as LinearAlignmentsDisplayModel)
             },
             { name: 'AlignmentsDisplayConfig' },
-          ),
-        )
-
-        // Propagate rpcDriverName to nested displays
-        addDisposer(
-          self,
-          autorun(
-            function propagateRpcDriverName() {
-              const { PileupDisplay, SNPCoverageDisplay, effectiveRpcDriverName } = self
-              if (PileupDisplay && effectiveRpcDriverName) {
-                PileupDisplay.setRpcDriverName(effectiveRpcDriverName)
-              }
-              if (SNPCoverageDisplay && effectiveRpcDriverName) {
-                SNPCoverageDisplay.setRpcDriverName(effectiveRpcDriverName)
-              }
-            },
-            { name: 'PropagateRpcDriverName' },
           ),
         )
 

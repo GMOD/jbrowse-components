@@ -3,7 +3,13 @@ import { lazy } from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getEnv,
+  getParent,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
@@ -23,6 +29,23 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+interface ParentDisplay {
+  colorBy?: ColorBy
+  filterBy?: FilterBy
+}
+
+function getParentDisplaySettings(self: unknown): ParentDisplay | undefined {
+  try {
+    const parent = getParent<any>(self, 2)
+    if (parent?.colorBy !== undefined || parent?.filterBy !== undefined) {
+      return parent as ParentDisplay
+    }
+  } catch {
+    // Not nested in a parent display
+  }
+  return undefined
+}
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -97,6 +120,11 @@ function stateModelFactory(
        * #getter
        */
       get colorBy() {
+        // Check parent display first (for nested displays like in LinearAlignmentsDisplay)
+        const parentSettings = getParentDisplaySettings(self)
+        if (parentSettings?.colorBy) {
+          return parentSettings.colorBy
+        }
         return self.colorBySetting ?? getConf(self, 'colorBy')
       },
 
@@ -104,6 +132,11 @@ function stateModelFactory(
        * #getter
        */
       get filterBy() {
+        // Check parent display first (for nested displays like in LinearAlignmentsDisplay)
+        const parentSettings = getParentDisplaySettings(self)
+        if (parentSettings?.filterBy) {
+          return parentSettings.filterBy
+        }
         return self.filterBySetting ?? getConf(self, 'filterBy')
       },
     }))

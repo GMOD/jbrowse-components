@@ -44,16 +44,23 @@ export default class RpcManager {
     // Register built-in drivers
     this.registerDriverFactory(
       'MainThreadRpcDriver',
-      (config, backendConfig) => new MainThreadRpcDriver({ ...backendConfig, config }),
+      (config, backendConfig) =>
+        new MainThreadRpcDriver({ ...backendConfig, config }),
     )
     this.registerDriverFactory(
       'WebWorkerRpcDriver',
       (config, backendConfig, pm) =>
         new WebWorkerRpcDriver(
-          { ...(backendConfig as ConstructorParameters<typeof WebWorkerRpcDriver>[0]), config },
+          {
+            ...(backendConfig as ConstructorParameters<
+              typeof WebWorkerRpcDriver
+            >[0]),
+            config,
+          },
           {
             plugins: pm.runtimePluginDefinitions,
-            windowHref: typeof window !== 'undefined' ? window.location.href : '',
+            windowHref:
+              typeof window !== 'undefined' ? window.location.href : '',
           },
         ),
     )

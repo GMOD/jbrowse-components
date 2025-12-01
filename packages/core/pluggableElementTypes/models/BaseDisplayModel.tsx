@@ -83,17 +83,59 @@ function stateModelFactory() {
 
       /**
        * #getter
+       * Returns the parent display if this display is nested within another display
+       * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
+       */
+      get parentDisplay() {
+        try {
+          let parent = getParent<any>(self)
+          while (parent && !isRoot(parent)) {
+            // Check if parent has effectiveRpcDriverName (is a display)
+            // but is not a track (doesn't have trackId config)
+            if (
+              parent.effectiveRpcDriverName !== undefined &&
+              typeof parent.effectiveRpcDriverName === 'string'
+            ) {
+              return parent
+            }
+            // Also check if parent has the display interface
+            if (
+              parent.type &&
+              parent.id &&
+              parent.rpcDriverName !== undefined
+            ) {
+              return parent
+            }
+            parent = getParent<any>(parent)
+          }
+        } catch {
+          // Ignore errors walking up tree
+        }
+        return undefined
+      },
+
+      /**
+       * #getter
        * Returns the effective RPC driver name with hierarchical fallback:
-       * display.rpcDriverName -> track.rpcDriverName -> global default
+       * display.rpcDriverName -> parentDisplay.effectiveRpcDriverName -> track.rpcDriverName -> global default
        */
       get effectiveRpcDriverName() {
+        // 1. Check this display's explicit setting
         if (self.rpcDriverName) {
           return self.rpcDriverName
         }
+
+        // 2. Check parent display (for nested displays like PileupDisplay inside LinearAlignmentsDisplay)
+        const parentDisplay = this.parentDisplay
+        if (parentDisplay?.effectiveRpcDriverName) {
+          return parentDisplay.effectiveRpcDriverName
+        }
+
+        // 3. Fall back to track config
         try {
           const trackRpcDriverName = getConf(this.parentTrack, 'rpcDriverName')
           return trackRpcDriverName || undefined
-        } catch (e) {
+        } catch {
           // parentTrack may not be available in some contexts
           return undefined
         }
