@@ -126,7 +126,7 @@ export const BaseChordDisplayModel = types
       const view = getContainingView(self) as CircularViewModel
       return {
         ...getParentRenderProps(self),
-        rpcDriverName: self.effectiveRpcDriverName,
+        rpcDriverName: self.rpcDriverName,
         bezierRadius: view.radiusPx * self.bezierRadiusRatio,
         radius: view.radiusPx,
         blockDefinitions: this.blockDefinitions,

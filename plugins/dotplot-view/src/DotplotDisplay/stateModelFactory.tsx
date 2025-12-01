@@ -107,7 +107,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       renderProps() {
         return {
           ...getParentRenderProps(self),
-          rpcDriverName: self.effectiveRpcDriverName,
+          rpcDriverName: self.rpcDriverName,
           config: self.configuration.renderer,
         }
       },
