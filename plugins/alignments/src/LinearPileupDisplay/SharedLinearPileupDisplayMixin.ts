@@ -22,7 +22,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, observable } from 'mobx'
 
-import { createAutorun, isNestedDisplay } from '../util'
+import { createAutorun } from '../util'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getUniqueTags } from '../shared/getUniqueTags'
 
@@ -583,7 +583,7 @@ export function SharedLinearPileupDisplayMixin(
         trackMenuItems() {
           // When nested in parent display (LinearAlignmentsDisplay),
           // Filter by is handled at the parent level
-          const filterByItem = isNestedDisplay(self)
+          const filterByItem = self.parentDisplay
             ? []
             : [
                 {

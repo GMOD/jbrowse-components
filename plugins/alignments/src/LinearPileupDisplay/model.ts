@@ -15,7 +15,6 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { modificationData } from '../shared/modificationData'
-import { isNestedDisplay } from '../util'
 
 import type { SortedBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -268,7 +267,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMenuItems() {
           // When nested in parent display (LinearAlignmentsDisplay),
           // Color by is handled at the parent level
-          const colorByItem = isNestedDisplay(self)
+          const colorByItem = self.parentDisplay
             ? []
             : [
                 {
@@ -419,7 +418,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             ...colorByItem,
-            ...(isNestedDisplay(self)
+            ...(self.parentDisplay
               ? []
               : [
                   {

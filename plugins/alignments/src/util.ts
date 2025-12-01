@@ -1,61 +1,14 @@
-import { addDisposer, getParent, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { modificationData } from './shared/modificationData'
 
-import type { ColorBy, FilterBy, ModificationTypeWithColor } from './shared/types'
-import type { ObservableMap } from 'mobx'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AugmentedRegion, Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { IAutorunOptions } from 'mobx'
-
-export interface ParentDisplaySettings {
-  colorBy?: ColorBy
-  filterBy?: FilterBy
-  visibleModifications?: ObservableMap<string, ModificationTypeWithColor>
-  simplexModifications?: Set<string>
-  modificationsReady?: boolean
-}
-
-/**
- * Gets the parent display if this display is nested.
- * Used by PileupDisplay and SNPCoverageDisplay when they're inside LinearAlignmentsDisplay.
- *
- * IMPORTANT: To maintain MobX reactivity, always access properties (colorBy, filterBy, etc.)
- * directly on the returned parent object within the same reactive context (getter/computed).
- */
-export function getParentDisplay(self: unknown): ParentDisplaySettings | undefined {
-  try {
-    const parent = getParent<any>(self, 1)
-    // Check if this looks like a parent display (has colorBy/filterBy getters)
-    if (parent && ('colorBy' in parent || 'filterBy' in parent)) {
-      return parent as ParentDisplaySettings
-    }
-  } catch {
-    // Not nested in a parent display
-  }
-  return undefined
-}
-
-/**
- * @deprecated Use getParentDisplay instead for proper MobX reactivity
- */
-export function getParentDisplaySettings(
-  self: unknown,
-): ParentDisplaySettings | undefined {
-  return getParentDisplay(self)
-}
-
-/**
- * Returns true if this display is nested inside a parent display
- * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
- */
-export function isNestedDisplay(self: unknown): boolean {
-  return getParentDisplaySettings(self) !== undefined
-}
 
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications

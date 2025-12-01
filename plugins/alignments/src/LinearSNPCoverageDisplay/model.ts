@@ -9,7 +9,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
-import { createAutorun, getParentDisplaySettings } from '../util'
+import { createAutorun } from '../util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -77,11 +77,6 @@ function stateModelFactory(
        * #getter
        */
       get colorBy() {
-        // Check parent display first (for nested displays like in LinearAlignmentsDisplay)
-        const parentSettings = getParentDisplaySettings(self)
-        if (parentSettings?.colorBy) {
-          return parentSettings.colorBy
-        }
         return self.colorBySetting ?? getConf(self, 'colorBy')
       },
 
@@ -89,11 +84,6 @@ function stateModelFactory(
        * #getter
        */
       get filterBy() {
-        // Check parent display first (for nested displays like in LinearAlignmentsDisplay)
-        const parentSettings = getParentDisplaySettings(self)
-        if (parentSettings?.filterBy) {
-          return parentSettings.filterBy
-        }
         return self.filterBySetting ?? getConf(self, 'filterBy')
       },
     }))
@@ -237,8 +227,7 @@ function stateModelFactory(
       afterAttach() {
         // Only run modifications autorun if not nested in a parent display
         // (parent LinearAlignmentsDisplay handles it for nested displays)
-        const parentSettings = getParentDisplaySettings(self)
-        if (parentSettings) {
+        if (self.parentDisplay) {
           // Nested display - parent handles modifications
           return
         }
@@ -285,8 +274,8 @@ function stateModelFactory(
          * Returns effective modifications (from parent if nested, else own)
          */
         get effectiveVisibleModifications() {
-          const parentSettings = getParentDisplaySettings(self)
-          return parentSettings?.visibleModifications ?? self.visibleModifications
+          const parent = self.parentDisplay
+          return parent?.visibleModifications ?? self.visibleModifications
         },
 
         /**
@@ -294,8 +283,8 @@ function stateModelFactory(
          * Returns effective simplex modifications (from parent if nested, else own)
          */
         get effectiveSimplexModifications() {
-          const parentSettings = getParentDisplaySettings(self)
-          return parentSettings?.simplexModifications ?? self.simplexModifications
+          const parent = self.parentDisplay
+          return parent?.simplexModifications ?? self.simplexModifications
         },
 
         /**
@@ -303,8 +292,8 @@ function stateModelFactory(
          * Returns effective modifications ready flag (from parent if nested, else own)
          */
         get effectiveModificationsReady() {
-          const parentSettings = getParentDisplaySettings(self)
-          return parentSettings?.modificationsReady ?? self.modificationsReady
+          const parent = self.parentDisplay
+          return parent?.modificationsReady ?? self.modificationsReady
         },
 
         /**

@@ -89,15 +89,7 @@ function stateModelFactory() {
       get parentDisplay() {
         try {
           const parent = getParent<any>(self)
-          // Check if immediate parent looks like a display (has type property
-          // and is not the same as self)
-          if (
-            parent &&
-            parent !== self &&
-            parent.type &&
-            typeof parent.type === 'string' &&
-            parent.type.includes('Display')
-          ) {
+          if (parent?.type?.endsWith?.('Display')) {
             return parent
           }
         } catch {
@@ -109,32 +101,20 @@ function stateModelFactory() {
       /**
        * #getter
        * Returns the effective RPC driver name with hierarchical fallback:
-       * display.rpcDriverName -> parentDisplay.effectiveRpcDriverName -> track.rpcDriverName -> global default
+       * 1. This display's explicit rpcDriverName
+       * 2. Parent display's effectiveRpcDriverName (for nested displays)
+       * 3. Track config's rpcDriverName
        */
       get effectiveRpcDriverName() {
-        // 1. Check this display's explicit setting
         if (self.rpcDriverName) {
-          // eslint-disable-next-line no-console
-          console.log(`[effectiveRpcDriverName] ${self.type}: using own rpcDriverName:`, self.rpcDriverName)
           return self.rpcDriverName
         }
-
-        // 2. Check parent display (for nested displays like PileupDisplay inside LinearAlignmentsDisplay)
-        const parentDisplay = this.parentDisplay
-        // eslint-disable-next-line no-console
-        console.log(`[effectiveRpcDriverName] ${self.type}: parentDisplay:`, parentDisplay?.type, 'effectiveRpcDriverName:', parentDisplay?.effectiveRpcDriverName)
-        if (parentDisplay?.effectiveRpcDriverName) {
-          return parentDisplay.effectiveRpcDriverName
+        if (this.parentDisplay?.effectiveRpcDriverName) {
+          return this.parentDisplay.effectiveRpcDriverName
         }
-
-        // 3. Fall back to track config
         try {
-          const trackRpcDriverName = getConf(this.parentTrack, 'rpcDriverName')
-          // eslint-disable-next-line no-console
-          console.log(`[effectiveRpcDriverName] ${self.type}: using track config:`, trackRpcDriverName)
-          return trackRpcDriverName || undefined
+          return getConf(this.parentTrack, 'rpcDriverName') || undefined
         } catch {
-          // parentTrack may not be available in some contexts
           return undefined
         }
       },
