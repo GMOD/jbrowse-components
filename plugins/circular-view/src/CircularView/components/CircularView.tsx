@@ -1,7 +1,7 @@
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import Controls from './Controls'
 import ImportForm from './ImportForm'

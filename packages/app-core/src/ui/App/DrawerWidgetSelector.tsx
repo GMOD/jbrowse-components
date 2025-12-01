@@ -1,4 +1,5 @@
 import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
   FormControl,
@@ -8,7 +9,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 

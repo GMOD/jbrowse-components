@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
@@ -16,7 +17,6 @@ import {
   Paper,
   Popover,
 } from '@mui/material'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { findLastIndex } from '../util'
 

@@ -1,11 +1,11 @@
 import { useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import { Button, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ImportError from './ImportError'
 

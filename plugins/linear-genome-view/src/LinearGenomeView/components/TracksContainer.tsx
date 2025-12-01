@@ -2,8 +2,8 @@ import { Suspense, lazy, useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import Gridlines from './Gridlines'
 import Rubberband from './Rubberband'

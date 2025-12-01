@@ -1,5 +1,5 @@
-import { Paper, Typography } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Paper, Typography } from '@mui/material'
 
 import Logo from './Logo'
 import LeftSidePanel from './leftSidePanel/LeftSidePanel'

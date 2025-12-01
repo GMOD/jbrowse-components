@@ -1,7 +1,7 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import LaunchIcon from '@mui/icons-material/Launch'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import DrawerControls from './DrawerControls'
 import DrawerWidgetSelector from './DrawerWidgetSelector'

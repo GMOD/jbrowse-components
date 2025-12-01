@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 
 const useStyles = makeStyles()({
   dialogContent: {

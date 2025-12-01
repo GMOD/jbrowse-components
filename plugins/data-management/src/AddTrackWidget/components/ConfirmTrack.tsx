@@ -8,6 +8,7 @@ import {
   isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Checkbox,
   FormControl,
@@ -16,7 +17,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import StatusMessage from './AddTrackStatusMessage'
 import UnknownAdapterPrompt from './AddTrackUnknownAdapterPrompt'

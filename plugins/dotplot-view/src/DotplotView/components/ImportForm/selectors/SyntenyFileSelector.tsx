@@ -1,6 +1,6 @@
 import { FileSelector } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import SwapAssemblies from './SwapAssemblies'
 

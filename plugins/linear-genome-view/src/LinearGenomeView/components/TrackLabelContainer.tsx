@@ -1,5 +1,5 @@
-import { observer } from 'mobx-react'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import TrackLabel from './TrackLabel'
 

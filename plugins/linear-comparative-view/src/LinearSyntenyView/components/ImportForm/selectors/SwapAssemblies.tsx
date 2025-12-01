@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import HelpIcon from '@mui/icons-material/Help'
 import { Button, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { helpStrings } from './SelectorTypes'
 

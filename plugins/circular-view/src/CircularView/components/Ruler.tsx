@@ -7,9 +7,9 @@ import {
   radToDeg,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { CircularViewModel } from '../model'
 import type { Slice, SliceElidedRegion, SliceNonElidedRegion } from '../slices'

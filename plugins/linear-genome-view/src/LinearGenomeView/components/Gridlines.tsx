@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { makeTicks } from '../util'
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import {
   Button,
@@ -11,7 +12,6 @@ import {
   Grid as Grid,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete'
 import { handleSelectedRegion, navToOption } from '../../searchUtils'

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   FormControl,
@@ -10,7 +11,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'

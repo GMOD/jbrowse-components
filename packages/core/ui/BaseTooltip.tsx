@@ -4,8 +4,8 @@ import {
   useFloating,
   useInteractions,
 } from '@floating-ui/react'
-import { Portal, alpha, useTheme } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Portal, alpha, useTheme } from '@mui/material'
 
 function round(value: number) {
   return Math.round(value * 1e5) / 1e5

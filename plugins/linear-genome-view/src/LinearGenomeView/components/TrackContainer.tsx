@@ -2,10 +2,10 @@ import { useRef } from 'react'
 
 import { ErrorMessage, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 
 import Gridlines from './Gridlines'
 import TrackLabelContainer from './TrackLabelContainer'

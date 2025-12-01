@@ -1,9 +1,9 @@
 import { ExternalLink } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'

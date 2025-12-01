@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import { observer } from 'mobx-react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(() => {
   const duration = 1.4

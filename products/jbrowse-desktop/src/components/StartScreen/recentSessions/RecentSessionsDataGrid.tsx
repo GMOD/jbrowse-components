@@ -2,10 +2,10 @@ import { useCallback, useMemo, useState } from 'react'
 
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { formatDistanceToNow } from 'date-fns'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import DateSinceLastUsed from './DateSinceLastUsed'
 import SessionNameCell from './SessionNameCell'

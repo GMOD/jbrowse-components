@@ -1,9 +1,9 @@
 import { Suspense } from 'react'
 
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, ScopedCssBaseline, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ViewTitle from './ViewTitle'
 

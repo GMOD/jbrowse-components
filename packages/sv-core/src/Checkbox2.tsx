@@ -1,5 +1,5 @@
-import { Checkbox, FormControlLabel } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Checkbox, FormControlLabel } from '@mui/material'
 
 const useStyles = makeStyles()({
   block: {

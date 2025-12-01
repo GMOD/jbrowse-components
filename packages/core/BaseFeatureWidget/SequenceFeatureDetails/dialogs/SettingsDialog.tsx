@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
@@ -13,7 +14,6 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { SequenceFeatureDetailsModel } from '../model'
 import type { TextFieldProps } from '@mui/material'

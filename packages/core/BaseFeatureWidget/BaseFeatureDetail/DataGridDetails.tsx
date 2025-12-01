@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import FieldName from './FieldName'
 import { SanitizedHTML } from '../../ui'

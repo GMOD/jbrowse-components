@@ -8,6 +8,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   Button,
@@ -17,7 +18,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { Feature } from '@jbrowse/core/util'
 

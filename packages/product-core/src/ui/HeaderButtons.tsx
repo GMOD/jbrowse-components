@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import { Button } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Button } from '@mui/material'
 
 import { removeAttr } from './util'
 

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Button, IconButton } from '@mui/material'
@@ -12,7 +13,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import CategorySelector from './CategorySelector'
 import MoreInfoDialog from './MoreInfoDialog'

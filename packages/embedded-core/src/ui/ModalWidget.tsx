@@ -1,10 +1,10 @@
 import { Suspense } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import { AppBar, Paper, Toolbar, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 

@@ -1,9 +1,9 @@
 import AppLogo from '@jbrowse/core/ui/AppLogo'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'

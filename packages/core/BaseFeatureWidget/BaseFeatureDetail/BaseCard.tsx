@@ -1,3 +1,4 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
@@ -5,7 +6,6 @@ import {
   AccordionSummary,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { BaseCardProps } from '../types'
 

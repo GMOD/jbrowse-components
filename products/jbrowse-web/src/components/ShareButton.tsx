@@ -1,9 +1,9 @@
 import { Suspense, lazy, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ShareIcon from '@mui/icons-material/Share'
 import { Button, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

@@ -1,3 +1,4 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import ArrowDropUp from '@mui/icons-material/ArrowDropUp'
 import ArrowLeft from '@mui/icons-material/ArrowLeft'
@@ -6,7 +7,6 @@ import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { DotplotViewModel } from '../model'
 

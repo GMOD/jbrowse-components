@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
@@ -14,7 +15,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
   dialogContent: {

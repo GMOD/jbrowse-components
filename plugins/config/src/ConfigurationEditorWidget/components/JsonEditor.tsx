@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { InputLabel, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 // fontSize and fontFamily have to match between Editor and SyntaxHighlighter
 const fontSize = '12px'

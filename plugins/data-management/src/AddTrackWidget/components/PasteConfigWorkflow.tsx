@@ -6,10 +6,10 @@ import {
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, TextField } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { AddTrackModel } from '../model'
 

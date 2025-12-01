@@ -1,9 +1,9 @@
 import type React from 'react'
 import { forwardRef, useEffect, useRef } from 'react'
 
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { autorun } from 'mobx'
-import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 
 import Gridlines from './Gridlines'
 import ScalebarCoordinateLabels from './ScalebarCoordinateLabels'

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { ImportWizardModel } from '../ImportWizard'
 

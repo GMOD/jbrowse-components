@@ -1,9 +1,9 @@
 import { Suspense, lazy } from 'react'
 
 import Snackbar from '@jbrowse/core/ui/Snackbar'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import AppFab from './AppFab'
 import AppToolbar from './AppToolbar'

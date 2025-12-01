@@ -5,6 +5,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
@@ -16,7 +17,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { singular } from 'pluralize'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'

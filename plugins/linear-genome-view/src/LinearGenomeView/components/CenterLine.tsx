@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 
-import { observer } from 'mobx-react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '..'
 

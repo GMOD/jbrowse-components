@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
 import { useWidthSetter } from '@jbrowse/core/util'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ViewHeader from './ViewHeader'
 import ViewWrapper from './ViewWrapper'

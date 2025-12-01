@@ -1,5 +1,5 @@
-import { Box, Button, FormControl, Typography } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Box, Button, FormControl, Typography } from '@mui/material'
 
 import { isElectron } from '../../util'
 import { getBlob, storeBlobLocation } from '../../util/tracks'

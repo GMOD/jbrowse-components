@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Checkbox,
@@ -9,7 +10,6 @@ import {
   FormControlLabel,
   TextField,
 } from '@mui/material'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { navToSynteny } from './util'
 

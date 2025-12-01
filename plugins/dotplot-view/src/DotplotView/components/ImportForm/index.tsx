@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Container,
@@ -12,7 +13,6 @@ import {
 } from '@mui/material'
 import { toJS, transaction } from 'mobx'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import TrackSelector from './TrackSelector'
 

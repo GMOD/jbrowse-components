@@ -4,10 +4,10 @@ import {
   getTickDisplayStr,
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { getBlockLabelKeysToHide } from './util'
 

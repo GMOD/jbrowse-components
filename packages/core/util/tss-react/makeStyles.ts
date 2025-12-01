@@ -1,5 +1,6 @@
 'use client'
-import type { EmotionCache } from '@emotion/cache'
+import { useMemo } from 'react'
+
 // this is the standard way to access Emotion's cache in a hook-based API when
 // using MUI. MUI's ThemeProvider wraps Emotion's CacheProvider, so the cache is
 // always available. this approach is used by tss-react and other MUI styling
@@ -7,8 +8,9 @@ import type { EmotionCache } from '@emotion/cache'
 import { __unsafe_useEmotionCache } from '@emotion/react'
 import { serializeStyles } from '@emotion/serialize'
 import { insertStyles } from '@emotion/utils'
-import { useTheme, type Theme } from '@mui/material/styles'
+import { type Theme, useTheme } from '@mui/material/styles'
 
+import type { EmotionCache } from '@emotion/cache'
 import type { CSSObject as CSSObjectBase } from '@emotion/serialize'
 
 type CxArg =
@@ -16,7 +18,7 @@ type CxArg =
   | null
   | string
   | boolean
-  | { [className: string]: boolean | null | undefined }
+  | Record<string, boolean | null | undefined>
   | readonly CxArg[]
 
 interface CSSObject extends CSSObjectBase {
@@ -37,6 +39,7 @@ export function cx(...args: CxArg[]): string {
         cls = cls ? `${cls} ${nested}` : nested
       }
     } else if (typeof arg === 'object') {
+      // eslint-disable-next-line/no-for-in-array
       for (const k in arg) {
         if ((arg as Record<string, boolean | null | undefined>)[k]) {
           cls = cls ? `${cls} ${k}` : k
@@ -100,26 +103,31 @@ export function makeStyles() {
 
     function useStyles(): { classes: Record<RuleName, string> } {
       const theme = useTheme()
-      const cache = __unsafe_useEmotionCache() as EmotionCache
+      const cache = __unsafe_useEmotionCache()!
 
-      let cssObjectByRuleName: Record<RuleName, CSSObject>
-      if (isStatic) {
-        cssObjectByRuleName = cssObjectByRuleNameOrGetCssObjectByRuleName
-      } else {
-        // check if we already computed styles for this theme
-        let cached = dynamicCache!.get(theme)
-        if (!cached) {
-          cached = (
-            cssObjectByRuleNameOrGetCssObjectByRuleName as (
-              theme: Theme,
-            ) => Record<RuleName, CSSObject>
-          )(theme)
-          dynamicCache!.set(theme, cached)
+      // useMemo ensures consistent hook ordering across renders
+      const result = useMemo(() => {
+        let cssObjectByRuleName: Record<RuleName, CSSObject>
+        if (isStatic) {
+          cssObjectByRuleName = cssObjectByRuleNameOrGetCssObjectByRuleName
+        } else {
+          // check if we already computed styles for this theme
+          let cached = dynamicCache!.get(theme)
+          if (!cached) {
+            cached = (
+              cssObjectByRuleNameOrGetCssObjectByRuleName as (
+                theme: Theme,
+              ) => Record<RuleName, CSSObject>
+            )(theme)
+            dynamicCache!.set(theme, cached)
+          }
+          cssObjectByRuleName = cached
         }
-        cssObjectByRuleName = cached
-      }
 
-      return getOrCreateResult(cssObjectByRuleName, cache)
+        return getOrCreateResult(cssObjectByRuleName, cache)
+      }, [theme, cache])
+
+      return result
     }
 
     return useStyles

@@ -1,7 +1,7 @@
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { LinearGenomeViewModel } from '..'
 

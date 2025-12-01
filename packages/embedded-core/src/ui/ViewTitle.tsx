@@ -2,9 +2,9 @@ import { Suspense, lazy, useState } from 'react'
 
 import { Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { IconButton, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ViewMenu from './ViewMenu'
 

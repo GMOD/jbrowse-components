@@ -1,7 +1,7 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import SimpleField from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField'
-import { Checkbox, FormControlLabel, FormGroup } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Checkbox, FormControlLabel, FormGroup } from '@mui/material'
 
 const useStyles = makeStyles()({
   compact: {

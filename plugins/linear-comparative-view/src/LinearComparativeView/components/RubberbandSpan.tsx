@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
-import { Typography, alpha } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Typography, alpha } from '@mui/material'
 
 import RubberbandTooltip from './RubberbandTooltip'
 

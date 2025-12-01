@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { useLocalStorage } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ListIcon from '@mui/icons-material/List'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
@@ -13,7 +14,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import Checkbox2 from '../Checkbox2'
 import RecentSessionsCards from './RecentSessionsCards'
