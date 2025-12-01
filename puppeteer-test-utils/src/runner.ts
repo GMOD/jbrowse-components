@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
-import type { Page } from 'puppeteer'
 import { launch } from 'puppeteer'
 
-import { startServer, type ServerOptions } from './server.js'
+import { type ServerOptions, startServer } from './server.ts'
+
+import type { Page } from 'puppeteer'
 
 export interface TestSuite {
   name: string

@@ -4,18 +4,19 @@ import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import {
-  parseArgs,
-  runTests,
-  findByTestId,
-  findByText,
-  delay,
-  capturePageSnapshot,
-  waitForLoadingToComplete,
-  type TestSuite,
-} from 'puppeteer-test-utils'
 import { type Page, launch } from 'puppeteer'
 import handler from 'serve-handler'
+
+import {
+  type TestSuite,
+  capturePageSnapshot,
+  delay,
+  findByTestId,
+  findByText,
+  parseArgs,
+  runTests,
+  waitForLoadingToComplete,
+} from '../../../puppeteer-test-utils/src/index.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

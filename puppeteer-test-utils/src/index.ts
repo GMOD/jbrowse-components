@@ -1,15 +1,15 @@
-export { startServer, type ServerOptions } from './server.js'
+export { type ServerOptions, startServer } from './server.ts'
 export {
   delay,
   findByTestId,
   findByText,
   waitForLoadingToComplete,
-} from './helpers.js'
-export { capturePageSnapshot, type SnapshotOptions } from './snapshot.js'
+} from './helpers.ts'
+export { type SnapshotOptions, capturePageSnapshot } from './snapshot.ts'
 export {
-  runTests,
+  type RunnerOptions,
+  type TestSuite,
   createTestRunner,
   parseArgs,
-  type TestSuite,
-  type RunnerOptions,
-} from './runner.js'
+  runTests,
+} from './runner.ts'

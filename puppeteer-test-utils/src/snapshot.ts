@@ -3,6 +3,7 @@ import path from 'path'
 
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
+
 import type { Page } from 'puppeteer'
 
 const FAILURE_THRESHOLD = 0.01

@@ -8,7 +8,7 @@ import {
   parseArgs,
   findByTestId,
   type TestSuite,
-} from 'puppeteer-test-utils'
+} from '../../../puppeteer-test-utils/src/index.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
