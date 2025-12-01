@@ -20,13 +20,11 @@ const useStyles = makeStyles()({
   },
   zoomContainer: {
     position: 'relative',
-    willChange: 'transform',
   },
   scalebar: {
     position: 'absolute',
     display: 'flex',
     pointerEvents: 'none',
-    willChange: 'transform, width',
   },
 })
 

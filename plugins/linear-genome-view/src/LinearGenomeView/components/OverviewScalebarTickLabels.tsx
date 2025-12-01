@@ -19,7 +19,6 @@ const useStyles = makeStyles()({
     display: 'flex',
     justifyContent: 'center',
     pointerEvents: 'none',
-    willChange: 'transform',
   },
 })
 

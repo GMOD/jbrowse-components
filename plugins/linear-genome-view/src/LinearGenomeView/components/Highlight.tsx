@@ -22,7 +22,6 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     overflow: 'hidden',
     background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
-    willChange: 'transform',
   },
   linkIcon: {
     color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),

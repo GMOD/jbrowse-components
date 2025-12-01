@@ -16,13 +16,11 @@ const useStyles = makeStyles()({
     left: 0,
     background: 'red',
     zIndex: 1001,
-    willChange: 'transform',
   },
   tooltipTarget: {
     position: 'sticky',
     left: 0,
     width: 1,
-    willChange: 'transform',
   },
 })
 

@@ -18,7 +18,6 @@ const useStyles = makeStyles()(theme => ({
     borderTop: 'none',
     borderBottom: 'none',
     pointerEvents: 'none',
-    willChange: 'transform',
   },
   centerLineText: {
     position: 'absolute',
@@ -26,7 +25,6 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
     fontWeight: 'bold',
-    willChange: 'transform',
   },
 }))
 

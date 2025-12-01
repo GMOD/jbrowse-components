@@ -18,7 +18,6 @@ const useStyles = makeStyles()({
     left: 0,
     minHeight: '100%',
     display: 'flex',
-    willChange: 'transform',
   },
 })
 

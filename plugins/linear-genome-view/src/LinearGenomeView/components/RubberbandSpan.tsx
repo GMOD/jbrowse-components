@@ -18,7 +18,6 @@ const useStyles = makeStyles()(theme => {
       zIndex: 830,
       textAlign: 'center',
       cursor: 'crosshair',
-      willChange: 'transform, width',
     },
 
     rubberbandText: {
