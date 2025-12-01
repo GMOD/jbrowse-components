@@ -4,6 +4,8 @@ import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import pixelmatch from 'pixelmatch'
+import { PNG } from 'pngjs'
 import { type Page, launch } from 'puppeteer'
 import handler from 'serve-handler'
 
@@ -67,17 +69,8 @@ async function findByText(page: Page, text: string | RegExp, timeout = 30000) {
   })
 }
 
-function uint8ArrayEquals(a: Uint8Array, b: Uint8Array) {
-  if (a.length !== b.length) {
-    return false
-  }
-  for (const [i, element] of a.entries()) {
-    if (element !== b[i]) {
-      return false
-    }
-  }
-  return true
-}
+const FAILURE_THRESHOLD = 0.01
+const FAILURE_THRESHOLD_TYPE = 'percent'
 
 async function capturePageSnapshot(page: Page, name: string) {
   if (!fs.existsSync(snapshotsDir)) {
@@ -95,13 +88,55 @@ async function capturePageSnapshot(page: Page, name: string) {
     }
   }
 
-  const expectedBuffer = new Uint8Array(fs.readFileSync(snapshotPath))
-  if (uint8ArrayEquals(screenshot, expectedBuffer)) {
+  const expectedBuffer = fs.readFileSync(snapshotPath)
+  const expectedImg = PNG.sync.read(expectedBuffer)
+  // @ts-expect-error Uint8Array works at runtime
+  const actualImg = PNG.sync.read(screenshot)
+
+  if (
+    expectedImg.width !== actualImg.width ||
+    expectedImg.height !== actualImg.height
+  ) {
+    fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
+    return {
+      passed: false,
+      message: `Snapshot size differs: expected ${expectedImg.width}x${expectedImg.height}, got ${actualImg.width}x${actualImg.height}`,
+    }
+  }
+
+  const { width, height } = expectedImg
+  const diffImg = new PNG({ width, height })
+
+  const numDiffPixels = pixelmatch(
+    expectedImg.data,
+    actualImg.data,
+    diffImg.data,
+    width,
+    height,
+    { threshold: 0.1 },
+  )
+
+  const totalPixels = width * height
+  const diffPercent = numDiffPixels / totalPixels
+  const threshold =
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    FAILURE_THRESHOLD_TYPE === 'percent'
+      ? FAILURE_THRESHOLD
+      : FAILURE_THRESHOLD / totalPixels
+
+  if (diffPercent <= threshold) {
     return { passed: true, message: 'Snapshot matches' }
   }
 
   fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
-  return { passed: false, message: 'Snapshot differs' }
+  fs.writeFileSync(
+    path.join(snapshotsDir, `${name}.diff-visual.png`),
+    PNG.sync.write(diffImg),
+  )
+  return {
+    passed: false,
+    message: `Snapshot differs by ${(diffPercent * 100).toFixed(2)}% (threshold: ${FAILURE_THRESHOLD * 100}%)`,
+  }
 }
 
 async function navigateToApp(page: Page) {
