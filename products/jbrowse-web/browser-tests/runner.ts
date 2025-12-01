@@ -69,6 +69,13 @@ async function findByText(page: Page, text: string | RegExp, timeout = 30000) {
   })
 }
 
+async function waitForLoadingToComplete(page: Page, timeout = 30000) {
+  await page.waitForFunction(
+    () => document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
+    { timeout },
+  )
+}
+
 const FAILURE_THRESHOLD = 0.01
 const FAILURE_THRESHOLD_TYPE = 'percent'
 
@@ -245,7 +252,7 @@ const testSuites: TestSuite[] = [
           await navigateToApp(page)
           await openTrack(page, 'volvox_alignments')
           await findByTestId(page, 'Blockset-pileup', 60000)
-          await delay(2000)
+          await waitForLoadingToComplete(page)
           const result = await capturePageSnapshot(page, 'alignments-bam')
           if (!result.passed) {
             throw new Error(result.message)
