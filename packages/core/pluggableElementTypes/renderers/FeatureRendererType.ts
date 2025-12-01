@@ -67,6 +67,14 @@ export interface ResultsDeserialized extends ServerSideResultsDeserialized {
  * serialization and can use getFeatures() directly without going through render().
  */
 export default class FeatureRendererType extends ServerSideRendererType {
+  async renderDirect(args: RenderArgs) {
+    const result = await super.renderDirect(args)
+    return {
+      ...result,
+      blockKey: args.blockKey,
+    }
+  }
+
   serializeArgsInClient(args: RenderArgs) {
     return super.serializeArgsInClient({
       ...args,

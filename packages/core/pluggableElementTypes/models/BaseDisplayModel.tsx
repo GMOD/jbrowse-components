@@ -82,6 +82,19 @@ function stateModelFactory() {
       },
 
       /**
+       * #getter
+       * Returns the effective RPC driver name with hierarchical fallback:
+       * display.rpcDriverName -> track.rpcDriverName -> global default
+       */
+      get effectiveRpcDriverName() {
+        if (self.rpcDriverName) {
+          return self.rpcDriverName
+        }
+        const trackRpcDriverName = getConf(this.parentTrack, 'rpcDriverName')
+        return trackRpcDriverName || undefined
+      },
+
+      /**
        * #method
        * the react props that are passed to the Renderer when data
        * is rendered in this display. these are serialized and sent to the
@@ -91,7 +104,7 @@ function stateModelFactory() {
         return {
           ...getParentRenderProps(self),
           notReady: getContainingView(self).minimized,
-          rpcDriverName: self.rpcDriverName,
+          rpcDriverName: this.effectiveRpcDriverName,
         }
       },
       /**

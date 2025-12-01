@@ -108,6 +108,28 @@ function createNormalElement(
 }
 
 export default class ServerSideRenderer extends RendererType {
+  /**
+   * Renders directly without serialization. Used by MainThreadRpcDriver
+   * to avoid unnecessary serialize/deserialize overhead when no worker
+   * thread boundary is crossed.
+   */
+  async renderDirect(args: RenderArgs) {
+    const { renderingProps, ...rest } = args
+    const results = await this.render(rest as RenderArgsDeserialized)
+
+    if (isRpcResult(results)) {
+      return this.deserializeResultsInClient(
+        results as unknown as ResultsSerialized,
+        args,
+      )
+    }
+
+    return this.deserializeResultsInClient(
+      this.serializeResultsInWorker(results, rest as RenderArgsDeserialized),
+      args,
+    )
+  }
+
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
     // strip renderingProps - they are client-side only and should not be
     // serialized to the worker

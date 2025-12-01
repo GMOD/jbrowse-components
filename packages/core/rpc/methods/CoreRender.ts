@@ -28,6 +28,25 @@ export default class CoreRender extends RpcMethodType {
     ).serializeArgsInClient(superArgs)
   }
 
+  /**
+   * Execute directly without serialization. Used by MainThreadRpcDriver
+   * to bypass the serialize/deserialize overhead.
+   */
+  async executeDirect(args: RenderArgs) {
+    const { rootModel } = this.pluginManager
+    const assemblyManager = rootModel!.session!.assemblyManager
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
+    const { sessionId, rendererType } = renamedArgs
+    if (!sessionId) {
+      throw new Error('must pass a unique session id')
+    }
+
+    return validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    ).renderDirect(renamedArgs)
+  }
+
   async execute(
     args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
