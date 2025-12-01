@@ -1,9 +1,6 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useMemo } from "react";
-import type { ReactNode } from "react";
-import { objectFromEntries } from "./tools/polyfills/Object.fromEntries";
+import { useMemo } from "react";
 import { objectKeys } from "./tools/objectKeys";
 import type { CSSObject } from "./types";
 import { createUseCssAndCx } from "./cssAndCx";
@@ -12,30 +9,24 @@ import { typeGuard } from "./tools/typeGuard";
 import { assert } from "./tools/assert";
 import { mergeClasses } from "./mergeClasses";
 import type { EmotionCache } from "@emotion/cache";
-import { createContext, useContext } from "react";
-import { useMuiThemeStyleOverridesPlugin } from "./mui/themeStyleOverridesPlugin";
-import type {
-    MuiThemeStyleOverridesPluginParams,
-    MuiThemeLike
-} from "./mui/themeStyleOverridesPlugin";
-// @ts-expect-error: It's not declared but it's there.
+// @ts-expect-error: not in the types but exists at runtime
 import { __unsafe_useEmotionCache } from "@emotion/react";
 
-const useContextualCache: () => EmotionCache | null = __unsafe_useEmotionCache;
+const useContextualCache: () => EmotionCache = __unsafe_useEmotionCache;
 
 let counter = 0;
 
 export function createMakeStyles<Theme>(params: {
     useTheme: () => Theme;
-    cache?: EmotionCache;
 }) {
-    const { useTheme, cache: cacheProvidedAtInception } = params;
+    const { useTheme } = params;
 
-    const { useCache } = createUseCache({ cacheProvidedAtInception });
+    function useCache() {
+        return useContextualCache();
+    }
 
     const { useCssAndCx } = createUseCssAndCx({ useCache });
 
-    /** returns useStyle. */
     function makeStyles<
         Params = void,
         RuleNameSubsetReferencableInNestedSelectors extends string = never
@@ -70,12 +61,12 @@ export function createMakeStyles<Theme>(params: {
                     : () => cssObjectByRuleNameOrGetCssObjectByRuleName;
 
             return function useStyles(
-                params: Params,
-                muiStyleOverridesParams?: MuiThemeStyleOverridesPluginParams["muiStyleOverridesParams"]
+                params?: Params,
+                muiStyleOverridesParams?: { props: { classes?: Record<string, string> } }
             ) {
                 const theme = useTheme();
 
-                let { css, cx } = useCssAndCx();
+                const { css, cx } = useCssAndCx();
 
                 const cache = useCache();
 
@@ -89,7 +80,7 @@ export function createMakeStyles<Theme>(params: {
 
                     const refClasses =
                         typeof Proxy !== "undefined" &&
-                        new Proxy<RefClasses>({} as any, {
+                        new Proxy<RefClasses>({} as RefClasses, {
                             "get": (_target, propertyKey) => {
                                 if (typeof propertyKey === "symbol") {
                                     assert(false);
@@ -105,79 +96,49 @@ export function createMakeStyles<Theme>(params: {
 
                     const cssObjectByRuleName = getCssObjectByRuleName(
                         theme,
-                        params,
+                        params as Params,
                         refClasses || ({} as RefClasses)
                     );
 
-                    const classes = objectFromEntries(
-                        objectKeys(cssObjectByRuleName).map(ruleName => {
-                            const cssObject = cssObjectByRuleName[ruleName];
+                    const classesResult: Record<string, string> = {};
 
-                            if (!cssObject.label) {
-                                cssObject.label = `${
-                                    name !== undefined ? `${name}-` : ""
-                                }${ruleName}`;
-                            }
+                    for (const ruleName of objectKeys(cssObjectByRuleName)) {
+                        const cssObject = cssObjectByRuleName[ruleName];
 
-                            return [
-                                ruleName,
-                                `${css(cssObject)}${
-                                    typeGuard<RuleNameSubsetReferencableInNestedSelectors>(
-                                        ruleName,
-                                        ruleName in refClassesCache
-                                    )
-                                        ? ` ${refClassesCache[ruleName]}`
-                                        : ""
-                                }`
-                            ];
-                        })
-                    ) as Record<RuleName, string>;
-
-                    objectKeys(refClassesCache).forEach(ruleName => {
-                        if (ruleName in classes) {
-                            return;
+                        if (!cssObject.label) {
+                            cssObject.label = `${
+                                name !== undefined ? `${name}-` : ""
+                            }${String(ruleName)}`;
                         }
 
-                        classes[ruleName as RuleName] =
-                            refClassesCache[ruleName];
-                    });
+                        classesResult[ruleName as string] = `${css(cssObject)}${
+                            typeGuard<RuleNameSubsetReferencableInNestedSelectors>(
+                                ruleName,
+                                (ruleName as string) in refClassesCache
+                            )
+                                ? ` ${refClassesCache[ruleName as string]}`
+                                : ""
+                        }`;
+                    }
 
-                    return classes;
+                    for (const ruleName of objectKeys(refClassesCache)) {
+                        if (ruleName in classesResult) {
+                            continue;
+                        }
+                        classesResult[ruleName] = refClassesCache[ruleName]!;
+                    }
+
+                    return classesResult as Record<RuleName, string>;
                 }, [cache, css, cx, theme, getDependencyArrayRef(params)]);
 
+                // Merge with props.classes if provided
                 {
-                    const propsClasses = muiStyleOverridesParams?.props
-                        .classes as Record<string, string> | undefined;
+                    const propsClasses = muiStyleOverridesParams?.props?.classes;
 
                     classes = useMemo(
                         () => mergeClasses(classes, propsClasses, cx),
                         [classes, getDependencyArrayRef(propsClasses), cx]
                     );
-                }
-
-                {
-                    const pluginResultWrap = useMuiThemeStyleOverridesPlugin({
-                        classes,
-                        css,
-                        cx,
-                        "name": name ?? "makeStyle no name",
-                        "idOfUseStyles": uniqId,
-                        muiStyleOverridesParams,
-                        // NOTE: If it's not a Mui Theme the plugin is resilient, it will not crash
-                        "theme": theme as MuiThemeLike
-                    });
-
-                    if (pluginResultWrap.classes !== undefined) {
-                        classes = pluginResultWrap.classes;
-                    }
-
-                    if (pluginResultWrap.css !== undefined) {
-                        css = pluginResultWrap.css;
-                    }
-
-                    if (pluginResultWrap.cx !== undefined) {
-                        cx = pluginResultWrap.cx;
-                    }
                 }
 
                 return {
@@ -198,59 +159,3 @@ export function createMakeStyles<Theme>(params: {
 
     return { makeStyles, useStyles };
 }
-
-const reactContext = createContext<EmotionCache | undefined>(undefined);
-
-export function TssCacheProvider(props: {
-    value: EmotionCache;
-    children: ReactNode;
-}) {
-    const { children, value } = props;
-
-    return (
-        <reactContext.Provider value={value}>{children}</reactContext.Provider>
-    );
-}
-
-export const { createUseCache } = (() => {
-    function useCacheProvidedByProvider() {
-        const cacheExplicitlyProvidedForTss = useContext(reactContext);
-
-        return cacheExplicitlyProvidedForTss;
-    }
-
-    function createUseCache(params: {
-        cacheProvidedAtInception?: EmotionCache;
-    }) {
-        const { cacheProvidedAtInception } = params;
-
-        function useCache() {
-            const contextualCache = useContextualCache();
-
-            const cacheExplicitlyProvidedForTss = useCacheProvidedByProvider();
-
-            const cacheToBeUsed =
-                cacheProvidedAtInception ??
-                cacheExplicitlyProvidedForTss ??
-                contextualCache;
-
-            if (cacheToBeUsed === null) {
-                throw new Error(
-                    [
-                        "In order to get SSR working with tss-react you need to explicitly provide an Emotion cache.",
-                        "MUI users be aware: This is not an error strictly related to tss-react, with or without tss-react,",
-                        "MUI needs an Emotion cache to be provided for SSR to work.",
-                        "Here is the MUI documentation related to SSR setup: https://mui.com/material-ui/guides/server-rendering/",
-                        "TSS provides helper that makes the process of setting up SSR easier: https://docs.tss-react.dev/ssr"
-                    ].join("\n")
-                );
-            }
-
-            return cacheToBeUsed;
-        }
-
-        return { useCache };
-    }
-
-    return { createUseCache };
-})();

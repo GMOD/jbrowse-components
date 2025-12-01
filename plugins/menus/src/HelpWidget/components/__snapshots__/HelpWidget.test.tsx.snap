@@ -3,7 +3,7 @@
 exports[`<HelpWidget /> renders 1`] = `
 <div>
   <div
-    class="css-1c5ij41"
+    class="css-dpbaeg-root"
   >
     <h4
       class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1ya2hdm-MuiTypography-root"
@@ -12,7 +12,7 @@ exports[`<HelpWidget /> renders 1`] = `
       JBrowse 2
     </h4>
     <h6
-      class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-1neszgn-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-6je6nr-MuiTypography-root-subtitle"
       style="--Typography-textAlign: center;"
     />
     <p

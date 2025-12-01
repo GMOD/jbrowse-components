@@ -74,7 +74,7 @@ exports[`renders with the available plugins 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-34ugrx-MuiSvgIcon-root-expandIcon"
               data-testid="ExpandMoreIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -101,7 +101,7 @@ exports[`renders with the available plugins 1`] = `
               role="region"
             >
               <div
-                class="css-1iblawk"
+                class="css-13k7ai2-m"
               >
                 <ul
                   class="MuiList-root MuiList-padding css-b7dj7n-MuiList-root"
@@ -111,7 +111,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -144,7 +144,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -177,7 +177,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -210,7 +210,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -243,7 +243,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -276,7 +276,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -309,7 +309,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -342,7 +342,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -375,7 +375,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -408,7 +408,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -441,7 +441,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -474,7 +474,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -507,7 +507,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -540,7 +540,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -573,7 +573,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -606,7 +606,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -639,7 +639,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -672,7 +672,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -705,7 +705,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -738,7 +738,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -771,7 +771,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -804,7 +804,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -837,7 +837,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -870,7 +870,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -903,7 +903,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -936,7 +936,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -969,7 +969,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -1002,7 +1002,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -1035,7 +1035,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -1068,7 +1068,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-9u48bm"
+                      class="css-1xdepnh-iconMargin"
                       data-mui-internal-clone-element="true"
                     >
                       <button
@@ -1130,7 +1130,7 @@ exports[`renders with the available plugins 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-34ugrx-MuiSvgIcon-root-expandIcon"
               data-testid="ExpandMoreIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1157,7 +1157,7 @@ exports[`renders with the available plugins 1`] = `
               role="region"
             >
               <div
-                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1y6zuga-MuiPaper-root-MuiCard-root"
+                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-lw40k8-MuiPaper-root-MuiCard-root-card"
               >
                 <div
                   class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
@@ -1187,11 +1187,11 @@ exports[`renders with the available plugins 1`] = `
                     </a>
                   </h5>
                   <div
-                    class="css-70qvj9"
+                    class="css-1jqggfz-dataField"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-dw1or6-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q07jlo-MuiSvgIcon-root-mr"
                       data-testid="PersonIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -1207,7 +1207,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </div>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-kw4hn-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1w1c51f-MuiTypography-root-bold"
                   >
                     Description:
                   </p>

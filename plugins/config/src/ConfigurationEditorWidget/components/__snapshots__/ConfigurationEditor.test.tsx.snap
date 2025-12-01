@@ -3,7 +3,7 @@
 exports[`renders all the different types of built-in slots 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-kl1736-MuiPaper-root-MuiAccordion-root"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-sj700u-MuiPaper-root-MuiAccordion-root-accordion"
     style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
   >
     <h3
@@ -29,7 +29,7 @@ exports[`renders all the different types of built-in slots 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
             data-testid="ExpandMoreIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -56,15 +56,15 @@ exports[`renders all the different types of built-in slots 1`] = `
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
+              class="MuiAccordionDetails-root css-1eji0yd-MuiAccordionDetails-root-expansionPanelDetails"
               data-testid="configEditor"
             >
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -100,15 +100,15 @@ exports[`renders all the different types of built-in slots 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     class="MuiBox-root css-k008qs"
@@ -201,15 +201,15 @@ exports[`renders all the different types of built-in slots 1`] = `
                   </p>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-41lcur-MuiFormLabel-root-MuiInputLabel-root"
@@ -315,15 +315,15 @@ exports[`renders all the different types of built-in slots 1`] = `
                   </p>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-41lcur-MuiFormLabel-root-MuiInputLabel-root"
@@ -331,7 +331,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                     stringArrayMapTest
                   </label>
                   <div
-                    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-1vpglax-MuiPaper-root-MuiCard-root"
+                    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-pyq3i6-MuiPaper-root-MuiCard-root-card"
                     style="--Paper-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);"
                   >
                     <div
@@ -476,7 +476,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                     </div>
                   </div>
                   <div
-                    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-1vpglax-MuiPaper-root-MuiCard-root"
+                    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-pyq3i6-MuiPaper-root-MuiCard-root-card"
                     style="--Paper-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);"
                   >
                     <div
@@ -533,15 +533,15 @@ exports[`renders all the different types of built-in slots 1`] = `
                   </p>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -577,15 +577,15 @@ exports[`renders all the different types of built-in slots 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -621,15 +621,15 @@ exports[`renders all the different types of built-in slots 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     style="display: flex;"
@@ -668,10 +668,10 @@ exports[`renders all the different types of built-in slots 1`] = `
                       style="margin-top: 10px;"
                     >
                       <div
-                        class="css-79elbk"
+                        class="css-7h64ut-picker"
                       >
                         <div
-                          class="css-1me52ai"
+                          class="css-hl2wx9-swatch"
                           style="background-color: rgb(57, 100, 148);"
                         />
                       </div>
@@ -679,15 +679,15 @@ exports[`renders all the different types of built-in slots 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense css-ylkp5u-MuiFormControl-root"
@@ -730,7 +730,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
             </div>
@@ -746,7 +746,7 @@ exports[`renders all the different types of built-in slots 1`] = `
 exports[`renders with defaults of the PileupTrack schema 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-kl1736-MuiPaper-root-MuiAccordion-root"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-sj700u-MuiPaper-root-MuiAccordion-root-accordion"
     style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
   >
     <h3
@@ -772,7 +772,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
             data-testid="ExpandMoreIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -799,15 +799,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
+              class="MuiAccordionDetails-root css-1eji0yd-MuiAccordionDetails-root-expansionPanelDetails"
               data-testid="configEditor"
             >
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -843,15 +843,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -887,15 +887,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -931,28 +931,28 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
-                    class="css-kge0eu"
+                    class="css-15g9652-callbackContainer"
                   >
                     <div
-                      class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-1lzfcik-MuiFormControl-root-MuiTextField-root"
+                      class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-194d3v5-MuiFormControl-root-MuiTextField-root-callbackEditor"
                     >
                       <div
                         class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-multiline css-14gvx6g-MuiInputBase-root-MuiInput-root"
                       >
                         <textarea
                           aria-invalid="false"
-                          class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline MuiInputBase-inputSizeSmall css-eeirxx-MuiInputBase-input-MuiInput-input"
+                          class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline MuiInputBase-inputSizeSmall css-4q7i7w-MuiInputBase-input-MuiInput-input-textAreaFont"
                           id="_r_s_"
                           style="height: 0px; overflow: hidden;"
                         >
@@ -960,7 +960,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                         </textarea>
                         <textarea
                           aria-hidden="true"
-                          class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline MuiInputBase-inputSizeSmall css-eeirxx-MuiInputBase-input-MuiInput-input"
+                          class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline MuiInputBase-inputSizeSmall css-4q7i7w-MuiInputBase-input-MuiInput-input-textAreaFont"
                           readonly=""
                           style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
                           tabindex="-1"
@@ -991,7 +991,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
@@ -1013,11 +1013,11 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-41lcur-MuiFormLabel-root-MuiInputLabel-root"
@@ -1043,11 +1043,11 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                   </p>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-kl1736-MuiPaper-root-MuiAccordion-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-sj700u-MuiPaper-root-MuiAccordion-root-accordion"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <h3
@@ -1073,7 +1073,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
                         data-testid="ExpandMoreIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -1100,14 +1100,14 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                         role="region"
                       >
                         <div
-                          class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
+                          class="MuiAccordionDetails-root css-1eji0yd-MuiAccordionDetails-root-expansionPanelDetails"
                         >
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                             style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                           >
                             <div
-                              class="css-8atqhb"
+                              class="css-1962tgi-paperContent"
                             >
                               <div
                                 class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -1164,14 +1164,14 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                             </div>
                           </div>
                           <div
-                            class="MuiFormGroup-root css-1cd0697-MuiFormGroup-root"
+                            class="MuiFormGroup-root css-18cxywa-MuiFormGroup-root-noOverflow"
                           >
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   style="display: flex;"
@@ -1210,10 +1210,10 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                     style="margin-top: 10px;"
                                   >
                                     <div
-                                      class="css-79elbk"
+                                      class="css-7h64ut-picker"
                                     >
                                       <div
-                                        class="css-1me52ai"
+                                        class="css-hl2wx9-swatch"
                                         style="background-color: rgb(255, 0, 255);"
                                       />
                                     </div>
@@ -1221,7 +1221,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               >
                                 <button
                                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
@@ -1244,11 +1244,11 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                               </div>
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -1306,15 +1306,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               />
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -1372,15 +1372,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               />
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -1416,15 +1416,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               />
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense css-ylkp5u-MuiFormControl-root"
@@ -1466,15 +1466,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               />
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -1510,15 +1510,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               />
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -1554,15 +1554,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               />
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -1598,7 +1598,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               >
                                 <button
                                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
@@ -1621,11 +1621,11 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                               </div>
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense css-ylkp5u-MuiFormControl-root"
@@ -1667,15 +1667,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               />
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -1711,15 +1711,15 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               />
                             </div>
                             <div
-                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                               style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                             >
                               <div
-                                class="css-8atqhb"
+                                class="css-1962tgi-paperContent"
                               >
                                 <div
                                   class="MuiFormControl-root MuiFormControl-marginDense css-ylkp5u-MuiFormControl-root"
@@ -1761,7 +1761,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 </div>
                               </div>
                               <div
-                                class="css-1sxld2r"
+                                class="css-lulcq7-slotModeSwitch"
                               />
                             </div>
                           </div>
@@ -1784,7 +1784,7 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
 exports[`renders with just the required model elements 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-kl1736-MuiPaper-root-MuiAccordion-root"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-sj700u-MuiPaper-root-MuiAccordion-root-accordion"
     style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
   >
     <h3
@@ -1810,7 +1810,7 @@ exports[`renders with just the required model elements 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
             data-testid="ExpandMoreIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -1837,15 +1837,15 @@ exports[`renders with just the required model elements 1`] = `
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
+              class="MuiAccordionDetails-root css-1eji0yd-MuiAccordionDetails-root-expansionPanelDetails"
               data-testid="configEditor"
             >
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-12upmnv-MuiPaper-root-paper"
                 style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
               >
                 <div
-                  class="css-8atqhb"
+                  class="css-1962tgi-paperContent"
                 >
                   <div
                     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
@@ -1879,7 +1879,7 @@ exports[`renders with just the required model elements 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1sxld2r"
+                  class="css-lulcq7-slotModeSwitch"
                 />
               </div>
             </div>
