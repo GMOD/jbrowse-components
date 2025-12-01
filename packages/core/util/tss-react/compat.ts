@@ -4,7 +4,7 @@ import type { EmotionCache } from "@emotion/cache";
 export type { CSSInterpolation, CSSObject, Css, Cx, CxArg } from "./types";
 import { createMakeStyles, TssCacheProvider } from "./makeStyles";
 export { createMakeStyles, TssCacheProvider };
-import { createWithStyles } from "./withStyles";
+import { createWithStyles } from "./withStyles_compat";
 export { createWithStyles };
 import { createTss } from "./tss";
 export { createTss };
@@ -32,12 +32,3 @@ export const { tss } = createTss({
 });
 
 export const useStyles = tss.create({});
-
-// Re-export from mui for convenience (most imports use these)
-export { makeStyles, withStyles } from "./mui";
-
-// Export cx as a standalone function (wrapper around classnames)
-import { classnames, type CxArg } from "./tools/classnames";
-export function cx(...args: CxArg[]): string {
-    return classnames(args);
-}
