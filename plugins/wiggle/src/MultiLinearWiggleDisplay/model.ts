@@ -404,6 +404,7 @@ export function stateModelFactory(
           ticks: self.ticks,
           stats: self.stats,
           scaleOpts: self.scaleOpts,
+          offset: self.isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET,
         }
       },
       /**

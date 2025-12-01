@@ -4,7 +4,6 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
-import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -15,11 +14,9 @@ export async function renderXYPlot(
 ) {
   const {
     config,
-    inverted,
     height,
     regions,
     bpPerPx,
-    stopToken,
     statusCallback = () => {},
   } = renderProps
 
@@ -40,10 +37,7 @@ export async function renderXYPlot(
           colorCallback: !config.color.isCallback
             ? (_feature, score) => (score < pivotValue ? negColor : posColor)
             : (feature, _score) => readConfObject(config, 'color', { feature }),
-          offset: YSCALEBAR_LABEL_OFFSET,
           features: [...features.values()],
-          inverted,
-          stopToken,
         }),
       ),
   )

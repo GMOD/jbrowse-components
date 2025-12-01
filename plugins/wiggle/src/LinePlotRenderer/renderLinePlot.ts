@@ -4,7 +4,6 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawLine } from '../drawLine'
-import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -13,8 +12,13 @@ export async function renderLinePlot(
   renderProps: RenderArgsDeserialized,
   features: Map<string, Feature>,
 ) {
-  const { config, height, regions, bpPerPx, statusCallback = () => {} } =
-    renderProps
+  const {
+    config,
+    height,
+    regions,
+    bpPerPx,
+    statusCallback = () => {},
+  } = renderProps
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
@@ -28,7 +32,6 @@ export async function renderLinePlot(
         drawLine(ctx, {
           ...renderProps,
           features,
-          offset: YSCALEBAR_LABEL_OFFSET,
           colorCallback:
             c === '#f0f'
               ? () => 'grey'

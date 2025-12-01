@@ -8,7 +8,6 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
-import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 import type { MultiRenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -44,7 +43,6 @@ export async function renderMultiRowXYPlot(
             ...renderProps,
             features: sourceFeatures,
             height: rowHeight,
-            offset: YSCALEBAR_LABEL_OFFSET,
             colorCallback: () => source.color || 'blue',
           })
           ctx.strokeStyle = 'rgba(200,200,200,0.8)'

@@ -176,6 +176,7 @@ function stateModelFactory(
           height,
           ticks,
           inverted,
+          offset: YSCALEBAR_LABEL_OFFSET,
         }
       },
 

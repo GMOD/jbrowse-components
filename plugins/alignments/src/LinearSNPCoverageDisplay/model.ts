@@ -79,7 +79,9 @@ function stateModelFactory(
        */
       get colorBy() {
         const parent = self.parentDisplay
-        return parent?.colorBy ?? self.colorBySetting ?? getConf(self, 'colorBy')
+        return (
+          parent?.colorBy ?? self.colorBySetting ?? getConf(self, 'colorBy')
+        )
       },
 
       /**
@@ -88,7 +90,9 @@ function stateModelFactory(
        */
       get filterBy() {
         const parent = self.parentDisplay
-        return parent?.filterBy ?? self.filterBySetting ?? getConf(self, 'filterBy')
+        return (
+          parent?.filterBy ?? self.filterBySetting ?? getConf(self, 'filterBy')
+        )
       },
     }))
     .actions(self => ({

@@ -13,6 +13,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   inverted: boolean
   themeOptions: ThemeOptions
   statusCallback?: (arg: string) => void
+  offset?: number
 }
 
 export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
