@@ -1,12 +1,15 @@
 'use client'
 
 import { useMemo } from 'react'
-import type { CSSObject } from './types'
-import { createUseCssAndCx } from './cssAndCx'
-import { getDependencyArrayRef } from './tools/getDependencyArrayRef'
-import { mergeClasses } from './mergeClasses'
-import type { EmotionCache } from '@emotion/cache'
+
 import { __unsafe_useEmotionCache } from '@emotion/react'
+
+import { createUseCssAndCx } from './cssAndCx'
+import { mergeClasses } from './mergeClasses'
+import { getDependencyArrayRef } from './tools/getDependencyArrayRef'
+
+import type { CSSObject } from './types'
+import type { EmotionCache } from '@emotion/cache'
 
 const useContextualCache = __unsafe_useEmotionCache as () => EmotionCache
 

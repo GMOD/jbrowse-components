@@ -1,170 +1,162 @@
-import { classnames } from "./tools/classnames";
-import type { Cx, Css, CSSObject } from "./types";
-import { serializeStyles } from "@emotion/serialize";
-import type { RegisteredCache } from "@emotion/serialize";
-import { insertStyles, getRegisteredStyles } from "@emotion/utils";
-import { useGuaranteedMemo } from "./tools/useGuaranteedMemo";
-import type { EmotionCache } from "@emotion/cache";
-import { matchCSSObject } from "./types";
+import { serializeStyles } from '@emotion/serialize'
+import { getRegisteredStyles, insertStyles } from '@emotion/utils'
+
+import { classnames } from './tools/classnames'
+import { useGuaranteedMemo } from './tools/useGuaranteedMemo'
+import { matchCSSObject } from './types'
+
+import type { CSSObject, Css, Cx } from './types'
+import type { EmotionCache } from '@emotion/cache'
+import type { RegisteredCache } from '@emotion/serialize'
 
 export const { createCssAndCx } = (() => {
-    function merge(registered: RegisteredCache, css: Css, className: string) {
-        const registeredStyles: string[] = [];
+  function merge(registered: RegisteredCache, css: Css, className: string) {
+    const registeredStyles: string[] = []
 
-        const rawClassName = getRegisteredStyles(
-            registered,
-            registeredStyles,
-            className
-        );
+    const rawClassName = getRegisteredStyles(
+      registered,
+      registeredStyles,
+      className,
+    )
 
-        if (registeredStyles.length < 2) {
-            return className;
+    if (registeredStyles.length < 2) {
+      return className
+    }
+
+    return rawClassName + css(registeredStyles)
+  }
+
+  function createCssAndCx(params: { cache: EmotionCache }) {
+    const { cache } = params
+
+    const css: Css = (...args) => {
+      const serialized = serializeStyles(args, cache.registered)
+      insertStyles(cache, serialized, false)
+      const className = `${cache.key}-${serialized.name}`
+
+      scope: {
+        const arg = args[0]
+
+        if (!matchCSSObject(arg)) {
+          break scope
         }
 
-        return rawClassName + css(registeredStyles);
+        increaseSpecificityToTakePrecedenceOverMediaQueries.saveClassNameCSSObjectMapping(
+          cache,
+          className,
+          arg,
+        )
+      }
+
+      return className
     }
 
-    function createCssAndCx(params: { cache: EmotionCache }) {
-        const { cache } = params;
+    const cx: Cx = (...args) => {
+      const className = classnames(args)
 
-        const css: Css = (...args) => {
-            const serialized = serializeStyles(args, cache.registered);
-            insertStyles(cache, serialized, false);
-            const className = `${cache.key}-${serialized.name}`;
+      const feat27FixedClassnames =
+        increaseSpecificityToTakePrecedenceOverMediaQueries.fixClassName(
+          cache,
+          className,
+          css,
+        )
 
-            scope: {
-                const arg = args[0];
-
-                if (!matchCSSObject(arg)) {
-                    break scope;
-                }
-
-                increaseSpecificityToTakePrecedenceOverMediaQueries.saveClassNameCSSObjectMapping(
-                    cache,
-                    className,
-                    arg
-                );
-            }
-
-            return className;
-        };
-
-        const cx: Cx = (...args) => {
-            const className = classnames(args);
-
-            const feat27FixedClassnames =
-                increaseSpecificityToTakePrecedenceOverMediaQueries.fixClassName(
-                    cache,
-                    className,
-                    css
-                );
-
-            return merge(cache.registered, css, feat27FixedClassnames);
-            //return merge(cache.registered, css, className);
-        };
-
-        return { css, cx };
+      return merge(cache.registered, css, feat27FixedClassnames)
+      // return merge(cache.registered, css, className);
     }
 
-    return { createCssAndCx };
-})();
+    return { css, cx }
+  }
+
+  return { createCssAndCx }
+})()
 
 export function createUseCssAndCx(params: { useCache: () => EmotionCache }) {
-    const { useCache } = params;
+  const { useCache } = params
 
-    function useCssAndCx() {
-        const cache = useCache();
+  function useCssAndCx() {
+    const cache = useCache()
 
-        const { css, cx } = useGuaranteedMemo(
-            () => createCssAndCx({ cache }),
-            [cache]
-        );
+    const { css, cx } = useGuaranteedMemo(
+      () => createCssAndCx({ cache }),
+      [cache],
+    )
 
-        return { css, cx };
-    }
+    return { css, cx }
+  }
 
-    return { useCssAndCx };
+  return { useCssAndCx }
 }
 
 // https://github.com/garronej/tss-react/issues/27
 const increaseSpecificityToTakePrecedenceOverMediaQueries = (() => {
-    const cssObjectMapByCache = new WeakMap<
-        EmotionCache,
-        Map<string, CSSObject>
-    >();
+  const cssObjectMapByCache = new WeakMap<
+    EmotionCache,
+    Map<string, CSSObject>
+  >()
 
-    return {
-        "saveClassNameCSSObjectMapping": (
-            cache: EmotionCache,
-            className: string,
-            cssObject: CSSObject
-        ) => {
-            let cssObjectMap = cssObjectMapByCache.get(cache);
+  return {
+    saveClassNameCSSObjectMapping: (
+      cache: EmotionCache,
+      className: string,
+      cssObject: CSSObject,
+    ) => {
+      let cssObjectMap = cssObjectMapByCache.get(cache)
 
-            if (cssObjectMap === undefined) {
-                cssObjectMap = new Map();
-                cssObjectMapByCache.set(cache, cssObjectMap);
+      if (cssObjectMap === undefined) {
+        cssObjectMap = new Map()
+        cssObjectMapByCache.set(cache, cssObjectMap)
+      }
+
+      cssObjectMap.set(className, cssObject)
+    },
+    fixClassName: (() => {
+      function fix(
+        classNameCSSObjects: [string /* className*/, CSSObject | undefined][],
+      ): (string | CSSObject)[] {
+        let isThereAnyMediaQueriesInPreviousClasses = false
+
+        return classNameCSSObjects.map(([className, cssObject]) => {
+          if (cssObject === undefined) {
+            return className
+          }
+
+          let out: string | CSSObject
+
+          if (!isThereAnyMediaQueriesInPreviousClasses) {
+            out = className
+
+            for (const key in cssObject) {
+              if (key.startsWith('@media')) {
+                isThereAnyMediaQueriesInPreviousClasses = true
+                break
+              }
             }
-
-            cssObjectMap.set(className, cssObject);
-        },
-        "fixClassName": (() => {
-            function fix(
-                classNameCSSObjects: [
-                    string /*className*/,
-                    CSSObject | undefined
-                ][]
-            ): (string | CSSObject)[] {
-                let isThereAnyMediaQueriesInPreviousClasses = false;
-
-                return classNameCSSObjects.map(([className, cssObject]) => {
-                    if (cssObject === undefined) {
-                        return className;
-                    }
-
-                    let out: string | CSSObject;
-
-                    if (!isThereAnyMediaQueriesInPreviousClasses) {
-                        out = className;
-
-                        for (const key in cssObject) {
-                            if (key.startsWith("@media")) {
-                                isThereAnyMediaQueriesInPreviousClasses = true;
-                                break;
-                            }
-                        }
-                    } else {
-                        out = {
-                            "&&": cssObject
-                        };
-                    }
-
-                    return out;
-                });
+          } else {
+            out = {
+              '&&': cssObject,
             }
+          }
 
-            return (
-                cache: EmotionCache,
-                className: string,
-                css: Css
-            ): string => {
-                const cssObjectMap = cssObjectMapByCache.get(cache);
+          return out
+        })
+      }
 
-                return classnames(
-                    fix(
-                        className
-                            .split(" ")
-                            .map(className => [
-                                className,
-                                cssObjectMap?.get(className)
-                            ])
-                    ).map(classNameOrCSSObject =>
-                        typeof classNameOrCSSObject === "string"
-                            ? classNameOrCSSObject
-                            : css(classNameOrCSSObject)
-                    )
-                );
-            };
-        })()
-    };
-})();
+      return (cache: EmotionCache, className: string, css: Css): string => {
+        const cssObjectMap = cssObjectMapByCache.get(cache)
+
+        return classnames(
+          fix(
+            className
+              .split(' ')
+              .map(className => [className, cssObjectMap?.get(className)]),
+          ).map(classNameOrCSSObject =>
+            typeof classNameOrCSSObject === 'string'
+              ? classNameOrCSSObject
+              : css(classNameOrCSSObject),
+          ),
+        )
+      }
+    })(),
+  }
+})()

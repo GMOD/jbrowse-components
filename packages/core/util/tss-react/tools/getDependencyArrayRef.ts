@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 /**
  * useEffect(
  *    ()=> { ... },
@@ -19,31 +17,31 @@
  * otherwise the object is returned (the function is the identity function).
  */
 export function getDependencyArrayRef(obj: any): any {
-    if (!(obj instanceof Object) || typeof obj === "function") {
-        return obj;
+  if (!(obj instanceof Object) || typeof obj === 'function') {
+    return obj
+  }
+
+  const arr: string[] = []
+
+  for (const key in obj) {
+    const value = obj[key]
+
+    const typeofValue = typeof value
+
+    if (
+      !(
+        typeofValue === 'string' ||
+        (typeofValue === 'number' && !isNaN(value)) ||
+        typeofValue === 'boolean' ||
+        value === undefined ||
+        value === null
+      )
+    ) {
+      return obj
     }
 
-    const arr: string[] = [];
+    arr.push(`${key}:${typeofValue}_${value}`)
+  }
 
-    for (const key in obj) {
-        const value = obj[key];
-
-        const typeofValue = typeof value;
-
-        if (
-            !(
-                typeofValue === "string" ||
-                (typeofValue === "number" && !isNaN(value)) ||
-                typeofValue === "boolean" ||
-                value === undefined ||
-                value === null
-            )
-        ) {
-            return obj;
-        }
-
-        arr.push(`${key}:${typeofValue}_${value}`);
-    }
-
-    return "xSqLiJdLMd9s" + arr.join("|");
+  return `xSqLiJdLMd9s${arr.join('|')}`
 }
