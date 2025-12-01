@@ -344,39 +344,31 @@ function stateModelFactory(
          * Generates color scheme submenu items for the Color by menu
          */
         colorSchemeSubMenuItems(): MenuItem[] {
+          const { colorBy } = self
+          const currentType = colorBy?.type
+
+          const colorTypes = [
+            { type: 'normal', label: 'Normal' },
+            { type: 'mappingQuality', label: 'Mapping quality' },
+            { type: 'strand', label: 'Strand' },
+            { type: 'perBaseQuality', label: 'Per-base quality' },
+            { type: 'perBaseLettering', label: 'Per-base lettering' },
+            { type: 'stranded', label: 'First-of-pair strand' },
+            { type: 'pairOrientation', label: 'Pair orientation' },
+            { type: 'insertSize', label: 'Insert size' },
+          ]
+
           return [
-            {
-              label: 'Normal',
-              onClick: () => self.setColorScheme({ type: 'normal' }),
-            },
-            {
-              label: 'Mapping quality',
-              onClick: () => self.setColorScheme({ type: 'mappingQuality' }),
-            },
-            {
-              label: 'Strand',
-              onClick: () => self.setColorScheme({ type: 'strand' }),
-            },
-            {
-              label: 'Per-base quality',
-              onClick: () => self.setColorScheme({ type: 'perBaseQuality' }),
-            },
-            {
-              label: 'Per-base lettering',
-              onClick: () => self.setColorScheme({ type: 'perBaseLettering' }),
-            },
-            {
-              label: 'First-of-pair strand',
-              onClick: () => self.setColorScheme({ type: 'stranded' }),
-            },
-            {
-              label: 'Pair orientation',
-              onClick: () => self.setColorScheme({ type: 'pairOrientation' }),
-            },
-            {
-              label: 'Insert size',
-              onClick: () => self.setColorScheme({ type: 'insertSize' }),
-            },
+            ...colorTypes.map(({ type, label }) => ({
+              type: 'radio' as const,
+              label,
+              checked: currentType === type,
+              onClick: () => {
+                // eslint-disable-next-line no-console
+                console.log(`[ColorBy] Setting color scheme to: ${type}`)
+                self.setColorScheme({ type })
+              },
+            })),
             {
               label: 'Color by tag...',
               onClick: () => {
@@ -395,12 +387,27 @@ function stateModelFactory(
          */
         modificationsMenuItems(): MenuItem[] {
           const threshold = this.modificationThreshold
+          const { colorBy } = self
+          const currentType = colorBy?.type
+          const currentMods = colorBy?.modifications
+
           if (!self.modificationsReady) {
             return [{ label: 'Loading modifications...', onClick: () => {} }]
           }
+
+          const isModsSelected = (opts: {
+            twoColor?: boolean
+            isolatedModification?: string
+          }) =>
+            currentType === 'modifications' &&
+            currentMods?.twoColor === opts.twoColor &&
+            currentMods?.isolatedModification === opts.isolatedModification
+
           return [
             {
+              type: 'radio' as const,
               label: `All modifications (>= ${threshold}% prob)`,
+              checked: isModsSelected({}),
               onClick: () =>
                 self.setColorScheme({
                   type: 'modifications',
@@ -408,7 +415,9 @@ function stateModelFactory(
                 }),
             },
             ...this.visibleModificationTypes.map(key => ({
+              type: 'radio' as const,
               label: `Show only ${modificationData[key]?.name || key} (>= ${threshold}% prob)`,
+              checked: isModsSelected({ isolatedModification: key }),
               onClick: () =>
                 self.setColorScheme({
                   type: 'modifications',
@@ -417,7 +426,9 @@ function stateModelFactory(
             })),
             { type: 'divider' } as MenuItem,
             {
+              type: 'radio' as const,
               label: 'All modifications (<50% prob colored blue)',
+              checked: isModsSelected({ twoColor: true }),
               onClick: () =>
                 self.setColorScheme({
                   type: 'modifications',
@@ -425,7 +436,9 @@ function stateModelFactory(
                 }),
             },
             ...this.visibleModificationTypes.map(key => ({
+              type: 'radio' as const,
               label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
+              checked: isModsSelected({ twoColor: true, isolatedModification: key }),
               onClick: () =>
                 self.setColorScheme({
                   type: 'modifications',
@@ -438,7 +451,9 @@ function stateModelFactory(
             })),
             { type: 'divider' } as MenuItem,
             {
+              type: 'radio' as const,
               label: 'All reference CpGs',
+              checked: currentType === 'methylation',
               onClick: () =>
                 self.setColorScheme({
                   type: 'methylation',

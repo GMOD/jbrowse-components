@@ -21,21 +21,32 @@ export interface ParentDisplaySettings {
 }
 
 /**
- * Gets settings from a parent display if this display is nested.
+ * Gets the parent display if this display is nested.
  * Used by PileupDisplay and SNPCoverageDisplay when they're inside LinearAlignmentsDisplay.
+ *
+ * IMPORTANT: To maintain MobX reactivity, always access properties (colorBy, filterBy, etc.)
+ * directly on the returned parent object within the same reactive context (getter/computed).
  */
-export function getParentDisplaySettings(
-  self: unknown,
-): ParentDisplaySettings | undefined {
+export function getParentDisplay(self: unknown): ParentDisplaySettings | undefined {
   try {
     const parent = getParent<any>(self, 2)
-    if (parent?.colorBy !== undefined || parent?.filterBy !== undefined) {
+    // Check if this looks like a parent display (has colorBy/filterBy getters)
+    if (parent && ('colorBy' in parent || 'filterBy' in parent)) {
       return parent as ParentDisplaySettings
     }
   } catch {
     // Not nested in a parent display
   }
   return undefined
+}
+
+/**
+ * @deprecated Use getParentDisplay instead for proper MobX reactivity
+ */
+export function getParentDisplaySettings(
+  self: unknown,
+): ParentDisplaySettings | undefined {
+  return getParentDisplay(self)
 }
 
 /**
