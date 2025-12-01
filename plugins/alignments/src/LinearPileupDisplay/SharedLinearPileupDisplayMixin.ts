@@ -404,12 +404,11 @@ export function SharedLinearPileupDisplayMixin(
          * #method
          */
         renderPropsPre() {
-          const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
+          const { colorTagMap, colorBy, filterBy } = self
           const superProps = superRenderProps()
           return {
             ...superProps,
             notReady: superProps.notReady || !self.renderReady(),
-            rpcDriverName,
             colorBy,
             filterBy,
             filters: self.filters,

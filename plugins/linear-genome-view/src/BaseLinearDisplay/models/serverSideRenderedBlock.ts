@@ -285,6 +285,8 @@ export function renderBlockData(
     }
 
     const renderProps = display.renderProps()
+    // eslint-disable-next-line no-console
+    console.log(`[renderBlockData] ${display.type} renderProps.rpcDriverName:`, renderProps.rpcDriverName)
     const renderingProps = display.renderingProps?.() as
       | Record<string, unknown>
       | undefined
