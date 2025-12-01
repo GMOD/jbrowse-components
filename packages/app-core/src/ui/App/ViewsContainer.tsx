@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react'
 
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ViewContainer from './ViewContainer'
 

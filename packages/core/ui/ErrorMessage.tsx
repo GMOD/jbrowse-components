@@ -3,7 +3,7 @@ import { Suspense, lazy, useState } from 'react'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import RedErrorMessageBox from './RedErrorMessageBox'
 

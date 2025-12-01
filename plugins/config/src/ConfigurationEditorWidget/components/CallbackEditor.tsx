@@ -6,7 +6,7 @@ import { getEnv } from '@jbrowse/mobx-state-tree'
 import HelpIcon from '@mui/icons-material/Help'
 import { IconButton, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 // Optimize by using system default fonts:
 // https://css-tricks.com/snippets/css/font-stacks/

@@ -14,7 +14,7 @@ import * as mxreact from 'mobx-react'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import * as ReactDomClient from 'react-dom/client'
-import { makeStyles } from '../util/tss-react'
+import { cx, keyframes, makeStyles } from '../util/tss-react'
 
 import Plugin from '../Plugin'
 import * as Configuration from '../configuration'
@@ -67,7 +67,14 @@ const libs = {
   // special case so plugins can easily use @mui/icons-material; don't remove
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
+  'tss-react': {
+    cx,
+    keyframes,
+    makeStyles,
+  },
   'tss-react/mui': {
+    cx,
+    keyframes,
     makeStyles,
   },
 

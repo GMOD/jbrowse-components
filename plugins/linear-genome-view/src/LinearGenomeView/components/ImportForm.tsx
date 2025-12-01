@@ -11,7 +11,7 @@ import {
   Grid as Grid,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete'
 import { handleSelectedRegion, navToOption } from '../../searchUtils'

@@ -52,34 +52,35 @@ export function cx(...args: CxArg[]): string {
 // object is no longer referenced
 const styleCache = new WeakMap<
   Record<string, CSSObject>,
-  Map<EmotionCache, Record<string, string>>
+  Map<EmotionCache, { classes: Record<string, string> }>
 >()
 
-function getOrCreateClasses<RuleName extends string>(
+function getOrCreateResult<RuleName extends string>(
   cssObjectByRuleName: Record<RuleName, CSSObject>,
   cache: EmotionCache,
-): Record<RuleName, string> {
+): { classes: Record<RuleName, string> } {
   let cacheByEmotionCache = styleCache.get(cssObjectByRuleName)
   if (!cacheByEmotionCache) {
     cacheByEmotionCache = new Map()
     styleCache.set(cssObjectByRuleName, cacheByEmotionCache)
   }
 
-  let classes = cacheByEmotionCache.get(cache) as
-    | Record<RuleName, string>
+  let result = cacheByEmotionCache.get(cache) as
+    | { classes: Record<RuleName, string> }
     | undefined
-  if (!classes) {
-    classes = {} as Record<RuleName, string>
+  if (!result) {
+    const classes = {} as Record<RuleName, string>
     for (const ruleName of Object.keys(cssObjectByRuleName) as RuleName[]) {
       const cssObject = cssObjectByRuleName[ruleName]
       const serialized = serializeStyles([cssObject], cache.registered)
       insertStyles(cache, serialized, false)
       classes[ruleName] = `${cache.key}-${serialized.name}`
     }
-    cacheByEmotionCache.set(cache, classes)
+    result = { classes }
+    cacheByEmotionCache.set(cache, result)
   }
 
-  return classes
+  return result
 }
 
 export function makeStyles() {
@@ -97,11 +98,7 @@ export function makeStyles() {
       ? null
       : new WeakMap<Theme, Record<RuleName, CSSObject>>()
 
-    return function useStyles(): {
-      classes: Record<RuleName, string>
-      theme: Theme
-      cx: typeof cx
-    } {
+    function useStyles(): { classes: Record<RuleName, string> } {
       const theme = useTheme()
       const cache = __unsafe_useEmotionCache() as EmotionCache
 
@@ -122,9 +119,9 @@ export function makeStyles() {
         cssObjectByRuleName = cached
       }
 
-      const classes = getOrCreateClasses(cssObjectByRuleName, cache)
-
-      return { classes, theme, cx }
+      return getOrCreateResult(cssObjectByRuleName, cache)
     }
+
+    return useStyles
   }
 }

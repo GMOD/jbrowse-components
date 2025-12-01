@@ -1,5 +1,5 @@
 import { Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()(theme => ({
   fieldDescription: {
@@ -29,7 +29,7 @@ export default function FieldName({
   prefix?: string[]
   width?: number
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const val = [...prefix, name].join('.')
   return description ? (
     <Tooltip title={description} placement="left">

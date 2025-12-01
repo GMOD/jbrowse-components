@@ -3,7 +3,7 @@ import { Suspense, useRef, useState } from 'react'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import SequenceFeatureMenu from './SequenceFeatureMenu'
 import SequenceTypeSelector from './SequenceTypeSelector'

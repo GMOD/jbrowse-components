@@ -13,7 +13,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import Checkbox2 from '../Checkbox2'
 import RecentSessionsCards from './RecentSessionsCards'

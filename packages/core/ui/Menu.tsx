@@ -16,7 +16,7 @@ import {
   Paper,
   Popover,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { findLastIndex } from '../util'
 

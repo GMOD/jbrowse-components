@@ -4,7 +4,7 @@ import { Dialog } from '@jbrowse/core/ui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
   dialogContent: {

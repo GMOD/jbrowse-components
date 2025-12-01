@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import TrackCategory from './TrackCategory'
 import TrackLabel from './TrackLabel'

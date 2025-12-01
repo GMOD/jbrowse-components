@@ -5,7 +5,7 @@ import { measureGridWidth } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { formatDistanceToNow } from 'date-fns'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import DateSinceLastUsed from './DateSinceLastUsed'
 import SessionNameCell from './SessionNameCell'

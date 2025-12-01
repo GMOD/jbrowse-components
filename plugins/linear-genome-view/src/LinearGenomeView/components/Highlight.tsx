@@ -8,7 +8,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { LinearGenomeViewModel } from '../model'
 import type { Region, SessionWithWidgets } from '@jbrowse/core/util'

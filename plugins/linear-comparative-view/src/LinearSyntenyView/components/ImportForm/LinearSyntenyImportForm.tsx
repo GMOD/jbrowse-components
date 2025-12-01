@@ -4,7 +4,7 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { Container } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea'
 import LeftPanel from './LeftPanel'

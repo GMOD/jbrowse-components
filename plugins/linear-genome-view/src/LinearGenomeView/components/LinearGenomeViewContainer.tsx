@@ -4,7 +4,7 @@ import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'

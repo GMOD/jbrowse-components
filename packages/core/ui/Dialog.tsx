@@ -13,7 +13,7 @@ import {
   useTheme,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ErrorMessage from './ErrorMessage'
 import SanitizedHTML from './SanitizedHTML'

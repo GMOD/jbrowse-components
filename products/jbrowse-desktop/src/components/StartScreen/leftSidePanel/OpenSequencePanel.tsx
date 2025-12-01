@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Button } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import OpenSequenceDialog from '../../OpenSequenceDialog'
 import AllGenomesDialog from '../availableGenomes/AvailableGenomesDialog'

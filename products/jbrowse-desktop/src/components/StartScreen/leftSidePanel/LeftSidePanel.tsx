@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util'
 import deepmerge from 'deepmerge'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import FavoriteGenomesPanel from './FavoriteGenomesPanel'
 import OpenSequencePanel from './OpenSequencePanel'

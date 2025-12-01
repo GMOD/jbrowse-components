@@ -3,7 +3,7 @@ import { forwardRef, useEffect, useRef } from 'react'
 
 import { Paper } from '@mui/material'
 import { autorun } from 'mobx'
-import { makeStyles } from 'tss-react/mui'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 
 import Gridlines from './Gridlines'
 import ScalebarCoordinateLabels from './ScalebarCoordinateLabels'
@@ -40,7 +40,7 @@ const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
   { model, style, className, ...other },
   ref,
 ) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const zoomRef = useRef<HTMLDivElement>(null)
   const scalebarRef = useRef<HTMLDivElement>(null)
 

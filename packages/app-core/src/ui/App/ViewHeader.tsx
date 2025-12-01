@@ -9,7 +9,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 
 import ViewContainerTitle from './ViewContainerTitle'
 import ViewMenu from './ViewMenu'
@@ -73,7 +73,7 @@ const ViewHeader = observer(function ({
   onMinimize: () => void
   className?: string
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
   let stickyViewHeaders = false

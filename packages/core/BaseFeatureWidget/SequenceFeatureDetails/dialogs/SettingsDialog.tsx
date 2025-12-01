@@ -13,7 +13,7 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { SequenceFeatureDetailsModel } from '../model'
 import type { TextFieldProps } from '@mui/material'

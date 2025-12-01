@@ -3,7 +3,7 @@ import { useState } from 'react'
 import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
 import { useLocalStorage } from '@jbrowse/core/util'
 import { Button, DialogActions, DialogContent } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import SetColorDialogBulkEditPanel from './SetColorDialogBulkEditPanel'
 import SetColorDialogHelpfulTips from './SetColorDialogHelpfulTips'

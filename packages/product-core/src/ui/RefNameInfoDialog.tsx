@@ -6,7 +6,7 @@ import { getSession } from '@jbrowse/core/util'
 import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { Button, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

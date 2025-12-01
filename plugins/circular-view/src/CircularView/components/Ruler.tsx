@@ -9,7 +9,7 @@ import {
 import { makeContrasting } from '@jbrowse/core/util/color'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { CircularViewModel } from '../model'
 import type { Slice, SliceElidedRegion, SliceNonElidedRegion } from '../slices'

@@ -6,7 +6,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../../model'
 import type { SessionWithWidgets } from '@jbrowse/core/util'

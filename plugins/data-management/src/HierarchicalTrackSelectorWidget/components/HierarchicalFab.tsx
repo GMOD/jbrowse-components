@@ -9,7 +9,7 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import { Fab, Menu, MenuItem } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { HierarchicalTrackSelectorModel } from '../model'
 

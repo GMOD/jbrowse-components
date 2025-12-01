@@ -16,7 +16,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { singular } from 'pluralize'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'

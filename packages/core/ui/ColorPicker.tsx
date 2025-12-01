@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { colord } from '@jbrowse/core/util/colord'
 import { MenuItem, Popover, Select, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import * as paletteColors from './colors'
 import { useDebounce, useLocalStorage } from '../util'

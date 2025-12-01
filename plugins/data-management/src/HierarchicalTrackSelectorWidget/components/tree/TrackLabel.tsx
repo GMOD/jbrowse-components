@@ -5,7 +5,7 @@ import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { getSession } from '@jbrowse/core/util'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { isUnsupported } from '../util'
 import TrackLabelMenu from './TrackLabelMenu'

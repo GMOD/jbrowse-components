@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../../model'
 import type { SessionWithWidgets } from '@jbrowse/core/util'

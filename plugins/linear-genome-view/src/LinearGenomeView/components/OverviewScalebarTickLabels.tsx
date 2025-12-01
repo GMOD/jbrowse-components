@@ -1,7 +1,7 @@
 import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 // core
 import { HEADER_OVERVIEW_HEIGHT } from '../consts'

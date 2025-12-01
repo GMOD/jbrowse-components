@@ -9,7 +9,7 @@ import {
 import { Link } from '@mui/material'
 import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { navToBookmark } from '../utils'
 

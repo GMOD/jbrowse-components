@@ -4,7 +4,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { Fav, LaunchCallback } from '../types'
 

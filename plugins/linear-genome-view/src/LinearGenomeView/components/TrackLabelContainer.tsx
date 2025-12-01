@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 
 import TrackLabel from './TrackLabel'
 
@@ -29,7 +29,7 @@ const TrackLabelContainer = observer(function ({
   track: BaseTrackModel
   view: LGV
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const display = track.displays[0]
   const labelStyle =
     view.trackLabelsSetting !== 'overlapping' || display.prefersOffset

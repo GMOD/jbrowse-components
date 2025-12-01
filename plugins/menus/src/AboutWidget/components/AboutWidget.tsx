@@ -3,7 +3,7 @@ import { getSession } from '@jbrowse/core/util'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'

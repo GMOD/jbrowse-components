@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { makeTicks } from '../util'
 

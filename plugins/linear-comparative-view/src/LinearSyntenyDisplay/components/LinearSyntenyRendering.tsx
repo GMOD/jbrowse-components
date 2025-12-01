@@ -3,7 +3,7 @@ import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
 import SyntenyContextMenu from './SyntenyContextMenu'

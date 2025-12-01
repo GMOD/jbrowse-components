@@ -8,7 +8,7 @@ import {
   alpha,
 } from '@mui/material'
 import { SourceMapConsumer } from 'source-map-js'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import Dialog from './Dialog'
 import ExternalLink from './ExternalLink'

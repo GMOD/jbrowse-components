@@ -11,7 +11,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreIcon from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
 import useSWR from 'swr'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { useInnerDims } from '../availableGenomes/util'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog'

@@ -4,7 +4,7 @@ import { SanitizedHTML } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import { DataGrid } from '@mui/x-data-grid'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { Source } from '../types'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'

@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react'
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { Link } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import StarIcon from '../StarIcon'
 import { loadPluginManager } from '../util'

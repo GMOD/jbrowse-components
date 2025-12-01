@@ -3,7 +3,7 @@ import { getSession } from '@jbrowse/core/util'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import FilledStarIcon from '@mui/icons-material/Star'
 import StarIcon from '@mui/icons-material/StarBorderOutlined'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

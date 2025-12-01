@@ -7,7 +7,7 @@ import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { getBlockLabelKeysToHide } from './util'
 

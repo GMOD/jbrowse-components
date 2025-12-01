@@ -3,7 +3,7 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { LinearComparativeViewModel } from '../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

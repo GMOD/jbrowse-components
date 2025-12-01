@@ -11,7 +11,7 @@ import Settings from '@mui/icons-material/Settings'
 import Share from '@mui/icons-material/Share'
 import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import AssemblySelector from './AssemblySelector'
 import BookmarkGrid from './BookmarkGrid'
