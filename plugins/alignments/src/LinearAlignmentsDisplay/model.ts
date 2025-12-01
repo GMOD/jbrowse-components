@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import ColorLensIcon from '@mui/icons-material/ColorLens'
 import FilterListIcon from '@mui/icons-material/ClearAll'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
@@ -43,6 +44,9 @@ const ColorByTagDialog = lazy(
 const SetModificationThresholdDialog = lazy(
   () =>
     import('../LinearPileupDisplay/components/SetModificationThresholdDialog'),
+)
+const GroupByDialog = lazy(
+  () => import('../LinearPileupDisplay/components/GroupByDialog'),
 )
 
 type LGV = LinearGenomeViewModel
@@ -364,8 +368,6 @@ function stateModelFactory(
               label,
               checked: currentType === type,
               onClick: () => {
-                // eslint-disable-next-line no-console
-                console.log(`[ColorBy] Setting color scheme to: ${type}`)
                 self.setColorScheme({ type })
               },
             })),
@@ -509,6 +511,16 @@ function stateModelFactory(
                 getSession(self).queueDialog(handleClose => [
                   FilterByTagDialog,
                   { model: self, handleClose },
+                ])
+              },
+            },
+            {
+              label: 'Group by...',
+              icon: WorkspacesIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  GroupByDialog,
+                  { model: self.PileupDisplay, handleClose },
                 ])
               },
             },

@@ -29,7 +29,7 @@ export interface ParentDisplaySettings {
  */
 export function getParentDisplay(self: unknown): ParentDisplaySettings | undefined {
   try {
-    const parent = getParent<any>(self, 2)
+    const parent = getParent<any>(self, 1)
     // Check if this looks like a parent display (has colorBy/filterBy getters)
     if (parent && ('colorBy' in parent || 'filterBy' in parent)) {
       return parent as ParentDisplaySettings

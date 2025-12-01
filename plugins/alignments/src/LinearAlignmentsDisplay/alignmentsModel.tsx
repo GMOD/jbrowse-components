@@ -86,15 +86,33 @@ export function LinearAlignmentsDisplayMixin(
     .actions(self => ({
       /**
        * #action
+       * Sets colorBy on this display and propagates to nested displays
        */
       setColorScheme(colorBy?: ColorBy) {
-        self.colorBySetting = colorBy ? { ...colorBy } : undefined
+        const newColorBy = colorBy ? { ...colorBy } : undefined
+        self.colorBySetting = newColorBy
+        // Propagate to nested displays
+        if (self.PileupDisplay?.setColorScheme) {
+          self.PileupDisplay.setColorScheme(newColorBy)
+        }
+        if (self.SNPCoverageDisplay?.setColorScheme) {
+          self.SNPCoverageDisplay.setColorScheme(newColorBy)
+        }
       },
       /**
        * #action
+       * Sets filterBy on this display and propagates to nested displays
        */
       setFilterBy(filter: FilterBy) {
-        self.filterBySetting = { ...filter }
+        const newFilter = { ...filter }
+        self.filterBySetting = newFilter
+        // Propagate to nested displays
+        if (self.PileupDisplay?.setFilterBy) {
+          self.PileupDisplay.setFilterBy(newFilter)
+        }
+        if (self.SNPCoverageDisplay?.setFilterBy) {
+          self.SNPCoverageDisplay.setFilterBy(newFilter)
+        }
       },
     }))
 }

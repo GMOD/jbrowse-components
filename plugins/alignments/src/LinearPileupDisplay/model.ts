@@ -419,19 +419,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             ...colorByItem,
-            {
-              label: 'Group by...',
-              icon: WorkspacesIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  GroupByDialog,
+            ...(isNestedDisplay(self)
+              ? []
+              : [
                   {
-                    model: self,
-                    handleClose,
+                    label: 'Group by...',
+                    icon: WorkspacesIcon,
+                    onClick: () => {
+                      getSession(self).queueDialog(handleClose => [
+                        GroupByDialog,
+                        {
+                          model: self,
+                          handleClose,
+                        },
+                      ])
+                    },
                   },
-                ])
-              },
-            },
+                ]),
             {
               label: 'Show soft clipping',
               icon: VisibilityIcon,

@@ -22,11 +22,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, observable } from 'mobx'
 
-import {
-  createAutorun,
-  getParentDisplaySettings,
-  isNestedDisplay,
-} from '../util'
+import { createAutorun, isNestedDisplay } from '../util'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getUniqueTags } from '../shared/getUniqueTags'
 
@@ -126,50 +122,15 @@ export function SharedLinearPileupDisplayMixin(
     .views(self => ({
       /**
        * #getter
-       * Returns the parent display if nested, for accessing shared settings
-       */
-      get parentDisplay() {
-        try {
-          const parent = getParent<any>(self, 2)
-          // eslint-disable-next-line no-console
-          console.log('[PileupDisplay.parentDisplay] parent type:', parent?.type, 'has colorBy:', 'colorBy' in parent)
-          if (parent && 'colorBy' in parent) {
-            return parent
-          }
-        } catch {
-          // Not nested
-        }
-        return undefined
-      },
-
-      /**
-       * #getter
        */
       get colorBy() {
-        // Access parent's colorBy directly to maintain MobX reactivity
-        const parent = this.parentDisplay
-        const parentColorBy = parent?.colorBy
-        if (parentColorBy) {
-          // eslint-disable-next-line no-console
-          console.log('[PileupDisplay.colorBy] Using parent colorBy:', parentColorBy)
-          return parentColorBy
-        }
-        const result = self.colorBySetting ?? getConf(self, 'colorBy')
-        // eslint-disable-next-line no-console
-        console.log('[PileupDisplay.colorBy] Using own colorBy:', result)
-        return result
+        return self.colorBySetting ?? getConf(self, 'colorBy')
       },
 
       /**
        * #getter
        */
       get filterBy() {
-        // Access parent's filterBy directly to maintain MobX reactivity
-        const parent = this.parentDisplay
-        const parentFilterBy = parent?.filterBy
-        if (parentFilterBy) {
-          return parentFilterBy
-        }
         return self.filterBySetting ?? getConf(self, 'filterBy')
       },
     }))
