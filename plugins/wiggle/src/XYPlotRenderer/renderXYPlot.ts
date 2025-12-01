@@ -10,8 +10,13 @@ export async function renderXYPlot(
   renderProps: RenderArgsDeserialized,
   features: Map<string, Feature>,
 ) {
-  const { config, height, regions, bpPerPx, statusCallback = () => {} } =
-    renderProps
+  const {
+    config,
+    height,
+    regions,
+    bpPerPx,
+    statusCallback = () => {},
+  } = renderProps
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
