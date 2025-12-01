@@ -90,8 +90,13 @@ function stateModelFactory() {
         if (self.rpcDriverName) {
           return self.rpcDriverName
         }
-        const trackRpcDriverName = getConf(this.parentTrack, 'rpcDriverName')
-        return trackRpcDriverName || undefined
+        try {
+          const trackRpcDriverName = getConf(this.parentTrack, 'rpcDriverName')
+          return trackRpcDriverName || undefined
+        } catch (e) {
+          // parentTrack may not be available in some contexts
+          return undefined
+        }
       },
 
       /**

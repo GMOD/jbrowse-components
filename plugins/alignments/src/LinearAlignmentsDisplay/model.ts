@@ -191,6 +191,7 @@ function stateModelFactory(
           type: 'LinearSNPCoverageDisplay',
           configuration,
           height: self.snpCovHeight,
+          rpcDriverName: self.effectiveRpcDriverName,
         }
       },
       /**
@@ -208,6 +209,7 @@ function stateModelFactory(
         self.PileupDisplay = {
           type: configuration.type || 'LinearPileupDisplay',
           configuration,
+          rpcDriverName: self.effectiveRpcDriverName,
         }
       },
       /**
@@ -279,6 +281,23 @@ function stateModelFactory(
               propagateFilterBy(self as LinearAlignmentsDisplayModel)
             },
             { name: 'AlignmentsDisplayConfig' },
+          ),
+        )
+
+        // Propagate rpcDriverName to nested displays
+        addDisposer(
+          self,
+          autorun(
+            function propagateRpcDriverName() {
+              const { PileupDisplay, SNPCoverageDisplay, effectiveRpcDriverName } = self
+              if (PileupDisplay && effectiveRpcDriverName) {
+                PileupDisplay.setRpcDriverName(effectiveRpcDriverName)
+              }
+              if (SNPCoverageDisplay && effectiveRpcDriverName) {
+                SNPCoverageDisplay.setRpcDriverName(effectiveRpcDriverName)
+              }
+            },
+            { name: 'PropagateRpcDriverName' },
           ),
         )
 

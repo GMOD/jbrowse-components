@@ -440,6 +440,7 @@ export function SharedLinearPileupDisplayMixin(
                       sessionId,
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
@@ -493,6 +494,7 @@ export function SharedLinearPileupDisplayMixin(
                       sessionId,
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
@@ -716,6 +718,7 @@ export function SharedLinearPileupDisplayMixin(
                       sessionId,
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 

@@ -65,6 +65,7 @@ export async function renderSvg(
       jitter: jitterVal,
       height,
       exportSVG: opts,
+      rpcDriverName: self.effectiveRpcDriverName,
     },
   )) as RenderingResult
 
