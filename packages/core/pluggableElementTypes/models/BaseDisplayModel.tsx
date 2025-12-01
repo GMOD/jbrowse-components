@@ -89,7 +89,10 @@ function stateModelFactory() {
       get parentDisplay() {
         try {
           const parent = getParent<any>(self)
-          if (parent?.type?.endsWith?.('Display')) {
+          // Check if immediate parent looks like a display
+          // (has type property ending with 'Display')
+          const parentType = parent?.type
+          if (typeof parentType === 'string' && parentType.endsWith('Display')) {
             return parent
           }
         } catch {
@@ -106,15 +109,29 @@ function stateModelFactory() {
        * 3. Track config's rpcDriverName
        */
       get effectiveRpcDriverName() {
+        // eslint-disable-next-line no-console
+        console.log(`[effectiveRpcDriverName] ${self.type}: checking...`)
         if (self.rpcDriverName) {
+          // eslint-disable-next-line no-console
+          console.log(`[effectiveRpcDriverName] ${self.type}: using self.rpcDriverName:`, self.rpcDriverName)
           return self.rpcDriverName
         }
-        if (this.parentDisplay?.effectiveRpcDriverName) {
-          return this.parentDisplay.effectiveRpcDriverName
+        const pd = this.parentDisplay
+        // eslint-disable-next-line no-console
+        console.log(`[effectiveRpcDriverName] ${self.type}: parentDisplay:`, pd?.type)
+        if (pd?.effectiveRpcDriverName) {
+          // eslint-disable-next-line no-console
+          console.log(`[effectiveRpcDriverName] ${self.type}: using parentDisplay.effectiveRpcDriverName:`, pd.effectiveRpcDriverName)
+          return pd.effectiveRpcDriverName
         }
         try {
-          return getConf(this.parentTrack, 'rpcDriverName') || undefined
-        } catch {
+          const trackRpc = getConf(this.parentTrack, 'rpcDriverName')
+          // eslint-disable-next-line no-console
+          console.log(`[effectiveRpcDriverName] ${self.type}: using track config:`, trackRpc)
+          return trackRpc || undefined
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(`[effectiveRpcDriverName] ${self.type}: error getting track config:`, e)
           return undefined
         }
       },
