@@ -6,7 +6,6 @@ import { createUseCssAndCx } from './cssAndCx'
 import { getDependencyArrayRef } from './tools/getDependencyArrayRef'
 import { mergeClasses } from './mergeClasses'
 import type { EmotionCache } from '@emotion/cache'
-// @ts-expect-error not in the types but exists at runtime
 import { __unsafe_useEmotionCache } from '@emotion/react'
 
 const useContextualCache = __unsafe_useEmotionCache as () => EmotionCache
