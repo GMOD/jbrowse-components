@@ -112,22 +112,42 @@ export default class ServerSideRenderer extends RendererType {
    * Renders directly without serialization. Used by MainThreadRpcDriver
    * to avoid unnecessary serialize/deserialize overhead when no worker
    * thread boundary is crossed.
+   *
+   * Key differences from renderInWorker + deserializeResultsInClient:
+   * - Config stays as live MST node (no snapshot/create cycle)
+   * - Features stay as Feature objects (no toJSON/fromJSON)
+   * - RpcResult values are unwrapped directly
    */
   async renderDirect(args: RenderArgs) {
     const { renderingProps, ...rest } = args
     const results = await this.render(rest as RenderArgsDeserialized)
 
+    // For RpcResult (canvas renderers with transferables), unwrap directly
+    // No need for transfer semantics since we're on the same thread
     if (isRpcResult(results)) {
-      return this.deserializeResultsInClient(
-        results as unknown as ResultsSerialized,
-        args,
-      )
+      const unwrapped = (results as { value: ResultsSerialized }).value
+      return this.deserializeResultsInClient(unwrapped, args)
     }
 
-    return this.deserializeResultsInClient(
-      this.serializeResultsInWorker(results, rest as RenderArgsDeserialized),
-      args,
-    )
+    // For non-RpcResult, we still need to create the React element
+    // but we can skip feature serialization by passing results directly
+    const { reactElement, ...resultRest } = results
+    return {
+      ...resultRest,
+      reactElement: args.exportSVG
+        ? createSvgExportElement(
+            resultRest as ResultsSerialized,
+            args,
+            this.ReactComponent,
+            this.supportsSVG,
+          )
+        : createNormalElement(
+            resultRest as ResultsSerialized,
+            args,
+            this.ReactComponent,
+            renderingProps,
+          ),
+    }
   }
 
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {

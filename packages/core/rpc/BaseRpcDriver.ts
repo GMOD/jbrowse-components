@@ -153,6 +153,10 @@ export default abstract class BaseRpcDriver {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
+
+    // eslint-disable-next-line no-console
+    console.log(`[RPC] ${this.name}: ${functionName} (worker)`)
+
     const unextendedWorker = await this.getWorker(sessionId)
     const worker = pluginManager.evaluateExtensionPoint(
       'Core-extendWorker',
