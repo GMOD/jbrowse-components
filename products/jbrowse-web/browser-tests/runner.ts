@@ -14,7 +14,7 @@ import {
   parseArgs,
   runTests,
   waitForLoadingToComplete,
-} from 'puppeteer-test-utils'
+} from '../../../puppeteer-test-utils/src/index.ts'
 import handler from 'serve-handler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

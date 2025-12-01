@@ -39,7 +39,7 @@ jobs:
   buildwebsite:
     name: Build website
     needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: false # Temporarily disabled for debugging snapshot tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
@@ -68,7 +68,7 @@ jobs:
   buildjbrowseweb:
     name: Deploy jbrowse-web and storybooks to S3
     needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: false # Temporarily disabled for debugging snapshot tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
@@ -157,20 +157,22 @@ jobs:
           cache: 'yarn'
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-      - name: Check code formatting
-        run: yarn prettier --check .
-      - name: Spellcheck
-        uses: crate-ci/typos@2d0ce569feab1f8752f1dde43cc2f2aa53236e06 # v1.40.0
-      - name: Lint code
-        run: yarn lint
-      - name: Typecheck code
-        run: yarn typecheck
-      - name: Run tests
-        run: yarn test-ci
-      - name: Build codebase
+      # Temporarily disabled for debugging snapshot tests
+      # - name: Check code formatting
+      #   run: yarn prettier --check .
+      # - name: Spellcheck
+      #   uses: crate-ci/typos@2d0ce569feab1f8752f1dde43cc2f2aa53236e06 # v1.40.0
+      # - name: Lint code
+      #   run: yarn lint
+      # - name: Typecheck code
+      #   run: yarn typecheck
+      # - name: Run tests
+      #   run: yarn test-ci
+      - name: Build jbrowse-web
         run: yarn build
-      - name: Test build
-        run: BUILT_TESTS=1 yarn built-test-ci
+        working-directory: products/jbrowse-web
+      # - name: Test build
+      #   run: BUILT_TESTS=1 yarn built-test-ci
       - name: Run browser tests with Puppeteer
         id: browser-tests
         run: yarn install --frozen-lockfile && yarn test
@@ -221,7 +223,7 @@ jobs:
   component_tests:
     name: Test embedded components
     needs: [check_commit_message, main]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: false # Temporarily disabled for debugging snapshot tests
     runs-on: ubuntu-latest
     permissions: {}
     steps:

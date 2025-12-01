@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { launch } from 'puppeteer'
 
-import { type ServerOptions, startServer } from './server.js'
+import { type ServerOptions, startServer } from './server.ts'
 
 import type { Page } from 'puppeteer'
 
