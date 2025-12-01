@@ -3,7 +3,11 @@ import type { Page } from 'puppeteer'
 export const delay = (ms: number) =>
   new Promise(resolve => setTimeout(resolve, ms))
 
-export async function findByTestId(page: Page, testId: string, timeout = 30000) {
+export async function findByTestId(
+  page: Page,
+  testId: string,
+  timeout = 30000,
+) {
   return page.waitForSelector(`[data-testid="${testId}"]`, {
     timeout,
     visible: true,

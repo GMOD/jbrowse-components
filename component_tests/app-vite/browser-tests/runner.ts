@@ -3,7 +3,11 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { createTestRunner, parseArgs, type TestSuite } from 'puppeteer-test-utils'
+import {
+  createTestRunner,
+  parseArgs,
+  type TestSuite,
+} from 'puppeteer-test-utils'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
