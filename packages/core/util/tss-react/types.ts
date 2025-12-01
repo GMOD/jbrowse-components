@@ -1,7 +1,10 @@
+import type { CxArg } from './tools/classnames'
 import type {
-  CSSInterpolation,
   CSSObject as CSSObject_base,
+  Interpolation,
 } from '@emotion/serialize'
+
+export type CSSInterpolation = Interpolation<undefined>
 
 export interface CSSObject extends CSSObject_base {
   /** https://emotion.sh/docs/labels */
@@ -12,8 +15,6 @@ export interface Css {
   (template: TemplateStringsArray, ...args: CSSInterpolation[]): string
   (...args: CSSInterpolation[]): string
 }
-
-import type { CxArg } from './tools/classnames'
 
 // SEE: https://github.com/emotion-js/emotion/pull/2276
 export type Cx = (...classNames: CxArg[]) => string
@@ -29,5 +30,4 @@ export function matchCSSObject(
   )
 }
 
-export { type CSSInterpolation } from '@emotion/serialize'
-export { type CxArg } from './tools/classnames'
+export type { CxArg } from './tools/classnames'

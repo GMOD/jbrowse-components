@@ -27,10 +27,13 @@ export const classnames = (args: CxArg[]): string => {
         if (Array.isArray(arg)) {
           toAdd = classnames(arg)
         } else {
+          const obj = arg as Record<string, boolean | null | undefined>
           toAdd = ''
-          for (const k in arg) {
-            if ((arg as Record<string, boolean | null | undefined>)[k] && k) {
-              toAdd && (toAdd += ' ')
+          for (const k of Object.keys(obj)) {
+            if (obj[k] && k) {
+              if (toAdd) {
+                toAdd += ' '
+              }
               toAdd += k
             }
           }
@@ -42,7 +45,9 @@ export const classnames = (args: CxArg[]): string => {
       }
     }
     if (toAdd) {
-      cls && (cls += ' ')
+      if (cls) {
+        cls += ' '
+      }
       cls += toAdd
     }
   }

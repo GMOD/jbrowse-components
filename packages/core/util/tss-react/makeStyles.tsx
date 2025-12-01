@@ -39,7 +39,6 @@ export function createMakeStyles<Theme>(params: { useTheme: () => Theme }) {
       ) {
         const theme = useTheme()
         const { css, cx } = useCssAndCx()
-        const cache = useContextualCache()
 
         let classes = useMemo(() => {
           const cssObjectByRuleName = getCssObjectByRuleName(theme)
@@ -51,16 +50,16 @@ export function createMakeStyles<Theme>(params: { useTheme: () => Theme }) {
           }
 
           return result as Record<RuleName, string>
-        }, [cache, css, theme])
+        }, [css, theme])
 
         // Merge with props.classes if provided
-        {
-          const propsClasses = muiStyleOverridesParams?.props?.classes
-          classes = useMemo(
-            () => mergeClasses(classes, propsClasses, cx),
-            [classes, getDependencyArrayRef(propsClasses), cx],
-          )
-        }
+        const propsClasses = muiStyleOverridesParams?.props.classes
+        const propsClassesRef = getDependencyArrayRef(propsClasses)
+        classes = useMemo(
+          () => mergeClasses(classes, propsClasses, cx),
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+          [classes, propsClassesRef, cx],
+        )
 
         return { classes, theme, css, cx }
       }

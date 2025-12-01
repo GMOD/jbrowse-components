@@ -1,8 +1,9 @@
+import { useMemo } from 'react'
+
 import { serializeStyles } from '@emotion/serialize'
 import { getRegisteredStyles, insertStyles } from '@emotion/utils'
 
 import { classnames } from './tools/classnames'
-import { useGuaranteedMemo } from './tools/useGuaranteedMemo'
 import { matchCSSObject } from './types'
 
 import type { CSSObject, Css, Cx } from './types'
@@ -77,10 +78,7 @@ export function createUseCssAndCx(params: { useCache: () => EmotionCache }) {
   function useCssAndCx() {
     const cache = useCache()
 
-    const { css, cx } = useGuaranteedMemo(
-      () => createCssAndCx({ cache }),
-      [cache],
-    )
+    const { css, cx } = useMemo(() => createCssAndCx({ cache }), [cache])
 
     return { css, cx }
   }

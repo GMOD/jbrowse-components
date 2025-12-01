@@ -34,7 +34,7 @@ exports[`open up a widget 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
               data-testid="ExpandMoreIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -61,7 +61,7 @@ exports[`open up a widget 1`] = `
               role="region"
             >
               <div
-                class="MuiAccordionDetails-root css-1eji0yd-MuiAccordionDetails-root-expansionPanelDetails"
+                class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
               >
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
@@ -69,29 +69,29 @@ exports[`open up a widget 1`] = `
                   Core details
                 </p>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                   >
                     Position
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     ctgA:3..102 (+)
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                   >
                     Name
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <span>
                       ctgA_3_555_0:0:0_2:0:0_102d
@@ -99,15 +99,15 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                   >
                     Length
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <span>
                       100
@@ -115,15 +115,15 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                   >
                     Type
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <span>
                       match
@@ -139,16 +139,16 @@ exports[`open up a widget 1`] = `
                   Attributes
                 </p>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                     style="width: 96px;"
                   >
                     seq
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
@@ -156,16 +156,16 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                     style="width: 96px;"
                   >
                     score
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       37
@@ -173,16 +173,16 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                     style="width: 96px;"
                   >
                     qual
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <button
                       type="button"
@@ -200,16 +200,16 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                     style="width: 96px;"
                   >
                     MQ
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       37
@@ -217,16 +217,16 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                     style="width: 96px;"
                   >
                     CIGAR
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       100M
@@ -234,16 +234,16 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                     style="width: 96px;"
                   >
                     length_on_ref
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       100
@@ -251,16 +251,16 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                     style="width: 96px;"
                   >
                     template_length
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       0
@@ -268,16 +268,16 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                     style="width: 96px;"
                   >
                     seq_length
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       100
@@ -285,10 +285,10 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-57ilie-container"
+                  class="css-1ebprri"
                 >
                   <div
-                    class="MuiFormControl-root MuiFormControl-marginDense css-h2948o-MuiFormControl-root-formControl"
+                    class="MuiFormControl-root MuiFormControl-marginDense css-1uvyb5m-MuiFormControl-root"
                   >
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
