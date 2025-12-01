@@ -7,8 +7,8 @@ import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { createAutorun } from '../util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
@@ -75,24 +75,16 @@ function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Returns colorBy from parent if nested, else own colorBy
        */
       get colorBy() {
-        const parent = self.parentDisplay
-        return (
-          parent?.colorBy ?? self.colorBySetting ?? getConf(self, 'colorBy')
-        )
+        return self.colorBySetting ?? getConf(self, 'colorBy')
       },
 
       /**
        * #getter
-       * Returns filterBy from parent if nested, else own filterBy
        */
       get filterBy() {
-        const parent = self.parentDisplay
-        return (
-          parent?.filterBy ?? self.filterBySetting ?? getConf(self, 'filterBy')
-        )
+        return self.filterBySetting ?? getConf(self, 'filterBy')
       },
     }))
     .actions(self => ({
@@ -233,13 +225,6 @@ function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
-        // Only run modifications autorun if not nested in a parent display
-        // (parent LinearAlignmentsDisplay handles it for nested displays)
-        if (self.parentDisplay) {
-          // Nested display - parent handles modifications
-          return
-        }
-
         createAutorun(
           self,
           async () => {
@@ -279,46 +264,17 @@ function stateModelFactory(
       return {
         /**
          * #getter
-         * Returns effective modifications (from parent if nested, else own)
-         */
-        get effectiveVisibleModifications() {
-          const parent = self.parentDisplay
-          return parent?.visibleModifications ?? self.visibleModifications
-        },
-
-        /**
-         * #getter
-         * Returns effective simplex modifications (from parent if nested, else own)
-         */
-        get effectiveSimplexModifications() {
-          const parent = self.parentDisplay
-          return parent?.simplexModifications ?? self.simplexModifications
-        },
-
-        /**
-         * #getter
-         * Returns effective modifications ready flag (from parent if nested, else own)
-         */
-        get effectiveModificationsReady() {
-          const parent = self.parentDisplay
-          return parent?.modificationsReady ?? self.modificationsReady
-        },
-
-        /**
-         * #getter
          */
         renderReady() {
           const superProps = superRenderProps()
-          return !superProps.notReady && this.effectiveModificationsReady
+          return !superProps.notReady && self.modificationsReady
         },
 
         /**
          * #method
          */
         renderProps() {
-          const { colorBy } = self
-          const visibleModifications = this.effectiveVisibleModifications
-          const simplexModifications = this.effectiveSimplexModifications
+          const { colorBy, visibleModifications, simplexModifications } = self
           return {
             ...superRenderProps(),
             notReady: !this.renderReady(),

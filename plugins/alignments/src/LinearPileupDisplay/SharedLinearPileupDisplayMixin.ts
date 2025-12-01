@@ -581,26 +581,6 @@ export function SharedLinearPileupDisplayMixin(
          * #method
          */
         trackMenuItems() {
-          // When nested in parent display (LinearAlignmentsDisplay),
-          // Filter by is handled at the parent level
-          const filterByItem = self.parentDisplay
-            ? []
-            : [
-                {
-                  label: 'Filter by...',
-                  icon: FilterListIcon,
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      FilterByTagDialog,
-                      {
-                        model: self,
-                        handleClose,
-                      },
-                    ])
-                  },
-                },
-              ]
-
           return [
             ...superTrackMenuItems(),
             {
@@ -664,7 +644,19 @@ export function SharedLinearPileupDisplayMixin(
                 ])
               },
             },
-            ...filterByItem,
+            {
+              label: 'Filter by...',
+              icon: FilterListIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  FilterByTagDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
           ]
         },
       }

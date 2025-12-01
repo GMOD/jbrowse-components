@@ -1,25 +1,11 @@
-import { lazy } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import {
-  addDisposer,
-  getSnapshot,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
-import FilterListIcon from '@mui/icons-material/ClearAll'
-import ColorLensIcon from '@mui/icons-material/ColorLens'
-import WorkspacesIcon from '@mui/icons-material/Workspaces'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
-import { getUniqueModifications } from '../shared/getUniqueModifications'
-import { modificationData } from '../shared/modificationData'
-import { createAutorun } from '../util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -29,27 +15,7 @@ import type {
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
-
-// lazies
-const FilterByTagDialog = lazy(
-  () => import('../shared/components/FilterByTagDialog'),
-)
-const ColorByTagDialog = lazy(
-  () => import('../LinearPileupDisplay/components/ColorByTagDialog'),
-)
-const SetModificationThresholdDialog = lazy(
-  () =>
-    import('../LinearPileupDisplay/components/SetModificationThresholdDialog'),
-)
-const GroupByDialog = lazy(
-  () => import('../LinearPileupDisplay/components/GroupByDialog'),
-)
-
-type LGV = LinearGenomeViewModel
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 const minDisplayHeight = 20
 
@@ -287,41 +253,6 @@ function stateModelFactory(
             { name: 'PileupHeight' },
           ),
         )
-
-        // Modifications autorun - runs once for both nested displays
-        createAutorun(
-          self,
-          async () => {
-            self.setModificationsReady(false)
-            const view = getContainingView(self) as LGV
-            if (!view.initialized) {
-              return
-            }
-            const { staticBlocks } = view
-            // Check parent colorBy, or fall back to nested displays' colorBy for
-            // backwards compatibility with old snapshots
-            const colorBy =
-              self.colorBy ??
-              self.PileupDisplay?.colorBySetting ??
-              self.SNPCoverageDisplay?.colorBySetting
-            if (colorBy?.type === 'modifications') {
-              const { modifications, simplexModifications } =
-                await getUniqueModifications({
-                  model: self,
-                  adapterConfig: getConf(self.parentTrack, 'adapter'),
-                  blocks: staticBlocks,
-                })
-              if (isAlive(self)) {
-                self.updateVisibleModifications(modifications)
-                self.setSimplexModifications(simplexModifications)
-                self.setModificationsReady(true)
-              }
-            } else {
-              self.setModificationsReady(true)
-            }
-          },
-          { delay: 1000 },
-        )
       },
       /**
        * #action
@@ -334,146 +265,6 @@ function stateModelFactory(
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
-        /**
-         * #method
-         * Generates color scheme submenu items for the Color by menu
-         */
-        colorSchemeSubMenuItems(): MenuItem[] {
-          const { colorBy } = self
-          const currentType = colorBy?.type
-
-          const colorTypes = [
-            { type: 'normal', label: 'Normal' },
-            { type: 'mappingQuality', label: 'Mapping quality' },
-            { type: 'strand', label: 'Strand' },
-            { type: 'perBaseQuality', label: 'Per-base quality' },
-            { type: 'perBaseLettering', label: 'Per-base lettering' },
-            { type: 'stranded', label: 'First-of-pair strand' },
-            { type: 'pairOrientation', label: 'Pair orientation' },
-            { type: 'insertSize', label: 'Insert size' },
-          ]
-
-          return [
-            ...colorTypes.map(({ type, label }) => ({
-              type: 'radio' as const,
-              label,
-              checked: currentType === type,
-              onClick: () => {
-                self.setColorScheme({ type })
-              },
-            })),
-            {
-              label: 'Color by tag...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  ColorByTagDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
-          ]
-        },
-
-        /**
-         * #method
-         * Generates modifications submenu for the Color by menu
-         */
-        modificationsMenuItems(): MenuItem[] {
-          const threshold = self.modificationThreshold
-          const { colorBy } = self
-          const currentType = colorBy?.type
-          const currentMods = colorBy?.modifications
-
-          if (!self.modificationsReady) {
-            return [{ label: 'Loading modifications...', onClick: () => {} }]
-          }
-
-          const isModsSelected = (opts: {
-            twoColor?: boolean
-            isolatedModification?: string
-          }) =>
-            currentType === 'modifications' &&
-            currentMods?.twoColor === opts.twoColor &&
-            currentMods?.isolatedModification === opts.isolatedModification
-
-          return [
-            {
-              type: 'radio' as const,
-              label: `All modifications (>= ${threshold}% prob)`,
-              checked: isModsSelected({}),
-              onClick: () => {
-                self.setColorScheme({
-                  type: 'modifications',
-                  modifications: { threshold },
-                })
-              },
-            },
-            ...self.visibleModificationTypes.map(key => ({
-              type: 'radio' as const,
-              label: `Show only ${modificationData[key]?.name || key} (>= ${threshold}% prob)`,
-              checked: isModsSelected({ isolatedModification: key }),
-              onClick: () => {
-                self.setColorScheme({
-                  type: 'modifications',
-                  modifications: { isolatedModification: key, threshold },
-                })
-              },
-            })),
-            { type: 'divider' } as MenuItem,
-            {
-              type: 'radio' as const,
-              label: 'All modifications (<50% prob colored blue)',
-              checked: isModsSelected({ twoColor: true }),
-              onClick: () => {
-                self.setColorScheme({
-                  type: 'modifications',
-                  modifications: { twoColor: true, threshold },
-                })
-              },
-            },
-            ...self.visibleModificationTypes.map(key => ({
-              type: 'radio' as const,
-              label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
-              checked: isModsSelected({
-                twoColor: true,
-                isolatedModification: key,
-              }),
-              onClick: () => {
-                self.setColorScheme({
-                  type: 'modifications',
-                  modifications: {
-                    isolatedModification: key,
-                    twoColor: true,
-                    threshold,
-                  },
-                })
-              },
-            })),
-            { type: 'divider' } as MenuItem,
-            {
-              type: 'radio' as const,
-              label: 'All reference CpGs',
-              checked: currentType === 'methylation',
-              onClick: () => {
-                self.setColorScheme({
-                  type: 'methylation',
-                  modifications: { threshold },
-                })
-              },
-            },
-            { type: 'divider' } as MenuItem,
-            {
-              label: `Adjust threshold (${threshold}%)`,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetModificationThresholdDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
-          ]
-        },
-
         /**
          * #method
          */
@@ -491,38 +282,6 @@ function stateModelFactory(
           }))
           return [
             ...superTrackMenuItems(),
-            {
-              label: 'Color by...',
-              icon: ColorLensIcon,
-              subMenu: [
-                {
-                  label: 'Modifications',
-                  type: 'subMenu',
-                  subMenu: this.modificationsMenuItems(),
-                },
-                ...this.colorSchemeSubMenuItems(),
-              ],
-            },
-            {
-              label: 'Filter by...',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  FilterByTagDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
-            {
-              label: 'Group by...',
-              icon: WorkspacesIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  GroupByDialog,
-                  { model: self.PileupDisplay, handleClose },
-                ])
-              },
-            },
             {
               type: 'subMenu',
               label: 'Pileup settings',
