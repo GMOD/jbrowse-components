@@ -1,13 +1,38 @@
-import WiggleBaseRenderer from '../WiggleBaseRenderer'
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { rpcResult } from 'librpc-web-mod'
 
-import type { RenderArgsDeserializedWithFeatures } from '../WiggleBaseRenderer'
+import type { RenderArgsDeserialized } from '../types'
 
-export default class DensityRenderer extends WiggleBaseRenderer {
-  async draw(
-    ctx: CanvasRenderingContext2D,
-    props: RenderArgsDeserializedWithFeatures,
-  ) {
-    const { drawDensity } = await import('../drawDensity')
-    return drawDensity(ctx, props)
+export default class DensityRenderer extends FeatureRendererType {
+  supportsSVG = true
+
+  async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
+    const { height, regions, bpPerPx, statusCallback = () => {} } = renderProps
+
+    const region = regions[0]!
+    const width = (region.end - region.start) / bpPerPx
+
+    const { reducedFeatures, ...rest } = await updateStatus(
+      'Rendering plot',
+      statusCallback,
+      async () => {
+        const { drawDensity } = await import('../drawDensity')
+        return renderToAbstractCanvas(width, height, renderProps, ctx =>
+          drawDensity(ctx, { ...renderProps, features }),
+        )
+      },
+    )
+
+    const serialized = {
+      ...rest,
+      features: reducedFeatures?.map(f => f.toJSON()),
+      height,
+      width,
+    }
+
+    return rpcResult(serialized, collectTransferables(rest))
   }
 }
