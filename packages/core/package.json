@@ -30,10 +30,7 @@
     "build": "tsc -p tsconfig.build.json && cp package.json README.md ../../LICENSE dist/"
   },
   "dependencies": {
-    "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
-    "@emotion/serialize": "^1.0.0",
-    "@emotion/utils": "^1.0.0",
     "@floating-ui/react": "^0.27.0",
     "@gmod/abortable-promise-cache": "^3.0.1",
     "@gmod/bgzf-filehandle": "^5.0.2",
