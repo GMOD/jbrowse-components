@@ -22,7 +22,11 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, observable } from 'mobx'
 
-import { createAutorun, getParentDisplaySettings } from '../util'
+import {
+  createAutorun,
+  getParentDisplaySettings,
+  isNestedDisplay,
+} from '../util'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getUniqueTags } from '../shared/getUniqueTags'
 
@@ -592,6 +596,26 @@ export function SharedLinearPileupDisplayMixin(
          * #method
          */
         trackMenuItems() {
+          // When nested in parent display (LinearAlignmentsDisplay),
+          // Filter by is handled at the parent level
+          const filterByItem = isNestedDisplay(self)
+            ? []
+            : [
+                {
+                  label: 'Filter by...',
+                  icon: FilterListIcon,
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      FilterByTagDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+              ]
+
           return [
             ...superTrackMenuItems(),
             {
@@ -655,19 +679,7 @@ export function SharedLinearPileupDisplayMixin(
                 ])
               },
             },
-            {
-              label: 'Filter by...',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  FilterByTagDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
+            ...filterByItem,
           ]
         },
       }

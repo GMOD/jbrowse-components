@@ -16,56 +16,59 @@ export function LinearAlignmentsDisplayMixin(
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
-    .compose(SharedModificationsMixin(), types.model({
-      /**
-       * #property
-       * refers to LinearPileupDisplay sub-display model
-       */
-      PileupDisplay: types.maybe(
-        types.union(
-          ...getLowerPanelDisplays(pluginManager).map(f => f.stateModel),
+    .compose(
+      SharedModificationsMixin(),
+      types.model({
+        /**
+         * #property
+         * refers to LinearPileupDisplay sub-display model
+         */
+        PileupDisplay: types.maybe(
+          types.union(
+            ...getLowerPanelDisplays(pluginManager).map(f => f.stateModel),
+          ),
         ),
-      ),
-      /**
-       * #property
-       * refers to LinearSNPCoverageDisplay sub-display model
-       */
-      SNPCoverageDisplay: types.maybe(
-        pluginManager.getDisplayType('LinearSNPCoverageDisplay')!.stateModel,
-      ),
-      /**
-       * #property
-       */
-      snpCovHeight: 45,
-      /**
-       * #property
-       */
-      type: types.literal('LinearAlignmentsDisplay'),
-      /**
-       * #property
-       */
-      configuration: ConfigurationReference(configSchema),
-      /**
-       * #property
-       */
-      heightPreConfig: types.maybe(types.number),
-      /**
-       * #property
-       */
-      userFeatureScreenDensity: types.maybe(types.number),
-      /**
-       * #property
-       */
-      lowerPanelType: 'LinearPileupDisplay',
-      /**
-       * #property
-       */
-      colorBySetting: types.frozen<ColorBy | undefined>(),
-      /**
-       * #property
-       */
-      filterBySetting: types.frozen<FilterBy | undefined>(),
-    }))
+        /**
+         * #property
+         * refers to LinearSNPCoverageDisplay sub-display model
+         */
+        SNPCoverageDisplay: types.maybe(
+          pluginManager.getDisplayType('LinearSNPCoverageDisplay')!.stateModel,
+        ),
+        /**
+         * #property
+         */
+        snpCovHeight: 45,
+        /**
+         * #property
+         */
+        type: types.literal('LinearAlignmentsDisplay'),
+        /**
+         * #property
+         */
+        configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        heightPreConfig: types.maybe(types.number),
+        /**
+         * #property
+         */
+        userFeatureScreenDensity: types.maybe(types.number),
+        /**
+         * #property
+         */
+        lowerPanelType: 'LinearPileupDisplay',
+        /**
+         * #property
+         */
+        colorBySetting: types.frozen<ColorBy | undefined>(),
+        /**
+         * #property
+         */
+        filterBySetting: types.frozen<FilterBy | undefined>(),
+      }),
+    )
     .views(self => ({
       /**
        * #getter

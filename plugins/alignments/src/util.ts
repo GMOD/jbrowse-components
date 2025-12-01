@@ -38,6 +38,14 @@ export function getParentDisplaySettings(
   return undefined
 }
 
+/**
+ * Returns true if this display is nested inside a parent display
+ * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
+ */
+export function isNestedDisplay(self: unknown): boolean {
+  return getParentDisplaySettings(self) !== undefined
+}
+
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications
 export function getTagAlt(feature: Feature, tag: string, alt: string) {

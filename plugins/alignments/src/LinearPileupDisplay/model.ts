@@ -15,6 +15,7 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { modificationData } from '../shared/modificationData'
+import { isNestedDisplay } from '../util'
 
 import type { SortedBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -265,6 +266,123 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         trackMenuItems() {
+          // When nested in parent display (LinearAlignmentsDisplay),
+          // Color by is handled at the parent level
+          const colorByItem = isNestedDisplay(self)
+            ? []
+            : [
+                {
+                  label: 'Color by...',
+                  icon: ColorLensIcon,
+                  subMenu: [
+                    {
+                      label: 'Pair orientation',
+                      onClick: () => {
+                        self.setColorScheme({
+                          type: 'pairOrientation',
+                        })
+                      },
+                    },
+                    {
+                      label: 'Modifications',
+                      type: 'subMenu',
+                      subMenu: self.modificationsReady
+                        ? [
+                            {
+                              label: `All modifications (>= ${self.modificationThreshold}% prob)`,
+                              onClick: () => {
+                                self.setColorScheme({
+                                  type: 'modifications',
+                                  modifications: {
+                                    threshold: self.modificationThreshold,
+                                  },
+                                })
+                              },
+                            },
+                            ...self.visibleModificationTypes.map(key => ({
+                              label: `Show only ${modificationData[key]?.name || key}  (>= ${self.modificationThreshold}% prob)`,
+                              onClick: () => {
+                                self.setColorScheme({
+                                  type: 'modifications',
+                                  modifications: {
+                                    isolatedModification: key,
+                                    threshold: self.modificationThreshold,
+                                  },
+                                })
+                              },
+                            })),
+                            { type: 'divider' },
+                            {
+                              label: 'All modifications (<50% prob colored blue)',
+                              onClick: () => {
+                                self.setColorScheme({
+                                  type: 'modifications',
+                                  modifications: {
+                                    twoColor: true,
+                                    threshold: self.modificationThreshold,
+                                  },
+                                })
+                              },
+                            },
+                            ...self.visibleModificationTypes.map(key => ({
+                              label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
+                              onClick: () => {
+                                self.setColorScheme({
+                                  type: 'modifications',
+                                  modifications: {
+                                    isolatedModification: key,
+                                    twoColor: true,
+                                    threshold: self.modificationThreshold,
+                                  },
+                                })
+                              },
+                            })),
+                            { type: 'divider' },
+                            {
+                              label: 'All reference CpGs',
+                              onClick: () => {
+                                self.setColorScheme({
+                                  type: 'methylation',
+                                  modifications: {
+                                    threshold: self.modificationThreshold,
+                                  },
+                                })
+                              },
+                            },
+                            { type: 'divider' },
+                            {
+                              label: `Adjust threshold (${self.modificationThreshold}%)`,
+                              onClick: () => {
+                                getSession(self).queueDialog(handleClose => [
+                                  SetModificationThresholdDialog,
+                                  {
+                                    model: self,
+                                    handleClose,
+                                  },
+                                ])
+                              },
+                            },
+                          ]
+                        : [
+                            {
+                              label: 'Loading modifications...',
+                              onClick: () => {},
+                            },
+                          ],
+                    },
+                    {
+                      label: 'Insert size',
+                      onClick: () => {
+                        self.setColorScheme({
+                          type: 'insertSize',
+                        })
+                      },
+                    },
+                    ...superColorSchemeSubMenuItems(),
+                  ],
+                },
+              ]
+
           return [
             ...superTrackMenuItems(),
             {
@@ -300,116 +418,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
               ],
             },
-            {
-              label: 'Color by...',
-              icon: ColorLensIcon,
-              subMenu: [
-                {
-                  label: 'Pair orientation',
-                  onClick: () => {
-                    self.setColorScheme({
-                      type: 'pairOrientation',
-                    })
-                  },
-                },
-                {
-                  label: 'Modifications',
-                  type: 'subMenu',
-                  subMenu: self.modificationsReady
-                    ? [
-                        {
-                          label: `All modifications (>= ${self.modificationThreshold}% prob)`,
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        },
-                        ...self.visibleModificationTypes.map(key => ({
-                          label: `Show only ${modificationData[key]?.name || key}  (>= ${self.modificationThreshold}% prob)`,
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                isolatedModification: key,
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        })),
-                        { type: 'divider' },
-                        {
-                          label: 'All modifications (<50% prob colored blue)',
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                twoColor: true,
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        },
-                        ...self.visibleModificationTypes.map(key => ({
-                          label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                isolatedModification: key,
-                                twoColor: true,
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        })),
-                        { type: 'divider' },
-                        {
-                          label: 'All reference CpGs',
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'methylation',
-                              modifications: {
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        },
-                        { type: 'divider' },
-                        {
-                          label: `Adjust threshold (${self.modificationThreshold}%)`,
-                          onClick: () => {
-                            getSession(self).queueDialog(handleClose => [
-                              SetModificationThresholdDialog,
-                              {
-                                model: self,
-                                handleClose,
-                              },
-                            ])
-                          },
-                        },
-                      ]
-                    : [
-                        {
-                          label: 'Loading modifications...',
-                          onClick: () => {},
-                        },
-                      ],
-                },
-                {
-                  label: 'Insert size',
-                  onClick: () => {
-                    self.setColorScheme({
-                      type: 'insertSize',
-                    })
-                  },
-                },
-                ...superColorSchemeSubMenuItems(),
-              ],
-            },
+            ...colorByItem,
             {
               label: 'Group by...',
               icon: WorkspacesIcon,

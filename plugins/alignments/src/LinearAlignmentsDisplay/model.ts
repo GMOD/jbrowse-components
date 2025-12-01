@@ -1,13 +1,23 @@
+import { lazy } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView } from '@jbrowse/core/util'
-import { addDisposer, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import ColorLensIcon from '@mui/icons-material/ColorLens'
+import FilterListIcon from '@mui/icons-material/ClearAll'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { modificationData } from '../shared/modificationData'
 import { createAutorun } from '../util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -22,6 +32,18 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+
+// lazies
+const FilterByTagDialog = lazy(
+  () => import('../shared/components/FilterByTagDialog'),
+)
+const ColorByTagDialog = lazy(
+  () => import('../LinearPileupDisplay/components/ColorByTagDialog'),
+)
+const SetModificationThresholdDialog = lazy(
+  () =>
+    import('../LinearPileupDisplay/components/SetModificationThresholdDialog'),
+)
 
 type LGV = LinearGenomeViewModel
 
@@ -304,6 +326,139 @@ function stateModelFactory(
       const { trackMenuItems: superTrackMenuItems } = self
       return {
         /**
+         * #getter
+         */
+        get modificationThreshold() {
+          return self.colorBy?.modifications?.threshold ?? 10
+        },
+
+        /**
+         * #getter
+         */
+        get visibleModificationTypes() {
+          return [...self.visibleModifications.keys()]
+        },
+
+        /**
+         * #method
+         * Generates color scheme submenu items for the Color by menu
+         */
+        colorSchemeSubMenuItems(): MenuItem[] {
+          return [
+            {
+              label: 'Normal',
+              onClick: () => self.setColorScheme({ type: 'normal' }),
+            },
+            {
+              label: 'Mapping quality',
+              onClick: () => self.setColorScheme({ type: 'mappingQuality' }),
+            },
+            {
+              label: 'Strand',
+              onClick: () => self.setColorScheme({ type: 'strand' }),
+            },
+            {
+              label: 'Per-base quality',
+              onClick: () => self.setColorScheme({ type: 'perBaseQuality' }),
+            },
+            {
+              label: 'Per-base lettering',
+              onClick: () => self.setColorScheme({ type: 'perBaseLettering' }),
+            },
+            {
+              label: 'First-of-pair strand',
+              onClick: () => self.setColorScheme({ type: 'stranded' }),
+            },
+            {
+              label: 'Pair orientation',
+              onClick: () => self.setColorScheme({ type: 'pairOrientation' }),
+            },
+            {
+              label: 'Insert size',
+              onClick: () => self.setColorScheme({ type: 'insertSize' }),
+            },
+            {
+              label: 'Color by tag...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  ColorByTagDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+          ]
+        },
+
+        /**
+         * #method
+         * Generates modifications submenu for the Color by menu
+         */
+        modificationsMenuItems(): MenuItem[] {
+          const threshold = this.modificationThreshold
+          if (!self.modificationsReady) {
+            return [{ label: 'Loading modifications...', onClick: () => {} }]
+          }
+          return [
+            {
+              label: `All modifications (>= ${threshold}% prob)`,
+              onClick: () =>
+                self.setColorScheme({
+                  type: 'modifications',
+                  modifications: { threshold },
+                }),
+            },
+            ...this.visibleModificationTypes.map(key => ({
+              label: `Show only ${modificationData[key]?.name || key} (>= ${threshold}% prob)`,
+              onClick: () =>
+                self.setColorScheme({
+                  type: 'modifications',
+                  modifications: { isolatedModification: key, threshold },
+                }),
+            })),
+            { type: 'divider' } as MenuItem,
+            {
+              label: 'All modifications (<50% prob colored blue)',
+              onClick: () =>
+                self.setColorScheme({
+                  type: 'modifications',
+                  modifications: { twoColor: true, threshold },
+                }),
+            },
+            ...this.visibleModificationTypes.map(key => ({
+              label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
+              onClick: () =>
+                self.setColorScheme({
+                  type: 'modifications',
+                  modifications: {
+                    isolatedModification: key,
+                    twoColor: true,
+                    threshold,
+                  },
+                }),
+            })),
+            { type: 'divider' } as MenuItem,
+            {
+              label: 'All reference CpGs',
+              onClick: () =>
+                self.setColorScheme({
+                  type: 'methylation',
+                  modifications: { threshold },
+                }),
+            },
+            { type: 'divider' } as MenuItem,
+            {
+              label: `Adjust threshold (${threshold}%)`,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SetModificationThresholdDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+          ]
+        },
+
+        /**
          * #method
          */
         trackMenuItems(): MenuItem[] {
@@ -320,6 +475,28 @@ function stateModelFactory(
           }))
           return [
             ...superTrackMenuItems(),
+            {
+              label: 'Color by...',
+              icon: ColorLensIcon,
+              subMenu: [
+                {
+                  label: 'Modifications',
+                  type: 'subMenu',
+                  subMenu: this.modificationsMenuItems(),
+                },
+                ...this.colorSchemeSubMenuItems(),
+              ],
+            },
+            {
+              label: 'Filter by...',
+              icon: FilterListIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  FilterByTagDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
             {
               type: 'subMenu',
               label: 'Pileup settings',
