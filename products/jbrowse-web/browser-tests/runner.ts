@@ -4,31 +4,27 @@ import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import pixelmatch from 'pixelmatch'
-import { PNG } from 'pngjs'
+import {
+  parseArgs,
+  runTests,
+  findByTestId,
+  findByText,
+  delay,
+  capturePageSnapshot,
+  waitForLoadingToComplete,
+  type TestSuite,
+} from 'puppeteer-test-utils'
 import { type Page, launch } from 'puppeteer'
 import handler from 'serve-handler'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-interface TestSuite {
-  name: string
-  tests: { name: string; fn: (page: Page) => Promise<void> }[]
-}
-
 const args = process.argv.slice(2)
-const headed = args.includes('--headed')
-const slowMoArg = args.find(a => a.startsWith('--slow-mo='))
-const slowMo = slowMoArg ? parseInt(slowMoArg.split('=')[1]!, 10) : 0
-const updateSnapshots =
-  args.includes('--update-snapshots') || args.includes('-u')
+const { headed, slowMo, updateSnapshots } = parseArgs(args)
 
 const snapshotsDir = path.resolve(__dirname, '__snapshots__')
 const buildPath = path.resolve(__dirname, '../build')
 const PORT = 3333
-
-// Helper functions
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 function startServer(port: number): Promise<http.Server> {
   return new Promise((resolve, reject) => {
@@ -54,98 +50,6 @@ function startServer(port: number): Promise<http.Server> {
   })
 }
 
-async function findByTestId(page: Page, testId: string, timeout = 30000) {
-  return page.waitForSelector(`[data-testid="${testId}"]`, {
-    timeout,
-    visible: true,
-  })
-}
-
-async function findByText(page: Page, text: string | RegExp, timeout = 30000) {
-  const searchText = typeof text === 'string' ? text : text.source
-  return page.waitForSelector(`::-p-text(${searchText})`, {
-    timeout,
-    visible: true,
-  })
-}
-
-async function waitForLoadingToComplete(page: Page, timeout = 30000) {
-  await page.waitForFunction(
-    () => document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
-    { timeout },
-  )
-}
-
-const FAILURE_THRESHOLD = 0.01
-const FAILURE_THRESHOLD_TYPE = 'percent'
-
-async function capturePageSnapshot(page: Page, name: string) {
-  if (!fs.existsSync(snapshotsDir)) {
-    fs.mkdirSync(snapshotsDir, { recursive: true })
-  }
-
-  const screenshot = await page.screenshot({ fullPage: true })
-  const snapshotPath = path.join(snapshotsDir, `${name}.png`)
-
-  if (updateSnapshots || !fs.existsSync(snapshotPath)) {
-    fs.writeFileSync(snapshotPath, screenshot)
-    return {
-      passed: true,
-      message: updateSnapshots ? 'Snapshot updated' : 'Snapshot created',
-    }
-  }
-
-  const expectedBuffer = fs.readFileSync(snapshotPath)
-  const expectedImg = PNG.sync.read(expectedBuffer)
-  // @ts-expect-error Uint8Array works at runtime
-  const actualImg = PNG.sync.read(screenshot)
-
-  if (
-    expectedImg.width !== actualImg.width ||
-    expectedImg.height !== actualImg.height
-  ) {
-    fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
-    return {
-      passed: false,
-      message: `Snapshot size differs: expected ${expectedImg.width}x${expectedImg.height}, got ${actualImg.width}x${actualImg.height}`,
-    }
-  }
-
-  const { width, height } = expectedImg
-  const diffImg = new PNG({ width, height })
-
-  const numDiffPixels = pixelmatch(
-    expectedImg.data,
-    actualImg.data,
-    diffImg.data,
-    width,
-    height,
-    { threshold: 0.1 },
-  )
-
-  const totalPixels = width * height
-  const diffPercent = numDiffPixels / totalPixels
-  const threshold =
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    FAILURE_THRESHOLD_TYPE === 'percent'
-      ? FAILURE_THRESHOLD
-      : FAILURE_THRESHOLD / totalPixels
-
-  if (diffPercent <= threshold) {
-    return { passed: true, message: 'Snapshot matches' }
-  }
-
-  fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
-  fs.writeFileSync(
-    path.join(snapshotsDir, `${name}.diff-visual.png`),
-    PNG.sync.write(diffImg),
-  )
-  return {
-    passed: false,
-    message: `Snapshot differs by ${(diffPercent * 100).toFixed(2)}% (threshold: ${FAILURE_THRESHOLD * 100}%)`,
-  }
-}
-
 async function navigateToApp(page: Page) {
   await page.goto(
     `http://localhost:${PORT}/?config=test_data/volvox/config.json`,
@@ -164,6 +68,16 @@ async function openTrack(page: Page, trackId: string) {
     10000,
   )
   await trackLabel?.click()
+}
+
+async function snapshot(page: Page, name: string) {
+  const result = await capturePageSnapshot(page, name, {
+    snapshotsDir,
+    updateSnapshots,
+  })
+  if (!result.passed) {
+    throw new Error(result.message)
+  }
 }
 
 const testSuites: TestSuite[] = [
@@ -253,55 +167,12 @@ const testSuites: TestSuite[] = [
           await openTrack(page, 'volvox_alignments')
           await findByTestId(page, 'Blockset-pileup', 60000)
           await waitForLoadingToComplete(page)
-          const result = await capturePageSnapshot(page, 'alignments-bam')
-          if (!result.passed) {
-            throw new Error(result.message)
-          }
+          await snapshot(page, 'alignments-bam')
         },
       },
     ],
   },
 ]
-
-async function runTests(page: Page) {
-  let passed = 0
-  let failed = 0
-
-  for (const suite of testSuites) {
-    console.log(`\n  ${suite.name}`)
-
-    for (const test of suite.tests) {
-      const start = performance.now()
-      process.stdout.write(`    ⏳ ${test.name}...`)
-
-      try {
-        await page.goto('about:blank')
-        await test.fn(page)
-
-        const duration = performance.now() - start
-        passed++
-
-        if (process.stdout.isTTY) {
-          process.stdout.clearLine(0)
-          process.stdout.cursorTo(0)
-        }
-        console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
-      } catch (e) {
-        failed++
-        const error = e instanceof Error ? e.message : String(e)
-
-        if (process.stdout.isTTY) {
-          process.stdout.clearLine(0)
-          process.stdout.cursorTo(0)
-        }
-        console.log(`    ✗ ${test.name}`)
-        console.log(`      Error: ${error}`)
-      }
-    }
-  }
-
-  return { passed, failed }
-}
 
 async function main() {
   if (!fs.existsSync(buildPath)) {
@@ -337,7 +208,7 @@ async function main() {
     })
 
     console.log('\nRunning browser tests...')
-    const { passed, failed } = await runTests(page)
+    const { passed, failed } = await runTests(page, testSuites)
 
     console.log(`\n${'─'.repeat(50)}`)
     console.log(`  Tests: ${passed} passed, ${failed} failed`)
