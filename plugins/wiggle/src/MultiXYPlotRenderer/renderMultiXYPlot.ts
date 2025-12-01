@@ -8,7 +8,6 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
-import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 import type { MultiRenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -41,7 +40,6 @@ export async function renderMultiXYPlot(
           const { reducedFeatures } = drawXY(ctx, {
             ...renderProps,
             features: sourceFeatures,
-            offset: YSCALEBAR_LABEL_OFFSET,
             colorCallback: () => source.color || 'blue',
           })
           feats = feats.concat(reducedFeatures)

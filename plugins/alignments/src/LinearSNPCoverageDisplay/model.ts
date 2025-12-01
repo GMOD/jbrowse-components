@@ -75,16 +75,20 @@ function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * Returns colorBy from parent if nested, else own colorBy
        */
       get colorBy() {
-        return self.colorBySetting ?? getConf(self, 'colorBy')
+        const parent = self.parentDisplay
+        return parent?.colorBy ?? self.colorBySetting ?? getConf(self, 'colorBy')
       },
 
       /**
        * #getter
+       * Returns filterBy from parent if nested, else own filterBy
        */
       get filterBy() {
-        return self.filterBySetting ?? getConf(self, 'filterBy')
+        const parent = self.parentDisplay
+        return parent?.filterBy ?? self.filterBySetting ?? getConf(self, 'filterBy')
       },
     }))
     .actions(self => ({
@@ -405,6 +409,20 @@ function stateModelFactory(
           return new SerializableFilterChain({ filters: self.jexlFilters })
         },
       }
+    })
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (snap) {
+        // @ts-expect-error
+        const { colorBy, colorBySetting, filterBySetting, filterBy, ...rest } =
+          snap
+        return {
+          ...rest,
+          filterBySetting: filterBySetting || filterBy,
+          colorBySetting: colorBySetting || colorBy,
+        }
+      }
+      return snap
     })
 }
 

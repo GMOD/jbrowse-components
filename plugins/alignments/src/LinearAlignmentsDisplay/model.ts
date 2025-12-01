@@ -298,7 +298,12 @@ function stateModelFactory(
               return
             }
             const { staticBlocks } = view
-            const { colorBy } = self
+            // Check parent colorBy, or fall back to nested displays' colorBy for
+            // backwards compatibility with old snapshots
+            const colorBy =
+              self.colorBy ??
+              self.PileupDisplay?.colorBySetting ??
+              self.SNPCoverageDisplay?.colorBySetting
             if (colorBy?.type === 'modifications') {
               const { modifications, simplexModifications } =
                 await getUniqueModifications({
