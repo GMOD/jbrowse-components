@@ -30,6 +30,10 @@
     "build": "tsc -p tsconfig.build.json && cp package.json README.md ../../LICENSE dist/"
   },
   "dependencies": {
+    "@emotion/cache": "^11.7.1",
+    "@emotion/react": "^11.9.0",
+    "@emotion/serialize": "^1.0.0",
+    "@emotion/utils": "^1.0.0",
     "@floating-ui/react": "^0.27.0",
     "@gmod/abortable-promise-cache": "^3.0.1",
     "@gmod/bgzf-filehandle": "^5.0.2",
@@ -58,8 +62,7 @@
     "react-draggable": "^4.4.5",
     "rxjs": "^7.0.0",
     "serialize-error": "^8.0.0",
-    "source-map-js": "^1.0.2",
-    "tss-react": "^4.0.0"
+    "source-map-js": "^1.0.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

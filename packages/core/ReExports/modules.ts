@@ -14,7 +14,7 @@ import * as mxreact from 'mobx-react'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import * as ReactDomClient from 'react-dom/client'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '../util/tss-react'
 
 import Plugin from '../Plugin'
 import * as Configuration from '../configuration'
