@@ -1,11 +1,14 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { getContainingView } from '@jbrowse/core/util'
+import { addDisposer, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
 import { getLowerPanelDisplays } from './util'
+import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { createAutorun } from '../util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -15,7 +18,12 @@ import type {
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
 
 const minDisplayHeight = 20
 
@@ -252,6 +260,36 @@ function stateModelFactory(
             },
             { name: 'PileupHeight' },
           ),
+        )
+
+        // Modifications autorun - runs once for both nested displays
+        createAutorun(
+          self,
+          async () => {
+            self.setModificationsReady(false)
+            const view = getContainingView(self) as LGV
+            if (!view.initialized) {
+              return
+            }
+            const { staticBlocks } = view
+            const { colorBy } = self
+            if (colorBy?.type === 'modifications') {
+              const { modifications, simplexModifications } =
+                await getUniqueModifications({
+                  model: self,
+                  adapterConfig: getConf(self.parentTrack, 'adapter'),
+                  blocks: staticBlocks,
+                })
+              if (isAlive(self)) {
+                self.updateVisibleModifications(modifications)
+                self.setSimplexModifications(simplexModifications)
+                self.setModificationsReady(true)
+              }
+            } else {
+              self.setModificationsReady(true)
+            }
+          },
+          { delay: 1000 },
         )
       },
       /**

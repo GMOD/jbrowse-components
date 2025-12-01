@@ -1,14 +1,42 @@
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getParent, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { modificationData } from './shared/modificationData'
 
+import type { ColorBy, FilterBy, ModificationTypeWithColor } from './shared/types'
+import type { ObservableMap } from 'mobx'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AugmentedRegion, Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { IAutorunOptions } from 'mobx'
+
+export interface ParentDisplaySettings {
+  colorBy?: ColorBy
+  filterBy?: FilterBy
+  visibleModifications?: ObservableMap<string, ModificationTypeWithColor>
+  simplexModifications?: Set<string>
+  modificationsReady?: boolean
+}
+
+/**
+ * Gets settings from a parent display if this display is nested.
+ * Used by PileupDisplay and SNPCoverageDisplay when they're inside LinearAlignmentsDisplay.
+ */
+export function getParentDisplaySettings(
+  self: unknown,
+): ParentDisplaySettings | undefined {
+  try {
+    const parent = getParent<any>(self, 2)
+    if (parent?.colorBy !== undefined || parent?.filterBy !== undefined) {
+      return parent as ParentDisplaySettings
+    }
+  } catch {
+    // Not nested in a parent display
+  }
+  return undefined
+}
 
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications

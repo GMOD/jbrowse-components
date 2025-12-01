@@ -15,20 +15,14 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, observable } from 'mobx'
 
-import { createAutorun } from '../util'
+import { createAutorun, getParentDisplaySettings } from '../util'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getUniqueTags } from '../shared/getUniqueTags'
 
@@ -39,23 +33,6 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-interface ParentDisplay {
-  colorBy?: ColorBy
-  filterBy?: FilterBy
-}
-
-function getParentDisplaySettings(self: unknown): ParentDisplay | undefined {
-  try {
-    const parent = getParent<any>(self, 2)
-    if (parent?.colorBy !== undefined || parent?.filterBy !== undefined) {
-      return parent as ParentDisplay
-    }
-  } catch {
-    // Not nested in a parent display
-  }
-  return undefined
-}
 // lazies
 const FilterByTagDialog = lazy(
   () => import('../shared/components/FilterByTagDialog'),

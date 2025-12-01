@@ -3,49 +3,21 @@ import { lazy } from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
-import {
-  cast,
-  getEnv,
-  getParent,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { observable } from 'mobx'
 
 import { getUniqueModifications } from '../shared/getUniqueModifications'
-import { createAutorun, getColorForModification } from '../util'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { createAutorun, getParentDisplaySettings } from '../util'
 
-import type {
-  ColorBy,
-  FilterBy,
-  ModificationType,
-  ModificationTypeWithColor,
-} from '../shared/types'
+import type { ColorBy, FilterBy } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-interface ParentDisplay {
-  colorBy?: ColorBy
-  filterBy?: FilterBy
-}
-
-function getParentDisplaySettings(self: unknown): ParentDisplay | undefined {
-  try {
-    const parent = getParent<any>(self, 2)
-    if (parent?.colorBy !== undefined || parent?.filterBy !== undefined) {
-      return parent as ParentDisplay
-    }
-  } catch {
-    // Not nested in a parent display
-  }
-  return undefined
-}
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -68,6 +40,7 @@ function stateModelFactory(
     .compose(
       'LinearSNPCoverageDisplay',
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -99,22 +72,6 @@ function stateModelFactory(
         jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      visibleModifications: observable.map<string, ModificationTypeWithColor>(
-        {},
-      ),
-      /**
-       * #volatile
-       */
-      simplexModifications: new Set<string>(),
-      /**
-       * #volatile
-       */
-      modificationsReady: false,
-    }))
     .views(self => ({
       /**
        * #getter
@@ -170,26 +127,6 @@ function stateModelFactory(
        */
       setJexlFilters(filters: string[]) {
         self.jexlFilters = cast(filters)
-      },
-
-      /**
-       * #action
-       */
-      updateVisibleModifications(uniqueModifications: ModificationType[]) {
-        for (const modification of uniqueModifications) {
-          if (!self.visibleModifications.has(modification.type)) {
-            self.visibleModifications.set(modification.type, {
-              ...modification,
-              color: getColorForModification(modification.type),
-            })
-          }
-        }
-      },
-      /**
-       * #action
-       */
-      setSimplexModifications(simplex: string[]) {
-        self.simplexModifications = new Set(simplex)
       },
     }))
     .views(self => {
@@ -280,12 +217,6 @@ function stateModelFactory(
       /**
        * #action
        */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
-      },
-      /**
-       * #action
-       */
       setShowInterbaseIndicators(arg: boolean) {
         self.showInterbaseIndicators = arg
       },
@@ -304,6 +235,14 @@ function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
+        // Only run modifications autorun if not nested in a parent display
+        // (parent LinearAlignmentsDisplay handles it for nested displays)
+        const parentSettings = getParentDisplaySettings(self)
+        if (parentSettings) {
+          // Nested display - parent handles modifications
+          return
+        }
+
         createAutorun(
           self,
           async () => {
@@ -343,17 +282,46 @@ function stateModelFactory(
       return {
         /**
          * #getter
+         * Returns effective modifications (from parent if nested, else own)
+         */
+        get effectiveVisibleModifications() {
+          const parentSettings = getParentDisplaySettings(self)
+          return parentSettings?.visibleModifications ?? self.visibleModifications
+        },
+
+        /**
+         * #getter
+         * Returns effective simplex modifications (from parent if nested, else own)
+         */
+        get effectiveSimplexModifications() {
+          const parentSettings = getParentDisplaySettings(self)
+          return parentSettings?.simplexModifications ?? self.simplexModifications
+        },
+
+        /**
+         * #getter
+         * Returns effective modifications ready flag (from parent if nested, else own)
+         */
+        get effectiveModificationsReady() {
+          const parentSettings = getParentDisplaySettings(self)
+          return parentSettings?.modificationsReady ?? self.modificationsReady
+        },
+
+        /**
+         * #getter
          */
         renderReady() {
           const superProps = superRenderProps()
-          return !superProps.notReady && self.modificationsReady
+          return !superProps.notReady && this.effectiveModificationsReady
         },
 
         /**
          * #method
          */
         renderProps() {
-          const { colorBy, visibleModifications, simplexModifications } = self
+          const { colorBy } = self
+          const visibleModifications = this.effectiveVisibleModifications
+          const simplexModifications = this.effectiveSimplexModifications
           return {
             ...superRenderProps(),
             notReady: !this.renderReady(),

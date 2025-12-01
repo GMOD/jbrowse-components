@@ -2,6 +2,7 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { getLowerPanelDisplays } from './util'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 
 import type { ColorBy, FilterBy } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -15,7 +16,7 @@ export function LinearAlignmentsDisplayMixin(
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
-    .model({
+    .compose(SharedModificationsMixin(), types.model({
       /**
        * #property
        * refers to LinearPileupDisplay sub-display model
@@ -64,7 +65,7 @@ export function LinearAlignmentsDisplayMixin(
        * #property
        */
       filterBySetting: types.frozen<FilterBy | undefined>(),
-    })
+    }))
     .views(self => ({
       /**
        * #getter

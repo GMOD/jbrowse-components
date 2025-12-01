@@ -11,17 +11,12 @@ import ColorLensIcon from '@mui/icons-material/ColorLens'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
-import { observable } from 'mobx'
 
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { modificationData } from '../shared/modificationData'
-import { getColorForModification } from '../util'
 
-import type {
-  ModificationType,
-  ModificationTypeWithColor,
-  SortedBy,
-} from '../shared/types'
+import type { SortedBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -46,6 +41,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .compose(
       'LinearPileupDisplay',
       SharedLinearPileupDisplayMixin(configSchema),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -79,20 +75,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       currSortBpPerPx: 0,
-      /**
-       * #volatile
-       */
-      visibleModifications: observable.map<string, ModificationTypeWithColor>(
-        {},
-      ),
-      /**
-       * #volatile
-       */
-      simplexModifications: new Set<string>(),
-      /**
-       * #volatile
-       */
-      modificationsReady: false,
     }))
     .actions(self => ({
       /**
@@ -100,33 +82,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setCurrSortBpPerPx(n: number) {
         self.currSortBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      updateVisibleModifications(uniqueModifications: ModificationType[]) {
-        for (const value of uniqueModifications) {
-          if (!self.visibleModifications.has(value.type)) {
-            self.visibleModifications.set(value.type, {
-              ...value,
-              color: getColorForModification(value.type),
-            })
-          }
-        }
-      },
-      /**
-       * #action
-       */
-      setSimplexModifications(simplex: string[]) {
-        for (const entry of simplex) {
-          self.simplexModifications.add(entry)
-        }
-      },
-      /**
-       * #action
-       */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
       },
       /**
        * #action
