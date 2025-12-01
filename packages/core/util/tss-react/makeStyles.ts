@@ -1,6 +1,4 @@
 'use client'
-import { useMemo } from 'react'
-
 import type { EmotionCache } from '@emotion/cache'
 // this is the standard way to access Emotion's cache in a hook-based API when
 // using MUI. MUI's ThemeProvider wraps Emotion's CacheProvider, so the cache is
@@ -25,7 +23,7 @@ interface CSSObject extends CSSObjectBase {
   label?: string
 }
 
-function cx(...args: CxArg[]): string {
+export function cx(...args: CxArg[]): string {
   let cls = ''
   for (const arg of args) {
     if (!arg) {
@@ -49,16 +47,55 @@ function cx(...args: CxArg[]): string {
   return cls
 }
 
+// cache serialized styles per cssObject reference to avoid recomputation on
+// re-mounts. uses WeakMap so entries are garbage collected when the style
+// object is no longer referenced
+const styleCache = new WeakMap<
+  Record<string, CSSObject>,
+  Map<EmotionCache, Record<string, string>>
+>()
+
+function getOrCreateClasses<RuleName extends string>(
+  cssObjectByRuleName: Record<RuleName, CSSObject>,
+  cache: EmotionCache,
+): Record<RuleName, string> {
+  let cacheByEmotionCache = styleCache.get(cssObjectByRuleName)
+  if (!cacheByEmotionCache) {
+    cacheByEmotionCache = new Map()
+    styleCache.set(cssObjectByRuleName, cacheByEmotionCache)
+  }
+
+  let classes = cacheByEmotionCache.get(cache) as
+    | Record<RuleName, string>
+    | undefined
+  if (!classes) {
+    classes = {} as Record<RuleName, string>
+    for (const ruleName of Object.keys(cssObjectByRuleName) as RuleName[]) {
+      const cssObject = cssObjectByRuleName[ruleName]
+      const serialized = serializeStyles([cssObject], cache.registered)
+      insertStyles(cache, serialized, false)
+      classes[ruleName] = `${cache.key}-${serialized.name}`
+    }
+    cacheByEmotionCache.set(cache, classes)
+  }
+
+  return classes
+}
+
 export function makeStyles() {
   return function <RuleName extends string>(
     cssObjectByRuleNameOrGetCssObjectByRuleName:
       | Record<RuleName, CSSObject>
       | ((theme: Theme) => Record<RuleName, CSSObject>),
   ) {
-    const getCssObjectByRuleName =
-      typeof cssObjectByRuleNameOrGetCssObjectByRuleName === 'function'
-        ? cssObjectByRuleNameOrGetCssObjectByRuleName
-        : () => cssObjectByRuleNameOrGetCssObjectByRuleName
+    // for static styles, compute classes once outside the hook
+    const isStatic =
+      typeof cssObjectByRuleNameOrGetCssObjectByRuleName !== 'function'
+
+    // cache for dynamic styles keyed by theme reference
+    const dynamicCache = isStatic
+      ? null
+      : new WeakMap<Theme, Record<RuleName, CSSObject>>()
 
     return function useStyles(): {
       classes: Record<RuleName, string>
@@ -68,17 +105,24 @@ export function makeStyles() {
       const theme = useTheme()
       const cache = __unsafe_useEmotionCache() as EmotionCache
 
-      const classes = useMemo(() => {
-        const cssObjectByRuleName = getCssObjectByRuleName(theme)
-        const result = {} as Record<RuleName, string>
-        for (const ruleName of Object.keys(cssObjectByRuleName) as RuleName[]) {
-          const cssObject = cssObjectByRuleName[ruleName]
-          const serialized = serializeStyles([cssObject], cache.registered)
-          insertStyles(cache, serialized, false)
-          result[ruleName] = `${cache.key}-${serialized.name}`
+      let cssObjectByRuleName: Record<RuleName, CSSObject>
+      if (isStatic) {
+        cssObjectByRuleName = cssObjectByRuleNameOrGetCssObjectByRuleName
+      } else {
+        // check if we already computed styles for this theme
+        let cached = dynamicCache!.get(theme)
+        if (!cached) {
+          cached = (
+            cssObjectByRuleNameOrGetCssObjectByRuleName as (
+              theme: Theme,
+            ) => Record<RuleName, CSSObject>
+          )(theme)
+          dynamicCache!.set(theme, cached)
         }
-        return result
-      }, [cache, theme])
+        cssObjectByRuleName = cached
+      }
+
+      const classes = getOrCreateClasses(cssObjectByRuleName, cache)
 
       return { classes, theme, cx }
     }
