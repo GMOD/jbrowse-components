@@ -13,30 +13,18 @@ interface LayoutItem {
 
 export type LayoutEntry = LayoutItem & { x: number; y: number }
 
-type LayoutMap = Map<string, LayoutEntry>
-
 export class FloatingLayout {
   width: number
-
   totalHeight = 0
+  items: LayoutItem[] = []
+  layout = new Map<string, LayoutEntry>()
 
-  rectangles = new Map()
   constructor({ width }: { width: number }) {
     if (!width) {
       throw new Error('width required to make a new FloatingLayout')
     }
     this.width = width
   }
-  discardRange() {
-    /* do nothing */
-    this.items = []
-    this.layout = new Map()
-    this.totalHeight = 0
-  }
-
-  items: LayoutItem[] = []
-
-  layout: LayoutMap = new Map()
 
   add(
     uniqueId: string,
@@ -54,17 +42,10 @@ export class FloatingLayout {
     })
   }
 
-  /**
-   * @returns Map of `uniqueId => {x,y,anchorLocation,width,height,data}`
-   */
   getLayout(configuration?: AnyConfigurationModel) {
     if (!configuration) {
       return this.layout
-      // throw new Error('configuration object required')
     }
-    // this.layout = new Map()
-    // this.totalHeight = 0
-    // console.log(this.items)
 
     const minY = readConfObject(configuration, 'minStickLength')
 
@@ -119,8 +100,6 @@ export class FloatingLayout {
       }
     }
 
-    // try to tile them left to right all at the same level
-    // if they don't fit, try to alternate them on 2 levels, then 3
     this.totalHeight = maxBottom
     this.layout = new Map(layoutEntries)
     return this.layout
@@ -128,59 +107,5 @@ export class FloatingLayout {
 
   getTotalHeight() {
     return this.totalHeight
-  }
-
-  serializeRegion() {
-    return this.toJSON()
-  }
-
-  toJSON() {
-    return {
-      pairs: [...this.getLayout()],
-      totalHeight: this.getTotalHeight(),
-    }
-  }
-
-  static fromJSON() {
-    throw new Error('not supported')
-  }
-}
-
-export class PrecomputedFloatingLayout {
-  layout: LayoutMap
-
-  totalHeight: number
-
-  constructor({
-    pairs,
-    totalHeight,
-  }: {
-    pairs: [string, LayoutEntry][]
-    totalHeight: number
-  }) {
-    this.layout = new Map(pairs)
-    this.totalHeight = totalHeight
-  }
-
-  add(uniqueId: string) {
-    if (!this.layout.has(uniqueId)) {
-      throw new Error(`layout error, precomputed layout is missing ${uniqueId}`)
-    }
-  }
-
-  getLayout() {
-    return this.layout
-  }
-
-  getTotalHeight() {
-    return this.totalHeight
-  }
-  discardRange() {
-    /* do nothing */
-  }
-  static fromJSON(
-    json: ConstructorParameters<typeof PrecomputedFloatingLayout>[0],
-  ) {
-    return new PrecomputedFloatingLayout(json)
   }
 }
