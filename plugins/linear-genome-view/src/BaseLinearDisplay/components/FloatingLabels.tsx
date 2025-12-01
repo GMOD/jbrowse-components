@@ -215,7 +215,6 @@ function FloatingLabels({
               element.style.position = 'absolute'
               element.style.fontSize = '11px'
               element.style.pointerEvents = 'none'
-              element.style.willChange = 'transform'
               container.append(element)
               domElements.set(labelKey, element)
             }
