@@ -10,7 +10,7 @@ import { type Warning, clampWithWarnX, clampWithWarnY } from './clamp'
 
 import type { Dotplot1DViewModel } from '../DotplotView/model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import type { RenderArgsDeserialized } from './DotplotRenderer'
 
 const { parseCigar } = MismatchParser
 

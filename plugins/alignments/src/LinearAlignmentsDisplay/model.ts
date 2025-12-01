@@ -326,23 +326,24 @@ function stateModelFactory(
         return renderSvg(self, opts)
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get modificationThreshold() {
+        return self.colorBy?.modifications?.threshold ?? 10
+      },
+
+      /**
+       * #getter
+       */
+      get visibleModificationTypes() {
+        return [...self.visibleModifications.keys()]
+      },
+    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
-        /**
-         * #getter
-         */
-        get modificationThreshold() {
-          return self.colorBy?.modifications?.threshold ?? 10
-        },
-
-        /**
-         * #getter
-         */
-        get visibleModificationTypes() {
-          return [...self.visibleModifications.keys()]
-        },
-
         /**
          * #method
          * Generates color scheme submenu items for the Color by menu
@@ -388,7 +389,7 @@ function stateModelFactory(
          * Generates modifications submenu for the Color by menu
          */
         modificationsMenuItems(): MenuItem[] {
-          const threshold = this.modificationThreshold
+          const threshold = self.modificationThreshold
           const { colorBy } = self
           const currentType = colorBy?.type
           const currentMods = colorBy?.modifications
@@ -416,7 +417,7 @@ function stateModelFactory(
                   modifications: { threshold },
                 }),
             },
-            ...this.visibleModificationTypes.map(key => ({
+            ...self.visibleModificationTypes.map(key => ({
               type: 'radio' as const,
               label: `Show only ${modificationData[key]?.name || key} (>= ${threshold}% prob)`,
               checked: isModsSelected({ isolatedModification: key }),
@@ -437,7 +438,7 @@ function stateModelFactory(
                   modifications: { twoColor: true, threshold },
                 }),
             },
-            ...this.visibleModificationTypes.map(key => ({
+            ...self.visibleModificationTypes.map(key => ({
               type: 'radio' as const,
               label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
               checked: isModsSelected({ twoColor: true, isolatedModification: key }),

@@ -35,8 +35,7 @@ RendererType (base)
     │       ├── PileupRenderer (canvas)
     │       └── CanvasFeatureRenderer (canvas)
     ├── HicRenderer
-    └── ComparativeServerSideRendererType
-        └── DotplotRenderer (canvas)
+    └── DotplotRenderer (canvas)
 ```
 
 ## Base classes

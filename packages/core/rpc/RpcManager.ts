@@ -45,7 +45,12 @@ export default class RpcManager {
     this.registerDriverFactory(
       'MainThreadRpcDriver',
       (config, backendConfig) =>
-        new MainThreadRpcDriver({ ...backendConfig, config }),
+        new MainThreadRpcDriver({
+          ...(backendConfig as ConstructorParameters<
+            typeof MainThreadRpcDriver
+          >[0]),
+          config,
+        }),
     )
     this.registerDriverFactory(
       'WebWorkerRpcDriver',

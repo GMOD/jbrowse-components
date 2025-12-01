@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { getLowerPanelDisplays } from './util'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { defaultFilterFlags } from '../shared/util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -79,8 +80,10 @@ export function LinearAlignmentsDisplayMixin(
       /**
        * #getter
        */
-      get filterBy(): FilterBy | undefined {
-        return self.filterBySetting ?? getConf(self, 'filterBy')
+      get filterBy(): FilterBy {
+        return (
+          self.filterBySetting ?? getConf(self, 'filterBy') ?? defaultFilterFlags
+        )
       },
     }))
     .actions(self => ({
