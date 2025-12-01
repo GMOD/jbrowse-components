@@ -48,9 +48,6 @@ const EditableTypography = forwardRef<HTMLDivElement, Props>(
     const [editedValue, setEditedValue] = useState<string>()
     const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
 
-    // possibly tss-react does not understand the passing of props to
-    // useStyles, but it appears to work
-    // @ts-expect-error
     const { classes } = useStyles(props, { props })
     const theme = useTheme()
 

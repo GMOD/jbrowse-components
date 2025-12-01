@@ -17,7 +17,6 @@ function styledBy(property: string, mapping: Record<string, string>) {
   return (props: Record<string, string>) => mapping[props[property]!]
 }
 
-// @ts-expect-error
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
@@ -79,8 +78,6 @@ const ImportSessionWidget = observer(function ({
       }
     },
   })
-
-  // @ts-expect-error
 
   const { classes } = useStyles({ isDragActive }) as any
 

@@ -1,44 +1,37 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import type { Cx } from "./types";
-import { objectKeys } from "./tools/objectKeys";
 
 export function mergeClasses<T extends string, U extends string>(
     classesFromUseStyles: Record<T, string>,
     classesOverrides: Partial<Record<U, string>> | undefined,
     cx: Cx
-): Record<T, string> &
-    (string extends U ? {} : Partial<Record<Exclude<U, T>, string>>) {
-    //NOTE: We use this test to be resilient in case classesOverrides is not of the expected type.
+): Record<T, string> & Partial<Record<Exclude<U, T>, string>> {
     if (!(classesOverrides instanceof Object)) {
-        return classesFromUseStyles as any;
+        return classesFromUseStyles as Record<T, string> &
+            Partial<Record<Exclude<U, T>, string>>;
     }
 
-    const out: Record<T | U, string> = {} as any;
+    const out: Record<string, string> = {};
 
-    objectKeys(classesFromUseStyles).forEach(
-        ruleName =>
-            (out[ruleName] = cx(
-                classesFromUseStyles[ruleName],
-                classesOverrides[ruleName]
-            ))
-    );
+    for (const ruleName of Object.keys(classesFromUseStyles)) {
+        out[ruleName] = cx(
+            classesFromUseStyles[ruleName as T],
+            classesOverrides[ruleName as U]
+        );
+    }
 
-    objectKeys(classesOverrides).forEach(ruleName => {
+    for (const ruleName of Object.keys(classesOverrides)) {
         if (ruleName in classesFromUseStyles) {
-            return;
+            continue;
         }
 
-        const className = classesOverrides[ruleName];
+        const className = classesOverrides[ruleName as U];
 
-        //...Same here, that why we don't do className === undefined
         if (typeof className !== "string") {
-            return;
+            continue;
         }
 
         out[ruleName] = className;
-    });
+    }
 
-    return out;
+    return out as Record<T, string> & Partial<Record<Exclude<U, T>, string>>;
 }
