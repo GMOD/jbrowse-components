@@ -1,7 +1,5 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import {
@@ -37,7 +35,6 @@ export async function makeImageData(
 ) {
   const {
     features,
-    config,
     bpPerPx,
     stopToken,
     resolution,
@@ -64,6 +61,12 @@ export async function makeImageData(
       ? resolution
       : await (dataAdapter as HicDataAdapter).getResolution(bpPerPx)
 
+  console.log('HicRenderer resolution:', {
+    requestedResolution: resolution,
+    calculatedRes: res,
+    bpPerPx,
+  })
+
   // Get pixel offsets from regions (they come with offsetPx from the view)
   // We need to calculate relative offsets from the first region
   const firstRegionOffsetPx = (regions[0] as any)?.offsetPx ?? 0
@@ -74,7 +77,6 @@ export async function makeImageData(
   }
 
   const w = res / (bpPerPx * Math.sqrt(2))
-  const baseColor = colord(readConfObject(config, 'baseColor'))
 
   if (features.length) {
     let maxScore = 0
@@ -109,6 +111,9 @@ export async function makeImageData(
       ? scaleSequentialLog(x1).domain([1, m])
       : scaleSequential(x1).domain([0, m])
 
+    // Pre-compute color function to avoid calling readConfObject in tight loop
+    const getColor = (counts: number) => scale(counts)
+
     if (yScalar) {
       ctx.scale(1, yScalar)
     }
@@ -128,13 +133,7 @@ export async function makeImageData(
 
       forEachWithStopTokenCheck(features, stopToken, (f: HicFeature) => {
         const { bin1, bin2, counts } = f
-        ctx.fillStyle = readConfObject(config, 'color', {
-          count: counts,
-          maxScore,
-          baseColor,
-          scale,
-          useLogScale,
-        })
+        ctx.fillStyle = getColor(counts)
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
       })
     } else {
@@ -164,13 +163,7 @@ export async function makeImageData(
 
         for (const f of regionFeatures) {
           const { bin1, bin2, counts } = f
-          ctx.fillStyle = readConfObject(config, 'color', {
-            count: counts,
-            maxScore,
-            baseColor,
-            scale,
-            useLogScale,
-          })
+          ctx.fillStyle = getColor(counts)
           ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
         }
         ctx.restore()
@@ -214,13 +207,7 @@ export async function makeImageData(
               (((region1.end - region1.start) / bpPerPx) * Math.sqrt(2)) / 2
             const y1 = (bin2 - offset2) * w
 
-            ctx.fillStyle = readConfObject(config, 'color', {
-              count: counts,
-              maxScore,
-              baseColor,
-              scale,
-              useLogScale,
-            })
+            ctx.fillStyle = getColor(counts)
             ctx.fillRect(x1, y1, w, w)
           }
           ctx.restore()
