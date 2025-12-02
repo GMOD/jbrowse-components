@@ -89,7 +89,7 @@ const SNPCoverageRendering = observer(function (props: {
       return undefined
     }
     const rect = ref.current.getBoundingClientRect()
-    const offsetX = clientX - rect.left
+    const offsetX = clientX - rect.left - 1
     const offsetY = clientY - rect.top
     const search = flatbush.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
     return search.length ? items[search[0]!] : undefined

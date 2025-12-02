@@ -288,10 +288,11 @@ export function makeImage(
             ? a
             : b,
         )
+        const clickWidth = Math.max(r * 2, 1.5)
         coords.push(
           x,
           INTERBASE_INDICATOR_HEIGHT,
-          x + r * 2,
+          x + clickWidth,
           INTERBASE_INDICATOR_HEIGHT + totalHeight,
         )
         items.push({
