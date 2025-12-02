@@ -17,6 +17,8 @@ import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
@@ -85,6 +87,25 @@ function stateModelFactory(
        */
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+
+      /**
+       * #getter
+       * Collect all skip features from rendered blocks for cross-region arc drawing
+       * Uses a Map to deduplicate features that appear in multiple blocks
+       */
+      get skipFeatures(): Feature[] {
+        const skipFeaturesMap = new Map<string, Feature>()
+        for (const block of self.blockState.values()) {
+          if (block.features) {
+            for (const feature of block.features.values()) {
+              if (feature.get('type') === 'skip') {
+                skipFeaturesMap.set(feature.id(), feature)
+              }
+            }
+          }
+        }
+        return [...skipFeaturesMap.values()]
       },
     }))
     .actions(self => ({
@@ -386,6 +407,7 @@ function stateModelFactory(
     })
 }
 
-export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageDisplayModel = Instance<SNPCoverageDisplayStateModel>
 
 export default stateModelFactory

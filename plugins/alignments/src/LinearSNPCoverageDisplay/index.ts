@@ -19,10 +19,8 @@ export default function register(pluginManager: PluginManager) {
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() =>
-        import('@jbrowse/plugin-wiggle').then(m => ({
-          default: m.LinearWiggleDisplayReactComponent,
-        })),
+      ReactComponent: lazy(
+        () => import('./components/SNPCoverageDisplayComponent'),
       ),
     })
   })
