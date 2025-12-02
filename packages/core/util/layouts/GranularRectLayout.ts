@@ -372,6 +372,23 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.addRectToBitmap(rectangle)
     this.rectangles.set(id, rectangle)
     this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
+
+    // // Log every 1000 rectangles to track memory growth
+    // if (this.rectangles.size % 1000 === 0) {
+    //   const memoryMB =
+    //     typeof performance !== 'undefined' &&
+    //     // @ts-expect-error
+    //     performance.memory !== undefined
+    //       ? // @ts-expect-error
+    //         (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2)
+    //       : 'N/A'
+    //   console.log(
+    //     `[GranularRectLayout.addRect] rectangles: ${this.rectangles.size}, ` +
+    //       `bitmap rows: ${this.bitmap.filter(Boolean).length}, ` +
+    //       `heap: ${memoryMB} MB`,
+    //   )
+    // }
+
     return top * this.pitchY
   }
 
@@ -434,13 +451,29 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   /**
    *  Given a range of X coordinates, deletes all data dealing with
    *  the features.
+   *
+   *  Note: We only delete rectangles that are COMPLETELY within the discarded
+   *  range. Rectangles that extend beyond the range are kept because they may
+   *  still be visible in adjacent blocks. The bitmap intervals are trimmed
+   *  but the rectangle metadata is preserved to maintain consistent Y positions
+   *  for long reads spanning multiple blocks.
    */
   discardRange(left: number, right: number) {
     const pLeft = Math.trunc(left / this.pitchX)
     const pRight = Math.trunc(right / this.pitchX)
     const { bitmap } = this
+
     for (const row of bitmap) {
-      row.discardRange(pLeft, pRight)
+      row?.discardRange(pLeft, pRight)
+    }
+
+    // Only remove rectangles that are completely within the discarded range.
+    // Rectangles extending beyond are kept to preserve layout consistency
+    // for long reads visible in adjacent blocks.
+    for (const [id, rect] of this.rectangles) {
+      if (rect.l >= pLeft && rect.r <= pRight) {
+        this.rectangles.delete(id)
+      }
     }
   }
 
@@ -477,7 +510,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return this.rectangles.get(id)?.data
   }
 
-  cleanup() {}
+  cleanup() {
+    this.bitmap.length = 0
+    this.rectangles.clear()
+    this.pTotalHeight = 0
+    this.maxHeightReached = false
+  }
 
   getTotalHeight() {
     return this.pTotalHeight * this.pitchY
