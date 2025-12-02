@@ -91,19 +91,20 @@ function stateModelFactory(
       /**
        * #getter
        * Collect all skip features from rendered blocks for cross-region arc drawing
+       * Uses a Map to deduplicate features that appear in multiple blocks
        */
       get skipFeatures(): Feature[] {
-        const skipFeatures: Feature[] = []
+        const skipFeaturesMap = new Map<string, Feature>()
         for (const block of self.blockState.values()) {
           if (block.features) {
             for (const feature of block.features.values()) {
               if (feature.get('type') === 'skip') {
-                skipFeatures.push(feature)
+                skipFeaturesMap.set(feature.id(), feature)
               }
             }
           }
         }
-        return skipFeatures
+        return [...skipFeaturesMap.values()]
       },
     }))
     .actions(self => ({

@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
 import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
+import type { Feature } from '@jbrowse/core/util'
 import type { SNPCoverageDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -21,29 +22,57 @@ interface ArcData {
   end: number
   refName: string
   score: number
-  effectiveStrand: number
+  strand: number
 }
 
-function getArcColor(effectiveStrand: number) {
-  if (effectiveStrand === 1) {
-    return 'rgba(255,200,200,0.7)'
-  } else if (effectiveStrand === -1) {
-    return 'rgba(200,200,255,0.7)'
-  }
-  return 'rgba(200,200,200,0.7)'
+function getArcColor(strand: number) {
+  return strand === 1
+    ? 'rgba(255,200,200,0.7)'
+    : strand === -1
+      ? 'rgba(200,200,255,0.7)'
+      : 'rgba(200,200,200,0.7)'
 }
 
-function getStrandLabel(effectiveStrand: number) {
-  if (effectiveStrand === 1) {
-    return '+'
-  } else if (effectiveStrand === -1) {
-    return '-'
+function getStrandLabel(strand: number) {
+  return strand === 1 ? '+' : strand === -1 ? '-' : 'unknown'
+}
+
+function featureToArcData(
+  feature: Feature,
+  view: LGV,
+  effectiveHeight: number,
+  offsetPx: number,
+): ArcData | undefined {
+  const start = feature.get('start')
+  const end = feature.get('end')
+  const refName = feature.get('refName')
+
+  const startPx = view.bpToPx({ refName, coord: start })
+  const endPx = view.bpToPx({ refName, coord: end })
+
+  if (startPx === undefined || endPx === undefined) {
+    return undefined
   }
-  return 'unknown'
+
+  const left = startPx.offsetPx - offsetPx
+  const right = endPx.offsetPx - offsetPx
+  const strand = feature.get('effectiveStrand') ?? 0
+  const score = feature.get('score') ?? 1
+
+  return {
+    id: feature.id(),
+    path: `M ${left} ${effectiveHeight} C ${left} 0, ${right} 0, ${right} ${effectiveHeight}`,
+    stroke: getArcColor(strand),
+    strokeWidth: Math.log(score + 1),
+    start,
+    end,
+    refName,
+    score,
+    strand,
+  }
 }
 
 function ArcTooltipContents({ arc }: { arc: ArcData }) {
-  const length = arc.end - arc.start
   return (
     <div>
       <div>
@@ -53,9 +82,9 @@ function ArcTooltipContents({ arc }: { arc: ArcData }) {
         Location: {arc.refName}:{arc.start.toLocaleString()}-
         {arc.end.toLocaleString()}
       </div>
-      <div>Length: {length.toLocaleString()} bp</div>
+      <div>Length: {(arc.end - arc.start).toLocaleString()} bp</div>
       <div>Reads supporting junction: {arc.score}</div>
-      <div>Strand: {getStrandLabel(arc.effectiveStrand)}</div>
+      <div>Strand: {getStrandLabel(arc.strand)}</div>
     </div>
   )
 }
@@ -69,46 +98,35 @@ const Arcs = observer(function ({ model }: { model: SNPCoverageDisplayModel }) {
     y: number
   } | null>(null)
 
+  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const effectiveHeight = height - YSCALEBAR_LABEL_OFFSET * 2
+
+  // Memoize arc computation - only recompute when features or bpPerPx change
+  // Track the offsetPx at which arcs were computed for proper positioning
+  const { arcs, drawnAtBpPerPx, drawnAtOffsetPx } = useMemo(() => {
+    const currentOffsetPx = view.offsetPx
+    const arcs = skipFeatures
+      .map(f => featureToArcData(f, view, effectiveHeight, currentOffsetPx))
+      .filter((arc): arc is ArcData => arc !== undefined)
+    return {
+      arcs,
+      drawnAtBpPerPx: view.bpPerPx,
+      drawnAtOffsetPx: currentOffsetPx,
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipFeatures, view.bpPerPx, effectiveHeight])
+
   if (!showArcsSetting || !view.initialized) {
     return null
   }
 
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
-  const arcs: ArcData[] = []
-  const effectiveHeight = height - YSCALEBAR_LABEL_OFFSET * 2
-
-  for (const feature of skipFeatures) {
-    const start = feature.get('start')
-    const end = feature.get('end')
-    const refName = feature.get('refName')
-
-    const startPx = view.bpToPx({ refName, coord: start })
-    const endPx = view.bpToPx({ refName, coord: end })
-
-    if (startPx === undefined || endPx === undefined) {
-      continue
-    }
-
-    const left = startPx.offsetPx - view.offsetPx
-    const right = endPx.offsetPx - view.offsetPx
-    const effectiveStrand = feature.get('effectiveStrand') ?? 0
-    const score = feature.get('score') ?? 1
-
-    // Create bezier curve path within the effective height area
-    const path = `M ${left} ${effectiveHeight} C ${left} 0, ${right} 0, ${right} ${effectiveHeight}`
-
-    arcs.push({
-      id: feature.id(),
-      path,
-      stroke: getArcColor(effectiveStrand),
-      strokeWidth: Math.log(score + 1),
-      start,
-      end,
-      refName,
-      score,
-      effectiveStrand,
-    })
+  // Don't render if bpPerPx changed (zoom) - arcs are invalid until recomputed
+  if (drawnAtBpPerPx !== view.bpPerPx) {
+    return null
   }
+
+  // Offset the SVG based on difference between when arcs were drawn and current position
+  const left = drawnAtOffsetPx - view.offsetPx
 
   return (
     <>
@@ -116,7 +134,7 @@ const Arcs = observer(function ({ model }: { model: SNPCoverageDisplayModel }) {
         style={{
           position: 'absolute',
           top: YSCALEBAR_LABEL_OFFSET,
-          left: 0,
+          left,
           pointerEvents: 'none',
           height: effectiveHeight,
           width,
@@ -124,18 +142,14 @@ const Arcs = observer(function ({ model }: { model: SNPCoverageDisplayModel }) {
       >
         {arcs.map(arc => (
           <path
-            key={arc.id}
+            key={`${arc.refName}-${arc.start}-${arc.end}-${arc.strand}`}
             d={arc.path}
             stroke={arc.stroke}
             strokeWidth={arc.strokeWidth}
             fill="none"
             style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
             onMouseEnter={event => {
-              setHoverInfo({
-                arc,
-                x: event.clientX,
-                y: event.clientY,
-              })
+              setHoverInfo({ arc, x: event.clientX, y: event.clientY })
             }}
             onMouseLeave={() => {
               setHoverInfo(null)
