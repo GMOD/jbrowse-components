@@ -22,8 +22,9 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
   const performRender = async () => {
     const view = getContainingView(self) as LGV
     const { bpPerPx, dynamicBlocks } = view
-    const region = dynamicBlocks.contentBlocks[0]
-    if (!region) {
+    const regions = dynamicBlocks.contentBlocks
+
+    if (!regions.length) {
       return
     }
 
@@ -49,7 +50,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         {
           sessionId: session.id,
           rendererType: 'HicRenderer',
-          regions: [region],
+          regions: [...regions],
           adapterConfig,
           bpPerPx,
           highResolutionScaling: 2,
