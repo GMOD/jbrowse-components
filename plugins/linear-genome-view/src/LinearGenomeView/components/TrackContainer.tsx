@@ -69,13 +69,18 @@ const TrackContainer = observer(function ({
         <TrackRenderingContainer
           model={model}
           track={track}
-          onDragEnter={() => {
+          onDragEnter={event => {
             if (
               isAlive(display) &&
               draggingTrackId !== undefined &&
               draggingTrackId !== display.id
             ) {
-              model.moveTrack(draggingTrackId, track.id)
+              const rect = event.currentTarget.getBoundingClientRect()
+              const y = event.clientY - rect.top
+              const threshold = rect.height * 0.3
+              if (y > threshold && y < rect.height - threshold) {
+                model.moveTrack(draggingTrackId, track.id)
+              }
             }
           }}
         />

@@ -38,7 +38,7 @@ const TrackRenderingContainer = observer(function ({
 }: {
   model: LGV
   track: BaseTrackModel
-  onDragEnter: () => void
+  onDragEnter: (event: React.DragEvent<HTMLDivElement>) => void
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
