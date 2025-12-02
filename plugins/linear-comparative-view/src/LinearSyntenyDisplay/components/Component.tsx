@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react'
 
-import BlockError from './BlockError'
 import BlockMessage from './BlockMessage'
 import LinearSyntenyRendering from './LinearSyntenyRendering'
 import LoadingMessage from './LoadingMessage'
@@ -13,7 +12,7 @@ const ServerSideRenderedBlockContent = observer(function ({
   model: LinearSyntenyDisplayModel
 }) {
   if (model.error) {
-    return <BlockError error={model.error} />
+    return <BlockMessage messageText={`${model.error}`} error />
   } else if (model.message) {
     return <BlockMessage messageText={model.message} />
   } else if (!model.features) {

@@ -10,22 +10,8 @@ import {
   drawRef,
 } from './drawSynteny'
 
-import type { LinearSyntenyDisplayModel } from './model'
+import type { FeatPos, LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
-import type { Feature } from '@jbrowse/core/util'
-
-interface Pos {
-  offsetPx: number
-}
-
-interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
-  f: Feature
-  cigar: string[]
-}
 
 type LSV = LinearSyntenyViewModel
 

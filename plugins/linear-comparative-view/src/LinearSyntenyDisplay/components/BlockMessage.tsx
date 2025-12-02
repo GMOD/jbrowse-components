@@ -7,7 +7,20 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function BlockMessage({ messageText }: { messageText: string }) {
+export default function BlockMessage({
+  messageText,
+  error,
+}: {
+  messageText: string
+  error?: boolean
+}) {
   const { classes } = useStyles()
-  return <div className={classes.blockMessage}>{messageText}</div>
+  return (
+    <div
+      className={classes.blockMessage}
+      style={{ color: error ? 'red' : undefined }}
+    >
+      {messageText}
+    </div>
+  )
 }

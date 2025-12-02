@@ -10,25 +10,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearSyntenyDisplay',
-    {
-      /**
-       * #slot
-       * currently unused
-       */
-      trackIds: {
-        type: 'stringArray',
-        defaultValue: [],
-      },
-
-      /**
-       * #slot
-       * currently unused
-       */
-      middle: {
-        type: 'boolean',
-        defaultValue: true,
-      },
-    },
+    {},
     {
       /**
        * #baseConfiguration

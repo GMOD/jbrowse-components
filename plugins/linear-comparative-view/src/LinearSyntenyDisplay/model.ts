@@ -7,7 +7,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-interface Pos {
+export interface Pos {
   offsetPx: number
 }
 
@@ -192,13 +192,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           assemblyNames: getConf(self, 'assemblyNames'),
           ...getConf(self.parentTrack, 'adapter'),
         }
-      },
-
-      /**
-       * #getter
-       */
-      get trackIds() {
-        return getConf(self, 'trackIds') as string[]
       },
 
       /**
