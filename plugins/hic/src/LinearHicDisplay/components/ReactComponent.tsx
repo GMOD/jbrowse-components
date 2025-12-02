@@ -16,23 +16,34 @@ const HicCanvas = observer(function ({
   model: LinearHicDisplayModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const screenWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+  const { offsetPx } = view
   const height = model.height
+
+  // Adjust canvas width and position when offsetPx is negative
+  const canvasWidth = offsetPx < 0 ? screenWidth + offsetPx : screenWidth
+  const canvasLeft = offsetPx < 0 ? -offsetPx : 0
+
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const cb = useCallback(
     (ref: HTMLCanvasElement) => {
       model.setRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, width, height],
+    [model, canvasWidth, height],
   )
 
   return (
     <canvas
       data-testid="hic-canvas"
       ref={cb}
-      style={{ width, height, position: 'absolute' }}
-      width={width * 2}
+      style={{
+        width: canvasWidth,
+        height,
+        position: 'absolute',
+        left: canvasLeft,
+      }}
+      width={canvasWidth * 2}
       height={height * 2}
     />
   )

@@ -110,25 +110,21 @@ export default function stateModelFactory(
        * #method
        */
       renderProps() {
-        const config = self.rendererType.configSchema.create(
-          {
-            ...getConf(self, 'renderer'),
-            ...(self.colorScheme
-              ? { color: 'jexl:interpolate(count,scale)' }
-              : {}),
-          },
-          getEnv(self),
-        )
-
         return {
-          notReady: false,
-          rpcDriverName: self.rpcDriverName,
-          config,
-          displayHeight: self.mode === 'adjust' ? self.height : undefined,
-          normalization: self.activeNormalization,
+          config: self.rendererType.configSchema.create(
+            {
+              ...getConf(self, 'renderer'),
+              ...(self.colorScheme
+                ? { color: 'jexl:interpolate(count,scale)' }
+                : {}),
+            },
+            getEnv(self),
+          ),
           resolution: self.resolution,
           useLogScale: self.useLogScale,
           colorScheme: self.colorScheme,
+          normalization: self.activeNormalization,
+          displayHeight: self.mode === 'adjust' ? self.height : undefined,
         }
       },
     }))

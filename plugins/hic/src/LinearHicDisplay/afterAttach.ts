@@ -1,11 +1,10 @@
-import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingView,
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-import { addDisposer, getEnv, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
 import type { LinearHicDisplayModel } from './model'
@@ -20,46 +19,21 @@ interface RenderResult {
 }
 
 export function doAfterAttach(self: LinearHicDisplayModel) {
-  const performRender = async (
-    resolution: number,
-    useLogScale: boolean,
-    colorScheme: string | undefined,
-    activeNormalization: string,
-    mode: string,
-    height: number,
-  ) => {
+  const performRender = async () => {
     const view = getContainingView(self) as LGV
-
-    if (
-      !view.initialized ||
-      untracked(() => self.error) ||
-      !self.statsReadyAndRegionNotTooLarge
-    ) {
-      return
-    }
-
     const { bpPerPx, dynamicBlocks } = view
-    const regions = dynamicBlocks.contentBlocks
-    if (regions.length === 0) {
+    const region = dynamicBlocks.contentBlocks[0]
+    if (!region) {
       return
     }
 
-    const region = regions[0]!
-    const { adapterConfig, rendererType } = self
-
-    const config = rendererType.configSchema.create(
-      {
-        ...getConf(self, 'renderer'),
-        ...(colorScheme ? { color: 'jexl:interpolate(count,scale)' } : {}),
-      },
-      getEnv(self),
-    )
+    const { adapterConfig } = self
+    const renderProps = self.renderProps()
 
     try {
       const session = getSession(self)
       const { rpcManager } = session
 
-      // Use untracked to avoid triggering reactions
       const previousToken = untracked(() => self.renderingStopToken)
       if (previousToken) {
         stopStopToken(previousToken)
@@ -77,15 +51,10 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
           rendererType: 'HicRenderer',
           regions: [region],
           adapterConfig,
-          config,
           bpPerPx,
-          resolution,
-          useLogScale,
-          colorScheme,
-          normalization: activeNormalization,
-          displayHeight: mode === 'adjust' ? height : undefined,
           highResolutionScaling: 2,
           stopToken,
+          ...renderProps,
         },
         {
           statusCallback: (msg: string) => {
@@ -98,7 +67,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
 
       if (result.imageData) {
         self.setRenderingImageData(result.imageData)
-        self.setLastDrawnOffsetPx(view.offsetPx)
+        self.setLastDrawnOffsetPx(Math.max(0, view.offsetPx))
       }
 
       self.setLastDrawnBpPerPx(bpPerPx)
@@ -130,23 +99,28 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
           height,
           statsReadyAndRegionNotTooLarge,
         } = self
-        const { bpPerPx, dynamicBlocks, initialized } = view
+        const { dynamicBlocks, initialized } = view
         const regions = dynamicBlocks.contentBlocks
 
-        if (!initialized || !statsReadyAndRegionNotTooLarge || !regions.length) {
+        // access these to trigger autorun on changes
+        void resolution
+        void useLogScale
+        void colorScheme
+        void activeNormalization
+        void mode
+        void height
+
+        if (
+          !initialized ||
+          untracked(() => self.error) ||
+          !statsReadyAndRegionNotTooLarge ||
+          !regions.length
+        ) {
           return
         }
 
-        // Fire off the async render but don't await it
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        performRender(
-          resolution,
-          useLogScale,
-          colorScheme,
-          activeNormalization,
-          mode,
-          height,
-        )
+        performRender()
       },
       { delay: 1000, name: 'LinearHicDisplayRender' },
     ),
@@ -156,6 +130,11 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
     self,
     autorun(
       () => {
+        const view = getContainingView(self) as LGV
+        if (!view.initialized) {
+          return
+        }
+
         const canvas = self.ref
         const { renderingImageData } = self
 

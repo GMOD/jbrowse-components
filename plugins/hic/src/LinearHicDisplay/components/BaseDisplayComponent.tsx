@@ -69,7 +69,7 @@ const DataDisplay = observer(function ({
 }) {
   const { drawn, loading } = model
   const view = getContainingView(model) as LinearGenomeViewModel
-  const left = (model.lastDrawnOffsetPx || 0) - view.offsetPx
+  const left = (model.lastDrawnOffsetPx || 0) - Math.max(0, view.offsetPx)
   return (
     <div data-testid={`drawn-${drawn}`}>
       <div style={{ position: 'absolute', left }}>{children}</div>
