@@ -1,28 +1,13 @@
 import { useEffect, useState } from 'react'
 
-import { isElectron } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  Typography,
-  alpha,
-} from '@mui/material'
-import { LocalFile } from 'generic-filehandle2'
+import { Button, DialogActions, DialogContent } from '@mui/material'
 import { SourceMapConsumer } from 'source-map-js'
 
 import Dialog from './Dialog'
-import ExternalLink from './ExternalLink'
+import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents'
 import LoadingEllipses from './LoadingEllipses'
 
 async function myfetchtext(uri: string) {
-  if (uri.startsWith('file://') && isElectron) {
-    const localPath = decodeURIComponent(new URL(uri).pathname)
-    const file = new LocalFile(localPath)
-    const buffer = await file.readFile()
-    return new TextDecoder().decode(buffer)
-  }
   const res = await fetch(uri)
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} fetching ${uri}: ${await res.text()}`)
@@ -31,8 +16,7 @@ async function myfetchtext(uri: string) {
 }
 
 async function myfetchjson(uri: string) {
-  const text = await myfetchtext(uri)
-  return JSON.parse(text)
+  return JSON.parse(await myfetchtext(uri))
 }
 
 // produce a source-map resolved stack trace
@@ -84,59 +68,16 @@ async function mapStackTrace(stack: string) {
 
 const MAX_ERR_LEN = 10_000
 
-// Chrome has the error message in the stacktrace, firefox doesn't
+// Chrome has the error message in the stacktrace, firefox doesn't.
+// Remove it since it can be very long due to mobx-state-tree stuff
 function stripMessage(trace: string, error: unknown) {
-  if (trace.startsWith('Error:')) {
-    // remove the error message, which can be very long due to @jbrowse/mobx-state-tree
-    // stuff, to get just the stack trace
-    const err = `${error}`
-    return trace.slice(err.length)
-  } else {
-    return trace
-  }
+  return trace.startsWith('Error:') ? trace.slice(`${error}`.length) : trace
 }
 
-const useStyles = makeStyles()(theme => ({
-  pre: {
-    background: alpha(theme.palette.error.main, 0.2),
-    border: `1px solid ${theme.palette.divider}`,
-    overflow: 'auto',
-    margin: 20,
-    maxHeight: 300,
-  },
-}))
-
-function Contents({ text, extra }: { text: string; extra?: unknown }) {
-  const { classes } = useStyles()
-  const err = encodeURIComponent(
-    `${[
-      'I got this error from JBrowse, here is the stack trace:\n',
-      '```',
-      text,
-      '```',
-      extra ? `supporting data: ${JSON.stringify(extra, null, 2)}` : '',
-    ].join('\n')}\n`,
-  )
-
-  const err2 = [
-    text,
-    extra ? `supporting data: ${JSON.stringify(extra, null, 2)}` : '',
-  ].join('\n')
-
-  const email = 'jbrowse2@berkeley.edu'
-  const githubLink = `https://github.com/GMOD/jbrowse-components/issues/new?labels=bug&title=JBrowse+issue&body=${err}`
-  const emailLink = `mailto:${email}?subject=JBrowse%202%20error&body=${err}`
-
-  return (
-    <>
-      <Typography>
-        Post a new issue at{' '}
-        <ExternalLink href={githubLink}>GitHub</ExternalLink> or send an email
-        to <ExternalLink href={emailLink}>{email}</ExternalLink>{' '}
-      </Typography>
-      <pre className={classes.pre}>{err2}</pre>
-    </>
-  )
+function getStackTrace(error: unknown) {
+  return typeof error === 'object' && error !== null && 'stack' in error
+    ? `${error.stack}`
+    : ''
 }
 
 export default function ErrorMessageStackTraceDialog({
@@ -151,16 +92,14 @@ export default function ErrorMessageStackTraceDialog({
   const [mappedStackTrace, setMappedStackTrace] = useState<string>()
   const [secondaryError, setSecondaryError] = useState<unknown>()
   const [clicked, setClicked] = useState(false)
-  const stackTracePreProcessed = `${typeof error === 'object' && error !== null && 'stack' in error ? error.stack : ''}`
   const errorText = error ? `${error}` : ''
-  const stackTrace = stripMessage(stackTracePreProcessed, errorText)
+  const stackTrace = stripMessage(getStackTrace(error), errorText)
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
-        const res = await mapStackTrace(stackTrace)
-        setMappedStackTrace(res)
+        setMappedStackTrace(await mapStackTrace(stackTrace))
       } catch (e) {
         console.error(e)
         setMappedStackTrace(stackTrace)
@@ -169,6 +108,8 @@ export default function ErrorMessageStackTraceDialog({
     })()
   }, [stackTrace])
 
+  // @ts-expect-error
+  const version = window.JBrowseSession?.version
   const errorBoxText = [
     secondaryError
       ? 'Error loading source map, showing raw stack trace below:'
@@ -177,10 +118,9 @@ export default function ErrorMessageStackTraceDialog({
       ? `${errorText.slice(0, MAX_ERR_LEN)}...`
       : errorText,
     mappedStackTrace || 'No stack trace available',
-    // @ts-expect-error add version info at bottom if we are in jbrowse-web
-    window.JBrowseSession ? `JBrowse ${window.JBrowseSession.version}` : '',
+    version ? `JBrowse ${version}` : '',
   ]
-    .filter(f => !!f)
+    .filter(Boolean)
     .join('\n')
 
   return (
@@ -189,7 +129,7 @@ export default function ErrorMessageStackTraceDialog({
         {mappedStackTrace === undefined ? (
           <LoadingEllipses variant="h6" />
         ) : (
-          <Contents text={errorBoxText} extra={extra} />
+          <ErrorMessageStackTraceContents text={errorBoxText} extra={extra} />
         )}
       </DialogContent>
       <DialogActions>
