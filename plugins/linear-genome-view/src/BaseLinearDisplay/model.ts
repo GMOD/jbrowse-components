@@ -547,7 +547,7 @@ function stateModelFactory() {
         return {
           ...getParentRenderProps(self),
           notReady: !self.featureDensityStatsReady,
-          rpcDriverName: self.rpcDriverName,
+          rpcDriverName: self.effectiveRpcDriverName,
         }
       },
     }))

@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import {
   Dialog,
@@ -11,7 +12,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import Draggable from 'react-draggable'
-import { makeStyles } from 'tss-react/mui'
 
 import type { DialogProps, PaperProps } from '@mui/material'
 

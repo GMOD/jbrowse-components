@@ -93,7 +93,6 @@ export default function stateModelFactory(
             config,
             displayHeight: self.mode === 'adjust' ? self.height : undefined,
             normalization: self.activeNormalization,
-            rpcDriverName: self.rpcDriverName,
             resolution: self.resolution,
             useLogScale: self.useLogScale,
             colorScheme: self.colorScheme,

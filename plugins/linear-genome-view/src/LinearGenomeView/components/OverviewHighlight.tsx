@@ -1,7 +1,7 @@
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '../model'
 import type { SessionWithWidgets } from '@jbrowse/core/util'

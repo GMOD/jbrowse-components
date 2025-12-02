@@ -1,5 +1,5 @@
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
   container: {

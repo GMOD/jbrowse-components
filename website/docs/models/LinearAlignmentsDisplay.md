@@ -150,13 +150,6 @@ setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { set
 setHeight: (n: number) => number
 ```
 
-#### action: setFilterBy
-
-```js
-// type signature
-setFilterBy: (filter: FilterBy) => void
-```
-
 #### action: setLowerPanelType
 
 ```js

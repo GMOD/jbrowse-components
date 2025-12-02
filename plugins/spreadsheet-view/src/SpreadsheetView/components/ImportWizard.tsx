@@ -7,6 +7,7 @@ import {
   LoadingEllipses,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
@@ -19,7 +20,6 @@ import {
   RadioGroup,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import TrackSelector from './TrackSelector'
 

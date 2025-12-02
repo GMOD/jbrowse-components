@@ -319,7 +319,6 @@ export function stateModelFactory(
             config: self.rendererConfig,
             filters: self.filters,
             resolution: self.resolution,
-            rpcDriverName: self.rpcDriverName,
             sources: self.sources,
           }
         },
@@ -400,12 +399,12 @@ export function stateModelFactory(
         return {
           ...superProps,
           notReady: superProps.notReady || !self.sources || !self.stats,
-          rpcDriverName: self.rpcDriverName,
           displayCrossHatches: self.displayCrossHatches,
           height: self.height,
           ticks: self.ticks,
           stats: self.stats,
           scaleOpts: self.scaleOpts,
+          offset: self.isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET,
         }
       },
       /**

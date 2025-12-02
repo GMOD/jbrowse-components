@@ -1,7 +1,7 @@
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import FacetFilters from './FacetFilters'
 import FacetedDataGrid from './FacetedDataGrid'

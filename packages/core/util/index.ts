@@ -48,6 +48,7 @@ export * from './coarseStripHTML'
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
+export * from './rpc'
 
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)

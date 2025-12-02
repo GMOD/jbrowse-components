@@ -67,9 +67,6 @@ export function drawXY(
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
-  // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
-  // wiggle display, and makes the height of the actual drawn area add
-  // "padding" to the top and bottom of the display
   const height = unadjustedHeight - offset * 2
 
   const filled = readConfObject(config, 'filled')

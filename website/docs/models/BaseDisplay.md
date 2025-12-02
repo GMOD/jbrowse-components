@@ -79,6 +79,29 @@ any
 any
 ```
 
+#### getter: parentDisplay
+
+Returns the parent display if this display is nested within another display
+(e.g., PileupDisplay inside LinearAlignmentsDisplay)
+
+```js
+// type
+any
+```
+
+#### getter: effectiveRpcDriverName
+
+Returns the effective RPC driver name with hierarchical fallback:
+
+1. This display's explicit rpcDriverName
+2. Parent display's effectiveRpcDriverName (for nested displays)
+3. Track config's rpcDriverName
+
+```js
+// type
+any
+```
+
 #### getter: rendererType
 
 the pluggable element type object for this display's renderer

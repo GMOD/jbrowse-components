@@ -1,4 +1,6 @@
 import { BoxRendererType } from '@jbrowse/core/pluggableElementTypes'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { rpcResult } from 'librpc-web-mod'
 
 import { doAll } from './doAll'
 
@@ -14,7 +16,6 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     const region = regions[0]!
     const width = Math.max(1, (region.end - region.start) / bpPerPx)
 
-    // Render to canvas
     const res = await doAll({
       pluginManager: this.pluginManager,
       renderProps,
@@ -23,25 +24,16 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
     })
 
     const height = Math.max(1, layout.getTotalHeight())
+    const serializedLayout = this.serializeLayout(layout, renderProps)
 
-    const result = await super.render({
-      ...renderProps,
+    const serialized = {
       ...res,
-      features,
-      layout,
-      height,
-      width,
-    })
-
-    return {
-      ...result,
-      ...res,
-      features: new Map(),
-      layout,
+      layout: serializedLayout,
       height,
       width,
       maxHeightReached: layout.maxHeightReached,
-      containsNoTransferables: true,
     }
+
+    return rpcResult(serialized, collectTransferables(res))
   }
 }

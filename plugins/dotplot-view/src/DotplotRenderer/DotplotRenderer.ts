@@ -1,18 +1,49 @@
-import ComparativeRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import ServerSideRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import {
+  dedupe,
+  getSerializedSvg,
   renameRegionsIfNeeded,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { rpcResult } from 'librpc-web-mod'
+import { firstValueFrom } from 'rxjs'
+import { filter, toArray } from 'rxjs/operators'
 
 import { Dotplot1DView } from '../DotplotView/model'
 
 import type { Dotplot1DViewModel } from '../DotplotView/model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type {
-  RenderArgs,
-  RenderArgsDeserialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+  RenderArgs as ServerSideRenderArgs,
+  RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
+  RenderArgsSerialized as ServerSideRenderArgsSerialized,
+  ResultsDeserialized as ServerSideResultsDeserialized,
+  ResultsSerialized as ServerSideResultsSerialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Region } from '@jbrowse/core/util'
+
+export interface RenderArgs extends ServerSideRenderArgs {
+  blockKey: string
+}
+
+export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
+  blockKey: string
+}
+
+export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized {
+  blockKey: string
+}
+
+export type ResultsSerialized = ServerSideResultsSerialized
+
+export interface ResultsDeserialized extends ServerSideResultsDeserialized {
+  blockKey: string
+}
 
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   adapterConfig: AnyConfigurationModel
@@ -25,7 +56,7 @@ export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   }
 }
 
-interface DotplotRenderArgs extends RenderArgs {
+export interface DotplotRenderArgs extends RenderArgs {
   adapterConfig: AnyConfigurationModel
   sessionId: string
   view: {
@@ -34,7 +65,27 @@ interface DotplotRenderArgs extends RenderArgs {
   }
 }
 
-export default class DotplotRenderer extends ComparativeRenderer {
+interface ResultsSerializedSvgExport extends ResultsSerialized {
+  canvasRecordedData: unknown
+  width: number
+  height: number
+}
+
+function isCanvasRecordedSvgExport(
+  e: ResultsSerialized,
+): e is ResultsSerializedSvgExport {
+  return 'canvasRecordedData' in e
+}
+
+function normalizeRegion(r: Region) {
+  return {
+    ...r,
+    start: Math.floor(r.start),
+    end: Math.ceil(r.end),
+  }
+}
+
+export default class DotplotRenderer extends ServerSideRenderer {
   supportsSVG = true
 
   async renameRegionsIfNeeded(args: DotplotRenderArgs) {
@@ -61,6 +112,66 @@ export default class DotplotRenderer extends ComparativeRenderer {
     return args
   }
 
+  serializeArgsInClient(args: RenderArgs) {
+    const { displayModel, ...serializable } = args
+    return super.serializeArgsInClient(serializable)
+  }
+
+  deserializeResultsInClient(
+    result: ResultsSerialized,
+    args: RenderArgs,
+  ): ResultsDeserialized {
+    return {
+      ...super.deserializeResultsInClient(result, args),
+      blockKey: args.blockKey,
+    }
+  }
+
+  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
+    const results = (await rpcManager.call(
+      args.sessionId,
+      'ComparativeRender',
+      args,
+    )) as ResultsSerialized
+
+    if (isCanvasRecordedSvgExport(results)) {
+      const { reactElement: _, ...rest } = results
+      return {
+        ...rest,
+        html: await getSerializedSvg(results),
+      }
+    }
+    return results
+  }
+
+  async getFeatures(renderArgs: {
+    regions: Region[]
+    sessionId: string
+    adapterConfig: AnyConfigurationModel
+    filters?: SerializableFilterChain
+  }) {
+    const { regions, sessionId, adapterConfig, filters } = renderArgs
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    const res = await firstValueFrom(
+      (dataAdapter as BaseFeatureDataAdapter)
+        .getFeaturesInMultipleRegions(
+          regions.map(r => normalizeRegion(r)),
+          renderArgs,
+        )
+        .pipe(
+          filter(f => (filters ? filters.passes(f, renderArgs) : true)),
+          toArray(),
+        ),
+    )
+
+    // dedupe needed xref https://github.com/GMOD/jbrowse-components/pull/3404/
+    return dedupe(res, f => f.id())
+  }
+
   async render(renderProps: DotplotRenderArgsDeserialized) {
     const {
       width,
@@ -85,15 +196,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
       drawDotplot(ctx, { ...renderProps, views }),
     )
 
-    const results = await super.render({
-      ...renderProps,
-      ...ret,
-      height,
-      width,
-    })
-
-    return {
-      ...results,
+    const serialized = {
       ...ret,
       height,
       width,
@@ -102,5 +205,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
       bpPerPxX: views[0]!.bpPerPx,
       bpPerPxY: views[1]!.bpPerPx,
     }
+
+    return rpcResult(serialized, collectTransferables(ret))
   }
 }

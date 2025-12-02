@@ -1,8 +1,9 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { rpcResult } from 'librpc-web-mod'
 
 import type { MultiRenderArgsDeserialized } from './types'
-import type { Feature } from '@jbrowse/core/util'
 
 export default class MultiVariantRenderer extends FeatureRendererType {
   supportsSVG = true
@@ -32,22 +33,13 @@ export default class MultiVariantRenderer extends FeatureRendererType {
       },
     )
 
-    const results = await super.render({
-      ...renderProps,
+    const serialized = {
       ...ret,
-      features,
-      height,
-      width,
-    })
-
-    return {
-      ...results,
-      ...ret,
-      features: new Map<string, Feature>(),
       height,
       width,
       origScrollTop: scrollTop,
-      containsNoTransferables: true,
     }
+
+    return rpcResult(serialized, collectTransferables(ret))
   }
 }
