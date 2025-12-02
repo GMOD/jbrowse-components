@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { cast, getEnv, isAlive, types, Instance } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
@@ -17,6 +17,7 @@ import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
@@ -85,6 +86,24 @@ function stateModelFactory(
        */
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+
+      /**
+       * #getter
+       * Collect all skip features from rendered blocks for cross-region arc drawing
+       */
+      get skipFeatures(): Feature[] {
+        const skipFeatures: Feature[] = []
+        for (const block of self.blockState.values()) {
+          if (block.features) {
+            for (const feature of block.features.values()) {
+              if (feature.get('type') === 'skip') {
+                skipFeatures.push(feature)
+              }
+            }
+          }
+        }
+        return skipFeatures
       },
     }))
     .actions(self => ({
@@ -386,6 +405,7 @@ function stateModelFactory(
     })
 }
 
-export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageDisplayModel = Instance<SNPCoverageDisplayStateModel>
 
 export default stateModelFactory

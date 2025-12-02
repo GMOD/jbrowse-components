@@ -439,8 +439,10 @@ export async function makeImage(
   // serializing thousands of per-base features
   let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures: Feature[] = []
+  const skipFeatures: Feature[] = []
   for (const feature of features.values()) {
     if (feature.get('type') === 'skip') {
+      skipFeatures.push(feature)
       continue
     }
     const start = feature.get('start')
@@ -451,5 +453,5 @@ export async function makeImage(
       prevLeftPx = leftPx
     }
   }
-  return { reducedFeatures }
+  return { reducedFeatures, skipFeatures }
 }
