@@ -9,8 +9,6 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { rpcResult } from 'librpc-web-mod'
 
-import type { InterbaseIndicatorItem, RenderArgsDeserialized } from './types'
-
 import type { RenderArgsDeserialized } from './types'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -52,14 +50,12 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
     const width = (region.end - region.start) / bpPerPx
 
     const { makeImage } = await import('./makeImage')
-    const { reducedFeatures, coords, items, skipFeatures, ...rest } = await updateStatus(
-      'Rendering coverage',
-      statusCallback,
-      () =>
+    const { reducedFeatures, coords, items, skipFeatures, ...rest } =
+      await updateStatus('Rendering coverage', statusCallback, () =>
         renderToAbstractCanvas(width, height, renderProps, ctx =>
           makeImage(ctx, { ...renderProps, features }),
         ),
-    )
+      )
 
     const flatbush = new Flatbush(Math.max(items.length, 1))
     if (coords.length) {
@@ -77,7 +73,7 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
       skipFeatures: skipFeatures.map(f => f.toJSON()),
       clickMap: {
         flatbush: flatbush.data,
-        items: items as InterbaseIndicatorItem[],
+        items: items,
       },
       height,
       width,

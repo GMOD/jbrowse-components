@@ -319,7 +319,12 @@ function stateModelFactory(
             ...superRenderingProps(),
             onIndicatorClick(
               _: unknown,
-              item: { type: string; base: string; count: number; total: number },
+              item: {
+                type: string
+                base: string
+                count: number
+                total: number
+              },
             ) {
               getSession(self).queueDialog(handleClose => [
                 InterbaseInfoDialog,

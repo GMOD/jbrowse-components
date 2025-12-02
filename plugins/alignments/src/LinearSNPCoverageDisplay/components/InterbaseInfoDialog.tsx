@@ -3,6 +3,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import {
+  formatInterbaseStats,
+  getInterbaseTypeLabel,
+} from '../../SNPCoverageRenderer/types'
+
 const useStyles = makeStyles()(theme => ({
   root: {
     width: '30em',
@@ -14,19 +19,6 @@ const useStyles = makeStyles()(theme => ({
     fontWeight: 'bold',
   },
 }))
-
-function getTypeLabel(type: string) {
-  switch (type) {
-    case 'insertion':
-      return 'Insertion'
-    case 'softclip':
-      return 'Soft clip'
-    case 'hardclip':
-      return 'Hard clip'
-    default:
-      return type
-  }
-}
 
 const InterbaseInfoDialog = observer(function ({
   item,
@@ -41,20 +33,22 @@ const InterbaseInfoDialog = observer(function ({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const { count, total } = item
-  const pct = total > 0 ? ((count / total) * 100).toFixed(1) : 0
+  const { type, count, total } = item
   return (
-    <Dialog open maxWidth="sm" onClose={handleClose} title="Interbase indicator">
+    <Dialog
+      open
+      maxWidth="sm"
+      onClose={handleClose}
+      title="Interbase indicator"
+    >
       <DialogContent className={classes.root}>
         <div className={classes.section}>
           <Typography className={classes.label}>Type:</Typography>
-          <Typography>{getTypeLabel(item.type)}</Typography>
+          <Typography>{getInterbaseTypeLabel(type)}</Typography>
         </div>
         <div className={classes.section}>
           <Typography className={classes.label}>Count:</Typography>
-          <Typography>
-            {count}/{total} ({pct}%)
-          </Typography>
+          <Typography>{formatInterbaseStats(count, total)}</Typography>
         </div>
         <DialogActions>
           <Button

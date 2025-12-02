@@ -4,6 +4,8 @@ import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
+import { formatInterbaseStats, getInterbaseTypeLabel } from '../types'
+
 import type { InterbaseIndicatorItem } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
@@ -12,18 +14,8 @@ function getItemLabel(item: InterbaseIndicatorItem | undefined) {
   if (!item) {
     return undefined
   }
-  const { count, total } = item
-  const pct = total > 0 ? ((count / total) * 100).toFixed(1) : 0
-  switch (item.type) {
-    case 'insertion':
-      return `Insertion: ${count}/${total} (${pct}%)`
-    case 'softclip':
-      return `Soft clip: ${count}/${total} (${pct}%)`
-    case 'hardclip':
-      return `Hard clip: ${count}/${total} (${pct}%)`
-    default:
-      return undefined
-  }
+  const { type, count, total } = item
+  return `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total)}`
 }
 
 const SNPCoverageRendering = observer(function (props: {
@@ -38,9 +30,16 @@ const SNPCoverageRendering = observer(function (props: {
     items: InterbaseIndicatorItem[]
   }
   onMouseLeave?: (event: React.MouseEvent) => void
-  onMouseMove?: (event: React.MouseEvent, featureId?: string, extra?: string) => void
+  onMouseMove?: (
+    event: React.MouseEvent,
+    featureId?: string,
+    extra?: string,
+  ) => void
   onFeatureClick?: (event: React.MouseEvent, featureId?: string) => void
-  onIndicatorClick?: (event: React.MouseEvent, item: InterbaseIndicatorItem) => void
+  onIndicatorClick?: (
+    event: React.MouseEvent,
+    item: InterbaseIndicatorItem,
+  ) => void
 }) {
   const {
     regions,

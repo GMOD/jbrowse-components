@@ -1,5 +1,5 @@
-import ReactComponent from './components/SNPCoverageRendering'
 import SNPCoverageRenderer from './SNPCoverageRenderer'
+import ReactComponent from './components/SNPCoverageRendering'
 import configSchema from './configSchema'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
