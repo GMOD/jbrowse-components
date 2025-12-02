@@ -38,16 +38,19 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 
 export interface RenderResults extends FeatureRenderResults {
   layout?: BaseLayout<Feature> | SerializedLayout
+  layoutWasReset?: boolean
 }
 
 export interface ResultsSerialized extends FeatureResultsSerialized {
   maxHeightReached: boolean
   layout: SerializedLayout
+  layoutWasReset?: boolean
 }
 
 export interface ResultsDeserialized extends FeatureResultsDeserialized {
   maxHeightReached: boolean
   layout: PrecomputedLayout<string>
+  layoutWasReset?: boolean
 }
 
 export default class BoxRendererType extends FeatureRendererType {
@@ -84,6 +87,19 @@ export default class BoxRendererType extends FeatureRendererType {
   }
 
   freeResources(args: RenderArgs) {
+    const specKeys = Object.keys(args)
+
+    // If only sessionId is specified, delete all layout sessions for that session
+    if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
+      const { sessionId } = args
+      for (const key of Object.keys(this.layoutSessions)) {
+        if (key.startsWith(`${sessionId}-`)) {
+          delete this.layoutSessions[key]
+        }
+      }
+      return
+    }
+
     const key = getLayoutId(args)
     const session = this.layoutSessions[key]
     if (session) {
@@ -123,8 +139,10 @@ export default class BoxRendererType extends FeatureRendererType {
 
   createLayoutInWorker(args: RenderArgsDeserialized) {
     const { regions } = args
-    const { layout } = this.getWorkerSession(args)
-    return layout.getSublayout(regions[0]!.refName)
+    const session = this.getWorkerSession(args)
+    const layout = session.layout.getSublayout(regions[0]!.refName)
+    const layoutWasReset = session.checkAndClearLayoutWasReset()
+    return { layout, layoutWasReset }
   }
 
   serializeLayout(layout: BaseLayout<unknown>, args: RenderArgsDeserialized) {
@@ -138,8 +156,8 @@ export default class BoxRendererType extends FeatureRendererType {
    */
   async render(renderArgs: RenderArgsDeserialized): Promise<RenderReturn> {
     const features = await this.getFeatures(renderArgs)
-    const layout = this.createLayoutInWorker(renderArgs)
-    return { features, layout }
+    const { layout, layoutWasReset } = this.createLayoutInWorker(renderArgs)
+    return { features, layout, layoutWasReset }
   }
 
   serializeResultsInWorker(
@@ -164,6 +182,7 @@ export default class BoxRendererType extends FeatureRendererType {
       ...rest,
       layout,
       maxHeightReached: layout.maxHeightReached,
+      layoutWasReset: results.layoutWasReset,
       // Filter features to only those visible in the layout
       features: features?.filter(f => !!layout.rectangles[f.uniqueId]),
     }

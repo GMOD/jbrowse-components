@@ -20,6 +20,21 @@ export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 export interface CachedLayout {
   layout: MyMultiLayout
   props: LayoutSessionProps
+  /** Track the min/max coordinates we've seen to detect large jumps */
+  minCoord: number
+  maxCoord: number
+}
+
+/**
+ * Check if two regions overlap
+ */
+function regionsOverlap(
+  r1Start: number,
+  r1End: number,
+  r2Start: number,
+  r2End: number,
+) {
+  return r1End > r2Start && r2End > r1Start
 }
 
 export class LayoutSession {
@@ -27,8 +42,21 @@ export class LayoutSession {
 
   cachedLayout: CachedLayout | undefined
 
+  /** Flag indicating the layout was reset (due to jump or config change) */
+  layoutWasReset = false
+
   constructor(props: LayoutSessionProps) {
     this.props = props
+  }
+
+  /**
+   * Check if layout was reset and clear the flag.
+   * Used to signal to the client that all blocks should re-render.
+   */
+  checkAndClearLayoutWasReset() {
+    const wasReset = this.layoutWasReset
+    this.layoutWasReset = false
+    return wasReset
   }
 
   update(props: LayoutSessionProps) {
@@ -46,22 +74,62 @@ export class LayoutSession {
   }
 
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
-    return (
-      cachedLayout.props.bpPerPx === this.props.bpPerPx &&
-      deepEqual(
+    if (
+      cachedLayout.props.bpPerPx !== this.props.bpPerPx ||
+      !deepEqual(
         readConfObject(this.props.config),
         readConfObject(cachedLayout.props.config),
-      ) &&
-      deepEqual(this.props.filters, cachedLayout.props.filters)
-    )
+      ) ||
+      !deepEqual(this.props.filters, cachedLayout.props.filters)
+    ) {
+      return false
+    }
+
+    // Check if current regions overlap with the cached coordinate range
+    // If there's no overlap, we've scrolled far away and should discard the layout
+    const region = this.props.regions[0]
+    if (region) {
+      const hasOverlap = regionsOverlap(
+        region.start,
+        region.end,
+        cachedLayout.minCoord,
+        cachedLayout.maxCoord,
+      )
+      if (!hasOverlap) {
+        return false
+      }
+    }
+
+    return true
   }
 
   get layout(): MyMultiLayout {
+    const region = this.props.regions[0]
+    const regionStart = region?.start ?? 0
+    const regionEnd = region?.end ?? 0
+
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
+      // Only signal reset if we're recreating an existing layout, not on first creation.
+      // On first load there are no stale blocks to worry about.
+      if (this.cachedLayout) {
+        this.layoutWasReset = true
+      }
       this.cachedLayout = {
         layout: this.makeLayout(),
         props: this.props,
+        minCoord: regionStart,
+        maxCoord: regionEnd,
       }
+    } else {
+      // Expand the tracked coordinate range as we see new regions
+      this.cachedLayout.minCoord = Math.min(
+        this.cachedLayout.minCoord,
+        regionStart,
+      )
+      this.cachedLayout.maxCoord = Math.max(
+        this.cachedLayout.maxCoord,
+        regionEnd,
+      )
     }
     return this.cachedLayout.layout
   }

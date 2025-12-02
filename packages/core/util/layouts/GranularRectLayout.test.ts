@@ -114,31 +114,69 @@ test('discardRange removes rectangles from the Map to prevent memory leaks', () 
   expect(l.rectangles.size).toBe(0)
 })
 
-test('discardRange only removes rectangles fully within range', () => {
+test('discardRange keeps long reads that extend beyond boundaries for layout consistency', () => {
   const l = new Layout({ pitchX: 10, pitchY: 4 })
 
   // Add features at different positions
-  l.addRect('inside', 5000, 6000, 1) // fully inside discard range
-  l.addRect('outside-left', 0, 1000, 1) // fully outside (left)
-  l.addRect('outside-right', 9000, 10000, 1) // fully outside (right)
-  l.addRect('spanning', 2000, 8000, 1) // spans the discard range
+  l.addRect('inside', 5000, 6000, 1) // fully inside discard range - SHOULD BE REMOVED
+  l.addRect('outside-left', 0, 1000, 1) // fully outside (left) - SHOULD BE KEPT
+  l.addRect('outside-right', 9000, 10000, 1) // fully outside (right) - SHOULD BE KEPT
+  l.addRect('spanning', 2000, 8000, 1) // spans the discard range (long read) - SHOULD BE KEPT
+  l.addRect('overlap-left', 2000, 4000, 1) // overlaps left edge - SHOULD BE KEPT
+  l.addRect('overlap-right', 6000, 8000, 1) // overlaps right edge - SHOULD BE KEPT
 
   // @ts-expect-error accessing private property for testing
-  expect(l.rectangles.size).toBe(4)
+  expect(l.rectangles.size).toBe(6)
 
   // Discard range 3000-7000
   l.discardRange(3000, 7000)
 
+  // Only rectangles COMPLETELY within the range should be removed
+  // Long reads extending beyond are kept to preserve Y position consistency
   // @ts-expect-error accessing private property for testing
-  expect(l.rectangles.size).toBe(3)
+  expect(l.rectangles.size).toBe(5)
+
+  // This should be removed (completely within discard range)
   // @ts-expect-error accessing private property for testing
   expect(l.rectangles.has('inside')).toBe(false)
+
+  // These should remain (extend beyond discard range - preserve for adjacent blocks)
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.has('spanning')).toBe(true)
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.has('overlap-left')).toBe(true)
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.has('overlap-right')).toBe(true)
+
+  // These should remain (no overlap with discard range)
   // @ts-expect-error accessing private property for testing
   expect(l.rectangles.has('outside-left')).toBe(true)
   // @ts-expect-error accessing private property for testing
   expect(l.rectangles.has('outside-right')).toBe(true)
+})
+
+test('cleanup clears all data structures', () => {
+  const l = new Layout({ pitchX: 10, pitchY: 4 })
+
+  // Add some features
+  for (let i = 0; i < 10; i++) {
+    l.addRect(`feature-${i}`, i * 1000, i * 1000 + 500, 1)
+  }
+
   // @ts-expect-error accessing private property for testing
-  expect(l.rectangles.has('spanning')).toBe(true)
+  expect(l.rectangles.size).toBe(10)
+  // @ts-expect-error accessing private property for testing
+  expect(l.bitmap.length).toBeGreaterThan(0)
+
+  // Cleanup
+  l.cleanup()
+
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.size).toBe(0)
+  // @ts-expect-error accessing private property for testing
+  expect(l.bitmap.length).toBe(0)
+  expect(l.getTotalHeight()).toBe(0)
+  expect(l.maxHeightReached).toBe(false)
 })
 
 // see issue #486
