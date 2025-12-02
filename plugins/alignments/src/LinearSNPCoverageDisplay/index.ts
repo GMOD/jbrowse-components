@@ -7,10 +7,6 @@ import modelFactory from './model'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const SNPCoverageDisplayComponent = lazy(
-  () => import('./components/SNPCoverageDisplayComponent'),
-)
-
 export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
@@ -23,7 +19,9 @@ export default function register(pluginManager: PluginManager) {
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: SNPCoverageDisplayComponent,
+      ReactComponent: lazy(
+        () => import('./components/SNPCoverageDisplayComponent'),
+      ),
     })
   })
 }

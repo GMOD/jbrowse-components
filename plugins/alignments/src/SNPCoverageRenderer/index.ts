@@ -1,4 +1,4 @@
-import { WiggleRendering } from '@jbrowse/plugin-wiggle'
+import { lazy } from 'react'
 
 import SNPCoverageRenderer from './SNPCoverageRenderer'
 import configSchema from './configSchema'
@@ -10,7 +10,7 @@ export default function register(pluginManager: PluginManager) {
     () =>
       new SNPCoverageRenderer({
         name: 'SNPCoverageRenderer',
-        ReactComponent: WiggleRendering,
+        ReactComponent: lazy(() => import('./WiggleRendering')),
         configSchema,
         pluginManager,
       }),

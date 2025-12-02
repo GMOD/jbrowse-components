@@ -1,6 +1,7 @@
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import ReactComponent from './components/AlignmentsDisplay'
 import configSchemaFactory from './configSchema'
 import modelFactory from './model'
 
@@ -16,7 +17,7 @@ export default function LinearAlignmentsDisplayF(pluginManager: PluginManager) {
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent,
+      ReactComponent: lazy(() => import('./components/AlignmentsDisplay')),
     })
   })
 }

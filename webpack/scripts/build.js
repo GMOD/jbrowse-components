@@ -1,120 +1,209 @@
+// Makes the script crash on unhandled rejections instead of silently ignoring
+// them. In the future, promise rejections that are not handled will terminate
+// the Node.js process with a non-zero exit code.
 process.on('unhandledRejection', err => {
   throw err
 })
+
+// Ensure environment variables are read.
+require('../config/env')
 
 const fs = require('fs')
 const path = require('path')
 
 const chalk = require('chalk')
+const FileSizeReporter = require('react-dev-utils/FileSizeReporter')
+const { checkBrowsers } = require('react-dev-utils/browsersHelper')
+const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles')
+const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
+const printBuildError = require('react-dev-utils/printBuildError')
+const printHostingInstructions = require('react-dev-utils/printHostingInstructions')
 const webpack = require('webpack')
+
+const paths = require('../config/paths')
+
+const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild
+const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild
+const useYarn = fs.existsSync(paths.yarnLockFile)
+
+// These sizes are pretty large. We'll warn for bundles exceeding them.
+const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024
+const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024
+
+const isInteractive = process.stdout.isTTY
+
+// Warn and crash if required files are missing
+if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
+  process.exit(1)
+}
 
 const argv = process.argv.slice(2)
 const writeStatsJson = argv.includes('--stats')
 
-function formatFileSize(bytes) {
-  if (bytes < 1024) {
-    return `${bytes} B`
-  } else if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(2)} kB`
-  } else {
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
-  }
-}
-
-function printFileSizes(webpackStats, buildFolder) {
-  const assets = (webpackStats.stats || [webpackStats])
-    .flatMap(stats =>
-      stats
-        .toJson({ all: false, assets: true })
-        .assets.filter(asset => /\.(js|css)$/.test(asset.name))
-        .map(asset => {
-          const size = fs.statSync(path.join(buildFolder, asset.name)).size
-          return {
-            folder: path.join(
-              path.basename(buildFolder),
-              path.dirname(asset.name),
-            ),
-            name: path.basename(asset.name),
-            size,
-            sizeLabel: formatFileSize(size),
-          }
-        }),
-    )
-    .sort((a, b) => b.size - a.size)
-
-  const longest = Math.max(...assets.map(a => a.sizeLabel.length))
-  for (const asset of assets) {
-    console.log(
-      `  ${asset.sizeLabel.padEnd(longest)}  ${chalk.dim(
-        asset.folder + path.sep,
-      )}${chalk.cyan(asset.name)}`,
-    )
-  }
-}
+// We require that you explicitly set browsers and do not fall back to
+// browserslist defaults.
 
 module.exports = function buildWebpack(config) {
-  const { paths } = require('../config/webpack.config')
-
-  for (const filePath of [paths.appHtml, paths.appIndexJs]) {
-    if (!fs.existsSync(filePath)) {
-      console.log(chalk.red(`Could not find required file: ${filePath}`))
-      process.exit(1)
-    }
-  }
-
-  fs.rmSync(paths.appBuild, { recursive: true, force: true })
-  fs.cpSync(paths.appPublic, paths.appBuild, {
-    recursive: true,
-    dereference: true,
-    filter: file => file !== paths.appHtml,
-  })
-
-  console.log('Creating an optimized production build...')
-
-  const compiler = webpack(config)
-  return (
-    new Promise((resolve, reject) => {
-      compiler.run((err, stats) => {
-        if (err) {
-          reject(err)
-          return
-        }
-
-        const info = stats.toJson({ all: false, warnings: true, errors: true })
-
-        if (info.errors.length) {
-          console.log(chalk.red('Failed to compile.\n'))
-          console.log(info.errors.map(e => e.message || e).join('\n\n'))
-          process.exit(1)
-        }
-
-        if (info.warnings.length) {
+  return checkBrowsers(paths.appPath, isInteractive)
+    .then(() => {
+      // First, read the current file sizes in build directory.
+      // This lets us display how much they changed later.
+      return measureFileSizesBeforeBuild(paths.appBuild)
+    })
+    .then(previousFileSizes => {
+      // Remove all content but keep the directory so that
+      // if you're in it, you don't end up in Trash
+      fs.rmSync(paths.appBuild, { recursive: true, force: true })
+      // Merge with the public folder
+      copyPublicFolder()
+      // Start the webpack build
+      return build(previousFileSizes)
+    })
+    .then(
+      ({ stats, previousFileSizes, warnings }) => {
+        if (warnings.length) {
           console.log(chalk.yellow('Compiled with warnings.\n'))
-          console.log(info.warnings.map(w => w.message || w).join('\n\n'))
+          console.log(warnings.join('\n\n'))
+          console.log(
+            `\nSearch for the ${chalk.underline(chalk.yellow('keywords'))} to learn more about each warning.`,
+          )
+          console.log(
+            `To ignore, add ${chalk.cyan('// eslint-disable-next-line')} to the line before.\n`,
+          )
         } else {
           console.log(chalk.green('Compiled successfully.\n'))
         }
 
-        console.log('File sizes:\n')
-        printFileSizes(stats, paths.appBuild)
+        console.log('File sizes after gzip:\n')
+        printFileSizesAfterBuild(
+          stats,
+          previousFileSizes,
+          paths.appBuild,
+          WARN_AFTER_BUNDLE_GZIP_SIZE,
+          WARN_AFTER_CHUNK_GZIP_SIZE,
+        )
         console.log()
+
+        const appPackage = require(paths.appPackageJson)
+        const publicUrl = paths.publicUrlOrPath
+        const publicPath = config.output.publicPath
+        const buildFolder = path.relative(process.cwd(), paths.appBuild)
+        printHostingInstructions(
+          appPackage,
+          publicUrl,
+          publicPath,
+          buildFolder,
+          useYarn,
+        )
+      },
+      err => {
+        const tscCompileOnError = process.env.TSC_COMPILE_ON_ERROR === 'true'
+        if (tscCompileOnError) {
+          console.log(
+            chalk.yellow(
+              'Compiled with the following type errors (you may want to check these before deploying your app):\n',
+            ),
+          )
+          printBuildError(err)
+        } else {
+          console.log(chalk.red('Failed to compile.\n'))
+          printBuildError(err)
+          process.exit(1)
+        }
+      },
+    )
+    .catch(err => {
+      if (err?.message) {
+        console.log(err.message)
+      }
+      process.exit(1)
+    })
+
+  // Create the production build and print the deployment instructions.
+  function build(previousFileSizes) {
+    console.log('Creating an optimized production build...')
+
+    const compiler = webpack(config)
+    return new Promise((resolve, reject) => {
+      compiler.run((err, stats) => {
+        let messages
+        if (err) {
+          if (!err.message) {
+            reject(err)
+            return
+          }
+
+          let errMessage = err.message
+
+          // Add additional information for postcss errors
+          if (Object.prototype.hasOwnProperty.call(err, 'postcssNode')) {
+            errMessage += `\nCompileError: Begins at CSS selector ${err.postcssNode.selector}`
+          }
+
+          messages = formatWebpackMessages({
+            errors: [errMessage],
+            warnings: [],
+          })
+        } else {
+          messages = formatWebpackMessages(
+            stats.toJson({ all: false, warnings: true, errors: true }),
+          )
+        }
+        if (messages.errors.length) {
+          // Only keep the first error. Others are often indicative
+          // of the same problem, but confuse the reader with noise.
+          if (messages.errors.length > 1) {
+            messages.errors.length = 1
+          }
+          reject(new Error(messages.errors.join('\n\n')))
+          return
+        }
+        if (
+          process.env.CI &&
+          (typeof process.env.CI !== 'string' ||
+            process.env.CI.toLowerCase() !== 'false') &&
+          messages.warnings.length
+        ) {
+          // Ignore sourcemap warnings in CI builds. See #8227 for more info.
+          const filteredWarnings = messages.warnings.filter(
+            w => !/Failed to parse source map/.test(w),
+          )
+          if (filteredWarnings.length) {
+            console.log(
+              chalk.yellow(
+                '\nTreating warnings as errors because process.env.CI = true.\n' +
+                  'Most CI servers set it automatically.\n',
+              ),
+            )
+            reject(new Error(filteredWarnings.join('\n\n')))
+            return
+          }
+        }
+
+        const resolveArgs = {
+          stats,
+          previousFileSizes,
+          warnings: messages.warnings,
+        }
 
         if (writeStatsJson) {
           fs.writeFileSync(
             `${paths.appBuild}/bundle-stats.json`,
             JSON.stringify(stats.toJson()),
           )
+          return
         }
 
-        resolve()
+        resolve(resolveArgs)
       })
     })
-      // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
-      .catch(err => {
-        if (err instanceof Error) {
-          console.log(err.message)
-        }
-        process.exit(1)
-      })
-  )
+  }
+
+  function copyPublicFolder() {
+    fs.cpSync(paths.appPublic, paths.appBuild, {
+      recursive: true,
+      dereference: true,
+      filter: file => file !== paths.appHtml,
+    })
+  }
 }
