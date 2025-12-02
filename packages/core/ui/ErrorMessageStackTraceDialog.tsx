@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react'
 
-import { Button, DialogActions, DialogContent } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from '@mui/material'
 import { SourceMapConsumer } from 'source-map-js'
 
-import Dialog from './Dialog'
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents'
 import LoadingEllipses from './LoadingEllipses'
 
@@ -124,7 +131,20 @@ export default function ErrorMessageStackTraceDialog({
     .join('\n')
 
   return (
-    <Dialog open onClose={onClose} title="Stack trace" maxWidth="xl">
+    <Dialog open onClose={onClose} maxWidth="xl">
+      <DialogTitle>
+        Stack trace
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
         {mappedStackTrace === undefined ? (
           <LoadingEllipses variant="h6" />
