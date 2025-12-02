@@ -4,7 +4,7 @@ import { getTickDisplayStr } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
-import { makeTicks } from '../util'
+import { getCachedElements, makeTicks } from '../util'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -78,19 +78,12 @@ function ScalebarCoordinateLabels({ model }: { model: LGV }) {
           return
         }
 
-        // Clear cache if bpPerPx changed - all elements need recomputation
-        const bpPerPxChanged = lastBpPerPxRef.current !== bpPerPx
-        lastBpPerPxRef.current = bpPerPx
-
-        const existingKeys = new Map<string, HTMLDivElement>()
-        if (!bpPerPxChanged) {
-          for (const child of container.children) {
-            const key = (child as HTMLElement).dataset.blockKey
-            if (key) {
-              existingKeys.set(key, child as HTMLDivElement)
-            }
-          }
-        }
+        const existingKeys = getCachedElements<HTMLDivElement>(
+          container,
+          bpPerPx,
+          lastBpPerPxRef,
+          'blockKey',
+        )
 
         const fragment = document.createDocumentFragment()
 
