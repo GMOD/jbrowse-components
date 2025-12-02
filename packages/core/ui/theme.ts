@@ -455,12 +455,20 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
 
 type ThemeMap = Record<string, ThemeOptions>
 
+const themeCache = new Map<string, ReturnType<typeof createTheme>>()
+
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
   themes = defaultThemes,
   themeName = 'default',
 ) {
-  return createTheme(
+  const cacheKey = JSON.stringify({ configTheme, themeName })
+  const cached = themeCache.get(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  const result = createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
         ? deepmerge(themes.default!, augmentThemeColors(configTheme), {
@@ -469,6 +477,17 @@ export function createJBrowseTheme(
         : addMissingColors(themes[themeName]),
     ),
   )
+
+  // limit cache size to prevent memory leaks
+  if (themeCache.size > 20) {
+    const firstKey = themeCache.keys().next().value
+    if (firstKey) {
+      themeCache.delete(firstKey)
+    }
+  }
+  themeCache.set(cacheKey, result)
+
+  return result
 }
 
 // MUI by default allows strings like '#f00' for primary and secondary and
