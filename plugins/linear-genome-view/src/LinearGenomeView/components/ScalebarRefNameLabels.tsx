@@ -3,6 +3,9 @@ import { useEffect, useRef } from 'react'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
+import { getCachedElements } from '../util'
+import ScalebarPinnedLabel from './ScalebarPinnedLabel'
+
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
@@ -10,45 +13,16 @@ type LGV = LinearGenomeViewModel
 function ScalebarRefNameLabels({ model }: { model: LGV }) {
   const theme = useTheme()
   const innerRef = useRef<HTMLDivElement>(null)
-  const pinnedRef = useRef<HTMLSpanElement | null>(null)
+  const lastBpPerPxRef = useRef<number | null>(null)
 
-  // Handle offsetPx changes - update container position and pinned label
+  // Handle offsetPx changes - update container position
   useEffect(() => {
     return autorun(
       function refNameLabelsOffsetAutorun() {
-        const { staticBlocks, offsetPx, scaleBarDisplayPrefix } = model
-
+        const { offsetPx } = model
         const inner = innerRef.current
-        if (!inner) {
-          return
-        }
-
-        // Translate container to account for scroll position
-        inner.style.transform = `translateX(${-offsetPx}px)`
-
-        // Find which block should be pinned (one that's off-screen left)
-        let pinnedBlockIndex = -1
-        let i = 0
-        for (const block of staticBlocks) {
-          if (block.offsetPx - offsetPx < 0) {
-            pinnedBlockIndex = i
-          } else {
-            break
-          }
-          i++
-        }
-
-        const pinned = pinnedRef.current
-        if (pinned) {
-          const pinnedBlock = staticBlocks.blocks[pinnedBlockIndex]
-          if (pinnedBlockIndex >= 0 && pinnedBlock?.type === 'ContentBlock') {
-            const val = scaleBarDisplayPrefix()
-            pinned.style.transform = `translateX(${Math.max(0, offsetPx)}px)`
-            pinned.style.display = ''
-            pinned.textContent = (val ? `${val}:` : '') + pinnedBlock.refName
-          } else {
-            pinned.style.display = 'none'
-          }
+        if (inner) {
+          inner.style.transform = `translateX(${-offsetPx}px)`
         }
       },
       { name: 'RefNameLabelsOffset' },
@@ -61,19 +35,18 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
 
     return autorun(
       function refNameLabelsLayoutAutorun() {
-        const { staticBlocks } = model
+        const { staticBlocks, bpPerPx } = model
         const inner = innerRef.current
         if (!inner) {
           return
         }
 
-        const existingKeys = new Map<string, HTMLSpanElement>()
-        for (const child of inner.children) {
-          const key = (child as HTMLElement).dataset.labelKey
-          if (key) {
-            existingKeys.set(key, child as HTMLSpanElement)
-          }
-        }
+        const existingKeys = getCachedElements<HTMLSpanElement>(
+          inner,
+          bpPerPx,
+          lastBpPerPxRef,
+          'labelKey',
+        )
 
         const fragment = document.createDocumentFragment()
 
@@ -102,26 +75,18 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
           index++
         }
 
-        // Create pinned label
-        const key = 'pinned-label'
-        let pinned = existingKeys.get(key)
-        if (!pinned) {
-          pinned = createLabelElement(bgColor)
-          pinned.dataset.labelKey = key
-          pinned.style.zIndex = '2'
-        }
-        pinned.style.left = '0px'
-        pinned.style.paddingLeft = '0px'
-        pinnedRef.current = pinned
-        fragment.append(pinned)
-
         inner.replaceChildren(fragment)
       },
       { name: 'RefNameLabelsLayout' },
     )
   }, [model, theme])
 
-  return <div ref={innerRef} style={{ position: 'absolute' }} />
+  return (
+    <>
+      <div ref={innerRef} style={{ position: 'absolute' }} />
+      <ScalebarPinnedLabel model={model} />
+    </>
+  )
 }
 
 function createLabelElement(bgColor: string) {
