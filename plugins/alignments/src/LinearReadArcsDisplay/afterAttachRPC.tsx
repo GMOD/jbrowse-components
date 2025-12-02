@@ -88,6 +88,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
           jitter: jitterVal,
           height,
           highResolutionScaling: 2,
+          rpcDriverName: self.effectiveRpcDriverName,
           statusCallback: (msg: string) => {
             self.setMessage(msg)
           },

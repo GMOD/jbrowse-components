@@ -19,7 +19,6 @@ import MultiWiggleAdapterF from './MultiWiggleAdapter'
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'
 import MultiXYPlotRendererF from './MultiXYPlotRenderer'
 import QuantitativeTrackF from './QuantitativeTrack'
-import WiggleBaseRenderer from './WiggleBaseRenderer'
 import {
   MultiWiggleClusterScoreMatrix,
   MultiWiggleGetScoreMatrix,
@@ -69,7 +68,6 @@ export default class WigglePlugin extends Plugin {
     LinearWiggleDisplayReactComponent,
     XYPlotRendererReactComponent,
     XYPlotRenderer,
-    WiggleBaseRenderer,
     linearWiggleDisplayModelFactory,
     xyPlotRendererConfigSchema,
     utils,
@@ -86,4 +84,8 @@ export {
 } from './LinearWiggleDisplay'
 export type { TooltipContentsComponent } from './Tooltip'
 
-export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'
+export type {
+  MultiRenderArgsDeserialized,
+  RenderArgsDeserialized,
+  RenderArgsDeserializedWithFeatures,
+} from './types'

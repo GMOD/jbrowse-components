@@ -65,6 +65,15 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       /**
        * #slot
        */
+      rpcDriverName: {
+        type: 'string',
+        description:
+          'RPC driver to use for this track. Leave empty to use the display-level or global default.',
+        defaultValue: '',
+      },
+      /**
+       * #slot
+       */
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
 
       textSearching: ConfigurationSchema('textSearching', {

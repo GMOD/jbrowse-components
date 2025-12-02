@@ -1,5 +1,6 @@
 import PluggableElementBase from './PluggableElementBase'
 import mapObject from '../util/map-obj'
+import { isRpcResult } from '../util/rpc'
 import { getBlobMap, setBlobMap } from '../util/tracks'
 import {
   RetryError,
@@ -68,6 +69,19 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     rpcDriverClassName: string,
   ): Promise<unknown>
 
+  /**
+   * Execute directly without serialization. Override in subclasses that support
+   * direct execution (e.g., CoreRender). Returns undefined by default, signaling
+   * that the driver should fall back to serialized execution.
+   */
+  async executeDirect(_args: Record<string, unknown>): Promise<unknown> {
+    return undefined
+  }
+
+  supportsDirectExecution(): boolean {
+    return this.executeDirect !== RpcMethodType.prototype.executeDirect
+  }
+
   async serializeReturn(
     originalReturn: unknown,
     _args: unknown,
@@ -98,6 +112,11 @@ export default abstract class RpcMethodType extends PluggableElementBase {
         )
       }
       throw error
+    }
+    // Unwrap rpcResult if present (needed for MainThreadRpcDriver where the
+    // rpcResult wrapper isn't stripped by the worker message handler)
+    if (isRpcResult(r)) {
+      return r.value
     }
     return r
   }

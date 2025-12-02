@@ -403,13 +403,12 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #method
          */
-        renderPropsPre() {
-          const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
+        adapterRenderProps() {
+          const { colorTagMap, colorBy, filterBy } = self
           const superProps = superRenderProps()
           return {
             ...superProps,
             notReady: superProps.notReady || !self.renderReady(),
-            rpcDriverName,
             colorBy,
             filterBy,
             filters: self.filters,
@@ -440,6 +439,7 @@ export function SharedLinearPileupDisplayMixin(
                       sessionId,
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
@@ -493,6 +493,7 @@ export function SharedLinearPileupDisplayMixin(
                       sessionId,
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
@@ -662,7 +663,7 @@ export function SharedLinearPileupDisplayMixin(
     })
     .views(self => ({
       renderProps() {
-        return self.renderPropsPre()
+        return self.adapterRenderProps()
       },
     }))
     .actions(self => ({
@@ -716,6 +717,7 @@ export function SharedLinearPileupDisplayMixin(
                       sessionId,
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 

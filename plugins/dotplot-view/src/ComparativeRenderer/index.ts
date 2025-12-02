@@ -2,19 +2,18 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import type {
-  RenderArgs as ComparativeRenderArgs,
-  RenderArgsSerialized as ComparativeRenderArgsSerialized,
-  RenderResults,
+  DotplotRenderArgs,
+  RenderArgsSerialized,
   ResultsSerialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import type ComparativeRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+} from '../DotplotRenderer/DotplotRenderer'
+import type DotplotRenderer from '../DotplotRenderer/DotplotRenderer'
+import type { RenderResults } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 
-interface RenderArgs extends ComparativeRenderArgs {
-  adapterConfig: Record<string, unknown>
+interface RenderArgs extends DotplotRenderArgs {
   rendererType: string
 }
 
-interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
+interface RenderArgsSerializedWithRenderer extends RenderArgsSerialized {
   adapterConfig: Record<string, unknown>
   rendererType: string
 }
@@ -22,13 +21,13 @@ interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 
-  async renameRegionsIfNeeded(args: RenderArgs, rend: ComparativeRenderer) {
+  async renameRegionsIfNeeded(args: RenderArgs, rend: DotplotRenderer) {
     return rend.renameRegionsIfNeeded(args)
   }
 
   getRenderer(rendererType: string) {
     const pm = this.pluginManager
-    return pm.getRendererType(rendererType) as ComparativeRenderer
+    return pm.getRendererType(rendererType) as DotplotRenderer
   }
 
   async serializeArguments(args: RenderArgs, rpcDriver: string) {
@@ -41,7 +40,7 @@ export default class ComparativeRender extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { stopToken?: string },
+    args: RenderArgsSerializedWithRenderer & { stopToken?: string },
     rpcDriver: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)

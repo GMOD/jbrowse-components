@@ -522,7 +522,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
     return {
       rectangles: regionRectangles,
-      containsNoTransferables: true,
       totalHeight: this.getTotalHeight(),
       maxHeightReached,
     }
@@ -532,7 +531,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const rectangles = Object.fromEntries(this.getRectangles())
     return {
       rectangles,
-      containsNoTransferables: true,
       totalHeight: this.getTotalHeight(),
       maxHeightReached: this.maxHeightReached,
     }

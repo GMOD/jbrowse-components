@@ -3,6 +3,7 @@ import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import RendererType from './RendererType'
 import SerializableFilterChain from './util/serializableFilterChain'
 import { getSerializedSvg, updateStatus } from '../../util'
+import { isRpcResult } from '../../util/rpc'
 import { checkStopToken } from '../../util/stopToken'
 
 import type { RenderProps, RenderResults } from './RendererType'
@@ -42,7 +43,9 @@ export interface RenderArgsDeserialized extends BaseRenderArgs {
   filters?: SerializableFilterChain
 }
 
-export type ResultsSerialized = Omit<RenderResults, 'reactElement'>
+export type ResultsSerialized = Omit<RenderResults, 'reactElement'> & {
+  imageData?: ImageBitmap
+}
 
 export interface ResultsSerializedSvgExport extends ResultsSerialized {
   canvasRecordedData: unknown
@@ -105,6 +108,48 @@ function createNormalElement(
 }
 
 export default class ServerSideRenderer extends RendererType {
+  /**
+   * Renders directly without serialization. Used by MainThreadRpcDriver
+   * to avoid unnecessary serialize/deserialize overhead when no worker
+   * thread boundary is crossed.
+   *
+   * Key differences from renderInWorker + deserializeResultsInClient:
+   * - Config stays as live MST node (no snapshot/create cycle)
+   * - Features stay as Feature objects (no toJSON/fromJSON)
+   * - RpcResult values are unwrapped directly
+   */
+  async renderDirect(args: RenderArgs) {
+    const { renderingProps, ...rest } = args
+    const results = await this.render(rest as RenderArgsDeserialized)
+
+    // For RpcResult (canvas renderers with transferables), unwrap directly
+    // No need for transfer semantics since we're on the same thread
+    if (isRpcResult(results)) {
+      const unwrapped = (results as { value: ResultsSerialized }).value
+      return this.deserializeResultsInClient(unwrapped, args)
+    }
+
+    // For non-RpcResult, we still need to create the React element
+    // but we can skip feature serialization by passing results directly
+    const { reactElement, ...resultRest } = results
+    return {
+      ...resultRest,
+      reactElement: args.exportSVG
+        ? createSvgExportElement(
+            resultRest as ResultsSerialized,
+            args,
+            this.ReactComponent,
+            this.supportsSVG,
+          )
+        : createNormalElement(
+            resultRest as ResultsSerialized,
+            args,
+            this.ReactComponent,
+            renderingProps,
+          ),
+    }
+  }
+
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
     // strip renderingProps - they are client-side only and should not be
     // serialized to the worker
@@ -149,7 +194,7 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   serializeResultsInWorker(
-    results: RenderResults,
+    results: RenderResults & { imageData?: ImageBitmap },
     _args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const { reactElement, ...rest } = results
@@ -182,6 +227,11 @@ export default class ServerSideRenderer extends RendererType {
     )
     checkStopToken(stopToken)
 
+    // If render() returned an rpcResult, it's already serialized - pass through
+    if (isRpcResult(results)) {
+      return results as unknown as ResultsSerialized
+    }
+
     return updateStatus('Serializing results', statusCallback, () =>
       this.serializeResultsInWorker(results, args2),
     )
@@ -195,4 +245,4 @@ export default class ServerSideRenderer extends RendererType {
   }
 }
 
-export { type RenderResults } from './RendererType'
+export { type RenderResults, type RenderReturn } from './RendererType'

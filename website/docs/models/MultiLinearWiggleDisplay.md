@@ -138,14 +138,14 @@ any
 
 ```js
 // type
-{ color: string; baseUri?: string; name: string; source: string; group?: string; }[]
+{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
 ```
 
 #### getter: sources
 
 ```js
 // type
-{ color: string; baseUri?: string; name: string; source: string; group?: string; }[]
+{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
 ```
 
 #### getter: quantitativeStatsReady

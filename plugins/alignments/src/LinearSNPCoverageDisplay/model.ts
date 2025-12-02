@@ -6,17 +6,12 @@ import { getContainingView } from '@jbrowse/core/util'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { observable } from 'mobx'
 
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
-import { createAutorun, getColorForModification } from '../util'
+import { createAutorun } from '../util'
 
-import type {
-  ColorBy,
-  FilterBy,
-  ModificationType,
-  ModificationTypeWithColor,
-} from '../shared/types'
+import type { ColorBy, FilterBy } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
@@ -45,6 +40,7 @@ function stateModelFactory(
     .compose(
       'LinearSNPCoverageDisplay',
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -76,22 +72,6 @@ function stateModelFactory(
         jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      visibleModifications: observable.map<string, ModificationTypeWithColor>(
-        {},
-      ),
-      /**
-       * #volatile
-       */
-      simplexModifications: new Set<string>(),
-      /**
-       * #volatile
-       */
-      modificationsReady: false,
-    }))
     .views(self => ({
       /**
        * #getter
@@ -137,26 +117,6 @@ function stateModelFactory(
        */
       setJexlFilters(filters: string[]) {
         self.jexlFilters = cast(filters)
-      },
-
-      /**
-       * #action
-       */
-      updateVisibleModifications(uniqueModifications: ModificationType[]) {
-        for (const modification of uniqueModifications) {
-          if (!self.visibleModifications.has(modification.type)) {
-            self.visibleModifications.set(modification.type, {
-              ...modification,
-              color: getColorForModification(modification.type),
-            })
-          }
-        }
-      },
-      /**
-       * #action
-       */
-      setSimplexModifications(simplex: string[]) {
-        self.simplexModifications = new Set(simplex)
       },
     }))
     .views(self => {
@@ -244,12 +204,6 @@ function stateModelFactory(
       }
     })
     .actions(self => ({
-      /**
-       * #action
-       */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
-      },
       /**
        * #action
        */
@@ -415,6 +369,20 @@ function stateModelFactory(
           return new SerializableFilterChain({ filters: self.jexlFilters })
         },
       }
+    })
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (snap) {
+        // @ts-expect-error
+        const { colorBy, colorBySetting, filterBySetting, filterBy, ...rest } =
+          snap
+        return {
+          ...rest,
+          filterBySetting: filterBySetting || filterBy,
+          colorBySetting: colorBySetting || colorBy,
+        }
+      }
+      return snap
     })
 }
 

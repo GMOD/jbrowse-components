@@ -15,6 +15,7 @@ import { alphaColor } from '../shared/util'
 
 import type { RenderArgsDeserializedWithFeatures } from './types'
 import type { BaseCoverageBin } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
@@ -432,4 +433,23 @@ export async function makeImage(
       ctx.stroke()
     }
   }
+
+  // Return reducedFeatures for tooltip functionality
+  // Create reduced features, keeping only one feature per pixel to avoid
+  // serializing thousands of per-base features
+  let prevLeftPx = Number.NEGATIVE_INFINITY
+  const reducedFeatures: Feature[] = []
+  for (const feature of features.values()) {
+    if (feature.get('type') === 'skip') {
+      continue
+    }
+    const start = feature.get('start')
+    const leftPx = (start - region.start) / bpPerPx
+    // Only keep one feature per pixel
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      reducedFeatures.push(feature)
+      prevLeftPx = leftPx
+    }
+  }
+  return { reducedFeatures }
 }

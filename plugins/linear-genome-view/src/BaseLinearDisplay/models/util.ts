@@ -49,13 +49,14 @@ export async function getFeatureDensityStatsPre(
   self: IAnyStateTreeNode & {
     adapterConfig?: AnyConfigurationModel
     setMessage: (arg: string) => void
+    effectiveRpcDriverName?: string
   },
 ) {
   const view = getContainingView(self) as LinearGenomeViewModel
   const regions = view.staticBlocks.contentBlocks
 
   const { rpcManager } = getSession(self)
-  const { adapterConfig } = self
+  const { adapterConfig, effectiveRpcDriverName } = self
   if (!adapterConfig) {
     // A track extending the base track might not have an adapter config
     // e.g. Apollo tracks don't use adapters
@@ -67,6 +68,7 @@ export async function getFeatureDensityStatsPre(
     sessionId,
     regions,
     adapterConfig,
+    rpcDriverName: effectiveRpcDriverName,
     statusCallback: (message: string) => {
       if (isAlive(self)) {
         self.setMessage(message)

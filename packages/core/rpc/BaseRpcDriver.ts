@@ -17,7 +17,6 @@ export interface WorkerHandle {
     args?: unknown,
     options?: {
       statusCallback?(message: string): void
-      timeout?: number
       rpcDriverClassName: string
     },
   ): Promise<unknown>
@@ -64,10 +63,6 @@ export default abstract class BaseRpcDriver {
 
   private workerPool?: LazyWorker[]
 
-  maxPingTime = 30000
-
-  workerCheckFrequency = 5000
-
   config: AnyConfigurationModel
 
   constructor(args: RpcDriverConstructorArgs) {
@@ -106,7 +101,7 @@ export default abstract class BaseRpcDriver {
     await worker.call(
       functionName,
       { stopTokenId },
-      { timeout: 1000000, rpcDriverClassName: this.name },
+      { rpcDriverClassName: this.name },
     )
   }
 
@@ -158,6 +153,10 @@ export default abstract class BaseRpcDriver {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
+
+    // // eslint-disable-next-line no-console
+    // console.log(`[RPC] ${this.name}: ${functionName} (worker)`)
+
     const unextendedWorker = await this.getWorker(sessionId)
     const worker = pluginManager.evaluateExtensionPoint(
       'Core-extendWorker',
@@ -172,7 +171,6 @@ export default abstract class BaseRpcDriver {
 
     // now actually call the worker
     const call = await worker.call(functionName, filteredAndSerializedArgs, {
-      timeout: 5 * 60 * 1000, // 5 minutes
       statusCallback: args.statusCallback,
       rpcDriverClassName: this.name,
       ...options,

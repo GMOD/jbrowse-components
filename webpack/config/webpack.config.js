@@ -217,6 +217,12 @@ module.exports = function webpackBuilder(webpackEnv) {
         port: process.env.PORT || 3000,
         hot: true,
         open: true,
+        client: {
+          logging: 'error',
+        },
+        devMiddleware: {
+          stats: 'errors-only',
+        },
       },
     }),
   }

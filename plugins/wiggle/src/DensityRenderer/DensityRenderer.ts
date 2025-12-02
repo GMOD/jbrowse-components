@@ -1,13 +1,13 @@
-import WiggleBaseRenderer from '../WiggleBaseRenderer'
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 
-import type { RenderArgsDeserializedWithFeatures } from '../WiggleBaseRenderer'
+import type { RenderArgsDeserialized } from '../types'
 
-export default class DensityRenderer extends WiggleBaseRenderer {
-  async draw(
-    ctx: CanvasRenderingContext2D,
-    props: RenderArgsDeserializedWithFeatures,
-  ) {
-    const { drawDensity } = await import('../drawDensity')
-    return drawDensity(ctx, props)
+export default class DensityRenderer extends FeatureRendererType {
+  supportsSVG = true
+
+  async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
+    const { renderDensity } = await import('./renderDensity')
+    return renderDensity(renderProps, features)
   }
 }
