@@ -37,7 +37,8 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-let lastMoveTime = 0
+let lastSwapY: number | undefined
+let lastDraggingTrackId: string | undefined
 
 const TrackContainer = observer(function ({
   model,
@@ -71,16 +72,36 @@ const TrackContainer = observer(function ({
         <TrackRenderingContainer
           model={model}
           track={track}
-          onDragOver={() => {
-            const now = Date.now()
+          onDragOver={event => {
             if (
-              now - lastMoveTime > 300 &&
               isAlive(display) &&
               draggingTrackId !== undefined &&
               draggingTrackId !== display.id
             ) {
-              lastMoveTime = now
-              model.moveTrack(draggingTrackId, track.id)
+              // reset state when a new drag starts
+              if (lastDraggingTrackId !== draggingTrackId) {
+                lastDraggingTrackId = draggingTrackId
+                lastSwapY = undefined
+              }
+
+              const draggingIdx = model.tracks.findIndex(
+                t => t.id === draggingTrackId,
+              )
+              const targetIdx = model.tracks.findIndex(t => t.id === track.id)
+              const movingDown = targetIdx > draggingIdx
+              const currentY = event.clientY
+              const minDistance = 30
+
+              // allow swap if: first swap, or mouse moved enough in swap direction
+              const shouldSwap =
+                lastSwapY === undefined ||
+                (movingDown && currentY > lastSwapY + minDistance) ||
+                (!movingDown && currentY < lastSwapY - minDistance)
+
+              if (shouldSwap) {
+                lastSwapY = currentY
+                model.moveTrack(draggingTrackId, track.id)
+              }
             }
           }}
         />
