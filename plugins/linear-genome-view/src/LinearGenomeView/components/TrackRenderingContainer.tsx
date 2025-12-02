@@ -34,11 +34,11 @@ type LGV = LinearGenomeViewModel
 const TrackRenderingContainer = observer(function ({
   model,
   track,
-  onDragEnter,
+  onDragOver,
 }: {
   model: LGV
   track: BaseTrackModel
-  onDragEnter: (event: React.DragEvent<HTMLDivElement>) => void
+  onDragOver: () => void
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
@@ -64,7 +64,7 @@ const TrackRenderingContainer = observer(function ({
         height: minimized ? 20 : height,
       }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
-      onDragEnter={onDragEnter}
+      onDragOver={onDragOver}
       data-testid={`trackRenderingContainer-${id}-${trackId}`}
     >
       {!minimized ? (

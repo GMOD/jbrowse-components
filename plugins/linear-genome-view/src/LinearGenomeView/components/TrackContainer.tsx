@@ -37,6 +37,8 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
+let lastMoveTime = 0
+
 const TrackContainer = observer(function ({
   model,
   track,
@@ -69,18 +71,16 @@ const TrackContainer = observer(function ({
         <TrackRenderingContainer
           model={model}
           track={track}
-          onDragEnter={event => {
+          onDragOver={() => {
+            const now = Date.now()
             if (
+              now - lastMoveTime > 300 &&
               isAlive(display) &&
               draggingTrackId !== undefined &&
               draggingTrackId !== display.id
             ) {
-              const rect = event.currentTarget.getBoundingClientRect()
-              const y = event.clientY - rect.top
-              const threshold = rect.height * 0.3
-              if (y > threshold && y < rect.height - threshold) {
-                model.moveTrack(draggingTrackId, track.id)
-              }
+              lastMoveTime = now
+              model.moveTrack(draggingTrackId, track.id)
             }
           }}
         />
