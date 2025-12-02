@@ -17,6 +17,9 @@ export function isSource(arg: any): arg is Source {
 type Obj = Record<string, any>
 export function deepUpdate(a: Obj, b: Obj): Obj {
   for (const prop of Object.keys(b)) {
+    if (prop === '__proto__' || prop === 'constructor' || prop === 'prototype') {
+      continue
+    }
     if (
       prop in a &&
       typeof b[prop] === 'object' &&
