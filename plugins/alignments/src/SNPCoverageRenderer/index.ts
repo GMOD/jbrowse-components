@@ -10,7 +10,7 @@ export default function register(pluginManager: PluginManager) {
     () =>
       new SNPCoverageRenderer({
         name: 'SNPCoverageRenderer',
-        ReactComponent: lazy(() => import('./WiggleRendering')),
+        ReactComponent: lazy(() => import('./components/SNPCoverageRendering')),
         configSchema,
         pluginManager,
       }),

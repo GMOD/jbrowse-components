@@ -3,10 +3,8 @@ import FeatureRendererType, {
   type ResultsDeserialized,
   type ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
-import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { updateStatus } from '@jbrowse/core/util'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { rpcResult } from 'librpc-web-mod'
 
 import type { RenderArgsDeserialized } from './types'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -43,29 +41,10 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { height, regions, bpPerPx, statusCallback = () => {} } = renderProps
-
-    const region = regions[0]!
-    const width = (region.end - region.start) / bpPerPx
-
-    const { makeImage } = await import('./makeImage')
-    const { reducedFeatures, skipFeatures, ...rest } = await updateStatus(
-      'Rendering coverage',
-      statusCallback,
-      () =>
-        renderToAbstractCanvas(width, height, renderProps, ctx =>
-          makeImage(ctx, { ...renderProps, features }),
-        ),
+    const { statusCallback = () => {} } = renderProps
+    const { renderSNPCoverageToCanvas } = await import('./makeImage')
+    return updateStatus('Rendering coverage', statusCallback, () =>
+      renderSNPCoverageToCanvas({ ...renderProps, features }),
     )
-
-    const serialized = {
-      ...rest,
-      features: reducedFeatures.map(f => f.toJSON()),
-      skipFeatures: skipFeatures.map(f => f.toJSON()),
-      height,
-      width,
-    }
-
-    return rpcResult(serialized, collectTransferables(rest))
   }
 }

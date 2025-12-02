@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -23,6 +23,9 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
+const InterbaseInfoDialog = lazy(
+  () => import('./components/InterbaseInfoDialog'),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -280,6 +283,7 @@ function stateModelFactory(
     .views(self => {
       const {
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
         trackMenuItems: superTrackMenuItems,
       } = self
       return {
@@ -304,6 +308,29 @@ function stateModelFactory(
               visibleModifications.toJSON(),
             ),
             simplexModifications: [...simplexModifications],
+          }
+        },
+
+        /**
+         * #method
+         */
+        renderingProps() {
+          return {
+            ...superRenderingProps(),
+            onIndicatorClick(
+              _: unknown,
+              item: {
+                type: string
+                base: string
+                count: number
+                total: number
+              },
+            ) {
+              getSession(self).queueDialog(handleClose => [
+                InterbaseInfoDialog,
+                { item, handleClose },
+              ])
+            },
           }
         },
         /**
