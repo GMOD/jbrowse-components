@@ -1,6 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getContainingView } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -92,37 +91,19 @@ export default function stateModelFactory(
        */
       renderingStopToken: undefined as string | undefined,
     }))
-    .views(self => {
-      const superHeight = Object.getOwnPropertyDescriptor(self, 'height')
-      return {
-        /**
-         * #getter
-         */
-        get drawn() {
-          return self.lastDrawnOffsetPx !== undefined
-        },
-        /**
-         * #getter
-         */
-        get rendererTypeName() {
-          return 'HicRenderer'
-        },
-        /**
-         * #getter
-         * override height to calculate triangular height when not in adjust mode
-         */
-        get height() {
-          const configHeight = superHeight?.get?.call(self) ?? 100
-          if (self.mode === 'adjust') {
-            return configHeight
-          }
-          // In triangular mode, calculate height based on view width
-          // The triangle's height is width / 2 for a 45-degree rotation
-          // @ts-expect-error
-          const view = getContainingView(self) as { dynamicBlocks?: { totalWidthPx: number } }
-          const width = view?.dynamicBlocks?.totalWidthPx ?? 800
-          return Math.round(width / 2)
-        },
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get drawn() {
+        return self.lastDrawnOffsetPx !== undefined
+      },
+      /**
+       * #getter
+       */
+      get rendererTypeName() {
+        return 'HicRenderer'
+      },
       /**
        * #method
        */
