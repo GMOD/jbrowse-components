@@ -62,7 +62,7 @@ export function parseLocStringOneBased(
     if (isValidRefName(location!, assemblyName)) {
       return { assemblyName, refName: location!, reversed }
     }
-    throw new Error(`Unknown reference sequence "${location}"`)
+    throw new Error(`Unknown feature or sequence "${location}"`)
   }
 
   // split into refName (prefix) and coordinate part (suffix) at the last colon
