@@ -1,10 +1,11 @@
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaF from './configSchema'
 import stateModelFactory from './model'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import { lazy } from 'react'
 
 export default function LinearVariantMatrixDisplayF(
   pluginManager: PluginManager,
