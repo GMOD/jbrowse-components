@@ -125,3 +125,19 @@ test('search matches description for feature in two places', async () => {
   fireEvent.click(await findByText(/b101.2/, ...opts))
   await findByText('Search results', ...opts)
 }, 30_000)
+
+test('failed search resets input to visible location', async () => {
+  const consoleMock = jest.spyOn(console, 'error').mockImplementation()
+  const { input, findByText } = await doSetup()
+
+  const originalValue = input.value
+
+  typeAndEnter({ input, value: 'nonexistent_location_xyz123' })
+
+  await findByText(/Unknown feature or sequence/, ...opts)
+
+  await waitFor(() => {
+    expect(input.value).toBe(originalValue)
+  }, delay)
+  consoleMock.mockRestore()
+}, 30_000)

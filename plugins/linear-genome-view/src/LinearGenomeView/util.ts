@@ -178,7 +178,7 @@ export function parseLocStrings(
     // start, end if start and end are integer inputs
     const [refName, start, end] = inputs
     if (
-      /Unknown reference sequence/.exec(`${e}`) &&
+      /Unknown feature or sequence/.exec(`${e}`) &&
       Number.isInteger(+start!) &&
       Number.isInteger(+end!)
     ) {
