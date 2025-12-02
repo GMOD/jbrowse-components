@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ExternalLink } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import AddIcon from '@mui/icons-material/Add'
 import CheckIcon from '@mui/icons-material/Check'
@@ -14,7 +15,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { PluginStoreModel } from '../model'
 import type { JBrowsePlugin } from '@jbrowse/core/util/types'

@@ -1,5 +1,5 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Alert, Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import type { AlertColor } from '@mui/material'
 

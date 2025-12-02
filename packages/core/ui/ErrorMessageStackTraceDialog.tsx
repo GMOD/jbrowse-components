@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
@@ -8,7 +9,6 @@ import {
   alpha,
 } from '@mui/material'
 import { SourceMapConsumer } from 'source-map-js'
-import { makeStyles } from 'tss-react/mui'
 
 import Dialog from './Dialog'
 import ExternalLink from './ExternalLink'
