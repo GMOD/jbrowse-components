@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`CanvasFeatureRenderer makeImageData snapshot of flatbush items structure 1`] = `
+[
+  {
+    "bottomPx": 34,
+    "description": "Test description",
+    "endBp": 200,
+    "featureId": "test1",
+    "label": "TestFeature",
+    "leftPx": 100,
+    "mouseOver": undefined,
+    "rightPx": 200,
+    "startBp": 100,
+    "topPx": 0,
+    "type": "box",
+  },
+]
+`;
+
+exports[`CanvasFeatureRenderer makeImageData snapshot of flatbush items structure 2`] = `[]`;

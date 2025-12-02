@@ -161,3 +161,49 @@ export function dataDir(str: string) {
 export function ctxDir(ctx: { dir: string }, str: string) {
   return path.join(ctx.dir, str)
 }
+
+interface MockFetchResponse {
+  ok?: boolean
+  status?: number
+  statusText?: string
+  headers?: Record<string, string>
+  json?: unknown
+  arrayBuffer?: ArrayBuffer
+  body?: NodeJS.ReadableStream
+}
+
+export function mockFetch(
+  mockOrHandler:
+    | MockFetchResponse
+    | ((url: string) => MockFetchResponse | undefined),
+) {
+  const fetchWithProxy = require('./fetchWithProxy')
+    .default as jest.MockedFunction<
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    typeof import('./fetchWithProxy').default
+  >
+
+  fetchWithProxy.mockImplementation(async (url: RequestInfo) => {
+    const urlStr = url.toString()
+    const response =
+      typeof mockOrHandler === 'function'
+        ? mockOrHandler(urlStr)
+        : mockOrHandler
+
+    if (!response) {
+      throw new Error(`Unexpected fetch to ${urlStr}`)
+    }
+
+    return {
+      ok: response.ok ?? true,
+      status: response.status ?? (response.ok === false ? 500 : 200),
+      statusText: response.statusText ?? '',
+      headers: new Headers(response.headers),
+      json: async () => response.json,
+      arrayBuffer: async () => response.arrayBuffer,
+      body: response.body,
+    } as unknown as Response
+  })
+
+  return fetchWithProxy
+}

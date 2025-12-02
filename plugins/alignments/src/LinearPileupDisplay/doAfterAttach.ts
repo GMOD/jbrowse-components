@@ -4,7 +4,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun } from '../util'
@@ -23,7 +23,7 @@ export function doAfterAttach(model: {
   sortReady: boolean
   currSortBpPerPx: number
   parentTrack: any
-  renderPropsPre: () => Record<string, unknown>
+  adapterRenderProps: () => Record<string, unknown>
   renderingProps: () => Record<string, unknown>
   setCurrSortBpPerPx: (arg: number) => void
   setError: (arg: unknown) => void
@@ -81,7 +81,7 @@ export function doAfterAttach(model: {
               model.setMessage(arg)
             }
           },
-          ...model.renderPropsPre(),
+          ...model.adapterRenderProps(),
           renderingProps: model.renderingProps(),
         })
       }

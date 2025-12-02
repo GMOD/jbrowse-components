@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
@@ -16,7 +17,6 @@ import {
   Paper,
   Popover,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import { findLastIndex } from '../util'
 
@@ -405,7 +405,12 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
       ListContents
     ) : (
       // Grow is required for cascading sub-menus
-      <Grow in={open} style={{ transformOrigin: '0 0 0' }} ref={ref}>
+      <Grow
+        in={open}
+        style={{ transformOrigin: '0 0 0' }}
+        timeout={100}
+        ref={ref}
+      >
         <Paper
           elevation={8}
           ref={paperRef}

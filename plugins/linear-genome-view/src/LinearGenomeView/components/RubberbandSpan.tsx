@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import RubberbandTooltip from './RubberbandTooltip'
 
@@ -18,7 +18,6 @@ const useStyles = makeStyles()(theme => {
       zIndex: 830,
       textAlign: 'center',
       cursor: 'crosshair',
-      willChange: 'transform, width',
     },
 
     rubberbandText: {

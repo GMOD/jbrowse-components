@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 
 import { toLocale } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { getAvgProbability } from '../../SNPCoverageAdapter/util'
 import { getModificationName } from '../../shared/modificationData'

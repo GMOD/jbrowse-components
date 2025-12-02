@@ -5,15 +5,18 @@ import Dialog from './Dialog'
 export default function CascadingMenuHelpDialog({
   onClose,
   helpText,
+  label,
 }: {
   onClose: (event: React.MouseEvent | React.KeyboardEvent) => void
   helpText: React.ReactNode
+  label?: React.ReactNode
 }) {
   return (
     <Dialog
       open
       onClose={onClose}
       title="Help"
+      titleNode={label ? <>Help: {label}</> : undefined}
       onClick={e => {
         e.stopPropagation()
       }}

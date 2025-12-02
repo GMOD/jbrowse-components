@@ -24,6 +24,7 @@ import { alphaColor } from '../shared/util'
 
 import type { RenderArgsDeserializedWithFeatures } from './types'
 import type { FlatBaseCoverageBin } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
@@ -170,7 +171,7 @@ export async function makeImage(
     }
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = rightPx - leftPx + fudgeFactor
-    const score = feature.get('score')
+    const score = feature.get('score') as number
     ctx.fillRect(leftPx, toY(score), w, toHeight(score))
   })
 
@@ -395,6 +396,8 @@ export async function makeImage(
         }
       }
 
+      // avoid drawing a bunch of indicators if coverage is very low. note:
+      // also uses the prev total in the case of the "cliff"
       const indicatorComparatorScore = Math.max(score0, prevTotal)
       if (
         accum > indicatorComparatorScore * indicatorThreshold &&
@@ -452,4 +455,23 @@ export async function makeImage(
       ctx.stroke()
     }
   }
+
+  // Return reducedFeatures for tooltip functionality
+  // Create reduced features, keeping only one feature per pixel to avoid
+  // serializing thousands of per-base features
+  let prevLeftPx = Number.NEGATIVE_INFINITY
+  const reducedFeatures: Feature[] = []
+  for (const feature of features.values()) {
+    if (feature.get('type') === 'skip') {
+      continue
+    }
+    const start = feature.get('start')
+    const leftPx = (start - region.start) / bpPerPx
+    // Only keep one feature per pixel
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      reducedFeatures.push(feature)
+      prevLeftPx = leftPx
+    }
+  }
+  return { reducedFeatures }
 }

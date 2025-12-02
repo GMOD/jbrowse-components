@@ -2,10 +2,10 @@ import { useRef } from 'react'
 
 import { ErrorMessage, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui'
 
 import Gridlines from './Gridlines'
 import TrackLabelContainer from './TrackLabelContainer'
@@ -44,7 +44,7 @@ const TrackContainer = observer(function ({
   model: LGV
   track: BaseTrackModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const display = track.displays[0]
   const { draggingTrackId, showTrackOutlines } = model
   const ref = useRef<HTMLDivElement>(null)

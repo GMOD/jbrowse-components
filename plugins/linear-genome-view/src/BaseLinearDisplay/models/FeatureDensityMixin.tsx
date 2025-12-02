@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
 import autorunFeatureDensityStats from './autorunFeatureDensityStats'
 import { getDisplayStr, getFeatureDensityStatsPre } from './util'
@@ -12,6 +12,9 @@ import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapte
 import type { Region } from '@jbrowse/core/util/types'
 
 type LGV = LinearGenomeViewModel
+
+type AutorunSelf = Parameters<typeof autorunFeatureDensityStats>[0]
+type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
 /**
  * #stateModel FeatureDensityMixin
@@ -87,7 +90,9 @@ export default function FeatureDensityMixin() {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => autorunFeatureDensityStats(self as any)),
+          autorun(() =>
+            autorunFeatureDensityStats(self as unknown as AutorunSelf),
+          ),
         )
       },
     }))
@@ -115,7 +120,7 @@ export default function FeatureDensityMixin() {
       getFeatureDensityStats() {
         if (!self.featureDensityStatsP) {
           self.featureDensityStatsP = getFeatureDensityStatsPre(
-            self as any,
+            self as unknown as FeatureDensityStatsSelf,
           ).catch((e: unknown) => {
             if (isAlive(self)) {
               this.setFeatureDensityStatsP(undefined)
@@ -209,9 +214,8 @@ export default function FeatureDensityMixin() {
        *  react node allows user to force load at current setting
        */
       regionCannotBeRendered(_region: Region) {
-        return self.regionTooLarge ? (
-          <TooLargeMessage model={self as any} />
-        ) : null
+        // @ts-expect-error
+        return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))
 }

@@ -26,12 +26,12 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
         // Translate container to account for scroll position
         inner.style.transform = `translateX(${-offsetPx}px)`
 
-        // Find which block should be pinned
-        let lastLeftBlock = 0
+        // Find which block should be pinned (one that's off-screen left)
+        let pinnedBlockIndex = -1
         let i = 0
         for (const block of staticBlocks) {
           if (block.offsetPx - offsetPx < 0) {
-            lastLeftBlock = i
+            pinnedBlockIndex = i
           } else {
             break
           }
@@ -39,11 +39,16 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
         }
 
         const pinned = pinnedRef.current
-        const pinnedBlock = staticBlocks.blocks[lastLeftBlock]
-        if (pinned && pinnedBlock?.type === 'ContentBlock') {
-          const val = scaleBarDisplayPrefix()
-          pinned.style.transform = `translateX(${Math.max(0, offsetPx)}px)`
-          pinned.textContent = (val ? `${val}:` : '') + pinnedBlock.refName
+        if (pinned) {
+          const pinnedBlock = staticBlocks.blocks[pinnedBlockIndex]
+          if (pinnedBlockIndex >= 0 && pinnedBlock?.type === 'ContentBlock') {
+            const val = scaleBarDisplayPrefix()
+            pinned.style.transform = `translateX(${Math.max(0, offsetPx)}px)`
+            pinned.style.display = ''
+            pinned.textContent = (val ? `${val}:` : '') + pinnedBlock.refName
+          } else {
+            pinned.style.display = 'none'
+          }
         }
       },
       { name: 'RefNameLabelsOffset' },
@@ -116,12 +121,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
     )
   }, [model, theme])
 
-  return (
-    <div
-      ref={innerRef}
-      style={{ position: 'absolute', willChange: 'transform' }}
-    />
-  )
+  return <div ref={innerRef} style={{ position: 'absolute' }} />
 }
 
 function createLabelElement(bgColor: string) {

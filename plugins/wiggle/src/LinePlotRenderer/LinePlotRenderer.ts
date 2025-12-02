@@ -1,27 +1,13 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 
-import WiggleBaseRenderer from '../WiggleBaseRenderer'
-import { YSCALEBAR_LABEL_OFFSET } from '../util'
+import type { RenderArgsDeserialized } from '../types'
 
-import type { RenderArgsDeserializedWithFeatures } from '../WiggleBaseRenderer'
-import type { Feature } from '@jbrowse/core/util'
+export default class LinePlotRenderer extends FeatureRendererType {
+  supportsSVG = true
 
-export default class LinePlotRenderer extends WiggleBaseRenderer {
-  async draw(
-    ctx: CanvasRenderingContext2D,
-    props: RenderArgsDeserializedWithFeatures,
-  ) {
-    const { config } = props
-    const c = readConfObject(config, 'color')
-    const { drawLine } = await import('../drawLine')
-
-    return drawLine(ctx, {
-      ...props,
-      offset: YSCALEBAR_LABEL_OFFSET,
-      colorCallback:
-        c === '#f0f'
-          ? () => 'grey'
-          : (feature: Feature) => readConfObject(config, 'color', { feature }),
-    })
+  async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
+    const { renderLinePlot } = await import('./renderLinePlot')
+    return renderLinePlot(renderProps, features)
   }
 }

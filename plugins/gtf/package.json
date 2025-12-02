@@ -37,14 +37,14 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^2.0.0",
-    "@gmod/bgzf-filehandle": "^5.0.1",
+    "@gmod/bgzf-filehandle": "^5.0.2",
     "@jbrowse/core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@mui/material": "^7.0.0",
     "gtf-nostream": "^1.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
     "rxjs": "^7.0.0"
   },
   "peerDependencies": {

@@ -1,4 +1,4 @@
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { assembleLocStringFast } from '.'
 import {

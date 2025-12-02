@@ -1,15 +1,15 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, reaction } from 'mobx'
-import { addDisposer, getSnapshot } from 'mobx-state-tree'
 
-import { parseCigar } from '../cigarUtils'
+import { drawCigarClickMap } from './drawCigarClickMap'
 import { drawMouseoverClickMap, drawSynteny } from './drawSynteny'
+import { parseCigar } from '../cigarUtils'
 
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import type { Feature } from '@jbrowse/core/util'
-import { drawCigarClickMap } from './drawCigarClickMap'
 
 interface Pos {
   offsetPx: number
@@ -29,43 +29,48 @@ type LSV = LinearSyntenyViewModel
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   addDisposer(
     self,
+    autorun(
       function syntenyDrawAutorun() {
-      const view = getContainingView(self) as LinearSyntenyViewModel
-      if (!view.viewsInitialized) {
-        return
-      }
+        const view = getContainingView(self) as LinearSyntenyViewModel
+        if (!view.viewsInitialized) {
+          return
+        }
 
-      const ctx1 = self.mainCanvas?.getContext('2d')
-      const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
-      if (!ctx1 || !ctx3) {
-        return
-      }
+        const ctx1 = self.mainCanvas?.getContext('2d')
+        const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
+        if (!ctx1 || !ctx3) {
+          return
+        }
 
-      // Access alpha to make autorun react to alpha changes
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { alpha } = self
-      const height = self.height
-      const width = view.width
-      ctx1.clearRect(0, 0, width, height)
+        // Access alpha to make autorun react to alpha changes
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { alpha } = self
+        const height = self.height
+        const width = view.width
+        ctx1.clearRect(0, 0, width, height)
 
-      // Draw main canvas immediately
-      drawSynteny(self, ctx1)
-      drawCigarClickMap(self, ctx3)
-    }),
+        // Draw main canvas immediately
+        drawSynteny(self, ctx1)
+
+        drawCigarClickMap(self, ctx3)
+      },
+      { name: 'SyntenyDraw' },
+    ),
   )
 
   addDisposer(
     self,
-    autorun(() => {
-      const view = getContainingView(self) as LinearSyntenyViewModel
-      if (!view.viewsInitialized) {
-        return
-      }
-      // Access reactive properties so autorun is triggered when they change
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { clickId, mouseoverId } = self
-      drawMouseoverClickMap(self)
-    },
+    autorun(
+      function syntenyMouseoverAutorun() {
+        const view = getContainingView(self) as LinearSyntenyViewModel
+        if (!view.viewsInitialized) {
+          return
+        }
+        // Access reactive properties so autorun is triggered when they change
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { clickId, mouseoverId } = self
+        drawMouseoverClickMap(self)
+      },
       { name: 'SyntenyMouseover' },
     ),
   )

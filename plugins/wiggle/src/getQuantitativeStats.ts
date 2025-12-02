@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
@@ -15,6 +15,7 @@ export async function getQuantitativeStats(
     configuration: AnyConfigurationModel
     autoscaleType: string
     setMessage: (str: string) => void
+    effectiveRpcDriverName?: string
   },
   opts: {
     headers?: Record<string, string>
@@ -25,12 +26,13 @@ export async function getQuantitativeStats(
 ): Promise<QuantitativeStats> {
   const { rpcManager } = getSession(self)
   const numStdDev = getConf(self, 'numStdDev') || 3
-  const { adapterConfig, autoscaleType } = self
+  const { adapterConfig, autoscaleType, effectiveRpcDriverName } = self
   const sessionId = getRpcSessionId(self)
   const { currStatsBpPerPx } = opts
   const params = {
     sessionId,
     adapterConfig,
+    rpcDriverName: effectiveRpcDriverName,
     statusCallback: (message: string) => {
       if (isAlive(self)) {
         self.setMessage(message)

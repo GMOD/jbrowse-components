@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import * as mst from '@jbrowse/mobx-state-tree'
 import { alpha, createTheme, useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
@@ -10,11 +11,9 @@ import {
 } from '@mui/x-data-grid'
 import * as mobx from 'mobx'
 import * as mxreact from 'mobx-react'
-import * as mst from 'mobx-state-tree'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import * as ReactDomClient from 'react-dom/client'
-import { makeStyles } from 'tss-react/mui'
 
 import Plugin from '../Plugin'
 import * as Configuration from '../configuration'
@@ -46,10 +45,12 @@ import * as coreLayouts from '../util/layouts'
 import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
 import * as trackUtils from '../util/tracks'
+import { cx, keyframes, makeStyles } from '../util/tss-react'
 import * as mstTypes from '../util/types/mst'
 
 const libs = {
   mobx,
+  '@jbrowse/mobx-state-tree': mst,
   'mobx-state-tree': mst,
   react: React,
   'react/jsx-runtime': ReactJSXRuntime,
@@ -66,7 +67,14 @@ const libs = {
   // special case so plugins can easily use @mui/icons-material; don't remove
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
+  'tss-react': {
+    cx,
+    keyframes,
+    makeStyles,
+  },
   'tss-react/mui': {
+    cx,
+    keyframes,
     makeStyles,
   },
 

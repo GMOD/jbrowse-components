@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -18,7 +18,6 @@ const useStyles = makeStyles()(theme => ({
     borderTop: 'none',
     borderBottom: 'none',
     pointerEvents: 'none',
-    willChange: 'transform',
   },
   centerLineText: {
     position: 'absolute',
@@ -26,7 +25,6 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
     fontWeight: 'bold',
-    willChange: 'transform',
   },
 }))
 

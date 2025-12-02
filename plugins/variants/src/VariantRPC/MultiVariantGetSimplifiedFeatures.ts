@@ -60,12 +60,18 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
       for (const [key, val] of Object.entries(samp)) {
         const isPhased = val.includes('|')
         hasPhased ||= isPhased
+        let ploidy = 1
+        if (isPhased) {
+          for (const char of val) {
+            if (char === '|') {
+              ploidy++
+            }
+          }
+        }
+        const existing = sampleInfo[key]
         sampleInfo[key] = {
-          maxPloidy: Math.max(
-            sampleInfo[key]?.maxPloidy || 0,
-            val.split('|').length,
-          ),
-          isPhased: sampleInfo[key]?.isPhased || isPhased,
+          maxPloidy: Math.max(existing?.maxPloidy ?? 0, ploidy),
+          isPhased: existing?.isPhased || isPhased,
         }
       }
     })

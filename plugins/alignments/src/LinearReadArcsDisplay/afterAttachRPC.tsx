@@ -4,8 +4,8 @@ import {
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
-import { getSnapshot } from 'mobx-state-tree'
 
 import { createAutorun } from '../util'
 
@@ -88,6 +88,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
           jitter: jitterVal,
           height,
           highResolutionScaling: 2,
+          rpcDriverName: self.effectiveRpcDriverName,
           statusCallback: (msg: string) => {
             self.setMessage(msg)
           },

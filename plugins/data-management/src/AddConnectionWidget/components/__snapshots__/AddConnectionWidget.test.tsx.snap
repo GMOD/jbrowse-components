@@ -3,10 +3,10 @@
 exports[`renders 1`] = `
 <div>
   <div
-    class="css-3o7gsw-root"
+    class="css-1fhgjcy"
   >
     <div
-      class="MuiStepper-root MuiStepper-vertical css-nzjsqw-MuiStepper-root-stepper"
+      class="MuiStepper-root MuiStepper-vertical css-h3b25w-MuiStepper-root"
     >
       <div
         class="MuiStep-root MuiStep-vertical css-enonti-MuiStep-root"
@@ -150,10 +150,10 @@ exports[`renders 1`] = `
                   </div>
                 </form>
                 <div
-                  class="css-14dqgmq-actionsContainer"
+                  class="css-19idom"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-179qsk4-MuiButtonBase-root-MuiButton-root-button"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-4rmdel-MuiButtonBase-root-MuiButton-root"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -161,7 +161,7 @@ exports[`renders 1`] = `
                     Back
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1aobgzj-MuiButtonBase-root-MuiButton-root-button"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1pprb7-MuiButtonBase-root-MuiButton-root"
                     data-testid="addConnectionNext"
                     tabindex="0"
                     type="button"

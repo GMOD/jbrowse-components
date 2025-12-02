@@ -5,6 +5,7 @@ import {
   type AbstractSessionModel,
   localStorageGetItem,
 } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -17,7 +18,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 
 import { shareSessionToDynamo } from '../sessionSharing'
 import { setQueryParams } from '../useQueryParam'

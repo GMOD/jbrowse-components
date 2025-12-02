@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
     "@jbrowse/plugin-circular-view": "^3.7.0",
     "@jbrowse/plugin-spreadsheet-view": "^3.7.0",
     "@jbrowse/sv-core": "^3.7.0",
@@ -44,7 +45,6 @@
     "@mui/material": "^7.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
     "tss-react": "^4.0.0"
   },
   "peerDependencies": {

@@ -1,53 +1,37 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { rpcResult } from 'librpc-web-mod'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type {
-  RenderArgs as ServerSideRenderArgs,
-  RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
-  ResultsDeserialized as ServerSideResultsDeserialized,
-  ResultsSerialized as ServerSideResultsSerialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import type { RenderArgsDeserialized as ServerSideRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
 
-interface HicFeature {
+export interface HicFeature {
   bin1: number
   bin2: number
   counts: number
 }
 
-interface HicDataAdapter extends BaseFeatureDataAdapter {
-  getResolution: (bp: number) => Promise<number>
-}
-
-export interface RenderArgs extends ServerSideRenderArgs {
+export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized {
   regions: Region[]
-}
-
-export interface RenderArgsDeserialized
-  extends ServerSideRenderArgsDeserialized {
-  regions: Region[]
-  dataAdapter: HicDataAdapter
   bpPerPx: number
   highResolutionScaling: number
   resolution: number
   adapterConfig: AnyConfigurationModel
   displayHeight?: number
+  useLogScale?: boolean
+  colorScheme?: string
 }
 
-export interface RenderArgsDeserializedWithFeatures
-  extends RenderArgsDeserialized {
+export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: HicFeature[]
   statusCallback?: (arg: string) => void
 }
-
-export type ResultsSerialized = ServerSideResultsSerialized
-
-export type ResultsDeserialized = ServerSideResultsDeserialized
 
 export default class HicRenderer extends ServerSideRendererType {
   supportsSVG = true
@@ -69,21 +53,9 @@ export default class HicRenderer extends ServerSideRendererType {
         pluginManager: this.pluginManager,
       }),
     )
-    const results = await super.render({
-      ...renderProps,
-      ...res,
-      features,
-      region: renderProps.regions[0],
-      height,
-      width,
-    })
 
-    return {
-      ...results,
-      ...res,
-      height,
-      width,
-    }
+    const serialized = { ...res, height, width }
+    return rpcResult(serialized, collectTransferables(res))
   }
 
   async getFeatures(args: RenderArgsDeserialized) {
@@ -99,13 +71,6 @@ export default class HicRenderer extends ServerSideRendererType {
         .pipe(toArray()),
     )
 
-    // cast to any to avoid return-type conflict, because the types of features
-    // returned by our getFeatures are quite different from the base interface
-    return features as any
+    return features as unknown as HicFeature[]
   }
 }
-
-export type {
-  RenderArgsSerialized,
-  RenderResults,
-} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'

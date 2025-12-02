@@ -4,8 +4,8 @@ import {
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
-import { getSnapshot, isAlive } from 'mobx-state-tree'
 
 import { createAutorun } from '../util'
 import { buildFlatbushIndex } from './drawFeatsCommon'
@@ -98,6 +98,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           trackMaxHeight,
           ...(drawCloud && { cloudModeHeight: height }),
           highResolutionScaling: 2,
+          rpcDriverName: self.effectiveRpcDriverName,
           statusCallback: (msg: string) => {
             self.setMessage(msg)
           },

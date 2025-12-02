@@ -3,8 +3,8 @@ id: linearvariantmatrixdisplay
 title: LinearVariantMatrixDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -35,59 +35,22 @@ ISimpleType<"LinearVariantMatrixDisplay">
 type: types.literal('LinearVariantMatrixDisplay')
 ```
 
-#### property: rowHeightSetting
+#### property: lineZoneHeight
 
 ```js
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-rowHeightSetting: types.optional(types.number, 1)
-```
-
-#### property: lineZoneHeight
-
-```js
-// type signature
-number
-// code
-lineZoneHeight: 20
+lineZoneHeight: types.optional(types.number, 20)
 ```
 
 ### LinearVariantMatrixDisplay - Getters
-
-#### getter: nrow
-
-```js
-// type
-number
-```
 
 #### getter: blockType
 
 ```js
 // type
 string
-```
-
-#### getter: totalHeight
-
-```js
-// type
-number
-```
-
-#### getter: rowHeight
-
-```js
-// type
-number
-```
-
-#### getter: featuresReady
-
-```js
-// type
-boolean
 ```
 
 #### getter: prefersOffset
@@ -99,16 +62,11 @@ positions multi-row below the tracklabel even if using overlap tracklabels
 boolean
 ```
 
-#### getter: canDisplayLabels
-
-```js
-// type
-boolean
-```
-
 ### LinearVariantMatrixDisplay - Methods
 
 #### method: renderProps
+
+Override renderProps to pass the correct height for the matrix renderer
 
 ```js
 // type signature
@@ -116,13 +74,6 @@ renderProps: () => any
 ```
 
 ### LinearVariantMatrixDisplay - Actions
-
-#### action: setLineZoneHeight
-
-```js
-// type signature
-setLineZoneHeight: (n: number) => number
-```
 
 #### action: setLineZoneHeight
 

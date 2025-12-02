@@ -62,6 +62,14 @@ export default class Flatbush {
       throw new Error('byteOffset must be 8-byte aligned.')
     }
 
+    // Check for detached ArrayBuffer (happens if buffer was transferred)
+    if (data.byteLength === 0) {
+      throw new Error(
+        'Flatbush data buffer is detached (byteLength=0). ' +
+          'This usually means the buffer was transferred and is no longer usable.',
+      )
+    }
+
     const [magic, versionAndType] = new Uint8Array(data, byteOffset + 0, 2)
     if (magic !== 0xfb) {
       throw new Error('Data does not appear to be in a Flatbush format.')

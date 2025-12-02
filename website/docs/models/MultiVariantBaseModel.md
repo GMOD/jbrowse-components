@@ -3,8 +3,8 @@ id: multivariantbasemodel
 title: MultiVariantBaseModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/MultiVariantBaseModel.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/MultiVariantBaseModel.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/MultiVariantBaseModel.md)
 
@@ -66,18 +66,18 @@ minorAlleleFrequencyFilter: types.optional(types.number, 0)
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showSidebarLabelsSetting: true
+showSidebarLabelsSetting: types.optional(types.boolean, true)
 ```
 
 #### property: showTree
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showTree: true
+showTree: types.optional(types.boolean, true)
 ```
 
 #### property: renderingMode
@@ -89,35 +89,31 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 renderingMode: types.optional(types.string, 'alleleCount')
 ```
 
-#### property: rowHeightSetting
+#### property: rowHeightMode
 
-used only if autoHeight is false
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-rowHeightSetting: types.optional(types.number, 8)
-```
-
-#### property: autoHeight
-
-used only if autoHeight is false
+Controls row height: 'auto' calculates from available height, or a number
+specifies manual pixel height per row
 
 ```js
 // type signature
-true
+IOptionalIType<ITypeUnion<number | "auto", number | "auto", number | "auto">, [undefined]>
 // code
-autoHeight: true
+rowHeightMode: types.optional(
+          types.union(types.literal('auto'), types.number),
+          'auto',
+        )
 ```
 
 #### property: lengthCutoffFilter
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-lengthCutoffFilter: Number.MAX_SAFE_INTEGER
+lengthCutoffFilter: types.optional(
+          types.number,
+          Number.MAX_SAFE_INTEGER,
+        )
 ```
 
 #### property: jexlFilters
@@ -133,9 +129,9 @@ jexlFilters: types.maybe(types.array(types.string))
 
 ```js
 // type signature
-string
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-referenceDrawingMode: 'skip'
+referenceDrawingMode: types.optional(types.string, 'skip')
 ```
 
 #### property: clusterTree
@@ -151,25 +147,37 @@ clusterTree: types.maybe(types.string)
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-treeAreaWidth: 80
+treeAreaWidth: types.optional(types.number, 80)
+```
+
+#### property: lineZoneHeight
+
+Height reserved for elements above the main display (e.g., connecting lines in
+matrix view)
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+lineZoneHeight: types.optional(types.number, 0)
 ```
 
 ### MultiVariantBaseModel - Getters
+
+#### getter: autoHeight
+
+```js
+// type
+boolean
+```
 
 #### getter: activeFilters
 
 ```js
 // type
 any
-```
-
-#### getter: preSources
-
-```js
-// type
-Source[]
 ```
 
 #### getter: sources
@@ -193,14 +201,23 @@ any
 any
 ```
 
-#### getter: rowHeight
+#### getter: availableHeight
+
+Available height for rows (total height minus lineZoneHeight)
 
 ```js
 // type
 number
 ```
 
-#### getter: totalHeight
+#### getter: nrow
+
+```js
+// type
+number
+```
+
+#### getter: rowHeight
 
 ```js
 // type
@@ -255,7 +272,7 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-getPortableSettings: () => { rowHeightSetting: number; minorAlleleFrequencyFilter: number; showSidebarLabelsSetting: boolean; showTree: boolean; renderingMode: string; autoHeight: boolean; lengthCutoffFilter: number; ... 5 more ...; height: number; }
+getPortableSettings: () => { minorAlleleFrequencyFilter: number; showSidebarLabelsSetting: boolean; showTree: boolean; renderingMode: string; lengthCutoffFilter: number; jexlFilters: IMSTArray<ISimpleType<string>> & IStateTreeNode<...>; ... 4 more ...; height: number; }
 ```
 
 #### method: renderProps
@@ -278,7 +295,7 @@ setJexlFilters: (f?: string[]) => void
 
 ```js
 // type signature
-setRowHeight: (arg: number) => void
+setRowHeight: (arg: number | "auto") => void
 ```
 
 #### action: setHoveredGenotype
@@ -395,9 +412,11 @@ setPhasedMode: (arg: string) => void
 
 #### action: setAutoHeight
 
+Toggle auto height mode. When turning off, uses default of 10px per row.
+
 ```js
 // type signature
-setAutoHeight: (arg: boolean) => void
+setAutoHeight: (auto: boolean) => void
 ```
 
 #### action: setHasPhased

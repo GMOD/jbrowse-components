@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import {
   Alert,
@@ -13,8 +15,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui'
 
 import { shareSessionToDynamo } from '../../sessionSharing'
 

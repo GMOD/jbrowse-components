@@ -1,8 +1,12 @@
+import PluginManager from '../PluginManager'
 import ConfigSlot from './configurationSlot'
+
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
 
 test('can convert a string slot to and from a callback', () => {
   const model = ConfigSlot('tester', { type: 'string', defaultValue: 'foo' })
-  const instance = model.create()
+  const instance = model.create(undefined, { pluginManager })
   expect(instance.value).toBe('foo')
   expect(instance.expr.evalSync()).toBe('foo')
   instance.convertToCallback()
@@ -19,7 +23,7 @@ test('can convert a numeric slot to and from a callback', () => {
     defaultValue: 12,
     contextVariable: ['something'],
   })
-  const instance = model.create()
+  const instance = model.create(undefined, { pluginManager })
   expect(instance.value).toBe(12)
   expect(instance.expr.evalSync()).toBe(12)
   instance.convertToCallback()
@@ -32,7 +36,7 @@ test('can convert a stringArray slot to and from a callback', () => {
     type: 'stringArray',
     defaultValue: ['foo', 'bar'],
   })
-  const instance = model.create()
+  const instance = model.create(undefined, { pluginManager })
   expect(instance.value).toEqual(['foo', 'bar'])
   expect(instance.expr.evalSync()).toEqual(['foo', 'bar'])
   instance.convertToCallback()
@@ -48,7 +52,7 @@ test('can convert a slot with a default function value to a scalar value', () =>
     type: 'string',
     defaultValue: 'jexl:get(feature,"foo")',
   })
-  const instance = model.create()
+  const instance = model.create(undefined, { pluginManager })
   expect(instance.value).toBe('jexl:get(feature,"foo")')
   expect(() => instance.expr.evalSync()).toThrow()
   instance.convertToCallback()

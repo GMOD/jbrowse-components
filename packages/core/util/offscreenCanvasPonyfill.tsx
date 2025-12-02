@@ -16,6 +16,17 @@ export let createImageBitmap: (
 /** the JS class (constructor) for offscreen-generated image bitmap data */
 export let ImageBitmapType: unknown
 
+/**
+ * Safely check if a value is an ImageBitmap.
+ * Works in both browser and Node.js environments.
+ */
+export function isImageBitmap(value: unknown): value is ImageBitmap {
+  return typeof ImageBitmap !== 'undefined' && value instanceof ImageBitmap
+}
+
+// Re-export transferable utilities for convenience
+export { collectTransferables, isDetachedBuffer } from './transferables'
+
 export function drawImageOntoCanvasContext(
   imageData: any,
   context: CanvasRenderingContext2D,
@@ -36,8 +47,10 @@ const weHave = {
 if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  createImageBitmap = window.createImageBitmap || self.createImageBitmap
+  // Use transferToImageBitmap for zero-copy transfer from OffscreenCanvas
+  // This is synchronous and more efficient than createImageBitmap which copies
+  createImageBitmap = canvas =>
+    Promise.resolve((canvas as OffscreenCanvas).transferToImageBitmap())
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap
@@ -77,7 +90,6 @@ if (weHave.realOffscreenCanvas) {
       height: canvas.height,
       width: canvas.width,
       serializedCommands: ctx.toJSON(),
-      containsNoTransferables: true,
     }
   }
   ImageBitmapType = String

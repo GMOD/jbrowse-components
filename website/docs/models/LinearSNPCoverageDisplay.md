@@ -3,8 +3,8 @@ id: linearsnpcoveragedisplay
 title: LinearSNPCoverageDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -250,27 +250,6 @@ setColorScheme: (colorBy?: ColorBy) => void
 ```js
 // type signature
 setJexlFilters: (filters: string[]) => void
-```
-
-#### action: updateVisibleModifications
-
-```js
-// type signature
-updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
-```
-
-#### action: setSimplexModifications
-
-```js
-// type signature
-setSimplexModifications: (simplex: string[]) => void
-```
-
-#### action: setModificationsReady
-
-```js
-// type signature
-setModificationsReady: (flag: boolean) => void
 ```
 
 #### action: setShowInterbaseIndicators

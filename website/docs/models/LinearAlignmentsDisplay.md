@@ -3,8 +3,8 @@ id: linearalignmentsdisplay
 title: LinearAlignmentsDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -148,13 +148,6 @@ setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { set
 ```js
 // type signature
 setHeight: (n: number) => number
-```
-
-#### action: setFilterBy
-
-```js
-// type signature
-setFilterBy: (filter: FilterBy) => void
 ```
 
 #### action: setLowerPanelType

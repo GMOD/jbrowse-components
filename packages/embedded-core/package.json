@@ -41,16 +41,12 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@babel/runtime": "^7.16.3",
     "@jbrowse/core": "^3.7.0",
-    "@jbrowse/product-core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
-    "copy-to-clipboard": "^3.3.1",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
-    "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
   },
   "peerDependencies": {

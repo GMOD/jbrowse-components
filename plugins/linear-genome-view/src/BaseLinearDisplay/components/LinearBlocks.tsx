@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import RenderedBlocks from './RenderedBlocks'
 
@@ -18,7 +18,6 @@ const useStyles = makeStyles()({
     left: 0,
     minHeight: '100%',
     display: 'flex',
-    willChange: 'transform',
   },
 })
 

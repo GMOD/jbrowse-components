@@ -4428,6 +4428,110 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox-sv.renamed",
       "type": "AlignmentsTrack",
     },
+    {
+      "adapter": {
+        "craiLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted-altname.cram.crai",
+        },
+        "cramLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted-altname.cram",
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "RPC Driver Test",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_cram_mainthread-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox_cram_mainthread-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox_cram_mainthread-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_cram_mainthread-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox_cram_mainthread-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-sorted.cram (MainThreadRpcDriver)",
+      "rpcDriverName": "MainThreadRpcDriver",
+      "trackId": "volvox_cram_mainthread",
+      "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "craiLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted-altname.cram.crai",
+        },
+        "cramLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted-altname.cram",
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "RPC Driver Test",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_cram_webworker-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox_cram_webworker-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox_cram_webworker-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_cram_webworker-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox_cram_webworker-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-sorted.cram (WebWorkerRpcDriver)",
+      "rpcDriverName": "WebWorkerRpcDriver",
+      "trackId": "volvox_cram_webworker",
+      "type": "AlignmentsTrack",
+    },
   ],
 }
 `;

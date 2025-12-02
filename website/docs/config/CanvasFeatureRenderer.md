@@ -95,6 +95,22 @@ showDescriptions: {
     }
 ```
 
+#### slot: subfeatureLabels
+
+```js
+subfeatureLabels: {
+      type: 'stringEnum',
+      model: types.enumeration('subfeatureLabels', [
+        'none',
+        'below',
+        'overlay',
+      ]),
+      description:
+        'subfeature label display: "none" hides labels, "below" reserves extra space, "overlay" draws on top of feature',
+      defaultValue: 'none',
+    }
+```
+
 #### slot: labels.name
 
 ```js
@@ -224,5 +240,21 @@ transcriptTypes: {
 containerTypes: {
       type: 'stringArray',
       defaultValue: ['proteoform_orf'],
+    }
+```
+
+#### slot: geneGlyphMode
+
+```js
+geneGlyphMode: {
+      type: 'stringEnum',
+      model: types.enumeration('geneGlyphMode', [
+        'all',
+        'longest',
+        'longestCoding',
+      ]),
+      description:
+        'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript, "longestCoding" shows only the longest coding transcript',
+      defaultValue: 'all',
     }
 ```

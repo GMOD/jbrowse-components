@@ -7,8 +7,8 @@ import {
 } from '@jbrowse/core/configuration'
 import { getEnv, getSession, isSelectionContainer } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
 
 import { getNiceDomain } from '../util'
 

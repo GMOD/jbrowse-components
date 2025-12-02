@@ -74,6 +74,17 @@ metadata: {
       }
 ```
 
+#### slot: rpcDriverName
+
+```js
+rpcDriverName: {
+        type: 'string',
+        description:
+          'RPC driver to use for this track. Leave empty to use the display-level or global default.',
+        defaultValue: '',
+      }
+```
+
 #### slot: adapter
 
 ```js

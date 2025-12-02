@@ -82,5 +82,5 @@ export function applyAlpha(color: string, alpha: number) {
 
 export function getId(r: number, g: number, b: number, unitMultiplier: number) {
   // Bitwise reconstruction matching makeColor's 256-based encoding
-  return (((r << 16) | (g << 8) | b) - 1) / unitMultiplier | 0
+  return ((((r << 16) | (g << 8) | b) - 1) / unitMultiplier) | 0
 }

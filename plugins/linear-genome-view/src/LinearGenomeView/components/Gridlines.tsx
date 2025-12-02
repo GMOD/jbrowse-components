@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
-import { makeStyles } from 'tss-react/mui'
 
 import { makeTicks } from '../util'
 
@@ -18,14 +18,12 @@ const useStyles = makeStyles()({
     height: '100%',
     width: '100%',
     pointerEvents: 'none',
-    willChange: 'transform',
   },
   verticalGuidesContainer: {
     position: 'absolute',
     display: 'flex',
     height: '100%',
     pointerEvents: 'none',
-    willChange: 'transform, width',
   },
 })
 

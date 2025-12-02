@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
@@ -8,7 +9,6 @@ import {
   alpha,
 } from '@mui/material'
 import { SourceMapConsumer } from 'source-map-js'
-import { makeStyles } from 'tss-react/mui'
 
 import Dialog from './Dialog'
 import ExternalLink from './ExternalLink'
@@ -96,7 +96,7 @@ const MAX_ERR_LEN = 10_000
 // Chrome has the error message in the stacktrace, firefox doesn't
 function stripMessage(trace: string, error: unknown) {
   if (trace.startsWith('Error:')) {
-    // remove the error message, which can be very long due to mobx-state-tree
+    // remove the error message, which can be very long due to @jbrowse/mobx-state-tree
     // stuff, to get just the stack trace
     const err = `${error}`
     return trace.slice(err.length)

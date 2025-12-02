@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import {
@@ -20,7 +21,6 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import { getRpcSessionId } from '../../../util/tracks'
 
@@ -30,9 +30,7 @@ import type {
   Feature,
   Region,
 } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
-
-// icons
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()({
   root: {
@@ -109,7 +107,12 @@ const SaveTrackDataDialog = observer(function ({
   const [helpDialogContent, setHelpDialogContent] = useState('')
 
   // @ts-expect-error
-  const regionStr = getContainingView(model).coarseVisibleLocStrings
+  const view = getContainingView(model) as {
+    coarseVisibleLocStrings: string[]
+    visibleRegions?: Region[]
+  }
+
+  const { visibleRegions, coarseVisibleLocStrings: regionStr } = view
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -117,9 +120,6 @@ const SaveTrackDataDialog = observer(function ({
       try {
         setError(undefined)
         setLoading(true)
-        const { visibleRegions } = getContainingView(model) as {
-          visibleRegions?: Region[]
-        }
         const session = getSession(model)
         if (!visibleRegions?.length || !type) {
           return
@@ -174,7 +174,7 @@ const SaveTrackDataDialog = observer(function ({
         setLoading(false)
       }
     })()
-  }, [type, options, model])
+  }, [type, visibleRegions, options, model])
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Save track data">
@@ -293,10 +293,10 @@ const SaveTrackDataDialog = observer(function ({
         </DialogContent>
         <DialogActions>
           <Button
+            autoFocus
             onClick={() => {
               setHelpDialogOpen(false)
             }}
-            autoFocus
           >
             Close
           </Button>

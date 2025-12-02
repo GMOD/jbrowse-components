@@ -10,6 +10,14 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable, DNA } from '@jbrowse/core/ui/Icons'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getType,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -29,14 +37,6 @@ import UndoIcon from '@mui/icons-material/Undo'
 import { formatDistanceToNow } from 'date-fns'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  isAlive,
-  types,
-} from 'mobx-state-tree'
 
 import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
@@ -50,14 +50,14 @@ import type {
   AbstractSessionModel,
   SessionWithWidgets,
 } from '@jbrowse/core/util'
-import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
-import type { IDBPDatabase } from 'idb'
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
   SnapshotIn,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { IDBPDatabase } from 'idb'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
