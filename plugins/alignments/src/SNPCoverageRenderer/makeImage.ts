@@ -1,11 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { bpSpanPx, featureSpanPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
-import {
-  YSCALEBAR_LABEL_OFFSET,
-  getOrigin,
-  getScale,
-} from '@jbrowse/plugin-wiggle'
+import { featureSpanPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import { getOrigin, getScale } from '@jbrowse/plugin-wiggle'
 
 import { alphaColor } from '../shared/util'
 
@@ -105,7 +101,7 @@ function calculateModificationCounts({
   return { modifiable, detectable }
 }
 
-export async function makeImage(
+export function makeImage(
   ctx: CanvasRenderingContext2D,
   props: RenderArgsDeserializedWithFeatures,
 ) {
@@ -123,15 +119,15 @@ export async function makeImage(
     config: cfg,
     ticks,
     stopToken,
+    offset = 0,
   } = props
   const theme = createJBrowseTheme(configTheme)
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
-  // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
-  // wiggle display, and makes the height of the actual drawn area add
-  // "padding" to the top and bottom of the display
-  const offset = YSCALEBAR_LABEL_OFFSET
+  // the adjusted height takes into account offset from the wiggle display,
+  // and makes the height of the actual drawn area add "padding" to the top
+  // and bottom of the display
   const height = unadjustedHeight - offset * 2
 
   const opts = { ...scaleOpts, range: [0, height] }
@@ -144,7 +140,6 @@ export async function makeImage(
     scaleType: 'linear',
   })
   const originY = getOrigin(scaleOpts.scaleType)
-  const originLinear = getOrigin('linear')
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
@@ -153,9 +148,9 @@ export async function makeImage(
   // get the y coordinate that we are plotting at, this can be log scale
   const toY = (n: number) => height - (viewScale(n) || 0) + offset
   const toHeight = (n: number) => toY(originY) - toY(n)
-  // used specifically for indicator
+  // used specifically for indicator, origin is always 0 for linear scale
   const toY2 = (n: number) => height - (indicatorViewScale(n) || 0) + offset
-  const toHeight2 = (n: number) => toY2(originLinear) - toY2(n)
+  const toHeight2 = (n: number) => toY2(0) - toY2(n)
 
   const { bases, softclip, hardclip, insertion } = theme.palette
   const colorMap: Record<string, string> = {
@@ -220,6 +215,8 @@ export async function makeImage(
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin
     const w = Math.max(rightPx - leftPx, 1)
     const score0 = feature.get('score')
+    const h = toHeight(score0)
+    const bottom = toY(score0) + h
     if (drawingModifications) {
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
@@ -248,19 +245,16 @@ export async function makeImage(
 
         const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const nonModColor = 'blue'
-        const c = alphaColor(nonModColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const c = alphaColor('blue', avgProbability)
 
         ctx.fillStyle = c
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - (curr + modFraction * height),
+          bottom - (curr + modFraction * h),
           w,
-          modFraction * height,
+          modFraction * h,
         )
-        curr += modFraction * height
+        curr += modFraction * h
       }
       // Sort keys once outside the loop
       const modKeys = Object.keys(mods).sort().reverse()
@@ -285,19 +279,16 @@ export async function makeImage(
 
         const { entryDepth, avgProbability = 0 } = mods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const baseColor = mod.color || 'black'
-        const c = alphaColor(baseColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const c = alphaColor(mod.color || 'black', avgProbability)
 
         ctx.fillStyle = c
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - (curr + modFraction * height),
+          bottom - (curr + modFraction * h),
           w,
-          modFraction * height,
+          modFraction * h,
         )
-        curr += modFraction * height
+        curr += modFraction * h
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = snpinfo
@@ -305,27 +296,23 @@ export async function makeImage(
 
       for (const base of Object.keys(mods).sort().reverse()) {
         const { entryDepth } = mods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
       for (const base of Object.keys(nonmods).sort().reverse()) {
         const { entryDepth } = nonmods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
@@ -334,14 +321,12 @@ export async function makeImage(
       let curr = 0
       for (const base of Object.keys(snps).sort().reverse()) {
         const { entryDepth } = snps[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }

@@ -36,6 +36,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   simplexModifications?: string[]
   colorBy: ColorBy
   statusCallback?: (arg: string) => void
+  offset?: number
 }
 
 export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
