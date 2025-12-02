@@ -1,10 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  bpSpanPx,
-  featureSpanPx,
-  forEachWithStopTokenCheck,
-} from '@jbrowse/core/util'
+import { featureSpanPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import {
   YSCALEBAR_LABEL_OFFSET,
   getOrigin,
@@ -149,7 +145,6 @@ export async function makeImage(
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
-  const showArcs = readConfObject(cfg, 'showArcs')
   const showInterbaseIndicators = readConfObject(cfg, 'showInterbaseIndicators')
 
   // get the y coordinate that we are plotting at, this can be log scale
@@ -393,35 +388,9 @@ export async function makeImage(
     prevTotal = score0
   })
 
-  if (showArcs) {
-    forEachWithStopTokenCheck(features.values(), stopToken, feature => {
-      if (feature.get('type') !== 'skip') {
-        return
-      }
-      const s = feature.get('start')
-      const e = feature.get('end')
-      const [left, right] = bpSpanPx(s, e, region, bpPerPx)
-
-      ctx.beginPath()
-      const effectiveStrand = feature.get('effectiveStrand')
-      const pos = 'rgba(255,200,200,0.7)'
-      const neg = 'rgba(200,200,255,0.7)'
-      const neutral = 'rgba(200,200,200,0.7)'
-
-      if (effectiveStrand === 1) {
-        ctx.strokeStyle = pos
-      } else if (effectiveStrand === -1) {
-        ctx.strokeStyle = neg
-      } else {
-        ctx.strokeStyle = neutral
-      }
-
-      ctx.lineWidth = Math.log(feature.get('score') + 1)
-      ctx.moveTo(left, height - offset * 2)
-      ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
-      ctx.stroke()
-    })
-  }
+  // Note: Arc rendering has been moved to LinearSNPCoverageDisplay component
+  // to support cross-region arc connections. Skip features are still collected
+  // and returned for the display to render.
 
   if (displayCrossHatches) {
     ctx.lineWidth = 1
@@ -439,8 +408,10 @@ export async function makeImage(
   // serializing thousands of per-base features
   let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures: Feature[] = []
+  const skipFeatures: Feature[] = []
   for (const feature of features.values()) {
     if (feature.get('type') === 'skip') {
+      skipFeatures.push(feature)
       continue
     }
     const start = feature.get('start')
@@ -451,5 +422,5 @@ export async function makeImage(
       prevLeftPx = leftPx
     }
   }
-  return { reducedFeatures }
+  return { reducedFeatures, skipFeatures }
 }
