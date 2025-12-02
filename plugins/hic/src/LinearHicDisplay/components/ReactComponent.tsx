@@ -4,7 +4,6 @@ import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent'
-import ResolutionControls from './ResolutionControls'
 
 import type { LinearHicDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -19,7 +18,7 @@ const HicCanvas = observer(function ({
   const view = getContainingView(model) as LGV
   const screenWidth = Math.round(view.dynamicBlocks.totalWidthPx)
   const { offsetPx } = view
-  const height = model.height
+  const { height, drawn, loading } = model
 
   // Adjust canvas width and position when offsetPx is negative
   const canvasWidth = offsetPx < 0 ? screenWidth + offsetPx : screenWidth
@@ -36,7 +35,7 @@ const HicCanvas = observer(function ({
 
   return (
     <canvas
-      data-testid="hic-canvas"
+      data-testid={`hic_canvas${drawn && !loading ? '_done' : ''}`}
       ref={cb}
       style={{
         width: canvasWidth,
@@ -56,12 +55,9 @@ const LinearHicReactComponent = observer(function ({
   model: LinearHicDisplayModel
 }) {
   return (
-    <>
-      <BaseDisplayComponent model={model}>
-        <HicCanvas model={model} />
-      </BaseDisplayComponent>
-      <ResolutionControls model={model} />
-    </>
+    <BaseDisplayComponent model={model}>
+      <HicCanvas model={model} />
+    </BaseDisplayComponent>
   )
 })
 

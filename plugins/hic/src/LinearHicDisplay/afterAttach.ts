@@ -1,4 +1,6 @@
+import { getConf } from '@jbrowse/core/configuration'
 import {
+  getContainingTrack,
   getContainingView,
   getSession,
   isAbortException,
@@ -19,6 +21,36 @@ interface RenderResult {
 }
 
 export function doAfterAttach(self: LinearHicDisplayModel) {
+  // Fetch available normalizations and resolutions
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  ;(async () => {
+    try {
+      const { rpcManager } = getSession(self)
+      const track = getContainingTrack(self)
+      const adapterConfig = getConf(track, 'adapter')
+      const { norms, resolutions } = (await rpcManager.call(
+        getConf(track, 'trackId'),
+        'CoreGetInfo',
+        {
+          adapterConfig,
+        },
+      )) as { norms?: string[]; resolutions?: number[] }
+      if (isAlive(self)) {
+        if (norms) {
+          self.setAvailableNormalizations(norms)
+        }
+        if (resolutions) {
+          self.setAvailableResolutions(resolutions)
+        }
+      }
+    } catch (e) {
+      console.error(e)
+      if (isAlive(self)) {
+        getSession(self).notifyError(`${e}`, e)
+      }
+    }
+  })()
+
   const performRender = async () => {
     const view = getContainingView(self) as LGV
     const { bpPerPx, dynamicBlocks } = view

@@ -19,7 +19,7 @@ test(
 
     view.setNewView(5000, 0)
     fireEvent.click(await findByTestId(hts('hic_test'), {}, delay))
-    expectCanvasMatch(await findByTestId(/hic-canvas/, {}, delay))
+    expectCanvasMatch(await findByTestId(/hic_canvas/, {}, delay))
   },
   timeout,
 )

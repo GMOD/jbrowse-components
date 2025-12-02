@@ -58,9 +58,11 @@ export async function makeImageData(
     sessionId,
     adapterConfig,
   )
-  const res = await (dataAdapter as HicDataAdapter).getResolution(
-    bpPerPx / resolution,
-  )
+  // If resolution > 0, use explicit value; otherwise auto-calculate
+  const res =
+    resolution > 0
+      ? resolution
+      : await (dataAdapter as HicDataAdapter).getResolution(bpPerPx)
 
   // Get pixel offsets from regions (they come with offsetPx from the view)
   // We need to calculate relative offsets from the first region

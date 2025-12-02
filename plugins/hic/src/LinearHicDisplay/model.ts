@@ -1,16 +1,24 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { addDisposer, getEnv, types } from '@jbrowse/mobx-state-tree'
+import { getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun } from 'mobx'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+function formatResolution(res: number) {
+  if (res >= 1_000_000) {
+    return `${res / 1_000_000}M`
+  }
+  if (res >= 1_000) {
+    return `${res / 1_000}K`
+  }
+  return `${res}`
+}
 
 /**
  * #stateModel LinearHicDisplay
@@ -43,8 +51,9 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
+         * explicit resolution value from availableResolutions, or 0 for auto
          */
-        resolution: types.optional(types.number, 1),
+        resolution: types.optional(types.number, 0),
         /**
          * #property
          */
@@ -68,6 +77,10 @@ export default function stateModelFactory(
        * #volatile
        */
       availableNormalizations: undefined as string[] | undefined,
+      /**
+       * #volatile
+       */
+      availableResolutions: undefined as number[] | undefined,
       /**
        * #volatile
        */
@@ -204,6 +217,12 @@ export default function stateModelFactory(
       /**
        * #action
        */
+      setAvailableResolutions(f: number[]) {
+        self.availableResolutions = f
+      },
+      /**
+       * #action
+       */
       setMode(arg: string) {
         self.mode = arg
       },
@@ -286,23 +305,31 @@ export default function stateModelFactory(
               ],
             },
 
-            {
-              label: 'Resolution',
-              subMenu: [
-                {
-                  label: 'Finer resolution',
-                  onClick: () => {
-                    self.setResolution(self.resolution * 2)
+            ...(self.availableResolutions
+              ? [
+                  {
+                    label: 'Resolution',
+                    subMenu: [
+                      {
+                        label: 'Auto',
+                        type: 'radio',
+                        checked: self.resolution === 0,
+                        onClick: () => {
+                          self.setResolution(0)
+                        },
+                      },
+                      ...self.availableResolutions.map(res => ({
+                        label: formatResolution(res),
+                        type: 'radio',
+                        checked: self.resolution === res,
+                        onClick: () => {
+                          self.setResolution(res)
+                        },
+                      })),
+                    ],
                   },
-                },
-                {
-                  label: 'Coarser resolution',
-                  onClick: () => {
-                    self.setResolution(self.resolution / 2)
-                  },
-                },
-              ],
-            },
+                ]
+              : []),
             ...(self.availableNormalizations
               ? [
                   {
@@ -331,30 +358,6 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          autorun(async () => {
-            try {
-              const { rpcManager } = getSession(self)
-              const track = getContainingTrack(self)
-              const adapterConfig = getConf(track, 'adapter')
-              const { norms } = (await rpcManager.call(
-                getConf(track, 'trackId'),
-                'CoreGetInfo',
-                {
-                  adapterConfig,
-                },
-              )) as { norms?: string[] }
-              if (norms) {
-                self.setAvailableNormalizations(norms)
-              }
-            } catch (e) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            }
-          }),
-        )
-
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
