@@ -8,5 +8,11 @@
     "test:headed": "node --experimental-strip-types runner.ts --headed",
     "test:debug": "node --experimental-strip-types runner.ts --headed --slow-mo=100",
     "test:update": "node --experimental-strip-types runner.ts --update-snapshots"
+  },
+  "dependencies": {
+    "pixelmatch": "^7.0.0",
+    "pngjs": "^7.0.0",
+    "puppeteer": "^24.9.0",
+    "serve-handler": "^6.1.6"
   }
 }
