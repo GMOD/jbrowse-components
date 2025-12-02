@@ -17,16 +17,12 @@ import { observer } from 'mobx-react'
 
 import ErrorMessage from './ErrorMessage'
 import SanitizedHTML from './SanitizedHTML'
+import { getCloseButtonStyle } from './dialogStyles'
 
 import type { DialogProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+  closeButton: getCloseButtonStyle(theme),
   errorBox: {
     width: 800,
     margin: 40,
@@ -64,10 +60,8 @@ const Dialog = observer(function (props: Props) {
             {onClose ? (
               <IconButton
                 className={classes.closeButton}
-                onClick={() => {
-                  // @ts-expect-error
-                  onClose()
-                }}
+                // @ts-expect-error MUI onClose doesn't have a 'closeIcon' reason
+                onClick={() => onClose()}
               >
                 <CloseIcon />
               </IconButton>

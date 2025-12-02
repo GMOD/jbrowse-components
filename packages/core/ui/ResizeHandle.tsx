@@ -88,13 +88,14 @@ function ResizeHandle({
     [getPosition, onMouseDown],
   )
 
-  const className = flexbox
-    ? vertical
-      ? classes.flexbox_verticalHandle
-      : classes.flexbox_horizontalHandle
-    : vertical
-      ? classes.verticalHandle
-      : classes.horizontalHandle
+  const handleClasses = {
+    flexbox_vertical: classes.flexbox_verticalHandle,
+    flexbox_horizontal: classes.flexbox_horizontalHandle,
+    vertical: classes.verticalHandle,
+    horizontal: classes.horizontalHandle,
+  }
+  const key = `${flexbox ? 'flexbox_' : ''}${vertical ? 'vertical' : 'horizontal'}`
+  const className = handleClasses[key]
 
   return (
     <div

@@ -196,8 +196,7 @@ export function bindFocus(popupState: PopupState) {
 export function bindPopover({ isOpen, anchorEl, close, popupId }: PopupState) {
   return {
     id: popupId,
-    anchorEl,
-    anchorReference: 'anchorEl' as const,
+    anchorEl: anchorEl ?? null,
     open: isOpen,
     onClose: close,
   }
@@ -206,8 +205,7 @@ export function bindPopover({ isOpen, anchorEl, close, popupId }: PopupState) {
 export function bindMenu({ isOpen, anchorEl, close, popupId }: PopupState) {
   return {
     id: popupId,
-    anchorEl,
-    anchorReference: 'anchorEl' as const,
+    anchorEl: anchorEl ?? null,
     open: isOpen,
     onClose: close,
   }
