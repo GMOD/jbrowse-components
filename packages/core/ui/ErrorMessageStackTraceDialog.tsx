@@ -115,8 +115,8 @@ export default function ErrorMessageStackTraceDialog({
     })()
   }, [stackTrace])
 
-  // @ts-expect-error
-  const version = window.JBrowseSession?.version
+  const version = (window as { JBrowseSession?: { version?: string } })
+    .JBrowseSession?.version
   const errorBoxText = [
     secondaryError
       ? 'Error loading source map, showing raw stack trace below:'

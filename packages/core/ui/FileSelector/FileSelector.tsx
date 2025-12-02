@@ -193,8 +193,8 @@ const FileSelector = observer(function (props: {
               )
             })}
             {hiddenAccounts.length > 0 ? (
-              // @ts-expect-error
               <ToggleButton
+                value="more"
                 onClick={event => {
                   setAnchorEl(event.target as HTMLElement)
                 }}

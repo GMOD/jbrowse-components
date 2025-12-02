@@ -13,15 +13,12 @@ import {
 import { observer } from 'mobx-react'
 import Draggable from 'react-draggable'
 
+import { getCloseButtonStyle } from './dialogStyles'
+
 import type { DialogProps, PaperProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+  closeButton: getCloseButtonStyle(theme),
 }))
 
 function PaperComponent(props: PaperProps) {
@@ -30,8 +27,12 @@ function PaperComponent(props: PaperProps) {
     <Draggable
       nodeRef={ref}
       cancel={'[class*="MuiDialogContent-root"]'}
-      // @ts-expect-error
-      onStart={arg => `${arg.target?.className}`.includes('MuiDialogTitle')}
+      onStart={event => {
+        const target = event.target as HTMLElement | null
+        if (!`${target?.className}`.includes('MuiDialogTitle')) {
+          return false
+        }
+      }}
     >
       <Paper ref={ref} {...props} />
     </Draggable>
@@ -52,9 +53,8 @@ const DraggableDialog = observer(function DraggableDialog(
           {onClose ? (
             <IconButton
               className={classes.closeButton}
-              onClick={() => {
-                // @ts-expect-error
-                onClose()
+              onClick={event => {
+                onClose(event, 'escapeKeyDown')
               }}
             >
               <CloseIcon />
