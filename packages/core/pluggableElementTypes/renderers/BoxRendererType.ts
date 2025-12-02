@@ -67,6 +67,10 @@ export default class BoxRendererType extends FeatureRendererType {
     const key = getLayoutId(props)
     if (!this.layoutSessions[key]) {
       this.layoutSessions[key] = this.createLayoutSession(props)
+      // console.log(
+      //   `[BoxRendererType.getWorkerSession] created new session: ${key}, ` +
+      //     `total sessions: ${Object.keys(this.layoutSessions).length}`,
+      // )
     }
     return this.layoutSessions[key].update(props)
   }
@@ -84,8 +88,17 @@ export default class BoxRendererType extends FeatureRendererType {
     const session = this.layoutSessions[key]
     if (session) {
       const region = args.regions[0]!
+      // console.log(
+      //   `[BoxRendererType.freeResources] key: ${key}, ` +
+      //     `region: ${region.refName}:${region.start}-${region.end}`,
+      // )
       session.layout.discardRange(region.refName, region.start, region.end)
     }
+    // else {
+    //   console.log(
+    //     `[BoxRendererType.freeResources] no session found for key: ${key}`,
+    //   )
+    // }
   }
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {

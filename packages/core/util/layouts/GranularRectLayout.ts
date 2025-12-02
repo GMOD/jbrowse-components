@@ -372,6 +372,23 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.addRectToBitmap(rectangle)
     this.rectangles.set(id, rectangle)
     this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
+
+    // // Log every 1000 rectangles to track memory growth
+    // if (this.rectangles.size % 1000 === 0) {
+    //   const memoryMB =
+    //     typeof performance !== 'undefined' &&
+    //     // @ts-expect-error
+    //     performance.memory !== undefined
+    //       ? // @ts-expect-error
+    //         (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2)
+    //       : 'N/A'
+    //   console.log(
+    //     `[GranularRectLayout.addRect] rectangles: ${this.rectangles.size}, ` +
+    //       `bitmap rows: ${this.bitmap.filter(Boolean).length}, ` +
+    //       `heap: ${memoryMB} MB`,
+    //   )
+    // }
+
     return top * this.pitchY
   }
 
@@ -439,9 +456,38 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const pLeft = Math.trunc(left / this.pitchX)
     const pRight = Math.trunc(right / this.pitchX)
     const { bitmap } = this
+
+    // const rectsBefore = this.rectangles.size
+    // const bitmapRowCount = bitmap.filter(Boolean).length
+
     for (const row of bitmap) {
       row.discardRange(pLeft, pRight)
     }
+
+    // Also remove rectangles that fall completely within the discarded range
+    // let deletedCount = 0
+    for (const [id, rect] of this.rectangles) {
+      if (rect.l >= pLeft && rect.r <= pRight) {
+        this.rectangles.delete(id)
+        // deletedCount++
+      }
+    }
+
+    // const rectsAfter = this.rectangles.size
+    // const memoryMB =
+    //   typeof performance !== 'undefined' &&
+    //   // @ts-expect-error
+    //   performance.memory !== undefined
+    //     ? // @ts-expect-error
+    //       (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2)
+    //     : 'N/A'
+
+    // console.log(
+    //   `[GranularRectLayout.discardRange] range: ${left}-${right}, ` +
+    //     `rectangles: ${rectsBefore} → ${rectsAfter} (deleted ${deletedCount}), ` +
+    //     `bitmap rows: ${bitmapRowCount}, ` +
+    //     `heap: ${memoryMB} MB`,
+    // )
   }
 
   hasSeen(id: string) {

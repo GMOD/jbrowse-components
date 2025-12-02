@@ -96,6 +96,51 @@ test('discards regions', () => {
   expect(l.bitmap[0].intervals.length).toBe(0)
 })
 
+test('discardRange removes rectangles from the Map to prevent memory leaks', () => {
+  const l = new Layout({ pitchX: 10, pitchY: 4 })
+
+  // Add features in the range 0-100000
+  for (let i = 0; i < 10; i++) {
+    l.addRect(`feature-${i}`, i * 10000, i * 10000 + 5000, 1)
+  }
+
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.size).toBe(10)
+
+  // Discard the entire range - all rectangles should be removed
+  l.discardRange(0, 100000)
+
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.size).toBe(0)
+})
+
+test('discardRange only removes rectangles fully within range', () => {
+  const l = new Layout({ pitchX: 10, pitchY: 4 })
+
+  // Add features at different positions
+  l.addRect('inside', 5000, 6000, 1) // fully inside discard range
+  l.addRect('outside-left', 0, 1000, 1) // fully outside (left)
+  l.addRect('outside-right', 9000, 10000, 1) // fully outside (right)
+  l.addRect('spanning', 2000, 8000, 1) // spans the discard range
+
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.size).toBe(4)
+
+  // Discard range 3000-7000
+  l.discardRange(3000, 7000)
+
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.size).toBe(3)
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.has('inside')).toBe(false)
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.has('outside-left')).toBe(true)
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.has('outside-right')).toBe(true)
+  // @ts-expect-error accessing private property for testing
+  expect(l.rectangles.has('spanning')).toBe(true)
+})
+
 // see issue #486
 test('tests that adding +/- pitchX fixes resolution causing errors', () => {
   const l = new Layout({ pitchX: 91.21851599727707, pitchY: 3 })
