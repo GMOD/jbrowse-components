@@ -18,7 +18,7 @@ jobs:
       skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           fetch-depth: 1
       - name: Check commit message
@@ -42,10 +42,10 @@ jobs:
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '22'
           cache: 'yarn'
@@ -60,7 +60,7 @@ jobs:
           mkdir testing
           mv build testing/jb2
       - name: Check website links
-        uses: untitaker/hyperlink@e66bb17cc9ae341677431edec3b893a0aa6ac747 # 0.1.44
+        uses: untitaker/hyperlink@fb5bb9c5011a3d143a54b4b30aedc30ec5bc0f89 # 0.2.0
         with:
           args: website/testing/ --check-anchors
 
@@ -71,10 +71,10 @@ jobs:
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '22'
           cache: 'yarn'
@@ -92,7 +92,7 @@ jobs:
           fi
           echo "Ref name validated: $REF_NAME"
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -139,19 +139,19 @@ jobs:
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${{ github.ref_name }}/*"
         working-directory: products/jbrowse-react-circular-genome-view
 
-  # Conditionally run the formatchecks job
-  formatchecks:
-    name: Lint, typecheck, and test
+  # Conditionally run the main job
+  main:
+    name: Lint, typecheck, test, and build
     needs: check_commit_message
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Install tabix
         run: sudo apt-get -y install tabix
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '22'
           cache: 'yarn'
@@ -160,7 +160,7 @@ jobs:
       - name: Check code formatting
         run: yarn prettier --check .
       - name: Spellcheck
-        uses: crate-ci/typos@80c8a4945eec0f6d464eaf9e65ed98ef085283d1
+        uses: crate-ci/typos@2d0ce569feab1f8752f1dde43cc2f2aa53236e06 # v1.40.0
       - name: Lint code
         run: yarn lint
       - name: Typecheck code
@@ -171,18 +171,74 @@ jobs:
         run: yarn build
       - name: Test build
         run: BUILT_TESTS=1 yarn built-test-ci
-      - name: Test embedded LGV component
+      - name: Run browser tests with Puppeteer
+        id: browser-tests
+        run: yarn install --frozen-lockfile && yarn test
+        working-directory: products/jbrowse-web/browser-tests
+        continue-on-error: true
+      - name: Upload snapshot diffs to S3
+        if: steps.browser-tests.outcome == 'failure'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
         run: |
-          yarn install --frozen-lockfile
-          yarn e2e
-        working-directory: component_tests/lgv-vite
-      - name: Test embedded CGV component
+          SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
+          S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
+
+          if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
+            echo "Uploading snapshot diffs to S3..."
+            aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
+
+            echo ""
+            echo "============================================"
+            echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
+            echo "============================================"
+            for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
+              filename=$(basename "$file")
+              echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
+            done
+            echo "============================================"
+          else
+            echo "No snapshot diff files found"
+          fi
+      - name: Fail if browser tests failed
+        if: steps.browser-tests.outcome == 'failure'
+        run: exit 1
+      - name: Upload packed artifacts for component tests
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: packed-artifacts
+          path: component_tests/*/packed/
+          retention-days: 1
+
+  # Separate job for component_tests with no permissions.
+  # These tests install npm packages without a yarn.lock, so untrusted
+  # dependencies could potentially run malicious code. By isolating this
+  # in a job with `permissions: {}`, we ensure that even if a rogue
+  # dependency executes, it has no GitHub token access and cannot push
+  # code, create issues/PRs, access secrets, or call GitHub APIs.
+  component_tests:
+    name: Test embedded components
+    needs: [check_commit_message, main]
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '22'
+      - name: Download packed artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: packed-artifacts
+          path: component_tests/
+      - name: Test embedded components
         run: |
-          yarn install --frozen-lockfile
-          yarn e2e
-        working-directory: component_tests/cgv-vite
-      - name: Test embedded React app component
-        run: |
-          yarn install --frozen-lockfile
-          yarn e2e
-        working-directory: component_tests/app-vite
+          for dir in component_tests/lgv-vite component_tests/cgv-vite component_tests/app-vite; do
+            echo "Testing $dir"
+            cd $dir && yarn install && yarn e2e && cd -
+          done
