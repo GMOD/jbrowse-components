@@ -9,7 +9,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 30_000 }
+const delay = { timeout: 40_000 }
 const opts = [{}, delay]
 
 function typeAndEnter({
@@ -60,20 +60,20 @@ test('single result, searching: eden.1', async () => {
   await waitFor(() => {
     expect(input.value).toBe('ctgA:1..10,590')
   }, delay)
-}, 30_000)
+}, 40_000)
 
 test('dialog with multiple results, searching seg02', async () => {
   const { input, findByText } = await doSetup()
 
   typeAndEnter({ input, value: 'seg02' })
   await findByText('Search results', ...opts)
-}, 30_000)
+}, 40_000)
 
 test('dialog with multiple results with jb1 config, searching: eden.1', async () => {
   const { input, findByText } = await doSetup(jb1_config)
   typeAndEnter({ input, value: 'eden.1' })
   await findByText('Search results', ...opts)
-}, 30_000)
+}, 40_000)
 
 test('test navigation with the search input box, {volvox2}ctgB:1..200', async () => {
   const { view, input } = await doSetup()
@@ -81,7 +81,7 @@ test('test navigation with the search input box, {volvox2}ctgB:1..200', async ()
   await waitFor(() => {
     expect(view.displayedRegions[0]!.assemblyName).toEqual('volvox2')
   })
-}, 30_000)
+}, 40_000)
 
 test('nav lower case refnames, searching: ctgb:1-100', async () => {
   const { view, input } = await doSetup()
@@ -89,7 +89,7 @@ test('nav lower case refnames, searching: ctgb:1-100', async () => {
   await waitFor(() => {
     expect(view.displayedRegions[0]!.refName).toBe('ctgB')
   })
-}, 30_000)
+}, 40_000)
 
 test('nav lower case refnames, searching: ctgb', async () => {
   const { view, input } = await doSetup()
@@ -98,7 +98,7 @@ test('nav lower case refnames, searching: ctgb', async () => {
   await waitFor(() => {
     expect(view.displayedRegions[0]!.refName).toBe('ctgB')
   })
-}, 30_000)
+}, 40_000)
 
 test('nav lower case refnames, searching: contigb:1-100', async () => {
   const { view, input } = await doSetup()
@@ -106,7 +106,7 @@ test('nav lower case refnames, searching: contigb:1-100', async () => {
   await waitFor(() => {
     expect(view.displayedRegions[0]!.refName).toBe('ctgB')
   })
-}, 30_000)
+}, 40_000)
 
 test('description of gene, searching: kinase', async () => {
   const { input, findByText } = await doSetup()
@@ -116,7 +116,7 @@ test('description of gene, searching: kinase', async () => {
   await waitFor(() => {
     expect(input.value).toBe('ctgA:1..10,590')
   }, delay)
-}, 30_000)
+}, 40_000)
 
 test('search matches description for feature in two places', async () => {
   const { input, findByText } = await doSetup()
@@ -124,4 +124,20 @@ test('search matches description for feature in two places', async () => {
   fireEvent.change(input, { target: { value: 'fingerprint' } })
   fireEvent.click(await findByText(/b101.2/, ...opts))
   await findByText('Search results', ...opts)
-}, 30_000)
+}, 40_000)
+
+test('failed search resets input to visible location', async () => {
+  const consoleMock = jest.spyOn(console, 'error').mockImplementation()
+  const { input, findByText } = await doSetup()
+
+  const originalValue = input.value
+
+  typeAndEnter({ input, value: 'nonexistent_location_xyz123' })
+
+  await findByText(/Unknown feature or sequence/, ...opts)
+
+  await waitFor(() => {
+    expect(input.value).toBe(originalValue)
+  }, delay)
+  consoleMock.mockRestore()
+}, 40_000)

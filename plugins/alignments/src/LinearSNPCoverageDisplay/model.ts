@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -17,10 +17,15 @@ import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
+const InterbaseInfoDialog = lazy(
+  () => import('./components/InterbaseInfoDialog'),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -85,6 +90,25 @@ function stateModelFactory(
        */
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+
+      /**
+       * #getter
+       * Collect all skip features from rendered blocks for cross-region arc drawing
+       * Uses a Map to deduplicate features that appear in multiple blocks
+       */
+      get skipFeatures(): Feature[] {
+        const skipFeaturesMap = new Map<string, Feature>()
+        for (const block of self.blockState.values()) {
+          if (block.features) {
+            for (const feature of block.features.values()) {
+              if (feature.get('type') === 'skip') {
+                skipFeaturesMap.set(feature.id(), feature)
+              }
+            }
+          }
+        }
+        return [...skipFeaturesMap.values()]
       },
     }))
     .actions(self => ({
@@ -259,6 +283,7 @@ function stateModelFactory(
     .views(self => {
       const {
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
         trackMenuItems: superTrackMenuItems,
       } = self
       return {
@@ -283,6 +308,29 @@ function stateModelFactory(
               visibleModifications.toJSON(),
             ),
             simplexModifications: [...simplexModifications],
+          }
+        },
+
+        /**
+         * #method
+         */
+        renderingProps() {
+          return {
+            ...superRenderingProps(),
+            onIndicatorClick(
+              _: unknown,
+              item: {
+                type: string
+                base: string
+                count: number
+                total: number
+              },
+            ) {
+              getSession(self).queueDialog(handleClose => [
+                InterbaseInfoDialog,
+                { item, handleClose },
+              ])
+            },
           }
         },
         /**
@@ -386,6 +434,7 @@ function stateModelFactory(
     })
 }
 
-export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageDisplayModel = Instance<SNPCoverageDisplayStateModel>
 
 export default stateModelFactory

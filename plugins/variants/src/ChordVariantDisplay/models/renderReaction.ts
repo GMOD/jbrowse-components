@@ -1,7 +1,7 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import type { CircularViewModel } from '../CircularView/model'
+import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 
 export function renderReactionData(self: any) {
   const view = getContainingView(self) as CircularViewModel

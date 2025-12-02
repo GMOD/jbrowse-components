@@ -2009,11 +2009,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     >
                       ctgA
                     </span>
-                    <span
-                      data-label-key="pinned-label"
-                      style="font-size: 11px; position: absolute; left: 0px; top: -1px; font-weight: bold; line-height: normal; z-index: 2; background: rgb(255, 255, 255); padding-left: 0px;"
-                    />
                   </div>
+                  <span
+                    style="font-size: 11px; position: absolute; left: 0px; top: -1px; font-weight: bold; line-height: normal; z-index: 2; background: rgb(255, 255, 255); display: none;"
+                  />
                 </div>
               </div>
               <div

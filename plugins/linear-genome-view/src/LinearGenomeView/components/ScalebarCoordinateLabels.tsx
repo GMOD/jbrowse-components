@@ -4,7 +4,7 @@ import { getTickDisplayStr } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
-import { makeTicks } from '../util'
+import { getCachedElements, makeTicks } from '../util'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -65,6 +65,7 @@ function createBlockElement(
 function ScalebarCoordinateLabels({ model }: { model: LGV }) {
   const theme = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
+  const lastBpPerPxRef = useRef<number | null>(null)
 
   useEffect(() => {
     const bgColor = theme.palette.background.paper
@@ -77,13 +78,12 @@ function ScalebarCoordinateLabels({ model }: { model: LGV }) {
           return
         }
 
-        const existingKeys = new Map<string, HTMLDivElement>()
-        for (const child of container.children) {
-          const key = (child as HTMLElement).dataset.blockKey
-          if (key) {
-            existingKeys.set(key, child as HTMLDivElement)
-          }
-        }
+        const existingKeys = getCachedElements<HTMLDivElement>(
+          container,
+          bpPerPx,
+          lastBpPerPxRef,
+          'blockKey',
+        )
 
         const fragment = document.createDocumentFragment()
 
