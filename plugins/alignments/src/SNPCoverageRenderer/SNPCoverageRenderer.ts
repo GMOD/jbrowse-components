@@ -3,11 +3,8 @@ import FeatureRendererType, {
   type ResultsDeserialized,
   type ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
-import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { updateStatus } from '@jbrowse/core/util'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { rpcResult } from 'librpc-web-mod'
 
 import type { RenderArgsDeserialized } from './types'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -44,41 +41,10 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { height, regions, bpPerPx, statusCallback = () => {} } = renderProps
-
-    const region = regions[0]!
-    const width = (region.end - region.start) / bpPerPx
-
-    const { makeImage } = await import('./makeImage')
-    const { reducedFeatures, coords, items, skipFeatures, ...rest } =
-      await updateStatus('Rendering coverage', statusCallback, () =>
-        renderToAbstractCanvas(width, height, renderProps, ctx =>
-          makeImage(ctx, { ...renderProps, features }),
-        ),
-      )
-
-    const flatbush = new Flatbush(Math.max(items.length, 1))
-    if (coords.length) {
-      for (let i = 0; i < coords.length; i += 4) {
-        flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
-      }
-    } else {
-      flatbush.add(0, 0)
-    }
-    flatbush.finish()
-
-    const serialized = {
-      ...rest,
-      features: reducedFeatures.map(f => f.toJSON()),
-      skipFeatures: skipFeatures.map(f => f.toJSON()),
-      clickMap: {
-        flatbush: flatbush.data,
-        items: items,
-      },
-      height,
-      width,
-    }
-
-    return rpcResult(serialized, collectTransferables(rest))
+    const { statusCallback = () => {} } = renderProps
+    const { renderSNPCoverageToCanvas } = await import('./makeImage')
+    return updateStatus('Rendering coverage', statusCallback, () =>
+      renderSNPCoverageToCanvas({ ...renderProps, features }),
+    )
   }
 }

@@ -1,8 +1,16 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import {
+  featureSpanPx,
+  forEachWithStopTokenCheck,
+  renderToAbstractCanvas,
+} from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { getOrigin, getScale } from '@jbrowse/plugin-wiggle'
+import { rpcResult } from 'librpc-web-mod'
 
+import { calculateModificationCounts } from './calculateModificationCounts'
 import { alphaColor } from '../shared/util'
 
 import type {
@@ -20,86 +28,7 @@ const INTERBASE_INDICATOR_HEIGHT = 4.5
 // 'statistical significance' is low
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
-const complementBase = {
-  C: 'G',
-  G: 'C',
-  A: 'T',
-  T: 'A',
-} as const
-
 const fudgeFactor = 0.6
-
-interface StrandCounts {
-  readonly entryDepth: number
-  readonly '1': number
-  readonly '-1': number
-  readonly '0': number
-}
-
-interface ModificationCountsParams {
-  readonly base: string
-  readonly isSimplex: boolean
-  readonly refbase: string | undefined
-  readonly snps: Readonly<Record<string, Partial<StrandCounts>>>
-  readonly ref: StrandCounts
-  readonly score0: number
-}
-
-interface ModificationCountsResult {
-  readonly modifiable: number
-  readonly detectable: number
-}
-
-/**
- * Calculate modifiable and detectable counts for a modification following IGV's algorithm.
- *
- * @param params.base - The canonical base (e.g., 'A' for A+a modification)
- * @param params.isSimplex - Whether this modification is simplex (only on one strand)
- * @param params.refbase - The reference base at this position
- * @param params.snps - SNP counts at this position
- * @param params.ref - Reference match counts at this position
- * @param params.score0 - Total coverage at this position
- * @returns Object with modifiable and detectable counts
- */
-function calculateModificationCounts({
-  base,
-  isSimplex,
-  refbase,
-  snps,
-  ref,
-  score0,
-}: ModificationCountsParams): ModificationCountsResult {
-  // Handle N base (all bases are modifiable/detectable)
-  if (base === 'N') {
-    return { modifiable: score0, detectable: score0 }
-  }
-
-  const cmp = complementBase[base as keyof typeof complementBase]
-
-  // Calculate total reads for base and complement
-  // IGV: getCount(pos, base) = reads matching that base (from SNPs or ref)
-  const baseCount =
-    (snps[base]?.entryDepth || 0) + (refbase === base ? ref.entryDepth : 0)
-  const complCount =
-    (snps[cmp]?.entryDepth || 0) + (refbase === cmp ? ref.entryDepth : 0)
-
-  // Modifiable: reads that COULD have this modification (base or complement)
-  // IGV: modifiable = getCount(pos, base) + getCount(pos, compl)
-  const modifiable = baseCount + complCount
-
-  // Detectable: reads where we can DETECT this modification
-  // For simplex: only specific strands (+ for base, - for complement)
-  // For duplex: all reads (same as modifiable)
-  // IGV: detectable = simplex ? getPosCount(base) + getNegCount(compl) : modifiable
-  const detectable = isSimplex
-    ? (snps[base]?.['1'] || 0) +
-      (snps[cmp]?.['-1'] || 0) +
-      (refbase === base ? ref['1'] : 0) +
-      (refbase === cmp ? ref['-1'] : 0)
-    : modifiable
-
-  return { modifiable, detectable }
-}
 
 export function makeImage(
   ctx: CanvasRenderingContext2D,
@@ -455,5 +384,50 @@ export function makeImage(
       prevLeftPx = leftPx
     }
   }
-  return { reducedFeatures, skipFeatures, coords, items }
+  return {
+    reducedFeatures,
+    skipFeatures,
+    coords,
+    items,
+  }
+}
+
+function buildClickMap(coords: number[], items: InterbaseIndicatorItem[]) {
+  const flatbush = new Flatbush(Math.max(items.length, 1))
+  if (coords.length) {
+    for (let i = 0; i < coords.length; i += 4) {
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+    }
+  } else {
+    flatbush.add(0, 0)
+  }
+  flatbush.finish()
+  return {
+    flatbush: flatbush.data,
+    items,
+  }
+}
+
+export async function renderSNPCoverageToCanvas(
+  props: RenderArgsDeserializedWithFeatures,
+) {
+  const { height, regions, bpPerPx } = props
+  const region = regions[0]!
+  const width = (region.end - region.start) / bpPerPx
+
+  const { reducedFeatures, skipFeatures, coords, items, ...rest } =
+    await renderToAbstractCanvas(width, height, props, ctx =>
+      makeImage(ctx, props),
+    )
+
+  const serialized = {
+    ...rest,
+    features: reducedFeatures.map(f => f.toJSON()),
+    skipFeatures: skipFeatures.map(f => f.toJSON()),
+    clickMap: buildClickMap(coords, items),
+    height,
+    width,
+  }
+
+  return rpcResult(serialized, collectTransferables(rest))
 }
