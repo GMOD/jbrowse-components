@@ -1,8 +1,9 @@
-import configSchema from './configSchema'
+import { lazy } from 'react'
+
 import MultiDensityRenderer from './MultiDensityRenderer'
+import configSchema from './configSchema'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import { lazy } from 'react'
 
 export default function MultiDensityRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(

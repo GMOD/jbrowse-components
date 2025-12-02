@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import LollipopRenderer from './LollipopRenderer'
 import configSchema from './configSchema'
 

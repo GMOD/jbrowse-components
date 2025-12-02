@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import PileupRenderer from './PileupRenderer'
 import configSchema from './configSchema'
 

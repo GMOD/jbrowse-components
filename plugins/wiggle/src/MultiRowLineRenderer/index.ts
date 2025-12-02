@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import MultiRowLineRenderer from './MultiRowLineRenderer'
 import configSchema from './configSchema'
 

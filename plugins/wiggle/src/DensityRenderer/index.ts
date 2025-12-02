@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import DensityRenderer from './DensityRenderer'
 import configSchema from './configSchema'
 

@@ -10,9 +10,8 @@ export class MultiWiggleClusterScoreMatrix extends RpcMethodTypeWithFiltersAndRe
       args,
       rpcDriverClassName,
     )
-    const { executeClusterScoreMatrix } = await import(
-      './executeClusterScoreMatrix'
-    )
+    const { executeClusterScoreMatrix } =
+      await import('./executeClusterScoreMatrix')
     return executeClusterScoreMatrix({
       pluginManager: this.pluginManager,
       args: deserializedArgs,

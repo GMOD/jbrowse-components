@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import MultiRowXYPlotRenderer from './MultiRowXYPlotRenderer'
 import configSchema from './configSchema'
 

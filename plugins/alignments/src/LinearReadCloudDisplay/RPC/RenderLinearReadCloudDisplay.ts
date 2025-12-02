@@ -91,9 +91,8 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
 
   async execute(args: Record<string, unknown>, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { executeRenderLinearReadCloudDisplay } = await import(
-      './executeRenderLinearReadCloudDisplay'
-    )
+    const { executeRenderLinearReadCloudDisplay } =
+      await import('./executeRenderLinearReadCloudDisplay')
     return executeRenderLinearReadCloudDisplay({
       pluginManager: this.pluginManager,
       args: deserializedArgs,

@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { expandRegion } from '@jbrowse/core/pluggableElementTypes/renderers/util'
 
@@ -5,7 +7,6 @@ import configSchema from './configSchema'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
-import { lazy } from 'react'
 
 class DivSequenceRenderer extends FeatureRendererType {
   supportsSVG = true

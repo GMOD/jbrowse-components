@@ -1,10 +1,10 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import MultiLinearVariantMatrixDisplayComponent from './components/VariantDisplayComponent'
 import configSchemaF from './configSchema'
 import stateModelFactory from './model'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import { lazy } from 'react'
 
 export default function LinearVariantMatrixDisplayF(
   pluginManager: PluginManager,
@@ -21,7 +21,9 @@ export default function LinearVariantMatrixDisplayF(
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: MultiLinearVariantMatrixDisplayComponent,
+      ReactComponent: lazy(
+        () => import('./components/VariantDisplayComponent'),
+      ),
     })
   })
 }

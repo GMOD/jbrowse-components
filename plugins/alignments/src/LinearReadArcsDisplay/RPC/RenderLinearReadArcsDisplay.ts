@@ -88,9 +88,8 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
 
   async execute(args: Record<string, unknown>, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { executeRenderLinearReadArcsDisplay } = await import(
-      './executeRenderLinearReadArcsDisplay'
-    )
+    const { executeRenderLinearReadArcsDisplay } =
+      await import('./executeRenderLinearReadArcsDisplay')
     return executeRenderLinearReadArcsDisplay({
       pluginManager: this.pluginManager,
       args: deserializedArgs,

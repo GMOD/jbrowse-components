@@ -16,6 +16,7 @@ import { rpcResult } from 'librpc-web-mod'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { getInsertSizeStats } from '../../shared/insertSizeStats'
 import { calculateCloudYOffsetsUtil } from '../drawFeatsCloud'
 import {
   computeChainBounds,
@@ -24,7 +25,6 @@ import {
   sortComputedChains,
 } from '../drawFeatsCommon'
 import { calculateStackYOffsetsCore } from '../drawFeatsStack'
-import { getInsertSizeStats } from '../../shared/insertSizeStats'
 
 import type { RenderLinearReadCloudDisplayArgs } from './RenderLinearReadCloudDisplay'
 import type { ComputedChain, DrawFeatsParams } from '../drawFeatsCommon'
@@ -112,9 +112,7 @@ export async function executeRenderLinearReadCloudDisplay({
     statusCallback,
     () =>
       firstValueFrom(
-        dataAdapter
-          .getFeaturesInMultipleRegions(regions, args)
-          .pipe(toArray()),
+        dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
       ),
   )
 

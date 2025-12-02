@@ -21,9 +21,8 @@ const paths = require('./paths')
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 
 const reactRefreshRuntimeEntry = require.resolve('react-refresh/runtime')
-const reactRefreshWebpackPluginRuntimeEntry = require.resolve(
-  '@pmmmwh/react-refresh-webpack-plugin',
-)
+const reactRefreshWebpackPluginRuntimeEntry =
+  require.resolve('@pmmmwh/react-refresh-webpack-plugin')
 
 function getWorkspaces(fromDir) {
   const cwd = fromDir || process.cwd()

@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import XYPlotRenderer from './XYPlotRenderer'
 import configSchema from './configSchema'
 

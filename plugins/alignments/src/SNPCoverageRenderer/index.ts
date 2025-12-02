@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import SNPCoverageRenderer from './SNPCoverageRenderer'
 import configSchema from './configSchema'
 

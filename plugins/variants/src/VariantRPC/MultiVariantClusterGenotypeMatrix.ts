@@ -10,9 +10,8 @@ export class MultiVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersA
       args,
       rpcDriverClassName,
     )
-    const { executeClusterGenotypeMatrix } = await import(
-      './executeClusterGenotypeMatrix'
-    )
+    const { executeClusterGenotypeMatrix } =
+      await import('./executeClusterGenotypeMatrix')
     return executeClusterGenotypeMatrix({
       pluginManager: this.pluginManager,
       args: deserializedArgs,
