@@ -1,5 +1,7 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import {
@@ -35,6 +37,7 @@ export async function makeImageData(
 ) {
   const {
     features,
+    config,
     bpPerPx,
     stopToken,
     resolution,
@@ -49,43 +52,31 @@ export async function makeImageData(
 
   const { statusCallback = () => {} } = props
   statusCallback('Drawing Hi-C matrix')
-
+  const region = regions[0]!
   const { dataAdapter } = await getAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
   )
-  // If resolution > 0, use explicit value; otherwise auto-calculate
-  const res =
-    resolution > 0
-      ? resolution
-      : await (dataAdapter as HicDataAdapter).getResolution(bpPerPx)
+  const res = await (dataAdapter as HicDataAdapter).getResolution(
+    bpPerPx / resolution,
+  )
 
-  console.log('HicRenderer resolution:', {
-    requestedResolution: resolution,
-    calculatedRes: res,
-    bpPerPx,
-  })
-
-  // Get pixel offsets from regions (they come with offsetPx from the view)
-  // We need to calculate relative offsets from the first region
-  const firstRegionOffsetPx = (regions[0] as any)?.offsetPx ?? 0
-  const regionOffsets: number[] = []
-  for (const region of regions) {
-    const regionOffsetPx = (region as any).offsetPx ?? 0
-    regionOffsets.push(regionOffsetPx - firstRegionOffsetPx)
-  }
-
+  const width = (region.end - region.start) / bpPerPx
   const w = res / (bpPerPx * Math.sqrt(2))
-
+  const baseColor = colord(readConfObject(config, 'baseColor'))
+  const offset = Math.floor(region.start / res)
   if (features.length) {
     let maxScore = 0
+    let minBin = 0
+    let maxBin = 0
     checkStopToken(stopToken)
-    for (const { counts } of features) {
+    for (const { bin1, bin2, counts } of features) {
       maxScore = Math.max(counts, maxScore)
+      minBin = Math.min(Math.min(bin1, bin2), minBin)
+      maxBin = Math.max(Math.max(bin1, bin2), maxBin)
     }
     checkStopToken(stopToken)
-
     const colorSchemes = {
       juicebox: ['rgba(0,0,0,0)', 'red'],
       fall: interpolateRgbBasis([
@@ -110,111 +101,27 @@ export async function makeImageData(
     const scale = useLogScale
       ? scaleSequentialLog(x1).domain([1, m])
       : scaleSequential(x1).domain([0, m])
-
-    // Pre-compute color function to avoid calling readConfObject in tight loop
-    const getColor = (counts: number) => scale(counts)
-
     if (yScalar) {
       ctx.scale(1, yScalar)
     }
     ctx.save()
 
-    // Handle single region case with rotation (original behavior)
-    if (regions.length === 1) {
-      const region = regions[0]!
-      const width = (region.end - region.start) / bpPerPx
-      const offset = Math.floor(region.start / res)
-
-      if (region.reversed === true) {
-        ctx.scale(-1, 1)
-        ctx.translate(-width, 0)
-      }
-      ctx.rotate(-Math.PI / 4)
-
-      forEachWithStopTokenCheck(features, stopToken, (f: HicFeature) => {
-        const { bin1, bin2, counts } = f
-        ctx.fillStyle = getColor(counts)
-        ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
-      })
-    } else {
-      // Multi-region case: draw each region's contacts with separate transformations
-
-      // Group features by region pair
-      const featuresByPair = new Map<string, HicFeature[]>()
-      for (const f of features) {
-        const key = `${f.region1Idx}-${f.region2Idx}`
-        if (!featuresByPair.has(key)) {
-          featuresByPair.set(key, [])
-        }
-        featuresByPair.get(key)!.push(f)
-      }
-
-      // Draw intra-region contacts (diagonal blocks) as triangles
-      for (const [i, region_] of regions.entries()) {
-        const region = region_
-        const offset = Math.floor(region.start / res)
-        const regionFeatures = featuresByPair.get(`${i}-${i}`) || []
-
-        ctx.save()
-        // Move to the region's starting position
-        ctx.translate(regionOffsets[i]!, 0)
-        // Rotate around the origin (top-left of this region)
-        ctx.rotate(-Math.PI / 4)
-
-        for (const f of regionFeatures) {
-          const { bin1, bin2, counts } = f
-          ctx.fillStyle = getColor(counts)
-          ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
-        }
-        ctx.restore()
-      }
-
-      // Draw inter-region contacts (off-diagonal blocks)
-      // These appear as parallelograms connecting the triangles
-      for (let i = 0; i < regions.length; i++) {
-        for (let j = i + 1; j < regions.length; j++) {
-          const region1 = regions[i]!
-          const region2 = regions[j]!
-          const interFeatures = featuresByPair.get(`${i}-${j}`) || []
-
-          if (interFeatures.length === 0) {
-            continue
-          }
-
-          const offset1 = Math.floor(region1.start / res)
-          const offset2 = Math.floor(region2.start / res)
-
-          // For inter-region contacts, we need to draw in a transformed space
-          // The contact at (bin1 in region1, bin2 in region2) should appear
-          // at the intersection of the two triangles' coordinate systems
-          ctx.save()
-
-          // Position at the midpoint between the two regions on the x-axis
-          // and draw the parallelogram that connects them
-          const region1EndPx =
-            regionOffsets[i]! + (region1.end - region1.start) / bpPerPx
-          const region2StartPx = regionOffsets[j]!
-
-          ctx.translate((region1EndPx + region2StartPx) / 2, 0)
-          ctx.rotate(-Math.PI / 4)
-
-          for (const f of interFeatures) {
-            const { bin1, bin2, counts } = f
-
-            // Calculate positions relative to the inter-region space
-            const x1 =
-              (bin1 - offset1) * w -
-              (((region1.end - region1.start) / bpPerPx) * Math.sqrt(2)) / 2
-            const y1 = (bin2 - offset2) * w
-
-            ctx.fillStyle = getColor(counts)
-            ctx.fillRect(x1, y1, w, w)
-          }
-          ctx.restore()
-        }
-      }
+    if (region.reversed === true) {
+      ctx.scale(-1, 1)
+      ctx.translate(-width, 0)
     }
-
+    ctx.rotate(-Math.PI / 4)
+    forEachWithStopTokenCheck(features, stopToken, (f: HicFeature) => {
+      const { bin1, bin2, counts } = f
+      ctx.fillStyle = readConfObject(config, 'color', {
+        count: counts,
+        maxScore,
+        baseColor,
+        scale,
+        useLogScale,
+      })
+      ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
+    })
     ctx.restore()
   }
   return undefined

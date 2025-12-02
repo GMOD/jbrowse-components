@@ -10,16 +10,6 @@ import {
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-function formatResolution(res: number) {
-  if (res >= 1_000_000) {
-    return `${res / 1_000_000}M`
-  }
-  if (res >= 1_000) {
-    return `${res / 1_000}K`
-  }
-  return `${res}`
-}
-
 /**
  * #stateModel LinearHicDisplay
  * #category display
@@ -51,9 +41,8 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * explicit resolution value from availableResolutions, or 0 for auto
          */
-        resolution: types.optional(types.number, 0),
+        resolution: types.optional(types.number, 1),
         /**
          * #property
          */
@@ -77,10 +66,6 @@ export default function stateModelFactory(
        * #volatile
        */
       availableNormalizations: undefined as string[] | undefined,
-      /**
-       * #volatile
-       */
-      availableResolutions: undefined as number[] | undefined,
       /**
        * #volatile
        */
@@ -217,12 +202,6 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setAvailableResolutions(f: number[]) {
-        self.availableResolutions = f
-      },
-      /**
-       * #action
-       */
       setMode(arg: string) {
         self.mode = arg
       },
@@ -305,31 +284,23 @@ export default function stateModelFactory(
               ],
             },
 
-            ...(self.availableResolutions
-              ? [
-                  {
-                    label: 'Resolution',
-                    subMenu: [
-                      {
-                        label: 'Auto',
-                        type: 'radio',
-                        checked: self.resolution === 0,
-                        onClick: () => {
-                          self.setResolution(0)
-                        },
-                      },
-                      ...self.availableResolutions.map(res => ({
-                        label: formatResolution(res),
-                        type: 'radio',
-                        checked: self.resolution === res,
-                        onClick: () => {
-                          self.setResolution(res)
-                        },
-                      })),
-                    ],
+            {
+              label: 'Resolution',
+              subMenu: [
+                {
+                  label: 'Finer resolution',
+                  onClick: () => {
+                    self.setResolution(self.resolution * 2)
                   },
-                ]
-              : []),
+                },
+                {
+                  label: 'Coarser resolution',
+                  onClick: () => {
+                    self.setResolution(self.resolution / 2)
+                  },
+                },
+              ],
+            },
             ...(self.availableNormalizations
               ? [
                   {

@@ -21,27 +21,22 @@ interface RenderResult {
 }
 
 export function doAfterAttach(self: LinearHicDisplayModel) {
-  // Fetch available normalizations and resolutions
+  // Fetch available normalizations
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   ;(async () => {
     try {
       const { rpcManager } = getSession(self)
       const track = getContainingTrack(self)
       const adapterConfig = getConf(track, 'adapter')
-      const { norms, resolutions } = (await rpcManager.call(
+      const { norms } = (await rpcManager.call(
         getConf(track, 'trackId'),
         'CoreGetInfo',
         {
           adapterConfig,
         },
-      )) as { norms?: string[]; resolutions?: number[] }
-      if (isAlive(self)) {
-        if (norms) {
-          self.setAvailableNormalizations(norms)
-        }
-        if (resolutions) {
-          self.setAvailableResolutions(resolutions)
-        }
+      )) as { norms?: string[] }
+      if (isAlive(self) && norms) {
+        self.setAvailableNormalizations(norms)
       }
     } catch (e) {
       console.error(e)
