@@ -18,14 +18,6 @@ const HicTrackConfigFactory = (pluginManager: PluginManager) => {
        * #slot
        */
       renderer: pluginManager.getRendererType('HicRenderer')!.configSchema,
-      /**
-       * #slot
-       */
-      height: {
-        type: 'number',
-        defaultValue: 400,
-        description: 'default height for the Hi-C track',
-      },
     },
     {
       /**
