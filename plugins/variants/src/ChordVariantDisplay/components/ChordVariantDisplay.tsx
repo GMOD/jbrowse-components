@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import DisplayError from './DisplayError'
 import Loading from './Loading'
 
-const BaseChordDisplay = observer(function ({
+const ChordVariantDisplay = observer(function ({
   display,
 }: {
   display: {
@@ -22,4 +22,4 @@ const BaseChordDisplay = observer(function ({
   }
 })
 
-export default BaseChordDisplay
+export default ChordVariantDisplay
