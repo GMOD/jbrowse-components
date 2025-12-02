@@ -127,7 +127,6 @@
     "terser-webpack-plugin": "^5.2.5",
     "ts-node": "^10.4.0",
     "tslib": "^2.0.1",
-    "tss-react": "^4.0.0",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.48.0",
     "webpack": "^5.64.4",

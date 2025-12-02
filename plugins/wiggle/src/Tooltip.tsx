@@ -1,8 +1,8 @@
 import { Suspense } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import { YSCALEBAR_LABEL_OFFSET } from './util'
 

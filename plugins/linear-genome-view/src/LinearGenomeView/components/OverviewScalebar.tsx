@@ -3,10 +3,10 @@ import { useEffect, useMemo, useRef } from 'react'
 // core
 import { getEnv, getSession } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import Cytobands from './Cytobands'
 import OverviewHighlight from './OverviewHighlight'
@@ -86,7 +86,7 @@ const OverviewBox = observer(function ({
   block: ContentBlock
   overview: Base1DViewModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const theme = useTheme()
   const { cytobandOffset, showCytobands } = model
   const { reversed, refName, assemblyName } = block

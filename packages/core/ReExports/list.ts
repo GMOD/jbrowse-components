@@ -20,6 +20,7 @@ export default [
   '@mui/x-data-grid',
   '@mui/material/utils',
   '@material-ui/core/utils',
+  'tss-react',
   'tss-react/mui',
   '@material-ui/core',
   '@mui/material',

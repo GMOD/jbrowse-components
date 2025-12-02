@@ -4,10 +4,10 @@ import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import TrackLabelDragHandle from './TrackLabelDragHandle'
 import TrackLabelMenu from './TrackLabelMenu'
@@ -47,7 +47,7 @@ const TrackLabel = observer(
     { track, className },
     ref,
   ) {
-    const { classes, cx } = useStyles()
+    const { classes } = useStyles()
     const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
