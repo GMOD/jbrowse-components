@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getEnv, isAlive } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import type { LinearHicDisplayModel } from './model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -20,12 +20,19 @@ interface RenderResult {
 }
 
 export function doAfterAttach(self: LinearHicDisplayModel) {
-  const performRender = async () => {
+  const performRender = async (
+    resolution: number,
+    useLogScale: boolean,
+    colorScheme: string | undefined,
+    activeNormalization: string,
+    mode: string,
+    height: number,
+  ) => {
     const view = getContainingView(self) as LGV
 
     if (
       !view.initialized ||
-      self.error ||
+      untracked(() => self.error) ||
       !self.statsReadyAndRegionNotTooLarge
     ) {
       return
@@ -38,16 +45,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
     }
 
     const region = regions[0]!
-    const {
-      resolution,
-      useLogScale,
-      colorScheme,
-      activeNormalization,
-      mode,
-      height,
-      adapterConfig,
-      rendererType,
-    } = self
+    const { adapterConfig, rendererType } = self
 
     const config = rendererType.configSchema.create(
       {
@@ -61,7 +59,8 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
       const session = getSession(self)
       const { rpcManager } = session
 
-      const previousToken = self.renderingStopToken
+      // Use untracked to avoid triggering reactions
+      const previousToken = untracked(() => self.renderingStopToken)
       if (previousToken) {
         stopStopToken(previousToken)
       }
@@ -120,9 +119,8 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
   addDisposer(
     self,
     autorun(
-      async () => {
+      () => {
         const view = getContainingView(self) as LGV
-        // Access reactive properties to ensure autorun triggers on changes
         const {
           resolution,
           useLogScale,
@@ -130,24 +128,25 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
           activeNormalization,
           mode,
           height,
+          statsReadyAndRegionNotTooLarge,
         } = self
-        const { bpPerPx, dynamicBlocks } = view
-        void resolution
-        void useLogScale
-        void colorScheme
-        void activeNormalization
-        void mode
-        void height
-        void bpPerPx
-        void dynamicBlocks.contentBlocks
+        const { bpPerPx, dynamicBlocks, initialized } = view
+        const regions = dynamicBlocks.contentBlocks
 
-        try {
-          await performRender()
-        } catch (e) {
-          if (isAlive(self)) {
-            self.setError(e)
-          }
+        if (!initialized || !statsReadyAndRegionNotTooLarge || !regions.length) {
+          return
         }
+
+        // Fire off the async render but don't await it
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        performRender(
+          resolution,
+          useLogScale,
+          colorScheme,
+          activeNormalization,
+          mode,
+          height,
+        )
       },
       { delay: 1000, name: 'LinearHicDisplayRender' },
     ),
