@@ -38,61 +38,47 @@ async function myfetchjson(uri: string) {
 // produce a source-map resolved stack trace
 // reference code https://stackoverflow.com/a/77158517/2129219
 const sourceMaps: Record<string, SourceMapConsumer> = {}
+const sourceMappingUrlRe = /\/\/# sourceMappingURL=(.*)/
+const stackLineRe = /(.*)((?:https?|file):\/\/.*):(\d+):(\d+)/
+
 async function getSourceMapFromUri(uri: string) {
-  if (sourceMaps[uri] !== undefined) {
+  if (sourceMaps[uri]) {
     return sourceMaps[uri]
   }
   const uriQuery = new URL(uri).search
   const currentScriptContent = await myfetchtext(uri)
-
-  let mapUri =
-    new RegExp(/\/\/# sourceMappingURL=(.*)/).exec(currentScriptContent)?.[1] ||
-    ''
-  mapUri = new URL(mapUri, uri).href + uriQuery
-
-  const data = await myfetchjson(mapUri)
+  const mapUri = sourceMappingUrlRe.exec(currentScriptContent)?.[1] ?? ''
+  const data = await myfetchjson(new URL(mapUri, uri).href + uriQuery)
   const map = new SourceMapConsumer(data)
   sourceMaps[uri] = map
   return map
 }
 
 async function mapStackTrace(stack: string) {
-  const stackLines = stack.split('\n')
   const mappedStack = []
-
-  for (const line of stackLines) {
-    const match = new RegExp(/(.*)((?:https?|file):\/\/.*):(\d+):(\d+)/).exec(
-      line,
-    )
-    if (match === null) {
+  for (const line of stack.split('\n')) {
+    const match = stackLineRe.exec(line)
+    if (!match) {
       mappedStack.push(line)
       continue
     }
 
     const uri = match[2]!
     const consumer = await getSourceMapFromUri(uri)
-
-    const originalPosition = consumer.originalPositionFor({
-      line: Number.parseInt(match[3]!),
-      column: Number.parseInt(match[4]!),
+    const pos = consumer.originalPositionFor({
+      line: +match[3]!,
+      column: +match[4]!,
     })
 
-    if (
-      !originalPosition.source ||
-      !originalPosition.line ||
-      !originalPosition.column
-    ) {
+    if (!pos.source || !pos.line || !pos.column) {
       mappedStack.push(line)
       continue
     }
 
     mappedStack.push(
-      `${originalPosition.source}:${originalPosition.line}:${
-        originalPosition.column + 1
-      } (${match[1]!.trim()})`,
+      `${pos.source}:${pos.line}:${pos.column + 1} (${match[1]!.trim()})`,
     )
   }
-
   return mappedStack.join('\n')
 }
 
