@@ -93,8 +93,8 @@ function ResizeHandle({
     flexbox_horizontal: classes.flexbox_horizontalHandle,
     vertical: classes.verticalHandle,
     horizontal: classes.horizontalHandle,
-  }
-  const key = `${flexbox ? 'flexbox_' : ''}${vertical ? 'vertical' : 'horizontal'}`
+  } as const
+  const key = `${flexbox ? 'flexbox_' : ''}${vertical ? 'vertical' : 'horizontal'}` as keyof typeof handleClasses
   const className = handleClasses[key]
 
   return (

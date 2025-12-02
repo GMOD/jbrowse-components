@@ -297,7 +297,7 @@ export function getProgressDisplayStr(current: number, total: number) {
   } else if (Math.floor(total / 1_000) > 0) {
     return `${r(current / 1_000)}/${r(total / 1_000)}Kb`
   } else {
-    return `${r(current)}/${r(total)}}bytes`
+    return `${r(current)}/${r(total)}bytes`
   }
 }
 
@@ -314,7 +314,9 @@ export function bytesForRegions(
       ref: string,
       start: number,
       end: number,
-    ) => Promise<{ minv: { blockPosition: number }; maxv: { blockPosition: number } }[]>
+    ) => Promise<
+      { minv: { blockPosition: number }; maxv: { blockPosition: number } }[]
+    >
   },
 ) {
   return Promise.all(

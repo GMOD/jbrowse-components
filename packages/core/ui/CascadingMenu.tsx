@@ -203,13 +203,10 @@ function HelpButton({
   item: JBMenuItem
   hasCheckboxOrRadioWithHelp: boolean
 }) {
-  const hasHelpText = 'helpText' in item && item.helpText
-  if (hasHelpText) {
+  const helpText = 'helpText' in item ? item.helpText : undefined
+  if (helpText) {
     return (
-      <CascadingMenuHelpIconButton
-        helpText={item.helpText}
-        label={item.label}
-      />
+      <CascadingMenuHelpIconButton helpText={helpText} label={item.label} />
     )
   }
   const isCheckboxOrRadio = item.type === 'checkbox' || item.type === 'radio'

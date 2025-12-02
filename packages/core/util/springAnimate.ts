@@ -15,7 +15,6 @@ export function springAnimate(
   friction = 20,
   clamp = true,
 ) {
-  const mass = 1
   if (!precision) {
     precision = Math.abs(toValue - fromValue) / 1000
   }
@@ -36,9 +35,9 @@ export function springAnimate(
     for (let i = 0; i < numSteps; ++i) {
       const force = -tension * (position - toValue)
       const damping = -friction * velocity
-      const acceleration = (force + damping) / mass
-      velocity += (acceleration * 1) / 1000
-      position += (velocity * 1) / 1000
+      const acceleration = force + damping
+      velocity += acceleration / 1000
+      position += velocity / 1000
     }
     const isVelocity = Math.abs(velocity) <= precision
     const isDisplacement =

@@ -207,7 +207,9 @@ export function bindMenu({ isOpen, anchorEl, close, popupId }: PopupState) {
     id: popupId,
     anchorEl: anchorEl ?? null,
     open: isOpen,
-    onClose: close,
+    onClose: () => {
+      close()
+    },
   }
 }
 

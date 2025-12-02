@@ -60,8 +60,9 @@ const Dialog = observer(function (props: Props) {
             {onClose ? (
               <IconButton
                 className={classes.closeButton}
-                // @ts-expect-error MUI onClose doesn't have a 'closeIcon' reason
-                onClick={() => onClose()}
+                onClick={event => {
+                  onClose(event, 'escapeKeyDown')
+                }}
               >
                 <CloseIcon />
               </IconButton>

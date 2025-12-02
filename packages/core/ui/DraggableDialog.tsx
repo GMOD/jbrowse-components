@@ -32,6 +32,7 @@ function PaperComponent(props: PaperProps) {
         if (!`${target?.className}`.includes('MuiDialogTitle')) {
           return false
         }
+        return undefined
       }}
     >
       <Paper ref={ref} {...props} />
