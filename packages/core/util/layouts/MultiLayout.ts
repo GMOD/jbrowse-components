@@ -58,6 +58,14 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
     return this.subLayouts.get(layoutName)?.discardRange(left, right)
   }
 
+  discardSublayout(layoutName: string) {
+    this.subLayouts.delete(layoutName)
+  }
+
+  clear() {
+    this.subLayouts.clear()
+  }
+
   toJSON() {
     const data: Record<string, SerializedLayout> = {}
     for (const [layoutName, sublayout] of this.subLayouts.entries()) {

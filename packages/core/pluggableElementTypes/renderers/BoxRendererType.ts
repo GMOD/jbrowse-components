@@ -84,6 +84,19 @@ export default class BoxRendererType extends FeatureRendererType {
   }
 
   freeResources(args: RenderArgs) {
+    const specKeys = Object.keys(args)
+
+    // If only sessionId is specified, delete all layout sessions for that session
+    if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
+      const { sessionId } = args
+      for (const key of Object.keys(this.layoutSessions)) {
+        if (key.startsWith(`${sessionId}-`)) {
+          delete this.layoutSessions[key]
+        }
+      }
+      return
+    }
+
     const key = getLayoutId(args)
     const session = this.layoutSessions[key]
     if (session) {
