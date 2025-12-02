@@ -54,11 +54,11 @@ export function findLast<T>(
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
   const result = {} as Record<string, T[]>
   for (const value of array) {
-    const t = predicate(value)
-    if (!result[t]) {
-      result[t] = []
+    const key = predicate(value)
+    if (!result[key]) {
+      result[key] = []
     }
-    result[t].push(value)
+    result[key].push(value)
   }
   return result
 }
@@ -98,9 +98,7 @@ export function mergeIntervals<T extends { start: number; end: number }>(
     // otherwise update the end value of the top element
     // if end of current interval is higher
     else if (top.end < intervals[i]!.end) {
-      top.end = Math.max(top.end, intervals[i]!.end)
-      stack.pop()
-      stack.push(top)
+      top.end = intervals[i]!.end
     }
   }
 
@@ -115,15 +113,7 @@ export interface BasicFeature {
 
 // returns new array non-overlapping features
 export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
-  const memo = {} as Record<string, T[]>
-  for (const x of regions) {
-    if (!memo[x.refName]) {
-      memo[x.refName] = []
-    }
-    memo[x.refName]!.push(x)
-  }
-
-  return Object.values(memo).flatMap(group =>
+  return Object.values(groupBy(regions, r => r.refName)).flatMap(group =>
     mergeIntervals(
       group.sort((a, b) => a.start - b.start),
       w,

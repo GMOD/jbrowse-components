@@ -55,11 +55,12 @@ export function useDebouncedCallback<T>(
   const argsRef = useRef<T[]>(null)
   const timeout = useRef<Timer>(null)
 
-  // make sure our timeout gets cleared if our consuming component gets
-  // unmounted
+  // make sure our timeout gets cleared if our consuming component gets unmounted
   useEffect(() => {
-    if (timeout.current) {
-      clearTimeout(timeout.current)
+    return () => {
+      if (timeout.current) {
+        clearTimeout(timeout.current)
+      }
     }
   }, [])
 

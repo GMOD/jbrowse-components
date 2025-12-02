@@ -15,9 +15,8 @@ export function localStorageGetNumber(key: string, defaultVal: number) {
 }
 
 export function localStorageGetBoolean(key: string, defaultVal: boolean) {
-  return Boolean(
-    JSON.parse(localStorageGetItem(key) || JSON.stringify(defaultVal)),
-  )
+  const item = localStorageGetItem(key)
+  return item !== null && item !== undefined ? JSON.parse(item) : defaultVal
 }
 
 export function localStorageSetBoolean(key: string, value: boolean) {
