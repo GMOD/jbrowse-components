@@ -1,15 +1,15 @@
 import configSchema from './configSchema'
-import ReactComponent from '../MultiWiggleRendering'
 import MultiDensityRenderer from './MultiDensityRenderer'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import { lazy } from 'react'
 
 export default function MultiDensityRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new MultiDensityRenderer({
         name: 'MultiDensityRenderer',
-        ReactComponent,
+        ReactComponent: lazy(() => import('../MultiWiggleRendering')),
         configSchema,
         pluginManager,
       }),

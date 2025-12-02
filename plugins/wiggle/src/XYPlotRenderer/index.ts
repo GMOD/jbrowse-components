@@ -1,4 +1,4 @@
-import ReactComponent from '../WiggleRendering'
+import { lazy } from 'react'
 import XYPlotRenderer from './XYPlotRenderer'
 import configSchema from './configSchema'
 
@@ -8,7 +8,7 @@ export default function XYPlotRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(() => {
     return new XYPlotRenderer({
       name: 'XYPlotRenderer',
-      ReactComponent,
+      ReactComponent: lazy(() => import('../WiggleRendering')),
       configSchema,
       pluginManager,
     })
