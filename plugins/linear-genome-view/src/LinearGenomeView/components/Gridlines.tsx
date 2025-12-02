@@ -94,6 +94,7 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
   const theme = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
+  const lastBpPerPxRef = useRef<number | null>(null)
 
   useEffect(() => {
     return autorun(
@@ -140,11 +141,17 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
           return
         }
 
+        // Clear cache if bpPerPx changed - all elements need recomputation
+        const bpPerPxChanged = lastBpPerPxRef.current !== bpPerPx
+        lastBpPerPxRef.current = bpPerPx
+
         const existingKeys = new Map<string, HTMLDivElement>()
-        for (const child of inner.children) {
-          const key = (child as HTMLElement).dataset.blockKey
-          if (key) {
-            existingKeys.set(key, child as HTMLDivElement)
+        if (!bpPerPxChanged) {
+          for (const child of inner.children) {
+            const key = (child as HTMLElement).dataset.blockKey
+            if (key) {
+              existingKeys.set(key, child as HTMLDivElement)
+            }
           }
         }
 

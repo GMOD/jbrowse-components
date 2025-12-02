@@ -65,6 +65,7 @@ function createBlockElement(
 function ScalebarCoordinateLabels({ model }: { model: LGV }) {
   const theme = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
+  const lastBpPerPxRef = useRef<number | null>(null)
 
   useEffect(() => {
     const bgColor = theme.palette.background.paper
@@ -77,11 +78,17 @@ function ScalebarCoordinateLabels({ model }: { model: LGV }) {
           return
         }
 
+        // Clear cache if bpPerPx changed - all elements need recomputation
+        const bpPerPxChanged = lastBpPerPxRef.current !== bpPerPx
+        lastBpPerPxRef.current = bpPerPx
+
         const existingKeys = new Map<string, HTMLDivElement>()
-        for (const child of container.children) {
-          const key = (child as HTMLElement).dataset.blockKey
-          if (key) {
-            existingKeys.set(key, child as HTMLDivElement)
+        if (!bpPerPxChanged) {
+          for (const child of container.children) {
+            const key = (child as HTMLElement).dataset.blockKey
+            if (key) {
+              existingKeys.set(key, child as HTMLDivElement)
+            }
           }
         }
 

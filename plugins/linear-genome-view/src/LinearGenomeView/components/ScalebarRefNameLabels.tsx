@@ -11,6 +11,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
   const theme = useTheme()
   const innerRef = useRef<HTMLDivElement>(null)
   const pinnedRef = useRef<HTMLSpanElement | null>(null)
+  const lastBpPerPxRef = useRef<number | null>(null)
 
   // Handle offsetPx changes - update container position and pinned label
   useEffect(() => {
@@ -61,17 +62,23 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
 
     return autorun(
       function refNameLabelsLayoutAutorun() {
-        const { staticBlocks } = model
+        const { staticBlocks, bpPerPx } = model
         const inner = innerRef.current
         if (!inner) {
           return
         }
 
+        // Clear cache if bpPerPx changed - all elements need recomputation
+        const bpPerPxChanged = lastBpPerPxRef.current !== bpPerPx
+        lastBpPerPxRef.current = bpPerPx
+
         const existingKeys = new Map<string, HTMLSpanElement>()
-        for (const child of inner.children) {
-          const key = (child as HTMLElement).dataset.labelKey
-          if (key) {
-            existingKeys.set(key, child as HTMLSpanElement)
+        if (!bpPerPxChanged) {
+          for (const child of inner.children) {
+            const key = (child as HTMLElement).dataset.labelKey
+            if (key) {
+              existingKeys.set(key, child as HTMLSpanElement)
+            }
           }
         }
 
