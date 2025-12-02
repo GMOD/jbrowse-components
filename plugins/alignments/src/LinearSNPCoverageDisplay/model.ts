@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
-import { cast, getEnv, isAlive, types, Instance } from '@jbrowse/mobx-state-tree'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
@@ -18,6 +18,7 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies

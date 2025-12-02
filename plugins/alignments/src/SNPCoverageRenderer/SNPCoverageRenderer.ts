@@ -4,8 +4,8 @@ import FeatureRendererType, {
   type ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { rpcResult } from 'librpc-web-mod'
 
 import type { RenderArgsDeserialized } from './types'

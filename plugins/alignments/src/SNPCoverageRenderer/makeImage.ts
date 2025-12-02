@@ -145,7 +145,6 @@ export async function makeImage(
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
-  const showArcs = readConfObject(cfg, 'showArcs')
   const showInterbaseIndicators = readConfObject(cfg, 'showInterbaseIndicators')
 
   // get the y coordinate that we are plotting at, this can be log scale

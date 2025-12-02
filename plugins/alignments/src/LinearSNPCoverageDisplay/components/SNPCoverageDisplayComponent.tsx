@@ -5,8 +5,8 @@ import { getContainingView } from '@jbrowse/core/util'
 import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
-import type { Feature } from '@jbrowse/core/util'
 import type { SNPCoverageDisplayModel } from '../model'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -89,8 +89,14 @@ function ArcTooltipContents({ arc }: { arc: ArcData }) {
   )
 }
 
-const Arcs = observer(function ({ model }: { model: SNPCoverageDisplayModel }) {
-  const { skipFeatures, showArcsSetting, height } = model
+interface ArcDisplayModel {
+  showArcsSetting: boolean
+  height: number
+  skipFeatures: Feature[]
+}
+
+const Arcs = observer(function ({ model }: { model: ArcDisplayModel }) {
+  const { showArcsSetting, height, skipFeatures } = model
   const view = getContainingView(model) as LGV
   const [hoverInfo, setHoverInfo] = useState<{
     arc: ArcData
