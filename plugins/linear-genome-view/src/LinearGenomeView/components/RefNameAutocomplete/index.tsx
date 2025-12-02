@@ -234,8 +234,11 @@ const RefNameAutocomplete = observer(function ({
     if (hasDisplayedRegions) {
       setCurrentSearch('')
       setSearchOptions(undefined)
+      if (inputRef.current) {
+        inputRef.current.value = inputBoxVal
+      }
     }
-  }, [hasDisplayedRegions])
+  }, [hasDisplayedRegions, inputBoxVal])
 
   // Wrapper div handles dynamic width without re-rendering MemoizedAutocomplete
   return (
