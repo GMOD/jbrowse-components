@@ -1,6 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
@@ -8,35 +7,52 @@ import {
   scaleSequential,
   scaleSequentialLog,
 } from '@mui/x-charts-vendor/d3-scale'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
 import interpolateViridis from './viridis'
 
-import type {
-  HicFeature,
-  RenderArgsDeserializedWithFeatures,
-} from './HicRenderer'
+import type { HicFeature, RenderArgsDeserialized } from './HicRenderer'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
-import type { Region } from '@jbrowse/core/util/types'
 
 interface HicDataAdapter extends BaseFeatureDataAdapter {
   getResolution: (bp: number) => Promise<number>
 }
 
-export interface RenderArgs extends ServerSideRenderArgs {
-  regions: Region[]
+function interpolateJuicebox(t: number) {
+  const r = Math.round(t * 255)
+  const a = t
+  return `rgba(${r},0,0,${a})`
+}
+
+const colorSchemes: Record<string, (t: number) => string> = {
+  juicebox: interpolateJuicebox,
+  fall: interpolateRgbBasis([
+    'rgb(255, 255, 255)',
+    'rgb(255, 255, 204)',
+    'rgb(255, 237, 160)',
+    'rgb(254, 217, 118)',
+    'rgb(254, 178, 76)',
+    'rgb(253, 141, 60)',
+    'rgb(252, 78, 42)',
+    'rgb(227, 26, 28)',
+    'rgb(189, 0, 38)',
+    'rgb(128, 0, 38)',
+    'rgb(0, 0, 0)',
+  ]),
+  viridis: interpolateViridis,
 }
 
 export async function makeImageData(
   ctx: CanvasRenderingContext2D,
-  props: RenderArgsDeserializedWithFeatures & {
+  props: RenderArgsDeserialized & {
     yScalar: number
     pluginManager: PluginManager
+    statusCallback?: (arg: string) => void
   },
 ) {
   const {
-    features,
     config,
     bpPerPx,
     stopToken,
@@ -48,71 +64,74 @@ export async function makeImageData(
     regions,
     pluginManager,
     yScalar,
+    statusCallback = () => {},
   } = props
 
-  const { statusCallback = () => {} } = props
-  statusCallback('Drawing Hi-C matrix')
   const region = regions[0]!
   const { dataAdapter } = await getAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
   )
+
+  statusCallback('Fetching Hi-C data')
+  const features = (await firstValueFrom(
+    (dataAdapter as BaseFeatureDataAdapter)
+      .getFeatures(region, props)
+      .pipe(toArray()),
+  )) as unknown as HicFeature[]
+
+  if (!features.length) {
+    return undefined
+  }
+
+  statusCallback('Drawing Hi-C matrix')
+  checkStopToken(stopToken)
+
   const res = await (dataAdapter as HicDataAdapter).getResolution(
     bpPerPx / resolution,
   )
-
   const width = (region.end - region.start) / bpPerPx
   const w = res / (bpPerPx * Math.sqrt(2))
-  const baseColor = colord(readConfObject(config, 'baseColor'))
   const offset = Math.floor(region.start / res)
-  if (features.length) {
-    let maxScore = 0
-    let minBin = 0
-    let maxBin = 0
-    checkStopToken(stopToken)
+
+  let maxScore = 0
+  for (const { counts } of features) {
+    if (counts > maxScore) {
+      maxScore = counts
+    }
+  }
+  checkStopToken(stopToken)
+
+  const m = useLogScale ? maxScore : maxScore / 20
+  const interpolator = colorSchemes[colorScheme ?? ''] ?? colorSchemes.juicebox
+  const scale = useLogScale
+    ? scaleSequentialLog(interpolator).domain([1, m])
+    : scaleSequential(interpolator).domain([0, m])
+
+  if (yScalar) {
+    ctx.scale(1, yScalar)
+  }
+  ctx.save()
+
+  if (region.reversed === true) {
+    ctx.scale(-1, 1)
+    ctx.translate(-width, 0)
+  }
+  ctx.rotate(-Math.PI / 4)
+
+  // Check raw config value to optimize the hot loop - avoid JEXL evaluation if default
+  const colorSlot = config.color as { value: string } | undefined
+  const useDefaultColor = colorSlot?.value === 'jexl:interpolate(count,scale)'
+
+  if (useDefaultColor) {
     for (const { bin1, bin2, counts } of features) {
-      maxScore = Math.max(counts, maxScore)
-      minBin = Math.min(Math.min(bin1, bin2), minBin)
-      maxBin = Math.max(Math.max(bin1, bin2), maxBin)
+      ctx.fillStyle = scale(counts)
+      ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
     }
-    checkStopToken(stopToken)
-    const colorSchemes = {
-      juicebox: ['rgba(0,0,0,0)', 'red'],
-      fall: interpolateRgbBasis([
-        'rgb(255, 255, 255)',
-        'rgb(255, 255, 204)',
-        'rgb(255, 237, 160)',
-        'rgb(254, 217, 118)',
-        'rgb(254, 178, 76)',
-        'rgb(253, 141, 60)',
-        'rgb(252, 78, 42)',
-        'rgb(227, 26, 28)',
-        'rgb(189, 0, 38)',
-        'rgb(128, 0, 38)',
-        'rgb(0, 0, 0)',
-      ]),
-      viridis: interpolateViridis,
-    }
-    const m = useLogScale ? maxScore : maxScore / 20
-
-    // @ts-expect-error
-    const x1 = colorSchemes[colorScheme] || colorSchemes.juicebox
-    const scale = useLogScale
-      ? scaleSequentialLog(x1).domain([1, m])
-      : scaleSequential(x1).domain([0, m])
-    if (yScalar) {
-      ctx.scale(1, yScalar)
-    }
-    ctx.save()
-
-    if (region.reversed === true) {
-      ctx.scale(-1, 1)
-      ctx.translate(-width, 0)
-    }
-    ctx.rotate(-Math.PI / 4)
-    forEachWithStopTokenCheck(features, stopToken, (f: HicFeature) => {
-      const { bin1, bin2, counts } = f
+  } else {
+    const baseColor = colord(readConfObject(config, 'baseColor'))
+    for (const { bin1, bin2, counts } of features) {
       ctx.fillStyle = readConfObject(config, 'color', {
         count: counts,
         maxScore,
@@ -121,8 +140,8 @@ export async function makeImageData(
         useLogScale,
       })
       ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
-    })
-    ctx.restore()
+    }
   }
+  ctx.restore()
   return undefined
 }

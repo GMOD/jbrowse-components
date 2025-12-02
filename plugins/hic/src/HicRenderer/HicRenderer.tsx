@@ -1,13 +1,9 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { rpcResult } from 'librpc-web-mod'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgsDeserialized as ServerSideRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -28,11 +24,6 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
   colorScheme?: string
 }
 
-export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
-  features: HicFeature[]
-  statusCallback?: (arg: string) => void
-}
-
 export default class HicRenderer extends ServerSideRendererType {
   supportsSVG = true
 
@@ -42,35 +33,16 @@ export default class HicRenderer extends ServerSideRendererType {
     const width = (region.end - region.start) / bpPerPx
     const hyp = width / 2
     const height = displayHeight ?? hyp
-    const features = await this.getFeatures(renderProps)
 
     const { makeImageData } = await import('./makeImageData')
     const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       makeImageData(ctx, {
         ...renderProps,
         yScalar: height / Math.max(height, hyp),
-        features,
         pluginManager: this.pluginManager,
       }),
     )
 
-    const serialized = { ...res, height, width }
-    return rpcResult(serialized, collectTransferables(res))
-  }
-
-  async getFeatures(args: RenderArgsDeserialized) {
-    const { regions, sessionId, adapterConfig } = args
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
-    const features = await firstValueFrom(
-      (dataAdapter as BaseFeatureDataAdapter)
-        .getFeatures(regions[0]!, args)
-        .pipe(toArray()),
-    )
-
-    return features as unknown as HicFeature[]
+    return rpcResult({ ...res, height, width }, collectTransferables(res))
   }
 }

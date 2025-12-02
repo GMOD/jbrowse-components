@@ -18,7 +18,11 @@ import { renderReactionData, renderReactionEffect } from './renderReaction'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
-import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
+import type {
+  CircularViewModel,
+  ExportSvgOptions,
+} from '@jbrowse/plugin-circular-view'
+import type { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel ChordVariantDisplay
@@ -296,7 +300,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       /**
        * #method
        */
-      async renderSvg(opts: { theme?: unknown }) {
+      async renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
         const { renderSvg } = await import('./renderSvg')
         return renderSvg(self, opts)
       },
