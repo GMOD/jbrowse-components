@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { isElectron } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
@@ -8,28 +9,30 @@ import {
   Typography,
   alpha,
 } from '@mui/material'
+import { LocalFile } from 'generic-filehandle2'
 import { SourceMapConsumer } from 'source-map-js'
 
 import Dialog from './Dialog'
 import ExternalLink from './ExternalLink'
 import LoadingEllipses from './LoadingEllipses'
 
-async function myfetch(uri: string) {
+async function myfetchtext(uri: string) {
+  if (uri.startsWith('file://') && isElectron) {
+    const localPath = decodeURIComponent(new URL(uri).pathname)
+    const file = new LocalFile(localPath)
+    const buffer = await file.readFile()
+    return new TextDecoder().decode(buffer)
+  }
   const res = await fetch(uri)
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} fetching ${uri}: ${await res.text()}`)
   }
-  return res
+  return res.text()
 }
 
 async function myfetchjson(uri: string) {
-  const res = await myfetch(uri)
-  return res.json()
-}
-
-async function myfetchtext(uri: string) {
-  const res = await myfetch(uri)
-  return res.text()
+  const text = await myfetchtext(uri)
+  return JSON.parse(text)
 }
 
 // produce a source-map resolved stack trace
@@ -58,7 +61,9 @@ async function mapStackTrace(stack: string) {
   const mappedStack = []
 
   for (const line of stackLines) {
-    const match = new RegExp(/(.*)(https?:\/\/.*):(\d+):(\d+)/).exec(line)
+    const match = new RegExp(/(.*)((?:https?|file):\/\/.*):(\d+):(\d+)/).exec(
+      line,
+    )
     if (match === null) {
       mappedStack.push(line)
       continue
