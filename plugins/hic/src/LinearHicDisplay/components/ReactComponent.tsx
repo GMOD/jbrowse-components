@@ -4,6 +4,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent'
+import ResolutionControls from './ResolutionControls'
 
 import type { LinearHicDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -55,9 +56,12 @@ const LinearHicReactComponent = observer(function ({
   model: LinearHicDisplayModel
 }) {
   return (
-    <BaseDisplayComponent model={model}>
-      <HicCanvas model={model} />
-    </BaseDisplayComponent>
+    <>
+      <BaseDisplayComponent model={model}>
+        <HicCanvas model={model} />
+      </BaseDisplayComponent>
+      <ResolutionControls model={model} />
+    </>
   )
 })
 

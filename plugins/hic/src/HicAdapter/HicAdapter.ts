@@ -54,6 +54,10 @@ interface HicParser {
     binsize: number,
   ) => Promise<ContactRecord[]>
   getMetaData: () => Promise<HicMetadata>
+  hicFile: {
+    init: () => Promise<void>
+    masterIndex: Record<string, { start: number; size: number }>
+  }
 }
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
@@ -81,7 +85,15 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     const { chromosomes, ...rest } = await this.setup(opts)
     // @ts-expect-error
     const norms = await this.hic.getNormalizationOptions()
-    return { ...rest, norms }
+
+    await this.hic.hicFile.init()
+    const { masterIndex } = this.hic.hicFile
+    const hasInterChromosomalData = Object.keys(masterIndex).some(key => {
+      const [idx1, idx2] = key.split('_')
+      return idx1 !== idx2
+    })
+
+    return { ...rest, norms, hasInterChromosomalData }
   }
 
   async getRefNames(opts?: BaseOptions) {
@@ -162,30 +174,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             'BP',
             res,
           )
-
-          // For inter-chromosome queries, try NONE normalization as a fallback
-          // Note: Many .hic files don't contain inter-chromosome data
-          if (records.length === 0 && i !== j) {
-            try {
-              records = await this.hic.getContactRecords(
-                'NONE',
-                {
-                  chr: region1.refName,
-                  start: region1.start,
-                  end: region1.end,
-                },
-                {
-                  chr: region2.refName,
-                  start: region2.start,
-                  end: region2.end,
-                },
-                'BP',
-                res,
-              )
-            } catch (e) {
-              // Inter-chromosome data may not exist in this file
-            }
-          }
 
           for (const record of records) {
             allRecords.push({
