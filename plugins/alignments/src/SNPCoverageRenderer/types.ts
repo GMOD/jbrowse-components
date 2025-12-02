@@ -3,6 +3,13 @@ import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@j
 import type { Feature } from '@jbrowse/core/util'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
 
+export interface InterbaseIndicatorItem {
+  type: 'insertion' | 'softclip' | 'hardclip'
+  base: string
+  count: number
+  total: number
+}
+
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
   height: number

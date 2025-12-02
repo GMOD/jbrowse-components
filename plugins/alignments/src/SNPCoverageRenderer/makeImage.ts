@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import { bpSpanPx, featureSpanPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import {
   YSCALEBAR_LABEL_OFFSET,
   getOrigin,
@@ -9,7 +9,10 @@ import {
 
 import { alphaColor } from '../shared/util'
 
-import type { RenderArgsDeserializedWithFeatures } from './types'
+import type {
+  InterbaseIndicatorItem,
+  RenderArgsDeserializedWithFeatures,
+} from './types'
 import type { BaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -195,6 +198,11 @@ export async function makeImage(
   // are located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
 
+  // Flatbush clickmap data for interbase indicators
+  const coords = [] as number[]
+  const items = [] as InterbaseIndicatorItem[]
+  let lastInterbaseCountX = Number.NEGATIVE_INFINITY
+
   const drawingModifications = colorBy.type === 'modifications'
   const drawingMethylation = colorBy.type === 'methylation'
   const isolatedModification = colorBy.modifications?.isolatedModification
@@ -342,17 +350,43 @@ export async function makeImage(
     const interbaseEvents = Object.keys(snpinfo.noncov)
     if (showInterbaseCounts) {
       let curr = 0
+      const r = 0.6
+      const x = leftPx - r + extraHorizontallyFlippedOffset
+      let totalHeight = 0
       for (const base of interbaseEvents) {
         const { entryDepth } = snpinfo.noncov[base]!
-        const r = 0.6
         ctx.fillStyle = colorMap[base]!
         ctx.fillRect(
-          leftPx - r + extraHorizontallyFlippedOffset,
+          x,
           INTERBASE_INDICATOR_HEIGHT + toHeight2(curr),
           r * 2,
           toHeight2(entryDepth),
         )
+        totalHeight += toHeight2(entryDepth)
         curr += entryDepth
+      }
+
+      // Add to clickmap if more than 0.5px from last added
+      if (interbaseEvents.length > 0 && x - lastInterbaseCountX > 0.5) {
+        const maxBase = interbaseEvents.reduce((a, b) =>
+          (snpinfo.noncov[a]?.entryDepth ?? 0) >
+          (snpinfo.noncov[b]?.entryDepth ?? 0)
+            ? a
+            : b,
+        )
+        coords.push(
+          x,
+          INTERBASE_INDICATOR_HEIGHT,
+          x + r * 2,
+          INTERBASE_INDICATOR_HEIGHT + totalHeight,
+        )
+        items.push({
+          type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+          base: maxBase,
+          count: curr,
+          total: score0,
+        })
+        lastInterbaseCountX = x
       }
     }
 
@@ -383,6 +417,20 @@ export async function makeImage(
         ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
         ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
         ctx.fill()
+
+        // Add to Flatbush clickmap
+        coords.push(
+          l - INTERBASE_INDICATOR_WIDTH / 2,
+          0,
+          l + INTERBASE_INDICATOR_WIDTH / 2,
+          INTERBASE_INDICATOR_HEIGHT,
+        )
+        items.push({
+          type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+          base: maxBase,
+          count: accum,
+          total: indicatorComparatorScore,
+        })
       }
     }
     prevTotal = score0
@@ -422,5 +470,5 @@ export async function makeImage(
       prevLeftPx = leftPx
     }
   }
-  return { reducedFeatures, skipFeatures }
+  return { reducedFeatures, skipFeatures, coords, items }
 }

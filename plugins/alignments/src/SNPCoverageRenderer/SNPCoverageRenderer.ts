@@ -4,9 +4,12 @@ import FeatureRendererType, {
   type ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { rpcResult } from 'librpc-web-mod'
+
+import type { InterbaseIndicatorItem, RenderArgsDeserialized } from './types'
 
 import type { RenderArgsDeserialized } from './types'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -49,7 +52,7 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
     const width = (region.end - region.start) / bpPerPx
 
     const { makeImage } = await import('./makeImage')
-    const { reducedFeatures, skipFeatures, ...rest } = await updateStatus(
+    const { reducedFeatures, coords, items, skipFeatures, ...rest } = await updateStatus(
       'Rendering coverage',
       statusCallback,
       () =>
@@ -58,10 +61,24 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
         ),
     )
 
+    const flatbush = new Flatbush(Math.max(items.length, 1))
+    if (coords.length) {
+      for (let i = 0; i < coords.length; i += 4) {
+        flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+      }
+    } else {
+      flatbush.add(0, 0)
+    }
+    flatbush.finish()
+
     const serialized = {
       ...rest,
       features: reducedFeatures.map(f => f.toJSON()),
       skipFeatures: skipFeatures.map(f => f.toJSON()),
+      clickMap: {
+        flatbush: flatbush.data,
+        items: items as InterbaseIndicatorItem[],
+      },
       height,
       width,
     }
