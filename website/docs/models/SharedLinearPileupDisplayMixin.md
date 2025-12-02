@@ -211,11 +211,11 @@ copyFeatureToClipboard: (feature: Feature) => Promise<void>
 contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
-#### method: renderPropsPre
+#### method: adapterRenderProps
 
 ```js
 // type signature
-renderPropsPre: () => any
+adapterRenderProps: () => any
 ```
 
 #### method: renderingProps

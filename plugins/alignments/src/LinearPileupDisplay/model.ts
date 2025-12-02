@@ -160,12 +160,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get visibleModificationTypes() {
-        return [...self.visibleModifications.keys()]
-      },
-      /**
-       * #getter
-       */
       get modificationThreshold() {
         return self.colorBy?.modifications?.threshold ?? 10
       },
@@ -222,7 +216,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
-        renderPropsPre: superRenderPropsPre,
+        adapterRenderProps: superAdapterRenderProps,
         renderProps: superRenderProps,
         colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
       } = self
@@ -231,14 +225,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        renderPropsPre() {
+        adapterRenderProps() {
           const {
             sortedBy,
             showSoftClipping,
             visibleModifications,
             simplexModifications,
           } = self
-          const superProps = superRenderPropsPre()
+          const superProps = superAdapterRenderProps()
           return {
             ...superProps,
             showSoftClip: showSoftClipping,

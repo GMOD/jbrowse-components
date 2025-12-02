@@ -403,7 +403,7 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #method
          */
-        renderPropsPre() {
+        adapterRenderProps() {
           const { colorTagMap, colorBy, filterBy } = self
           const superProps = superRenderProps()
           return {
@@ -663,7 +663,7 @@ export function SharedLinearPileupDisplayMixin(
     })
     .views(self => ({
       renderProps() {
-        return self.renderPropsPre()
+        return self.adapterRenderProps()
       },
     }))
     .actions(self => ({

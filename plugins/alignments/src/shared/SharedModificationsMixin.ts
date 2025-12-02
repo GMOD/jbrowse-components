@@ -28,6 +28,14 @@ export function SharedModificationsMixin() {
        */
       modificationsReady: false,
     }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get visibleModificationTypes() {
+        return [...self.visibleModifications.keys()]
+      },
+    }))
     .actions(self => ({
       /**
        * #action
