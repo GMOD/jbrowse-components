@@ -29,6 +29,7 @@ export default ConfigurationSchema(
         types.union(
           {
             dispatcher: (snapshot: { type?: string }) => {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               switch (snapshot?.type) {
                 case 'MainThreadRpcDriver':
                   return MainThreadRpcDriverConfigSchema

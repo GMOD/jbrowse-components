@@ -27,6 +27,7 @@ export function LinearAlignmentsDisplayMixin(
         return types.union(
           {
             dispatcher: (snapshot: { type?: string }) =>
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               (snapshot?.type ? typeMap[snapshot.type] : undefined) ??
               displayTypes[0]!,
           },
