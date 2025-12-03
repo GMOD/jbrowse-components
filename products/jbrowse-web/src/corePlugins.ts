@@ -30,7 +30,6 @@ import Wiggle from '@jbrowse/plugin-wiggle'
 
 const corePlugins = [
   Canvas,
-  SVG,
   LinearGenomeView,
   Alignments,
   Authentication,
