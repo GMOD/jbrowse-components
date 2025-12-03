@@ -68,8 +68,11 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
 export const FileLocation = types.snapshotProcessor(
   types.union(
     {
-      dispatcher: (snapshot: { locationType?: string }) => {
-        switch (snapshot?.locationType) {
+      dispatcher: (snapshot: { locationType?: string } | undefined) => {
+        if (!snapshot || typeof snapshot !== 'object') {
+          return LocalPathLocation
+        }
+        switch (snapshot.locationType) {
           case 'LocalPathLocation':
             return LocalPathLocation
           case 'UriLocation':
@@ -77,6 +80,16 @@ export const FileLocation = types.snapshotProcessor(
           case 'BlobLocation':
             return BlobLocation
           default:
+            // Infer from fields if locationType not set
+            if ('uri' in snapshot) {
+              return UriLocation
+            }
+            if ('localPath' in snapshot) {
+              return LocalPathLocation
+            }
+            if ('blobId' in snapshot) {
+              return BlobLocation
+            }
             return UriLocation
         }
       },
