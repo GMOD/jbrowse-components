@@ -261,6 +261,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
+      lastTrackDragY: undefined as undefined | number,
+      /**
+       * #volatile
+       */
       volatileError: undefined as unknown,
 
       /**
@@ -1084,6 +1088,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
+        if (idx === undefined) {
+          self.lastTrackDragY = undefined
+        }
+      },
+
+      /**
+       * #action
+       */
+      setLastTrackDragY(y: number) {
+        self.lastTrackDragY = y
       },
 
       /**

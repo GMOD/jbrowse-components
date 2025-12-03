@@ -37,8 +37,19 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-let lastSwapY: number | undefined
-let lastDraggingTrackId: string | undefined
+const MIN_DRAG_DISTANCE = 30
+
+export function shouldSwapTracks(
+  lastSwapY: number | undefined,
+  currentY: number,
+  movingDown: boolean,
+) {
+  return (
+    lastSwapY === undefined ||
+    (movingDown && currentY > lastSwapY + MIN_DRAG_DISTANCE) ||
+    (!movingDown && currentY < lastSwapY - MIN_DRAG_DISTANCE)
+  )
+}
 
 const TrackContainer = observer(function ({
   model,
@@ -64,47 +75,31 @@ const TrackContainer = observer(function ({
           model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
         }
       }}
+      onDragOver={event => {
+        if (
+          isAlive(display) &&
+          draggingTrackId !== undefined &&
+          draggingTrackId !== display.id
+        ) {
+          const draggingIdx = model.tracks.findIndex(
+            t => t.id === draggingTrackId,
+          )
+          const targetIdx = model.tracks.findIndex(t => t.id === track.id)
+          const movingDown = targetIdx > draggingIdx
+          const currentY = event.clientY
+
+          if (shouldSwapTracks(model.lastTrackDragY, currentY, movingDown)) {
+            model.setLastTrackDragY(currentY)
+            model.moveTrack(draggingTrackId, track.id)
+          }
+        }
+      }}
     >
       {/* offset 1px since for left track border */}
       {track.pinned ? <Gridlines model={model} offset={1} /> : null}
       <TrackLabelContainer track={track} view={model} />
       <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
-        <TrackRenderingContainer
-          model={model}
-          track={track}
-          onDragOver={event => {
-            if (
-              isAlive(display) &&
-              draggingTrackId !== undefined &&
-              draggingTrackId !== display.id
-            ) {
-              // reset state when a new drag starts
-              if (lastDraggingTrackId !== draggingTrackId) {
-                lastDraggingTrackId = draggingTrackId
-                lastSwapY = undefined
-              }
-
-              const draggingIdx = model.tracks.findIndex(
-                t => t.id === draggingTrackId,
-              )
-              const targetIdx = model.tracks.findIndex(t => t.id === track.id)
-              const movingDown = targetIdx > draggingIdx
-              const currentY = event.clientY
-              const minDistance = 30
-
-              // allow swap if: first swap, or mouse moved enough in swap direction
-              const shouldSwap =
-                lastSwapY === undefined ||
-                (movingDown && currentY > lastSwapY + minDistance) ||
-                (!movingDown && currentY < lastSwapY - minDistance)
-
-              if (shouldSwap) {
-                lastSwapY = currentY
-                model.moveTrack(draggingTrackId, track.id)
-              }
-            }
-          }}
-        />
+        <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
       <ResizeHandle
         onDrag={display.resizeHeight}
