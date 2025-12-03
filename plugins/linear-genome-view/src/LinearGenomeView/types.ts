@@ -38,7 +38,7 @@ export interface NavLocation {
 }
 
 export interface InitState {
-  loc: string
+  loc?: string
   assembly: string
   tracks?: string[]
 }

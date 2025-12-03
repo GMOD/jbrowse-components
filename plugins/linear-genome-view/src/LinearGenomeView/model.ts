@@ -1911,12 +1911,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
             function initAutorun() {
               const { init } = self
               if (init) {
-                self
-                  .navToLocString(init.loc, init.assembly)
-                  .catch((e: unknown) => {
-                    console.error(init, e)
-                    getSession(self).notifyError(`${e}`, e)
-                  })
+                if (init.loc) {
+                  self
+                    .navToLocString(init.loc, init.assembly)
+                    .catch((e: unknown) => {
+                      console.error(init, e)
+                      getSession(self).notifyError(`${e}`, e)
+                    })
+                } else {
+                  self.showAllRegionsInAssembly(init.assembly)
+                }
 
                 init.tracks?.map(t => self.showTrack(t))
 
