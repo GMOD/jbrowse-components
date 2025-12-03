@@ -10,6 +10,7 @@ import { observer } from 'mobx-react'
 import Gridlines from './Gridlines'
 import TrackLabelContainer from './TrackLabelContainer'
 import TrackRenderingContainer from './TrackRenderingContainer'
+import { shouldSwapTracks } from './util'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -37,20 +38,6 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-const MIN_DRAG_DISTANCE = 30
-
-export function shouldSwapTracks(
-  lastSwapY: number | undefined,
-  currentY: number,
-  movingDown: boolean,
-) {
-  return (
-    lastSwapY === undefined ||
-    (movingDown && currentY > lastSwapY + MIN_DRAG_DISTANCE) ||
-    (!movingDown && currentY < lastSwapY - MIN_DRAG_DISTANCE)
-  )
-}
-
 const TrackContainer = observer(function ({
   model,
   track,
@@ -70,7 +57,7 @@ const TrackContainer = observer(function ({
       variant={showTrackOutlines ? 'outlined' : undefined}
       elevation={showTrackOutlines ? undefined : 0}
       onClick={event => {
-        if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
+        if (event.detail === 2 && !display.featureIdUnderMouse) {
           const left = ref.current?.getBoundingClientRect().left || 0
           model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
         }

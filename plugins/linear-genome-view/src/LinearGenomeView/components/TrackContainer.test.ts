@@ -1,4 +1,4 @@
-import { shouldSwapTracks } from './TrackContainer'
+import { shouldSwapTracks } from './util'
 
 describe('shouldSwapTracks', () => {
   it('allows first swap when lastSwapY is undefined', () => {
