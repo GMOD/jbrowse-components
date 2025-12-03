@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
 import {
   clamp,
@@ -7,6 +7,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { autorun, untracked } from 'mobx'
+import { observer } from 'mobx-react'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -139,11 +140,11 @@ interface LabelPositionData {
   lastX?: number
 }
 
-function FloatingLabels({
+const FloatingLabels = observer(function FloatingLabels({
   model,
 }: {
   model: FeatureTrackModel
-}): React.ReactElement {
+}) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)
   const assemblyName = view.assemblyNames[0]
@@ -154,21 +155,21 @@ function FloatingLabels({
   const labelPositionsRef = useRef<Map<string, LabelPositionData>>(new Map())
 
   // Autorun 1: Rebuild DOM elements when layoutFeatures changes
-  useEffect(() => {
-    if (!assembly) {
+  useLayoutEffect(() => {
+    const container = containerRef.current
+    if (!container || !assembly) {
       return
     }
 
-    return autorun(
-      function floatingLabelsLayoutAutorun() {
-        const container = containerRef.current
-        if (!container) {
-          return
-        }
+    const domElements = domElementsRef.current
+    const labelPositions = labelPositionsRef.current
 
+    const dispose = autorun(
+      function floatingLabelsLayoutAutorun() {
         const { layoutFeatures } = model
-        const domElements = domElementsRef.current
-        const labelPositions = labelPositionsRef.current
+        // Track bpPerPx to recalculate positions on zoom changes
+        const { bpPerPx } = view
+        void bpPerPx
         const newKeys = new Set<string>()
 
         const featureLabels = deduplicateFeatureLabels(
@@ -199,8 +200,6 @@ function FloatingLabels({
             const labelKey = `${key}-${i}`
             newKeys.add(labelKey)
 
-            // Store position data for fast offset updates
-            // Use rightPx (actual feature bounds) to constrain labels within feature width
             labelPositions.set(labelKey, {
               featureLeftPx: featureVisualLeftPx,
               featureRightPx: rightPx,
@@ -234,8 +233,7 @@ function FloatingLabels({
               element.style.lineHeight = lineHeight
             }
 
-            // Set initial transform (offset autorun will update x on scroll)
-            // Use untracked to avoid this autorun re-running on offsetPx changes
+            // Set initial transform using untracked to avoid re-running on offsetPx changes
             const offsetPx = untracked(() => view.offsetPx)
             const naturalX = featureVisualLeftPx - offsetPx
             const maxX = rightPx - offsetPx - labelWidth
@@ -244,7 +242,6 @@ function FloatingLabels({
           }
         }
 
-        // Remove stale elements
         for (const [key, element] of domElements.entries()) {
           if (!newKeys.has(key)) {
             element.remove()
@@ -255,11 +252,20 @@ function FloatingLabels({
       },
       { name: 'FloatingLabelsLayout' },
     )
+
+    return () => {
+      dispose()
+      for (const element of domElements.values()) {
+        element.remove()
+      }
+      domElements.clear()
+      labelPositions.clear()
+    }
   }, [assembly, model, view])
 
   // Autorun 2: Update transforms when offsetPx changes (fast path)
-  useEffect(() => {
-    return autorun(
+  useLayoutEffect(() => {
+    const dispose = autorun(
       function floatingLabelsOffsetAutorun() {
         const { offsetPx } = view
         const domElements = domElementsRef.current
@@ -276,7 +282,6 @@ function FloatingLabels({
           const maxX = featureRightPx - offsetPx - labelWidth
           const x = clamp(0, naturalX, maxX)
 
-          // Only update DOM if x position changed
           if (pos.lastX !== x) {
             pos.lastX = x
             element.style.transform = `translate(${x}px, ${y}px)`
@@ -285,6 +290,8 @@ function FloatingLabels({
       },
       { name: 'FloatingLabelsOffset' },
     )
+
+    return dispose
   }, [view])
 
   return (
@@ -301,6 +308,6 @@ function FloatingLabels({
       }}
     />
   )
-}
+})
 
 export default FloatingLabels
