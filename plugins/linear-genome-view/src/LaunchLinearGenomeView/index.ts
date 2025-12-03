@@ -23,7 +23,7 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
     }: {
       session: AbstractSessionModel
       assembly?: string
-      loc: string
+      loc?: string
       tracks?: string[]
       tracklist?: boolean
       nav?: boolean
@@ -70,11 +70,15 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
           }
         }
 
-        await handleSelectedRegion({
-          input: loc,
-          model: view,
-          assembly: asm,
-        })
+        if (loc) {
+          await handleSelectedRegion({
+            input: loc,
+            model: view,
+            assembly: asm,
+          })
+        } else {
+          view.showAllRegionsInAssembly(assembly)
+        }
 
         const idsNotFound = [] as string[]
         for (const track of tracks) {
