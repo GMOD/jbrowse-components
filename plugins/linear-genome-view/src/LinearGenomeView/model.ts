@@ -1909,7 +1909,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(
             function initAutorun() {
-              const { init } = self
+              const { init, initialized } = self
+              if (!initialized) {
+                return
+              }
               if (init) {
                 if (init.loc) {
                   self
