@@ -5,8 +5,7 @@
   "workspaces": [
     "packages/*",
     "products/*",
-    "plugins/*",
-    "puppeteer-test-utils"
+    "plugins/*"
   ],
   "scripts": {
     "build": "yarn useDist && node --experimental-strip-types scripts/build.ts && yarn useSrc",
