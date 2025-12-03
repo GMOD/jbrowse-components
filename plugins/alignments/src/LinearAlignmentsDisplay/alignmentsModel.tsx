@@ -19,9 +19,20 @@ export function LinearAlignmentsDisplayMixin(
      * refers to LinearPileupDisplay sub-display model
      */
     PileupDisplay: types.maybe(
-      types.union(
-        ...getLowerPanelDisplays(pluginManager).map(f => f.stateModel),
-      ),
+      (() => {
+        const displayTypes = getLowerPanelDisplays(pluginManager).map(
+          f => f.stateModel,
+        )
+        const typeMap = Object.fromEntries(displayTypes.map(t => [t.name, t]))
+        return types.union(
+          {
+            dispatcher: (snapshot: { type?: string }) =>
+              (snapshot?.type ? typeMap[snapshot.type] : undefined) ??
+              displayTypes[0]!,
+          },
+          ...displayTypes,
+        )
+      })(),
     ),
     /**
      * #property

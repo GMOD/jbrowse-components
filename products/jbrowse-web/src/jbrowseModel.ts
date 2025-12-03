@@ -6,6 +6,8 @@ import { removeAttr } from './util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
+console.log('hi')
+
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-expect-error
 window.getSnapshot = getSnapshot

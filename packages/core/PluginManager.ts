@@ -394,7 +394,8 @@ export default class PluginManager {
     return types.union(
       {
         dispatcher: (snapshot: { type?: string }) =>
-          snapshot?.type ? typeMap[snapshot.type] : undefined,
+          (snapshot?.type ? typeMap[snapshot.type] : undefined) ??
+          pluggableTypes[0]!,
       },
       ...pluggableTypes,
     )
@@ -418,7 +419,8 @@ export default class PluginManager {
     return types.union(
       {
         dispatcher: (snapshot: { type?: string }) =>
-          snapshot?.type ? typeMap[snapshot.type] : undefined,
+          (snapshot?.type ? typeMap[snapshot.type] : undefined) ??
+          pluggableTypes[0]!,
       },
       ...pluggableTypes,
     ) as IAnyModelType

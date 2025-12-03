@@ -77,7 +77,7 @@ export const FileLocation = types.snapshotProcessor(
           case 'BlobLocation':
             return BlobLocation
           default:
-            return undefined
+            return UriLocation
         }
       },
     },

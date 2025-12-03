@@ -35,7 +35,7 @@ export default ConfigurationSchema(
                 case 'WebWorkerRpcDriver':
                   return WebWorkerRpcDriverConfigSchema
                 default:
-                  return undefined
+                  return MainThreadRpcDriverConfigSchema
               }
             },
           },
