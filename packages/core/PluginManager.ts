@@ -390,7 +390,14 @@ export default class PluginManager {
       )
       return fallback
     }
-    return types.union(...pluggableTypes)
+    const typeMap = Object.fromEntries(pluggableTypes.map(t => [t.name, t]))
+    return types.union(
+      {
+        dispatcher: (snapshot: { type?: string }) =>
+          snapshot?.type ? typeMap[snapshot.type] : undefined,
+      },
+      ...pluggableTypes,
+    )
   }
 
   /** get a MST type for the union of all specified pluggable config schemas */
@@ -407,7 +414,14 @@ export default class PluginManager {
     if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
     }
-    return types.union(...pluggableTypes) as IAnyModelType
+    const typeMap = Object.fromEntries(pluggableTypes.map(t => [t.name, t]))
+    return types.union(
+      {
+        dispatcher: (snapshot: { type?: string }) =>
+          snapshot?.type ? typeMap[snapshot.type] : undefined,
+      },
+      ...pluggableTypes,
+    ) as IAnyModelType
   }
 
   jbrequireCache = new Map()

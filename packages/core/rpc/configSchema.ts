@@ -27,6 +27,18 @@ export default ConfigurationSchema(
     drivers: types.optional(
       types.map(
         types.union(
+          {
+            dispatcher: (snapshot: { type?: string }) => {
+              switch (snapshot?.type) {
+                case 'MainThreadRpcDriver':
+                  return MainThreadRpcDriverConfigSchema
+                case 'WebWorkerRpcDriver':
+                  return WebWorkerRpcDriverConfigSchema
+                default:
+                  return undefined
+              }
+            },
+          },
           MainThreadRpcDriverConfigSchema,
           WebWorkerRpcDriverConfigSchema,
         ),

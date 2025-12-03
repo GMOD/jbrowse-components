@@ -66,7 +66,25 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
 })
 
 export const FileLocation = types.snapshotProcessor(
-  types.union(LocalPathLocation, UriLocation, BlobLocation),
+  types.union(
+    {
+      dispatcher: (snapshot: { locationType?: string }) => {
+        switch (snapshot?.locationType) {
+          case 'LocalPathLocation':
+            return LocalPathLocation
+          case 'UriLocation':
+            return UriLocation
+          case 'BlobLocation':
+            return BlobLocation
+          default:
+            return undefined
+        }
+      },
+    },
+    LocalPathLocation,
+    UriLocation,
+    BlobLocation,
+  ),
   {
     // @ts-expect-error
     preProcessor(snap) {
