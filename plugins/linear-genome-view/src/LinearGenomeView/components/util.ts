@@ -82,3 +82,17 @@ export function getCytobands(assembly: Assembly | undefined, refName: string) {
       .filter(f => f.refName === refName) || []
   )
 }
+
+const MIN_DRAG_DISTANCE = 30
+
+export function shouldSwapTracks(
+  lastSwapY: number | undefined,
+  currentY: number,
+  movingDown: boolean,
+) {
+  return (
+    lastSwapY === undefined ||
+    (movingDown && currentY > lastSwapY + MIN_DRAG_DISTANCE) ||
+    (!movingDown && currentY < lastSwapY - MIN_DRAG_DISTANCE)
+  )
+}
