@@ -175,12 +175,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             res,
           )
 
-          for (const record of records) {
-            allRecords.push({
-              ...record,
-              region1Idx: i,
-              region2Idx: j,
-            })
+          for (const { bin1, bin2, counts } of records) {
+            allRecords.push({ bin1, bin2, counts, region1Idx: i, region2Idx: j })
           }
         }
       }

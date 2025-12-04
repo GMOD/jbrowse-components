@@ -1,6 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
 import {
-  getContainingTrack,
   getContainingView,
   getSession,
   isAbortException,
@@ -26,15 +24,9 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
   ;(async () => {
     try {
       const { rpcManager } = getSession(self)
-      const track = getContainingTrack(self)
-      const adapterConfig = getConf(track, 'adapter')
-      const { norms } = (await rpcManager.call(
-        getConf(track, 'trackId'),
-        'CoreGetInfo',
-        {
-          adapterConfig,
-        },
-      )) as { norms?: string[] }
+      const { norms } = (await rpcManager.call(self.id, 'CoreGetInfo', {
+        adapterConfig: self.adapterConfig,
+      })) as { norms?: string[] }
       if (isAlive(self) && norms) {
         self.setAvailableNormalizations(norms)
       }
@@ -97,8 +89,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         self.setRenderingImageData(result.imageData)
         self.setLastDrawnOffsetPx(Math.max(0, view.offsetPx))
       }
-
-      self.setLastDrawnBpPerPx(bpPerPx)
     } catch (error) {
       if (!isAbortException(error)) {
         if (isAlive(self)) {
@@ -121,24 +111,16 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         if (!view.initialized) {
           return
         }
-        const {
-          resolution,
-          useLogScale,
-          colorScheme,
-          activeNormalization,
-          mode,
-          height,
-        } = self
         const { dynamicBlocks } = view
         const regions = dynamicBlocks.contentBlocks
 
         // access these to trigger autorun on changes
-        void resolution
-        void useLogScale
-        void colorScheme
-        void activeNormalization
-        void mode
-        void height
+        self.resolution
+        self.useLogScale
+        self.colorScheme
+        self.activeNormalization
+        self.mode
+        self.height
 
         if (untracked(() => self.error) || !regions.length) {
           return

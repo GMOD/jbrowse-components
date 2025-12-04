@@ -35,12 +35,7 @@ const BlockErrorMessage = observer(function ({
       action={
         <>
           <Tooltip title="Reload track">
-            <IconButton
-              data-testid="reload_button"
-              onClick={() => {
-                model.reload()
-              }}
-            >
+            <IconButton data-testid="reload_button" onClick={model.reload}>
               <RefreshIcon />
             </IconButton>
           </Tooltip>

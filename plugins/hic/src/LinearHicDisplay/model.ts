@@ -77,10 +77,6 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      lastDrawnBpPerPx: 0,
-      /**
-       * #volatile
-       */
       ref: null as HTMLCanvasElement | null,
       /**
        * #volatile
@@ -132,12 +128,6 @@ export default function stateModelFactory(
        */
       setLastDrawnOffsetPx(n: number) {
         self.lastDrawnOffsetPx = n
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(n: number) {
-        self.lastDrawnBpPerPx = n
       },
       /**
        * #action

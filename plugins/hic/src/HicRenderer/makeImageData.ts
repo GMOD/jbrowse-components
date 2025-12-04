@@ -76,13 +76,11 @@ export async function makeImageData(
   const regionBinOffsets = regions.map(region => Math.floor(region.start / res))
   if (features.length) {
     let maxScore = 0
-    let minBin = 0
-    let maxBin = 0
     checkStopToken(stopToken)
-    for (const { bin1, bin2, counts } of features) {
-      maxScore = Math.max(counts, maxScore)
-      minBin = Math.min(Math.min(bin1, bin2), minBin)
-      maxBin = Math.max(Math.max(bin1, bin2), maxBin)
+    for (const { counts } of features) {
+      if (counts > maxScore) {
+        maxScore = counts
+      }
     }
     checkStopToken(stopToken)
     const colorSchemes = {
@@ -116,16 +114,15 @@ export async function makeImageData(
 
     // TODO: handle reversed regions for multi-region case
     ctx.rotate(-Math.PI / 4)
+
+    // Precompute combined offsets for each region (bin offset + pixel-to-bin conversion)
+    const pxToBinFactor = bpPerPx / res
+    const regionCombinedOffsets = regionBinOffsets.map(
+      (binOffset, i) => (regionPixelOffsets[i] ?? 0) * pxToBinFactor - binOffset,
+    )
+
     forEachWithStopTokenCheck(features, stopToken, (f: HicFeature) => {
       const { bin1, bin2, counts, region1Idx, region2Idx } = f
-
-      // Get the bin offset for each region
-      const offset1 = regionBinOffsets[region1Idx] ?? 0
-      const offset2 = regionBinOffsets[region2Idx] ?? 0
-
-      // Get the pixel offset for each region
-      const pixelOffset1 = regionPixelOffsets[region1Idx] ?? 0
-      const pixelOffset2 = regionPixelOffsets[region2Idx] ?? 0
 
       ctx.fillStyle = readConfObject(config, 'color', {
         count: counts,
@@ -135,12 +132,8 @@ export async function makeImageData(
         useLogScale,
       })
 
-      // Position the bin relative to its region's bin offset, then add the region's pixel offset
-      // Convert pixel offset to bin-space: pixelOffset * bpPerPx gives bp, then / res gives bins
-      const binOffset1 = (pixelOffset1 * bpPerPx) / res
-      const binOffset2 = (pixelOffset2 * bpPerPx) / res
-      const x = (bin1 - offset1 + binOffset1) * w
-      const y = (bin2 - offset2 + binOffset2) * w
+      const x = (bin1 + (regionCombinedOffsets[region1Idx] ?? 0)) * w
+      const y = (bin2 + (regionCombinedOffsets[region2Idx] ?? 0)) * w
       ctx.fillRect(x, y, w, w)
     })
     ctx.restore()

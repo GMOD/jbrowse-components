@@ -71,11 +71,9 @@ export default class HicRenderer extends ServerSideRendererType {
       sessionId,
       adapterConfig,
     )
-
-    const features = await (
-      dataAdapter as unknown as HicAdapter
-    ).getMultiRegionContactRecords(regions, args)
-
-    return features
+    return (dataAdapter as unknown as HicAdapter).getMultiRegionContactRecords(
+      regions,
+      args,
+    )
   }
 }
