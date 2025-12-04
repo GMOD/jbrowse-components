@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, toLocale } from '@jbrowse/core/util'
+import { getContainingView, reducePrecision } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -14,6 +14,56 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 const SQRT2 = Math.sqrt(2)
+
+function HicTooltip({
+  item,
+  x,
+  y,
+}: {
+  item: HicFlatbushItem
+  x: number
+  y: number
+}) {
+  return (
+    <BaseTooltip clientPoint={{ x: x + 15, y }}>
+      <div>Score: {reducePrecision(item.counts)}</div>
+    </BaseTooltip>
+  )
+}
+
+function Crosshairs({
+  x,
+  y,
+  yScalar,
+  left,
+  width,
+  height,
+}: {
+  x: number
+  y: number
+  yScalar: number
+  left: number
+  width: number
+  height: number
+}) {
+  const dx = y / yScalar
+  return (
+    <svg
+      style={{
+        position: 'absolute',
+        left,
+        top: 0,
+        width,
+        height,
+        pointerEvents: 'none',
+      }}
+    >
+      <g stroke="#000" strokeWidth="1" fill="none">
+        <path d={`M ${x - dx} 0 L ${x} ${y} L ${x + dx} 0`} />
+      </g>
+    </svg>
+  )
+}
 
 /**
  * Transform screen coordinates to the unrotated coordinate space.
@@ -127,37 +177,22 @@ const HicCanvas = observer(function ({
         height={height * 2}
       />
       {hoveredItem && localMousePos ? (
-        <svg
-          style={{
-            position: 'absolute',
-            left: canvasLeft,
-            top: 0,
-            width: canvasWidth,
-            height,
-            pointerEvents: 'none',
-          }}
-        >
-          <g stroke="#000" strokeWidth="1" fill="none">
-            <path
-              d={`M ${localMousePos.x - localMousePos.y} 0 L ${localMousePos.x} ${localMousePos.y} L ${localMousePos.x + localMousePos.y} 0`}
-            />
-          </g>
-        </svg>
+        <Crosshairs
+          x={localMousePos.x}
+          y={localMousePos.y}
+          yScalar={yScalar}
+          left={canvasLeft}
+          width={canvasWidth}
+          height={height}
+        />
       ) : null}
 
       {hoveredItem && mousePosition ? (
-        <BaseTooltip
-          clientPoint={{ x: mousePosition.x + 15, y: mousePosition.y }}
-        >
-          <div>
-            Score:{' '}
-            {toLocale(
-              hoveredItem.counts > 10
-                ? Math.round(hoveredItem.counts)
-                : hoveredItem.counts,
-            )}
-          </div>
-        </BaseTooltip>
+        <HicTooltip
+          item={hoveredItem}
+          x={mousePosition.x}
+          y={mousePosition.y}
+        />
       ) : null}
     </div>
   )

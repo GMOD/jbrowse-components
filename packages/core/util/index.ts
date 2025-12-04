@@ -998,16 +998,17 @@ export function getBpDisplayStr(total: number) {
   }
 }
 
-function r(s: number) {
-  return toLocale(Number.parseFloat(s.toPrecision(3)))
+export function reducePrecision(s: number, n = 3) {
+  return toLocale(Number.parseFloat(s.toPrecision(n)))
 }
+
 export function getProgressDisplayStr(current: number, total: number) {
   if (Math.floor(total / 1_000_000) > 0) {
-    return `${r(current / 1_000_000)}/${r(total / 1_000_000)}Mb`
+    return `${reducePrecision(current / 1_000_000)}/${reducePrecision(total / 1_000_000)}Mb`
   } else if (Math.floor(total / 1_000) > 0) {
-    return `${r(current / 1_000)}/${r(total / 1_000)}Kb`
+    return `${reducePrecision(current / 1_000)}/${reducePrecision(total / 1_000)}Kb`
   } else {
-    return `${r(current)}/${r(total)}}bytes`
+    return `${reducePrecision(current)}/${reducePrecision(total)}}bytes`
   }
 }
 
