@@ -1,5 +1,9 @@
 import {
   ENTRY_DEPTH,
+  ENTRY_LEN_COUNT,
+  ENTRY_LEN_MAX,
+  ENTRY_LEN_MIN,
+  ENTRY_LEN_TOTAL,
   ENTRY_NEG,
   ENTRY_POS,
   ENTRY_PROB_COUNT,
@@ -29,16 +33,38 @@ const STRAND_TO_ENTRY_IDX: Record<-1 | 1, number> = {
   [1]: ENTRY_POS,
 }
 
-export function inc(bin: FlatBaseCoverageBin, strand: -1 | 0 | 1, key: string) {
+// Use a larger array size to accommodate length fields
+const ENTRY_SIZE_WITH_LENGTH = 9
+
+export function inc(
+  bin: FlatBaseCoverageBin,
+  strand: -1 | 0 | 1,
+  key: string,
+  length?: number,
+) {
   let entry = bin.entries.get(key)
   if (!entry) {
-    entry = new Uint32Array(3)
+    entry = new Uint32Array(length !== undefined ? ENTRY_SIZE_WITH_LENGTH : 3)
+    if (length !== undefined) {
+      // Initialize min to max uint32 value so first comparison works
+      entry[ENTRY_LEN_MIN] = 0xffffffff
+      entry[ENTRY_LEN_MAX] = 0
+    }
     bin.entries.set(key, entry)
   }
-  entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
+  entry[ENTRY_DEPTH]!++
   if (strand !== 0) {
-    const strandIdx = STRAND_TO_ENTRY_IDX[strand]
-    entry[strandIdx] = (entry[strandIdx] || 0) + 1
+    entry[STRAND_TO_ENTRY_IDX[strand]]!++
+  }
+  if (length !== undefined) {
+    entry[ENTRY_LEN_TOTAL]! += length
+    entry[ENTRY_LEN_COUNT]!++
+    if (length < entry[ENTRY_LEN_MIN]!) {
+      entry[ENTRY_LEN_MIN] = length
+    }
+    if (length > entry[ENTRY_LEN_MAX]!) {
+      entry[ENTRY_LEN_MAX] = length
+    }
   }
 }
 
@@ -53,18 +79,29 @@ export function incWithProbabilities(
     entry = new Uint32Array(5)
     bin.entries.set(key, entry)
   }
-  entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
+  entry[ENTRY_DEPTH]!++
   if (strand !== 0) {
-    const strandIdx = STRAND_TO_ENTRY_IDX[strand]
-    entry[strandIdx] = (entry[strandIdx] || 0) + 1
+    entry[STRAND_TO_ENTRY_IDX[strand]]!++
   }
-  entry[ENTRY_PROB_TOTAL] =
-    (entry[ENTRY_PROB_TOTAL] || 0) + Math.round(probability * 1000000)
-  entry[ENTRY_PROB_COUNT] = (entry[ENTRY_PROB_COUNT] || 0) + 1
+  entry[ENTRY_PROB_TOTAL]! += Math.round(probability * 1000000)
+  entry[ENTRY_PROB_COUNT]!++
 }
 
 // Helper to get average probability from entry (returns 0-1 range)
 export function getAvgProbability(entry: Uint32Array) {
   const count = entry[ENTRY_PROB_COUNT] || 0
   return count ? (entry[ENTRY_PROB_TOTAL] || 0) / count / 1000000 : 0
+}
+
+// Helper to get length stats from entry
+export function getLengthStats(entry: Uint32Array) {
+  const count = entry[ENTRY_LEN_COUNT] || 0
+  if (!count) {
+    return undefined
+  }
+  return {
+    avgLength: (entry[ENTRY_LEN_TOTAL] || 0) / count,
+    minLength: entry[ENTRY_LEN_MIN],
+    maxLength: entry[ENTRY_LEN_MAX],
+  }
 }

@@ -18,6 +18,11 @@ export const ENTRY_NEG = 1 // strand -1
 export const ENTRY_POS = 2 // strand 1
 export const ENTRY_PROB_TOTAL = 3
 export const ENTRY_PROB_COUNT = 4
+// Length tracking indices (for noncov entries)
+export const ENTRY_LEN_TOTAL = 5
+export const ENTRY_LEN_COUNT = 6
+export const ENTRY_LEN_MIN = 7
+export const ENTRY_LEN_MAX = 8
 
 // Entry category prefixes for flat map keys
 export const CAT_MOD = 'm:' // e.g., 'm:h' for mod_h
@@ -27,6 +32,7 @@ export const CAT_NONCOV = 'c:' // e.g., 'c:insertion'
 
 // Flat entry: [entryDepth, negCount, posCount]
 // For mods with probability: [entryDepth, neg, pos, probTotal, probCount]
+// For noncov with length: [entryDepth, neg, pos, probTotal, probCount, lenTotal, lenCount, lenMin, lenMax]
 export type FlatEntry = Uint32Array
 
 // SNP entry type: [depth, neg, pos]

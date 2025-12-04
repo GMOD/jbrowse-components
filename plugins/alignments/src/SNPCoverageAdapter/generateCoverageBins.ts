@@ -28,6 +28,7 @@ export async function generateCoverageBins({
   const diff = region.start - start2
 
   let regionSequence: string | undefined
+  let slicedSequence: string | undefined
   let start = performance.now()
   for (const feature of features) {
     if (performance.now() - start > 400) {
@@ -37,19 +38,22 @@ export async function generateCoverageBins({
     processDepth({ feature, bins, region })
 
     if (colorBy?.type === 'modifications') {
-      regionSequence ??=
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: region.end + 1,
-        })) || ''
+      if (regionSequence === undefined) {
+        regionSequence =
+          (await fetchSequence({
+            ...region,
+            start: start2,
+            end: region.end + 1,
+          })) || ''
+        slicedSequence = regionSequence.slice(diff)
+      }
 
       processModifications({
         feature,
         colorBy,
         bins,
         region,
-        regionSequence: regionSequence.slice(diff),
+        regionSequence: slicedSequence!,
       })
     } else if (colorBy?.type === 'methylation') {
       regionSequence ??=

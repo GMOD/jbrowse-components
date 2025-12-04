@@ -4,7 +4,6 @@ import {
   ReactRendering,
   getContainingView,
   getSession,
-  getViewParams,
 } from '@jbrowse/core/util'
 
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
@@ -70,7 +69,6 @@ export async function renderBaseLinearDisplaySvg(
           ...renderArgs,
           ...renderProps,
           renderingProps,
-          viewParams: getViewParams(self, true),
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,
         }),

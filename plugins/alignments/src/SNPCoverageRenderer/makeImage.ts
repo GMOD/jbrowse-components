@@ -10,7 +10,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { getOrigin, getScale } from '@jbrowse/plugin-wiggle'
 import { rpcResult } from 'librpc-web-mod'
 
-import { getAvgProbability } from '../SNPCoverageAdapter/util'
+import { getAvgProbability, getLengthStats } from '../SNPCoverageAdapter/util'
 import {
   CAT_MOD,
   CAT_NONCOV,
@@ -192,7 +192,6 @@ export function makeImage(
   // Flatbush clickmap data for interbase indicators
   const coords = [] as number[]
   const items = [] as InterbaseIndicatorItem[]
-  let lastInterbaseCountX = Number.NEGATIVE_INFINITY
 
   const drawingModifications = colorBy.type === 'modifications'
   const drawingMethylation = colorBy.type === 'methylation'
@@ -383,15 +382,26 @@ export function makeImage(
         curr += entryDepth
       }
 
-      // Add to clickmap if more than 0.5px from last added
-      if (noncovEntries.length > 0 && x - lastInterbaseCountX > 0.5) {
-        const maxEntry = noncovEntries.reduce((a, b) =>
+      // Add to clickmap when zoomed in enough for meaningful interaction,
+      // or when interbase events represent a significant fraction of reads
+      const totalInterbaseCount = noncovEntries.reduce(
+        (sum, [, entry]) => sum + (entry[ENTRY_DEPTH] ?? 0),
+        0,
+      )
+      const isMajorityInterbase =
+        score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
+      if (noncovEntries.length > 0 && (bpPerPx < 10 || isMajorityInterbase)) {
+        const maxNoncovEntry = noncovEntries.reduce((a, b) =>
           (a[1][ENTRY_DEPTH] ?? 0) > (b[1][ENTRY_DEPTH] ?? 0) ? a : b,
         )
-        const maxBase = maxEntry[0]
-        const clickWidth = Math.max(r * 2, 1.5)
+        const maxBase = maxNoncovEntry[0]
+        const maxEntry = maxNoncovEntry[1]
+        const lengthStats = getLengthStats(maxEntry)
+        // Extend hitbox horizontally for easier mouse targeting
+        const hitboxPadding = 2
+        const clickWidth = Math.max(r * 2, 1.5) + hitboxPadding * 2
         coords.push(
-          x,
+          x - hitboxPadding,
           INTERBASE_INDICATOR_HEIGHT,
           x + clickWidth,
           INTERBASE_INDICATOR_HEIGHT + totalHeight,
@@ -401,8 +411,10 @@ export function makeImage(
           base: maxBase,
           count: curr,
           total: score0,
+          avgLength: lengthStats?.avgLength,
+          minLength: lengthStats?.minLength,
+          maxLength: lengthStats?.maxLength,
         })
-        lastInterbaseCountX = x
       }
     }
 
@@ -410,12 +422,14 @@ export function makeImage(
       let accum = 0
       let max = 0
       let maxBase = ''
+      let maxEntry: Uint32Array | undefined
       for (const [base, entry] of noncovEntries) {
         const entryDepth = entry[ENTRY_DEPTH]!
         accum += entryDepth
         if (entryDepth > max) {
           max = entryDepth
           maxBase = base
+          maxEntry = entry
         }
       }
 
@@ -434,18 +448,23 @@ export function makeImage(
         ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
         ctx.fill()
 
-        // Add to Flatbush clickmap
+        const lengthStats = maxEntry ? getLengthStats(maxEntry) : undefined
+        // Add to Flatbush clickmap with extended hitbox for easier mouse targeting
+        const hitboxPadding = 3
         coords.push(
-          l - INTERBASE_INDICATOR_WIDTH / 2,
+          l - INTERBASE_INDICATOR_WIDTH / 2 - hitboxPadding,
           0,
-          l + INTERBASE_INDICATOR_WIDTH / 2,
-          INTERBASE_INDICATOR_HEIGHT,
+          l + INTERBASE_INDICATOR_WIDTH / 2 + hitboxPadding,
+          INTERBASE_INDICATOR_HEIGHT + hitboxPadding,
         )
         items.push({
           type: maxBase as 'insertion' | 'softclip' | 'hardclip',
           base: maxBase,
           count: accum,
           total: indicatorComparatorScore,
+          avgLength: lengthStats?.avgLength,
+          minLength: lengthStats?.minLength,
+          maxLength: lengthStats?.maxLength,
         })
       }
     }

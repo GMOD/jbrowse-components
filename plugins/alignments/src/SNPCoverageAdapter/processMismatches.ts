@@ -79,7 +79,11 @@ export function processMismatches({
           bin[strandRef]--
           bin.refbase = altbase
         } else {
-          inc(bin, fstrand, CAT_NONCOV + MISMATCH_TYPE_NAMES[type]!)
+          const len =
+            type === MISMATCH_TYPE_INSERTION
+              ? mismatch.insertedBases?.length
+              : mismatch.cliplen
+          inc(bin, fstrand, CAT_NONCOV + MISMATCH_TYPE_NAMES[type]!, len)
         }
       }
     }
