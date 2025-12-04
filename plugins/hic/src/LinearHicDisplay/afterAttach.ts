@@ -118,6 +118,9 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
     autorun(
       () => {
         const view = getContainingView(self) as LGV
+        if (!view.initialized) {
+          return
+        }
         const {
           resolution,
           useLogScale,
@@ -125,9 +128,8 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
           activeNormalization,
           mode,
           height,
-          statsReadyAndRegionNotTooLarge,
         } = self
-        const { dynamicBlocks, initialized } = view
+        const { dynamicBlocks } = view
         const regions = dynamicBlocks.contentBlocks
 
         // access these to trigger autorun on changes
@@ -138,12 +140,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         void mode
         void height
 
-        if (
-          !initialized ||
-          untracked(() => self.error) ||
-          !statsReadyAndRegionNotTooLarge ||
-          !regions.length
-        ) {
+        if (untracked(() => self.error) || !regions.length) {
           return
         }
 

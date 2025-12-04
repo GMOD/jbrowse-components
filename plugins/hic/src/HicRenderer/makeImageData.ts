@@ -52,7 +52,6 @@ export async function makeImageData(
 
   const { statusCallback = () => {} } = props
   statusCallback('Drawing Hi-C matrix')
-  const region = regions[0]!
   const { dataAdapter } = await getAdapter(
     pluginManager,
     sessionId,
@@ -62,10 +61,19 @@ export async function makeImageData(
     bpPerPx / resolution,
   )
 
-  const width = (region.end - region.start) / bpPerPx
   const w = res / (bpPerPx * Math.sqrt(2))
   const baseColor = colord(readConfObject(config, 'baseColor'))
-  const offset = Math.floor(region.start / res)
+
+  // Calculate pixel offset for each region (cumulative)
+  const regionPixelOffsets: number[] = []
+  let cumulativePixelOffset = 0
+  for (const region of regions) {
+    regionPixelOffsets.push(cumulativePixelOffset)
+    cumulativePixelOffset += (region.end - region.start) / bpPerPx
+  }
+
+  // Calculate bin offset within each region
+  const regionBinOffsets = regions.map(region => Math.floor(region.start / res))
   if (features.length) {
     let maxScore = 0
     let minBin = 0
@@ -106,13 +114,19 @@ export async function makeImageData(
     }
     ctx.save()
 
-    if (region.reversed === true) {
-      ctx.scale(-1, 1)
-      ctx.translate(-width, 0)
-    }
+    // TODO: handle reversed regions for multi-region case
     ctx.rotate(-Math.PI / 4)
     forEachWithStopTokenCheck(features, stopToken, (f: HicFeature) => {
-      const { bin1, bin2, counts } = f
+      const { bin1, bin2, counts, region1Idx, region2Idx } = f
+
+      // Get the bin offset for each region
+      const offset1 = regionBinOffsets[region1Idx] ?? 0
+      const offset2 = regionBinOffsets[region2Idx] ?? 0
+
+      // Get the pixel offset for each region
+      const pixelOffset1 = regionPixelOffsets[region1Idx] ?? 0
+      const pixelOffset2 = regionPixelOffsets[region2Idx] ?? 0
+
       ctx.fillStyle = readConfObject(config, 'color', {
         count: counts,
         maxScore,
@@ -120,7 +134,14 @@ export async function makeImageData(
         scale,
         useLogScale,
       })
-      ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
+
+      // Position the bin relative to its region's bin offset, then add the region's pixel offset
+      // Convert pixel offset to bin-space: pixelOffset * bpPerPx gives bp, then / res gives bins
+      const binOffset1 = (pixelOffset1 * bpPerPx) / res
+      const binOffset2 = (pixelOffset2 * bpPerPx) / res
+      const x = (bin1 - offset1 + binOffset1) * w
+      const y = (bin2 - offset2 + binOffset2) * w
+      ctx.fillRect(x, y, w, w)
     })
     ctx.restore()
   }

@@ -167,7 +167,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
           const region1 = regions[i]!
           const region2 = regions[j]!
 
-          let records = await this.hic.getContactRecords(
+          const records = await this.hic.getContactRecords(
             normalization,
             { chr: region1.refName, start: region1.start, end: region1.end },
             { chr: region2.refName, start: region2.start, end: region2.end },
