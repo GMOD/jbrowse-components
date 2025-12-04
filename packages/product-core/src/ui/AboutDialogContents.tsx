@@ -3,9 +3,10 @@ import { useState } from 'react'
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import FileInfoPanel from './FileInfoPanel'
 import HeaderButtons from './HeaderButtons'
@@ -13,6 +14,7 @@ import RefNameInfoDialog from './RefNameInfoDialog'
 import { generateDisplayableConfig } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   content: {
@@ -22,11 +24,12 @@ const useStyles = makeStyles()({
 
 const AboutDialogContents = observer(function ({
   config,
+  session,
 }: {
   config: AnyConfigurationModel
+  session: AbstractSessionModel
 }) {
-  const conf = readConfObject(config)
-  const session = getSession(config)
+  const conf = isStateTreeNode(config) ? readConfObject(config) : config
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)
 
@@ -38,6 +41,7 @@ const AboutDialogContents = observer(function ({
 
   const confPostExt = generateDisplayableConfig({
     config,
+    session,
     pluginManager,
   })
 
@@ -74,9 +78,10 @@ const AboutDialogContents = observer(function ({
           <ExtraPanel.Component config={config} />
         </BaseCard>
       ) : null}
-      <FileInfoPanel config={config} />
+      <FileInfoPanel config={config} session={session} />
       {showRefNames ? (
         <RefNameInfoDialog
+          session={session}
           config={config}
           onClose={() => {
             setShowRefNames(false)
