@@ -44,24 +44,11 @@ export function getSOTermAndDescription(
     return ['remark', 'no alternative alleles']
   }
 
-  // Group alts by SO term
-  const grouped = new Map<string, string[]>()
-  for (const a of alt) {
-    const soTerm = getSOTerm(a, ref, parser)
-    const alts = grouped.get(soTerm) ?? []
-    alts.push(a)
-    grouped.set(soTerm, alts)
-  }
+  const soTerms = alt.map(a => getSOTerm(a, ref, parser))
+  const uniqueSoTerms = [...new Set(soTerms)]
+  const description = formatGroupDescription(ref, alt)
 
-  // Generate combined description for each group
-  const soTerms: string[] = []
-  const descriptions: string[] = []
-  for (const [soTerm, alts] of grouped) {
-    soTerms.push(soTerm)
-    descriptions.push(formatGroupDescription(soTerm, ref, alts))
-  }
-
-  return [soTerms.join(','), descriptions.join(',')]
+  return [uniqueSoTerms.join(','), description]
 }
 
 function getSOTerm(alt: string, ref: string, parser: VCF): string {
@@ -80,43 +67,21 @@ function getSOTerm(alt: string, ref: string, parser: VCF): string {
 
   if (lenRef === 1 && lenAlt === 1) {
     return 'SNV'
+  } else if (lenRef === lenAlt) {
+    return isInversion(ref, alt) ? 'inversion' : 'substitution'
+  } else {
+    return lenRef < lenAlt ? 'insertion' : 'deletion'
   }
-  if (lenRef === lenAlt) {
-    return isInversion(ref, alt) ? 'inv' : 'substitution'
-  }
-  return lenRef < lenAlt ? 'ins' : 'del'
 }
 
-function formatGroupDescription(
-  soTerm: string,
-  ref: string,
-  alts: string[],
-): string {
+function formatGroupDescription(ref: string, alts: string[]): string {
   if (alts.every(isSymbolic)) {
     return alts.join(',')
   }
 
   const lenRef = ref.length
-  const isLong = lenRef > 5 || alts.some(a => a.length > 5)
 
-  if (!isLong) {
-    return `${soTerm} ${ref} -> ${alts.join(',')}`
-  }
-
-  switch (soTerm) {
-    case 'substitution':
-    case 'inv':
-      return `${soTerm} ${getBpDisplayStr(lenRef)} -> ${alts.map(a => getBpDisplayStr(a.length)).join(',')}`
-
-    case 'ins':
-      return alts.map(a => `${getBpDisplayStr(a.length - lenRef)} INS`).join(',')
-
-    case 'del':
-      return alts.map(a => `${getBpDisplayStr(lenRef - a.length)} DEL`).join(',')
-
-    default:
-      return alts.join(',')
-  }
+  return `${ref.length > 10 ? getBpDisplayStr(lenRef) : ref} -> ${alts.map(a => (a.length > 10 ? getBpDisplayStr(a.length) : a)).join(',')}`
 }
 
 function findSOTerm(alt: string, parser: VCF): string | undefined {
@@ -151,22 +116,9 @@ export function getMinimalDesc(ref: string, alt: string) {
   const lenAlt = alt.length
   const isLong = lenRef > 5 || lenAlt > 5
 
-  if (lenRef === lenAlt) {
-    const soTerm = isInversion(ref, alt) ? 'inv' : 'substitution'
-    return isLong
-      ? `${soTerm} ${getBpDisplayStr(lenRef)} -> ${getBpDisplayStr(lenAlt)}`
-      : `${soTerm} ${ref} -> ${alt}`
-  }
-
-  if (lenRef < lenAlt) {
-    return isLong
-      ? `${getBpDisplayStr(lenAlt - lenRef)} INS`
-      : `ins ${ref} -> ${alt}`
-  }
-
   return isLong
-    ? `${getBpDisplayStr(lenRef - lenAlt)} DEL`
-    : `del ${ref} -> ${alt}`
+    ? `${getBpDisplayStr(lenRef)} -> ${getBpDisplayStr(lenAlt)}`
+    : `${ref} -> ${alt}`
 }
 
 export function makeSimpleAltString(
