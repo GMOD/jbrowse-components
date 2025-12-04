@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import useMeasure from '@jbrowse/core/util/useMeasure'
+import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { ResizableBox } from 'react-resizable'
 
@@ -22,31 +22,24 @@ const FloatingViewPanel = observer(function ({
   // above drawer https://mui.com/material-ui/customization/z-index/, but below
   // menu popovers
   const zIndex = session.focusedViewId === view.id ? 1202 : 1201
-  const [ref, { height }] = useMeasure()
-  const [mode, setMode] = useState<'se' | 'e'>('se')
-  const [size, setSize] = useState<{ width: number; height: number }>()
-  const h = size !== undefined ? size.height : undefined
-
-  useEffect(() => {
-    if (h !== undefined && height !== undefined && height - h > 50) {
-      setMode('e')
-    }
-  }, [h, height])
+  const [size, setSize] = useState({ width: 800, height: 400 })
 
   return (
     <DraggableViewPanel zIndex={zIndex}>
       <ResizableBox
         className="box"
-        height={(height || 100) + 20}
-        resizeHandles={[mode]}
-        width={1000}
+        height={size.height}
+        width={size.width}
+        resizeHandles={['se', 'e', 's']}
         onResize={(_event, { size }) => {
           setSize(size)
         }}
       >
-        <div ref={ref}>
-          <StaticViewPanel view={view} session={session} />
-        </div>
+        <StaticViewPanel
+          view={view}
+          session={session}
+          contentHeight={size.height - VIEW_HEADER_HEIGHT}
+        />
       </ResizableBox>
     </DraggableViewPanel>
   )

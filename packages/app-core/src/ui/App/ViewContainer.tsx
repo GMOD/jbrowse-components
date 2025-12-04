@@ -18,6 +18,10 @@ const useStyles = makeStyles()(theme => ({
     // xref https://stackoverflow.com/questions/43909940/why-does-overflowhidden-prevent-positionsticky-from-working
     // note that contain:paint also seems to work
   },
+  floatingViewContainer: {
+    padding: 0,
+    margin: 0,
+  },
   focusedView: {
     background: theme.palette.secondary.main,
   },
@@ -32,12 +36,14 @@ const ViewContainer = observer(function ({
   onMinimize,
   session,
   children,
+  contentHeight,
 }: {
   view: AbstractViewModel
   onClose: () => void
   onMinimize: () => void
   session: AppSession
   children: React.ReactNode
+  contentHeight?: number
 }) {
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
@@ -65,6 +71,7 @@ const ViewContainer = observer(function ({
   const viewContainerClassName = cx(
     classes.viewContainer,
     backgroundColorClassName,
+    view.isFloating && classes.floatingViewContainer,
   )
 
   return (
@@ -77,7 +84,16 @@ const ViewContainer = observer(function ({
           className={view.isFloating ? undefined : backgroundColorClassName}
         />
       </div>
-      <Paper elevation={view.isFloating ? undefined : 0}>{children}</Paper>
+      <Paper
+        elevation={view.isFloating ? undefined : 0}
+        style={
+          contentHeight !== undefined
+            ? { height: contentHeight, overflow: 'auto' }
+            : undefined
+        }
+      >
+        {children}
+      </Paper>
     </Paper>
   )
 })

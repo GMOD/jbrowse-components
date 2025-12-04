@@ -14,9 +14,11 @@ import type { AbstractViewModel } from '@jbrowse/core/util'
 const StaticViewPanel = observer(function ({
   view,
   session,
+  contentHeight,
 }: {
   view: AbstractViewModel
   session: AppSession
+  contentHeight?: number
 }) {
   const { pluginManager } = getEnv(session)
   const viewType = pluginManager.getViewType(view.type)
@@ -34,6 +36,7 @@ const StaticViewPanel = observer(function ({
       onMinimize={() => {
         view.setMinimized(!view.minimized)
       }}
+      contentHeight={contentHeight}
     >
       {!view.minimized ? (
         <ErrorBoundary
