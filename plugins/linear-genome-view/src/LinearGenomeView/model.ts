@@ -261,6 +261,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
+      lastTrackDragY: undefined as undefined | number,
+      /**
+       * #volatile
+       */
       volatileError: undefined as unknown,
 
       /**
@@ -1084,6 +1088,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
+        if (idx === undefined) {
+          self.lastTrackDragY = undefined
+        }
+      },
+
+      /**
+       * #action
+       */
+      setLastTrackDragY(y: number) {
+        self.lastTrackDragY = y
       },
 
       /**
@@ -1895,14 +1909,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(
             function initAutorun() {
-              const { init } = self
+              const { init, initialized } = self
+              if (!initialized) {
+                return
+              }
               if (init) {
-                self
-                  .navToLocString(init.loc, init.assembly)
-                  .catch((e: unknown) => {
-                    console.error(init, e)
-                    getSession(self).notifyError(`${e}`, e)
-                  })
+                if (init.loc) {
+                  self
+                    .navToLocString(init.loc, init.assembly)
+                    .catch((e: unknown) => {
+                      console.error(init, e)
+                      getSession(self).notifyError(`${e}`, e)
+                    })
+                } else {
+                  self.showAllRegionsInAssembly(init.assembly)
+                }
 
                 init.tracks?.map(t => self.showTrack(t))
 

@@ -173,8 +173,8 @@ jobs:
         run: BUILT_TESTS=1 yarn built-test-ci
       - name: Run browser tests with Puppeteer
         id: browser-tests
-        run: yarn install --frozen-lockfile && yarn test
-        working-directory: products/jbrowse-web/browser-tests
+        run: node --experimental-strip-types browser-tests/runner.ts
+        working-directory: products/jbrowse-web
         continue-on-error: true
       - name: Upload snapshot diffs to S3
         if: steps.browser-tests.outcome == 'failure'

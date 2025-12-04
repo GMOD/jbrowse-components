@@ -128,9 +128,18 @@ test('search matches description for feature in two places', async () => {
 
 test('failed search resets input to visible location', async () => {
   const consoleMock = jest.spyOn(console, 'error').mockImplementation()
-  const { input, findByText } = await doSetup()
+  const { input, findByText, view } = await doSetup()
+
+  // Wait for coarseVisibleLocStrings to populate (has 100ms delay in autorun)
+  // and blur input so useLayoutEffect can update its value
+  input.blur()
+  await waitFor(() => {
+    expect(view.coarseVisibleLocStrings).not.toBe('')
+    expect(input.value).not.toBe('')
+  }, delay)
 
   const originalValue = input.value
+  input.focus()
 
   typeAndEnter({ input, value: 'nonexistent_location_xyz123' })
 
