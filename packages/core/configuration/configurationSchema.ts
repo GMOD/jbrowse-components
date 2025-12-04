@@ -338,6 +338,7 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
  * Creates a reference type for display configurations that:
  * - Resolves displayId strings to configuration objects at runtime
  * - Works with frozen track configurations (where displays are plain objects)
+ * - Falls back to creating a default configuration if display is not explicitly configured
  *
  * Note: Unlike TrackConfigurationReference, we don't use snapshotProcessor here
  * because it interferes with how sub-displays (like PileupDisplay) are created
@@ -348,10 +349,20 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
       const track = getContainingTrack(parent)
+      const displays = track.configuration.displays || []
       // Find in the track's displays array (may be frozen/plain objects)
-      const ret = track.configuration.displays.find(
-        (d: { displayId: string }) => d.displayId === id,
-      )
+      let ret = displays.find((d: { displayId: string }) => d.displayId === id)
+
+      // If not found in config, create a default configuration for this display type
+      // This handles the common case where displays are auto-generated from track types
+      if (!ret) {
+        // Extract display type from the displayId (format: trackId-DisplayType)
+        const displayType = id.split('-').slice(1).join('-')
+        if (displayType) {
+          ret = { displayId: id, type: displayType }
+        }
+      }
+
       if (!ret) {
         throw new Error(`Display configuration "${id}" not found`)
       }
