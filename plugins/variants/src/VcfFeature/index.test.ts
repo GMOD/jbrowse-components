@@ -58,6 +58,7 @@ test('try DEL feature with END info field valid', () => {
   expect(f.id()).toEqual('myuniqueid')
   expect(f.get('start')).toEqual(99)
   expect(f.get('end')).toEqual(1000)
+  expect(f.get('description')).toEqual('<DEL>')
 })
 
 test('multiple SVs', () => {

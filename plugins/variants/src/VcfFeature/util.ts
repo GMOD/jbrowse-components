@@ -85,6 +85,11 @@ function formatGroupDescription(
   ref: string,
   alts: string[],
 ): string {
+  // For symbolic alleles, just return the alt itself
+  if (alts.every(a => a.startsWith('<'))) {
+    return alts.join(',')
+  }
+
   const lenRef = ref.length
   const isLong = lenRef > 5 || alts.some(a => a.length > 5)
 
