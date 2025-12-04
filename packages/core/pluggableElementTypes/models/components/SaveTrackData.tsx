@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import {
@@ -20,7 +21,6 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import { getRpcSessionId } from '../../../util/tracks'
 

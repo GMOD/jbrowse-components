@@ -443,7 +443,6 @@ export default function MultiVariantBaseModelF(
         adapterProps() {
           return {
             ...superRenderProps(),
-            rpcDriverName: self.rpcDriverName,
             config: self.rendererConfig,
           }
         },

@@ -120,7 +120,7 @@ function stateModelFactory(
           const { filters, resolution, scaleOpts } = self
           return {
             ...superProps,
-            rpcDriverName: self.rpcDriverName,
+            rpcDriverName: self.effectiveRpcDriverName,
             config: self.rendererConfig,
             displayCrossHatches: self.displayCrossHatchesSetting,
             scaleOpts,
@@ -176,6 +176,7 @@ function stateModelFactory(
           height,
           ticks,
           inverted,
+          offset: YSCALEBAR_LABEL_OFFSET,
         }
       },
 

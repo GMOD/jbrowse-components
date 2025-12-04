@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Dialog,
@@ -8,7 +9,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   root: {

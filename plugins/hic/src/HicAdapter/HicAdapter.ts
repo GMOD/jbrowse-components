@@ -17,11 +17,19 @@ interface ContactRecord {
   counts: number
 }
 
+export interface MultiRegionContactRecord {
+  bin1: number
+  bin2: number
+  counts: number
+  region1Idx: number
+  region2Idx: number
+}
+
 interface HicMetadata {
   chromosomes: {
     name: string
-    length: number
-    id: number
+    size: number
+    index: number
   }[]
   resolutions: number[]
 }
@@ -46,6 +54,10 @@ interface HicParser {
     binsize: number,
   ) => Promise<ContactRecord[]>
   getMetaData: () => Promise<HicMetadata>
+  hicFile: {
+    init: () => Promise<void>
+    masterIndex: Record<string, { start: number; size: number }>
+  }
 }
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
@@ -73,7 +85,15 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     const { chromosomes, ...rest } = await this.setup(opts)
     // @ts-expect-error
     const norms = await this.hic.getNormalizationOptions()
-    return { ...rest, norms }
+
+    await this.hic.hicFile.init()
+    const { masterIndex } = this.hic.hicFile
+    const hasInterChromosomalData = Object.keys(masterIndex).some(key => {
+      const [idx1, idx2] = key.split('_')
+      return idx1 !== idx2
+    })
+
+    return { ...rest, norms, hasInterChromosomalData }
   }
 
   async getRefNames(opts?: BaseOptions) {
@@ -119,6 +139,56 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       })
       observer.complete()
     }, opts.stopToken) as any
+  }
+
+  /**
+   * Get contact records between all pairs of regions.
+   * This enables rendering Hi-C data across multiple chromosomes/regions.
+   */
+  async getMultiRegionContactRecords(
+    regions: Region[],
+    opts: HicOptions = {},
+  ): Promise<MultiRegionContactRecord[]> {
+    const {
+      resolution,
+      normalization = 'KR',
+      bpPerPx = 1,
+      statusCallback = () => {},
+    } = opts
+
+    const res = await this.getResolution(bpPerPx / (resolution || 1000), opts)
+
+    const allRecords: MultiRegionContactRecord[] = []
+
+    await updateStatus('Downloading .hic data', statusCallback, async () => {
+      // Query contacts between all pairs of regions (including self-contacts)
+      for (let i = 0; i < regions.length; i++) {
+        for (let j = i; j < regions.length; j++) {
+          const region1 = regions[i]!
+          const region2 = regions[j]!
+
+          const records = await this.hic.getContactRecords(
+            normalization,
+            { chr: region1.refName, start: region1.start, end: region1.end },
+            { chr: region2.refName, start: region2.start, end: region2.end },
+            'BP',
+            res,
+          )
+
+          for (const { bin1, bin2, counts } of records) {
+            allRecords.push({
+              bin1,
+              bin2,
+              counts,
+              region1Idx: i,
+              region2Idx: j,
+            })
+          }
+        }
+      }
+    })
+
+    return allRecords
   }
 
   // don't do feature stats estimation, similar to bigwigadapter

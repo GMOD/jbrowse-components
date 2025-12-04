@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
-import { makeStyles } from 'tss-react/mui'
 
-import { makeTicks } from '../util'
+import { getCachedElements, makeTicks } from '../util'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -18,14 +18,12 @@ const useStyles = makeStyles()({
     height: '100%',
     width: '100%',
     pointerEvents: 'none',
-    willChange: 'transform',
   },
   verticalGuidesContainer: {
     position: 'absolute',
     display: 'flex',
     height: '100%',
     pointerEvents: 'none',
-    willChange: 'transform, width',
   },
 })
 
@@ -96,6 +94,7 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
   const theme = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
+  const lastBpPerPxRef = useRef<number | null>(null)
 
   useEffect(() => {
     return autorun(
@@ -142,13 +141,12 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
           return
         }
 
-        const existingKeys = new Map<string, HTMLDivElement>()
-        for (const child of inner.children) {
-          const key = (child as HTMLElement).dataset.blockKey
-          if (key) {
-            existingKeys.set(key, child as HTMLDivElement)
-          }
-        }
+        const existingKeys = getCachedElements<HTMLDivElement>(
+          inner,
+          bpPerPx,
+          lastBpPerPxRef,
+          'blockKey',
+        )
 
         const fragment = document.createDocumentFragment()
 

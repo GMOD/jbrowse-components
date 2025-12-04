@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { complement, reverse } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
@@ -16,7 +17,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import { fetchSequence } from './fetchSequence'
 

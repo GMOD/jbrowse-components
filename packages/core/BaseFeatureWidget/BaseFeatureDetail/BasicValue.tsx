@@ -1,7 +1,7 @@
 import { isValidElement } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Link } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import { SanitizedHTML } from '../../ui'
 import { isObject } from '../../util'

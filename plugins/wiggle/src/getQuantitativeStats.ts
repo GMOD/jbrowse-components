@@ -15,6 +15,7 @@ export async function getQuantitativeStats(
     configuration: AnyConfigurationModel
     autoscaleType: string
     setMessage: (str: string) => void
+    effectiveRpcDriverName?: string
   },
   opts: {
     headers?: Record<string, string>
@@ -25,12 +26,13 @@ export async function getQuantitativeStats(
 ): Promise<QuantitativeStats> {
   const { rpcManager } = getSession(self)
   const numStdDev = getConf(self, 'numStdDev') || 3
-  const { adapterConfig, autoscaleType } = self
+  const { adapterConfig, autoscaleType, effectiveRpcDriverName } = self
   const sessionId = getRpcSessionId(self)
   const { currStatsBpPerPx } = opts
   const params = {
     sessionId,
     adapterConfig,
+    rpcDriverName: effectiveRpcDriverName,
     statusCallback: (message: string) => {
       if (isAlive(self)) {
         self.setMessage(message)

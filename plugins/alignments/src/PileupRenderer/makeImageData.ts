@@ -1,8 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import {
+  forEachWithStopTokenCheck,
+  renderToAbstractCanvas,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { layoutFeats } from './layoutFeatures'
 import { renderAlignment } from './renderers/renderAlignment'
 import { renderMismatches } from './renderers/renderMismatches'
 import { renderSoftClipping } from './renderers/renderSoftClipping'
@@ -14,17 +19,43 @@ import {
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from './util'
+import { fetchSequence } from '../util'
 
-import type { FlatbushItem, ProcessedRenderArgs } from './types'
-import type { Feature } from '@jbrowse/core/util'
+import type {
+  FlatbushItem,
+  LayoutFeature,
+  PreProcessedRenderArgs,
+  ProcessedRenderArgs,
+} from './types'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-interface LayoutFeature {
-  heightPx: number
-  topPx: number
-  feature: Feature
+async function fetchRegionSequence(
+  renderArgs: PreProcessedRenderArgs,
+  pluginManager: PluginManager,
+) {
+  const { colorBy, features, sessionId, adapterConfig, regions } = renderArgs
+  const { sequenceAdapter } = adapterConfig
+  if (colorBy?.type !== 'methylation' || !features.size || !sequenceAdapter) {
+    return undefined
+  }
+  const region = regions[0]!
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    sequenceAdapter,
+  )
+  return fetchSequence(
+    {
+      ...region,
+      start: Math.max(0, region.start - 1),
+      end: region.end + 1,
+    },
+    dataAdapter as BaseFeatureDataAdapter,
+  )
 }
 
-export function makeImageData({
+function renderFeatures({
   ctx,
   layoutRecords,
   canvasWidth,
@@ -60,6 +91,7 @@ export function makeImageData({
   const drawIndels = shouldDrawIndels()
   const coords = [] as number[]
   const items = [] as FlatbushItem[]
+
   forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
     const alignmentRet = renderAlignment({
       ctx,
@@ -113,6 +145,7 @@ export function makeImageData({
       })
     }
   })
+
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (coords.length) {
     for (let i = 0; i < coords.length; i += 4) {
@@ -122,8 +155,42 @@ export function makeImageData({
     flatbush.add(0, 0)
   }
   flatbush.finish()
+
   return {
     flatbush: flatbush.data,
     items,
   }
+}
+
+export async function makeImageData({
+  width,
+  renderArgs,
+  pluginManager,
+}: {
+  width: number
+  renderArgs: PreProcessedRenderArgs
+  pluginManager: PluginManager
+}) {
+  const { statusCallback = () => {} } = renderArgs
+
+  statusCallback('Creating layout')
+  const { layoutRecords, height } = layoutFeats(renderArgs)
+
+  statusCallback('Fetching sequence')
+  const regionSequence = await fetchRegionSequence(renderArgs, pluginManager)
+
+  statusCallback('Rendering alignments')
+  const result = await renderToAbstractCanvas(width, height, renderArgs, ctx =>
+    renderFeatures({
+      ctx,
+      layoutRecords,
+      canvasWidth: width,
+      renderArgs: {
+        ...renderArgs,
+        regionSequence,
+      },
+    }),
+  )
+
+  return { result, height }
 }

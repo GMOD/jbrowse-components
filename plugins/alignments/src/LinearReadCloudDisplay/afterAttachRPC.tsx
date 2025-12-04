@@ -98,6 +98,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           trackMaxHeight,
           ...(drawCloud && { cloudModeHeight: height }),
           highResolutionScaling: 2,
+          rpcDriverName: self.effectiveRpcDriverName,
           statusCallback: (msg: string) => {
             self.setMessage(msg)
           },

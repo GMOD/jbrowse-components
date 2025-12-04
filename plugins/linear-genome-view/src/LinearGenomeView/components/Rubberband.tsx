@@ -1,8 +1,8 @@
 import { useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import RubberbandSpan from './RubberbandSpan'
 import VerticalGuide from './VerticalGuide'

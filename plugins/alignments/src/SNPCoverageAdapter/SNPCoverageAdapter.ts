@@ -84,6 +84,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             id: key,
             data: {
               type: 'skip',
+              refName: region.refName,
               start: skip.start,
               end: skip.end,
               strand: skip.strand,

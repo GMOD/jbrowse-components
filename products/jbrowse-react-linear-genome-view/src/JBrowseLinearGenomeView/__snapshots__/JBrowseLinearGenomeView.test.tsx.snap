@@ -3,27 +3,27 @@
 exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
 <div>
   <div
-    class="css-jn2cxo-avoidParentStyle"
+    class="css-1uws30q"
   >
     <div
       class="MuiScopedCssBaseline-root css-12wnono-MuiScopedCssBaseline-root"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-1ltju1u-MuiPaper-root-viewContainer"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-ckefex-MuiPaper-root"
         style="--Paper-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 12px 17px 2px rgba(0,0,0,0.14),0px 5px 22px 4px rgba(0,0,0,0.12);"
       >
         <div
-          class="css-10rokvf-container"
+          class="css-k008qs"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-1xja71r-MuiButtonBase-root-MuiIconButton-root-iconRoot"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-d0u1y7-MuiButtonBase-root-MuiIconButton-root"
             data-testid="view_menu_icon"
             tabindex="0"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
               data-testid="MenuIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -34,10 +34,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
             </svg>
           </button>
           <div
-            class="css-122lw0e-grow"
+            class="css-i9gxme"
           />
           <div
-            class="css-122lw0e-grow"
+            class="css-i9gxme"
           />
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
@@ -79,72 +79,72 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
         >
           <div
-            class="css-1v4ghfe-rel"
+            class="css-79elbk"
           >
             <div
-              class="css-1atg2qy-header"
+              class="css-1dv8lbb"
             >
               <div>
                 <div
-                  class="css-1v4ghfe-rel"
+                  class="css-79elbk"
                 >
                   <div
-                    class="css-dznme2-rubberbandControl"
+                    class="css-1y73v8g"
                   >
                     <div
-                      class="css-1eig9rh-scalebar"
+                      class="css-8i8koh"
                     >
                       <div
-                        class="css-1co65jp-scalebarVisibleRegion"
+                        class="css-1nyqiym"
                         style="width: 272px; transform: translateX(0px); background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
                       />
                       <div
-                        class="css-12i65rv-scalebarContig"
+                        class="css-pohvk8"
                         style="width: 0px; transform: translateX(0px); background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
                       />
                       <div>
                         <p
-                          class="MuiTypography-root MuiTypography-body1 css-yydqu3-MuiTypography-root-scalebarRefName"
+                          class="MuiTypography-root MuiTypography-body1 css-j0q2lv-MuiTypography-root"
                           style="transform: translateX(3px); color: rgb(153, 102, 0);"
                         >
                           ctgA
                         </p>
                         <div
-                          class="css-10fcb8d-scalebarContig-scalebarContigForward-scalebarBorder"
+                          class="css-pohvk8 css-evrjnx css-b7rhyr"
                           style="transform: translateX(0px); width: 808px; border-color: rgb(153, 102, 0);"
                         >
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-1q0dgco-MuiTypography-root"
                             style="transform: translateX(134.66666666666669px); color: rgb(153, 102, 0);"
                           >
                             20
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-1q0dgco-MuiTypography-root"
                             style="transform: translateX(269.33333333333337px); color: rgb(153, 102, 0);"
                           >
                             40
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-1q0dgco-MuiTypography-root"
                             style="transform: translateX(404px); color: rgb(153, 102, 0);"
                           >
                             60
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-1q0dgco-MuiTypography-root"
                             style="transform: translateX(538.6666666666667px); color: rgb(153, 102, 0);"
                           >
                             80
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-1q0dgco-MuiTypography-root"
                             style="transform: translateX(673.3333333333334px); color: rgb(153, 102, 0);"
                           >
                             100
                           </p>
                           <p
-                            class="MuiTypography-root MuiTypography-body2 css-ujgitl-MuiTypography-root-scalebarLabel"
+                            class="MuiTypography-root MuiTypography-body2 css-1q0dgco-MuiTypography-root"
                             style="transform: translateX(808px); color: rgb(153, 102, 0);"
                           >
                             120
@@ -152,17 +152,17 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         </div>
                       </div>
                       <div
-                        class="css-12i65rv-scalebarContig"
+                        class="css-pohvk8"
                         style="width: 0px; transform: translateX(808px); background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
                       />
                     </div>
                   </div>
                 </div>
                 <div
-                  class="css-1fs11k8-overview"
+                  class="css-11ojfo7"
                 >
                   <svg
-                    class="css-191b84s-overviewSvg"
+                    class="css-q7jsrn"
                     height="48"
                   >
                     <polygon
@@ -174,10 +174,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </svg>
                   <div
-                    class="css-10yx88u-headerBar"
+                    class="css-1dxgcpm"
                   >
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pqc086-MuiButtonBase-root-MuiIconButton-root-toggleButton"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1hpomh-MuiButtonBase-root-MuiIconButton-root"
                       tabindex="0"
                       title="Open track selector"
                       type="button"
@@ -195,13 +195,13 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       </svg>
                     </button>
                     <div
-                      class="css-1n1xfjh-spacer"
+                      class="css-i9gxme"
                     />
                     <div
-                      class="MuiFormGroup-root MuiFormGroup-row css-f2mils-MuiFormGroup-root-headerForm"
+                      class="MuiFormGroup-root MuiFormGroup-row css-1vqqhs3-MuiFormGroup-root"
                     >
                       <button
-                        class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-1nko6dx-MuiButtonBase-root-MuiButton-root-panButton"
+                        class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-s1m607-MuiButtonBase-root-MuiButton-root"
                         tabindex="0"
                         type="button"
                       >
@@ -218,7 +218,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         </svg>
                       </button>
                       <button
-                        class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-1nko6dx-MuiButtonBase-root-MuiButton-root-panButton"
+                        class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-s1m607-MuiButtonBase-root-MuiButton-root"
                         tabindex="0"
                         type="button"
                       >
@@ -242,7 +242,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                           data-testid="autocomplete"
                         >
                           <div
-                            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1jmmqni-MuiFormControl-root-MuiTextField-root-headerRefName"
+                            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-3dce60-MuiFormControl-root-MuiTextField-root"
                             style="margin: 7px;"
                           >
                             <div
@@ -263,7 +263,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                                 type="text"
                               />
                               <div
-                                class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1hnilo0-MuiInputAdornment-root-th"
+                                class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1b3djvr-MuiInputAdornment-root"
                               >
                                 <svg
                                   aria-hidden="true"
@@ -315,12 +315,12 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       </div>
                     </div>
                     <p
-                      class="MuiTypography-root MuiTypography-body2 css-lqhf8e-MuiTypography-root-bp"
+                      class="MuiTypography-root MuiTypography-body2 css-1tocnb3-MuiTypography-root"
                     >
                       40bp
                     </p>
                     <div
-                      class="css-z84q6m-container"
+                      class="css-u4p24i"
                     >
                       <span
                         aria-label="Zoom out 2x"
@@ -347,7 +347,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         </button>
                       </span>
                       <span
-                        class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1fayfxi-MuiSlider-root-slider"
+                        class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-k9iaht-MuiSlider-root"
                       >
                         <span
                           class="MuiSlider-rail css-r64h58-MuiSlider-rail"
@@ -424,21 +424,21 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       </button>
                     </div>
                     <div
-                      class="css-1n1xfjh-spacer"
+                      class="css-i9gxme"
                     />
                   </div>
                 </div>
               </div>
             </div>
             <div
-              class="css-p33ofe-tracksContainer"
+              class="css-yh5o2b"
               data-testid="tracksContainer"
             >
               <div
-                class="css-xn9n8g-verticalGuidesZoomContainer"
+                class="css-1lf7t5i"
               >
                 <div
-                  class="css-poxp29-verticalGuidesContainer"
+                  class="css-1xv28hj"
                   style="transform: translateX(-800px); width: 2400px;"
                 >
                   <div
@@ -1154,20 +1154,20 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 </div>
               </div>
               <div
-                class="css-fe416x-rubberbandControl"
+                class="css-1tgbc2z"
                 data-testid="rubberband_controls"
                 style="top: 0px;"
               >
                 <div
-                  class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-gcizdo-MuiPaper-root-container"
+                  class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1emg6sm-MuiPaper-root"
                   data-resizer="true"
                   style="height: 17px; box-sizing: border-box;"
                 >
                   <div
-                    class="css-xn9n8g-verticalGuidesZoomContainer"
+                    class="css-1lf7t5i"
                   >
                     <div
-                      class="css-poxp29-verticalGuidesContainer"
+                      class="css-1xv28hj"
                       style="transform: translateX(-801px); width: 2400px;"
                     >
                       <div
@@ -1883,10 +1883,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-1c7qp56-zoomContainer"
+                    class="css-79elbk"
                   >
                     <div
-                      class="css-167fr73-scalebar"
+                      class="css-9ipu8y"
                       style="transform: translateX(-801px); width: 2400px;"
                     >
                       <div
@@ -2000,7 +2000,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <div
-                    style="position: absolute; will-change: transform; transform: translateX(0px);"
+                    style="position: absolute; transform: translateX(0px);"
                   >
                     <span
                       data-label-key="refLabel-{volvox}ctgA:1..40-0-1"
@@ -2009,28 +2009,27 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     >
                       ctgA
                     </span>
-                    <span
-                      data-label-key="pinned-label"
-                      style="font-size: 11px; position: absolute; left: 0px; top: -1px; font-weight: bold; line-height: normal; z-index: 2; background: rgb(255, 255, 255); padding-left: 0px;"
-                    />
                   </div>
+                  <span
+                    style="font-size: 11px; position: absolute; left: 0px; top: -1px; font-weight: bold; line-height: normal; z-index: 2; background: rgb(255, 255, 255); display: none;"
+                  />
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1m2nal4-MuiPaper-root-root-unpinnedTrack"
+                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1d3972r-MuiPaper-root"
               >
                 <div
-                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1fyjxz2-MuiPaper-root-trackLabel-trackLabelOffset-root"
+                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1v9yqz7-MuiPaper-root"
                   style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
                 >
                   <span
-                    class="css-k4omgw-dragHandle"
+                    class="css-ehba41"
                     data-testid="dragHandle-test_view-volvox_refseq"
                     draggable="true"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1lzyuvu-MuiSvgIcon-root-dragHandleIcon"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-6klx1v-MuiSvgIcon-root"
                       data-testid="DragIndicatorIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -2041,7 +2040,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </svg>
                   </span>
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1hvip8y-MuiButtonBase-root-MuiIconButton-root-iconButton"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1qlqtmc-MuiButtonBase-root-MuiIconButton-root"
                     tabindex="0"
                     title="close this track"
                     type="button"
@@ -2059,7 +2058,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </svg>
                   </button>
                   <span
-                    class="MuiTypography-root MuiTypography-body1 css-14nk8rx-MuiTypography-root-trackName"
+                    class="MuiTypography-root MuiTypography-body1 css-1r39ldq-MuiTypography-root"
                   >
                     <span>
                       Reference sequence (volvox)
@@ -2085,27 +2084,27 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </button>
                 </div>
                 <div
-                  class="css-1amg6mz-trackRenderingContainer"
+                  class="css-1wbzinv"
                   data-testid="trackRenderingContainer-test_view-volvox_refseq"
                   style="height: 120px;"
                 >
                   <div
-                    class="css-ewmwoa-renderingComponentContainer"
+                    class="css-g0aj9a"
                   >
                     <div
-                      class="css-1y9lrrz-display"
+                      class="css-1pa3giq"
                       data-testid="display-volvox_refseq-LinearReferenceSequenceDisplay"
                     >
                       <div
-                        class="css-85fyjg-linearBlocks"
+                        class="css-u3tbwy"
                         style="transform: translateX(-800px);"
                       >
                         <div
-                          class="css-a9ifge-boundaryPaddingBlock"
+                          class="css-gdf1zi"
                           style="background: none; width: 800px;"
                         />
                         <div
-                          class="css-100aiuy-contentBlock"
+                          class="css-1ncicg5"
                           style="width: 800px;"
                         >
                           <svg
@@ -5101,7 +5100,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                           </svg>
                         </div>
                         <div
-                          class="css-100aiuy-contentBlock"
+                          class="css-1ncicg5"
                           style="width: 800px;"
                         >
                           <svg
@@ -8311,7 +8310,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1f98zvl-resizeHandle-horizontalHandle"
+                  class="css-1njn1am css-ietj56"
                   data-resizer="true"
                 />
               </div>

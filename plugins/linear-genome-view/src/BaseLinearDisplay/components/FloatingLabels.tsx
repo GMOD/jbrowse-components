@@ -167,6 +167,9 @@ function FloatingLabels({
         }
 
         const { layoutFeatures } = model
+        // Track bpPerPx to recalculate positions on zoom changes
+        const { bpPerPx } = view
+        void bpPerPx
         const domElements = domElementsRef.current
         const labelPositions = labelPositionsRef.current
         const newKeys = new Set<string>()
@@ -193,16 +196,12 @@ function FloatingLabels({
               continue
             }
 
-            const featureVisualLeftPx = leftPx
             const y = featureVisualBottom + relativeY
-
             const labelKey = `${key}-${i}`
             newKeys.add(labelKey)
 
-            // Store position data for fast offset updates
-            // Use rightPx (actual feature bounds) to constrain labels within feature width
             labelPositions.set(labelKey, {
-              featureLeftPx: featureVisualLeftPx,
+              featureLeftPx: leftPx,
               featureRightPx: rightPx,
               labelWidth,
               y,
@@ -215,7 +214,6 @@ function FloatingLabels({
               element.style.position = 'absolute'
               element.style.fontSize = '11px'
               element.style.pointerEvents = 'none'
-              element.style.willChange = 'transform'
               container.append(element)
               domElements.set(labelKey, element)
             }
@@ -235,17 +233,15 @@ function FloatingLabels({
               element.style.lineHeight = lineHeight
             }
 
-            // Set initial transform (offset autorun will update x on scroll)
-            // Use untracked to avoid this autorun re-running on offsetPx changes
+            // Set initial transform using untracked to avoid re-running on offsetPx changes
             const offsetPx = untracked(() => view.offsetPx)
-            const naturalX = featureVisualLeftPx - offsetPx
+            const naturalX = leftPx - offsetPx
             const maxX = rightPx - offsetPx - labelWidth
             const x = clamp(0, naturalX, maxX)
             element.style.transform = `translate(${x}px, ${y}px)`
           }
         }
 
-        // Remove stale elements
         for (const [key, element] of domElements.entries()) {
           if (!newKeys.has(key)) {
             element.remove()
@@ -277,7 +273,6 @@ function FloatingLabels({
           const maxX = featureRightPx - offsetPx - labelWidth
           const x = clamp(0, naturalX, maxX)
 
-          // Only update DOM if x position changed
           if (pos.lastX !== x) {
             pos.lastX = x
             element.style.transform = `translate(${x}px, ${y}px)`

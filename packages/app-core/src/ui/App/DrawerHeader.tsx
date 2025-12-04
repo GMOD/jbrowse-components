@@ -1,14 +1,17 @@
+import { Suspense, lazy } from 'react'
+
 import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import LaunchIcon from '@mui/icons-material/Launch'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import DrawerControls from './DrawerControls'
-import DrawerHeaderHelpButton from './DrawerHeaderHelpButton'
 import DrawerWidgetSelector from './DrawerWidgetSelector'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+
+const DrawerHeaderHelpButton = lazy(() => import('./DrawerHeaderHelpButton'))
 
 const useStyles = makeStyles()(theme => ({
   spacer: {
@@ -67,7 +70,9 @@ const DrawerHeader = observer(function ({
           </IconButton>
         </Tooltip>
         {helpText ? (
-          <DrawerHeaderHelpButton helpText={helpText} session={session} />
+          <Suspense fallback={null}>
+            <DrawerHeaderHelpButton helpText={helpText} session={session} />
+          </Suspense>
         ) : null}
         <div className={classes.spacer} />
         <DrawerControls session={session} />

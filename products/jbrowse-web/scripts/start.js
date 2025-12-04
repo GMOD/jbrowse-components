@@ -1,16 +1,8 @@
+// Do this as the first thing so that any code reading it knows the right env.
+process.env.BABEL_ENV = 'development'
 process.env.NODE_ENV = 'development'
 
-const webpack = require('webpack')
-
+const configTransform = require('./config')
 const configFactory = require('../../../webpack/config/webpack.config')
 const startServer = require('../../../webpack/scripts/start')
-
-const config = configFactory('development')
-config.plugins.push(
-  new webpack.DefinePlugin({
-    'process.env.ENABLE_TYPE_CHECK': '"true"',
-  }),
-)
-config.output.publicPath = 'auto'
-
-startServer(config)
+startServer(configTransform(configFactory('development')))

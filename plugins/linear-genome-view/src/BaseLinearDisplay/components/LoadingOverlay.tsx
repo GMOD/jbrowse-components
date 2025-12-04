@@ -1,5 +1,5 @@
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
   container: {
@@ -40,7 +40,7 @@ export default function LoadingOverlay({
   return (
     <div className={classes.container}>
       {children}
-      <div className={classes.overlay}>
+      <div className={classes.overlay} data-testid="loading-overlay">
         <div className={classes.message}>
           <LoadingEllipses message={message} />
         </div>

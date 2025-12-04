@@ -252,27 +252,6 @@ setColorScheme: (colorBy?: ColorBy) => void
 setJexlFilters: (filters: string[]) => void
 ```
 
-#### action: updateVisibleModifications
-
-```js
-// type signature
-updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
-```
-
-#### action: setSimplexModifications
-
-```js
-// type signature
-setSimplexModifications: (simplex: string[]) => void
-```
-
-#### action: setModificationsReady
-
-```js
-// type signature
-setModificationsReady: (flag: boolean) => void
-```
-
 #### action: setShowInterbaseIndicators
 
 ```js

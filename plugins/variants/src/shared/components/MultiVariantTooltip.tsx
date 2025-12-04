@@ -1,7 +1,7 @@
 import { memo } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Portal, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(theme => ({
   tooltip: {

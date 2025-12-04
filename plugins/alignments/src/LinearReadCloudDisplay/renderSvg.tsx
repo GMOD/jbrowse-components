@@ -72,6 +72,7 @@ export async function renderSvg(
       trackMaxHeight,
       height,
       exportSVG: opts,
+      rpcDriverName: self.effectiveRpcDriverName,
     },
   )) as RenderingResult
 

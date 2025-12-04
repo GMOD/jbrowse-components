@@ -16,9 +16,9 @@ class DummyHandle {
 }
 
 /**
- * Stub RPC driver class that runs RPC functions in-band in the main thread.
- *
- * @param rpcFuncs - object containing runnable rpc functions
+ * RPC driver that runs RPC functions in-band in the main thread.
+ * Supports direct execution for methods that implement executeDirect(),
+ * bypassing serialization overhead entirely.
  */
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   name = 'MainThreadRpcDriver'
@@ -43,6 +43,24 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     if (!rpcMethod) {
       throw new Error(`unknown RPC method ${funcName}`)
     }
+
+    // Use direct execution if the method supports it (avoids serialization)
+    if (rpcMethod.supportsDirectExecution()) {
+      const result = await rpcMethod.executeDirect(args)
+      if (result !== undefined) {
+        // // eslint-disable-next-line no-console
+        // console.log(
+        //   `[RPC] MainThreadRpcDriver: ${funcName} (direct, no serialization)`,
+        // )
+        return result
+      }
+      // Fall through to serialized path if executeDirect returns undefined
+    }
+
+    // // eslint-disable-next-line no-console
+    // console.log(`[RPC] MainThreadRpcDriver: ${funcName} (serialized)`)
+
+    // Fallback to serialized execution
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const result = await rpcMethod.execute(serializedArgs, this.name)
     return rpcMethod.deserializeReturn(result, args, this.name)

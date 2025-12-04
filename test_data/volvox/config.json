@@ -2386,6 +2386,44 @@
         }
       },
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_mainthread",
+      "name": "volvox-sorted.cram (MainThreadRpcDriver)",
+      "category": ["RPC Driver Test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "uri": "volvox-sorted-altname.cram",
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "rpcDriverName": "MainThreadRpcDriver"
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_webworker",
+      "name": "volvox-sorted.cram (WebWorkerRpcDriver)",
+      "category": ["RPC Driver Test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "uri": "volvox-sorted-altname.cram",
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "rpcDriverName": "WebWorkerRpcDriver"
     }
   ],
   "plugins": [

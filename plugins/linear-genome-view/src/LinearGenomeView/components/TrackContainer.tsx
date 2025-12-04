@@ -2,14 +2,15 @@ import { useRef } from 'react'
 
 import { ErrorMessage, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import Gridlines from './Gridlines'
 import TrackLabelContainer from './TrackLabelContainer'
 import TrackRenderingContainer from './TrackRenderingContainer'
+import { shouldSwapTracks } from './util'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -44,7 +45,7 @@ const TrackContainer = observer(function ({
   model: LGV
   track: BaseTrackModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const display = track.displays[0]
   const { draggingTrackId, showTrackOutlines } = model
   const ref = useRef<HTMLDivElement>(null)
@@ -56,9 +57,28 @@ const TrackContainer = observer(function ({
       variant={showTrackOutlines ? 'outlined' : undefined}
       elevation={showTrackOutlines ? undefined : 0}
       onClick={event => {
-        if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
+        if (event.detail === 2 && !display.featureIdUnderMouse) {
           const left = ref.current?.getBoundingClientRect().left || 0
           model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
+        }
+      }}
+      onDragOver={event => {
+        if (
+          isAlive(display) &&
+          draggingTrackId !== undefined &&
+          draggingTrackId !== display.id
+        ) {
+          const draggingIdx = model.tracks.findIndex(
+            t => t.id === draggingTrackId,
+          )
+          const targetIdx = model.tracks.findIndex(t => t.id === track.id)
+          const movingDown = targetIdx > draggingIdx
+          const currentY = event.clientY
+
+          if (shouldSwapTracks(model.lastTrackDragY, currentY, movingDown)) {
+            model.setLastTrackDragY(currentY)
+            model.moveTrack(draggingTrackId, track.id)
+          }
         }
       }}
     >
@@ -66,19 +86,7 @@ const TrackContainer = observer(function ({
       {track.pinned ? <Gridlines model={model} offset={1} /> : null}
       <TrackLabelContainer track={track} view={model} />
       <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
-        <TrackRenderingContainer
-          model={model}
-          track={track}
-          onDragEnter={() => {
-            if (
-              isAlive(display) &&
-              draggingTrackId !== undefined &&
-              draggingTrackId !== display.id
-            ) {
-              model.moveTrack(draggingTrackId, track.id)
-            }
-          }}
-        />
+        <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
       <ResizeHandle
         onDrag={display.resizeHeight}

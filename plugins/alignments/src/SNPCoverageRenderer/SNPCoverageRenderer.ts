@@ -1,21 +1,50 @@
+import FeatureRendererType, {
+  type RenderArgs,
+  type ResultsDeserialized,
+  type ResultsSerialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { updateStatus } from '@jbrowse/core/util'
-import { WiggleBaseRenderer } from '@jbrowse/plugin-wiggle'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import type { RenderArgsDeserializedWithFeatures } from './types'
+import type { RenderArgsDeserialized } from './types'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
-export default class SNPCoverageRenderer extends WiggleBaseRenderer {
-  // note: the snps are drawn on linear scale even if the data is drawn in log
-  // scape hence the two different scales being used
-  // @ts-expect-error
-  async draw(
-    ctx: CanvasRenderingContext2D,
-    props: RenderArgsDeserializedWithFeatures,
-  ) {
-    const { statusCallback = () => {} } = props
-    const { makeImage } = await import('./makeImage')
-    await updateStatus('Rendering coverage', statusCallback, () =>
-      makeImage(ctx, props),
+interface SNPCoverageResultsSerialized extends ResultsSerialized {
+  skipFeatures?: SimpleFeatureSerialized[]
+}
+
+export interface SNPCoverageResultsDeserialized extends ResultsDeserialized {
+  skipFeatures: Feature[]
+}
+
+export default class SNPCoverageRenderer extends FeatureRendererType {
+  supportsSVG = true
+
+  deserializeResultsInClient(
+    result: SNPCoverageResultsSerialized,
+    args: RenderArgs,
+  ): SNPCoverageResultsDeserialized {
+    const deserialized = super.deserializeResultsInClient(result, args)
+    const skipFeatures = (result.skipFeatures ?? []).map(f =>
+      SimpleFeature.fromJSON(f),
     )
-    return undefined
+    // Add skip features to the features map so they get stored in the block
+    // and can be accessed by the display for cross-region arc rendering
+    for (const skipFeature of skipFeatures) {
+      deserialized.features.set(skipFeature.id(), skipFeature)
+    }
+    return {
+      ...deserialized,
+      skipFeatures,
+    }
+  }
+
+  async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
+    const { statusCallback = () => {} } = renderProps
+    const { renderSNPCoverageToCanvas } = await import('./makeImage')
+    return updateStatus('Rendering coverage', statusCallback, () =>
+      renderSNPCoverageToCanvas({ ...renderProps, features }),
+    )
   }
 }

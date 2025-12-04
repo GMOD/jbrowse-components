@@ -1,5 +1,6 @@
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 
 import configSchemaFactory from './configSchema'
 import modelFactory from './model'
@@ -18,7 +19,9 @@ export default function register(pluginManager: PluginManager) {
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: LinearWiggleDisplayReactComponent,
+      ReactComponent: lazy(
+        () => import('./components/SNPCoverageDisplayComponent'),
+      ),
     })
   })
 }

@@ -1,15 +1,24 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getContainingTrack, getSession } from '@jbrowse/core/util'
-import { addDisposer, getEnv, types } from '@jbrowse/mobx-state-tree'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { autorun } from 'mobx'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getEnv, types } from '@jbrowse/mobx-state-tree'
+import {
+  FeatureDensityMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 
+import type { HicFlatbushItem } from '../HicRenderer/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearHicDisplay
  * #category display
- * extends `BaseLinearDisplay`
+ * Non-block-based Hi-C display that renders to a single canvas
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -19,7 +28,9 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearHicDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      TrackHeightMixin(),
+      FeatureDensityMixin(),
       types.model({
         /**
          * #property
@@ -56,52 +67,129 @@ export default function stateModelFactory(
        * #volatile
        */
       availableNormalizations: undefined as string[] | undefined,
+      /**
+       * #volatile
+       */
+      loading: false,
+      /**
+       * #volatile
+       */
+      lastDrawnOffsetPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
+      ref: null as HTMLCanvasElement | null,
+      /**
+       * #volatile
+       */
+      renderingImageData: undefined as ImageBitmap | undefined,
+      /**
+       * #volatile
+       */
+      renderingStopToken: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      flatbush: undefined as ArrayBufferLike | undefined,
+      /**
+       * #volatile
+       */
+      flatbushItems: [] as HicFlatbushItem[],
+      /**
+       * #volatile
+       */
+      maxScore: 0,
+      /**
+       * #volatile
+       */
+      yScalar: 1,
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #getter
-         */
-        get blockType() {
-          return 'dynamicBlocks'
-        },
-        /**
-         * #getter
-         */
-        get rendererTypeName() {
-          return 'HicRenderer'
-        },
-        /**
-         * #method
-         */
-        renderProps() {
-          const config = self.rendererType.configSchema.create(
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get drawn() {
+        return self.lastDrawnOffsetPx !== undefined
+      },
+      /**
+       * #getter
+       */
+      get rendererTypeName() {
+        return 'HicRenderer'
+      },
+      /**
+       * #method
+       */
+      renderProps() {
+        return {
+          config: self.rendererType.configSchema.create(
             {
               ...getConf(self, 'renderer'),
-
-              // add specific jexl color callback when using pre-defined color schemes
               ...(self.colorScheme
                 ? { color: 'jexl:interpolate(count,scale)' }
                 : {}),
             },
             getEnv(self),
-          )
-
-          return {
-            ...superRenderProps(),
-            config,
-            displayHeight: self.mode === 'adjust' ? self.height : undefined,
-            normalization: self.activeNormalization,
-            rpcDriverName: self.rpcDriverName,
-            resolution: self.resolution,
-            useLogScale: self.useLogScale,
-            colorScheme: self.colorScheme,
-          }
-        },
-      }
-    })
+          ),
+          resolution: self.resolution,
+          useLogScale: self.useLogScale,
+          colorScheme: self.colorScheme,
+          normalization: self.activeNormalization,
+          displayHeight: self.mode === 'adjust' ? self.height : undefined,
+        }
+      },
+    }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setLastDrawnOffsetPx(n: number) {
+        self.lastDrawnOffsetPx = n
+      },
+      /**
+       * #action
+       */
+      setLoading(f: boolean) {
+        self.loading = f
+      },
+      /**
+       * #action
+       */
+      setRef(ref: HTMLCanvasElement | null) {
+        self.ref = ref
+      },
+      /**
+       * #action
+       */
+      setRenderingImageData(imageData: ImageBitmap | undefined) {
+        self.renderingImageData = imageData
+      },
+      /**
+       * #action
+       */
+      setRenderingStopToken(token: string | undefined) {
+        self.renderingStopToken = token
+      },
+      /**
+       * #action
+       */
+      setFlatbushData(
+        flatbush: ArrayBufferLike | undefined,
+        items: HicFlatbushItem[],
+        maxScore: number,
+        yScalar: number,
+      ) {
+        self.flatbush = flatbush
+        self.flatbushItems = items
+        self.maxScore = maxScore
+        self.yScalar = yScalar
+      },
+      /**
+       * #action
+       */
+      reload() {
+        self.error = undefined
+      },
       /**
        * #action
        */
@@ -254,30 +342,27 @@ export default function stateModelFactory(
       }
     })
     .actions(self => ({
+      beforeDestroy() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+        }
+      },
+    }))
+    .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          autorun(async () => {
-            try {
-              const { rpcManager } = getSession(self)
-              const track = getContainingTrack(self)
-              const adapterConfig = getConf(track, 'adapter')
-              const { norms } = (await rpcManager.call(
-                getConf(track, 'trackId'),
-                'CoreGetInfo',
-                {
-                  adapterConfig,
-                },
-              )) as { norms?: string[] }
-              if (norms) {
-                self.setAvailableNormalizations(norms)
-              }
-            } catch (e) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            }
-          }),
-        )
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./afterAttach')
+            doAfterAttach(self)
+          } catch (e) {
+            console.error(e)
+            self.setError(e)
+          }
+        })()
       },
     }))
 }
+
+export type LinearHicDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearHicDisplayModel = Instance<LinearHicDisplayStateModel>

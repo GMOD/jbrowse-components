@@ -1,4 +1,5 @@
-import ReactComponent from '../MultiWiggleRendering'
+import { lazy } from 'react'
+
 import MultiRowXYPlotRenderer from './MultiRowXYPlotRenderer'
 import configSchema from './configSchema'
 
@@ -9,7 +10,7 @@ export default function MultiRowXYPlotRendererF(pluginManager: PluginManager) {
     () =>
       new MultiRowXYPlotRenderer({
         name: 'MultiRowXYPlotRenderer',
-        ReactComponent,
+        ReactComponent: lazy(() => import('../MultiWiggleRendering')),
         configSchema,
         pluginManager,
       }),
