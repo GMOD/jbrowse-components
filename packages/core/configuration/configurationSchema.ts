@@ -297,7 +297,7 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
         ret = resolveIdentifier(schemaType, getRoot(parent), id)
       }
       if (!ret) {
-        throw new Error(`Track configuration "${id}" not found`)
+        throw new Error(`Could not resolve identifier "${id}"`)
       }
       // If it's a frozen/plain object, we need to instantiate it
       return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))

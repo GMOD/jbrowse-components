@@ -312,7 +312,7 @@ export function showTrackGeneric(
     session.tracksById[trackId] ??
     session.tracks.find(t => t.trackId === trackId)
   if (!conf) {
-    throw new Error(`Could not find track "${trackId}"`)
+    throw new Error(`Could not resolve identifier "${trackId}"`)
   }
 
   const trackType = pluginManager.getTrackType(conf.type)
