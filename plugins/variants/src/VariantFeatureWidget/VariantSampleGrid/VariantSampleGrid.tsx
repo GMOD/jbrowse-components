@@ -42,7 +42,10 @@ export default function VariantSampleGrid(props: {
 
   const { rows, error } = getSampleGridRows(samples, REF, ALT, filter)
 
-  const keys = ['sample', ...Object.keys(rows[0] || {})].filter(k => k !== 'id')
+  const keys = [
+    'sample',
+    ...Object.keys(rows[0] || {}).filter(k => k !== 'id' && k !== 'sample'),
+  ]
   const columns = keys.map(
     field =>
       ({
