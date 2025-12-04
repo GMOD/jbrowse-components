@@ -308,7 +308,9 @@ export function showTrackGeneric(
   }
 
   // Find the track configuration (works for both frozen and MST model tracks)
-  const conf = session.tracksById?.[trackId] ?? session.tracks.find(t => t.trackId === trackId)
+  const conf =
+    session.tracksById[trackId] ??
+    session.tracks.find(t => t.trackId === trackId)
   if (!conf) {
     throw new Error(`Could not find track "${trackId}"`)
   }
@@ -327,8 +329,12 @@ export function showTrackGeneric(
   )
 
   // Generate displayId if not found in config
-  const displayId = displayConf?.displayId ?? `${trackId}-${displayConf?.type ?? trackType.displayTypes[0]?.name}`
-  const displayType = displayConf?.type ?? trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
+  const displayId =
+    displayConf?.displayId ??
+    `${trackId}-${displayConf?.type ?? trackType.displayTypes[0]?.name}`
+  const displayType =
+    displayConf?.type ??
+    trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
 
   if (!displayType) {
     throw new Error(

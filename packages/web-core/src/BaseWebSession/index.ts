@@ -120,6 +120,7 @@ export function BaseWebSession({
       get tracksById(): Record<string, AnyConfigurationModel> {
         return Object.fromEntries([
           ...this.tracks.map(t => [t.trackId, t]),
+          // @ts-expect-error
           ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
         ])
       },

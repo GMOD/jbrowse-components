@@ -5,8 +5,8 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { observer } from 'mobx-react'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
 import FileInfoPanel from './FileInfoPanel'
 import HeaderButtons from './HeaderButtons'
