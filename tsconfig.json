@@ -18,7 +18,9 @@
     "jsx": "react-jsx",
     "isolatedModules": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   },
   "exclude": [
     "**/build/",
@@ -34,6 +36,7 @@
     "**/component_tests/",
     "**/plugin-development-tools/",
     "**/webpack.config.js",
-    "**/website"
+    "**/website",
+    "**/auth_test_utils"
   ]
 }

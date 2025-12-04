@@ -28,7 +28,6 @@ const DraggableViewPanel = observer(function DraggableViewPanel({
   const { getFloatingProps } = useInteractions([clientPoint])
   return (
     <Portal>
-      {/* @ts-expect-error */}
       <Draggable nodeRef={ref} handle=".viewHeader" onStop={onStop}>
         <div
           ref={ref}

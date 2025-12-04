@@ -1,13 +1,17 @@
 /* eslint-disable react-refresh/only-export-components */
+import fs from 'fs'
+import path from 'path'
+
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
+import { saveAs } from 'file-saver-es'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import rangeParser from 'range-parser'
 
+import { generateReadBuffer } from './generateReadBuffer'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
@@ -16,7 +20,6 @@ import JBrowse from './TestingJBrowse'
 
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { GenericFilehandle } from 'generic-filehandle2'
 
 type LGV = LinearGenomeViewModel
 
@@ -50,35 +53,6 @@ export function getPluginManager(
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
   return { pluginManager, rootModel }
-}
-
-export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
-  return async (request: Request) => {
-    try {
-      const file = getFile(request.url)
-      const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
-      const r = request.headers.get('range')
-      if (r) {
-        const range = rangeParser(maxRangeRequest, r)
-        if (range === -2 || range === -1) {
-          throw new Error(`Error parsing range "${r}"`)
-        }
-        const { start, end } = range[0]!
-        const len = end - start + 1
-        const buf = await file.read(len, start)
-        const stat = await file.stat()
-        return new Response(buf, {
-          status: 206,
-          headers: [['content-range', `${start}-${end}/${stat.size}`]],
-        })
-      }
-      const body = await file.readFile()
-      return new Response(body, { status: 200 })
-    } catch (e) {
-      console.error(e)
-      return new Response(undefined, { status: 404 })
-    }
-  }
 }
 
 export function setup() {
@@ -136,7 +110,10 @@ export function createViewNoWait(args?: any, adminMode?: boolean): Results {
 }
 
 export function doBeforeEach(
-  cb = (str: string) => require.resolve(`../../test_data/volvox/${str}`),
+  cb = (str: string) =>
+    require.resolve(
+      `../../test_data/volvox/${str.replace('http://localhost:3000/test_data/volvox/', '')}`,
+    ),
 ) {
   clearCache()
   clearAdapterCache()
@@ -208,4 +185,137 @@ export function mockFile404(
   )
 }
 
+export async function exportAndVerifySvg({
+  findByTestId,
+  findByText,
+  filename,
+  delay,
+  findAllByText,
+}: {
+  findByTestId: any
+  findByText: any
+  filename: string
+  delay?: { timeout: number }
+  findAllByText?: any
+}) {
+  const actualDelay = delay || { timeout: 40000 }
+  const opts = [{}, actualDelay]
+  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
+
+  if (findAllByText) {
+    fireEvent.click((await findAllByText('Export SVG'))[0])
+  } else {
+    fireEvent.click(await findByText('Export SVG', ...opts))
+  }
+
+  fireEvent.click(await findByText('Submit', ...opts))
+
+  await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(saveAs).toHaveBeenCalled()
+  }, actualDelay)
+
+  // @ts-expect-error
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const svg = saveAs.mock.calls[0][0].content[0]
+  const dir = path.dirname(module.filename)
+  fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
+  expect(svg).toMatchSnapshot()
+  return svg
+}
+
+export async function testFileReload(config: {
+  failingFile: string
+  readBuffer: any
+  trackId: string
+  viewLocation: [number, number]
+  expectedCanvas: string | RegExp
+  timeout?: number
+}) {
+  const delay = { timeout: config.timeout || 30000 }
+  const opts = [{}, delay]
+
+  await mockConsole(async () => {
+    mockFile404(config.failingFile, config.readBuffer)
+    const { view, findByTestId, findAllByTestId, findAllByText } =
+      await createView()
+    view.setNewView(config.viewLocation[0], config.viewLocation[1])
+    fireEvent.click(await findByTestId(hts(config.trackId), ...opts))
+    await findAllByText(/HTTP 404/, ...opts)
+
+    // @ts-expect-error
+    fetch.mockResponse(config.readBuffer)
+    const buttons = await findAllByTestId('reload_button')
+    fireEvent.click(buttons[0]!)
+
+    const canvas =
+      typeof config.expectedCanvas === 'string'
+        ? await findByTestId(config.expectedCanvas, ...opts)
+        : (await findAllByTestId(config.expectedCanvas, ...opts))[0]!
+    expectCanvasMatch(canvas)
+  })
+}
+
+export async function openSpreadsheetView({
+  user,
+  screen,
+  fileUrl,
+  timeout,
+}: {
+  user: any
+  screen: any
+  fileUrl: string
+  timeout?: number
+}) {
+  const delay = { timeout: timeout || 50000 }
+  const opts = [{}, delay]
+  const { session } = await createView()
+
+  await user.click(await screen.findByText('File'))
+  await user.click(await screen.findByText('Add'))
+  await user.click(await screen.findByText('Spreadsheet view'))
+
+  fireEvent.change(await screen.findByTestId('urlInput', ...opts), {
+    target: { value: fileUrl },
+  })
+
+  await waitFor(() => {
+    expect(screen.getByTestId('open_spreadsheet')).not.toBeDisabled()
+  }, delay)
+
+  await user.click(await screen.findByTestId('open_spreadsheet'))
+  return { session }
+}
+
+export async function openViewWithFileInput({
+  menuPath,
+  fileUrl,
+  timeout,
+}: {
+  menuPath: string[]
+  fileUrl: string
+  timeout?: number
+}) {
+  const delay = { timeout: timeout || 40000 }
+  const result = await createView()
+  const { findByTestId, getByTestId, findByText } = result
+
+  for (const item of menuPath) {
+    fireEvent.click(await findByText(item))
+  }
+
+  fireEvent.change(await findByTestId('urlInput', {}, delay), {
+    target: { value: fileUrl },
+  })
+
+  await waitFor(() => {
+    expect(getByTestId('open_spreadsheet').closest('button')).not.toBeDisabled()
+  }, delay)
+
+  fireEvent.click(await findByTestId('open_spreadsheet'))
+  return result
+}
+
 export { default as JBrowse } from './TestingJBrowse'
+
+export { generateReadBuffer } from './generateReadBuffer'

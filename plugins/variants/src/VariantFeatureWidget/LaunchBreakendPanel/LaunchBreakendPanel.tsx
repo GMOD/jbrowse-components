@@ -71,28 +71,36 @@ function LaunchBreakpointSplitViewPanel({
   const session = getSession(model)
   const simpleFeature = new SimpleFeature(feature)
   const assemblyName = model.view?.displayedRegions[0]?.assemblyName
+
+  const launchDialog = (
+    Dialog: typeof BreakendMultiLevelOptionDialog,
+    viewType: string,
+  ) => {
+    session.queueDialog(handleClose => [
+      Dialog,
+      {
+        handleClose,
+        session,
+        feature: simpleFeature,
+        stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_${viewType}`,
+        view: model.view,
+        assemblyName,
+      },
+    ])
+  }
+
   return (
     <div>
       <Typography>Launch split view</Typography>
       <ul>
         {locStrings.map(locString => (
-          <li key={JSON.stringify(locString)}>
+          <li key={locString}>
             {`${feature.refName}:${feature.start} // ${locString}`}{' '}
             <Link
               href="#"
               onClick={event => {
                 event.preventDefault()
-                session.queueDialog(handleClose => [
-                  BreakendMultiLevelOptionDialog,
-                  {
-                    handleClose,
-                    session,
-                    feature: simpleFeature,
-                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_multilevel`,
-                    view: model.view,
-                    assemblyName,
-                  },
-                ])
+                launchDialog(BreakendMultiLevelOptionDialog, 'multilevel')
               }}
             >
               (top/bottom)
@@ -101,17 +109,7 @@ function LaunchBreakpointSplitViewPanel({
               href="#"
               onClick={event => {
                 event.preventDefault()
-                session.queueDialog(handleClose => [
-                  BreakendSingleLevelOptionDialog,
-                  {
-                    handleClose,
-                    session,
-                    feature: simpleFeature,
-                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_singlelevel`,
-                    view: model.view,
-                    assemblyName,
-                  },
-                ])
+                launchDialog(BreakendSingleLevelOptionDialog, 'singlelevel')
               }}
             >
               (single row)

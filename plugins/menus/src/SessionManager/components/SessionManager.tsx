@@ -1,5 +1,6 @@
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
@@ -14,7 +15,6 @@ import {
 import { DataGrid } from '@mui/x-data-grid'
 import { differenceInDays, formatDistanceToNow } from 'date-fns'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { SessionModel } from './util'
 
@@ -56,7 +56,7 @@ const SessionManager = observer(function ({
               }}
             />
           }
-          label="Show only favorites?"
+          label="Show favorites only?"
         />
 
         <Button
@@ -66,7 +66,7 @@ const SessionManager = observer(function ({
             if (session.savedSessionMetadata) {
               for (const elt of session.savedSessionMetadata) {
                 if (
-                  differenceInDays(+Date.now(), elt.createdAt) > 1 &&
+                  differenceInDays(Date.now(), elt.createdAt) > 1 &&
                   !elt.favorite
                 ) {
                   // @ts-expect-error

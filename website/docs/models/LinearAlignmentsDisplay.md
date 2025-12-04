@@ -3,8 +3,8 @@ id: linearalignmentsdisplay
 title: LinearAlignmentsDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearAlignmentsDisplay.md)
 
@@ -150,13 +150,6 @@ setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { set
 setHeight: (n: number) => number
 ```
 
-#### action: setFilterBy
-
-```js
-// type signature
-setFilterBy: (filter: FilterBy) => void
-```
-
 #### action: setLowerPanelType
 
 ```js
@@ -175,5 +168,5 @@ resizeHeight: (distance: number) => number
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<Element>
 ```

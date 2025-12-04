@@ -26,7 +26,7 @@ const TrackLabelMenu = observer(function ({
   const { isTopLevelView } = view
 
   const items = [
-    ...(isTopLevelView
+    ...(!isTopLevelView
       ? []
       : [
           {
@@ -61,20 +61,24 @@ const TrackLabelMenu = observer(function ({
             ]
           : []),
 
-        {
-          label: 'Move track up',
-          icon: KeyboardArrowUpIcon,
-          onClick: () => {
-            view.moveTrackUp(track.id)
-          },
-        },
-        {
-          label: 'Move track down',
-          icon: KeyboardArrowDownIcon,
-          onClick: () => {
-            view.moveTrackDown(track.id)
-          },
-        },
+        ...(view.tracks.length > 1
+          ? [
+              {
+                label: 'Move track up',
+                icon: KeyboardArrowUpIcon,
+                onClick: () => {
+                  view.moveTrackUp(track.id)
+                },
+              },
+              {
+                label: 'Move track down',
+                icon: KeyboardArrowDownIcon,
+                onClick: () => {
+                  view.moveTrackDown(track.id)
+                },
+              },
+            ]
+          : []),
         ...(view.tracks.length > 2
           ? [
               {

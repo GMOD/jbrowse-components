@@ -1,11 +1,11 @@
-import { getParent, isRoot } from 'mobx-state-tree'
+import { getParent, isRoot } from '@jbrowse/mobx-state-tree'
 
 import { getEnv, getSession, objectHash } from './index'
 import { readConfObject } from '../configuration'
 
 import type { FileLocation, PreFileLocation } from './types'
 import type { AnyConfigurationModel } from '../configuration'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /* utility functions for use by track models and so forth */
 
@@ -102,7 +102,7 @@ let counter = 0
 // calls
 export function storeBlobLocation(location: PreFileLocation) {
   if ('blob' in location) {
-    const blobId = `b${+Date.now()}-${counter++}`
+    const blobId = `b${Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
     return { name: location.blob.name, blobId, locationType: 'BlobLocation' }
   }

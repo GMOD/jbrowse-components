@@ -3,22 +3,24 @@
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
-    "prep": "cp ../products/jbrowse-cli/README.md docs/cli.md && npm run fetchPlugins",
+    "prep": "cp ../products/jbrowse-cli/README.md docs/cli.md && yarn fetchPlugins",
     "fetchPlugins": "rimraf plugins.json && wget -q https://s3.amazonaws.com/jbrowse.org/plugin-store/plugins.json",
-    "prebuild": "npm run prep",
-    "prestart": "npm run prep",
+    "prebuild": "yarn prep",
+    "prestart": "yarn prep",
     "start": "docusaurus start",
     "build": "docusaurus build",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "typecheck": "tsc",
-    "predeploy": "npm run build",
+    "predeploy": "yarn build",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/",
     "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\""
   },
   "dependencies": {
-    "@cmfcmf/docusaurus-search-local": "^1.1.0",
+    "@cmfcmf/docusaurus-search-local": "^2.0.1",
     "@docusaurus/core": "^3.3.0",
+    "@docusaurus/faster": "^3.8.0",
+    "@docusaurus/plugin-google-gtag": "^3.8.1",
     "@docusaurus/preset-classic": "^3.3.0",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
@@ -30,13 +32,14 @@
     "clsx": "^2.0.0",
     "copy-to-clipboard": "^3.3.3",
     "prism-react-renderer": "^2.1.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-player": "^2.12.0"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-player": "^3.3.2"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.3.0",
     "@tsconfig/docusaurus": "^2.0.2",
+    "rimraf": "^6.1.0",
     "typescript": "^5.0.4"
   },
   "browserslist": {
@@ -50,8 +53,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "resolutions": {
-    "cheerio": "1.0.0-rc.9"
   }
 }

@@ -49,7 +49,9 @@ function rightTriangle(x: number, _y: number, width: number, height: number) {
 const colorMap: Record<string, string> = {
   gneg: 'rgb(227,227,227)',
   gpos25: 'rgb(142,142,142)',
+  gpos33: 'rgb(142,142,142)',
   gpos50: 'rgb(85,85,85)',
+  gpos66: 'rgb(85,85,85)',
   gpos100: 'rgb(0,0,0)',
   gpos75: 'rgb(57,57,57)',
   gvar: 'rgb(0,0,0)',

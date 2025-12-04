@@ -1,7 +1,5 @@
 import { useState } from 'react'
 
-import copy from 'copy-to-clipboard'
-
 // this 'show more...' used specifically as a formatter on alignments feature
 // details because long SEQ or CRAM files, even a single div full of a ton of
 // data from a long read, can slow down the rest of the app
@@ -13,7 +11,8 @@ export default function Formatter({ value }: { value: unknown }) {
     <>
       <button
         type="button"
-        onClick={() => {
+        onClick={async () => {
+          const { default: copy } = await import('copy-to-clipboard')
           copy(display)
           setCopied(true)
           setTimeout(() => {

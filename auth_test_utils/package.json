@@ -1,10 +1,10 @@
 {
+  "type": "module",
   "scripts": {
-    "oauth": "tsx OAuthServer/app.ts",
-    "basicauth": "tsx HTTPBasicAuthServer/app.ts"
+    "oauth": "node --experimental-strip-types  OAuthServer/app.ts",
+    "basicauth": "node --experimental-strip-types HTTPBasicAuthServer/app.ts"
   },
-  "packages": {},
   "dependencies": {
-    "tsx": "^4.19.1"
+    "body-parser": "^2.2.1"
   }
 }

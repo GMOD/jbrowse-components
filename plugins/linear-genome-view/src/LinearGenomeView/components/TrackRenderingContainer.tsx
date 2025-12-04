@@ -2,8 +2,8 @@ import { Suspense, useEffect, useRef } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -25,6 +25,7 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
+    contain: 'strict',
   },
 })
 
@@ -33,11 +34,9 @@ type LGV = LinearGenomeViewModel
 const TrackRenderingContainer = observer(function ({
   model,
   track,
-  onDragEnter,
 }: {
   model: LGV
   track: BaseTrackModel
-  onDragEnter: () => void
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
@@ -63,7 +62,6 @@ const TrackRenderingContainer = observer(function ({
         height: minimized ? 20 : height,
       }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
-      onDragEnter={onDragEnter}
       data-testid={`trackRenderingContainer-${id}-${trackId}`}
     >
       {!minimized ? (

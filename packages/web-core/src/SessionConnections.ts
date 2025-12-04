@@ -1,5 +1,5 @@
+import { types } from '@jbrowse/mobx-state-tree'
 import { ConnectionManagementSessionMixin } from '@jbrowse/product-core'
-import { types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -41,9 +41,9 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
           } else {
             const { connectionId, type } = connectionConf
             if (!type) {
-              throw new Error(`unknown connection type ${type}`)
+              throw new Error(`unknown connection type "${type}"`)
             }
-            const connection = self.sessionTracks.find(
+            const connection = self.sessionConnections.find(
               c => c.connectionId === connectionId,
             )
             if (connection) {

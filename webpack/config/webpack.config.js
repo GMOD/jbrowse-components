@@ -20,10 +20,12 @@ const paths = require('./paths')
 // source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 
+// Disable minimization for production builds (useful for debugging)
+const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
+
 const reactRefreshRuntimeEntry = require.resolve('react-refresh/runtime')
-const reactRefreshWebpackPluginRuntimeEntry = require.resolve(
-  '@pmmmwh/react-refresh-webpack-plugin',
-)
+const reactRefreshWebpackPluginRuntimeEntry =
+  require.resolve('@pmmmwh/react-refresh-webpack-plugin')
 
 function getWorkspaces(fromDir) {
   const cwd = fromDir || process.cwd()
@@ -185,6 +187,7 @@ module.exports = function webpackBuilder(webpackEnv) {
 
               loader: require.resolve('babel-loader'),
               options: {
+                plugins: ['babel-plugin-react-compiler'],
                 presets: [
                   [
                     '@babel/preset-react',
@@ -194,8 +197,6 @@ module.exports = function webpackBuilder(webpackEnv) {
                   ],
                   '@babel/preset-typescript',
                 ],
-
-                plugins: ['babel-plugin-react-compiler'],
               },
             },
             // "postcss" loader applies autoprefixer to our CSS. "css"
@@ -350,5 +351,8 @@ module.exports = function webpackBuilder(webpackEnv) {
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false,
+    optimization: {
+      minimize: isEnvProduction && shouldMinimize,
+    },
   }
 }

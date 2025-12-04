@@ -15,8 +15,8 @@ import { MultiVariantGetSimplifiedFeatures } from './VariantRPC/MultiVariantGetS
 import { MultiVariantGetSources } from './VariantRPC/MultiVariantGetSources'
 import VariantTrackF from './VariantTrack'
 import VcfAdapterF from './VcfAdapter'
+import ExtensionPointsF from './VcfExtensionPoints'
 import VcfTabixAdapterF from './VcfTabixAdapter'
-import ExtensionPointsF from './extensionPoints'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

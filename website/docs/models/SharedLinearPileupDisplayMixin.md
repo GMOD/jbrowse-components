@@ -3,8 +3,8 @@ id: sharedlinearpileupdisplaymixin
 title: SharedLinearPileupDisplayMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -195,18 +195,34 @@ string
 
 ### SharedLinearPileupDisplayMixin - Methods
 
+#### method: copyFeatureToClipboard
+
+uses copy-to-clipboard and generates notification
+
+```js
+// type signature
+copyFeatureToClipboard: (feature: Feature) => Promise<void>
+```
+
 #### method: contextMenuItems
 
 ```js
 // type signature
-contextMenuItems: () => { label: string; icon: (props: SvgIconProps) => Element; onClick: () => void; }[]
+contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
-#### method: renderPropsPre
+#### method: adapterRenderProps
 
 ```js
 // type signature
-renderPropsPre: () => any
+adapterRenderProps: () => any
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onClick(): void; onMismatchClick(_: unknown, item: { type: string; seq: string; modType?: string; probability?: number; }, featureId?: string): Promise<...>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<...>; displayModel: { ...;...
 ```
 
 #### method: colorSchemeSubMenuItems
@@ -279,15 +295,6 @@ setFeatureUnderMouse: (feat?: Feature) => void
 ```js
 // type signature
 selectFeature: (feature: Feature) => void
-```
-
-#### action: copyFeatureToClipboard
-
-uses copy-to-clipboard and generates notification
-
-```js
-// type signature
-copyFeatureToClipboard: (feature: Feature) => void
 ```
 
 #### action: setConfig

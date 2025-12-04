@@ -1,75 +1,78 @@
+import { useMemo } from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import MultiVariantTooltip from './MultiVariantTooltip'
 
 import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()({
-  rel: {
-    position: 'relative',
-  },
-  cursor: {
+const useStyles = makeStyles()(theme => ({
+  container: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     pointerEvents: 'none',
     zIndex: 800,
+  },
+  horizontalLine: {
     position: 'absolute',
+    left: 0,
+    height: 1,
+    backgroundColor: theme.palette.text.primary,
+    pointerEvents: 'none',
   },
-  color: {
-    width: 10,
-    height: 10,
+  verticalLine: {
+    position: 'absolute',
+    top: 0,
+    width: 1,
+    backgroundColor: theme.palette.text.primary,
+    pointerEvents: 'none',
   },
-})
+}))
 
 const MultiVariantCrosshairs = observer(function ({
   mouseX,
   mouseY,
   model,
+  offsetX,
+  offsetY,
 }: {
   mouseX: number
   mouseY: number
   model: MultiVariantBaseModel
+  offsetX: number
+  offsetY: number
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
-  const { hoveredGenotype, height, scrollTop, sourceMap } = model
+  const { hoveredGenotype, height, sourceMap } = model
   const { width } = getContainingView(model) as LinearGenomeViewModel
-  const source = hoveredGenotype ? sourceMap?.[hoveredGenotype.name] : undefined
-  const y = mouseY - scrollTop
-  return (
-    <div className={classes.rel}>
-      <svg
-        className={classes.cursor}
-        width={width}
-        height={height}
-        style={{
-          top: scrollTop,
-        }}
-      >
-        <line
-          x1={0}
-          x2={width}
-          y1={y}
-          y2={y}
-          stroke={theme.palette.text.primary}
-        />
-        <line
-          x1={mouseX}
-          x2={mouseX}
-          y1={0}
-          y2={height}
-          stroke={theme.palette.text.primary}
-        />
-      </svg>
 
-      {source ? (
+  const tooltipSource = useMemo(() => {
+    if (!hoveredGenotype) {
+      return undefined
+    }
+    const source = sourceMap?.[hoveredGenotype.name]
+    return source ? { ...source, ...hoveredGenotype } : undefined
+  }, [hoveredGenotype, sourceMap])
+
+  return (
+    <div className={classes.container} style={{ width, height }}>
+      <div
+        className={classes.horizontalLine}
+        style={{ transform: `translateY(${mouseY}px)`, width }}
+      />
+      <div
+        className={classes.verticalLine}
+        style={{ transform: `translateX(${mouseX}px)`, height }}
+      />
+      {tooltipSource ? (
         <MultiVariantTooltip
-          source={{
-            ...source,
-            ...hoveredGenotype,
-          }}
+          source={tooltipSource}
+          x={offsetX + mouseX}
+          y={offsetY + mouseY}
         />
       ) : null}
     </div>

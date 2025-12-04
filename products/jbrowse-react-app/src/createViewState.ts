@@ -1,35 +1,10 @@
-import { onPatch } from 'mobx-state-tree'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel'
 
+import type { Config } from './types'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import type { IJsonPatch, SnapshotIn } from 'mobx-state-tree'
-
-interface TextSearchAdapterConfig {
-  textSearchAdapterId: string
-  [key: string]: unknown
-}
-interface InternetAccountConfig {
-  internetAccountId: string
-  [key: string]: unknown
-}
-interface TrackConfig {
-  trackId: string
-  [key: string]: unknown
-}
-interface SessionSnapshot {
-  name: string
-  [key: string]: unknown
-}
-interface Config {
-  assemblies: SnapshotIn<BaseAssemblyConfigSchema>[]
-  tracks: TrackConfig[]
-  internetAccounts?: InternetAccountConfig[]
-  aggregateTextSearchAdapters?: TextSearchAdapterConfig[]
-  configuration?: Record<string, unknown>
-  defaultSession?: SessionSnapshot
-}
+import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
 
 export default function createViewState(opts: {
   config: Config
@@ -39,7 +14,10 @@ export default function createViewState(opts: {
 }) {
   const { config, plugins = [], onChange, makeWorkerInstance } = opts
   const { defaultSession = { name: 'NewSession' } } = config
-  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  const { model, pluginManager } = createModel({
+    runtimePlugins: plugins,
+    makeWorkerInstance,
+  })
   const stateTree = model.create(
     {
       jbrowse: config,

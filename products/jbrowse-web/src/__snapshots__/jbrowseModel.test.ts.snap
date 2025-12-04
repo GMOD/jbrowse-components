@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`JBrowse model creates with empty snapshot 1`] = `
 {
@@ -1398,6 +1398,49 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "bigWigLocation": {
               "uri": "v1.cram.bw",
             },
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "v2.cram.bw",
+            },
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "v3.cram.bw",
+            },
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "v4.cram.bw",
+            },
+            "type": "BigWigAdapter",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_microarray_multi2-MultiLinearWiggleDisplay",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig no names",
+      "trackId": "volvox_microarray_multi2",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "subadapters": [
+          {
+            "bigWigLocation": {
+              "uri": "v1.cram.bw",
+            },
             "name": "k1",
             "source": "j1",
             "type": "BigWigAdapter",
@@ -1438,6 +1481,44 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "name": "MultiWig",
       "trackId": "volvox_microarray_multi",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "subadapters": [
+          {
+            "color": "#f00",
+            "name": "Grain1",
+            "type": "BigWigAdapter",
+            "uri": "v1.cram.bw",
+          },
+          {
+            "color": "#f60",
+            "name": "Grain2",
+            "type": "BigWigAdapter",
+            "uri": "v2.cram.bw",
+          },
+          {
+            "color": "#fa0",
+            "name": "Grain3",
+            "type": "BigWigAdapter",
+            "uri": "v3.cram.bw",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "defaultRendering": "multiline",
+          "displayId": "mytrack-MultiLinearWiggleDisplay",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig (w/ colors and default line rendering)",
+      "trackId": "mytrack",
       "type": "MultiQuantitativeTrack",
     },
     {
@@ -2238,6 +2319,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "aggregateField": "geneName",
         "bigBedLocation": {
           "locationType": "UriLocation",
           "uri": "volvox.bb",
@@ -3419,6 +3501,45 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox_del.paf",
         },
+        "queryAssembly": "volvox_del2",
+        "targetAssembly": "volvox",
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+        "volvox_del2",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_del2.paf-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        {
+          "displayId": "volvox_del2.paf-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        {
+          "displayId": "volvox_del2.paf-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+        {
+          "displayId": "volvox_del2.paf-LGVSyntenyDisplay",
+          "type": "LGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_del2.paf",
+      "trackId": "volvox_del2.paf",
+      "type": "SyntenyTrack",
+    },
+    {
+      "adapter": {
+        "pafLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_del.paf",
+        },
         "queryAssembly": "volvox_del",
         "targetAssembly": "volvox",
         "type": "PAFAdapter",
@@ -4253,6 +4374,163 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox_repeats (plus)",
       "trackId": "volvox_repeats_plus",
       "type": "QuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "bamLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sv.renamed.bam",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox-sv.renamed.bam.bai",
+          },
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox-sv.renamed-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox-sv.renamed-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox-sv.renamed-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox-sv.renamed-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox-sv.renamed-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-sv.renamed",
+      "trackId": "volvox-sv.renamed",
+      "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "craiLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted-altname.cram.crai",
+        },
+        "cramLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted-altname.cram",
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "RPC Driver Test",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_cram_mainthread-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox_cram_mainthread-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox_cram_mainthread-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_cram_mainthread-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox_cram_mainthread-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-sorted.cram (MainThreadRpcDriver)",
+      "rpcDriverName": "MainThreadRpcDriver",
+      "trackId": "volvox_cram_mainthread",
+      "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "craiLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted-altname.cram.crai",
+        },
+        "cramLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-sorted-altname.cram",
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "RPC Driver Test",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_cram_webworker-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox_cram_webworker-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox_cram_webworker-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_cram_webworker-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox_cram_webworker-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-sorted.cram (WebWorkerRpcDriver)",
+      "rpcDriverName": "WebWorkerRpcDriver",
+      "trackId": "volvox_cram_webworker",
+      "type": "AlignmentsTrack",
     },
   ],
 }

@@ -17,10 +17,8 @@ export default class CoreGetRefNames extends RpcMethodType {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { sessionId, adapterConfig } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-
-    if (isFeatureAdapter(dataAdapter)) {
-      return dataAdapter.getRefNames(deserializedArgs)
-    }
-    return []
+    return isFeatureAdapter(dataAdapter)
+      ? dataAdapter.getRefNames(deserializedArgs)
+      : []
   }
 }

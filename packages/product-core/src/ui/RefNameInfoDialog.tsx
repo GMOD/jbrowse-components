@@ -4,10 +4,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -97,7 +96,8 @@ const RefNameInfoDialog = observer(function ({
           <>
             <Button
               variant="contained"
-              onClick={() => {
+              onClick={async () => {
+                const { default: copy } = await import('copy-to-clipboard')
                 copy(
                   names
                     .flatMap(([assemblyName, refNames]) => [

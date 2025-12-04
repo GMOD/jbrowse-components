@@ -1,7 +1,7 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
@@ -84,7 +84,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
-            rpcDriverName: self.rpcDriverName,
             config: self.rendererConfig,
             height: self.height,
           }

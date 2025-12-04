@@ -9,6 +9,13 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
+  addDisposer,
+  cast,
+  getParent,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import {
   DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
   MultipleViewsSessionMixin,
@@ -21,13 +28,6 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getSnapshot,
-  types,
-} from 'mobx-state-tree'
 
 import { WebSessionConnectionsMixin } from '../SessionConnections'
 
@@ -43,7 +43,7 @@ import type {
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
@@ -432,10 +432,13 @@ export function BaseWebSession({
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem('drawerPosition', self.drawerPosition)
-            localStorageSetItem('themeName', self.themeName)
-          }),
+          autorun(
+            function sessionLocalStorageAutorun() {
+              localStorageSetItem('drawerPosition', self.drawerPosition)
+              localStorageSetItem('themeName', self.themeName)
+            },
+            { name: 'SessionLocalStorage' },
+          ),
         )
       },
     }))
@@ -449,6 +452,7 @@ export function BaseWebSession({
     // @ts-expect-error
     preProcessor(snapshot) {
       // @ts-expect-error
+
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const { connectionInstances, ...rest } = snapshot || {}
 

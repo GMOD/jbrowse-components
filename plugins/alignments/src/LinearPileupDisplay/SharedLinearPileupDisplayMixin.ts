@@ -6,7 +6,6 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   SimpleFeature,
   getContainingTrack,
@@ -16,12 +15,12 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import copy from 'copy-to-clipboard'
 import { autorun, observable } from 'mobx'
-import { addDisposer, cast, isAlive, types } from 'mobx-state-tree'
 
 import { createAutorun } from '../util'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
@@ -34,16 +33,18 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
 // lazies
 const FilterByTagDialog = lazy(
   () => import('../shared/components/FilterByTagDialog'),
 )
 const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog'))
 const SetFeatureHeightDialog = lazy(
-  () => import('./components/SetFeatureHeightDialog'),
+  () => import('../shared/components/SetFeatureHeightDialog'),
 )
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
+const SetMaxHeightDialog = lazy(
+  () => import('../shared/components/SetMaxHeightDialog'),
+)
+const MismatchInfoDialog = lazy(() => import('./components/MismatchInfoDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -248,17 +249,6 @@ export function SharedLinearPileupDisplayMixin(
 
       /**
        * #action
-       * uses copy-to-clipboard and generates notification
-       */
-      copyFeatureToClipboard(feature: Feature) {
-        const { uniqueId, ...rest } = feature.toJSON()
-        const session = getSession(self)
-        copy(JSON.stringify(rest, null, 4))
-        session.notify('Copied to clipboard', 'success')
-      },
-
-      /**
-       * #action
        */
       setConfig(conf: AnyConfigurationModel) {
         self.configuration = conf
@@ -289,6 +279,17 @@ export function SharedLinearPileupDisplayMixin(
     }))
 
     .views(self => ({
+      /**
+       * #method
+       * uses copy-to-clipboard and generates notification
+       */
+      async copyFeatureToClipboard(feature: Feature) {
+        const { uniqueId, ...rest } = feature.toJSON()
+        const session = getSession(self)
+        const { default: copy } = await import('copy-to-clipboard')
+        copy(JSON.stringify(rest, null, 4))
+        session.notify('Copied to clipboard', 'success')
+      },
       /**
        * #getter
        */
@@ -350,6 +351,7 @@ export function SharedLinearPileupDisplayMixin(
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
 
       return {
@@ -384,6 +386,7 @@ export function SharedLinearPileupDisplayMixin(
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: () => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.copyFeatureToClipboard(feat)
                   },
                 },
@@ -400,19 +403,25 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #method
          */
-        renderPropsPre() {
-          const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
+        adapterRenderProps() {
+          const { colorTagMap, colorBy, filterBy } = self
           const superProps = superRenderProps()
           return {
             ...superProps,
             notReady: superProps.notReady || !self.renderReady(),
-            rpcDriverName,
-            displayModel: self,
             colorBy,
             filterBy,
             filters: self.filters,
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
             config: self.rendererConfig,
+          }
+        },
+        /**
+         * #method
+         */
+        renderingProps() {
+          return {
+            ...superRenderingProps(),
             async onFeatureClick(_: unknown, featureId?: string) {
               const session = getSession(self)
               const { rpcManager } = session
@@ -430,6 +439,7 @@ export function SharedLinearPileupDisplayMixin(
                       sessionId,
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
@@ -445,6 +455,25 @@ export function SharedLinearPileupDisplayMixin(
 
             onClick() {
               self.clearFeatureSelection()
+            },
+            async onMismatchClick(
+              _: unknown,
+              item: {
+                type: string
+                seq: string
+                modType?: string
+                probability?: number
+              },
+              featureId?: string,
+            ) {
+              getSession(self).queueDialog(handleClose => [
+                MismatchInfoDialog,
+                {
+                  item,
+                  featureId,
+                  handleClose,
+                },
+              ])
             },
             // similar to click but opens a menu with further options
             async onFeatureContextMenu(_: unknown, featureId?: string) {
@@ -464,6 +493,7 @@ export function SharedLinearPileupDisplayMixin(
                       sessionId,
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
@@ -572,6 +602,13 @@ export function SharedLinearPileupDisplayMixin(
                   },
                 },
                 {
+                  label: 'Super-compact',
+                  onClick: () => {
+                    self.setFeatureHeight(1)
+                    self.setNoSpacing(true)
+                  },
+                },
+                {
                   label: 'Manually set height',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
@@ -626,7 +663,7 @@ export function SharedLinearPileupDisplayMixin(
     })
     .views(self => ({
       renderProps() {
-        return self.renderPropsPre()
+        return self.adapterRenderProps()
       },
     }))
     .actions(self => ({
@@ -680,13 +717,14 @@ export function SharedLinearPileupDisplayMixin(
                       sessionId,
                       layoutId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
-                  // check featureIdUnderMouse is still the same as the
-                  // feature.id that was returned e.g. that the user hasn't
-                  // moused over to a new position during the async operation
-                  // above
+                  // check featureIdUnderMouse is still the same
+                  // as the feature.id that was returned e.g. that
+                  // the user hasn't moused over to a new position
+                  // during the async operation above
                   if (
                     isAlive(self) &&
                     feature &&

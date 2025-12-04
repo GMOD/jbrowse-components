@@ -260,20 +260,56 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           const subs = subfeatures.sort((a, b) =>
             a.uniqueId.localeCompare(b.uniqueId),
           )
-          observer.next(
-            new SimpleFeature({
-              id: `${this.id}-${subs[0]?.uniqueId}-parent`,
-              data: {
-                type: 'gene',
-                subfeatures: subs,
-                strand: subs[0]?.strand || 1,
-                name,
-                start: s,
-                end: e,
-                refName: query.refName,
-              },
-            }),
-          )
+          // Check if any features in the subs array overlap with each other.
+          // This helps avoid aggregating features, like in bacterial GFF,
+          // where two genes have the same gene name but are distinct locations
+          // on the genome
+          //
+          // If they do, we'll create a single parent feature with all
+          // subfeatures (use the computed parent aggregation)
+          if (
+            subs.some((a, i) =>
+              subs.some(
+                (b, j) =>
+                  i !== j && doesIntersect2(a.start, a.end, b.start, b.end),
+              ),
+            )
+          ) {
+            observer.next(
+              new SimpleFeature({
+                id: `${this.id}-${subs[0]?.uniqueId}-parent`,
+                data: {
+                  type: 'gene',
+                  subfeatures: subs,
+                  strand: subs[0]?.strand || 1,
+                  name,
+                  start: s,
+                  end: e,
+                  refName: query.refName,
+                },
+              }),
+            )
+          }
+
+          // Otherwise, we'll create individual parent features for each subfeature (remove parent aggregation)
+          else {
+            for (const sub of subs) {
+              observer.next(
+                new SimpleFeature({
+                  id: `${this.id}-${sub.uniqueId}-parent`,
+                  data: {
+                    type: 'gene',
+                    subfeatures: [sub],
+                    strand: subs[0]?.strand || 1,
+                    name,
+                    start: sub.start,
+                    end: sub.end,
+                    refName: query.refName,
+                  },
+                }),
+              )
+            }
+          }
         }
       })
     })

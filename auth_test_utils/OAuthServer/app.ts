@@ -1,17 +1,21 @@
 /* eslint-disable no-console */
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import express from 'express'
 
-import oauthServer from './oauth/server'
+import oauthServer from './oauth/server.ts'
 
 import type { Request } from 'express'
 
 const router = express.Router()
 
-const filePath = path.join(__dirname, './public/oauthAuthenticate.html')
+const filePath = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  './public/oauthAuthenticate.html',
+)
 
 router.get('/', (req, res) => {
   // send back a simple form for the oauth
@@ -63,7 +67,15 @@ app.use('/oauth', router) // routes to access the auth stuff
 app.use(
   '/data',
   oauthServer.authenticate(),
-  express.static(path.join(__dirname, '..', '..', 'test_data', 'volvox')),
+  express.static(
+    path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '..',
+      '..',
+      'test_data',
+      'volvox',
+    ),
+  ),
 )
 
 console.log(

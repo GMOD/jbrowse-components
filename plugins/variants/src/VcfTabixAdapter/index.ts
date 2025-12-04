@@ -13,6 +13,7 @@ export default function VcfTabixAdapterF(pluginManager: PluginManager) {
         name: 'VcfTabixAdapter',
         displayName: 'VCF tabix adapter',
         configSchema,
+        adapterCapabilities: ['exportData'],
         getAdapterClass: () => import('./VcfTabixAdapter').then(r => r.default),
       }),
   )

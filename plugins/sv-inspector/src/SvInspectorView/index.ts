@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { type IAnyStateTreeNode, getParent } from '@jbrowse/mobx-state-tree'
 import { navToMultiLevelBreak } from '@jbrowse/sv-core'
-import { type IAnyStateTreeNode, getParent } from 'mobx-state-tree'
 
 import stateModelFactory from './model'
 

@@ -3,8 +3,8 @@ id: basefeaturewidget
 title: BaseFeatureWidget
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -125,7 +125,7 @@ maxDepth: types.maybe(types.number)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized; mode: string; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized; mode: SequenceDisplayMode; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 ```

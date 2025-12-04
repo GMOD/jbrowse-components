@@ -6,8 +6,8 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { types } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 
 import { stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
@@ -659,6 +659,30 @@ test('can showAllRegionsInAssembly', async () => {
     'ctgA',
     'ctgB',
   ])
+})
+
+test('init without loc shows whole genome', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testInitNoLoc',
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+      },
+    }),
+  )
+  model.setWidth(width)
+  await waitFor(() => {
+    expect(model.displayedRegions.map(reg => reg.refName)).toEqual([
+      'ctgA',
+      'ctgB',
+    ])
+  })
 })
 
 describe('get sequence for selected displayed regions', () => {

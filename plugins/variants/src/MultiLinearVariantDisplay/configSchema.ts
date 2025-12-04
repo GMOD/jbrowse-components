@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-// locals
 import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

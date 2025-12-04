@@ -2,30 +2,30 @@ import { lazy } from 'react'
 
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { observable } from 'mobx'
-import { cast, getEnv, isAlive, types } from 'mobx-state-tree'
 
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
-import { createAutorun, getColorForModification } from '../util'
+import { createAutorun } from '../util'
 
-import type {
-  ColorBy,
-  FilterBy,
-  ModificationType,
-  ModificationTypeWithColor,
-} from '../shared/types'
+import type { ColorBy, FilterBy } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
+const InterbaseInfoDialog = lazy(
+  () => import('./components/InterbaseInfoDialog'),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -45,6 +45,7 @@ function stateModelFactory(
     .compose(
       'LinearSNPCoverageDisplay',
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -76,18 +77,6 @@ function stateModelFactory(
         jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      visibleModifications: observable.map<string, ModificationTypeWithColor>(
-        {},
-      ),
-      /**
-       * #volatile
-       */
-      modificationsReady: false,
-    }))
     .views(self => ({
       /**
        * #getter
@@ -101,6 +90,25 @@ function stateModelFactory(
        */
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+
+      /**
+       * #getter
+       * Collect all skip features from rendered blocks for cross-region arc drawing
+       * Uses a Map to deduplicate features that appear in multiple blocks
+       */
+      get skipFeatures(): Feature[] {
+        const skipFeaturesMap = new Map<string, Feature>()
+        for (const block of self.blockState.values()) {
+          if (block.features) {
+            for (const feature of block.features.values()) {
+              if (feature.get('type') === 'skip') {
+                skipFeaturesMap.set(feature.id(), feature)
+              }
+            }
+          }
+        }
+        return [...skipFeaturesMap.values()]
       },
     }))
     .actions(self => ({
@@ -134,24 +142,16 @@ function stateModelFactory(
       setJexlFilters(filters: string[]) {
         self.jexlFilters = cast(filters)
       },
-
-      /**
-       * #action
-       */
-      updateVisibleModifications(uniqueModifications: ModificationType[]) {
-        for (const modification of uniqueModifications) {
-          if (!self.visibleModifications.has(modification.type)) {
-            self.visibleModifications.set(modification.type, {
-              ...modification,
-              color: getColorForModification(modification.type),
-            })
-          }
-        }
-      },
     }))
     .views(self => {
       const { adapterProps: superAdapterProps } = self
       return {
+        /**
+         * #getter
+         */
+        get modificationThreshold() {
+          return self.colorBy?.modifications?.threshold ?? 10
+        },
         /**
          * #getter
          */
@@ -222,17 +222,12 @@ function stateModelFactory(
             ...superProps,
             filters,
             filterBy,
+            modificationThreshold: this.modificationThreshold,
           }
         },
       }
     })
     .actions(self => ({
-      /**
-       * #action
-       */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
-      },
       /**
        * #action
        */
@@ -265,13 +260,15 @@ function stateModelFactory(
             const { staticBlocks } = view
             const { colorBy } = self
             if (colorBy?.type === 'modifications') {
-              const vals = await getUniqueModifications({
-                model: self,
-                adapterConfig: getConf(self.parentTrack, 'adapter'),
-                blocks: staticBlocks,
-              })
+              const { modifications, simplexModifications } =
+                await getUniqueModifications({
+                  model: self,
+                  adapterConfig: getConf(self.parentTrack, 'adapter'),
+                  blocks: staticBlocks,
+                })
               if (isAlive(self)) {
-                self.updateVisibleModifications(vals)
+                self.updateVisibleModifications(modifications)
+                self.setSimplexModifications(simplexModifications)
                 self.setModificationsReady(true)
               }
             } else {
@@ -286,6 +283,7 @@ function stateModelFactory(
     .views(self => {
       const {
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
         trackMenuItems: superTrackMenuItems,
       } = self
       return {
@@ -301,7 +299,7 @@ function stateModelFactory(
          * #method
          */
         renderProps() {
-          const { colorBy, visibleModifications } = self
+          const { colorBy, visibleModifications, simplexModifications } = self
           return {
             ...superRenderProps(),
             notReady: !this.renderReady(),
@@ -309,6 +307,33 @@ function stateModelFactory(
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),
             ),
+            simplexModifications: [...simplexModifications],
+          }
+        },
+
+        /**
+         * #method
+         */
+        renderingProps() {
+          return {
+            ...superRenderingProps(),
+            onIndicatorClick(
+              _: unknown,
+              item: {
+                type: string
+                base: string
+                count: number
+                total: number
+                avgLength?: number
+                minLength?: number
+                maxLength?: number
+              },
+            ) {
+              getSession(self).queueDialog(handleClose => [
+                InterbaseInfoDialog,
+                { item, handleClose },
+              ])
+            },
           }
         },
         /**
@@ -396,8 +421,23 @@ function stateModelFactory(
         },
       }
     })
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (snap) {
+        // @ts-expect-error
+        const { colorBy, colorBySetting, filterBySetting, filterBy, ...rest } =
+          snap
+        return {
+          ...rest,
+          filterBySetting: filterBySetting || filterBy,
+          colorBySetting: colorBySetting || colorBy,
+        }
+      }
+      return snap
+    })
 }
 
-export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageDisplayModel = Instance<SNPCoverageDisplayStateModel>
 
 export default stateModelFactory

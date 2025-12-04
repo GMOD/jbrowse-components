@@ -1,28 +1,61 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import {
+  forEachWithStopTokenCheck,
+  renderToAbstractCanvas,
+} from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { renderAlignment } from './renderAlignment'
-import { renderMismatches } from './renderMismatches'
-import { renderSoftClipping } from './renderSoftClipping'
+import { layoutFeats } from './layoutFeatures'
+import { renderAlignment } from './renderers/renderAlignment'
+import { renderMismatches } from './renderers/renderMismatches'
+import { renderSoftClipping } from './renderers/renderSoftClipping'
 import {
   getCharWidthHeight,
   getColorBaseMap,
   getContrastBaseMap,
+  setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from './util'
+import { fetchSequence } from '../util'
 
-import type { ProcessedRenderArgs } from './types'
-import type { Feature } from '@jbrowse/core/util'
+import type {
+  FlatbushItem,
+  LayoutFeature,
+  PreProcessedRenderArgs,
+  ProcessedRenderArgs,
+} from './types'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-interface LayoutFeature {
-  heightPx: number
-  topPx: number
-  feature: Feature
+async function fetchRegionSequence(
+  renderArgs: PreProcessedRenderArgs,
+  pluginManager: PluginManager,
+) {
+  const { colorBy, features, sessionId, adapterConfig, regions } = renderArgs
+  const { sequenceAdapter } = adapterConfig
+  if (colorBy?.type !== 'methylation' || !features.size || !sequenceAdapter) {
+    return undefined
+  }
+  const region = regions[0]!
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    sequenceAdapter,
+  )
+  return fetchSequence(
+    {
+      ...region,
+      start: Math.max(0, region.start - 1),
+      end: region.end + 1,
+    },
+    dataAdapter as BaseFeatureDataAdapter,
+  )
 }
 
-export function makeImageData({
+function renderFeatures({
   ctx,
   layoutRecords,
   canvasWidth,
@@ -51,13 +84,16 @@ export function makeImageData({
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
-  ctx.font = 'bold 10px Courier New,monospace'
+  setAlignmentFont(ctx)
 
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
   const drawIndels = shouldDrawIndels()
+  const coords = [] as number[]
+  const items = [] as FlatbushItem[]
+
   forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
-    renderAlignment({
+    const alignmentRet = renderAlignment({
       ctx,
       feat,
       renderArgs,
@@ -68,10 +104,17 @@ export function makeImageData({
       charHeight,
       canvasWidth,
     })
-    renderMismatches({
+    for (let i = 0, l = alignmentRet.coords.length; i < l; i++) {
+      coords.push(alignmentRet.coords[i]!)
+    }
+    for (let i = 0, l = alignmentRet.items.length; i < l; i++) {
+      items.push(alignmentRet.items[i]!)
+    }
+    const ret = renderMismatches({
       ctx,
       feat,
-      renderArgs,
+      bpPerPx: renderArgs.bpPerPx,
+      regions: renderArgs.regions,
       hideSmallIndels,
       mismatchAlpha,
       drawSNPsMuted,
@@ -84,6 +127,12 @@ export function makeImageData({
       colorContrastMap,
       canvasWidth,
     })
+    for (let i = 0, l = ret.coords.length; i < l; i++) {
+      coords.push(ret.coords[i]!)
+    }
+    for (let i = 0, l = ret.items.length; i < l; i++) {
+      items.push(ret.items[i]!)
+    }
     if (showSoftClip) {
       renderSoftClipping({
         ctx,
@@ -96,5 +145,52 @@ export function makeImageData({
       })
     }
   })
-  return undefined
+
+  const flatbush = new Flatbush(Math.max(items.length, 1))
+  if (coords.length) {
+    for (let i = 0; i < coords.length; i += 4) {
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+    }
+  } else {
+    flatbush.add(0, 0)
+  }
+  flatbush.finish()
+
+  return {
+    flatbush: flatbush.data,
+    items,
+  }
+}
+
+export async function makeImageData({
+  width,
+  renderArgs,
+  pluginManager,
+}: {
+  width: number
+  renderArgs: PreProcessedRenderArgs
+  pluginManager: PluginManager
+}) {
+  const { statusCallback = () => {} } = renderArgs
+
+  statusCallback('Creating layout')
+  const { layoutRecords, height } = layoutFeats(renderArgs)
+
+  statusCallback('Fetching sequence')
+  const regionSequence = await fetchRegionSequence(renderArgs, pluginManager)
+
+  statusCallback('Rendering alignments')
+  const result = await renderToAbstractCanvas(width, height, renderArgs, ctx =>
+    renderFeatures({
+      ctx,
+      layoutRecords,
+      canvasWidth: width,
+      renderArgs: {
+        ...renderArgs,
+        regionSequence,
+      },
+    }),
+  )
+
+  return { result, height }
 }

@@ -16,6 +16,8 @@ import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
+  public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
+
   private configured?: Promise<{
     vcf: TabixIndexedFile
     parser: VcfParser
@@ -78,6 +80,39 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
     return parser.getMetadata()
   }
 
+  public async getExportData(
+    regions: NoAssemblyRegion[],
+    formatType: string,
+    opts?: BaseOptions,
+  ): Promise<string | undefined> {
+    if (formatType !== 'vcf') {
+      return undefined
+    }
+
+    const { statusCallback = () => {} } = opts || {}
+    const { vcf } = await this.configure(opts)
+    const headerText = await vcf.getHeader()
+    const exportLines: string[] = headerText.split('\n').filter(Boolean)
+
+    for (const region of regions) {
+      const { refName, start, end } = region
+      const regionLines: string[] = []
+
+      await updateStatus('Exporting variants', statusCallback, () =>
+        vcf.getLines(refName, start, end, {
+          lineCallback: (line: string) => {
+            regionLines.push(line)
+          },
+          ...opts,
+        }),
+      )
+
+      exportLines.push(...regionLines)
+    }
+
+    return exportLines.join('\n')
+  }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = query
@@ -118,7 +153,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       const { parser } = await this.configure()
       const metadataLines = lines
         .slice(1)
-        .filter(f => !!f)
+        .filter(Boolean)
         .map(line => {
           const [name, ...rest] = line.split('\t')
           return {
@@ -146,7 +181,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       if (vcfSamplesNotInMetadata.length) {
         console.warn(
           `There are ${vcfSamplesNotInMetadata.length} samples in VCF file (${parser.samples.length} samples) not in metadata file (${metadataLines.length} lines):`,
-          shorten2(vcfSamplesNotInMetadata.map(m => m).join(',')),
+          shorten2(vcfSamplesNotInMetadata.join(',')),
         )
       }
       return metadataLines.filter(f => vcfSampleSet.has(f.name))

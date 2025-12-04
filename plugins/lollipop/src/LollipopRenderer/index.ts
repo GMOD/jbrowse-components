@@ -1,5 +1,6 @@
+import { lazy } from 'react'
+
 import LollipopRenderer from './LollipopRenderer'
-import ReactComponent from './components/LollipopRendering'
 import configSchema from './configSchema'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -9,7 +10,7 @@ export default function LollipopRendererF(pluginManager: PluginManager) {
     () =>
       new LollipopRenderer({
         name: 'LollipopRenderer',
-        ReactComponent,
+        ReactComponent: lazy(() => import('./components/LollipopRendering')),
         configSchema,
         pluginManager,
       }),

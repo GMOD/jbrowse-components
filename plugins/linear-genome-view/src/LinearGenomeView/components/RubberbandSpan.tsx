@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import RubberbandTooltip from './RubberbandTooltip'
 
@@ -14,14 +14,12 @@ const useStyles = makeStyles()(theme => {
       height: '100%',
       background,
       position: 'absolute',
+      left: 0,
       zIndex: 830,
       textAlign: 'center',
-    },
-    rubberbandControl: {
       cursor: 'crosshair',
-      width: '100%',
-      minHeight: 8,
     },
+
     rubberbandText: {
       color: theme.palette.tertiary.contrastText,
     },
@@ -69,7 +67,10 @@ export default function RubberbandSpan({
           />
         </>
       ) : null}
-      <div className={classes.rubberband} style={{ left, width }}>
+      <div
+        className={classes.rubberband}
+        style={{ transform: `translateX(${left}px)`, width }}
+      >
         {numOfBpSelected ? (
           <Typography
             ref={el => {

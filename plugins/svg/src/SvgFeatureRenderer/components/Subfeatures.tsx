@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import { chooseGlyphComponent, layOut, layOutFeature } from './util'
 
-import type { ExtraGlyphValidator } from './util'
+import type { ExtraGlyphValidator } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -16,6 +16,8 @@ const Subfeatures = observer(function Subfeatures(props: {
   const { feature, featureLayout, selected } = props
 
   return feature.get('subfeatures')?.map(subfeature => {
+    // bad or old code might not be a string id but try to assume it is
+
     const subfeatureId = String(subfeature.id())
     const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
     if (!subfeatureLayout) {

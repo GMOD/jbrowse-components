@@ -1,9 +1,15 @@
-import { sum } from '.'
-
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 export class BlockSet {
-  constructor(public blocks: BaseBlock[] = []) {}
+  blocks: BaseBlock[]
+
+  constructor(blocks: BaseBlock[] = []) {
+    this.blocks = blocks
+  }
+
+  *[Symbol.iterator]() {
+    yield* this.blocks
+  }
 
   push(block: BaseBlock) {
     if (block.type === 'ElidedBlock' && this.blocks.length > 0) {
@@ -40,19 +46,23 @@ export class BlockSet {
   }
 
   get totalWidthPx() {
-    return this.blocks.length > 0
-      ? sum(this.blocks.map(blocks => blocks.widthPx))
-      : 0
+    let total = 0
+    for (let i = 0, l = this.blocks.length; i < l; i++) {
+      total += this.blocks[i]!.widthPx
+    }
+
+    return total
   }
 
   get totalWidthPxWithoutBorders() {
-    return this.blocks.length > 0
-      ? sum(
-          this.blocks
-            .filter(block => block.variant !== 'boundary')
-            .map(blocks => blocks.widthPx),
-        )
-      : 0
+    let total = 0
+    for (let i = 0, l = this.blocks.length; i < l; i++) {
+      if (this.blocks[i]!.variant !== 'boundary') {
+        total += this.blocks[i]!.widthPx
+      }
+    }
+
+    return total
   }
 
   get offsetPx() {
@@ -64,7 +74,12 @@ export class BlockSet {
   }
 
   get totalBp() {
-    return sum(this.contentBlocks.map(block => block.end - block.start))
+    let total = 0
+    for (let i = 0, l = this.contentBlocks.length; i < l; i++) {
+      const b = this.contentBlocks[i]!
+      total += b.end - b.start
+    }
+    return total
   }
 }
 

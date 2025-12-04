@@ -1,7 +1,5 @@
 import { useState } from 'react'
 
-import copy from 'copy-to-clipboard'
-
 // this 'show more...' for long strings
 export default function Formatter({ value }: { value: unknown }) {
   const [show, setShow] = useState(false)
@@ -11,7 +9,8 @@ export default function Formatter({ value }: { value: unknown }) {
     <>
       <button
         type="button"
-        onClick={() => {
+        onClick={async () => {
+          const { default: copy } = await import('copy-to-clipboard')
           copy(display)
           setCopied(true)
           setTimeout(() => {

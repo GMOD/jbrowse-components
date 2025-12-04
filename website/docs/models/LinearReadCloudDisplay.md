@@ -3,8 +3,8 @@ id: linearreadclouddisplay
 title: LinearReadCloudDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -46,31 +46,35 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: filterBySetting
+#### property: drawCloud
 
 ```js
 // type signature
-IType<FilterBy, FilterBy, FilterBy>
+false
 // code
-filterBySetting: types.frozen<FilterBy | undefined>()
+drawCloud: false
 ```
 
-#### property: colorBySetting
+#### property: noSpacing
+
+Whether to remove spacing between stacked features
 
 ```js
 // type signature
-IType<ColorBy, ColorBy, ColorBy>
+IMaybe<ISimpleType<boolean>>
 // code
-colorBySetting: types.frozen<ColorBy | undefined>()
+noSpacing: types.maybe(types.boolean)
 ```
 
-#### property: drawSingletons
+#### property: trackMaxHeight
+
+Maximum height for the layout (prevents infinite stacking)
 
 ```js
 // type signature
-true
+IMaybe<ISimpleType<number>>
 // code
-drawSingletons: true
+trackMaxHeight: types.maybe(types.number)
 ```
 
 ### LinearReadCloudDisplay - Getters
@@ -83,6 +87,13 @@ any
 ```
 
 #### getter: filterBy
+
+```js
+// type
+any
+```
+
+#### getter: featureHeightSetting
 
 ```js
 // type
@@ -102,38 +113,10 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearReadCloudDisplay - Actions
-
-#### action: setDrawSingletons
-
-```js
-// type signature
-setDrawSingletons: (f: boolean) => void
-```
-
-#### action: setLastDrawnOffsetPx
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
-```
-
-#### action: setLastDrawnBpPerPx
-
-```js
-// type signature
-setLastDrawnBpPerPx: (n: number) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
 
 #### action: reload
 
@@ -142,26 +125,70 @@ setLoading: (f: boolean) => void
 reload: () => void
 ```
 
-#### action: setRef
+#### action: setNoSpacing
 
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
+Set whether to remove spacing between features
 
 ```js
 // type signature
-setRef: (ref: HTMLCanvasElement) => void
+setNoSpacing: (flag?: boolean) => void
 ```
 
-#### action: setChainData
+#### action: setMaxHeight
+
+Set the maximum height for the layout
 
 ```js
 // type signature
-setChainData: (args: ChainData) => void
+setMaxHeight: (n?: number) => void
 ```
 
-#### action: setFilterBy
+#### action: setLayoutHeight
+
+Set the current layout height
 
 ```js
 // type signature
-setFilterBy: (filter: FilterBy) => void
+setLayoutHeight: (n: number) => void
+```
+
+#### action: selectFeature
+
+```js
+// type signature
+selectFeature: (chain: ReducedFeature[]) => void
+```
+
+#### action: setDrawCloud
+
+```js
+// type signature
+setDrawCloud: (b: boolean) => void
+```
+
+#### action: setRenderingImageData
+
+Set the rendering imageData from RPC
+
+```js
+// type signature
+setRenderingImageData: (imageData: ImageBitmap) => void
+```
+
+#### action: setSelectedFeatureId
+
+Set the ID of the selected feature for persistent highlighting
+
+```js
+// type signature
+setSelectedFeatureId: (id: string) => void
+```
+
+#### action: setRenderingStopToken
+
+Set the rendering stop token
+
+```js
+// type signature
+setRenderingStopToken: (token: string) => void
 ```

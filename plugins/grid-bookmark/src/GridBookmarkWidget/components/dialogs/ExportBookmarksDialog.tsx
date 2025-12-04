@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Alert,
@@ -12,9 +13,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
-
-// Icons
 
 import { downloadBookmarkFile } from '../../utils'
 
@@ -47,10 +45,10 @@ const ExportBookmarksDialog = observer(function ({
   return (
     <Dialog
       open
+      title="Export bookmarks"
       onClose={() => {
         onClose()
       }}
-      title="Export bookmarks"
     >
       <DialogContent className={classes.container}>
         <Alert severity="info">
@@ -86,6 +84,7 @@ const ExportBookmarksDialog = observer(function ({
           color="primary"
           startIcon={<GetAppIcon />}
           onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             downloadBookmarkFile(fileType, model)
             onClose()
           }}

@@ -22,45 +22,28 @@ const VariantConsequenceDataGrid = lazy(
   () => import('./VariantConsequence/VariantConsequenceDataGrid'),
 )
 
-function AnnPanel({
+function AnnotationPanel({
   descriptions,
   feature,
+  fieldKey,
+  title,
+  regex,
 }: {
   descriptions?: Descriptions
   feature: SimpleFeatureSerialized & ReducedFeature
+  fieldKey: 'ANN' | 'CSQ'
+  title: string
+  regex: RegExp
 }) {
-  const annDesc = descriptions?.INFO?.ANN?.Description
-  const annFields =
-    annDesc?.match(/.*Functional annotations:'(.*)'$/)?.[1]?.split('|') || []
-  const ann = feature.INFO?.ANN || []
+  const desc = descriptions?.INFO?.[fieldKey]?.Description
+  const fields = desc?.match(regex)?.[1]?.split('|') || []
+  const data = feature.INFO?.[fieldKey] || []
   return (
-    <VariantConsequenceDataGrid
-      fields={annFields}
-      data={ann}
-      title="Variant ANN field"
-    />
+    <VariantConsequenceDataGrid fields={fields} data={data} title={title} />
   )
 }
 
-function CsqPanel({
-  descriptions,
-  feature,
-}: {
-  descriptions?: Descriptions
-  feature: SimpleFeatureSerialized & ReducedFeature
-}) {
-  const csqDescription = descriptions?.INFO?.CSQ?.Description
-  const csqFields =
-    csqDescription?.match(/.*Format: (.*)/)?.[1]?.split('|') || []
-  const csq = feature.INFO?.CSQ || []
-  return (
-    <VariantConsequenceDataGrid
-      fields={csqFields}
-      data={csq}
-      title="Variant CSQ field"
-    />
-  )
-}
+const svTypes = ['inversion', 'deletion', 'duplication', 'cnv', 'sv']
 
 function LaunchBreakendWidgetArea({
   model,
@@ -91,11 +74,7 @@ function LaunchBreakendWidgetArea({
       model={model}
       locStrings={[`${feat.mate.refName}:${feat.mate.start}`]}
     />
-  ) : type.includes('inversion') ||
-    type.includes('deletion') ||
-    type.includes('duplication') ||
-    type.includes('cnv') ||
-    type.includes('sv') ? (
+  ) : svTypes.some(t => type.includes(t)) ? (
     <LaunchBreakendPanel
       feature={{
         uniqueId: 'random',
@@ -131,18 +110,30 @@ const FeatDefined = observer(function (props: {
           ...variantFieldDescriptions,
           ...descriptions,
         }}
-        formatter={(value, key) => {
-          return key === 'ALT' ? (
-            <AltFormatter value={`${value}`} ref={REF as string} />
+        formatter={(value, key) =>
+          key === 'ALT' ? (
+            <AltFormatter value={`${value}`} refString={REF as string} />
           ) : (
             <Formatter value={value} />
           )
-        }}
+        }
         {...props}
       />
       <Suspense fallback={null}>
-        <CsqPanel feature={rest} descriptions={descriptions} />
-        <AnnPanel feature={rest} descriptions={descriptions} />
+        <AnnotationPanel
+          feature={rest}
+          descriptions={descriptions}
+          fieldKey="CSQ"
+          title="Variant CSQ field"
+          regex={/.*Format: (.*)/}
+        />
+        <AnnotationPanel
+          feature={rest}
+          descriptions={descriptions}
+          fieldKey="ANN"
+          title="Variant ANN field"
+          regex={/.*Functional annotations:'(.*)'$/}
+        />
         <LaunchBreakendWidgetArea model={model} />
       </Suspense>
       <VariantSampleGrid

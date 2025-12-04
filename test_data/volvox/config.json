@@ -723,6 +723,41 @@
     },
     {
       "type": "MultiQuantitativeTrack",
+      "trackId": "volvox_microarray_multi2",
+      "name": "MultiWig no names",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v1.cram.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v2.cram.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v3.cram.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v4.cram.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi",
       "name": "MultiWig",
       "assemblyNames": ["volvox"],
@@ -761,6 +796,41 @@
           }
         ]
       }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "mytrack",
+      "name": "MultiWig (w/ colors and default line rendering)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain1",
+            "uri": "v1.cram.bw",
+            "color": "#f00"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain2",
+            "uri": "v2.cram.bw",
+            "color": "#f60"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain3",
+            "uri": "v3.cram.bw",
+            "color": "#fa0"
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "multiline"
+        }
+      ]
     },
     {
       "type": "QuantitativeTrack",
@@ -1191,6 +1261,7 @@
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "BigBedAdapter",
+        "aggregateField": "geneName",
         "bigBedLocation": {
           "uri": "volvox.bb",
           "locationType": "UriLocation"
@@ -1869,6 +1940,21 @@
     {
       "type": "SyntenyTrack",
       "category": ["Synteny"],
+      "trackId": "volvox_del2.paf",
+      "name": "volvox_del2.paf",
+      "assemblyNames": ["volvox", "volvox_del2"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "targetAssembly": "volvox",
+        "queryAssembly": "volvox_del2",
+        "pafLocation": {
+          "uri": "volvox_del.paf"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "volvox_del.paf",
       "name": "volvox_del.paf",
       "assemblyNames": ["volvox", "volvox_del"],
@@ -2272,6 +2358,72 @@
           }
         }
       ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox-sv.renamed",
+      "name": "volvox-sv.renamed",
+      "category": ["Alignments"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sv.renamed.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sv.renamed.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_mainthread",
+      "name": "volvox-sorted.cram (MainThreadRpcDriver)",
+      "category": ["RPC Driver Test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "uri": "volvox-sorted-altname.cram",
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "rpcDriverName": "MainThreadRpcDriver"
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_webworker",
+      "name": "volvox-sorted.cram (WebWorkerRpcDriver)",
+      "category": ["RPC Driver Test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "uri": "volvox-sorted-altname.cram",
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "rpcDriverName": "WebWorkerRpcDriver"
     }
   ],
   "plugins": [

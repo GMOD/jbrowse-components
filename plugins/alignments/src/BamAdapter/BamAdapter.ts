@@ -51,7 +51,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       bamFilehandle: openLocation(bamLocation, pm),
       csiFilehandle: csi ? openLocation(location, pm) : undefined,
       baiFilehandle: !csi ? openLocation(location, pm) : undefined,
-      yieldThreadTime: Number.POSITIVE_INFINITY,
     })
 
     const adapterConfig = this.getConf('sequenceAdapter')

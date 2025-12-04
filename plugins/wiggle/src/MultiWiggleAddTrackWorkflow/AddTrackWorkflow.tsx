@@ -7,9 +7,9 @@ import {
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Paper, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { AddTrackModel } from '@jbrowse/plugin-data-management'
 
@@ -27,10 +27,9 @@ const useStyles = makeStyles()(theme => ({
 
 // on electron, use path to LocalFileLocation, on web, use the BlobLocation
 function makeFileLocation(file: File) {
-  const { webUtils } = window.require('electron')
   return isElectron
     ? {
-        localPath: webUtils.getPathForFile(file),
+        localPath: window.require('electron').webUtils.getPathForFile(file),
         locationType: 'LocalPathLocation',
       }
     : storeBlobLocation({ blob: file })
@@ -96,7 +95,7 @@ const MultiWiggleAddTrackWorkflow = observer(function ({
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
-  const [trackName, setTrackName] = useState(`MultiWiggle${+Date.now()}`)
+  const [trackName, setTrackName] = useState(`MultiWiggle${Date.now()}`)
   return (
     <Paper className={classes.paper}>
       <ul>

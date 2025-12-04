@@ -1,5 +1,5 @@
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
-import { addDisposer, isAlive } from 'mobx-state-tree'
 
 import { isAbortException } from './aborting'
 import { createStopToken, stopStopToken } from './stopToken'
@@ -42,8 +42,8 @@ export function makeAbortableReaction<T, U, V>(
 
   function handleError(error: unknown) {
     if (!isAbortException(error)) {
-      console.error(error)
       if (isAlive(self)) {
+        console.error(error)
         errorFunction(error)
       }
     }

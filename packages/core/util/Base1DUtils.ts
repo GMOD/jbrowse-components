@@ -17,7 +17,7 @@ function lengthBetween(self: ViewSnap, start: BpOffset, end: BpOffset) {
     const s = displayedRegions[start.index]!
     bpSoFar += s.end - s.start - start.offset
     if (end.index - start.index >= 2) {
-      for (let i = start.index + 1; i < end.index; i++) {
+      for (let i = start.index + 1, l = end.index; i < l; i++) {
         const region = displayedRegions[i]!
         const len = region.end - region.start
         bpSoFar += len
@@ -49,7 +49,7 @@ export function moveTo(
 
   const len = lengthBetween(self, start, end)
   let numBlocksWideEnough = 0
-  for (let i = start.index; i < end.index; i++) {
+  for (let i = start.index, l = end.index; i < l; i++) {
     const r = displayedRegions[i]!
     if ((r.end - r.start) / bpPerPx > minimumBlockWidth) {
       numBlocksWideEnough++
@@ -68,9 +68,8 @@ export function moveTo(
   }
 
   let bpToStart = -extraBp
-
-  for (let i = 0; i < self.displayedRegions.length; i++) {
-    const region = self.displayedRegions[i]!
+  for (let i = 0, l = displayedRegions.length; i < l; i++) {
+    const region = displayedRegions[i]!
     if (start.index === i) {
       bpToStart += start.offset
       break
@@ -79,7 +78,8 @@ export function moveTo(
     }
   }
 
-  self.scrollTo(Math.round(bpToStart / self.bpPerPx))
+  const scrollPos = Math.round(bpToStart / self.bpPerPx)
+  self.scrollTo(scrollPos)
 }
 
 function coord(r: Region, bp: number) {
@@ -115,7 +115,7 @@ export function pxToBp(
     const r = displayedRegions[0]!
     const snap = r
     return {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       ...(snap as Omit<typeof snap, symbol>),
       oob: true,
       coord: coord(r, bp),
@@ -126,15 +126,15 @@ export function pxToBp(
 
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
   let currBlock = 0
-  // eslint-disable-next-line unicorn/no-for-loop
-  for (let i = 0; i < displayedRegions.length; i++) {
+
+  for (let i = 0, l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
     const len = r.end - r.start
     const offset = bp - bpSoFar
     if (len + bpSoFar > bp && bpSoFar <= bp) {
       const snap = r
       return {
-        // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+        // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
         ...(snap as Omit<typeof snap, symbol>),
         oob: false,
         offset,
@@ -146,6 +146,25 @@ export function pxToBp(
     // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
     // a static block
     if (blocks[currBlock]?.regionNumber === i) {
+      const paddingStart = bpSoFar + len
+      const paddingEnd = paddingStart + interRegionPaddingBp
+      // If bp is in the inter-region padding, use the next region's info
+      if (
+        bp >= paddingStart &&
+        bp < paddingEnd &&
+        i + 1 < displayedRegions.length
+      ) {
+        const nextR = displayedRegions[i + 1]!
+        const snap = nextR
+        return {
+          // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
+          ...(snap as Omit<typeof snap, symbol>),
+          oob: false,
+          offset: 0,
+          coord: coord(nextR, 0),
+          index: i + 1,
+        }
+      }
       bpSoFar += len + interRegionPaddingBp
       currBlock++
     } else {
@@ -160,7 +179,7 @@ export function pxToBp(
 
     const snap = r
     return {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       ...(snap as Omit<typeof snap, symbol>),
       oob: true,
       offset,
@@ -201,7 +220,7 @@ export function bpToPx({
   let currBlock = 0
 
   let i = 0
-  for (; i < displayedRegions.length; i++) {
+  for (let l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
     const len = r.end - r.start
     if (
@@ -255,7 +274,7 @@ export function bpToPxMap({
   let currBlock = 0
 
   let i = 0
-  for (; i < displayedRegions.length; i++) {
+  for (let l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
     const len = r.end - r.start
     if (

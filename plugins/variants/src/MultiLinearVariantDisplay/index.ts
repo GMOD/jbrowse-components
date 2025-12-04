@@ -15,6 +15,8 @@ export default function MultiLinearVariantDisplayF(
     return new DisplayType({
       name: 'MultiLinearVariantDisplay',
       displayName: 'Multi-sample variant display (regular)',
+      helpText:
+        'Draws multi-sample variant data using a row for each sample in your dataset. The term "regular" is unfortunately vague but it just means drawing the variants at their actual base pair coordinates. The "regular" mode is notable for also being able to draw structural variants (SVs), including overlapping SVs. It will specifically skip drawing the "reference" alleles by default, allowing overlapping SVs to not cover each other up',
       configSchema,
       stateModel: modelFactory(configSchema),
       trackType: 'VariantTrack',

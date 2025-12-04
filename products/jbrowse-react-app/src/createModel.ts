@@ -5,14 +5,17 @@ import createRootModel from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
-export default function createModel(
-  runtimePlugins: PluginConstructor[],
-  makeWorkerInstance: () => Worker = () => {
+export default function createModel({
+  runtimePlugins,
+  makeWorkerInstance = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
-) {
+}: {
+  runtimePlugins: PluginConstructor[]
+  makeWorkerInstance?: () => Worker
+}) {
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
     ...runtimePlugins.map(P => new P()),

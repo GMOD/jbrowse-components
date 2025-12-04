@@ -1,6 +1,5 @@
+import { cx, keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
-import { keyframes } from 'tss-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { TypographyProps } from '@mui/material'
 
@@ -31,14 +30,16 @@ const useStyles = makeStyles()({
 
 interface Props extends TypographyProps {
   message?: string
+  children?: never
 }
 
 export default function LoadingEllipses({
   message,
+  children,
   variant = 'body2',
   ...rest
 }: Props) {
-  const { cx, classes } = useStyles()
+  const { classes } = useStyles()
   return (
     <Typography
       className={cx(classes.dots, rest.className)}

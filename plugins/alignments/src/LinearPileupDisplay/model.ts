@@ -6,28 +6,27 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import ColorLensIcon from '@mui/icons-material/ColorLens'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
-import { observable } from 'mobx'
-import { types } from 'mobx-state-tree'
 
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { getColorForModification, modificationData } from '../util'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { modificationData } from '../shared/modificationData'
 
-import type {
-  ModificationType,
-  ModificationTypeWithColor,
-  SortedBy,
-} from '../shared/types'
+import type { SortedBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
+const SetModificationThresholdDialog = lazy(
+  () => import('./components/SetModificationThresholdDialog'),
+)
 
 type LGV = LinearGenomeViewModel
 
@@ -42,6 +41,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .compose(
       'LinearPileupDisplay',
       SharedLinearPileupDisplayMixin(configSchema),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -75,16 +75,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       currSortBpPerPx: 0,
-      /**
-       * #volatile
-       */
-      visibleModifications: observable.map<string, ModificationTypeWithColor>(
-        {},
-      ),
-      /**
-       * #volatile
-       */
-      modificationsReady: false,
     }))
     .actions(self => ({
       /**
@@ -92,25 +82,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setCurrSortBpPerPx(n: number) {
         self.currSortBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      updateVisibleModifications(uniqueModifications: ModificationType[]) {
-        for (const value of uniqueModifications) {
-          if (!self.visibleModifications.has(value.type)) {
-            self.visibleModifications.set(value.type, {
-              ...value,
-              color: getColorForModification(value.type),
-            })
-          }
-        }
-      },
-      /**
-       * #action
-       */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
       },
       /**
        * #action
@@ -189,8 +160,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get visibleModificationTypes() {
-        return [...self.visibleModifications.keys()]
+      get modificationThreshold() {
+        return self.colorBy?.modifications?.threshold ?? 10
       },
       /**
        * #getter
@@ -245,7 +216,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
-        renderPropsPre: superRenderPropsPre,
+        adapterRenderProps: superAdapterRenderProps,
         renderProps: superRenderProps,
         colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
       } = self
@@ -254,9 +225,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        renderPropsPre() {
-          const { sortedBy, showSoftClipping, visibleModifications } = self
-          const superProps = superRenderPropsPre()
+        adapterRenderProps() {
+          const {
+            sortedBy,
+            showSoftClipping,
+            visibleModifications,
+            simplexModifications,
+          } = self
+          const superProps = superAdapterRenderProps()
           return {
             ...superProps,
             showSoftClip: showSoftClipping,
@@ -264,6 +240,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),
             ),
+            simplexModifications: [...simplexModifications],
           }
         },
         /**
@@ -335,20 +312,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   subMenu: self.modificationsReady
                     ? [
                         {
-                          label: 'All modifications',
+                          label: `All modifications (>= ${self.modificationThreshold}% prob)`,
                           onClick: () => {
                             self.setColorScheme({
                               type: 'modifications',
+                              modifications: {
+                                threshold: self.modificationThreshold,
+                              },
                             })
                           },
                         },
                         ...self.visibleModificationTypes.map(key => ({
-                          label: `Show only ${modificationData[key]?.name || key}`,
+                          label: `Show only ${modificationData[key]?.name || key}  (>= ${self.modificationThreshold}% prob)`,
                           onClick: () => {
                             self.setColorScheme({
                               type: 'modifications',
                               modifications: {
                                 isolatedModification: key,
+                                threshold: self.modificationThreshold,
                               },
                             })
                           },
@@ -361,6 +342,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                               type: 'modifications',
                               modifications: {
                                 twoColor: true,
+                                threshold: self.modificationThreshold,
                               },
                             })
                           },
@@ -373,6 +355,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                               modifications: {
                                 isolatedModification: key,
                                 twoColor: true,
+                                threshold: self.modificationThreshold,
                               },
                             })
                           },
@@ -383,7 +366,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                           onClick: () => {
                             self.setColorScheme({
                               type: 'methylation',
+                              modifications: {
+                                threshold: self.modificationThreshold,
+                              },
                             })
+                          },
+                        },
+                        { type: 'divider' },
+                        {
+                          label: `Adjust threshold (${self.modificationThreshold}%)`,
+                          onClick: () => {
+                            getSession(self).queueDialog(handleClose => [
+                              SetModificationThresholdDialog,
+                              {
+                                model: self,
+                                handleClose,
+                              },
+                            ])
                           },
                         },
                       ]

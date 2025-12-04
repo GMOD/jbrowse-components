@@ -1,15 +1,15 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
 
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
 import type { SessionTriagedInfo } from './types'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SessionLoader = types
   .model({
@@ -152,7 +152,7 @@ const SessionLoader = types
      * #getter
      */
     get isJb1StyleSession() {
-      return !!self.loc
+      return !!(self.loc || self.assembly)
     },
 
     /**
@@ -176,10 +176,8 @@ const SessionLoader = types
     /**
      * #getter
      */
-    get ready() {
-      return Boolean(
-        this.isSessionLoaded && !self.configError && this.pluginsLoaded,
-      )
+    get ready(): boolean {
+      return this.isSessionLoaded && !self.configError && this.pluginsLoaded
     },
     /**
      * #getter
@@ -203,9 +201,9 @@ const SessionLoader = types
     get isSessionLoaded() {
       return Boolean(
         self.sessionError ||
-          self.sessionSnapshot ||
-          self.blankSession ||
-          self.sessionSpec,
+        self.sessionSnapshot ||
+        self.blankSession ||
+        self.sessionSpec,
       )
     },
     /**
@@ -495,7 +493,7 @@ const SessionLoader = types
         highlight,
         sessionTracksParsed: sessionTracks,
       } = self
-      if (loc) {
+      if (loc || assembly) {
         self.sessionSpec = {
           sessionTracks,
           views: [

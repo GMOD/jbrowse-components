@@ -5,10 +5,10 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithConnections } from '@jbrowse/product-core'
 import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
@@ -41,7 +41,7 @@ const AddConnectionWidget = observer(function ({ model }: { model: unknown }) {
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
 
-  // useMemo is needed for react@18+mobx-react@9, previous code called configScema.create directly in a setConfigModel useState hook setter but this caused infinite loop
+  // useMemo is needed for react@18+mobx-react@9, previous code called configSchema.create directly in a setConfigModel useState hook setter but this caused infinite loop
   const configModel = useMemo(
     () => connectionType?.configSchema.create({ connectionId }, getEnv(model)),
     [connectionId, connectionType, model],

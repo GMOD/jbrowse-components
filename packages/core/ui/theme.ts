@@ -433,6 +433,21 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           size: 'small' as const,
         },
       },
+      // Speed up ripple animations for snappier feel (default is 550ms)
+      // See https://mui.com/material-ui/api/button-base/
+      // and https://github.com/mui/material-ui/blob/master/packages/mui-material/src/ButtonBase/TouchRipple.js
+      MuiButtonBase: {
+        styleOverrides: {
+          root: {
+            '& .MuiTouchRipple-ripple': {
+              animationDuration: '50ms !important',
+            },
+            '& .MuiTouchRipple-child': {
+              animationDuration: '50ms !important',
+            },
+          },
+        },
+      },
     },
   }
   return deepmerge(themeP, theme || {}, { arrayMerge: overwriteArrayMerge })

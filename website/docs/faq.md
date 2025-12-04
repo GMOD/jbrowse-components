@@ -325,10 +325,10 @@ so they will not display soft-clipping.
 
 The soft-clipping indicators on these reads will appear black.
 
-### Do you have any tips for learning React and mobx-state-tree
+### Do you have any tips for learning React and @jbrowse/mobx-state-tree
 
-Here is a short guide to React and mobx-state-tree that could help get you
-oriented:
+Here is a short guide to React and @jbrowse/mobx-state-tree that could help get
+you oriented:
 
 https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 
@@ -337,7 +337,7 @@ https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 We build on a lot of great open source technology, some main ones include:
 
 - React
-- mobx-state-tree
+- @jbrowse/mobx-state-tree
 - web-workers
 - Typescript
 - Electron (for desktop specifically)
@@ -536,3 +536,32 @@ links without the central server.
 Also, if you are implementing JBrowse Web on your own server and would like to
 create your own URL shortener, you can use the shareURL parameter in the
 config.json file to point at your own server instead of ours.
+
+### Embedded views versus full JBrowse app
+
+Embedded views are intended to facilitate genome browsing within the context of
+an existing webpage, however if it makes sense for a given use case, one might
+decide to run an instance of JBrowse on one's hosting website instead. Detailed
+below are the core differences between embedded components and the full JBrowse
+app:
+
+| Embedded components                                     | JBrowse Web                                                                            |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Only has access to one view type                        | Access to all view types loaded into the JBrowse session, including those from plugins |
+| Feature details and track selector open as a dialog     | Feature details open as a left/right oriented drawer                                   |
+| No built-in concept of local session, saving or loading | Save / import / export session options for any user                                    |
+
+**Both can:**
+
+- enable/disable tracks through the Track interface
+- change the track's assembly based on what is available in the configuration
+- manipulate the views with zoom, horizontal flip, view all regions, track label
+  positioning, etc.
+- change track display options
+- export the view as an SVG
+
+Note that though the embedded components lack certain functionality, they are
+designed for web developers to build a custom system around, so though some of
+these options are not available by default, the ability to design mechanics such
+as sessions and custom track manipulation is present for a developer seeking to
+do these things.

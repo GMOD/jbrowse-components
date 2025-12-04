@@ -1,7 +1,4 @@
-import {
-  fetchAndMaybeUnzipText,
-  getProgressDisplayStr,
-} from '@jbrowse/core/util'
+import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 
 import type { PAFRecord } from './PAFAdapter/util'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -35,44 +32,6 @@ export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
 
 export function zip(a: number[], b: number[]) {
   return a.map((e, i) => [e, b[i]] as [number, number])
-}
-
-export function parseLineByLine<T>(
-  buffer: Uint8Array,
-  cb: (line: string) => T | undefined,
-  opts?: BaseOptions,
-): T[] {
-  const { statusCallback = () => {} } = opts || {}
-  let blockStart = 0
-  const entries: T[] = []
-  const decoder = new TextDecoder('utf8')
-
-  let i = 0
-  let s = performance.now()
-  while (blockStart < buffer.length) {
-    const n = buffer.indexOf(10, blockStart)
-    if (n === -1) {
-      break
-    }
-    const b = buffer.subarray(blockStart, n)
-    const line = decoder.decode(b).trim()
-    if (line) {
-      const entry = cb(line)
-      if (entry) {
-        entries.push(entry)
-      }
-    }
-
-    if (i++ % 10_000 === 0 && performance.now() - s > 50) {
-      statusCallback(
-        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
-      )
-      s = performance.now()
-    }
-    blockStart = n + 1
-  }
-  statusCallback('')
-  return entries
 }
 
 export function parsePAFLine(line: string) {

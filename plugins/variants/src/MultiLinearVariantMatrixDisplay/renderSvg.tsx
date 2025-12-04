@@ -1,8 +1,13 @@
 import { getContainingView } from '@jbrowse/core/util'
+import {
+  getSerializedSvg,
+  renderToAbstractCanvas,
+} from '@jbrowse/core/util/offscreenCanvasUtils'
 import { when } from 'mobx'
 
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition'
 import LegendBar from '../shared/components/MultiVariantLegendBar'
+import { drawTree } from '../shared/drawTree'
 
 import type { MultiLinearVariantMatrixDisplayModel } from './model'
 import type {
@@ -17,14 +22,42 @@ export async function renderSvg(
 ) {
   await when(() => !!model.regionCannotBeRenderedText)
   const { offsetPx } = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight } = model
+  const { lineZoneHeight, hierarchy, treeAreaWidth, totalHeight } = model as any
+
+  let treeSvg = null
+  if (hierarchy) {
+    const result = await renderToAbstractCanvas(
+      treeAreaWidth,
+      totalHeight,
+      { exportSVG: { rasterizeLayers: opts.rasterizeLayers } },
+      async ctx => {
+        drawTree(ctx, hierarchy, treeAreaWidth, totalHeight)
+        return undefined
+      },
+    )
+
+    if ('html' in result) {
+      treeSvg = <g dangerouslySetInnerHTML={{ __html: result.html }} />
+    } else if ('canvasRecordedData' in result) {
+      const html = await getSerializedSvg({
+        width: treeAreaWidth,
+        height: totalHeight,
+        canvasRecordedData: result.canvasRecordedData,
+      })
+      treeSvg = <g dangerouslySetInnerHTML={{ __html: html }} />
+    }
+  }
+
   return (
     <>
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
         <LinesConnectingMatrixToGenomicPosition exportSVG model={model} />
         <g transform={`translate(0,${lineZoneHeight})`}>
           <g>{await superRenderSvg(opts)}</g>
-          <LegendBar model={model} orientation="left" exportSVG />
+          <g transform={`translate(${hierarchy ? treeAreaWidth : 0})`}>
+            <LegendBar model={model} orientation="left" exportSVG />
+          </g>
+          {treeSvg}
         </g>
       </g>
     </>

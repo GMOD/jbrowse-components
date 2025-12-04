@@ -11,7 +11,7 @@ import {
   isModelType,
   isReferenceType,
   isValidReference,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type {
@@ -19,7 +19,7 @@ import type {
   IAnyType,
   Instance,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
@@ -54,9 +54,9 @@ export async function fromUrlSafeB64(b64: string) {
     b64.replaceAll('-', '+').replaceAll('_', '/'),
   )
   const { toByteArray } = await import('base64-js')
-  const { inflate } = await import('pako')
+  const { inflate } = await import('pako-esm2')
   const bytes = toByteArray(originalB64)
-  const inflated = inflate(bytes)
+  const inflated = inflate(bytes, undefined)
   const decoder = new TextDecoder('utf8')
   return decoder.decode(inflated)
 }
@@ -68,9 +68,9 @@ export async function fromUrlSafeB64(b64: string) {
  */
 export async function toUrlSafeB64(str: string) {
   const bytes = new TextEncoder().encode(str)
-  const { deflate } = await import('pako')
+  const { deflate } = await import('pako-esm2')
   const { fromByteArray } = await import('base64-js')
-  const deflated = deflate(bytes)
+  const deflated = deflate(bytes, undefined)
   const encoded = fromByteArray(deflated)
   const pos = encoded.indexOf('=')
   return pos > 0
@@ -84,11 +84,10 @@ type MSTMap = Instance<ReturnType<typeof types.map>>
 // attempts to remove undefined references from the given MST model. can only
 // actually remove them from arrays and maps. throws MST undefined ref error if
 // it encounters undefined refs in model properties
-export function filterSessionInPlace(
-  node: IAnyStateTreeNode | undefined,
-  type: IAnyType,
-) {
+export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
   // makes it work with session sharing
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (node === undefined) {
     return
   }
@@ -130,7 +129,6 @@ export function filterSessionInPlace(
 
     // eslint-disable-next-line unicorn/no-array-for-each
     Object.entries(properties).forEach(([pname, ptype]) => {
-      // @ts-ignore
       filterSessionInPlace(node[pname], ptype)
     })
   }
@@ -145,7 +143,7 @@ export function addRelativeUris(
       if (typeof config[key] === 'object' && config[key] !== null) {
         addRelativeUris(config[key] as Record<string, unknown>, base)
       } else if (key === 'uri') {
-        config.baseUri = base.href
+        config.baseUri = config.baseUri ?? base.href
       }
     }
   }

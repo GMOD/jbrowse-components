@@ -37,6 +37,7 @@ function PrerenderedCanvas(props: {
       return
     }
     drawImageOntoCanvasContext(imageData, context)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDone(true)
   }, [imageData])
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Button,
@@ -13,7 +14,6 @@ import {
 } from '@mui/material'
 import IconButton from '@mui/material/IconButton'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { PluginStoreModel } from '../model'
 
@@ -41,7 +41,7 @@ const AddCustomPluginDialog = observer(function ({
   onClose: () => void
   model: PluginStoreModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const [umdPluginName, setUMDPluginName] = useState('')
   const [umdPluginUrl, setUMDPluginUrl] = useState('')
   const [esmPluginUrl, setESMPluginUrl] = useState('')

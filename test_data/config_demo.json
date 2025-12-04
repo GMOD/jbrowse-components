@@ -2,11 +2,11 @@
   "plugins": [
     {
       "name": "Biothings",
-      "url": "https://unpkg.com/jbrowse-plugin-biothings@^1/dist/jbrowse-plugin-biothings.umd.production.min.js"
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-biothings/dist/jbrowse-plugin-biothings.umd.production.min.js"
     },
     {
       "name": "UCSC",
-      "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js"
     }
   ],
   "assemblies": [
@@ -186,19 +186,7 @@
           "chrY",
           "chrMT"
         ]
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "nclist_genes_hg19_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -419,19 +407,7 @@
           "chrY",
           "chrMT"
         ]
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "gencode_nclist_hg38_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -473,19 +449,7 @@
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb",
           "locationType": "UriLocation"
         }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "mane_hg38_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'geneName2')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -1089,20 +1053,6 @@
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
             "locationType": "UriLocation"
           }
-        }
-      }
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "nanopore_ultralong_cram_coverage",
-      "name": "HG002 Nanopore ultralong coverage",
-      "assemblyNames": ["hg19"],
-      "category": ["GIAB"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.regions.bw",
-          "locationType": "UriLocation"
         }
       }
     },
@@ -2658,19 +2608,7 @@
           },
           "indexType": "TBI"
         }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "gencode_nclist_v36_hg37_lift_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -2691,19 +2629,7 @@
           },
           "indexType": "TBI"
         }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "gencode_nclist_v36_hg38_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "VariantTrack",
@@ -3336,19 +3262,7 @@
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/encode3/ccre/encodeCcreCombined.bb",
           "locationType": "UriLocation"
         }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "testing1",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'ucscLabel')"
-            }
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -3559,12 +3473,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808248/hg19.COLO_829N.bam",
+          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808247/hg19.COLO_829N.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808248/hg19.COLO_829N.bam.bai",
+            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808247/hg19.COLO_829N.bam.bai",
             "locationType": "UriLocation"
           }
         },
@@ -4954,19 +4868,7 @@
         }
       },
       "category": ["Annotation", "MANE"],
-      "assemblyNames": ["hg38"],
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "MANE.GRCh38.v1.4.refseq-LinearBasicDisplay",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'geneSymbol')"
-            }
-          }
-        }
-      ]
+      "assemblyNames": ["hg38"]
     },
     {
       "type": "FeatureTrack",
@@ -5021,8 +4923,105 @@
       "name": "gencodeV47lift37",
       "adapter": {
         "type": "BigBedAdapter",
+        "aggregateField": "geneName",
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gencode/gencodeV47lift37.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG02031.final",
+      "name": "HG02031_mother",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/ERR3242258/HG02031.final.cram"
+        },
+        "craiLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/ERR3242258/HG02031.final.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "PAY22766-nanopore",
+      "name": "Nanopore PAY22766 (6mA rep2)",
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PAY22766/basecalls.bam",
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        },
+        "metadata": {
+          "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "PBA15131-nanopore",
+      "name": "Nanopore PBA15131 (6mA rep1)",
+      "category": ["Methylation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PBA15131/basecalls.bam",
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        },
+        "metadata": {
+          "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "PBA15156-nanopore",
+      "name": "Nanopore PBA15156 (native)",
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://ont-open-data.s3.amazonaws.com/chrom_acc_2025.06/basecalls/PBA15156/basecalls.bam",
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        },
+        "metadata": {
+          "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
+        }
+      }
+    },
+    {
+      "type": "HicTrack",
+      "trackId": "combined",
+      "name": "combined",
+      "adapter": {
+        "type": "HicAdapter",
+        "hicLocation": {
+          "uri": "https://hicfiles.s3.amazonaws.com/hiseq/gm12878/in-situ/combined.hic",
           "locationType": "UriLocation"
         }
       },

@@ -21,6 +21,7 @@ const BigWigAdapter = ConfigurationSchema(
 
     /**
      * #slot
+     * added as feature.get('source') on all features
      */
     source: {
       type: 'string',

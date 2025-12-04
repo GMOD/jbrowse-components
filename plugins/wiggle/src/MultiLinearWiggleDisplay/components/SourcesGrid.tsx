@@ -3,13 +3,13 @@ import { useState } from 'react'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
 import { getStr, measureGridWidth } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import { Button } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { makeStyles } from 'tss-react/mui'
 
 import { moveDown, moveUp } from './util'
 
@@ -41,7 +41,13 @@ function SourcesGrid({
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as GridRowId[])
-  const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]!
+  const {
+    name: _name,
+    color: _color,
+    source: _source,
+    baseUri: _baseUri,
+    ...rest
+  } = rows.length > 0 ? rows[0]! : {}
   const [widgetColor, setWidgetColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
     idx: 0,

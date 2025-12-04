@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/blocks'
+import { Meta, Story } from '@storybook/addon-docs/blocks'
 import { WithErrorHandler } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Error handling" />
@@ -7,7 +7,7 @@ import { WithErrorHandler } from './JBrowseLinearGenomeView.stories'
 
 The default code for the embedded views do not have any 'error boundary', so you
 must create your own error handling. Because 'createViewState' can throw an
-error (which can be a complex mobx-state-tree error) we suggest using
+error (which can be a complex @jbrowse/mobx-state-tree error) we suggest using
 [`@jbrowse/core/ui/ErrorMessage`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ui/ErrorMessage.tsx)
 component, which is a error message component (not a React error boundary) with
 specialized code for showing JBrowse related error messages.

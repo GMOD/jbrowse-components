@@ -2,7 +2,7 @@ import PluggableElementBase from './PluggableElementBase'
 
 import type { AnyConfigurationSchemaType } from '../configuration'
 import type { AnyReactComponentType } from '../util'
-import type { IAnyModelType } from 'mobx-state-tree'
+import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 export default class DisplayType extends PluggableElementBase {
   stateModel: IAnyModelType
@@ -30,6 +30,11 @@ export default class DisplayType extends PluggableElementBase {
    */
   viewType: string
 
+  /**
+   * Help text describing the display type
+   */
+  helpText?: string
+
   constructor(stuff: {
     name: string
     stateModel: IAnyModelType
@@ -39,6 +44,7 @@ export default class DisplayType extends PluggableElementBase {
     subDisplay?: { type: string; [key: string]: unknown }
     configSchema: AnyConfigurationSchemaType
     ReactComponent: AnyReactComponentType
+    helpText?: string
   }) {
     super(stuff)
     this.stateModel = stuff.stateModel
@@ -47,5 +53,6 @@ export default class DisplayType extends PluggableElementBase {
     this.ReactComponent = stuff.ReactComponent
     this.trackType = stuff.trackType
     this.viewType = stuff.viewType
+    this.helpText = stuff.helpText
   }
 }

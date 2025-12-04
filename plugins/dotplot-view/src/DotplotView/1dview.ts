@@ -1,13 +1,13 @@
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
+import { getParent } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
-import { getParent } from 'mobx-state-tree'
 
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel Dotplot1DView
- * ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
+ * ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state used here
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -34,7 +34,7 @@ const Dotplot1DView = Base1DView.extend(self => {
        * #getter
        */
       get maxBpPerPx() {
-        return self.totalBp / (self.width - 50)
+        return self.totalBp / (self.width * 0.9)
       },
 
       /**
@@ -48,14 +48,16 @@ const Dotplot1DView = Base1DView.extend(self => {
        * #getter
        */
       get maxOffset() {
-        return self.displayedRegionsTotalPx - self.width * 0.2
+        const leftPadding = 10
+        return self.displayedRegionsTotalPx - leftPadding
       },
 
       /**
        * #getter
        */
       get minOffset() {
-        return -self.width * 0.8
+        const rightPadding = 30
+        return -self.width + rightPadding
       },
     },
     actions: {

@@ -1,17 +1,17 @@
 import { useEffect } from 'react'
 
 import { useWidthSetter } from '@jbrowse/core/util'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import ViewHeader from './ViewHeader'
+import ViewWrapper from './ViewWrapper'
 
 import type {
   AbstractViewModel,
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
-import ViewWrapper from './ViewWrapper'
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
@@ -44,8 +44,7 @@ const ViewContainer = observer(function ({
 }) {
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
-  const { classes, cx } = useStyles()
-  console.log({ session })
+  const { classes } = useStyles()
 
   useEffect(() => {
     function handleSelectView(e: Event) {

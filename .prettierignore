@@ -16,3 +16,7 @@
 **/*nclist*/**/*.json
 **/ensembl_genes/**/*.json
 **/storybook-static/*
+
+/.nx/workspace-data
+plugins/variants/src/d3-hierarchy2
+benchmarks/*

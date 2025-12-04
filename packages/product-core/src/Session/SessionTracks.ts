@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession'
 import { TracksManagerSessionMixin } from './Tracks'
@@ -8,7 +8,7 @@ import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel SessionTracksManagerSessionMixin

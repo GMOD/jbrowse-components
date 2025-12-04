@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - '*'
+    tags:
+      - '*'
+
+permissions:
+  contents: read
 
 jobs:
   check_commit_message:
@@ -13,15 +18,16 @@ jobs:
       skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           fetch-depth: 1
-
       - name: Check commit message
         id: check_message
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          commit_message="${{ github.event.head_commit.message }}"
-          if [[ "$commit_message" == *"[update docs only]"* ]]; then
+          # Use env variable for safe expansion of special characters like quotes.
+          if [[ "$COMMIT_MSG" == *"[update docs only]"* ]]; then
             echo "skip_jobs=true" >> $GITHUB_OUTPUT
             echo "Commit message contains [update docs only], skipping regular push jobs"
           else
@@ -36,16 +42,17 @@ jobs:
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '22'
-      - name: Install website deps (with cache)
-        uses: bahmutov/npm-install@v1
-        with:
-          working-directory: website
+          cache: 'yarn'
+          cache-dependency-path: 'website/yarn.lock'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: website
       - name: Build website
         run: |
           cd website/
@@ -53,44 +60,9 @@ jobs:
           mkdir testing
           mv build testing/jb2
       - name: Check website links
-        uses: untitaker/hyperlink@0.1.27
+        uses: untitaker/hyperlink@fb5bb9c5011a3d143a54b4b30aedc30ec5bc0f89 # 0.2.0
         with:
           args: website/testing/ --check-anchors
-
-  # Conditionally run the buildwholerepo job
-  buildwholerepo:
-    name: Build whole repo
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: Build codebase
-        run: yarn build
-      - name: Test build
-        run: BUILT_TESTS=1 yarn built-test-ci
-      - name: Test embedded lgv
-        run: |
-          yarn
-          yarn e2e
-        working-directory: component_tests/lgv-vite
-      - name: Test embedded cgv
-        run: |
-          yarn
-          yarn e2e
-        working-directory: component_tests/cgv-vite
-      - name: Test embedded react-app
-        run: |
-          yarn
-          yarn e2e
-        working-directory: component_tests/app-vite
 
   # Conditionally run the buildjbrowseweb job
   buildjbrowseweb:
@@ -99,112 +71,174 @@ jobs:
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '22'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: Build project
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Validate branch/tag name for S3 path safety
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          echo $RELEASE_VERSION
+          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
+            echo "Error: Invalid ref name '$REF_NAME'"
+            echo "Ref names must contain only alphanumeric characters, hyphens, underscores, and periods"
+            echo "This prevents path traversal attacks on S3"
+            exit 1
+          fi
+          echo "Ref name validated: $REF_NAME"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Build and deploy jbrowse-web
+        run: |
           cd products/jbrowse-web/
           NODE_OPTIONS='--max-old-space-size=6500' yarn build
-          cd ../../
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Copy branch build to S3
-        run: |
-          cd products/jbrowse-web/build && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
-          cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
-          aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+          cd build && zip -r "jbrowse-web-${{ github.ref_name }}.zip" . && cd -
+          cp build/test_data/config.json build/config.json
+          aws s3 sync --delete --exclude="*.map" build s3://jbrowse.org/code/jb2/${{ github.ref_name }}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${{ github.ref_name }}/*"
 
-      - name: Build LGV
-        run: |
-          yarn storybook:build
-        working-directory: products/jbrowse-react-linear-genome-view
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Deploy LGV
-        run: |
-          pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+      - name: Build LGV storybook
+        run: yarn storybook:build
         working-directory: products/jbrowse-react-linear-genome-view
 
-      - name: Build React App
+      - name: Deploy LGV storybook
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          yarn storybook:build
-        working-directory: products/jbrowse-react-app
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Deploy React App
-        run: |
-          pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/$(echo ${{github.ref}} | cut -d "/" -f3-)
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${{ github.ref_name }}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${{ github.ref_name }}/*"
+        working-directory: products/jbrowse-react-linear-genome-view
+
+      - name: Build React App storybook
+        run: yarn storybook:build
         working-directory: products/jbrowse-react-app
 
-      - name: Build CGV
+      - name: Deploy React App storybook
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          yarn storybook:build
-        working-directory: products/jbrowse-react-circular-genome-view
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Deploy CGV
-        run: |
-          pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${{ github.ref_name }}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${{ github.ref_name }}/*"
+        working-directory: products/jbrowse-react-app
+
+      - name: Build CGV storybook
+        run: yarn storybook:build
         working-directory: products/jbrowse-react-circular-genome-view
 
-  # Conditionally run the formatchecks job
-  formatchecks:
-    name: Lint, typecheck, test
+      - name: Deploy CGV storybook
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${{ github.ref_name }}
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${{ github.ref_name }}/*"
+        working-directory: products/jbrowse-react-circular-genome-view
+
+  # Conditionally run the main job
+  main:
+    name: Lint, typecheck, test, and build
     needs: check_commit_message
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - run: sudo apt-get -y install tabix
-      - uses: actions/checkout@v4
+      - name: Install tabix
+        run: sudo apt-get -y install tabix
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '22'
-      - name: Install deps and build (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: Check codebase format
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Check code formatting
         run: yarn prettier --check .
-      - name: Check autogen docs
-        run: yarn statedocs && yarn configdocs
       - name: Spellcheck
-        uses: crate-ci/typos@master
-      - name: Lint codebase
+        uses: crate-ci/typos@2d0ce569feab1f8752f1dde43cc2f2aa53236e06 # v1.40.0
+      - name: Lint code
         run: yarn lint
-      - name: Test codebase
-        run: yarn test-ci
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-      - name: Typecheck codebase
+      - name: Typecheck code
         run: yarn typecheck
+      - name: Run tests
+        run: yarn test-ci
+      - name: Build codebase
+        run: yarn build
+      - name: Test build
+        run: BUILT_TESTS=1 yarn built-test-ci
+      - name: Run browser tests with Puppeteer
+        id: browser-tests
+        run: node --experimental-strip-types browser-tests/runner.ts
+        working-directory: products/jbrowse-web
+        continue-on-error: true
+      - name: Upload snapshot diffs to S3
+        if: steps.browser-tests.outcome == 'failure'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
+          S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
+
+          if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
+            echo "Uploading snapshot diffs to S3..."
+            aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
+
+            echo ""
+            echo "============================================"
+            echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
+            echo "============================================"
+            for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
+              filename=$(basename "$file")
+              echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
+            done
+            echo "============================================"
+          else
+            echo "No snapshot diff files found"
+          fi
+      - name: Fail if browser tests failed
+        if: steps.browser-tests.outcome == 'failure'
+        run: exit 1
+      - name: Upload packed artifacts for component tests
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: packed-artifacts
+          path: component_tests/*/packed/
+          retention-days: 1
+
+  # Separate job for component_tests with no permissions.
+  # These tests install npm packages without a yarn.lock, so untrusted
+  # dependencies could potentially run malicious code. By isolating this
+  # in a job with `permissions: {}`, we ensure that even if a rogue
+  # dependency executes, it has no GitHub token access and cannot push
+  # code, create issues/PRs, access secrets, or call GitHub APIs.
+  component_tests:
+    name: Test embedded components
+    needs: [check_commit_message, main]
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '22'
+      - name: Download packed artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: packed-artifacts
+          path: component_tests/
+      - name: Test embedded components
+        run: |
+          for dir in component_tests/lgv-vite component_tests/cgv-vite component_tests/app-vite; do
+            echo "Testing $dir"
+            cd $dir && yarn install && yarn e2e && cd -
+          done

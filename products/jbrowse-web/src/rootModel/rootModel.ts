@@ -10,6 +10,14 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable, DNA } from '@jbrowse/core/ui/Icons'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getType,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -27,10 +35,8 @@ import StarIcon from '@mui/icons-material/Star'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { formatDistanceToNow } from 'date-fns'
-import { saveAs } from 'file-saver'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
 
 import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
@@ -44,14 +50,14 @@ import type {
   AbstractSessionModel,
   SessionWithWidgets,
 } from '@jbrowse/core/util'
-import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
-import type { IDBPDatabase } from 'idb'
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
   SnapshotIn,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { IDBPDatabase } from 'idb'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
@@ -221,6 +227,9 @@ export default function RootModel({
                       // triggered the autorun
                       if (self.sessionDB) {
                         await sessionDB.put('sessions', getSnapshot(s), s.id)
+                        if (!isAlive(self)) {
+                          return
+                        }
 
                         const ret = await self.sessionDB.get('metadata', s.id)
                         await sessionDB.put(
@@ -346,7 +355,7 @@ export default function RootModel({
         const { defaultSession } = self.jbrowse
         this.setSession({
           ...defaultSession,
-          name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+          name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
         })
       },
       /**
@@ -468,7 +477,10 @@ export default function RootModel({
                 {
                   label: 'Export session',
                   icon: GetAppIcon,
-                  onClick: (session: IAnyStateTreeNode) => {
+                  onClick: async (session: IAnyStateTreeNode) => {
+                    // eslint-disable-next-line @typescript-eslint/no-deprecated
+                    const { saveAs } = await import('file-saver-es')
+
                     saveAs(
                       new Blob(
                         [
@@ -481,6 +493,7 @@ export default function RootModel({
                         { type: 'text/plain;charset=utf-8' },
                       ),
                       'session.json',
+                      { autoBom: false },
                     )
                   },
                 },

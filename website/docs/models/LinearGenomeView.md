@@ -3,8 +3,8 @@ id: lineargenomeview
 title: LinearGenomeView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -296,6 +296,13 @@ number
 any[]
 ```
 
+#### getter: assemblyDisplayNames
+
+```js
+// type
+any
+```
+
 #### getter: isTopLevelView
 
 checking if lgv is a 'top-level' view is used for toggling pin track capability,
@@ -303,7 +310,7 @@ sticky positioning
 
 ```js
 // type
-AbstractViewModel
+boolean
 ```
 
 #### getter: stickyViewHeaders
@@ -531,6 +538,13 @@ same as visibleLocStrings, but only updated every 300ms
 string
 ```
 
+#### getter: coarseTotalBpDisplayStr
+
+```js
+// type
+string
+```
+
 #### getter: centerLineInfo
 
 ```js
@@ -607,7 +621,7 @@ were selected by the rubberband
 
 ```js
 // type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { start: number; end: number; type: string; regionNumber?: number; reversed?: boolean; refName: string; assemblyName: string; ... 4 more ...; isLeftEndOfDisplayedRegion?: boolean; }[]
+getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { assemblyName: string; refName: string; start: number; end: number; }[]
 ```
 
 #### method: exportSvg
@@ -994,7 +1008,7 @@ is returned. Will pop up a search dialog if multiple results are returned
 
 ```js
 // type signature
-navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promis...
+navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promise<...>
 ```
 
 #### action: navToLocation

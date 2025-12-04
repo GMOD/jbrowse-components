@@ -1,52 +1,70 @@
 import { promises as fsPromises } from 'fs'
+import { parseArgs } from 'util'
 
-import { Args, Flags } from '@oclif/core'
-
-import JBrowseCommand from '../base'
+import { printHelp, readJsonFile, writeJsonFile } from '../utils'
 
 import type { Config } from '../base'
 
-export default class RemoveTrackJson extends JBrowseCommand {
-  // @ts-expect-error
-  target: string
+export async function run(args?: string[]) {
+  const options = {
+    help: {
+      type: 'boolean',
+      short: 'h',
+    },
+    target: {
+      type: 'string',
+      description:
+        'Path to config file in JB2 installation directory to write out to',
+    },
+    out: {
+      type: 'string',
+      description: 'Synonym for target',
+    },
+  } as const
+  const { values: flags, positionals } = parseArgs({
+    args,
+    options,
+    allowPositionals: true,
+  })
 
-  static description =
+  const description =
     'Remove a track configuration from a JBrowse 2 configuration. Be aware that this can cause crashes in saved sessions that refer to this track!'
 
-  static examples = ['$ jbrowse remove-track-json trackId']
+  const examples = ['$ jbrowse remove-track trackId']
 
-  static args = {
-    track: Args.string({
-      required: true,
-      description: 'track JSON file or command line arg blob',
-    }),
+  if (flags.help) {
+    printHelp({
+      description,
+      examples,
+      usage: 'jbrowse remove-track <trackId> [options]',
+      options,
+    })
+    return
   }
 
-  static flags = {
-    target: Flags.string({
-      description:
-        'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-    }),
-    out: Flags.string({
-      description: 'synonym for target',
-    }),
+  const trackId = positionals[0]
+  if (!trackId) {
+    console.error('Error: Missing required argument: trackId')
+    console.error('Usage: jbrowse remove-track <trackId> [options]')
+    process.exit(1)
   }
 
-  async run() {
-    const { args, flags: runFlags } = await this.parse(RemoveTrackJson)
+  const output = flags.target || flags.out || '.'
+  const isDir = (await fsPromises.lstat(output)).isDirectory()
+  const target = isDir ? `${output}/config.json` : output
 
-    const output = runFlags.target || runFlags.out || '.'
-    const isDir = (await fsPromises.lstat(output)).isDirectory()
-    this.target = isDir ? `${output}/config.json` : output
+  const config: Config = await readJsonFile(target)
 
-    const { track: inputId } = args as { track: string }
+  const originalLength = config.tracks?.length || 0
+  config.tracks = config.tracks?.filter(
+    ({ trackId: id }: { trackId: string }) => id !== trackId,
+  )
+  const newLength = config.tracks?.length || 0
 
-    const config: Config = await this.readJsonFile(this.target)
-
-    config.tracks = config.tracks?.filter(
-      ({ trackId }: { trackId: string }) => trackId !== inputId,
-    )
-
-    await this.writeJsonFile(this.target, config)
+  if (originalLength === newLength) {
+    console.log(`No track found with trackId: ${trackId}`)
+  } else {
+    await writeJsonFile(target, config)
+    console.log(`Removed track with trackId: ${trackId} from ${target}`)
   }
 }

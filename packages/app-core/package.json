@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/app-core",
-  "version": "3.5.0",
+  "version": "3.7.0",
   "description": "JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop",
   "keywords": [
     "jbrowse",
@@ -29,9 +29,9 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
-    "build": "npm run build:esm && npm run build:commonjs",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
+    "build": "yarn build:esm && yarn build:commonjs",
     "test": "cd ../..; jest --passWithNoTests packages/app-core",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",
@@ -41,16 +41,14 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@babel/runtime": "^7.16.3",
-    "@jbrowse/product-core": "^3.5.0",
+    "@jbrowse/core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/product-core": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
-    "copy-to-clipboard": "^3.3.1",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
     "react-resizable": "^3.0.5",
-    "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
   },
   "peerDependencies": {

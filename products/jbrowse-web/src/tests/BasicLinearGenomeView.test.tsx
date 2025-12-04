@@ -83,7 +83,7 @@ test('click and drag to reorder tracks', async () => {
   fireEvent.mouseDown(dragHandle0, { clientX: 10, clientY: 100 })
   fireEvent(dragHandle0, dragStartEvent)
   fireEvent.mouseMove(dragHandle0, { clientX: 10, clientY: 220 })
-  fireEvent.dragEnter(container1)
+  fireEvent.dragOver(container1, { clientY: 220 })
   fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
   fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
   await waitFor(() => {
@@ -142,7 +142,7 @@ test('click to display center line with correct value', async () => {
   fireEvent.click(await findByText('Show center line', ...opts))
   expect(view.showCenterLine).toBe(true)
   expect(view.centerLineInfo?.refName).toBe('ctgA')
-  expect(view.centerLineInfo?.offset).toEqual(120)
+  expect(view.centerLineInfo?.offset).toEqual(120.2)
 }, 30000)
 
 test('test choose option from dropdown refName autocomplete', async () => {

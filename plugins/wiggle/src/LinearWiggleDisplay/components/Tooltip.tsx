@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 
+import { toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import Tooltip from '../../Tooltip'
@@ -8,7 +9,7 @@ import { toP } from '../../util'
 import type { TooltipContentsComponent } from '../../Tooltip'
 import type { Feature } from '@jbrowse/core/util'
 
-const en = (n: number) => n.toLocaleString('en-US')
+const en = toLocale
 
 interface Props {
   feature: Feature

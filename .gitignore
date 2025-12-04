@@ -20,4 +20,4 @@ lerna-debug.log
 .yarnrc
 *.tsbuildinfo
 .aider*
-
+*.cpuprofile

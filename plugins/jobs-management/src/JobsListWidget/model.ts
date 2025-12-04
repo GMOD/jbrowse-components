@@ -1,10 +1,10 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { Job } from './jobModel'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 export interface NewJob extends SnapshotIn<typeof Job> {
   cancelCallback(): void
@@ -61,11 +61,11 @@ export function stateModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       removeJob(jobName: string) {
-        const indx = self.jobs.findIndex(job => job.name === jobName)
-        if (indx === -1) {
+        const index = self.jobs.findIndex(job => job.name === jobName)
+        if (index === -1) {
           return undefined
         }
-        const removed = self.jobs.splice(indx, 1)
+        const removed = self.jobs.splice(index, 1)
         return removed[0]
       },
       /**
@@ -111,11 +111,11 @@ export function stateModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       removeQueuedJob(jobName: string) {
-        const indx = self.queued.findIndex(job => job.name === jobName)
-        if (indx === -1) {
+        const index = self.queued.findIndex(job => job.name === jobName)
+        if (index === -1) {
           return undefined
         }
-        const removed = self.queued.splice(indx, 1)
+        const removed = self.queued.splice(index, 1)
         return removed[0]
       },
       /**

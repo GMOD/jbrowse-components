@@ -5,23 +5,27 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { measureGridWidth } from '@jbrowse/core/util'
-import { Typography } from '@mui/material'
+import {
+  Checkbox,
+  FormControlLabel,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import Checkbox2 from '../Checkbox2'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
 import SampleFilters from './VariantSampleFilters'
-import { areSetsEqual } from './util'
-import { makeSimpleAltString } from '../../VcfFeature/util'
+import { getSampleGridRows } from './getSampleGridRows'
 
-import type {
-  Filters,
-  InfoFields,
-  VariantFieldDescriptions,
-  VariantSampleGridRow,
-} from './types'
+import type { Filters, InfoFields, VariantFieldDescriptions } from './types'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
+
+type ColumnDisplayMode = 'all' | 'gtOnly' | 'genotypeOnly'
+
+const gtOnlyFields = new Set(['sample', 'GT'])
+const genotypeFields = new Set(['sample', 'GT', 'genotype'])
 
 export default function VariantSampleGrid(props: {
   feature: SimpleFeatureSerialized
@@ -29,76 +33,29 @@ export default function VariantSampleGrid(props: {
 }) {
   const { feature, descriptions = {} } = props
   const [filter, setFilter] = useState<Filters>({})
-  const [showOnlyGenotypeColumns, setShowOnlyGenotypeColumns] = useState(true)
+  const [columnDisplayMode, setColumnDisplayMode] =
+    useState<ColumnDisplayMode>('all')
   const [showFilters, setShowFilters] = useState(false)
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const ALT = feature.ALT as string[]
   const REF = feature.REF as string
-  const preFilteredRows = Object.entries(samples).map(
-    ([key, val]) =>
-      [
-        key,
-        {
-          ...val,
-          GT: `${val.GT?.[0]}`,
-          genotype: makeSimpleAltString(`${val.GT?.[0]}`, REF, ALT),
-        },
-      ] as const,
-  )
 
-  let error: unknown
-  let rows = [] as VariantSampleGridRow[]
-  const filters = Object.keys(filter)
+  const { rows, error } = getSampleGridRows(samples, REF, ALT, filter)
 
-  // catch some error thrown from regex
-  // note: maps all values into a string, if this is not done rows are not
-  // sortable by the data-grid
-  try {
-    rows = preFilteredRows
-      .map(([key, val]) => {
-        return {
-          ...Object.fromEntries(
-            Object.entries(val).map(([formatField, formatValue]) => [
-              formatField,
-              formatValue,
-            ]),
-          ),
-          sample: key,
-          id: key,
-        } as VariantSampleGridRow
-      })
-      .filter(row =>
-        filters.length
-          ? filters.every(key => {
-              const currFilter = filter[key]
-              return currFilter
-                ? new RegExp(currFilter, 'i').exec(row[key]!)
-                : true
-            })
-          : true,
-      )
-  } catch (e) {
-    console.error(e)
-    error = e
-  }
-
-  const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
-  const widths = keys.map(e => measureGridWidth(rows.map(r => r[e])))
+  const keys = [
+    'sample',
+    ...Object.keys(rows[0] || {}).filter(k => k !== 'id' && k !== 'sample'),
+  ]
   const columns = keys.map(
-    (field, index) =>
+    field =>
       ({
         field,
         description: descriptions?.FORMAT?.[field]?.Description,
-        width: widths[index],
+        width: measureGridWidth(rows.map(r => r[field])),
       }) satisfies GridColDef<(typeof rows)[0]>,
   )
 
-  const s1 = new Set(['sample', 'GT', 'genotype'])
-  const s2 = new Set(keys)
-
-  //  helps avoid
-  // https://github.com/mui-org/material-ui-x/issues/1197
-  return !preFilteredRows.length ? null : (
+  return !rows.length ? null : (
     <>
       <BaseCard {...props} title="Genotype frequencies">
         <ErrorBoundary FallbackComponent={ErrorMessage}>
@@ -107,23 +64,35 @@ export default function VariantSampleGrid(props: {
       </BaseCard>
       <BaseCard {...props} title="Samples">
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
-
-        <Checkbox2
-          label="Show filters"
-          checked={showFilters}
-          onChange={event => {
-            setShowFilters(event.target.checked)
-          }}
-        />
-        {areSetsEqual(s1, s2) ? null : (
-          <Checkbox2
-            label="Show only genotype columns"
-            checked={showOnlyGenotypeColumns}
-            onChange={event => {
-              setShowOnlyGenotypeColumns(event.target.checked)
-            }}
+        <div>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showFilters}
+                onChange={event => {
+                  setShowFilters(event.target.checked)
+                }}
+              />
+            }
+            label={<Typography variant="body2">Show filters</Typography>}
           />
-        )}
+          <ToggleButtonGroup
+            value={columnDisplayMode}
+            exclusive
+            size="small"
+            onChange={(_, newValue) => {
+              if (newValue !== null) {
+                setColumnDisplayMode(newValue as ColumnDisplayMode)
+              }
+            }}
+          >
+            <ToggleButton value="all">All</ToggleButton>
+            <ToggleButton value="gtOnly">GT only</ToggleButton>
+            <ToggleButton value="genotypeOnly">
+              GT+resolved genotype
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </div>
 
         {showFilters ? (
           <SampleFilters
@@ -138,9 +107,11 @@ export default function VariantSampleGrid(props: {
             rows={rows}
             hideFooter={rows.length < 100}
             columns={
-              showOnlyGenotypeColumns
-                ? columns.filter(f => s1.has(f.field))
-                : columns
+              columnDisplayMode === 'gtOnly'
+                ? columns.filter(f => gtOnlyFields.has(f.field))
+                : columnDisplayMode === 'genotypeOnly'
+                  ? columns.filter(f => genotypeFields.has(f.field))
+                  : columns
             }
             rowHeight={25}
             columnHeaderHeight={35}

@@ -9,8 +9,8 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
-import { isAlive, types } from 'mobx-state-tree'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
@@ -20,11 +20,11 @@ import type { Source } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
@@ -316,11 +316,9 @@ export function stateModelFactory(
           const superProps = superRenderProps()
           return {
             ...superProps,
-            displayModel: self,
             config: self.rendererConfig,
             filters: self.filters,
             resolution: self.resolution,
-            rpcDriverName: self.rpcDriverName,
             sources: self.sources,
           }
         },
@@ -377,11 +375,11 @@ export function stateModelFactory(
     })
     .views(self => ({
       get legendFontSize() {
-        return Math.min(self.rowHeight, 12)
+        return Math.min(self.rowHeight, 8)
       },
 
       get canDisplayLegendLabels() {
-        return self.rowHeight > 11
+        return self.rowHeight > 7
       },
 
       get labelWidth() {
@@ -401,13 +399,20 @@ export function stateModelFactory(
         return {
           ...superProps,
           notReady: superProps.notReady || !self.sources || !self.stats,
-          displayModel: self,
-          rpcDriverName: self.rpcDriverName,
           displayCrossHatches: self.displayCrossHatches,
           height: self.height,
           ticks: self.ticks,
           stats: self.stats,
           scaleOpts: self.scaleOpts,
+          offset: self.isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET,
+        }
+      },
+      /**
+       * #method
+       */
+      renderingProps() {
+        return {
+          displayModel: self,
           onMouseMove: (_: unknown, f: Feature) => {
             self.setFeatureUnderMouse(f)
           },

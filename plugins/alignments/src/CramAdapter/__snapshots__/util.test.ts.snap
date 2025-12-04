@@ -1,9 +1,10 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`cram read features mismatches 1`] = `
 [
   {
     "base": "1",
+    "insertedBases": "C",
     "length": 0,
     "start": 24,
     "type": "insertion",

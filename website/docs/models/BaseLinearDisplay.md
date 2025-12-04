@@ -3,8 +3,8 @@ id: baselineardisplay
 title: BaseLinearDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/model.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseLinearDisplay.md)
 
@@ -37,7 +37,7 @@ updated via autorun
 
 ```js
 // type signature
-IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Region>; reloadFlag: IType<number, number, number>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Region>; reloadFlag: IType<number, number, number>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 blockState: types.map(BlockState)
 ```
@@ -121,6 +121,13 @@ CompositeMap<unknown, unknown>
 any
 ```
 
+#### getter: layoutFeatures
+
+```js
+// type
+CompositeMap<string, LayoutRecord>
+```
+
 #### getter: getFeatureOverlapping
 
 ```js
@@ -144,6 +151,13 @@ any
 
 ### BaseLinearDisplay - Methods
 
+#### method: copyInfoToClipboard
+
+```js
+// type signature
+copyInfoToClipboard: (feature: Feature) => Promise<void>
+```
+
 #### method: trackMenuItems
 
 ```js
@@ -158,7 +172,19 @@ trackMenuItems: () => MenuItem[]
 contextMenuItems: () => MenuItem[]
 ```
 
+#### method: renderingProps
+
+props for the renderer's React "Rendering" component - client-side only, never
+sent to the worker. includes displayModel and callbacks
+
+```js
+// type signature
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRe...
+```
+
 #### method: renderProps
+
+props sent to the worker for server-side rendering
 
 ```js
 // type signature
@@ -221,6 +247,13 @@ setFeatureIdUnderMouse: (feature?: string) => void
 ```js
 // type signature
 setContextMenuFeature: (feature?: Feature) => void
+```
+
+#### action: setMouseoverExtraInformation
+
+```js
+// type signature
+setMouseoverExtraInformation: (extra?: string) => void
 ```
 
 #### action: reload

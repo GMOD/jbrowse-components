@@ -1,9 +1,9 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { ConfigurationSchema } from '../../configuration'
 
 import type PluginManager from '../../PluginManager'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface BasicTrack {
   trackId: string
@@ -61,6 +61,15 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         type: 'frozen',
         description: 'anything to add about this track',
         defaultValue: {},
+      },
+      /**
+       * #slot
+       */
+      rpcDriverName: {
+        type: 'string',
+        description:
+          'RPC driver to use for this track. Leave empty to use the display-level or global default.',
+        defaultValue: '',
       },
       /**
        * #slot

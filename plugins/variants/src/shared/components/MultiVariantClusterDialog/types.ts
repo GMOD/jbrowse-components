@@ -6,6 +6,7 @@ export interface ReducedModel {
   minorAlleleFrequencyFilter?: number
   lengthCutoffFilter: number
   adapterConfig: AnyConfigurationModel
-  setLayout: (arg: Source[]) => void
+  setClusterTree: (arg?: string) => void
+  setLayout: (arg: Source[], clearTree?: boolean) => void
   clearLayout: () => void
 }

@@ -7,7 +7,8 @@ import {
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable, DNA, SaveAs } from '@jbrowse/core/ui/Icons'
+import { Cable, DNA } from '@jbrowse/core/ui/Icons'
+import { types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -18,10 +19,10 @@ import ExtensionIcon from '@mui/icons-material/Extension'
 import OpenIcon from '@mui/icons-material/FolderOpen'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import RedoIcon from '@mui/icons-material/Redo'
+import SaveAsIcon from '@mui/icons-material/SaveAs'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
-import { types } from 'mobx-state-tree'
 
 import { DesktopSessionManagementMixin, getSaveSession } from './Sessions'
 import packageJSON from '../../package.json'
@@ -35,8 +36,8 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/ass
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionWithDialogs } from '@jbrowse/product-core'
-import type { IAnyType, Instance } from 'mobx-state-tree'
 
 // lazies
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
@@ -161,7 +162,7 @@ export default function rootModelFactory({
                 },
                 {
                   label: 'Save session as...',
-                  icon: SaveAs,
+                  icon: SaveAsIcon,
                   onClick: async () => {
                     try {
                       self.setSessionPath(

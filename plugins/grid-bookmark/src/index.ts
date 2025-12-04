@@ -124,7 +124,6 @@ export default class GridBookmarkPlugin extends Plugin {
                 menuItems() {
                   return [
                     ...superMenuItems(),
-                    { type: 'divider' },
                     {
                       label: 'Bookmarks',
                       icon: BookmarksIcon,
@@ -195,26 +194,32 @@ export default class GridBookmarkPlugin extends Plugin {
                 },
               }
             })
-            .actions(self => ({
-              afterCreate() {
-                document.addEventListener('keydown', e => {
-                  const activationSequence =
-                    (e.ctrlKey || e.metaKey) && e.shiftKey
-                  // ctrl+shift+d or cmd+shift+d
-                  if (activationSequence && e.code === 'KeyD') {
-                    e.preventDefault()
-                    self.activateBookmarkWidget()
-                    self.bookmarkCurrentRegion()
-                    getSession(self).notify('Bookmark created.', 'success')
-                  }
-                  // ctrl+shift+m or cmd+shift+m
-                  if (activationSequence && e.code === 'KeyM') {
-                    e.preventDefault()
-                    self.navigateNewestBookmark()
-                  }
-                })
-              },
-            }))
+            .actions(self => {
+              const keydownListener = (e: KeyboardEvent) => {
+                const activationSequence =
+                  (e.ctrlKey || e.metaKey) && e.shiftKey
+                // ctrl+shift+d or cmd+shift+d
+                if (activationSequence && e.code === 'KeyD') {
+                  e.preventDefault()
+                  self.activateBookmarkWidget()
+                  self.bookmarkCurrentRegion()
+                  getSession(self).notify('Bookmark created.', 'success')
+                }
+                // ctrl+shift+m or cmd+shift+m
+                if (activationSequence && e.code === 'KeyM') {
+                  e.preventDefault()
+                  self.navigateNewestBookmark()
+                }
+              }
+              return {
+                afterCreate() {
+                  document.addEventListener('keydown', keydownListener)
+                },
+                beforeDestroy() {
+                  document.removeEventListener('keydown', keydownListener)
+                },
+              }
+            })
 
           ;(pluggableElement as ViewType).stateModel = newStateModel
         }

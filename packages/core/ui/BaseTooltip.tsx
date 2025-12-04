@@ -4,8 +4,8 @@ import {
   useFloating,
   useInteractions,
 } from '@floating-ui/react'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Portal, alpha, useTheme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 function round(value: number) {
   return Math.round(value * 1e5) / 1e5
@@ -34,7 +34,19 @@ export default function BaseTooltip({
   children,
   placement = 'right',
 }: {
-  placement?: 'left' | 'right'
+  placement?:
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'right'
+    | 'right-start'
+    | 'right-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'left'
+    | 'left-start'
+    | 'left-end'
   clientPoint?: { x: number; y: number }
   children: React.ReactNode
 }) {
@@ -53,6 +65,7 @@ export default function BaseTooltip({
     <Portal container={popperTheme?.defaultProps?.container}>
       <div
         className={classes.tooltip}
+        // eslint-disable-next-line react-hooks/refs
         ref={refs.setFloating}
         style={{
           ...floatingStyles,

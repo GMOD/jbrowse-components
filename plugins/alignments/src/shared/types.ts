@@ -1,3 +1,5 @@
+import type { Feature } from '@jbrowse/core/util'
+
 export type SkipMap = Record<
   string,
   {
@@ -16,6 +18,9 @@ export interface BinEntry {
   '0': number
   '1': number
   avgProbability?: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
 }
 
 type BinType = Record<string, BinEntry>
@@ -42,7 +47,12 @@ export interface PreBinEntry {
   '-1': number
   '0': number
   '1': number
-  probabilities: number[]
+  probabilityTotal: number
+  probabilityCount: number
+  lengthTotal: number
+  lengthCount: number
+  lengthMin: number
+  lengthMax: number
 }
 
 type PreBinType = Record<string, PreBinEntry>
@@ -86,6 +96,7 @@ export interface ColorBy {
   modifications?: {
     twoColor?: boolean
     isolatedModification?: string
+    threshold?: number
   }
 }
 
@@ -111,9 +122,38 @@ export interface Mismatch {
   qual?: number
   start: number
   length: number
+  insertedBases?: string
   type: string
   base: string
   altbase?: string
   seq?: string
   cliplen?: number
+}
+
+export interface ReducedFeature {
+  name: string
+  strand: number
+  refName: string
+  start: number
+  end: number
+  id: string
+  flags: number
+  tlen: number
+  pair_orientation: string
+  next_ref?: string
+  next_pos?: number
+  clipPos: number
+  SA?: string
+}
+
+export interface ChainStats {
+  max: number
+  min: number
+  upper: number
+  lower: number
+}
+
+export interface ChainData {
+  stats?: ChainStats
+  chains: Feature[][]
 }

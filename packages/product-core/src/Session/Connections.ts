@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession'
 
@@ -7,9 +7,8 @@ import type { SessionWithReferenceManagementType } from './ReferenceManagement'
 import type { BaseRootModelType } from '../RootModel/BaseRootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel ConnectionManagementSessionMixin
@@ -21,10 +20,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
        * #property
        */
       connectionInstances: types.array(
-        pluginManager.pluggableMstType(
-          'connection',
-          'stateModel',
-        ) as BaseConnectionModel,
+        pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
     })
     .views(self => ({
@@ -56,8 +52,6 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         const length = self.connectionInstances.push({
           ...initialSnapshot,
           name,
-          // @ts-expect-error unsure why ts doesn't like `type` here, but is
-          // needed
           type,
           configuration,
         })

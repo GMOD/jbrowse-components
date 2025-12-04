@@ -4,7 +4,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun } from '../util'
@@ -23,10 +23,12 @@ export function doAfterAttach(model: {
   sortReady: boolean
   currSortBpPerPx: number
   parentTrack: any
-  renderPropsPre: () => Record<string, unknown>
+  adapterRenderProps: () => Record<string, unknown>
+  renderingProps: () => Record<string, unknown>
   setCurrSortBpPerPx: (arg: number) => void
   setError: (arg: unknown) => void
   updateVisibleModifications: (arg: ModificationType[]) => void
+  setSimplexModifications: (arg: string[]) => void
   setModificationsReady: (arg: boolean) => void
   setSortReady: (arg: boolean) => void
   setMessage: (arg: string) => void
@@ -41,7 +43,7 @@ export function doAfterAttach(model: {
 
       model.setCurrSortBpPerPx(view.bpPerPx)
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'CurrBpPerPx' },
   )
   createAutorun(
     model,
@@ -79,7 +81,8 @@ export function doAfterAttach(model: {
               model.setMessage(arg)
             }
           },
-          ...model.renderPropsPre(),
+          ...model.adapterRenderProps(),
+          renderingProps: model.renderingProps(),
         })
       }
       if (isAlive(model)) {
@@ -87,7 +90,7 @@ export function doAfterAttach(model: {
         model.setSortReady(true)
       }
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'SortReads' },
   )
 
   createAutorun(
@@ -98,16 +101,18 @@ export function doAfterAttach(model: {
       }
       const { adapterConfig } = model
       const { staticBlocks } = getContainingView(model) as LGV
-      const vals = await getUniqueModifications({
-        model,
-        adapterConfig,
-        blocks: staticBlocks,
-      })
+      const { modifications, simplexModifications } =
+        await getUniqueModifications({
+          model,
+          adapterConfig,
+          blocks: staticBlocks,
+        })
       if (isAlive(model)) {
-        model.updateVisibleModifications(vals)
+        model.updateVisibleModifications(modifications)
+        model.setSimplexModifications(simplexModifications)
         model.setModificationsReady(true)
       }
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'GetModInfo' },
   )
 }

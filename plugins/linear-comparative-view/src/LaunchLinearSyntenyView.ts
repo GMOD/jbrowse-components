@@ -8,7 +8,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 type LSV = LinearSyntenyViewModel
 
 interface ViewData {
-  loc: string
+  loc?: string
   assembly: string
   tracks?: string[]
 }
@@ -67,7 +67,11 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
             if (!asm) {
               throw new Error(`Assembly ${data.assembly} failed to load`)
             }
-            await view.navToSearchString({ input: loc, assembly: asm })
+            if (loc) {
+              await view.navToSearchString({ input: loc, assembly: asm })
+            } else {
+              view.showAllRegionsInAssembly(assembly)
+            }
             idsNotFound = [
               ...idsNotFound,
               ...tracks.map(trackId =>

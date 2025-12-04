@@ -1,10 +1,15 @@
 import { colord } from '@jbrowse/core/util/colord'
 
-import type { ChainData } from './fetchChains'
+import type { ChainData } from './types'
 
+/**
+ * Check if ChainData contains paired-end reads
+ * Note: This checks the data content, not the type.
+ * For type-level checking, use hasPairedChainData() from fetchChains.ts
+ */
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {
-    if (f[0]!.flags & 1) {
+    if (f[0]!.get('flags') & 1) {
       return true
     }
   }
@@ -63,3 +68,18 @@ export function filterTagValue(readVal: unknown, filterVal?: string) {
     ? readVal === undefined
     : `${readVal}` !== `${filterVal}`
 }
+
+/**
+ * Determine if chevrons should be rendered based on zoom level and feature height
+ * @param bpPerPx - base pairs per pixel (zoom level)
+ * @param featureHeight - height of the feature in pixels
+ * @returns true if chevrons should be rendered
+ */
+export function shouldRenderChevrons(bpPerPx: number, featureHeight: number) {
+  return bpPerPx < 50 && featureHeight >= 3
+}
+
+/**
+ * Width of chevron pointer in pixels
+ */
+export const CHEVRON_WIDTH = 5

@@ -1,5 +1,6 @@
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
@@ -16,7 +17,6 @@ import {
   Paper,
   Popover,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import { findLastIndex } from '../util'
 
@@ -118,6 +118,7 @@ export interface BaseMenuItem {
   subLabel?: string
   icon?: React.ComponentType<SvgIconProps>
   disabled?: boolean
+  helpText?: string
 }
 
 export interface NormalMenuItem extends BaseMenuItem {
@@ -207,7 +208,9 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
 
     useEffect(() => {
       if (!open) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSubMenuAnchorEl(undefined)
+
         setOpenSubMenuIdx(undefined)
       }
     }, [open])
@@ -229,7 +232,7 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
       }
     }, [isSubMenuOpen, open, subMenuAnchorEl])
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (anchorEl) {
         const rect = (anchorEl as HTMLElement).getBoundingClientRect()
         if (position) {
@@ -237,6 +240,7 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
             rect.top !== position.top ||
             rect.left + rect.width !== position.left
           ) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPosition({ top: rect.top, left: rect.left + rect.width })
           }
         } else {
@@ -325,6 +329,7 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
                       }
                     } else {
                       setSubMenuAnchorEl(undefined)
+
                       setOpenSubMenuIdx(undefined)
                     }
                   }}
@@ -400,7 +405,12 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
       ListContents
     ) : (
       // Grow is required for cascading sub-menus
-      <Grow in={open} style={{ transformOrigin: '0 0 0' }} ref={ref}>
+      <Grow
+        in={open}
+        style={{ transformOrigin: '0 0 0' }}
+        timeout={100}
+        ref={ref}
+      >
         <Paper
           elevation={8}
           ref={paperRef}
@@ -414,7 +424,7 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
   },
 )
 
-interface MenuProps extends PopoverProps {
+export interface MenuProps extends PopoverProps {
   menuItems: MenuItem[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement>,
@@ -429,6 +439,7 @@ function Menu(props: MenuProps) {
     <Popover
       open={open}
       onClose={onClose}
+      style={{ zIndex: 10000, ...other.style }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'right',

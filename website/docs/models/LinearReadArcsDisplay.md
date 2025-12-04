@@ -3,8 +3,8 @@ id: linearreadarcsdisplay
 title: LinearReadArcsDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -49,6 +49,8 @@ configuration: ConfigurationReference(configSchema)
 
 #### property: lineWidth
 
+Width of the arc lines (thin, bold, extra bold)
+
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
@@ -58,6 +60,8 @@ lineWidth: types.maybe(types.number)
 
 #### property: jitter
 
+Jitter amount for x-position to better visualize overlapping arcs
+
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
@@ -65,25 +69,9 @@ IMaybe<ISimpleType<number>>
 jitter: types.maybe(types.number)
 ```
 
-#### property: colorBySetting
-
-```js
-// type signature
-IType<ColorBy, ColorBy, ColorBy>
-// code
-colorBySetting: types.frozen<ColorBy | undefined>()
-```
-
-#### property: filterBySetting
-
-```js
-// type signature
-IType<FilterBy, FilterBy, FilterBy>
-// code
-filterBySetting: types.frozen<FilterBy | undefined>()
-```
-
 #### property: drawInter
+
+Whether to draw inter-region vertical lines
 
 ```js
 // type signature
@@ -93,6 +81,8 @@ drawInter: true
 ```
 
 #### property: drawLongRange
+
+Whether to draw long-range connections
 
 ```js
 // type signature
@@ -115,13 +105,6 @@ any
 ```js
 // type
 any
-```
-
-#### getter: drawn
-
-```js
-// type
-boolean
 ```
 
 #### getter: lineWidthSetting
@@ -160,31 +143,10 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearReadArcsDisplay - Actions
-
-#### action: setLastDrawnOffsetPx
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
-```
-
-#### action: setLastDrawnBpPerPx
-
-```js
-// type signature
-setLastDrawnBpPerPx: (n: number) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
 
 #### action: reload
 
@@ -193,31 +155,9 @@ setLoading: (f: boolean) => void
 reload: () => void
 ```
 
-#### action: setRef
-
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
-
-```js
-// type signature
-setRef: (ref: HTMLCanvasElement) => void
-```
-
-#### action: setColorScheme
-
-```js
-// type signature
-setColorScheme: (colorBy: { type: string; }) => void
-```
-
-#### action: setChainData
-
-```js
-// type signature
-setChainData: (args: ChainData) => void
-```
-
 #### action: setDrawInter
+
+Toggle drawing of inter-region vertical lines
 
 ```js
 // type signature
@@ -226,21 +166,16 @@ setDrawInter: (f: boolean) => void
 
 #### action: setDrawLongRange
 
+Toggle drawing of long-range connections
+
 ```js
 // type signature
 setDrawLongRange: (f: boolean) => void
 ```
 
-#### action: setFilterBy
-
-```js
-// type signature
-setFilterBy: (filter: FilterBy) => void
-```
-
 #### action: setLineWidth
 
-thin, bold, extrabold, etc
+Set the line width (thin=1, bold=2, extrabold=5, etc)
 
 ```js
 // type signature
@@ -249,10 +184,28 @@ setLineWidth: (n: number) => void
 
 #### action: setJitter
 
-jitter val, helpful to jitter the x direction so you see better evidence when
-e.g. 100 long reads map to same x position
+Set jitter amount for x-position Helpful to jitter the x direction so you see
+better evidence when e.g. 100 long reads map to same x position
 
 ```js
 // type signature
 setJitter: (n: number) => void
+```
+
+#### action: setRenderingImageData
+
+Set the rendering imageData from RPC
+
+```js
+// type signature
+setRenderingImageData: (imageData: ImageBitmap) => void
+```
+
+#### action: setRenderingStopToken
+
+Set the rendering stop token
+
+```js
+// type signature
+setRenderingStopToken: (token: string) => void
 ```

@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { getParent, isRoot, types } from 'mobx-state-tree'
+import { getParent, isRoot, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration'
 import { getContainingView, getEnv } from '../../util'
@@ -8,7 +8,7 @@ import { getParentRenderProps } from '../../util/tracks'
 import { ElementId } from '../../util/types/mst'
 
 import type { MenuItem } from '../../ui'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseDisplay
@@ -82,15 +82,70 @@ function stateModelFactory() {
       },
 
       /**
+       * #getter
+       * Returns the parent display if this display is nested within another display
+       * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
+       */
+      get parentDisplay() {
+        try {
+          const parent = getParent<any>(self)
+          // Check if immediate parent looks like a display
+          // (has type property ending with 'Display')
+          const parentType = parent?.type
+          if (
+            typeof parentType === 'string' &&
+            parentType.endsWith('Display')
+          ) {
+            return parent
+          }
+        } catch {
+          // Ignore errors walking up tree
+        }
+        return undefined
+      },
+
+      /**
+       * #getter
+       * Returns the effective RPC driver name with hierarchical fallback:
+       * 1. This display's explicit rpcDriverName
+       * 2. Parent display's effectiveRpcDriverName (for nested displays)
+       * 3. Track config's rpcDriverName
+       */
+      get effectiveRpcDriverName() {
+        if (self.rpcDriverName) {
+          return self.rpcDriverName
+        }
+        if (this.parentDisplay?.effectiveRpcDriverName) {
+          return this.parentDisplay.effectiveRpcDriverName
+        }
+        try {
+          return getConf(this.parentTrack, 'rpcDriverName') || undefined
+        } catch {
+          return undefined
+        }
+      },
+
+      /**
        * #method
        * the react props that are passed to the Renderer when data
-       * is rendered in this display
+       * is rendered in this display. these are serialized and sent to the
+       * worker for server-side rendering
        */
       renderProps() {
         return {
           ...getParentRenderProps(self),
           notReady: getContainingView(self).minimized,
-          rpcDriverName: self.rpcDriverName,
+          rpcDriverName: this.effectiveRpcDriverName,
+        }
+      },
+      /**
+       * #method
+       * props passed to the renderer's React "Rendering" component.
+       * these are client-side only and never sent to the worker.
+       * includes displayModel and callbacks
+       */
+      renderingProps() {
+        return {
           displayModel: self,
         }
       },

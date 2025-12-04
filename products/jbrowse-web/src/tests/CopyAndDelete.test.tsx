@@ -5,6 +5,7 @@ import {
   JBrowse,
   createView,
   doBeforeEach,
+  expectCanvasMatch,
   getPluginManager,
   mockConsoleWarn,
   setup,
@@ -24,7 +25,7 @@ const delay = { timeout: 40000 }
 // getConf(track,'trackId') to the TrackContainer but this seems odd, so just
 // silence the warning in test. exact warn is this:
 //
-// "Error: [mobx-state-tree] You are trying
+// "Error: [@jbrowse/mobx-state-tree] You are trying
 // to read or write to an object that is no longer part of a state tree.
 // (Object type: 'LinearVariantDisplay', Path upon death:
 // '/session/views/0/tracks/0/displays/0', Subpath: 'configuration',
@@ -34,7 +35,7 @@ const delay = { timeout: 40000 }
 
 test('copy and delete track in admin mode', () => {
   return mockConsoleWarn(async () => {
-    const { view, findByTestId, queryByText, findAllByTestId, findByText } =
+    const { view, findByTestId, queryByText, findByText, findAllByTestId } =
       await createView(undefined, true)
 
     view.setNewView(0.05, 5000)
@@ -51,7 +52,9 @@ test('copy and delete track in admin mode', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    await findAllByTestId('box-test-vcf-604453', {}, delay)
+    expectCanvasMatch(
+      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
+    )
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Delete track'))
     await waitFor(() => {
@@ -90,7 +93,7 @@ test('copy and delete reference sequence track disabled', () => {
 
 test('copy and delete track to session tracks', () => {
   return mockConsoleWarn(async () => {
-    const { view, findByTestId, findAllByTestId, findByText } =
+    const { view, findByTestId, findByText, findAllByTestId } =
       await createView(undefined, false)
 
     view.setNewView(0.05, 5000)
@@ -107,7 +110,9 @@ test('copy and delete track to session tracks', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    await findAllByTestId('box-test-vcf-604453', {}, delay)
+    expectCanvasMatch(
+      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
+    )
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Delete track'))
     await waitFor(() => {

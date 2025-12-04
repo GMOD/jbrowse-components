@@ -1,12 +1,13 @@
 import { lazy, useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   type AbstractSessionModel,
   localStorageGetItem,
 } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
   Button,
@@ -16,12 +17,10 @@ import {
   IconButton,
   Typography,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
-import { StringParam, useQueryParam } from 'use-query-params'
 
 import { shareSessionToDynamo } from '../sessionSharing'
+import { setQueryParams } from '../useQueryParam'
 import { toUrlSafeB64 } from '../util'
 import ShareDialogLinkField from './ShareDialogLinkField'
 
@@ -43,8 +42,6 @@ const ShareDialog = observer(function ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
-  const [, setPassword] = useQueryParam('password', StringParam)
-  const [, setSession] = useQueryParam('session', StringParam)
 
   const url = session.shareURL
   const currentSetting =
@@ -133,8 +130,10 @@ const ShareDialog = observer(function ({
             disabled={disabled}
             onClick={event => {
               event.preventDefault()
-              setPassword(passwordParam, 'replaceIn')
-              setSession(sessionParam, 'replaceIn')
+              setQueryParams({
+                password: passwordParam,
+                session: sessionParam,
+              })
               alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
             }}
           >
@@ -144,7 +143,8 @@ const ShareDialog = observer(function ({
           <Button
             startIcon={<ContentCopyIcon />}
             disabled={disabled}
-            onClick={() => {
+            onClick={async () => {
+              const { default: copy } = await import('copy-to-clipboard')
               copy(shortUrl || longUrl)
               session.notify('Copied to clipboard', 'success')
             }}

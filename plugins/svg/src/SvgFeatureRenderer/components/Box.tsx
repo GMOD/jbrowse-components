@@ -1,10 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getFrame } from '@jbrowse/core/util'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Arrow from './Arrow'
-import { isUTR } from './util'
+import { getBoxColor } from './getBoxColor'
+import { isUTR } from './isUTR'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -37,8 +38,6 @@ const Box = observer(function Box(props: {
   const featureStart = feature.get('start')
   const featureEnd = feature.get('end')
   const featureType: string | undefined = feature.get('type')
-  const featureStrand: -1 | 1 | undefined = feature.get('strand')
-  const featurePhase: 0 | 1 | 2 | undefined = feature.get('phase')
   const width = (featureEnd - featureStart) / bpPerPx
   const { left = 0 } = featureLayout.absolute
   let { top = 0, height = 0 } = featureLayout.absolute
@@ -55,27 +54,13 @@ const Box = observer(function Box(props: {
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
 
-  let fill: string = isUTR(feature)
-    ? readConfObject(config, 'color3', { feature })
-    : readConfObject(config, 'color1', { feature })
-  if (
-    colorByCDS &&
-    featureType === 'CDS' &&
-    featureStrand !== undefined &&
-    featurePhase !== undefined
-  ) {
-    const frame = getFrame(
-      featureStart,
-      featureEnd,
-      featureStrand,
-      featurePhase,
-    )
-    const frameColor = theme.palette.framesCDS.at(frame)?.main
-    if (frameColor) {
-      fill = frameColor
-    }
-  }
-
+  const fill = getBoxColor({
+    feature,
+    config,
+    colorByCDS,
+    theme,
+  })
+  const stroke = readConfObject(config, 'outline', { feature }) as string
   // if feature has parent and type is intron, then don't render the intron
   // subfeature (if it doesn't have a parent, then maybe the introns are
   // separately displayed features that should be displayed)
@@ -88,8 +73,8 @@ const Box = observer(function Box(props: {
         y={top}
         width={widthWithinBlock}
         height={height}
-        fill={fill}
-        stroke={readConfObject(config, 'outline', { feature }) as string}
+        {...getFillProps(fill)}
+        {...getStrokeProps(stroke)}
       />
     </>
   )

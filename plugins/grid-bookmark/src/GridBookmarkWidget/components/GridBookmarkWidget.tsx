@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Delete from '@mui/icons-material/Delete'
 import GetApp from '@mui/icons-material/GetApp'
 import Menu from '@mui/icons-material/Menu'
@@ -11,7 +12,6 @@ import Settings from '@mui/icons-material/Settings'
 import Share from '@mui/icons-material/Share'
 import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import AssemblySelector from './AssemblySelector'
 import BookmarkGrid from './BookmarkGrid'
@@ -54,8 +54,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
     <div>
       <Alert severity="info">
         Click and type within the <strong>label</strong> field to annotate your
-        bookmark. Double click the <strong>label</strong> field to do so within
-        a dialog.
+        bookmark
       </Alert>
       <div className={classes.flex}>
         <CascadingMenuButton

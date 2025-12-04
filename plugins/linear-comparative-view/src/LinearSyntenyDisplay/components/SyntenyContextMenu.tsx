@@ -1,5 +1,5 @@
 import { Menu } from '@jbrowse/core/ui'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
@@ -60,21 +60,12 @@ export default function SyntenyContextMenu({
 
             const l1 = view.views[model.level]!
             const l2 = view.views[model.level + 1]!
-            l1.navToLocString(`${refName}:${start}-${end}`).catch(
-              (e: unknown) => {
-                const err = `${l1.assemblyNames[0]}:${e}`
-                console.error(err)
-                getSession(model).notifyError(err, e)
-              },
-            )
 
-            l2.navToLocString(
-              `${mate.refName}:${mate.start}-${mate.end}`,
-            ).catch((e: unknown) => {
-              const err = `${l2.assemblyNames[0]}:${e}`
-              console.error(err)
-              getSession(model).notifyError(err, e)
-            })
+            const center1 = (start + end) / 2
+            const center2 = (mate.start + mate.end) / 2
+
+            l1.centerAt(center1, refName)
+            l2.centerAt(center2, mate.refName)
           },
         },
       ]}

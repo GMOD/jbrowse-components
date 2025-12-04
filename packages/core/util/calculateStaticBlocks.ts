@@ -1,4 +1,4 @@
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { assembleLocStringFast } from '.'
 import {
@@ -10,7 +10,7 @@ import {
 
 import type { Region } from './types'
 import type { Region as RegionModel } from './types/mst'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface Base1DViewModel {
   offsetPx: number
@@ -41,6 +41,10 @@ export default function calculateStaticBlocks(
   const windowRightBp = (offsetPx + modelWidth) * bpPerPx
   const blockSizePx = width
   const blockSizeBp = Math.ceil(blockSizePx * bpPerPx)
+
+  // Pre-calculate inverse values to avoid repeated divisions
+  const invBpPerPx = 1 / bpPerPx
+  const invBlockSizeBp = 1 / blockSizeBp
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
@@ -58,22 +62,24 @@ export default function calculateStaticBlocks(
       reversed,
     } = region
 
-    const regionBlockCount = Math.ceil((regionEnd - regionStart) / blockSizeBp)
+    const regionBlockCount = Math.ceil(
+      (regionEnd - regionStart) * invBlockSizeBp,
+    )
     const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     let windowRightBlockNum =
-      Math.floor((windowRightBp - regionBpOffset) / blockSizeBp) + extra
+      Math.floor((windowRightBp - regionBpOffset) * invBlockSizeBp) + extra
     if (windowRightBlockNum >= regionBlockCount) {
       windowRightBlockNum = regionBlockCount - 1
     }
 
     let windowLeftBlockNum =
-      Math.floor((windowLeftBp - regionBpOffset) / blockSizeBp) - extra
+      Math.floor((windowLeftBp - regionBpOffset) * invBlockSizeBp) - extra
     if (windowLeftBlockNum < 0) {
       windowLeftBlockNum = 0
     }
 
-    const regionWidthPx = (regionEnd - regionStart) / bpPerPx
+    const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
 
     for (
       let blockNum = windowLeftBlockNum;
@@ -95,24 +101,27 @@ export default function calculateStaticBlocks(
         isLeftEndOfDisplayedRegion = start === regionStart
         isRightEndOfDisplayedRegion = end === regionEnd
       }
-      const widthPx = (end - start) / bpPerPx
+      const widthPx = (end - start) * invBpPerPx
       const blockData = {
         assemblyName,
         refName,
         start,
         end,
         reversed,
-        offsetPx: (regionBpOffset + blockNum * blockSizeBp) / bpPerPx,
+        offsetPx: (regionBpOffset + blockNum * blockSizeBp) * invBpPerPx,
         parentRegion,
         regionNumber,
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
-        key: '',
+        key: `${assembleLocStringFast({
+          assemblyName,
+          refName,
+          start,
+          end,
+          reversed,
+        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
       }
-      blockData.key = `${assembleLocStringFast(blockData)}-${regionNumber}${
-        reversed ? '-reversed' : ''
-      }`
 
       if (padding && regionNumber === 0 && blockNum === 0) {
         blocks.push(

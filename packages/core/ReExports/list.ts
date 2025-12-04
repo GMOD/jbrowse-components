@@ -10,6 +10,7 @@
  */
 export default [
   'mobx',
+  '@jbrowse/mobx-state-tree',
   'mobx-state-tree',
   'react',
   'react/jsx-runtime',
@@ -19,6 +20,7 @@ export default [
   '@mui/x-data-grid',
   '@mui/material/utils',
   '@material-ui/core/utils',
+  'tss-react',
   'tss-react/mui',
   '@material-ui/core',
   '@mui/material',

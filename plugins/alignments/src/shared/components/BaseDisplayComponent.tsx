@@ -1,65 +1,59 @@
+import React, { Suspense, lazy } from 'react'
+
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'
-import { Button, Tooltip } from '@mui/material'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-// local
-import type { LinearReadArcsDisplayModel } from '../../LinearReadArcsDisplay/model'
-import type { LinearReadCloudDisplayModel } from '../../LinearReadCloudDisplay/model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()(theme => ({
-  loading: {
-    backgroundColor: theme.palette.background.default,
-    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${theme.palette.action.disabledBackground} 5px, ${theme.palette.action.disabledBackground} 10px)`,
-    position: 'absolute',
-    bottom: 0,
-    height: 50,
-    width: 300,
-    right: 0,
-    pointerEvents: 'none',
-    textAlign: 'center',
-  },
-}))
+const BlockErrorMessage = lazy(() => import('./BlockErrorMessage'))
 
-const BlockError = observer(function ({
-  model,
-}: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
-}) {
-  const { error } = model
-  return (
-    <BlockMsg
-      message={`${error}`}
-      severity="error"
-      action={
-        <Tooltip title="Reload">
-          <Button
-            data-testid="reload_button"
-            onClick={() => {
-              model.reload()
-            }}
-          >
-            Reload
-          </Button>
-        </Tooltip>
-      }
-    />
-  )
+// Duck-typed interface to avoid circular dependencies
+interface BaseDisplayModel {
+  error?: unknown
+  regionTooLarge?: boolean
+  reload: () => void
+  regionCannotBeRendered: () => React.ReactElement | null
+  drawn: boolean
+  loading: boolean
+  lastDrawnOffsetPx?: number
+  message?: string
+}
+
+const useStyles = makeStyles()({
+  loading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.05) 8px, rgba(0, 0, 0, 0.05) 16px)`,
+    pointerEvents: 'none',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  loadingMessage: {
+    zIndex: 2,
+    pointerEvents: 'none',
+  },
 })
 
 const BaseDisplayComponent = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model: BaseDisplayModel
   children?: React.ReactNode
 }) {
   const { error, regionTooLarge } = model
   return error ? (
-    <BlockError model={model} />
+    <Suspense fallback={null}>
+      <BlockErrorMessage model={model} />
+    </Suspense>
   ) : regionTooLarge ? (
     model.regionCannotBeRendered()
   ) : (
@@ -71,7 +65,7 @@ const DataDisplay = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model: BaseDisplayModel
   children?: React.ReactNode
 }) {
   const { drawn, loading } = model
@@ -87,16 +81,14 @@ const DataDisplay = observer(function ({
   )
 })
 
-const LoadingBar = observer(function ({
-  model,
-}: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
-}) {
+const LoadingBar = observer(function ({ model }: { model: BaseDisplayModel }) {
   const { classes } = useStyles()
   const { message } = model
   return (
     <div className={classes.loading}>
-      <LoadingEllipses message={message} />
+      <div className={classes.loadingMessage}>
+        <LoadingEllipses message={message} />
+      </div>
     </div>
   )
 })

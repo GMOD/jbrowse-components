@@ -7,6 +7,7 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
+  toLocale,
 } from '@jbrowse/core/util'
 
 import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
@@ -112,6 +113,67 @@ export function draw(
   } else {
     drawBox(ctx, x1, x2, y1, x3, x4, y2)
   }
+}
+
+export function drawLocationMarkers(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  x2: number,
+  y1: number,
+  x3: number,
+  x4: number,
+  y2: number,
+  mid: number,
+  bpPerPx1: number,
+  bpPerPx2: number,
+  drawCurves?: boolean,
+) {
+  const width1 = Math.abs(x2 - x1)
+  const width2 = Math.abs(x4 - x3)
+  const averageWidth = (width1 + width2) / 2
+
+  // Only draw markers for sufficiently large matches (wider than ~30 pixels)
+  if (averageWidth < 30) {
+    return
+  }
+
+  // Aim for markers at consistent pixel spacing for even visual density
+  // Target spacing of ~20 pixels between markers regardless of feature size
+  const targetPixelSpacing = 20
+  const numMarkers = Math.max(
+    2,
+    Math.floor(averageWidth / targetPixelSpacing) + 1,
+  )
+
+  const prevStrokeStyle = ctx.strokeStyle
+  const prevLineWidth = ctx.lineWidth
+
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)' // Dark semi-transparent line
+  ctx.lineWidth = 0.5
+
+  // Create single path for all markers
+  ctx.beginPath()
+  if (drawCurves) {
+    for (let step = 0; step < numMarkers; step++) {
+      const t = step / numMarkers
+      const topX = x1 + (x2 - x1) * t
+      const bottomX = x4 + (x3 - x4) * t
+      ctx.moveTo(topX, y1)
+      ctx.bezierCurveTo(topX, mid, bottomX, mid, bottomX, y2)
+    }
+  } else {
+    for (let step = 0; step < numMarkers; step++) {
+      const t = step / numMarkers
+      const topX = x1 + (x2 - x1) * t
+      const bottomX = x4 + (x3 - x4) * t
+      ctx.moveTo(topX, y1)
+      ctx.lineTo(bottomX, y2)
+    }
+  }
+  ctx.stroke()
+
+  ctx.strokeStyle = prevStrokeStyle
+  ctx.lineWidth = prevLineWidth
 }
 
 export function drawBox(
@@ -233,7 +295,11 @@ export function onSynContextClick(
   const f = model.featPositions[id]
   if (f) {
     model.setClickId(f.f.id())
-    setAnchorEl({ clientX, clientY, feature: f })
+    setAnchorEl({
+      clientX,
+      clientY,
+      feature: f,
+    })
   }
 }
 
@@ -243,8 +309,8 @@ export function getTooltip({
   cigarOpLen,
 }: {
   feature: Feature
-  cigarOp?: string
   cigarOpLen?: string
+  cigarOp?: string
 }) {
   // @ts-expect-error
   const f1 = feature.toJSON() as {
@@ -272,10 +338,10 @@ export function getTooltip({
     `Loc1: ${assembleLocString(f1)}`,
     `Loc2: ${assembleLocString(f2)}`,
     `Inverted: ${f1.strand === -1}`,
-    `Query len: ${l1.toLocaleString('en-US')}`,
-    `Target len: ${l2.toLocaleString('en-US')}`,
+    `Query len: ${toLocale(l1)}`,
+    `Target len: ${toLocale(l2)}`,
     identity ? `Identity: ${identity.toPrecision(2)}` : '',
-    cigarOp ? `CIGAR operator: ${cigarOp}${cigarOpLen}` : '',
+    cigarOp ? `CIGAR operator: ${toLocale(+cigarOpLen!)}${cigarOp}` : '',
     n1 ? `Name 1: ${n1}` : '',
     n2 ? `Name 2: ${n2}` : '',
   ]

@@ -1,5 +1,5 @@
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
 
 import {
   localStorageGetBoolean,
@@ -9,7 +9,7 @@ import {
 } from '../../util'
 
 import type { SimpleFeatureSerialized } from '../../util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function localStorageSetNumber(key: string, value: number) {
   localStorageSetItem(key, JSON.stringify(value))
@@ -18,6 +18,18 @@ function localStorageSetNumber(key: string, value: number) {
 function localStorageSetBoolean(key: string, value: boolean) {
   localStorageSetItem(key, JSON.stringify(value))
 }
+
+type ShowCoordinatesMode = 'none' | 'relative' | 'genomic'
+type SequenceDisplayMode =
+  | ''
+  | 'gene'
+  | 'gene_collapsed_intron'
+  | 'gene_updownstream'
+  | 'cdna'
+  | 'cds'
+  | 'genomic'
+  | 'genomic_sequence_updownstream'
+  | 'protein'
 
 const p = 'sequenceFeatureDetails'
 
@@ -53,7 +65,7 @@ export function SequenceFeatureDetailsF() {
       /**
        * #volatile
        */
-      mode: '',
+      mode: '' as SequenceDisplayMode,
     }))
     .actions(self => ({
       /**
@@ -83,13 +95,13 @@ export function SequenceFeatureDetailsF() {
       /**
        * #action
        */
-      setShowCoordinates(f: 'none' | 'relative' | 'genomic') {
+      setShowCoordinates(f: ShowCoordinatesMode) {
         self.showCoordinatesSetting = f
       },
       /**
        * #action
        */
-      setMode(mode: string) {
+      setMode(mode: SequenceDisplayMode) {
         self.mode = mode
       },
     }))
@@ -115,7 +127,9 @@ export function SequenceFeatureDetailsF() {
        * #getter
        */
       get hasCDS() {
-        return self.feature?.subfeatures?.some(sub => sub.type === 'CDS')
+        return self.feature?.subfeatures?.some(
+          sub => sub.type?.toLowerCase() === 'cds',
+        )
       },
       /**
        * #getter
@@ -134,23 +148,29 @@ export function SequenceFeatureDetailsF() {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetNumber(`${p}-upDownBp`, self.upDownBp)
-            localStorageSetNumber(`${p}-intronBp`, self.intronBp)
-            localStorageSetBoolean(`${p}-upperCaseCDS`, self.upperCaseCDS)
-            localStorageSetItem(
-              `${p}-showCoordinatesSetting`,
-              self.showCoordinatesSetting,
-            )
-          }),
+          autorun(
+            function sequenceFeatureLocalStorageAutorun() {
+              localStorageSetNumber(`${p}-upDownBp`, self.upDownBp)
+              localStorageSetNumber(`${p}-intronBp`, self.intronBp)
+              localStorageSetBoolean(`${p}-upperCaseCDS`, self.upperCaseCDS)
+              localStorageSetItem(
+                `${p}-showCoordinatesSetting`,
+                self.showCoordinatesSetting,
+              )
+            },
+            { name: 'SequenceFeatureLocalStorage' },
+          ),
         )
         addDisposer(
           self,
-          autorun(() => {
-            self.setMode(
-              self.hasCDS ? 'cds' : self.hasExon ? 'cdna' : 'genomic',
-            )
-          }),
+          autorun(
+            function sequenceFeatureModeAutorun() {
+              self.setMode(
+                self.hasCDS ? 'cds' : self.hasExon ? 'cdna' : 'genomic',
+              )
+            },
+            { name: 'SequenceFeatureMode' },
+          ),
         )
       },
     }))
