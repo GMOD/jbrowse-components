@@ -324,6 +324,9 @@ function stateModelFactory(
                 base: string
                 count: number
                 total: number
+                avgLength?: number
+                minLength?: number
+                maxLength?: number
               },
             ) {
               getSession(self).queueDialog(handleClose => [

@@ -125,7 +125,6 @@ export function makeImage(
   // Flatbush clickmap data for interbase indicators
   const coords = [] as number[]
   const items = [] as InterbaseIndicatorItem[]
-  let lastInterbaseCountX = Number.NEGATIVE_INFINITY
 
   const drawingModifications = colorBy.type === 'modifications'
   const drawingMethylation = colorBy.type === 'methylation'
@@ -280,17 +279,27 @@ export function makeImage(
         curr += entryDepth
       }
 
-      // Add to clickmap if more than 0.5px from last added
-      if (interbaseEvents.length > 0 && x - lastInterbaseCountX > 0.5) {
+      // Add to clickmap when zoomed in enough for meaningful interaction,
+      // or when interbase events represent a significant fraction of reads
+      const totalInterbaseCount = interbaseEvents.reduce(
+        (sum, base) => sum + (snpinfo.noncov[base]?.entryDepth ?? 0),
+        0,
+      )
+      const isMajorityInterbase =
+        score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
+      if (interbaseEvents.length > 0 && (bpPerPx < 10 || isMajorityInterbase)) {
         const maxBase = interbaseEvents.reduce((a, b) =>
           (snpinfo.noncov[a]?.entryDepth ?? 0) >
           (snpinfo.noncov[b]?.entryDepth ?? 0)
             ? a
             : b,
         )
-        const clickWidth = Math.max(r * 2, 1.5)
+        const maxEntry = snpinfo.noncov[maxBase]
+        // Extend hitbox horizontally for easier mouse targeting
+        const hitboxPadding = 2
+        const clickWidth = Math.max(r * 2, 1.5) + hitboxPadding * 2
         coords.push(
-          x,
+          x - hitboxPadding,
           INTERBASE_INDICATOR_HEIGHT,
           x + clickWidth,
           INTERBASE_INDICATOR_HEIGHT + totalHeight,
@@ -300,8 +309,10 @@ export function makeImage(
           base: maxBase,
           count: curr,
           total: score0,
+          avgLength: maxEntry?.avgLength,
+          minLength: maxEntry?.minLength,
+          maxLength: maxEntry?.maxLength,
         })
-        lastInterbaseCountX = x
       }
     }
 
@@ -333,18 +344,23 @@ export function makeImage(
         ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
         ctx.fill()
 
-        // Add to Flatbush clickmap
+        const maxEntry = snpinfo.noncov[maxBase]
+        // Add to Flatbush clickmap with extended hitbox for easier mouse targeting
+        const hitboxPadding = 3
         coords.push(
-          l - INTERBASE_INDICATOR_WIDTH / 2,
+          l - INTERBASE_INDICATOR_WIDTH / 2 - hitboxPadding,
           0,
-          l + INTERBASE_INDICATOR_WIDTH / 2,
-          INTERBASE_INDICATOR_HEIGHT,
+          l + INTERBASE_INDICATOR_WIDTH / 2 + hitboxPadding,
+          INTERBASE_INDICATOR_HEIGHT + hitboxPadding,
         )
         items.push({
           type: maxBase as 'insertion' | 'softclip' | 'hardclip',
           base: maxBase,
           count: accum,
           total: indicatorComparatorScore,
+          avgLength: maxEntry?.avgLength,
+          minLength: maxEntry?.minLength,
+          maxLength: maxEntry?.maxLength,
         })
       }
     }

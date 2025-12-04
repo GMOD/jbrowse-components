@@ -29,11 +29,14 @@ const InterbaseInfoDialog = observer(function ({
     base: string
     count: number
     total: number
+    avgLength?: number
+    minLength?: number
+    maxLength?: number
   }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const { type, count, total } = item
+  const { type, count, total, avgLength, minLength, maxLength } = item
   return (
     <Dialog
       open
@@ -48,7 +51,13 @@ const InterbaseInfoDialog = observer(function ({
         </div>
         <div className={classes.section}>
           <Typography className={classes.label}>Count:</Typography>
-          <Typography>{formatInterbaseStats(count, total)}</Typography>
+          <Typography style={{ whiteSpace: 'pre-wrap' }}>
+            {formatInterbaseStats(count, total, {
+              avgLength,
+              minLength,
+              maxLength,
+            })}
+          </Typography>
         </div>
         <DialogActions>
           <Button

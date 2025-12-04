@@ -6,7 +6,6 @@ import {
   getContainingDisplay,
   getContainingTrack,
   getSession,
-  getViewParams,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
@@ -362,7 +361,6 @@ async function renderBlockEffect(
         ...renderArgs,
         ...renderProps,
         renderingProps,
-        viewParams: getViewParams(self),
         stopToken,
       })
     return {
