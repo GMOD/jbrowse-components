@@ -14,6 +14,14 @@ function isBreakend(alt: string) {
   )
 }
 
+function isSymbolic(alt: string) {
+  return alt.startsWith('<') || isBreakend(alt)
+}
+
+function isInversion(ref: string, alt: string) {
+  return ref.split('').reverse().join('') === alt
+}
+
 const altTypeToSO: Record<string, string> = {
   '<DEL>': 'deletion',
   '<INS>': 'insertion',
@@ -74,10 +82,9 @@ function getSOTerm(alt: string, ref: string, parser: VCF): string {
     return 'SNV'
   }
   if (lenRef === lenAlt) {
-    const refReversed = ref.split('').reverse().join('')
-    return refReversed === alt ? 'inv' : 'substitution'
+    return isInversion(ref, alt) ? 'inv' : 'substitution'
   }
-  return lenRef < lenAlt ? 'insertion' : 'deletion'
+  return lenRef < lenAlt ? 'ins' : 'del'
 }
 
 function formatGroupDescription(
@@ -85,8 +92,7 @@ function formatGroupDescription(
   ref: string,
   alts: string[],
 ): string {
-  // For symbolic alleles and breakends, just return the alt itself
-  if (alts.every(a => a.startsWith('<') || isBreakend(a))) {
+  if (alts.every(isSymbolic)) {
     return alts.join(',')
   }
 
@@ -102,10 +108,10 @@ function formatGroupDescription(
     case 'inv':
       return `${soTerm} ${getBpDisplayStr(lenRef)} -> ${alts.map(a => getBpDisplayStr(a.length)).join(',')}`
 
-    case 'insertion':
+    case 'ins':
       return alts.map(a => `${getBpDisplayStr(a.length - lenRef)} INS`).join(',')
 
-    case 'deletion':
+    case 'del':
       return alts.map(a => `${getBpDisplayStr(lenRef - a.length)} DEL`).join(',')
 
     default:
@@ -114,25 +120,17 @@ function formatGroupDescription(
 }
 
 function findSOTerm(alt: string, parser: VCF): string | undefined {
-  // Direct lookup
-  const soTerm = altTypeToSO[alt]
-  if (soTerm) {
-    return soTerm
+  if (altTypeToSO[alt]) {
+    return altTypeToSO[alt]
   }
-
-  // Check parser metadata
   if (parser.getMetadata('ALT', alt)) {
     return 'sequence_variant'
   }
-
   // Try parent term by stripping last component, e.g. '<INS:ME>' -> '<INS>'
-  const inner = alt.slice(1, -1)
-  const parts = inner.split(':')
-  if (parts.length > 1) {
-    return findSOTerm(`<${parts.slice(0, -1).join(':')}>`, parser)
-  }
-
-  return undefined
+  const parts = alt.slice(1, -1).split(':')
+  return parts.length > 1
+    ? findSOTerm(`<${parts.slice(0, -1).join(':')}>`, parser)
+    : undefined
 }
 
 export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
@@ -145,12 +143,7 @@ export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
 }
 
 export function getMinimalDesc(ref: string, alt: string) {
-  // Breakends, symbolic alleles, and SNVs - just return alt
-  if (
-    isBreakend(alt) ||
-    alt.includes('<') ||
-    (ref.length === 1 && alt.length === 1)
-  ) {
+  if (isSymbolic(alt) || (ref.length === 1 && alt.length === 1)) {
     return alt
   }
 
@@ -158,37 +151,22 @@ export function getMinimalDesc(ref: string, alt: string) {
   const lenAlt = alt.length
   const isLong = lenRef > 5 || lenAlt > 5
 
-  // Same length - substitution or inversion
   if (lenRef === lenAlt) {
-    const refReversed = ref.split('').reverse().join('')
-    const isInversion = refReversed === alt
-    const refStr = isLong ? getBpDisplayStr(lenRef) : ref
-    const altStr = isLong ? getBpDisplayStr(lenAlt) : alt
-    return isInversion
-      ? makeDescriptionString('inv', refStr, altStr)
-      : makeDescriptionString('substitution', refStr, altStr)
-  }
-
-  // Insertion
-  if (lenRef < lenAlt) {
-    const len = lenAlt - lenRef
+    const soTerm = isInversion(ref, alt) ? 'inv' : 'substitution'
     return isLong
-      ? `${getBpDisplayStr(len)} INS`
-      : makeDescriptionString(
-          'insertion',
-          len > 5 ? getBpDisplayStr(len) : ref,
-          alt,
-        )
+      ? `${soTerm} ${getBpDisplayStr(lenRef)} -> ${getBpDisplayStr(lenAlt)}`
+      : `${soTerm} ${ref} -> ${alt}`
   }
 
-  // Deletion
+  if (lenRef < lenAlt) {
+    return isLong
+      ? `${getBpDisplayStr(lenAlt - lenRef)} INS`
+      : `ins ${ref} -> ${alt}`
+  }
+
   return isLong
     ? `${getBpDisplayStr(lenRef - lenAlt)} DEL`
-    : makeDescriptionString('deletion', ref, alt)
-}
-
-function makeDescriptionString(soTerm: string, ref: string, alt: string) {
-  return `${soTerm} ${ref} -> ${alt}`
+    : `del ${ref} -> ${alt}`
 }
 
 export function makeSimpleAltString(

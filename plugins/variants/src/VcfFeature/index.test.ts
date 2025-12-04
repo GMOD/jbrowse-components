@@ -143,7 +143,24 @@ test('multiple SNV2', () => {
     variant,
     id: 'myuniqueid',
   })
-  expect(f.get('description')).toEqual('insertion G -> AT,<*>')
+  expect(f.get('description')).toEqual('ins G -> AT,<*>')
+})
+
+test('mixed deletion and insertion', () => {
+  const parser = new VcfParser({
+    header:
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam',
+  })
+  const line = 'chr1\t100\trs123\tATC\tT,ATCGGGG\t29\tPASS\tHELLO=world'
+
+  const variant = parser.parseLine(line)
+
+  const f = new VcfFeature({
+    parser,
+    variant,
+    id: 'myuniqueid',
+  })
+  expect(f.get('description')).toEqual('del ATC -> T,4bp INS')
 })
 
 // see example 1.1 in VCF 4.3 spec, indicates the . in ALT field indicates
