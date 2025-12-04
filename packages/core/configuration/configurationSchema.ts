@@ -280,37 +280,75 @@ export function ConfigurationSchema<
   return schemaType
 }
 
+/**
+ * Creates a reference type for track configurations that:
+ * - Resolves trackId strings to configuration objects at runtime
+ * - Always serializes as just the trackId string in snapshots
+ * - Works with both frozen tracks (plain objects) and MST model tracks
+ */
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      let ret = getSession(parent).tracksById[id]
+      // First try to get from session.tracksById (works for frozen tracks)
+      let ret = getSession(parent).tracksById?.[id]
       if (!ret) {
+        // Fall back to resolveIdentifier (works for MST model tracks)
         // @ts-expect-error
         ret = resolveIdentifier(schemaType, getRoot(parent), id)
       }
       if (!ret) {
-        throw new Error(`${id} not found`)
+        throw new Error(`Track configuration "${id}" not found`)
       }
+      // If it's a frozen/plain object, we need to instantiate it
       return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
     },
     set(value) {
       return value.trackId
     },
   })
-  return types.union(trackRef, schemaType)
+
+  // Use snapshotProcessor to ensure we always serialize as just the trackId
+  return types.snapshotProcessor(
+    types.union({
+      dispatcher: snapshot =>
+        typeof snapshot === 'string' ? trackRef : schemaType,
+    }, trackRef, schemaType),
+    {
+      preProcessor(snapshot: string | { trackId: string }) {
+        // Accept both string IDs and full objects
+        return snapshot
+      },
+      postProcessor(snapshot) {
+        // Always serialize as just the trackId string
+        if (typeof snapshot === 'object' && snapshot !== null && 'trackId' in snapshot) {
+          return (snapshot as { trackId: string }).trackId
+        }
+        return snapshot
+      },
+    },
+  )
 }
 
+/**
+ * Creates a reference type for display configurations that:
+ * - Resolves displayId strings to configuration objects at runtime
+ * - Always serializes as just the displayId string in snapshots
+ */
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
       const track = getContainingTrack(parent)
-      let ret = track.configuration.displays.find(u => u.displayId === id)
+      // First try to find in the track's displays array
+      let ret = track.configuration.displays?.find(
+        (d: { displayId: string }) => d.displayId === id,
+      )
       if (!ret) {
+        // Fall back to resolveIdentifier
         // @ts-expect-error
         ret = resolveIdentifier(schemaType, getRoot(parent), id)
       }
       if (!ret) {
-        throw new Error(`${id} not found`)
+        throw new Error(`Display configuration "${id}" not found`)
       }
       return ret
     },
@@ -318,17 +356,45 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       return value.displayId
     },
   })
-  return types.union(displayRef, schemaType)
+
+  // Use snapshotProcessor to ensure we always serialize as just the displayId
+  return types.snapshotProcessor(
+    types.union({
+      dispatcher: snapshot =>
+        typeof snapshot === 'string' ? displayRef : schemaType,
+    }, displayRef, schemaType),
+    {
+      preProcessor(snapshot: string | { displayId: string }) {
+        // Accept both string IDs and full objects
+        return snapshot
+      },
+      postProcessor(snapshot) {
+        // Always serialize as just the displayId string
+        if (typeof snapshot === 'object' && snapshot !== null && 'displayId' in snapshot) {
+          return (snapshot as { displayId: string }).displayId
+        }
+        return snapshot
+      },
+    },
+  )
 }
 
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
 >(schemaType: SCHEMATYPE) {
-  if (schemaType.name.endsWith('TrackConfigurationSchema')) {
-    return TrackConfigurationReference(schemaType)
-  } else if (schemaType.name.endsWith('DisplayConfigurationSchema')) {
-    return DisplayConfigurationReference(schemaType)
+  const name = schemaType.name
+  // Check if this is a track configuration schema
+  if (
+    name.includes('TrackConfigurationSchema') &&
+    !name.includes('DisplayConfigurationSchema')
+  ) {
+    return TrackConfigurationReference(schemaType) as SCHEMATYPE
   }
+  // Check if this is a display configuration schema
+  if (name.includes('DisplayConfigurationSchema')) {
+    return DisplayConfigurationReference(schemaType) as SCHEMATYPE
+  }
+  // Default behavior for other configuration types
   // we cast this to SCHEMATYPE, because the reference *should* behave just
   // like the object it points to. It won't be undefined (this is a
   // `reference`, not a `safeReference`)
