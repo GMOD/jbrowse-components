@@ -307,19 +307,16 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     },
   })
 
-  // Use snapshotProcessor to ensure we always serialize as just the trackId
+  // Use snapshotProcessor to always serialize as just the trackId.
+  // The union allows accepting either a string ID or full object as input,
+  // but postProcessor ensures output is always just the ID string.
   return types.snapshotProcessor(
     types.union({
       dispatcher: snapshot =>
         typeof snapshot === 'string' ? trackRef : schemaType,
     }, trackRef, schemaType),
     {
-      preProcessor(snapshot: string | { trackId: string }) {
-        // Accept both string IDs and full objects
-        return snapshot
-      },
       postProcessor(snapshot) {
-        // Always serialize as just the trackId string
         if (typeof snapshot === 'object' && snapshot !== null && 'trackId' in snapshot) {
           return (snapshot as { trackId: string }).trackId
         }
@@ -350,26 +347,24 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       if (!ret) {
         throw new Error(`Display configuration "${id}" not found`)
       }
-      return ret
+      // If it's a frozen/plain object, we need to instantiate it
+      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
     },
     set(value) {
       return value.displayId
     },
   })
 
-  // Use snapshotProcessor to ensure we always serialize as just the displayId
+  // Use snapshotProcessor to always serialize as just the displayId.
+  // The union allows accepting either a string ID or full object as input,
+  // but postProcessor ensures output is always just the ID string.
   return types.snapshotProcessor(
     types.union({
       dispatcher: snapshot =>
         typeof snapshot === 'string' ? displayRef : schemaType,
     }, displayRef, schemaType),
     {
-      preProcessor(snapshot: string | { displayId: string }) {
-        // Accept both string IDs and full objects
-        return snapshot
-      },
       postProcessor(snapshot) {
-        // Always serialize as just the displayId string
         if (typeof snapshot === 'object' && snapshot !== null && 'displayId' in snapshot) {
           return (snapshot as { displayId: string }).displayId
         }

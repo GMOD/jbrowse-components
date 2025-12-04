@@ -118,7 +118,10 @@ export function BaseWebSession({
        * #getter
        */
       get tracksById(): Record<string, AnyConfigurationModel> {
-        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
+        return Object.fromEntries([
+          ...this.tracks.map(t => [t.trackId, t]),
+          ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+        ])
       },
       /**
        * #getter

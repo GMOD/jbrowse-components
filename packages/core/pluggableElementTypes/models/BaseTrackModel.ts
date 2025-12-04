@@ -252,6 +252,7 @@ export function createBaseTrackModel(
               getSession(self).queueDialog(handleClose => [
                 SaveTrackDataDlg,
                 {
+                  // @ts-expect-error cast needed due to snapshotProcessor wrapper on configuration
                   model: self,
                   handleClose,
                 },

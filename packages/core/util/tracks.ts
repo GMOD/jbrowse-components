@@ -1,9 +1,4 @@
-import {
-  getParent,
-  getRoot,
-  isRoot,
-  resolveIdentifier,
-} from '@jbrowse/mobx-state-tree'
+import { getParent, isRoot } from '@jbrowse/mobx-state-tree'
 
 import { getEnv, getSession, objectHash } from './index'
 import { readConfObject } from '../configuration'
@@ -305,65 +300,57 @@ export function showTrackGeneric(
 ) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
-  let conf = session.tracks.find(t => t.trackId === trackId)
-  if (!conf) {
-    const schema = pluginManager.pluggableConfigSchemaType('track')
-    conf = resolveIdentifier(schema, getRoot(self), trackId)
+
+  // Check if track is already shown
+  const found = self.tracks.find(t => t.configuration.trackId === trackId)
+  if (found) {
+    return found
   }
+
+  // Find the track configuration (works for both frozen and MST model tracks)
+  const conf = session.tracksById?.[trackId] ?? session.tracks.find(t => t.trackId === trackId)
   if (!conf) {
-    throw new Error(`Could not resolve identifier "${trackId}"`)
+    throw new Error(`Could not find track "${trackId}"`)
   }
+
   const trackType = pluginManager.getTrackType(conf.type)
   if (!trackType) {
     throw new Error(`Unknown track type ${conf.type}`)
   }
+
+  // Find a compatible display for this view type
   const viewType = pluginManager.getViewType(self.type)!
   const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
-
-  const { displays = [] } = conf
-  const displayTypes = new Set()
-
-  for (const d of displays) {
-    if (d) {
-      displayTypes.add(d.type)
-    }
-  }
-  for (const displayType of trackType.displayTypes) {
-    if (!displayTypes.has(displayType.name)) {
-      displays.push({
-        displayId: `${trackId}-${displayType.name}`,
-        type: displayType.name,
-      })
-    }
-  }
-
-  const displayConf = displays?.find((d: AnyConfigurationModel) =>
+  const displays = conf.displays ?? []
+  const displayConf = displays.find((d: { type: string }) =>
     supportedDisplays.has(d.type),
   )
-  if (!displayConf) {
+
+  // Generate displayId if not found in config
+  const displayId = displayConf?.displayId ?? `${trackId}-${displayConf?.type ?? trackType.displayTypes[0]?.name}`
+  const displayType = displayConf?.type ?? trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
+
+  if (!displayType) {
     throw new Error(
       `Could not find a compatible display for view type ${self.type}`,
     )
   }
 
-  const found = self.tracks.find(t => t.configuration.trackId === trackId)
-  if (!found) {
-    const track = trackType.stateModel.create({
-      ...initialSnapshot,
-      type: conf.type,
-      configuration: conf,
-      displays: [
-        {
-          type: displayConf.type,
-          configuration: displayConf,
-          ...displayInitialSnapshot,
-        },
-      ],
-    })
-    self.tracks.push(track)
-    return track
-  }
-  return found
+  // Create track with just the trackId - the ConfigurationReference will resolve it
+  const track = trackType.stateModel.create({
+    ...initialSnapshot,
+    type: conf.type,
+    configuration: trackId,
+    displays: [
+      {
+        type: displayType,
+        configuration: displayId,
+        ...displayInitialSnapshot,
+      },
+    ],
+  })
+  self.tracks.push(track)
+  return track
 }
 
 export function hideTrackGeneric(self: GenericView, trackId: string) {
