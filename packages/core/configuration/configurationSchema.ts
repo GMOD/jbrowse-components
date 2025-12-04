@@ -349,6 +349,7 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
       const track = getContainingTrack(parent)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const displays = track.configuration.displays || []
       // Find in the track's displays array (may be frozen/plain objects)
       let ret = displays.find((d: { displayId: string }) => d.displayId === id)
@@ -357,9 +358,10 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // This handles the common case where displays are auto-generated from track types
       if (!ret) {
         // Extract display type from the displayId (format: trackId-DisplayType)
-        const displayType = id.split('-').slice(1).join('-')
+        const displayType = `${id}`.split('-').slice(1).join('-')
         if (displayType) {
-          ret = { displayId: id, type: displayType }
+          // @ts-expect-error
+          ret = { displayId: `${id}`, type: displayType }
         }
       }
 

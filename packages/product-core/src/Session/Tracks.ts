@@ -35,7 +35,16 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        * #getter
        */
       get tracksById(): Record<string, AnyConfigurationModel> {
-        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
+        return Object.fromEntries([
+          ...this.tracks.map(t => [t.trackId, t]),
+          // Include assembly sequence tracks so they can be resolved by trackId
+          ...self.jbrowse.assemblies.map(
+            (a: { sequence: { trackId: string } }) => [
+              a.sequence.trackId,
+              a.sequence,
+            ],
+          ),
+        ])
       },
     }))
     .actions(self => ({
