@@ -40,7 +40,11 @@ export function processMismatches({
           bin.ref[fstrand]--
           bin.refbase = altbase
         } else {
-          inc(bin, fstrand, 'noncov', type)
+          const len =
+            type === 'insertion'
+              ? mismatch.insertedBases?.length
+              : mismatch.cliplen
+          inc(bin, fstrand, 'noncov', type, len)
         }
       }
     }

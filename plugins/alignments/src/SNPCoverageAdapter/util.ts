@@ -3,6 +3,7 @@ import type {
   Mismatch,
   PreBaseCoverageBin,
   PreBaseCoverageBinSubtypes,
+  PreBinEntry,
 } from '../shared/types'
 
 export interface Opts {
@@ -19,24 +20,37 @@ export function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
 }
 
+export function createPreBinEntry(): PreBinEntry {
+  return {
+    entryDepth: 0,
+    probabilityTotal: 0,
+    probabilityCount: 0,
+    lengthTotal: 0,
+    lengthCount: 0,
+    lengthMin: Infinity,
+    lengthMax: -Infinity,
+    '-1': 0,
+    '0': 0,
+    '1': 0,
+  }
+}
+
 export function inc(
   bin: PreBaseCoverageBin,
   strand: -1 | 0 | 1,
   type: keyof PreBaseCoverageBinSubtypes,
   field: string,
+  length?: number,
 ) {
-  let thisBin = bin[type][field]
-  if (thisBin === undefined) {
-    thisBin = bin[type][field] = {
-      entryDepth: 0,
-      probabilities: [],
-      '-1': 0,
-      '0': 0,
-      '1': 0,
-    }
+  const entry = (bin[type][field] ??= createPreBinEntry())
+  entry.entryDepth++
+  entry[strand]++
+  if (length !== undefined) {
+    entry.lengthTotal += length
+    entry.lengthCount++
+    entry.lengthMin = Math.min(entry.lengthMin, length)
+    entry.lengthMax = Math.max(entry.lengthMax, length)
   }
-  thisBin.entryDepth++
-  thisBin[strand]++
 }
 
 export function incWithProbabilities(
@@ -46,17 +60,9 @@ export function incWithProbabilities(
   field: string,
   probability: number,
 ) {
-  let thisBin = bin[type][field]
-  if (thisBin === undefined) {
-    thisBin = bin[type][field] = {
-      entryDepth: 0,
-      probabilities: [],
-      '-1': 0,
-      '0': 0,
-      '1': 0,
-    }
-  }
-  thisBin.entryDepth++
-  thisBin.probabilities.push(probability)
-  thisBin[strand]++
+  const entry = (bin[type][field] ??= createPreBinEntry())
+  entry.entryDepth++
+  entry.probabilityTotal += probability
+  entry.probabilityCount++
+  entry[strand]++
 }

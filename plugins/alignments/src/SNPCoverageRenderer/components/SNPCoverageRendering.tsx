@@ -14,8 +14,8 @@ function getItemLabel(item: InterbaseIndicatorItem | undefined) {
   if (!item) {
     return undefined
   }
-  const { type, count, total } = item
-  return `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total)}`
+  const { type, count, total, avgLength, minLength, maxLength } = item
+  return `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total, { avgLength, minLength, maxLength })}`
 }
 
 const SNPCoverageRendering = observer(function (props: {
@@ -89,9 +89,16 @@ const SNPCoverageRendering = observer(function (props: {
       return undefined
     }
     const rect = ref.current.getBoundingClientRect()
-    const offsetX = clientX - rect.left - 1
+    const offsetX = clientX - rect.left
     const offsetY = clientY - rect.top
-    const search = flatbush.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
+    // Use a small search box around the cursor for better hit detection
+    const tolerance = 2
+    const search = flatbush.search(
+      offsetX - tolerance,
+      offsetY - tolerance,
+      offsetX + tolerance,
+      offsetY + tolerance,
+    )
     return search.length ? items[search[0]!] : undefined
   }
 
