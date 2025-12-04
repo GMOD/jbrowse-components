@@ -390,7 +390,23 @@ export default class PluginManager {
       )
       return fallback
     }
-    return types.union(...pluggableTypes)
+    const typeMap = Object.fromEntries(
+      pluggableTypes.map(t => {
+        // @ts-expect-error - access internal MST properties
+        const typeLiteral = t.properties?.type?.value
+        const key = typeLiteral ?? t.name
+        return [key, t]
+      }),
+    )
+    return types.union(
+      {
+        dispatcher: (snapshot: { type?: string }) =>
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          (snapshot?.type ? typeMap[snapshot.type] : undefined) ??
+          pluggableTypes[0]!,
+      },
+      ...pluggableTypes,
+    )
   }
 
   /** get a MST type for the union of all specified pluggable config schemas */
@@ -407,7 +423,22 @@ export default class PluginManager {
     if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
     }
-    return types.union(...pluggableTypes) as IAnyModelType
+    const typeMap = Object.fromEntries(
+      pluggableTypes.map(t => {
+        // Strip ConfigurationSchema suffix to match snapshot type field
+        const key = t.name.replace(/ConfigurationSchema$/, '')
+        return [key, t]
+      }),
+    )
+    return types.union(
+      {
+        dispatcher: (snapshot: { type?: string }) =>
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          (snapshot?.type ? typeMap[snapshot.type] : undefined) ??
+          pluggableTypes[0]!,
+      },
+      ...pluggableTypes,
+    ) as IAnyModelType
   }
 
   jbrequireCache = new Map()

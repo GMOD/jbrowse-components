@@ -27,6 +27,19 @@ export default ConfigurationSchema(
     drivers: types.optional(
       types.map(
         types.union(
+          {
+            dispatcher: (snapshot: { type?: string }) => {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              switch (snapshot?.type) {
+                case 'MainThreadRpcDriver':
+                  return MainThreadRpcDriverConfigSchema
+                case 'WebWorkerRpcDriver':
+                  return WebWorkerRpcDriverConfigSchema
+                default:
+                  return MainThreadRpcDriverConfigSchema
+              }
+            },
+          },
           MainThreadRpcDriverConfigSchema,
           WebWorkerRpcDriverConfigSchema,
         ),
