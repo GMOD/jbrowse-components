@@ -6,12 +6,9 @@ import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewHeader from './ViewHeader'
-import ViewWrapper from './ViewWrapper'
 
-import type {
-  AbstractViewModel,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { AppSession } from './types'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
@@ -39,7 +36,7 @@ const ViewContainer = observer(function ({
   view: AbstractViewModel
   onClose: () => void
   onMinimize: () => void
-  session: SessionWithFocusedViewAndDrawerWidgets
+  session: AppSession
   children: React.ReactNode
 }) {
   const theme = useTheme()
@@ -72,30 +69,15 @@ const ViewContainer = observer(function ({
 
   return (
     <Paper ref={ref} elevation={12} className={viewContainerClassName}>
-      {view.isFloating ? (
-        <>
-          <div style={{ cursor: 'all-scroll' }}>
-            <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
-          </div>
-          <Paper>{children}</Paper>
-        </>
-      ) : (
-        <>
-          <ViewHeader
-            view={view}
-            onClose={() => {
-              session.removeView(view)
-            }}
-            onMinimize={() => {
-              view.setMinimized(!view.minimized)
-            }}
-            className={backgroundColorClassName}
-          />
-          <Paper elevation={0}>
-            <ViewWrapper view={view} session={session} />
-          </Paper>
-        </>
-      )}
+      <div style={view.isFloating ? { cursor: 'all-scroll' } : undefined}>
+        <ViewHeader
+          view={view}
+          onClose={onClose}
+          onMinimize={onMinimize}
+          className={view.isFloating ? undefined : backgroundColorClassName}
+        />
+      </div>
+      <Paper elevation={view.isFloating ? undefined : 0}>{children}</Paper>
     </Paper>
   )
 })

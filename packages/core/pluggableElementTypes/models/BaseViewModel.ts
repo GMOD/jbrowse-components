@@ -92,6 +92,10 @@ const BaseViewModel = types
     setMinimized(flag: boolean) {
       self.minimized = flag
     },
+
+    /**
+     * #action
+     */
     setFloatingPosition(arg: { x: number; y: number }) {
       self.floatingX = arg.x
       self.floatingY = arg.y

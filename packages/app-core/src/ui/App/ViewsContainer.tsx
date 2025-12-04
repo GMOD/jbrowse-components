@@ -3,13 +3,12 @@ import { Suspense, lazy } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import FloatingViewPanel from './FloatingViewPanel'
 import StaticViewPanel from './StaticViewPanel'
-
 
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
+const FloatingViewPanel = lazy(() => import('./FloatingViewPanel'))
 const ViewLauncher = lazy(() => import('./ViewLauncher'))
 
 const useStyles = makeStyles()({
@@ -37,11 +36,9 @@ const ViewsContainer = observer(function ViewsContainer(props: Props) {
       {views.length > 0 ? (
         views.map(view =>
           view.isFloating ? (
-            <FloatingViewPanel
-              key={`view-${view.id}`}
-              view={view}
-              session={session}
-            />
+            <Suspense key={`view-${view.id}`} fallback={null}>
+              <FloatingViewPanel view={view} session={session} />
+            </Suspense>
           ) : (
             <StaticViewPanel
               key={`view-${view.id}`}

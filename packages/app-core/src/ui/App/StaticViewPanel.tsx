@@ -1,29 +1,17 @@
 import { Suspense } from 'react'
+
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { observer } from 'mobx-react'
-
-// locals
-import {
-  getEnv,
-  AbstractViewModel,
-  SessionWithDrawerWidgets,
-} from '@jbrowse/core/util'
-import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-
-// ui elements
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
+import { getEnv } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
-// locals
 import ViewContainer from './ViewContainer'
 
-type AppSession = SessionWithDrawerWidgets & {
-  snackbarMessages: SnackbarMessage[]
-  renameCurrentSession: (arg: string) => void
-  popSnackbarMessage: () => unknown
-}
+import type { AppSession } from './types'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 
-const StaticViewPanel = observer(function StaticViewPanel2({
+const StaticViewPanel = observer(function ({
   view,
   session,
 }: {
@@ -38,7 +26,6 @@ const StaticViewPanel = observer(function StaticViewPanel2({
   const { ReactComponent } = viewType
   return (
     <ViewContainer
-      // @ts-expect-error
       session={session}
       view={view}
       onClose={() => {

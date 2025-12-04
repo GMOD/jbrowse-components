@@ -4,16 +4,12 @@ import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
-import AddIcon from '@mui/icons-material/Add'
-import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
-import MinimizeIcon from '@mui/icons-material/Minimize'
-import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewContainerTitle from './ViewContainerTitle'
-import ViewMenu from './ViewMenu'
 import ViewHeaderButtons from './ViewHeaderButtons'
+import ViewMenu from './ViewMenu'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 

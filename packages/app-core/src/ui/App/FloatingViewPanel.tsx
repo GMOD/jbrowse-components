@@ -1,20 +1,16 @@
 import { useEffect, useState } from 'react'
-import { ResizableBox } from 'react-resizable'
-import { observer } from 'mobx-react'
-import { AbstractViewModel, SessionWithDrawerWidgets } from '@jbrowse/core/util'
-import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 
-// locals
-import StaticViewPanel from './StaticViewPanel'
-import './test.css'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import DraggableViewPanel from './DraggableViewPanel'
+import { observer } from 'mobx-react'
+import { ResizableBox } from 'react-resizable'
 
-type AppSession = SessionWithDrawerWidgets & {
-  snackbarMessages: SnackbarMessage[]
-  renameCurrentSession: (arg: string) => void
-  popSnackbarMessage: () => unknown
-}
+import DraggableViewPanel from './DraggableViewPanel'
+import StaticViewPanel from './StaticViewPanel'
+
+import type { AppSession } from './types'
+import type { AbstractViewModel } from '@jbrowse/core/util'
+
+import './FloatingViewPanel.css'
 
 const FloatingViewPanel = observer(function ({
   view,
