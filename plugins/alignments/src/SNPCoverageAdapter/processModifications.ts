@@ -1,6 +1,6 @@
 import { max, sum } from '@jbrowse/core/util'
 
-import { incWithProbabilities } from './util'
+import { createPreBinEntry, incWithProbabilities } from './util'
 import { parseCigar } from '../MismatchParser'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 
@@ -52,30 +52,16 @@ export function processModifications({
 
       const epos = pos + fstart - region.start
       if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-        if (bins[epos] === undefined) {
-          bins[epos] = {
-            depth: 0,
-            readsCounted: 0,
-            snps: {},
-            ref: {
-              probabilities: [],
-              lengthTotal: 0,
-              lengthCount: 0,
-              lengthMin: Infinity,
-              lengthMax: -Infinity,
-              entryDepth: 0,
-              '-1': 0,
-              0: 0,
-              1: 0,
-            },
-            mods: {},
-            nonmods: {},
-            delskips: {},
-            noncov: {},
-          }
-        }
-
-        const bin = bins[epos]
+        const bin = (bins[epos] ??= {
+          depth: 0,
+          readsCounted: 0,
+          snps: {},
+          ref: createPreBinEntry(),
+          mods: {},
+          nonmods: {},
+          delskips: {},
+          noncov: {},
+        })
         bin.refbase = regionSequence[epos]
 
         const s = 1 - sum(allProbs)

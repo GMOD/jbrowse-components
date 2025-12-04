@@ -1,3 +1,5 @@
+import { createPreBinEntry } from './util'
+
 import type { PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
@@ -18,30 +20,16 @@ export function processDepth({
   for (let j = fstart; j < fend + 1; j++) {
     const i = j - region.start
     if (i >= 0 && i < regionLength) {
-      if (bins[i] === undefined) {
-        bins[i] = {
-          depth: 0,
-          readsCounted: 0,
-          ref: {
-            probabilities: [],
-            lengthTotal: 0,
-            lengthCount: 0,
-            lengthMin: Infinity,
-            lengthMax: -Infinity,
-            entryDepth: 0,
-            '-1': 0,
-            0: 0,
-            1: 0,
-          },
-          snps: {},
-          mods: {},
-          nonmods: {},
-          delskips: {},
-          noncov: {},
-        }
-      }
-
-      const bin = bins[i]
+      const bin = (bins[i] ??= {
+        depth: 0,
+        readsCounted: 0,
+        ref: createPreBinEntry(),
+        snps: {},
+        mods: {},
+        nonmods: {},
+        delskips: {},
+        noncov: {},
+      })
       if (j !== fend) {
         bin.depth++
         bin.readsCounted++

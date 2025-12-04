@@ -47,7 +47,8 @@ export interface PreBinEntry {
   '-1': number
   '0': number
   '1': number
-  probabilities: number[]
+  probabilityTotal: number
+  probabilityCount: number
   lengthTotal: number
   lengthCount: number
   lengthMin: number
