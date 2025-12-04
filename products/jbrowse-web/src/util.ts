@@ -3,23 +3,8 @@ import {
   isESMPluginDefinition,
   isUMDPluginDefinition,
 } from '@jbrowse/core/PluginLoader'
-import {
-  getChildType,
-  getPropertyMembers,
-  isArrayType,
-  isMapType,
-  isModelType,
-  isReferenceType,
-  isValidReference,
-} from '@jbrowse/mobx-state-tree'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import type {
-  IAnyStateTreeNode,
-  IAnyType,
-  Instance,
-  types,
-} from '@jbrowse/mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
@@ -76,62 +61,6 @@ export async function toUrlSafeB64(str: string) {
   return pos > 0
     ? encoded.slice(0, pos).replaceAll('+', '-').replaceAll('/', '_')
     : encoded.replaceAll('+', '-').replaceAll('/', '_')
-}
-
-type MSTArray = Instance<ReturnType<typeof types.array>>
-type MSTMap = Instance<ReturnType<typeof types.map>>
-
-// attempts to remove undefined references from the given MST model. can only
-// actually remove them from arrays and maps. throws MST undefined ref error if
-// it encounters undefined refs in model properties
-export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
-  // makes it work with session sharing
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (node === undefined) {
-    return
-  }
-  if (isArrayType(type)) {
-    const array = node as MSTArray
-    const childType = getChildType(node)
-    if (isReferenceType(childType)) {
-      // filter array elements
-      for (let i = 0; i < array.length; ) {
-        if (!isValidReference(() => array[i])) {
-          array.splice(i, 1)
-        } else {
-          i += 1
-        }
-      }
-    }
-    // eslint-disable-next-line unicorn/no-array-for-each
-    array.forEach(el => {
-      filterSessionInPlace(el, childType)
-    })
-  } else if (isMapType(type)) {
-    const map = node as MSTMap
-    const childType = getChildType(map)
-    if (isReferenceType(childType)) {
-      // filter the map members
-      for (const key in map.keys()) {
-        if (!isValidReference(() => map.get(key))) {
-          map.delete(key)
-        }
-      }
-    }
-    // eslint-disable-next-line unicorn/no-array-for-each
-    map.forEach(child => {
-      filterSessionInPlace(child, childType)
-    })
-  } else if (isModelType(type)) {
-    // iterate over children
-    const { properties } = getPropertyMembers(node)
-
-    // eslint-disable-next-line unicorn/no-array-for-each
-    Object.entries(properties).forEach(([pname, ptype]) => {
-      filterSessionInPlace(node[pname], ptype)
-    })
-  }
 }
 
 export function addRelativeUris(

@@ -13,6 +13,7 @@ import { observer } from 'mobx-react'
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
 const useStyles = makeStyles()(theme => ({
@@ -100,7 +101,7 @@ const AddConnectionWidget = observer(function ({ model }: { model: unknown }) {
                     if (activeStep === steps.length - 1) {
                       if (configModel && isSessionWithConnections(session)) {
                         const conf = session.addConnectionConf(configModel)
-                        session.makeConnection(conf)
+                        session.makeConnection(conf as AnyConfigurationModel)
                       } else {
                         session.notify('No config model to add')
                       }

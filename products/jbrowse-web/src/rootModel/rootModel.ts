@@ -3,18 +3,24 @@ import { lazy } from 'react'
 import {
   HistoryManagementMixin,
   RootAppMenuMixin,
+  getOpenTrackMenuItem,
+  getOpenConnectionMenuItem,
+  getUndoMenuItem,
+  getRedoMenuItem,
+  getPluginStoreMenuItem,
+  getImportSessionMenuItem,
+  getExportSessionMenuItem,
   processMutableMenuActions,
 } from '@jbrowse/app-core'
+import type { Menu, SessionModelFactory } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable, DNA } from '@jbrowse/core/ui/Icons'
+import { DNA } from '@jbrowse/core/ui/Icons'
 import {
   addDisposer,
-  cast,
   getSnapshot,
-  getType,
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -24,16 +30,10 @@ import {
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
-import ExtensionIcon from '@mui/icons-material/Extension'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import GetAppIcon from '@mui/icons-material/GetApp'
-import PublishIcon from '@mui/icons-material/Publish'
-import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StarIcon from '@mui/icons-material/Star'
-import StorageIcon from '@mui/icons-material/Storage'
-import UndoIcon from '@mui/icons-material/Undo'
 import { formatDistanceToNow } from 'date-fns'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
@@ -41,21 +41,14 @@ import { autorun } from 'mobx'
 import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
-import { filterSessionInPlace } from '../util'
 
 import type { SessionDB, SessionMetadata } from '../types'
-import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AbstractSessionModel,
   SessionWithWidgets,
 } from '@jbrowse/core/util'
-import type {
-  IAnyStateTreeNode,
-  IAnyType,
-  Instance,
-  SnapshotIn,
-} from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
 import type { IDBPDatabase } from 'idb'
 
@@ -64,10 +57,6 @@ const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
-type SessionModelFactory = (args: {
-  pluginManager: PluginManager
-  assemblyConfigSchema: AssemblyConfig
-}) => IAnyType
 
 /**
  * #stateModel JBrowseWebRootModel
@@ -316,24 +305,6 @@ export default function RootModel({
       /**
        * #action
        */
-      setSession(sessionSnapshot: SnapshotIn<BaseSessionType>) {
-        const oldSession = self.session
-        self.session = cast(sessionSnapshot)
-        if (self.session) {
-          // validate all references in the session snapshot
-          try {
-            filterSessionInPlace(self.session, getType(self.session))
-          } catch (error) {
-            // throws error if session filtering failed
-            self.session = oldSession
-            throw error
-          }
-        }
-      },
-
-      /**
-       * #action
-       */
       setPluginsUpdated(flag: boolean) {
         self.pluginsUpdated = flag
       },
@@ -353,7 +324,10 @@ export default function RootModel({
        */
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
-        this.setSession({
+        const { setSession } = self as unknown as {
+          setSession: (arg: unknown) => void
+        }
+        setSession({
           ...defaultSession,
           name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
         })
@@ -364,7 +338,10 @@ export default function RootModel({
       async activateSession(id: string) {
         const ret = await self.sessionDB?.get('sessions', id)
         if (ret) {
-          this.setSession(ret)
+          const { setSession } = self as unknown as {
+            setSession: (arg: unknown) => void
+          }
+          setSession(ret)
         } else {
           self.session.notifyError('Session not found')
         }
@@ -421,8 +398,12 @@ export default function RootModel({
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        this.setSession({
-          ...getSnapshot(self.session),
+        const { setSession } = self as unknown as {
+          setSession: (arg: unknown) => void
+        }
+        const snapshot = getSnapshot(self.session) as Record<string, unknown>
+        setSession({
+          ...snapshot,
           name: sessionName,
         })
       },
@@ -463,40 +444,8 @@ export default function RootModel({
                     self.setDefaultSession()
                   },
                 },
-                {
-                  label: 'Import session...',
-                  icon: PublishIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    const widget = session.addWidget(
-                      'ImportSessionWidget',
-                      'importSessionWidget',
-                    )
-                    session.showWidget(widget)
-                  },
-                },
-                {
-                  label: 'Export session',
-                  icon: GetAppIcon,
-                  onClick: async (session: IAnyStateTreeNode) => {
-                    // eslint-disable-next-line @typescript-eslint/no-deprecated
-                    const { saveAs } = await import('file-saver-es')
-
-                    saveAs(
-                      new Blob(
-                        [
-                          JSON.stringify(
-                            { session: getSnapshot(session) },
-                            null,
-                            2,
-                          ),
-                        ],
-                        { type: 'text/plain;charset=utf-8' },
-                      ),
-                      'session.json',
-                      { autoBom: false },
-                    )
-                  },
-                },
+                getImportSessionMenuItem(),
+                getExportSessionMenuItem(),
                 {
                   label: 'Duplicate session',
                   icon: FileCopyIcon,
@@ -590,39 +539,8 @@ export default function RootModel({
                     : [{ label: 'No autosaves found', onClick: () => {} }],
                 },
                 { type: 'divider' },
-                {
-                  label: 'Open track...',
-                  icon: StorageIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    if (session.views.length === 0) {
-                      session.notify('Please open a view to add a track first')
-                    } else if (session.views.length > 0) {
-                      const widget = session.addWidget(
-                        'AddTrackWidget',
-                        'addTrackWidget',
-                        { view: session.views[0]!.id },
-                      )
-                      session.showWidget(widget)
-                      if (session.views.length > 1) {
-                        session.notify(
-                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
-                        )
-                      }
-                    }
-                  },
-                },
-                {
-                  label: 'Open connection...',
-                  icon: Cable,
-                  onClick: (session: SessionWithWidgets) => {
-                    session.showWidget(
-                      session.addWidget(
-                        'AddConnectionWidget',
-                        'addConnectionWidget',
-                      ),
-                    )
-                  },
-                },
+                getOpenTrackMenuItem(),
+                getOpenConnectionMenuItem(),
               ]
             },
           },
@@ -654,39 +572,10 @@ export default function RootModel({
           {
             label: 'Tools',
             menuItems: [
-              {
-                label: 'Undo',
-                icon: UndoIcon,
-                onClick: () => {
-                  if (self.history.canUndo) {
-                    self.history.undo()
-                  }
-                },
-              },
-              {
-                label: 'Redo',
-                icon: RedoIcon,
-                onClick: () => {
-                  if (self.history.canRedo) {
-                    self.history.redo()
-                  }
-                },
-              },
+              getUndoMenuItem(() => self.history),
+              getRedoMenuItem(() => self.history),
               { type: 'divider' },
-              {
-                label: 'Plugin store',
-                icon: ExtensionIcon,
-                onClick: () => {
-                  if (self.session) {
-                    self.session.showWidget(
-                      self.session.addWidget(
-                        'PluginStoreWidget',
-                        'pluginStoreWidget',
-                      ),
-                    )
-                  }
-                },
-              },
+              getPluginStoreMenuItem(() => self.session),
               {
                 label: 'Assembly manager',
                 icon: DNA,

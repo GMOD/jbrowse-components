@@ -1,50 +1,30 @@
-import { RootAppMenuMixin, processMutableMenuActions } from '@jbrowse/app-core'
+import {
+  RootAppMenuMixin,
+  getOpenTrackMenuItem,
+  getOpenConnectionMenuItem,
+  getImportSessionMenuItem,
+  getExportSessionMenuItem,
+  processMutableMenuActions,
+} from '@jbrowse/app-core'
+import type { Menu, SessionModelFactory } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable } from '@jbrowse/core/ui/Icons'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
-import GetAppIcon from '@mui/icons-material/GetApp'
-import PublishIcon from '@mui/icons-material/Publish'
-import StorageIcon from '@mui/icons-material/Storage'
 import { autorun } from 'mobx'
 
 import jbrowseWebFactory from '../jbrowseModel'
-import { filterSessionInPlace } from '../util'
 import { version } from '../version'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { MenuItem } from '@jbrowse/core/ui'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type {
-  IAnyStateTreeNode,
-  IAnyType,
-  Instance,
-  SnapshotIn,
-} from '@jbrowse/mobx-state-tree'
-import type { BaseSessionType } from '@jbrowse/product-core'
-
-export interface Menu {
-  label: string
-  menuItems: MenuItem[]
-}
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
-type SessionModelFactory = (args: {
-  pluginManager: PluginManager
-  assemblyConfigSchema: AssemblyConfig
-}) => IAnyType
 
 /**
  * #stateModel JBrowseReactAppRootModel
@@ -138,24 +118,6 @@ export default function RootModel({
         /**
          * #action
          */
-        setSession(sessionSnapshot?: SnapshotIn<BaseSessionType>) {
-          const oldSession = self.session
-          self.session = cast(sessionSnapshot)
-          if (self.session) {
-            // validate all references in the session snapshot
-            try {
-              filterSessionInPlace(self.session, getType(self.session))
-            } catch (error) {
-              // throws error if session filtering failed
-              self.session = oldSession
-              throw error
-            }
-          }
-        },
-
-        /**
-         * #action
-         */
         setPluginsUpdated(flag: boolean) {
           self.pluginsUpdated = flag
         },
@@ -164,7 +126,10 @@ export default function RootModel({
          */
         setDefaultSession() {
           const { defaultSession } = self.jbrowse
-          this.setSession({
+          const { setSession } = self as unknown as {
+            setSession: (arg: unknown) => void
+          }
+          setSession({
             ...defaultSession,
             name: `${defaultSession.name} ${new Date().toLocaleString()}`,
           })
@@ -173,9 +138,14 @@ export default function RootModel({
          * #action
          */
         renameCurrentSession(sessionName: string) {
-          if (self.session) {
-            this.setSession({
-              ...getSnapshot(self.session),
+          const { session } = self
+          if (session) {
+            const { setSession } = self as unknown as {
+              setSession: (arg: unknown) => void
+            }
+            const snapshot = getSnapshot(session) as Record<string, unknown>
+            setSession({
+              ...snapshot,
               name: sessionName,
             })
           }
@@ -202,78 +172,15 @@ export default function RootModel({
                 {
                   label: 'New session',
                   icon: AddIcon,
-
-                  onClick: (session: any) => {
-                    session.setDefaultSession()
+                  onClick: () => {
+                    self.setDefaultSession()
                   },
                 },
-                {
-                  label: 'Import session…',
-                  icon: PublishIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    const widget = session.addWidget(
-                      'ImportSessionWidget',
-                      'importSessionWidget',
-                    )
-                    session.showWidget(widget)
-                  },
-                },
-                {
-                  label: 'Export session',
-                  icon: GetAppIcon,
-                  onClick: async (session: IAnyStateTreeNode) => {
-                    // eslint-disable-next-line @typescript-eslint/no-deprecated
-                    const { saveAs } = await import('file-saver-es')
-
-                    saveAs(
-                      new Blob(
-                        [
-                          JSON.stringify(
-                            { session: getSnapshot(session) },
-                            null,
-                            2,
-                          ),
-                        ],
-                        { type: 'text/plain;charset=utf-8' },
-                      ),
-                      'session.json',
-                    )
-                  },
-                },
-
+                getImportSessionMenuItem(),
+                getExportSessionMenuItem(),
                 { type: 'divider' },
-                {
-                  label: 'Open track...',
-                  icon: StorageIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    if (session.views.length === 0) {
-                      session.notify('Please open a view to add a track first')
-                    } else if (session.views.length > 0) {
-                      const widget = session.addWidget(
-                        'AddTrackWidget',
-                        'addTrackWidget',
-                        { view: session.views[0]!.id },
-                      )
-                      session.showWidget(widget)
-                      if (session.views.length > 1) {
-                        session.notify(
-                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
-                        )
-                      }
-                    }
-                  },
-                },
-                {
-                  label: 'Open connection...',
-                  icon: Cable,
-                  onClick: (session: SessionWithWidgets) => {
-                    const widget = session.addWidget(
-                      'AddConnectionWidget',
-                      'addConnectionWidget',
-                    )
-                    session.showWidget(widget)
-                  },
-                },
+                getOpenTrackMenuItem(),
+                getOpenConnectionMenuItem(),
               ],
             },
             {

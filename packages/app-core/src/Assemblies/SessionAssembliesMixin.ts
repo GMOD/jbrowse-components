@@ -3,14 +3,23 @@ import { types } from '@jbrowse/mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
-import type { BaseSession } from '@jbrowse/product-core'
+
+interface SessionAssembliesMixinJBrowse {
+  addAssemblyConf: (conf: AnyConfiguration) => void
+  removeAssemblyConf: (name: string) => void
+}
+
+interface SessionAssembliesMixinContext {
+  adminMode: boolean
+  jbrowse: SessionAssembliesMixinJBrowse
+}
 
 /**
  * #stateModel SessionAssembliesMixin
  * #category root
  */
 export function SessionAssembliesMixin(
-  pluginManager: PluginManager,
+  _pluginManager: PluginManager,
   assemblyConfigSchemasType: BaseAssemblyConfigSchema,
 ) {
   return types
@@ -21,7 +30,7 @@ export function SessionAssembliesMixin(
       sessionAssemblies: types.array(assemblyConfigSchemasType),
     })
     .actions(s => {
-      const self = s as typeof s & BaseSession
+      const self = s as typeof s & SessionAssembliesMixinContext
       return {
         /**
          * #action

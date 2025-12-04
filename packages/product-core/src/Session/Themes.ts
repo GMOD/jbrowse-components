@@ -1,15 +1,19 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { BaseSession } from './BaseSession'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
 type ThemeMap = Record<string, ThemeOptions>
+
+interface ThemeMixinContext {
+  jbrowse: AnyConfigurationModel
+}
 
 /**
  * #stateModel ThemeManagerSessionMixin
@@ -20,33 +24,34 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
     .volatile(() => ({
       sessionThemeName: localStorageGetItem('themeName') || 'default',
     }))
-    .views(s => ({
-      /**
-       * #method
-       */
-      allThemes(): ThemeMap {
-        const self = s as typeof s & BaseSession
-        const extraThemes = getConf(self.jbrowse, 'extraThemes')
-        return { ...defaultThemes, ...extraThemes }
-      },
-      /**
-       * #getter
-       */
-      get themeName() {
-        const { sessionThemeName } = s
-        const all = this.allThemes()
-        return all[sessionThemeName] ? sessionThemeName : 'default'
-      },
-      /**
-       * #getter
-       */
-      get theme() {
-        const self = s as typeof s & BaseSession
-        const configTheme = getConf(self.jbrowse, 'theme')
-        const all = this.allThemes()
-        return createJBrowseTheme(configTheme, all, this.themeName)
-      },
-    }))
+    .views(s => {
+      const self = s as typeof s & ThemeMixinContext
+      return {
+        /**
+         * #method
+         */
+        allThemes(): ThemeMap {
+          const extraThemes = readConfObject(self.jbrowse, 'extraThemes')
+          return { ...defaultThemes, ...extraThemes }
+        },
+        /**
+         * #getter
+         */
+        get themeName() {
+          const { sessionThemeName } = s
+          const all = this.allThemes()
+          return all[sessionThemeName] ? sessionThemeName : 'default'
+        },
+        /**
+         * #getter
+         */
+        get theme() {
+          const configTheme = readConfObject(self.jbrowse, 'theme')
+          const all = this.allThemes()
+          return createJBrowseTheme(configTheme, all, this.themeName)
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

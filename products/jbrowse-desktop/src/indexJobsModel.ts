@@ -15,9 +15,21 @@ import {
 import { autorun, observable, toJS } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { JobsListModel } from '@jbrowse/plugin-jobs-management/src/JobsListWidget/model'
+
+interface JobsModelRootModel {
+  jbrowse: {
+    rpcManager: RpcManager
+    tracks: AnyConfigurationModel[]
+    aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
+  }
+  session: SessionWithDrawerWidgets
+  sessionPath: string
+}
 
 const { ipcRenderer } = window.require('electron')
 
@@ -77,33 +89,32 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get rpcManager() {
-        return getParent<any>(self).jbrowse.rpcManager
+        return getParent<JobsModelRootModel>(self).jbrowse.rpcManager
       },
       /**
        * #getter
        */
       get tracks() {
-        return getParent<any>(self).jbrowse.tracks
+        return getParent<JobsModelRootModel>(self).jbrowse.tracks
       },
       /**
        * #getter
        */
       get sessionPath() {
-        return getParent<any>(self).sessionPath
+        return getParent<JobsModelRootModel>(self).sessionPath
       },
       /**
        * #getter
        */
       get session() {
-        return getParent<{ session: SessionWithDrawerWidgets }>(self).session
+        return getParent<JobsModelRootModel>(self).session
       },
       /**
        * #getter
        */
       get aggregateTextSearchAdapters() {
-        return getParent<any>(self).jbrowse.aggregateTextSearchAdapters as {
-          textSearchAdapterId: string
-        }[]
+        return getParent<JobsModelRootModel>(self).jbrowse
+          .aggregateTextSearchAdapters
       },
     }))
     .actions(self => ({
@@ -228,10 +239,12 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           indexType,
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
-        const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
-          // @ts-expect-error
-          c => JSON.parse(JSON.stringify(getSnapshot(c))),
-        )
+        const trackConfigs: { trackId: string; assemblyNames: string[] }[] =
+          // @ts-expect-error self.tracks is AnyConfigurationModel[] but findTrackConfigsToIndex expects Track[]
+          findTrackConfigsToIndex(self.tracks, trackIds).map(c =>
+            // @ts-expect-error Track type doesn't extend IStateTreeNode but works at runtime
+            structuredClone(getSnapshot(c)),
+          )
         try {
           this.setRunning(true)
           this.setJobName(entry.name)
