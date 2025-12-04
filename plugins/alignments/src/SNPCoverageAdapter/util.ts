@@ -26,21 +26,24 @@ export function inc(
   field: string,
   length?: number,
 ) {
-  let thisBin = bin[type][field]
-  if (thisBin === undefined) {
-    thisBin = bin[type][field] = {
-      entryDepth: 0,
-      probabilities: [],
-      lengths: [],
-      '-1': 0,
-      '0': 0,
-      '1': 0,
-    }
-  }
-  thisBin.entryDepth++
-  thisBin[strand]++
+  const entry = (bin[type][field] ??= {
+    entryDepth: 0,
+    probabilities: [],
+    lengthTotal: 0,
+    lengthCount: 0,
+    lengthMin: Infinity,
+    lengthMax: -Infinity,
+    '-1': 0,
+    '0': 0,
+    '1': 0,
+  })
+  entry.entryDepth++
+  entry[strand]++
   if (length !== undefined) {
-    thisBin.lengths.push(length)
+    entry.lengthTotal += length
+    entry.lengthCount++
+    entry.lengthMin = Math.min(entry.lengthMin, length)
+    entry.lengthMax = Math.max(entry.lengthMax, length)
   }
 }
 
@@ -51,18 +54,18 @@ export function incWithProbabilities(
   field: string,
   probability: number,
 ) {
-  let thisBin = bin[type][field]
-  if (thisBin === undefined) {
-    thisBin = bin[type][field] = {
-      entryDepth: 0,
-      probabilities: [],
-      lengths: [],
-      '-1': 0,
-      '0': 0,
-      '1': 0,
-    }
-  }
-  thisBin.entryDepth++
-  thisBin.probabilities.push(probability)
-  thisBin[strand]++
+  const entry = (bin[type][field] ??= {
+    entryDepth: 0,
+    probabilities: [],
+    lengthTotal: 0,
+    lengthCount: 0,
+    lengthMin: Infinity,
+    lengthMax: -Infinity,
+    '-1': 0,
+    '0': 0,
+    '1': 0,
+  })
+  entry.entryDepth++
+  entry.probabilities.push(probability)
+  entry[strand]++
 }

@@ -279,8 +279,15 @@ export function makeImage(
         curr += entryDepth
       }
 
-      // Add to clickmap when zoomed in enough for meaningful interaction
-      if (interbaseEvents.length > 0 && bpPerPx < 10) {
+      // Add to clickmap when zoomed in enough for meaningful interaction,
+      // or when interbase events represent a significant fraction of reads
+      const totalInterbaseCount = interbaseEvents.reduce(
+        (sum, base) => sum + (snpinfo.noncov[base]?.entryDepth ?? 0),
+        0,
+      )
+      const isMajorityInterbase =
+        score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
+      if (interbaseEvents.length > 0 && (bpPerPx < 10 || isMajorityInterbase)) {
         const maxBase = interbaseEvents.reduce((a, b) =>
           (snpinfo.noncov[a]?.entryDepth ?? 0) >
           (snpinfo.noncov[b]?.entryDepth ?? 0)

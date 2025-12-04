@@ -48,7 +48,10 @@ export interface PreBinEntry {
   '0': number
   '1': number
   probabilities: number[]
-  lengths: number[]
+  lengthTotal: number
+  lengthCount: number
+  lengthMin: number
+  lengthMax: number
 }
 
 type PreBinType = Record<string, PreBinEntry>

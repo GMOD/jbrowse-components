@@ -1,6 +1,7 @@
+import { type Feature, reducePrecision, toLocale } from '@jbrowse/core/util'
+
 import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import type { Feature } from '@jbrowse/core/util'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
 
 export interface InterbaseIndicatorItem {
@@ -32,12 +33,12 @@ export function formatInterbaseStats(
   let result = `${count}/${total} (${pct}% of reads)`
   if (lengthStats?.avgLength !== undefined) {
     const { avgLength, minLength, maxLength } = lengthStats
-    const avgStr = avgLength.toFixed(1)
+    const avgStr = reducePrecision(avgLength, 1)
     if (minLength !== undefined && maxLength !== undefined) {
       result +=
         minLength === maxLength
-          ? `\nLength: ${minLength}bp`
-          : `\nLength: ${minLength}-${maxLength}bp (avg ${avgStr})`
+          ? `\nLength: ${toLocale(minLength)}bp`
+          : `\nLength: ${toLocale(minLength)}bp - ${toLocale(maxLength)}bp (avg ${avgStr}bp)`
     } else {
       result += `\nAvg length: ${avgStr}bp`
     }

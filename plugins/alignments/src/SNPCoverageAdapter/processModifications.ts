@@ -59,7 +59,10 @@ export function processModifications({
             snps: {},
             ref: {
               probabilities: [],
-              lengths: [],
+              lengthTotal: 0,
+              lengthCount: 0,
+              lengthMin: Infinity,
+              lengthMax: -Infinity,
               entryDepth: 0,
               '-1': 0,
               0: 0,

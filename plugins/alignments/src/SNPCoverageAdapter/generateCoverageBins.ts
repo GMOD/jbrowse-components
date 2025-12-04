@@ -105,16 +105,14 @@ export async function generateCoverageBins({
       )
       bin.noncov = Object.fromEntries(
         Object.entries(bin.noncov).map(([key, val]) => {
-          const lengths = val.lengths
+          const { lengthTotal, lengthCount, lengthMin, lengthMax } = val
           return [
             key,
             {
               ...val,
-              avgLength: lengths.length
-                ? sum(lengths) / lengths.length
-                : undefined,
-              minLength: lengths.length ? Math.min(...lengths) : undefined,
-              maxLength: lengths.length ? Math.max(...lengths) : undefined,
+              avgLength: lengthCount ? lengthTotal / lengthCount : undefined,
+              minLength: lengthCount ? lengthMin : undefined,
+              maxLength: lengthCount ? lengthMax : undefined,
             },
           ] as const
         }),
