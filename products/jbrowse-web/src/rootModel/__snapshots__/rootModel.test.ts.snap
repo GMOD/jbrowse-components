@@ -53,6 +53,10 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
+        "label": "Make all views non-floating",
+        "onClick": [Function],
+      },
+      {
         "icon": [Function],
         "label": "Assembly manager",
         "onClick": [Function],
@@ -124,6 +128,10 @@ exports[`adds menus 2`] = `
           },
         },
         "label": "Plugin store",
+        "onClick": [Function],
+      },
+      {
+        "label": "Make all views non-floating",
         "onClick": [Function],
       },
       {

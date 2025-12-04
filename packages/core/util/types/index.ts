@@ -33,7 +33,6 @@ export interface AbstractViewContainer extends IStateTreeNode<
   IType<any, any, any>
 > {
   views: AbstractViewModel[]
-  floating?: boolean
   removeView(view: AbstractViewModel): void
   addView(
     typeName: string,
@@ -277,8 +276,6 @@ export interface SessionWithFocusedViewAndDrawerWidgets extends SessionWithDrawe
 
 /** minimum interface that all view state models must implement */
 export interface AbstractViewModel {
-  floatingX: number
-  floatingY: number
   id: string
   type: string
   width: number
@@ -287,7 +284,6 @@ export interface AbstractViewModel {
   displayName: string | undefined
 
   setWidth(width: number): void
-  setFloatingPosition: (arg: { x: number; y: number }) => void
   setMinimized(flag: boolean): void
   setDisplayName: (arg: string) => void
   setIsFloating: (arg: boolean) => void

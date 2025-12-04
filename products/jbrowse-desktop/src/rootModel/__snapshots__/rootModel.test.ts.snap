@@ -130,6 +130,10 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
+        "label": "Make all views non-floating",
+        "onClick": [Function],
+      },
+      {
         "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -278,6 +282,10 @@ exports[`adds menus 2`] = `
           },
         },
         "label": "Plugin store",
+        "onClick": [Function],
+      },
+      {
+        "label": "Make all views non-floating",
         "onClick": [Function],
       },
       {

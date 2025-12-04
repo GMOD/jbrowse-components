@@ -21,6 +21,8 @@ const useStyles = makeStyles()(theme => ({
   floatingViewContainer: {
     padding: 0,
     margin: 0,
+    border: `${theme.spacing(1)} solid`,
+    borderColor: theme.palette.secondary.main,
   },
   focusedView: {
     background: theme.palette.secondary.main,
@@ -29,6 +31,26 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.secondary.dark,
   },
 }))
+
+function useFocusEffect(
+  ref: React.RefObject<HTMLDivElement | null>,
+  session: AppSession,
+  viewId: string,
+) {
+  useEffect(() => {
+    function handleSelectView(e: Event) {
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
+        session.setFocusedViewId(viewId)
+      }
+    }
+    document.addEventListener('mousedown', handleSelectView)
+    document.addEventListener('keydown', handleSelectView)
+    return () => {
+      document.removeEventListener('mousedown', handleSelectView)
+      document.removeEventListener('keydown', handleSelectView)
+    }
+  }, [ref, session, viewId])
+}
 
 const ViewContainer = observer(function ({
   view,
@@ -48,44 +70,38 @@ const ViewContainer = observer(function ({
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
   const { classes } = useStyles()
+  const { isFloating } = view
 
-  useEffect(() => {
-    function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref.current?.contains(e.target)) {
-        session.setFocusedViewId(view.id)
-      }
-    }
+  useFocusEffect(ref, session, view.id)
 
-    document.addEventListener('mousedown', handleSelectView)
-    document.addEventListener('keydown', handleSelectView)
-    return () => {
-      document.removeEventListener('mousedown', handleSelectView)
-      document.removeEventListener('keydown', handleSelectView)
-    }
-  }, [ref, session, view])
-
-  const backgroundColorClassName =
-    session.focusedViewId === view.id
-      ? classes.focusedView
-      : classes.unfocusedView
+  const isFocused = session.focusedViewId === view.id
+  const backgroundColorClassName = isFocused
+    ? classes.focusedView
+    : classes.unfocusedView
   const viewContainerClassName = cx(
     classes.viewContainer,
     backgroundColorClassName,
-    view.isFloating && classes.floatingViewContainer,
+    isFloating && classes.floatingViewContainer,
+  )
+
+  const header = (
+    <ViewHeader
+      view={view}
+      onClose={onClose}
+      onMinimize={onMinimize}
+      className={isFloating ? undefined : backgroundColorClassName}
+    />
   )
 
   return (
     <Paper ref={ref} elevation={12} className={viewContainerClassName}>
-      <div style={view.isFloating ? { cursor: 'all-scroll' } : undefined}>
-        <ViewHeader
-          view={view}
-          onClose={onClose}
-          onMinimize={onMinimize}
-          className={view.isFloating ? undefined : backgroundColorClassName}
-        />
-      </div>
+      {isFloating ? (
+        <div style={{ cursor: 'all-scroll' }}>{header}</div>
+      ) : (
+        header
+      )}
       <Paper
-        elevation={view.isFloating ? undefined : 0}
+        elevation={isFloating ? undefined : 0}
         style={
           contentHeight !== undefined
             ? { height: contentHeight, overflow: 'auto' }
