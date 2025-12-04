@@ -1,8 +1,17 @@
-import { RootAppMenuMixin, processMutableMenuActions } from '@jbrowse/app-core'
+import {
+  RootAppMenuMixin,
+  getOpenTrackMenuItem,
+  getOpenConnectionMenuItem,
+  getMakeAllViewsNonFloatingMenuItem,
+  getImportSessionMenuItem,
+  getExportSessionMenuItem,
+  processMutableMenuActions,
+  filterSessionInPlace,
+} from '@jbrowse/app-core'
+import type { Menu, SessionModelFactory } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable } from '@jbrowse/core/ui/Icons'
 import {
   addDisposer,
   cast,
@@ -15,36 +24,16 @@ import {
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
-import GetAppIcon from '@mui/icons-material/GetApp'
-import PublishIcon from '@mui/icons-material/Publish'
-import StorageIcon from '@mui/icons-material/Storage'
 import { autorun } from 'mobx'
 
 import jbrowseWebFactory from '../jbrowseModel'
-import { filterSessionInPlace } from '../util'
 import { version } from '../version'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { MenuItem } from '@jbrowse/core/ui'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type {
-  IAnyStateTreeNode,
-  IAnyType,
-  Instance,
-  SnapshotIn,
-} from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { BaseSessionType } from '@jbrowse/product-core'
 
-export interface Menu {
-  label: string
-  menuItems: MenuItem[]
-}
-
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
-type SessionModelFactory = (args: {
-  pluginManager: PluginManager
-  assemblyConfigSchema: AssemblyConfig
-}) => IAnyType
 
 /**
  * #stateModel JBrowseReactAppRootModel
@@ -202,78 +191,15 @@ export default function RootModel({
                 {
                   label: 'New session',
                   icon: AddIcon,
-
                   onClick: (session: any) => {
                     session.setDefaultSession()
                   },
                 },
-                {
-                  label: 'Import session…',
-                  icon: PublishIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    const widget = session.addWidget(
-                      'ImportSessionWidget',
-                      'importSessionWidget',
-                    )
-                    session.showWidget(widget)
-                  },
-                },
-                {
-                  label: 'Export session',
-                  icon: GetAppIcon,
-                  onClick: async (session: IAnyStateTreeNode) => {
-                    // eslint-disable-next-line @typescript-eslint/no-deprecated
-                    const { saveAs } = await import('file-saver-es')
-
-                    saveAs(
-                      new Blob(
-                        [
-                          JSON.stringify(
-                            { session: getSnapshot(session) },
-                            null,
-                            2,
-                          ),
-                        ],
-                        { type: 'text/plain;charset=utf-8' },
-                      ),
-                      'session.json',
-                    )
-                  },
-                },
-
+                getImportSessionMenuItem(),
+                getExportSessionMenuItem(),
                 { type: 'divider' },
-                {
-                  label: 'Open track...',
-                  icon: StorageIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    if (session.views.length === 0) {
-                      session.notify('Please open a view to add a track first')
-                    } else if (session.views.length > 0) {
-                      const widget = session.addWidget(
-                        'AddTrackWidget',
-                        'addTrackWidget',
-                        { view: session.views[0]!.id },
-                      )
-                      session.showWidget(widget)
-                      if (session.views.length > 1) {
-                        session.notify(
-                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
-                        )
-                      }
-                    }
-                  },
-                },
-                {
-                  label: 'Open connection...',
-                  icon: Cable,
-                  onClick: (session: SessionWithWidgets) => {
-                    const widget = session.addWidget(
-                      'AddConnectionWidget',
-                      'addConnectionWidget',
-                    )
-                    session.showWidget(widget)
-                  },
-                },
+                getOpenTrackMenuItem(),
+                getOpenConnectionMenuItem(),
               ],
             },
             {
@@ -282,18 +208,7 @@ export default function RootModel({
             },
             {
               label: 'Tools',
-              menuItems: [
-                {
-                  label: 'Make all views non-floating',
-                  onClick: () => {
-                    if (self.session) {
-                      for (const view of self.session.views) {
-                        view.setIsFloating(false)
-                      }
-                    }
-                  },
-                },
-              ],
+              menuItems: [getMakeAllViewsNonFloatingMenuItem(() => self.session)],
             },
           ],
           self.mutableMenuActions,
