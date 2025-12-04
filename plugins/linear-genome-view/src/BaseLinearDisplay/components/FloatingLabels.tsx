@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import {
   clamp,
@@ -7,7 +7,6 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { autorun, untracked } from 'mobx'
-import { observer } from 'mobx-react'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -140,11 +139,11 @@ interface LabelPositionData {
   lastX?: number
 }
 
-const FloatingLabels = observer(function FloatingLabels({
+function FloatingLabels({
   model,
 }: {
   model: FeatureTrackModel
-}) {
+}): React.ReactElement {
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)
   const assemblyName = view.assemblyNames[0]
@@ -155,21 +154,24 @@ const FloatingLabels = observer(function FloatingLabels({
   const labelPositionsRef = useRef<Map<string, LabelPositionData>>(new Map())
 
   // Autorun 1: Rebuild DOM elements when layoutFeatures changes
-  useLayoutEffect(() => {
-    const container = containerRef.current
-    if (!container || !assembly) {
+  useEffect(() => {
+    if (!assembly) {
       return
     }
 
-    const domElements = domElementsRef.current
-    const labelPositions = labelPositionsRef.current
-
-    const dispose = autorun(
+    return autorun(
       function floatingLabelsLayoutAutorun() {
+        const container = containerRef.current
+        if (!container) {
+          return
+        }
+
         const { layoutFeatures } = model
         // Track bpPerPx to recalculate positions on zoom changes
         const { bpPerPx } = view
         void bpPerPx
+        const domElements = domElementsRef.current
+        const labelPositions = labelPositionsRef.current
         const newKeys = new Set<string>()
 
         const featureLabels = deduplicateFeatureLabels(
@@ -194,14 +196,12 @@ const FloatingLabels = observer(function FloatingLabels({
               continue
             }
 
-            const featureVisualLeftPx = leftPx
             const y = featureVisualBottom + relativeY
-
             const labelKey = `${key}-${i}`
             newKeys.add(labelKey)
 
             labelPositions.set(labelKey, {
-              featureLeftPx: featureVisualLeftPx,
+              featureLeftPx: leftPx,
               featureRightPx: rightPx,
               labelWidth,
               y,
@@ -235,7 +235,7 @@ const FloatingLabels = observer(function FloatingLabels({
 
             // Set initial transform using untracked to avoid re-running on offsetPx changes
             const offsetPx = untracked(() => view.offsetPx)
-            const naturalX = featureVisualLeftPx - offsetPx
+            const naturalX = leftPx - offsetPx
             const maxX = rightPx - offsetPx - labelWidth
             const x = clamp(0, naturalX, maxX)
             element.style.transform = `translate(${x}px, ${y}px)`
@@ -252,20 +252,11 @@ const FloatingLabels = observer(function FloatingLabels({
       },
       { name: 'FloatingLabelsLayout' },
     )
-
-    return () => {
-      dispose()
-      for (const element of domElements.values()) {
-        element.remove()
-      }
-      domElements.clear()
-      labelPositions.clear()
-    }
   }, [assembly, model, view])
 
   // Autorun 2: Update transforms when offsetPx changes (fast path)
-  useLayoutEffect(() => {
-    const dispose = autorun(
+  useEffect(() => {
+    return autorun(
       function floatingLabelsOffsetAutorun() {
         const { offsetPx } = view
         const domElements = domElementsRef.current
@@ -290,8 +281,6 @@ const FloatingLabels = observer(function FloatingLabels({
       },
       { name: 'FloatingLabelsOffset' },
     )
-
-    return dispose
   }, [view])
 
   return (
@@ -308,6 +297,6 @@ const FloatingLabels = observer(function FloatingLabels({
       }}
     />
   )
-})
+}
 
 export default FloatingLabels
