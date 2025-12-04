@@ -18,6 +18,9 @@ export interface BinEntry {
   '0': number
   '1': number
   avgProbability?: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
 }
 
 type BinType = Record<string, BinEntry>
@@ -45,6 +48,7 @@ export interface PreBinEntry {
   '0': number
   '1': number
   probabilities: number[]
+  lengths: number[]
 }
 
 type PreBinType = Record<string, PreBinEntry>

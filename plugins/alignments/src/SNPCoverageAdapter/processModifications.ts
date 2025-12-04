@@ -59,6 +59,7 @@ export function processModifications({
             snps: {},
             ref: {
               probabilities: [],
+              lengths: [],
               entryDepth: 0,
               '-1': 0,
               0: 0,

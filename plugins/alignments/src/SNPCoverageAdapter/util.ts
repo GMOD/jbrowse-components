@@ -24,12 +24,14 @@ export function inc(
   strand: -1 | 0 | 1,
   type: keyof PreBaseCoverageBinSubtypes,
   field: string,
+  length?: number,
 ) {
   let thisBin = bin[type][field]
   if (thisBin === undefined) {
     thisBin = bin[type][field] = {
       entryDepth: 0,
       probabilities: [],
+      lengths: [],
       '-1': 0,
       '0': 0,
       '1': 0,
@@ -37,6 +39,9 @@ export function inc(
   }
   thisBin.entryDepth++
   thisBin[strand]++
+  if (length !== undefined) {
+    thisBin.lengths.push(length)
+  }
 }
 
 export function incWithProbabilities(
@@ -51,6 +56,7 @@ export function incWithProbabilities(
     thisBin = bin[type][field] = {
       entryDepth: 0,
       probabilities: [],
+      lengths: [],
       '-1': 0,
       '0': 0,
       '1': 0,

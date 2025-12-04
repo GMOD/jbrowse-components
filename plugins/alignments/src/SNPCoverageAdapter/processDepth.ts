@@ -24,6 +24,7 @@ export function processDepth({
           readsCounted: 0,
           ref: {
             probabilities: [],
+            lengths: [],
             entryDepth: 0,
             '-1': 0,
             0: 0,

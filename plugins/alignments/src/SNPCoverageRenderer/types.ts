@@ -8,6 +8,9 @@ export interface InterbaseIndicatorItem {
   base: string
   count: number
   total: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
 }
 
 const typeLabels: Record<string, string> = {
@@ -20,9 +23,26 @@ export function getInterbaseTypeLabel(type: string) {
   return typeLabels[type] ?? type
 }
 
-export function formatInterbaseStats(count: number, total: number) {
+export function formatInterbaseStats(
+  count: number,
+  total: number,
+  lengthStats?: { avgLength?: number; minLength?: number; maxLength?: number },
+) {
   const pct = total > 0 ? ((count / total) * 100).toFixed(1) : '0'
-  return `${count}/${total} (${pct}%)`
+  let result = `${count}/${total} (${pct}% of reads)`
+  if (lengthStats?.avgLength !== undefined) {
+    const { avgLength, minLength, maxLength } = lengthStats
+    const avgStr = avgLength.toFixed(1)
+    if (minLength !== undefined && maxLength !== undefined) {
+      result +=
+        minLength === maxLength
+          ? `\nLength: ${minLength}bp`
+          : `\nLength: ${minLength}-${maxLength}bp (avg ${avgStr})`
+    } else {
+      result += `\nAvg length: ${avgStr}bp`
+    }
+  }
+  return result
 }
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
