@@ -990,9 +990,9 @@ export function isSupportedIndexingAdapter(type = '') {
 
 export function getBpDisplayStr(total: number) {
   if (Math.floor(total / 1_000_000) > 0) {
-    return `${r(total / 1_000_000)}Mbp`
+    return `${reducePrecision(total / 1_000_000)}Mbp`
   } else if (Math.floor(total / 1_000) > 0) {
-    return `${r(total / 1_000)}Kbp`
+    return `${reducePrecision(total / 1_000)}Kbp`
   } else {
     return `${Math.floor(total)}bp`
   }
@@ -1034,20 +1034,6 @@ export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
   return Math.floor(bpPerPx / 1_000) > 0
     ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
     : toLocale(Math.floor(totalBp))
-}
-
-export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
-  // @ts-expect-error
-  const { dynamicBlocks, staticBlocks, offsetPx } = getContainingView(model)
-  const b = dynamicBlocks?.contentBlocks[0] || {}
-  const staticblock = staticBlocks?.contentBlocks[0] || {}
-  const staticblock1 = staticBlocks?.contentBlocks[1] || {}
-  return {
-    offsetPx: exportSVG ? 0 : offsetPx - staticblock.offsetPx,
-    offsetPx1: exportSVG ? 0 : offsetPx - staticblock1.offsetPx,
-    start: b.start as number,
-    end: b.end as number,
-  }
 }
 
 export function getLayoutId({
