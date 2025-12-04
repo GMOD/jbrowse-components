@@ -85,33 +85,28 @@ function formatGroupDescription(
   ref: string,
   alts: string[],
 ): string {
-  // For symbolic alleles, just return the alt itself
-  if (alts.every(a => a.startsWith('<'))) {
+  // For symbolic alleles and breakends, just return the alt itself
+  if (alts.every(a => a.startsWith('<') || isBreakend(a))) {
     return alts.join(',')
   }
 
   const lenRef = ref.length
   const isLong = lenRef > 5 || alts.some(a => a.length > 5)
 
-  switch (soTerm) {
-    case 'SNV':
-      return `SNV ${ref} -> ${alts.join(',')}`
+  if (!isLong) {
+    return `${soTerm} ${ref} -> ${alts.join(',')}`
+  }
 
+  switch (soTerm) {
     case 'substitution':
     case 'inv':
-      return isLong
-        ? `${soTerm} ${getBpDisplayStr(lenRef)} -> ${alts.map(a => getBpDisplayStr(a.length)).join(',')}`
-        : `${soTerm} ${ref} -> ${alts.join(',')}`
+      return `${soTerm} ${getBpDisplayStr(lenRef)} -> ${alts.map(a => getBpDisplayStr(a.length)).join(',')}`
 
     case 'insertion':
-      return isLong
-        ? alts.map(a => `${getBpDisplayStr(a.length - lenRef)} INS`).join(',')
-        : `insertion ${ref} -> ${alts.join(',')}`
+      return alts.map(a => `${getBpDisplayStr(a.length - lenRef)} INS`).join(',')
 
     case 'deletion':
-      return isLong
-        ? alts.map(a => `${getBpDisplayStr(lenRef - a.length)} DEL`).join(',')
-        : `deletion ${ref} -> ${alts.join(',')}`
+      return alts.map(a => `${getBpDisplayStr(lenRef - a.length)} DEL`).join(',')
 
     default:
       return alts.join(',')
