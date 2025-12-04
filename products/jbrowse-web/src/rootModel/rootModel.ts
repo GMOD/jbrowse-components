@@ -688,6 +688,16 @@ export default function RootModel({
                 },
               },
               {
+                label: 'Make all views non-floating',
+                onClick: () => {
+                  if (self.session) {
+                    for (const view of self.session.views) {
+                      view.setIsFloating(false)
+                    }
+                  }
+                },
+              },
+              {
                 label: 'Assembly manager',
                 icon: DNA,
                 onClick: () => {
