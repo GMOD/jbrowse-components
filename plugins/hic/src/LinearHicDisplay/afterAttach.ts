@@ -8,12 +8,17 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
 import type { LinearHicDisplayModel } from './model'
+import type { HicFlatbushItem } from '../HicRenderer/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
 interface RenderResult {
   imageData?: ImageBitmap
+  flatbush?: ArrayBufferLike
+  items?: HicFlatbushItem[]
+  maxScore?: number
+  yScalar?: number
   width: number
   height: number
 }
@@ -89,6 +94,13 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         self.setRenderingImageData(result.imageData)
         self.setLastDrawnOffsetPx(Math.max(0, view.offsetPx))
       }
+      // Store flatbush data for mouseover
+      self.setFlatbushData(
+        result.flatbush,
+        result.items ?? [],
+        result.maxScore ?? 0,
+        result.yScalar ?? 1,
+      )
     } catch (error) {
       if (!isAbortException(error)) {
         if (isAlive(self)) {
@@ -114,6 +126,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         const { dynamicBlocks } = view
         const regions = dynamicBlocks.contentBlocks
 
+        /* eslint-disable @typescript-eslint/no-unused-expressions */
         // access these to trigger autorun on changes
         self.resolution
         self.useLogScale
@@ -121,6 +134,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         self.activeNormalization
         self.mode
         self.height
+        /* eslint-enable @typescript-eslint/no-unused-expressions */
 
         if (untracked(() => self.error) || !regions.length) {
           return

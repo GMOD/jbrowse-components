@@ -165,7 +165,7 @@ export async function makeImageData(
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (coords.length) {
     for (let i = 0; i < coords.length; i += 4) {
-      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2]!, coords[i + 3]!)
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
     }
   } else {
     flatbush.add(0, 0)

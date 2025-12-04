@@ -7,6 +7,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import type { HicFlatbushItem } from '../HicRenderer/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -86,6 +87,22 @@ export default function stateModelFactory(
        * #volatile
        */
       renderingStopToken: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      flatbush: undefined as ArrayBufferLike | undefined,
+      /**
+       * #volatile
+       */
+      flatbushItems: [] as HicFlatbushItem[],
+      /**
+       * #volatile
+       */
+      maxScore: 0,
+      /**
+       * #volatile
+       */
+      yScalar: 1,
     }))
     .views(self => ({
       /**
@@ -152,6 +169,20 @@ export default function stateModelFactory(
        */
       setRenderingStopToken(token: string | undefined) {
         self.renderingStopToken = token
+      },
+      /**
+       * #action
+       */
+      setFlatbushData(
+        flatbush: ArrayBufferLike | undefined,
+        items: HicFlatbushItem[],
+        maxScore: number,
+        yScalar: number,
+      ) {
+        self.flatbush = flatbush
+        self.flatbushItems = items
+        self.maxScore = maxScore
+        self.yScalar = yScalar
       },
       /**
        * #action

@@ -35,7 +35,9 @@ export async function renderToAbstractCanvas<T extends object | undefined>(
   if (exportSVG) {
     if (!exportSVG.rasterizeLayers) {
       const fakeCtx = new CanvasSequence()
-      const callbackResult = await cb(fakeCtx as unknown as CanvasRenderingContext2D)
+      const callbackResult = await cb(
+        fakeCtx as unknown as CanvasRenderingContext2D,
+      )
       return {
         ...callbackResult,
         canvasRecordedData: fakeCtx.toJSON() as Record<string, unknown>,
