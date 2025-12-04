@@ -17,31 +17,29 @@ interface RenderToAbstractCanvasOptions {
   highResolutionScaling?: number
 }
 
-type R<T extends Record<string, unknown> | undefined> = Omit<T, never> &
-  (
-    | { canvasRecordedData: Record<string, unknown> }
-    | { imageData: any }
-    | { html: string }
-  )
+type RenderResult =
+  | { canvasRecordedData: Record<string, unknown> }
+  | { imageData: ImageBitmap }
+  | { html: string }
 
-export async function renderToAbstractCanvas<
-  T extends Record<string, unknown> | undefined,
->(
+export async function renderToAbstractCanvas<T extends object | undefined>(
   width: number,
   height: number,
   opts: RenderToAbstractCanvasOptions,
   cb: (ctx: CanvasRenderingContext2D) => Promise<T> | T,
-): Promise<R<T>> {
+): Promise<(T extends undefined ? object : T) & RenderResult> {
   const { exportSVG, highResolutionScaling = 1 } = opts
+
+  type Result = (T extends undefined ? object : T) & RenderResult
 
   if (exportSVG) {
     if (!exportSVG.rasterizeLayers) {
       const fakeCtx = new CanvasSequence()
-      const callbackResult = await cb(fakeCtx as any)
+      const callbackResult = await cb(fakeCtx as unknown as CanvasRenderingContext2D)
       return {
         ...callbackResult,
         canvasRecordedData: fakeCtx.toJSON() as Record<string, unknown>,
-      }
+      } as unknown as Result
     } else {
       const s = exportSVG.scale || highResolutionScaling
       const canvas = createCanvas(Math.ceil(width * s), height * s)
@@ -67,7 +65,7 @@ export async function renderToAbstractCanvas<
               )
             : canvas.toDataURL('image/png')
         }" />`,
-      }
+      } as unknown as Result
     }
   } else {
     const canvas = createCanvas(
@@ -85,7 +83,7 @@ export async function renderToAbstractCanvas<
     return {
       ...callbackResult,
       imageData: await createImageBitmap(canvas),
-    }
+    } as unknown as Result
   }
 }
 

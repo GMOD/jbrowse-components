@@ -38,7 +38,8 @@ export default class HicRenderer extends ServerSideRendererType {
   supportsSVG = true
 
   async render(renderProps: RenderArgsDeserialized) {
-    const { displayHeight, regions, bpPerPx } = renderProps
+    const { displayHeight, regions, bpPerPx, colorScheme, useLogScale } =
+      renderProps
 
     // Calculate total width across all regions
     let totalWidthBp = 0
@@ -49,19 +50,28 @@ export default class HicRenderer extends ServerSideRendererType {
     const hyp = width / 2
     const height = displayHeight ?? hyp
     const features = await this.getFeatures(renderProps)
+    const yScalar = height / Math.max(height, hyp)
 
     const { makeImageData } = await import('./makeImageData')
+
     const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       makeImageData(ctx, {
         ...renderProps,
-        yScalar: height / Math.max(height, hyp),
+        yScalar,
         features,
         pluginManager: this.pluginManager,
       }),
     )
 
-    const serialized = { ...res, height, width }
-    return rpcResult(serialized, collectTransferables(res))
+    const serialized = {
+      ...res,
+      height,
+      width,
+      yScalar,
+      colorScheme,
+      useLogScale,
+    }
+    return rpcResult(serialized, collectTransferables(serialized))
   }
 
   async getFeatures(args: RenderArgsDeserialized) {
