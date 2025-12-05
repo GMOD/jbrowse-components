@@ -35,7 +35,8 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
 
     return autorun(
       function refNameLabelsLayoutAutorun() {
-        const { staticBlocks, bpPerPx } = model
+        const { staticBlocks, bpPerPx, scaleBarDisplayPrefix } = model
+        const prefix = scaleBarDisplayPrefix()
         const inner = innerRef.current
         if (!inner) {
           return
@@ -69,7 +70,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
             }
             span.style.left = `${blockOffsetPx - 1}px`
             span.style.paddingLeft = '1px'
-            span.textContent = refName
+            span.textContent = (prefix ? `${prefix}:` : '') + refName
             fragment.append(span)
           }
           index++
