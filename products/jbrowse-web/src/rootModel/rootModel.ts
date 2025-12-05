@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import {
+  filterSessionInPlace,
   getExportSessionMenuItem,
   getImportSessionMenuItem,
   getOpenConnectionMenuItem,
@@ -11,19 +12,20 @@ import {
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { DNA } from '@jbrowse/core/ui/Icons'
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import {
   addDisposer,
+  cast,
   getSnapshot,
+  getType,
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
-import { BaseRootModelFactory } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -58,9 +60,6 @@ const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 /**
  * #stateModel JBrowseWebRootModel
  *
- * composed of
- * - [BaseRootModel](../baserootmodel)
- *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
  * the root model (via e.g. getRoot) in plugin code
@@ -84,29 +83,46 @@ export default function RootModel({
     assemblyConfigSchema,
   })
   return types
-    .compose(
-      BaseRootModelFactory({
-        pluginManager,
-        jbrowseModelType,
-        sessionModelType,
-        assemblyConfigSchema,
-      }),
-      types.model({
-        // InternetAccountsRootModelMixin property
-        internetAccounts: types.array(
-          pluginManager.pluggableMstType('internet account', 'stateModel'),
-        ),
-        // HistoryManagementMixin property
-        history: types.optional(TimeTraveller, { targetPath: '../session' }),
-      }),
-    )
-    .props({
+    .model('JBrowseWebRootModel', {
+      /**
+       * #property
+       */
+      jbrowse: jbrowseModelType,
+      /**
+       * #property
+       */
+      session: types.maybe(sessionModelType),
+      /**
+       * #property
+       */
+      sessionPath: types.optional(types.string, ''),
+      /**
+       * #property
+       */
+      assemblyManager: types.optional(
+        assemblyManagerFactory(assemblyConfigSchema, pluginManager),
+        {},
+      ),
+      /**
+       * #property
+       */
+      internetAccounts: types.array(
+        pluginManager.pluggableMstType('internet account', 'stateModel'),
+      ),
+      /**
+       * #property
+       */
+      history: types.optional(TimeTraveller, { targetPath: '../session' }),
       /**
        * #property
        */
       configPath: types.maybe(types.string),
     })
     .volatile(self => ({
+      /**
+       * #volatile
+       */
+      pluginManager,
       /**
        * #volatile
        */
@@ -155,7 +171,9 @@ export default function RootModel({
       ) => {
         console.error('reloadPluginManagerCallback unimplemented')
       },
-      // RootAppMenuMixin volatile
+      /**
+       * #volatile
+       */
       mutableMenuActions: [] as MenuAction[],
     }))
 
@@ -163,10 +181,30 @@ export default function RootModel({
       /**
        * #action
        */
+      setSession(sessionSnapshot?: Record<string, unknown>) {
+        const oldSession = self.session
+        self.session = cast(sessionSnapshot)
+        if (self.session) {
+          try {
+            filterSessionInPlace(self.session, getType(self.session))
+          } catch (error) {
+            self.session = oldSession
+            throw error
+          }
+        }
+      },
+      /**
+       * #action
+       */
+      setSessionPath(path: string) {
+        self.sessionPath = path
+      },
+      /**
+       * #action
+       */
       setSavedSessionMetadata(sessions: SessionMetadata[]) {
         self.savedSessionMetadata = sessions
       },
-
       /**
        * #action
        */
@@ -186,8 +224,6 @@ export default function RootModel({
       setSessionDB(sessionDB: IDBPDatabase<SessionDB>) {
         self.sessionDB = sessionDB
       },
-
-      // InternetAccountsRootModelMixin actions
       /**
        * #action
        */
@@ -211,7 +247,6 @@ export default function RootModel({
         })
         return self.internetAccounts[length - 1]
       },
-
       /**
        * #action
        */
@@ -269,8 +304,6 @@ export default function RootModel({
           ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
       },
-
-      // RootAppMenuMixin actions
       /**
        * #action
        */
@@ -342,7 +375,6 @@ export default function RootModel({
       },
     }))
     .actions(self => {
-      // HistoryManagementMixin keyboard listener
       const keydownListener = (e: KeyboardEvent) => {
         if (
           self.history.canRedo &&
@@ -364,11 +396,7 @@ export default function RootModel({
       }
 
       return {
-        /**
-         * #aftercreate
-         */
         afterCreate() {
-          // HistoryManagementMixin setup
           document.addEventListener('keydown', keydownListener)
           addDisposer(
             self,
@@ -382,7 +410,6 @@ export default function RootModel({
             ),
           )
 
-          // InternetAccountsRootModelMixin setup
           addDisposer(
             self,
             autorun(
@@ -395,7 +422,6 @@ export default function RootModel({
             ),
           )
 
-          // Session storage setup
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {
@@ -524,10 +550,7 @@ export default function RootModel({
          */
         setDefaultSession() {
           const { defaultSession } = self.jbrowse
-          const { setSession } = self as unknown as {
-            setSession: (arg: unknown) => void
-          }
-          setSession({
+          self.setSession({
             ...defaultSession,
             name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
           })
@@ -538,10 +561,7 @@ export default function RootModel({
         async activateSession(id: string) {
           const ret = await self.sessionDB?.get('sessions', id)
           if (ret) {
-            const { setSession } = self as unknown as {
-              setSession: (arg: unknown) => void
-            }
-            setSession(ret)
+            self.setSession(ret)
           } else {
             self.session.notifyError('Session not found')
           }
@@ -598,16 +618,12 @@ export default function RootModel({
          * #action
          */
         renameCurrentSession(sessionName: string) {
-          const { setSession } = self as unknown as {
-            setSession: (arg: unknown) => void
-          }
-          const snapshot = getSnapshot(self.session)
-          setSession({
+          const snapshot = getSnapshot(self.session) as Record<string, unknown>
+          self.setSession({
             ...snapshot,
             name: sessionName,
           })
         },
-
         /**
          * #action
          */
@@ -621,10 +637,7 @@ export default function RootModel({
        * #method
        */
       menus() {
-        const preConfiguredSessions = readConfObject(
-          self.jbrowse,
-          'preConfiguredSessions',
-        )
+        const { preConfiguredSessions } = self.jbrowse
 
         const ret = [
           {

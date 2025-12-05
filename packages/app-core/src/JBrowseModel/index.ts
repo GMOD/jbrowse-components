@@ -79,7 +79,7 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      addTrackConf(trackConf: AnyConfigurationModel) {
+      addTrackConf(trackConf: Record<string, unknown>) {
         const { type } = trackConf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
@@ -90,7 +90,7 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      addConnectionConf(connectionConf: AnyConfigurationModel) {
+      addConnectionConf(connectionConf: Record<string, unknown>) {
         const { type } = connectionConf
         if (!type) {
           throw new Error(`unknown connection type ${type}`)

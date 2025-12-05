@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import {
+  filterSessionInPlace,
   getOpenConnectionMenuItem,
   getOpenTrackMenuItem,
   getPluginStoreMenuItem,
@@ -8,13 +9,20 @@ import {
   getUndoMenuItem,
   processMutableMenuActions,
 } from '@jbrowse/app-core'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { DNA } from '@jbrowse/core/ui/Icons'
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
-import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getType,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
-import { BaseRootModelFactory } from '@jbrowse/product-core'
 import AppsIcon from '@mui/icons-material/Apps'
 import OpenIcon from '@mui/icons-material/FolderOpen'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
@@ -33,30 +41,25 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel, UriLocation } from '@jbrowse/core/util'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { BaseSession, SessionWithDialogs } from '@jbrowse/product-core'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { SessionWithDialogs } from '@jbrowse/product-core'
 
 // lazies
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
 const { ipcRenderer } = window.require('electron')
 
-export function getSaveSession(model: {
-  jbrowse: Record<string, unknown>
-  session: Record<string, unknown> | undefined
-}) {
-  const snap = getSnapshot(model.jbrowse)
+export function getSaveSession(model: { jbrowse: unknown; session: unknown }) {
+  const snap = getSnapshot(model.jbrowse as object)
   return {
     ...(snap as Record<string, unknown>),
-    defaultSession: model.session ? getSnapshot(model.session) : {},
+    defaultSession: model.session ? getSnapshot(model.session as object) : {},
   }
 }
 
 /**
  * #stateModel JBrowseDesktopRootModel
  * #category root
- * composed of
- * - [BaseRootModel](../baserootmodel)
  *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
@@ -77,34 +80,57 @@ export default function rootModelFactory({
   const jbrowseModelType = JBrowseDesktop(pluginManager, assemblyConfigSchema)
   const JobsManager = jobsModelFactory(pluginManager)
   return types
-    .compose(
-      'JBrowseDesktopRootModel',
-      BaseRootModelFactory({
-        pluginManager,
-        jbrowseModelType,
-        sessionModelType,
-        assemblyConfigSchema,
-      }),
-      types.model({
-        // InternetAccountsRootModelMixin property
-        internetAccounts: types.array(
-          pluginManager.pluggableMstType('internet account', 'stateModel'),
-        ),
-        // HistoryManagementMixin property
-        history: types.optional(TimeTraveller, { targetPath: '../session' }),
-        // DesktopSessionManagementMixin property
-        sessionPath: types.optional(types.string, ''),
-      }),
-    )
-    .props({
+    .model('JBrowseDesktopRootModel', {
+      /**
+       * #property
+       */
+      jbrowse: jbrowseModelType,
+      /**
+       * #property
+       */
+      session: types.maybe(sessionModelType),
+      /**
+       * #property
+       */
+      sessionPath: types.optional(types.string, ''),
+      /**
+       * #property
+       */
+      assemblyManager: types.optional(
+        assemblyManagerFactory(assemblyConfigSchema, pluginManager),
+        {},
+      ),
+      /**
+       * #property
+       */
+      internetAccounts: types.array(
+        pluginManager.pluggableMstType('internet account', 'stateModel'),
+      ),
+      /**
+       * #property
+       */
+      history: types.optional(TimeTraveller, { targetPath: '../session' }),
       /**
        * #property
        */
       jobsManager: types.optional(JobsManager, {}),
     })
     .volatile(self => ({
+      /**
+       * #volatile
+       */
+      pluginManager,
+      /**
+       * #volatile
+       */
       version: packageJSON.version,
+      /**
+       * #volatile
+       */
       adminMode: true,
+      /**
+       * #volatile
+       */
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
@@ -113,13 +139,53 @@ export default function rootModelFactory({
           MainThreadRpcDriver: {},
         },
       ),
+      /**
+       * #volatile
+       */
+      textSearchManager: new TextSearchManager(pluginManager),
+      /**
+       * #volatile
+       */
+      error: undefined as unknown,
+      /**
+       * #volatile
+       */
       openNewSessionCallback: async (_path: string) => {
         console.error('openNewSessionCallback unimplemented')
       },
-      // RootAppMenuMixin volatile
+      /**
+       * #volatile
+       */
       mutableMenuActions: [] as MenuAction[],
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setSession(sessionSnapshot?: Record<string, unknown>) {
+        const oldSession = self.session
+        self.session = cast(sessionSnapshot)
+        if (self.session) {
+          try {
+            filterSessionInPlace(self.session, getType(self.session))
+          } catch (error) {
+            self.session = oldSession
+            throw error
+          }
+        }
+      },
+      /**
+       * #action
+       */
+      setSessionPath(path: string) {
+        self.sessionPath = path
+      },
+      /**
+       * #action
+       */
+      setError(error: unknown) {
+        self.error = error
+      },
       /**
        * #action
        */
@@ -129,15 +195,11 @@ export default function rootModelFactory({
       /**
        * #action
        */
-      async setPluginsUpdated() {
-        const root = self as DesktopRootModel
-        if (root.session) {
-          await root.saveSession(getSaveSession(root))
+      async saveSession(val: unknown) {
+        if (self.sessionPath) {
+          await ipcRenderer.invoke('saveSession', self.sessionPath, val)
         }
-        await root.openNewSessionCallback(root.sessionPath)
       },
-
-      // InternetAccountsRootModelMixin actions
       /**
        * #action
        */
@@ -161,7 +223,6 @@ export default function rootModelFactory({
         })
         return self.internetAccounts[length - 1]
       },
-
       /**
        * #action
        */
@@ -219,28 +280,6 @@ export default function rootModelFactory({
           ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
       },
-
-      // DesktopSessionManagementMixin actions
-      /**
-       * #action
-       */
-      async saveSession(val: unknown) {
-        if (self.sessionPath) {
-          await ipcRenderer.invoke('saveSession', self.sessionPath, val)
-        }
-      },
-
-      /**
-       * #action
-       */
-      activateSession(sessionSnapshot: SnapshotIn<BaseSession>) {
-        const { setSession } = self as typeof self & {
-          setSession: (arg: unknown) => void
-        }
-        setSession(sessionSnapshot)
-      },
-
-      // RootAppMenuMixin actions
       /**
        * #action
        */
@@ -312,7 +351,6 @@ export default function rootModelFactory({
       },
     }))
     .actions(self => {
-      // HistoryManagementMixin keyboard listener
       const keydownListener = (e: KeyboardEvent) => {
         if (
           self.history.canRedo &&
@@ -335,7 +373,6 @@ export default function rootModelFactory({
 
       return {
         afterCreate() {
-          // HistoryManagementMixin setup
           document.addEventListener('keydown', keydownListener)
           addDisposer(
             self,
@@ -349,7 +386,6 @@ export default function rootModelFactory({
             ),
           )
 
-          // InternetAccountsRootModelMixin setup
           addDisposer(
             self,
             autorun(
@@ -362,7 +398,6 @@ export default function rootModelFactory({
             ),
           )
 
-          // DesktopSessionManagementMixin setup
           addDisposer(
             self,
             autorun(
@@ -382,6 +417,44 @@ export default function rootModelFactory({
         },
         beforeDestroy() {
           document.removeEventListener('keydown', keydownListener)
+        },
+        /**
+         * #action
+         */
+        async setPluginsUpdated() {
+          const root = self as DesktopRootModel
+          if (root.session) {
+            await root.saveSession(getSaveSession(root))
+          }
+          await root.openNewSessionCallback(root.sessionPath)
+        },
+        /**
+         * #action
+         */
+        activateSession(sessionSnapshot: Record<string, unknown>) {
+          self.setSession(sessionSnapshot)
+        },
+        /**
+         * #action
+         */
+        setDefaultSession() {
+          const { defaultSession } = self.jbrowse
+          self.setSession({
+            ...defaultSession,
+            name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
+          })
+        },
+        /**
+         * #action
+         */
+        renameCurrentSession(sessionName: string) {
+          if (self.session) {
+            const snapshot = getSnapshot(self.session) as Record<string, unknown>
+            self.setSession({
+              ...snapshot,
+              name: sessionName,
+            })
+          }
         },
       }
     })

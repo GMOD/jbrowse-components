@@ -1,4 +1,5 @@
 import {
+  filterSessionInPlace,
   getExportSessionMenuItem,
   getImportSessionMenuItem,
   getOpenConnectionMenuItem,
@@ -6,10 +7,16 @@ import {
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
-import { BaseRootModelFactory } from '@jbrowse/product-core'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getType,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import AddIcon from '@mui/icons-material/Add'
 import { autorun } from 'mobx'
 
@@ -25,9 +32,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactAppRootModel
- *
- * composed of
- * - [BaseRootModel](../baserootmodel)
  *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
@@ -45,29 +49,47 @@ export default function RootModel({
   makeWorkerInstance?: () => Worker
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const jbrowseModelType = jbrowseWebFactory({
+    pluginManager,
+    assemblyConfigSchema,
+  })
+  const sessionModelType = sessionModelFactory({
+    pluginManager,
+    assemblyConfigSchema,
+  })
   return types
-    .compose(
-      BaseRootModelFactory({
-        pluginManager,
-        jbrowseModelType: jbrowseWebFactory({
-          pluginManager,
-          assemblyConfigSchema,
-        }),
-        sessionModelType: sessionModelFactory({
-          pluginManager,
-          assemblyConfigSchema,
-        }),
-        assemblyConfigSchema,
-      }),
-      types.model({
-        // InternetAccountsRootModelMixin property
-        internetAccounts: types.array(
-          pluginManager.pluggableMstType('internet account', 'stateModel'),
-        ),
-      }),
-    )
-
+    .model('JBrowseReactAppRootModel', {
+      /**
+       * #property
+       */
+      jbrowse: jbrowseModelType,
+      /**
+       * #property
+       */
+      session: types.maybe(sessionModelType),
+      /**
+       * #property
+       */
+      sessionPath: types.optional(types.string, ''),
+      /**
+       * #property
+       */
+      assemblyManager: types.optional(
+        assemblyManagerFactory(assemblyConfigSchema, pluginManager),
+        {},
+      ),
+      /**
+       * #property
+       */
+      internetAccounts: types.array(
+        pluginManager.pluggableMstType('internet account', 'stateModel'),
+      ),
+    })
     .volatile(self => ({
+      /**
+       * #volatile
+       */
+      pluginManager,
       /**
        * #volatile
        */
@@ -97,11 +119,33 @@ export default function RootModel({
        * #volatile
        */
       error: undefined as unknown,
-      // RootAppMenuMixin volatile
+      /**
+       * #volatile
+       */
       mutableMenuActions: [] as MenuAction[],
     }))
     .actions(self => ({
-      // InternetAccountsRootModelMixin actions
+      /**
+       * #action
+       */
+      setSession(sessionSnapshot?: Record<string, unknown>) {
+        const oldSession = self.session
+        self.session = cast(sessionSnapshot)
+        if (self.session) {
+          try {
+            filterSessionInPlace(self.session, getType(self.session))
+          } catch (error) {
+            self.session = oldSession
+            throw error
+          }
+        }
+      },
+      /**
+       * #action
+       */
+      setSessionPath(path: string) {
+        self.sessionPath = path
+      },
       /**
        * #action
        */
@@ -125,7 +169,6 @@ export default function RootModel({
         })
         return self.internetAccounts[length - 1]
       },
-
       /**
        * #action
        */
@@ -183,8 +226,6 @@ export default function RootModel({
           ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
       },
-
-      // RootAppMenuMixin actions
       /**
        * #action
        */
@@ -255,79 +296,68 @@ export default function RootModel({
         ]
       },
     }))
-    .actions(self => {
-      return {
-        afterCreate() {
-          // InternetAccountsRootModelMixin setup
-          addDisposer(
-            self,
-            autorun(
-              function internetAccountsAutorun() {
-                for (const internetAccount of self.jbrowse.internetAccounts) {
-                  self.initializeInternetAccount(internetAccount)
-                }
-              },
-              { name: 'InternetAccounts' },
-            ),
-          )
+    .actions(self => ({
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(
+            function internetAccountsAutorun() {
+              for (const internetAccount of self.jbrowse.internetAccounts) {
+                self.initializeInternetAccount(internetAccount)
+              }
+            },
+            { name: 'InternetAccounts' },
+          ),
+        )
 
-          addDisposer(
-            self,
-            autorun(
-              function pluginsUpdatedAutorun() {
-                if (self.pluginsUpdated) {
-                  // reload app to get a fresh plugin manager
-                  window.location.reload()
-                }
-              },
-              { name: 'PluginsUpdated' },
-            ),
-          )
-        },
-        /**
-         * #action
-         */
-        setPluginsUpdated(flag: boolean) {
-          self.pluginsUpdated = flag
-        },
-        /**
-         * #action
-         */
-        setDefaultSession() {
-          const { defaultSession } = self.jbrowse
-          const { setSession } = self as unknown as {
-            setSession: (arg: unknown) => void
-          }
-          setSession({
-            ...defaultSession,
-            name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+        addDisposer(
+          self,
+          autorun(
+            function pluginsUpdatedAutorun() {
+              if (self.pluginsUpdated) {
+                window.location.reload()
+              }
+            },
+            { name: 'PluginsUpdated' },
+          ),
+        )
+      },
+      /**
+       * #action
+       */
+      setPluginsUpdated(flag: boolean) {
+        self.pluginsUpdated = flag
+      },
+      /**
+       * #action
+       */
+      setDefaultSession() {
+        const { defaultSession } = self.jbrowse
+        self.setSession({
+          ...defaultSession,
+          name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+        })
+      },
+      /**
+       * #action
+       */
+      renameCurrentSession(sessionName: string) {
+        const { session } = self
+        if (session) {
+          const snapshot = getSnapshot(session) as Record<string, unknown>
+          self.setSession({
+            ...snapshot,
+            name: sessionName,
           })
-        },
-        /**
-         * #action
-         */
-        renameCurrentSession(sessionName: string) {
-          const { session } = self
-          if (session) {
-            const { setSession } = self as unknown as {
-              setSession: (arg: unknown) => void
-            }
-            const snapshot = getSnapshot(session) as Record<string, unknown>
-            setSession({
-              ...snapshot,
-              name: sessionName,
-            })
-          }
-        },
-
-        /**
-         * #action
-         */
-        setError(error?: unknown) {
-          self.error = error
-        },
-      }
-    })
+        }
+      },
+      /**
+       * #action
+       */
+      setError(error?: unknown) {
+        self.error = error
+      },
+    }))
     .views(self => ({
       /**
        * #method

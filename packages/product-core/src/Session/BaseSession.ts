@@ -72,8 +72,8 @@ export function BaseSessionModel<
       /**
        * #getter
        */
-      get configuration(): Instance<JB_CONFIG_SCHEMA> {
-        return this.jbrowse.configuration
+      get configuration() {
+        return this.jbrowse.configuration as Instance<JB_CONFIG_SCHEMA>
       },
       /**
        * #getter
@@ -93,8 +93,8 @@ export function BaseSessionModel<
       /**
        * #getter
        */
-      get assemblies(): Instance<BaseAssemblyConfigSchema>[] {
-        return self.jbrowse.assemblies
+      get assemblies() {
+        return self.jbrowse.assemblies as Instance<BaseAssemblyConfigSchema>[]
       },
     }))
     .actions(self => ({
