@@ -343,9 +343,13 @@ export function BaseWebSession({
       /**
        * #action
        */
-      editTrackConfiguration(configuration: AnyConfigurationModel) {
+      editTrackConfiguration(
+        configuration: AnyConfigurationModel | { trackId: string },
+      ) {
         const { adminMode, sessionTracks } = self
-        if (!adminMode && !sessionTracks.includes(configuration)) {
+        const trackId = configuration.trackId
+        const isSessionTrack = sessionTracks.some(t => t.trackId === trackId)
+        if (!adminMode && !isSessionTrack) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         self.editConfiguration(configuration)

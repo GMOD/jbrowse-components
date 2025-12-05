@@ -22,15 +22,14 @@ import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
  */
 export function JBrowseModelF({
-  adminMode,
   pluginManager,
   assemblyConfigSchema,
 }: {
-  adminMode: boolean
+  adminMode?: boolean
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  return JBrowseConfigF({ pluginManager, assemblyConfigSchema, adminMode })
+  return JBrowseConfigF({ pluginManager, assemblyConfigSchema })
     .views(self => ({
       /**
        * #getter
@@ -86,11 +85,8 @@ export function JBrowseModelF({
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        if (adminMode) {
-          self.tracks.push(trackConf)
-        } else {
-          self.tracks = [...self.tracks, trackConf]
-        }
+        // For frozen tracks, create new array with added track
+        self.tracks = [...self.tracks, trackConf]
         return self.tracks.at(-1)
       },
       /**
@@ -114,13 +110,24 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      deleteTrackConf(trackConf: AnyConfigurationModel) {
-        if (adminMode) {
-          const elt = self.tracks.find(t => t.trackId === trackConf.trackId)
-          // @ts-expect-error
-          return self.tracks.remove(elt)
-        } else {
-          return self.tracks.filter(f => f.trackId !== trackConf.trackId)
+      deleteTrackConf(trackConf: AnyConfigurationModel | { trackId: string }) {
+        const trackId = trackConf.trackId
+        // For frozen tracks, filter and reassign
+        self.tracks = self.tracks.filter(t => t.trackId !== trackId)
+      },
+      /**
+       * #action
+       * Updates an existing track configuration. Used to sync editable configs
+       * back to the frozen tracks array.
+       */
+      updateTrackConf(trackConf: { trackId: string; [key: string]: unknown }) {
+        const { trackId } = trackConf
+        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+        if (idx !== -1) {
+          // Replace the track at that index
+          const newTracks = [...self.tracks]
+          newTracks[idx] = trackConf
+          self.tracks = newTracks
         }
       },
       /**

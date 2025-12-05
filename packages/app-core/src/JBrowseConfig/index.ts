@@ -21,11 +21,10 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 export function JBrowseConfigF({
   pluginManager,
   assemblyConfigSchema,
-  adminMode,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
-  adminMode: boolean
+  adminMode?: boolean
 }) {
   return types.model('JBrowseConfig', {
     configuration: RootConfiguration({
@@ -53,11 +52,12 @@ export function JBrowseConfigF({
     /**
      * #slot
      * track configuration is an array of track config schemas. multiple
-     * instances of a track can exist that use the same configuration
+     * instances of a track can exist that use the same configuration.
+     * Always uses frozen for performance - editing creates temporary MST models.
      */
     tracks:
       // @ts-expect-error
-      adminMode || globalThis.disableFrozenTracks
+      globalThis.disableFrozenTracks
         ? types.array(pluginManager.pluggableConfigSchemaType('track'))
         : types.frozen([] as { trackId: string; [key: string]: unknown }[]),
     /**

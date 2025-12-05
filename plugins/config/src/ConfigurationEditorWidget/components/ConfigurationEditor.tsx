@@ -130,14 +130,18 @@ const Schema = observer(function ({
 const ConfigurationEditor = observer(function ({
   model,
 }: {
-  model: { target: AnyConfigurationModel }
+  model: { target?: AnyConfigurationModel; effectiveTarget?: AnyConfigurationModel }
   session?: AbstractSessionModel
 }) {
   const { classes } = useStyles()
   // key forces a re-render, otherwise the same field can end up being used for
   // different tracks since only the backing model changes for example see pr
   // #804
-  const { target } = model
+  // Use effectiveTarget if available (for frozen configs), otherwise target
+  const target = model.effectiveTarget ?? model.target
+  if (!target) {
+    return <Typography>No configuration target</Typography>
+  }
   const key = readConfObject(target, 'trackId')
   const name = readConfObject(target, 'name')
   return (
