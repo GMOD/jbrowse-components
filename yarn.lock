@@ -6744,6 +6744,25 @@ dns-packet@^5.2.2:
   dependencies:
     "@leichtgewicht/ip-codec" "^2.0.1"
 
+dockview-core@^4.11.0:
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/dockview-core/-/dockview-core-4.11.0.tgz#fc7f012f59f4e20c1089a2173a735ea6cf2f48c1"
+  integrity sha512-v7I9fjJ7mNsRCrtN4fLeopc46mufqUEie7hszJ4m37f3zWTnj73herI30021+v5BIxgM3Et/S95fI+ibdYZbQg==
+
+dockview-react@^4.11.0:
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/dockview-react/-/dockview-react-4.11.0.tgz#102ecae2fd410678ef08fa50180a1e167cf20d1c"
+  integrity sha512-Z7Il4zOrUhKGsRlHWpO5JZ4CELu2wE+ClFVNJqngcElU2JCBnuAWzptb+KqQPtOOydvdEyKyBGRIREnq8HEJJA==
+  dependencies:
+    dockview "^4.11.0"
+
+dockview@^4.11.0:
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/dockview/-/dockview-4.11.0.tgz#2f8fd70e0b9438c3265eff65129aed65ecaf12eb"
+  integrity sha512-C8QQPsK2SSfKgEFzC9vRADLok2YIr/AKdKRvnzWxo6SkPpH4t7oJvZJr2egL0bna1iUJaVcrWJEMZcI6slnsNA==
+  dependencies:
+    dockview-core "^4.11.0"
+
 doctrine@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/doctrine/-/doctrine-2.1.0.tgz#5cd01fc101621b42c4cd7f5d1a66243716d3f39d"

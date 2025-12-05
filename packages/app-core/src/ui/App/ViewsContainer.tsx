@@ -3,27 +3,30 @@ import { Suspense, lazy } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import ViewContainer from './ViewContainer'
-
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+import type {
+  AbstractViewContainer,
+  SessionWithFocusedViewAndDrawerWidgets,
+} from '@jbrowse/core/util'
 
+const TiledViewsContainer = lazy(() => import('./TiledViewsContainer'))
 const ViewLauncher = lazy(() => import('./ViewLauncher'))
 
 const useStyles = makeStyles()({
   viewsContainer: {
-    overflowY: 'auto',
     gridRow: 'components',
+    overflow: 'hidden',
   },
 })
 
 interface Props {
   HeaderButtons?: React.ReactElement
-  session: SessionWithFocusedViewAndDrawerWidgets & {
-    renameCurrentSession: (arg: string) => void
-    snackbarMessages: SnackbarMessage[]
-    popSnackbarMessage: () => unknown
-  }
+  session: SessionWithFocusedViewAndDrawerWidgets &
+    AbstractViewContainer & {
+      renameCurrentSession: (arg: string) => void
+      snackbarMessages: SnackbarMessage[]
+      popSnackbarMessage: () => unknown
+    }
 }
 
 const ViewsContainer = observer(function ViewsContainer(props: Props) {
@@ -33,21 +36,14 @@ const ViewsContainer = observer(function ViewsContainer(props: Props) {
   return (
     <div className={classes.viewsContainer}>
       {views.length > 0 ? (
-        views.map(view => (
-          <ViewContainer
-            key={`view-${view.id}`}
-            view={view}
-            session={session}
-          />
-        ))
+        <Suspense fallback={null}>
+          <TiledViewsContainer session={session} />
+        </Suspense>
       ) : (
         <Suspense fallback={null}>
           <ViewLauncher {...props} />
         </Suspense>
       )}
-
-      {/* blank space at the bottom of screen allows scroll */}
-      <div style={{ height: 300 }} />
     </div>
   )
 })
