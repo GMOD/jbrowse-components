@@ -4,13 +4,19 @@ import { getSession } from '@jbrowse/core/util'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import GridViewIcon from '@mui/icons-material/GridView'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import MenuIcon from '@mui/icons-material/Menu'
+import TableRowsIcon from '@mui/icons-material/TableRows'
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'
+import ViewModuleIcon from '@mui/icons-material/ViewModule'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { useDockview } from './DockviewContext'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -52,6 +58,124 @@ function renameIds(obj: Record<string, unknown>): Record<string, unknown> {
   return transformIds(obj) as Record<string, unknown>
 }
 
+function useTilingActions() {
+  const { api, rearrangePanels } = useDockview()
+
+  const tileHorizontally = () => {
+    rearrangePanels(api => {
+      const panels = api.panels
+      if (panels.length <= 1) {
+        return
+      }
+
+      const panelStates = panels.map(p => ({
+        id: p.id,
+        component: 'jbrowseView',
+        tabComponent: 'jbrowseTab',
+        title: p.title,
+        params: p.params,
+      }))
+
+      panels.forEach(p => api.removePanel(p))
+      panelStates.forEach((state, idx) => {
+        api.addPanel({
+          ...state,
+          position: idx === 0 ? undefined : { referencePanel: panelStates[0]?.id, direction: 'right' },
+        })
+      })
+    })
+  }
+
+  const tileVertically = () => {
+    rearrangePanels(api => {
+      const panels = api.panels
+      if (panels.length <= 1) {
+        return
+      }
+
+      const panelStates = panels.map(p => ({
+        id: p.id,
+        component: 'jbrowseView',
+        tabComponent: 'jbrowseTab',
+        title: p.title,
+        params: p.params,
+      }))
+
+      panels.forEach(p => api.removePanel(p))
+      panelStates.forEach((state, idx) => {
+        api.addPanel({
+          ...state,
+          position: idx === 0 ? undefined : { referencePanel: panelStates[0]?.id, direction: 'below' },
+        })
+      })
+    })
+  }
+
+  const tileGrid = () => {
+    rearrangePanels(api => {
+      const panels = api.panels
+      if (panels.length <= 1) {
+        return
+      }
+
+      const panelStates = panels.map(p => ({
+        id: p.id,
+        component: 'jbrowseView',
+        tabComponent: 'jbrowseTab',
+        title: p.title,
+        params: p.params,
+      }))
+
+      panels.forEach(p => api.removePanel(p))
+
+      const cols = Math.ceil(Math.sqrt(panelStates.length))
+      panelStates.forEach((state, idx) => {
+        const col = idx % cols
+        const row = Math.floor(idx / cols)
+
+        let position
+        if (idx === 0) {
+          position = undefined
+        } else if (col === 0) {
+          const refIdx = (row - 1) * cols
+          position = { referencePanel: panelStates[refIdx]?.id, direction: 'below' as const }
+        } else {
+          position = { referencePanel: panelStates[idx - 1]?.id, direction: 'right' as const }
+        }
+
+        api.addPanel({ ...state, position })
+      })
+    })
+  }
+
+  const stackAll = () => {
+    rearrangePanels(api => {
+      const panels = api.panels
+      if (panels.length <= 1) {
+        return
+      }
+
+      const panelStates = panels.map(p => ({
+        id: p.id,
+        component: 'jbrowseView',
+        tabComponent: 'jbrowseTab',
+        title: p.title,
+        params: p.params,
+      }))
+
+      panels.forEach(p => api.removePanel(p))
+      panelStates.forEach((state, idx) => {
+        api.addPanel({
+          ...state,
+          position: idx === 0 ? undefined : { referencePanel: panelStates[0]?.id, direction: 'within' },
+        })
+      })
+    })
+  }
+
+  return { api, tileHorizontally, tileVertically, tileGrid, stackAll }
+}
+
 const ViewMenu = observer(function ({
   model,
   IconButtonProps,
@@ -71,6 +195,8 @@ const ViewMenu = observer(function ({
   const popupState = usePopupState({
     variant: 'popover',
   })
+
+  const { api, tileHorizontally, tileVertically, tileGrid, stackAll } = useTilingActions()
 
   // note: This does not use CascadingMenuButton on purpose, because there was
   // a confusing bug related to it! see
@@ -154,6 +280,37 @@ const ViewMenu = observer(function ({
                 : []),
             ],
           },
+          ...(api && session.views.length > 1
+            ? [
+                {
+                  label: 'Layout',
+                  icon: GridViewIcon,
+                  type: 'subMenu' as const,
+                  subMenu: [
+                    {
+                      label: 'Tile horizontally',
+                      icon: ViewColumnIcon,
+                      onClick: tileHorizontally,
+                    },
+                    {
+                      label: 'Tile vertically',
+                      icon: TableRowsIcon,
+                      onClick: tileVertically,
+                    },
+                    {
+                      label: 'Tile grid',
+                      icon: ViewModuleIcon,
+                      onClick: tileGrid,
+                    },
+                    {
+                      label: 'Stack all (tabs)',
+                      icon: GridViewIcon,
+                      onClick: stackAll,
+                    },
+                  ],
+                },
+              ]
+            : []),
 
           ...model.menuItems(),
         ]}
