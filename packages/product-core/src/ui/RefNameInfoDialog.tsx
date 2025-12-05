@@ -39,7 +39,7 @@ const RefNameInfoDialog = observer(function ({
   const [copied, setCopied] = useState(false)
   const { rpcManager } = session
   const trackId = readConf(config, 'trackId') as string
-  const assemblyNames = (readConf(config, 'assemblyNames') || []) as string[]
+  const assemblyNames = readConf(config, 'assemblyNames') as string[]
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises

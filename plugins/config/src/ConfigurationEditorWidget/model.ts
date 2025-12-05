@@ -38,11 +38,8 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         }
         const snapshot = getSnapshot(self.target)
         const session = getSession(self)
-        // @ts-expect-error jbrowse may not exist on all session types
         const jbrowse = session.jbrowse
-        if (jbrowse?.updateTrackConf) {
-          jbrowse.updateTrackConf(snapshot)
-        }
+        jbrowse.updateTrackConf(snapshot)
       },
     }))
 }

@@ -25,7 +25,9 @@ export function readConf(
   slotPath?: string | string[],
 ) {
   if (isStateTreeNode(config)) {
-    return slotPath ? readConfObject(config, slotPath as any) : getSnapshot(config)
+    return slotPath
+      ? readConfObject(config, slotPath as any)
+      : getSnapshot(config)
   }
   // Plain object - access directly
   if (!slotPath) {

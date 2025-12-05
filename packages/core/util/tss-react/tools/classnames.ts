@@ -29,7 +29,7 @@ export const classnames = (args: CxArg[]): string => {
         } else {
           const obj = arg as Record<string, boolean | null | undefined>
           toAdd = ''
-          for (const k of Object.keys(obj)) {
+          for (const k in obj) {
             if (obj[k] && k) {
               if (toAdd) {
                 toAdd += ' '

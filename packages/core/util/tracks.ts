@@ -268,11 +268,11 @@ export function generateUnknownTrackConf(
 export function getTrackName(
   conf: AnyConfigurationModel | { name?: string; type?: string },
   session: { assemblies: AnyConfigurationModel[] },
-) {
+): string {
   // Handle both MST models and plain objects
   const trackName = isStateTreeNode(conf)
     ? (readConfObject(conf, 'name') as string)
-    : conf.name
+    : (conf.name ?? '')
   const trackType = isStateTreeNode(conf)
     ? (readConfObject(conf, 'type') as string)
     : conf.type

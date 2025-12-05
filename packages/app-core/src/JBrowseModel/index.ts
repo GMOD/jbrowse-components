@@ -85,7 +85,6 @@ export function JBrowseModelF({
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        // For frozen tracks, create new array with added track
         self.tracks = [...self.tracks, trackConf]
         return self.tracks.at(-1)
       },
@@ -112,7 +111,6 @@ export function JBrowseModelF({
        */
       deleteTrackConf(trackConf: AnyConfigurationModel | { trackId: string }) {
         const trackId = trackConf.trackId
-        // For frozen tracks, filter and reassign
         self.tracks = self.tracks.filter(t => t.trackId !== trackId)
       },
       /**
