@@ -35,8 +35,8 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
 
     return autorun(
       function refNameLabelsLayoutAutorun() {
-        const { staticBlocks, bpPerPx, scaleBarDisplayPrefix } = model
-        const prefix = scaleBarDisplayPrefix()
+        const { staticBlocks, bpPerPx, scalebarDisplayPrefix } = model
+        const prefix = scalebarDisplayPrefix()
         const inner = innerRef.current
         if (!inner) {
           return
