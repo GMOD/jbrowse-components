@@ -55,11 +55,7 @@ export function JBrowseConfigF({
      * instances of a track can exist that use the same configuration.
      * Always uses frozen for performance - editing creates temporary MST models.
      */
-    tracks:
-      // @ts-expect-error
-      globalThis.disableFrozenTracks
-        ? types.array(pluginManager.pluggableConfigSchemaType('track'))
-        : types.frozen([] as { trackId: string; [key: string]: unknown }[]),
+    tracks: types.frozen([] as { trackId: string; [key: string]: unknown }[]),
     /**
      * #slot
      * configuration for internet accounts, see InternetAccounts
