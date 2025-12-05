@@ -34,6 +34,19 @@ const BaseViewModel = types
      * #property
      */
     isFloating: types.optional(types.boolean, false),
+
+    /**
+     * #property
+     */
+    floatingCoord: types.optional(
+      types.model({
+        x: types.number,
+        y: types.number,
+        width: types.number,
+        height: types.number,
+      }),
+      { x: 100, y: 100, width: 800, height: 400 },
+    ),
   })
   .volatile(() => ({
     width: 800,
@@ -81,6 +94,21 @@ const BaseViewModel = types
      */
     setMinimized(flag: boolean) {
       self.minimized = flag
+    },
+
+    /**
+     * #action
+     */
+    setFloatingCoord(coord: {
+      x?: number
+      y?: number
+      width?: number
+      height?: number
+    }) {
+      self.floatingCoord = {
+        ...self.floatingCoord,
+        ...coord,
+      }
     },
   }))
 

@@ -40,6 +40,7 @@ export default function ResizableDraggablePanel({
   minWidth = 200,
   minHeight = 100,
   onResize,
+  onPositionChange,
   style,
 }: {
   children: React.ReactNode
@@ -49,6 +50,7 @@ export default function ResizableDraggablePanel({
   minWidth?: number
   minHeight?: number
   onResize?: (size: { width: number; height: number }) => void
+  onPositionChange?: (position: { x: number; y: number }) => void
   style?: React.CSSProperties
 }) {
   const { classes } = useStyles()
@@ -72,10 +74,12 @@ export default function ResizableDraggablePanel({
         const dy = e.clientY - startY
 
         if (type === 'drag') {
-          setPosition({
+          const newPos = {
             x: startPos.x + dx,
             y: startPos.y + dy,
-          })
+          }
+          setPosition(newPos)
+          onPositionChange?.(newPos)
         } else {
           const newSize = { ...startSize }
           if (type === 'resize-right' || type === 'resize-corner') {
@@ -97,7 +101,7 @@ export default function ResizableDraggablePanel({
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', onMouseUp)
     },
-    [position, size, minWidth, minHeight, onResize],
+    [position, size, minWidth, minHeight, onResize, onPositionChange],
   )
 
   const handleDragStart = useCallback(
