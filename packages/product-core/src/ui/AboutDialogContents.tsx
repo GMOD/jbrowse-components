@@ -2,16 +2,16 @@ import { useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import FileInfoPanel from './FileInfoPanel'
 import HeaderButtons from './HeaderButtons'
 import RefNameInfoDialog from './RefNameInfoDialog'
-import { generateDisplayableConfig } from './util'
+import { generateDisplayableConfig, readConf } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -26,16 +26,16 @@ const AboutDialogContents = observer(function ({
   config,
   session,
 }: {
-  config: AnyConfigurationModel
+  config: AnyConfigurationModel | Record<string, unknown>
   session: AbstractSessionModel
 }) {
-  const conf = isStateTreeNode(config) ? readConfObject(config) : config
+  const conf = isStateTreeNode(config) ? getSnapshot(config) : config
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)
 
   const hideUris =
     getConf(session, ['formatAbout', 'hideUris']) ||
-    readConfObject(config, ['formatAbout', 'hideUris'])
+    readConf(config, ['formatAbout', 'hideUris'])
 
   const { pluginManager } = getEnv(session)
 

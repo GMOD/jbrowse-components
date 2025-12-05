@@ -8,10 +8,12 @@ import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import SaveIcon from '@mui/icons-material/Save'
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Button,
   FormGroup,
   Typography,
 } from '@mui/material'
@@ -39,6 +41,9 @@ const useStyles = makeStyles()(theme => ({
   noOverflow: {
     width: '100%',
     overflowX: 'auto',
+  },
+  saveButton: {
+    marginTop: theme.spacing(2),
   },
 }))
 
@@ -130,14 +135,18 @@ const Schema = observer(function ({
 const ConfigurationEditor = observer(function ({
   model,
 }: {
-  model: { target?: AnyConfigurationModel; effectiveTarget?: AnyConfigurationModel }
+  model: {
+    target?: AnyConfigurationModel
+    effectiveTarget?: AnyConfigurationModel
+    saveConfig?: () => void
+  }
   session?: AbstractSessionModel
 }) {
   const { classes } = useStyles()
   // key forces a re-render, otherwise the same field can end up being used for
   // different tracks since only the backing model changes for example see pr
   // #804
-  // Use effectiveTarget if available (for frozen configs), otherwise target
+  // Use effectiveTarget if available, otherwise target
   const target = model.effectiveTarget ?? model.target
   if (!target) {
     return <Typography>No configuration target</Typography>
@@ -145,21 +154,34 @@ const ConfigurationEditor = observer(function ({
   const key = readConfObject(target, 'trackId')
   const name = readConfObject(target, 'name')
   return (
-    <Accordion key={key} defaultExpanded className={classes.accordion}>
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon className={classes.icon} />}
-      >
-        <Typography>
-          <SanitizedHTML html={name ?? 'Configuration'} />
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails
-        className={classes.expansionPanelDetails}
-        data-testid="configEditor"
-      >
-        <Schema schema={target} />
-      </AccordionDetails>
-    </Accordion>
+    <>
+      <Accordion key={key} defaultExpanded className={classes.accordion}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon className={classes.icon} />}
+        >
+          <Typography>
+            <SanitizedHTML html={name ?? 'Configuration'} />
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails
+          className={classes.expansionPanelDetails}
+          data-testid="configEditor"
+        >
+          <Schema schema={target} />
+        </AccordionDetails>
+      </Accordion>
+      {model.saveConfig ? (
+        <Button
+          className={classes.saveButton}
+          variant="contained"
+          color="primary"
+          startIcon={<SaveIcon />}
+          onClick={() => model.saveConfig?.()}
+        >
+          Save configuration
+        </Button>
+      ) : null}
+    </>
   )
 })
 

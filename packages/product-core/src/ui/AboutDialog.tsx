@@ -13,11 +13,11 @@ export function AboutDialog({
   session,
   handleClose,
 }: {
-  config: AnyConfigurationModel
+  config: AnyConfigurationModel | Record<string, unknown>
   session: AbstractSessionModel
   handleClose: () => void
 }) {
-  const trackName = getTrackName(config, session)
+  const trackName = getTrackName(config as AnyConfigurationModel, session)
   const { pluginManager } = getEnv(session)
 
   const AboutComponent = pluginManager.evaluateExtensionPoint(
@@ -25,7 +25,7 @@ export function AboutDialog({
     AboutContents,
     { session, config },
   ) as React.FC<{
-    config: AnyConfigurationModel
+    config: AnyConfigurationModel | Record<string, unknown>
     session: AbstractSessionModel
   }>
 
