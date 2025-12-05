@@ -1,15 +1,13 @@
 import '@testing-library/jest-dom'
 import userEvent from '@testing-library/user-event'
 
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
+import { createView, expectCanvasMatch, hts, setupTest } from './util'
+
 jest.mock('../makeWorkerInstance', () => () => {})
 
-const delay = { timeout: 30000 }
-setup()
+setupTest()
 
-beforeEach(() => {
-  doBeforeEach()
-})
+const delay = { timeout: 30000 }
 
 test('change color on track', async () => {
   const user = userEvent.setup()

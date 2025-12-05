@@ -1,11 +1,8 @@
 import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts, setup } from './util'
-setup()
+import { createView, hts, setupTest } from './util'
 
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 10000 }
 const opts = [{}, delay]

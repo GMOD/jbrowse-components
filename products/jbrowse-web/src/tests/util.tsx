@@ -6,7 +6,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { Image, createCanvas } from 'canvas'
 import { saveAs } from 'file-saver-es'
 import { LocalFile } from 'generic-filehandle2'
@@ -21,6 +20,7 @@ import JBrowse from './TestingJBrowse'
 
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type userEvent from '@testing-library/user-event'
 
 type LGV = LinearGenomeViewModel
 
@@ -61,9 +61,7 @@ export function setup() {
 }
 
 // Combined setup helper - use this instead of separate setup() + beforeEach(() => doBeforeEach())
-export function setupTest(
-  customResolver?: (url: string) => string,
-) {
+export function setupTest(customResolver?: (url: string) => string) {
   setup()
   beforeEach(() => {
     doBeforeEach(customResolver)

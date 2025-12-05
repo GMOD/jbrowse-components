@@ -4,11 +4,10 @@ import userEvent from '@testing-library/user-event'
 
 import {
   createView,
-  doBeforeEach,
   expectCanvasMatch,
   hts,
   mockConsoleWarn,
-  setup,
+  setupTest,
   sleep,
 } from './util'
 
@@ -16,11 +15,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view/src/LinearSyntenyView/model'
 import type { SessionWithConnections } from '@jbrowse/product-core'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 50000 }
 const opts = [{}, delay]

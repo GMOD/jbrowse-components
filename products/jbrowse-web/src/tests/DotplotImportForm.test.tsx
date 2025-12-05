@@ -1,14 +1,12 @@
 import { fireEvent, within } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
-setup()
+import { createView, expectCanvasMatch, setupTest } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
+setupTest()
+
 const delay = { timeout: 50000 }
-beforeEach(() => {
-  doBeforeEach()
-})
 
 // onAction listener warning
 console.warn = jest.fn()

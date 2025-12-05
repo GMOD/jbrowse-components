@@ -11,23 +11,13 @@ import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
 import * as sessionSharing from '../sessionSharing'
 import TestPlugin from './TestPlugin'
-import {
-  createView,
-  doBeforeEach,
-  expectCanvasMatch,
-  openTrackMenu,
-  setup,
-} from './util'
+import { createView, expectCanvasMatch, openTrackMenu, setupTest } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-setup()
+setupTest()
 
 const delay = { timeout: 30000 }
-
-beforeEach(() => {
-  doBeforeEach()
-})
 
 test('renders with an empty config', async () => {
   const { findByText } = await createView()

@@ -1,12 +1,8 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
+import { createView, expectCanvasMatch, hts, setupTest } from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 20000 }
 

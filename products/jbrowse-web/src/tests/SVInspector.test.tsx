@@ -1,18 +1,9 @@
 import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import {
-  doBeforeEach,
-  mockConsoleWarn,
-  openViewWithFileInput,
-  setup,
-} from './util'
+import { mockConsoleWarn, openViewWithFileInput, setupTest } from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 40000 }
 

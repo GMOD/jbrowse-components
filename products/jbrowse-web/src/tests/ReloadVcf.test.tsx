@@ -1,16 +1,12 @@
 import { LocalFile } from 'generic-filehandle2'
 
-import { doBeforeEach, generateReadBuffer, setup, testFileReload } from './util'
+import { generateReadBuffer, setupTest, testFileReload } from './util'
 
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
 )
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 test('reloads vcf (VCF.GZ 404)', async () => {
   await testFileReload({

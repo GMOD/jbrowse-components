@@ -1,14 +1,10 @@
 import '@testing-library/jest-dom'
 import { waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
+import { createView, mockConsoleWarn, setupTest } from './util'
 import breakpointConfig from '../../test_data/breakpoint/config.json'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
-})
+setupTest(url => require.resolve(`../../test_data/breakpoint/${url}`))
 
 const delay = { timeout: 40000 }
 

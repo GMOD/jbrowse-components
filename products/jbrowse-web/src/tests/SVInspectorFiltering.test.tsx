@@ -14,15 +14,11 @@
 import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, mockConsoleWarn, setup, sleep } from './util'
+import { createView, mockConsoleWarn, setupTest, sleep } from './util'
 
 import type { SvInspectorViewModel } from '../../../../plugins/sv-inspector/src/SvInspectorView/model'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 40000 }
 

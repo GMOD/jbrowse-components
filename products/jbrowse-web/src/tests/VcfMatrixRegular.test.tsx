@@ -1,11 +1,7 @@
 import { testMultiVariantDisplay } from './testMultiVariantDisplay'
-import { doBeforeEach, setup } from './util'
+import { setupTest } from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 test('regular', async () => {
   await testMultiVariantDisplay({ displayType: 'regular', timeout: 90000 })

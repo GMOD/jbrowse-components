@@ -1,14 +1,10 @@
 import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts, setup } from './util'
+import { createView, hts, setupTest } from './util'
 import configSnapshot from '../../test_data/volvox/config.json'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 10000 }
 const opts = [{}, delay]

@@ -1,16 +1,12 @@
 import path from 'path'
 
 import { testAlignmentModificationsDisplay } from './testAlignmentModificationsDisplay'
-import { doBeforeEach, setup } from './util'
+import { setupTest } from './util'
 import config from '../../test_data/methylation_test/config.json'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach(url =>
-    require.resolve(`../../test_data/methylation_test/${path.basename(url)}`),
-  )
-})
+setupTest(url =>
+  require.resolve(`../../test_data/methylation_test/${path.basename(url)}`),
+)
 
 test('color by methylation', async () => {
   await testAlignmentModificationsDisplay({

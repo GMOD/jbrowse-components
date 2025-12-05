@@ -1,22 +1,12 @@
 import { LocalFile } from 'generic-filehandle2'
 
-import {
-  doBeforeEach,
-  generateReadBuffer,
-  pv,
-  setup,
-  testFileReload,
-} from './util'
+import { generateReadBuffer, pv, setupTest, testFileReload } from './util'
 
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
 )
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 test('reloads alignments track (CRAI 404)', async () => {
   await testFileReload({

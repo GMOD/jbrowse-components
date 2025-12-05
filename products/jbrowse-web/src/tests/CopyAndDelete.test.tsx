@@ -4,18 +4,14 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import {
   JBrowse,
   createView,
-  doBeforeEach,
   expectCanvasMatch,
   getPluginManager,
   mockConsoleWarn,
-  setup,
+  setupTest,
 } from './util'
 import masterConfig from '../../test_data/volvox/connection_test.json'
 
-setup()
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 40000 }
 

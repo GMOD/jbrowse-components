@@ -2,17 +2,13 @@ import path from 'path'
 
 import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
 import dotplotSession from './dotplot_inverted_test.json'
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
+import { createView, expectCanvasMatch, setupTest } from './util'
 import config from '../../test_data/config_dotplot.json'
+
+setupTest(url => require.resolve(`../../test_data/${path.basename(url)}`))
 
 const delay = { timeout: 50000 }
 const opts = [{}, delay]
-
-setup()
-
-beforeEach(() => {
-  doBeforeEach(url => require.resolve(`../../test_data/${path.basename(url)}`))
-})
 
 test('open a dotplot view', async () => {
   const { findByTestId } = await createView(config)

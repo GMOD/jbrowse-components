@@ -1,12 +1,8 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { doBeforeEach, doSetupForImportForm, setup } from './util'
+import { doSetupForImportForm, setupTest } from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 20000 }
 

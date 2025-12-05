@@ -1,11 +1,7 @@
 import { testOpenTrack } from './testOpenTrack'
-import { doBeforeEach, setup } from './util'
+import { setupTest } from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 test('open a bigwig track', async () => {
   await testOpenTrack({

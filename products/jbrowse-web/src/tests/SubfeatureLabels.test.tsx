@@ -1,12 +1,7 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import {
-  createView,
-  expectCanvasMatch,
-  openTrackMenu,
-  setupTest,
-} from './util'
+import { createView, expectCanvasMatch, openTrackMenu, setupTest } from './util'
 
 setupTest()
 

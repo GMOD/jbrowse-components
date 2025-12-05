@@ -1,13 +1,9 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
-import { createView, doBeforeEach, setup } from './util'
+import { createView, setupTest } from './util'
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 40_000 }
 const opts = [{}, delay]

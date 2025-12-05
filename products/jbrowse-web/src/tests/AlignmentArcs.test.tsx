@@ -1,11 +1,7 @@
 import { testLinkedReadsDisplay } from './testLinkedReadsDisplay'
-import { doBeforeEach, setup } from './util'
+import { setupTest } from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const testArc = (loc: string, track: string) =>
   testLinkedReadsDisplay({
