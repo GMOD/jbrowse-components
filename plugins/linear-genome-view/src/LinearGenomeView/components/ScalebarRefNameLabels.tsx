@@ -3,19 +3,35 @@ import { useEffect, useRef } from 'react'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
-import { getCachedElements } from '../util'
+import { getCachedElements, getPinnedContentBlock } from '../util'
 import ScalebarPinnedLabel from './ScalebarPinnedLabel'
 
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
+function updateFirstLabelPrefix(
+  firstLabel: HTMLSpanElement | null,
+  model: LGV,
+) {
+  if (!firstLabel) {
+    return
+  }
+  const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
+  const pinnedBlock = getPinnedContentBlock(staticBlocks, offsetPx)
+  const prefix = scalebarDisplayPrefix()
+  const refName = firstLabel.dataset.refname || ''
+  const showPrefix = prefix && !pinnedBlock
+  firstLabel.textContent = (showPrefix ? `${prefix}:` : '') + refName
+}
+
 function ScalebarRefNameLabels({ model }: { model: LGV }) {
   const theme = useTheme()
   const innerRef = useRef<HTMLDivElement>(null)
   const lastBpPerPxRef = useRef<number | null>(null)
+  const firstLabelRef = useRef<HTMLSpanElement | null>(null)
 
-  // Handle offsetPx changes - update container position
+  // Fast path: update transform and prefix on scroll
   useEffect(() => {
     return autorun(
       function refNameLabelsOffsetAutorun() {
@@ -24,19 +40,19 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
         if (inner) {
           inner.style.transform = `translateX(${-offsetPx}px)`
         }
+        updateFirstLabelPrefix(firstLabelRef.current, model)
       },
       { name: 'RefNameLabelsOffset' },
     )
   }, [model])
 
-  // Handle staticBlocks changes - create/update label elements
+  // Slow path: rebuild labels when blocks change
   useEffect(() => {
     const bgColor = theme.palette.background.paper
 
     return autorun(
       function refNameLabelsLayoutAutorun() {
-        const { staticBlocks, bpPerPx, scalebarDisplayPrefix } = model
-        const prefix = scalebarDisplayPrefix()
+        const { staticBlocks, bpPerPx } = model
         const inner = innerRef.current
         if (!inner) {
           return
@@ -50,6 +66,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
         )
 
         const fragment = document.createDocumentFragment()
+        firstLabelRef.current = null
 
         let index = 0
         for (const block of staticBlocks) {
@@ -68,15 +85,20 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
               span.dataset.labelKey = key
               span.dataset.testid = `refLabel-${refName}`
             }
+            span.dataset.refname = refName
             span.style.left = `${blockOffsetPx - 1}px`
             span.style.paddingLeft = '1px'
-            span.textContent = (prefix ? `${prefix}:` : '') + refName
+            span.textContent = refName
             fragment.append(span)
+            if (!firstLabelRef.current) {
+              firstLabelRef.current = span
+            }
           }
           index++
         }
 
         inner.replaceChildren(fragment)
+        updateFirstLabelPrefix(firstLabelRef.current, model)
       },
       { name: 'RefNameLabelsLayout' },
     )

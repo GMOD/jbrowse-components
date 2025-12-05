@@ -1942,7 +1942,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
               }
             },
-            { delay: 100, name: 'LGVCoarseDynamicBlocks' },
+            { delay: 500, name: 'LGVCoarseDynamicBlocks' },
           ),
         )
 

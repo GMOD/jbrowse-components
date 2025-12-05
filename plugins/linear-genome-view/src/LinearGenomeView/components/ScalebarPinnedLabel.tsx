@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
+import { getPinnedContentBlock } from '../util'
+
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
@@ -15,29 +17,16 @@ function ScalebarPinnedLabel({ model }: { model: LGV }) {
     return autorun(
       function pinnedLabelAutorun() {
         const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
-
         const span = spanRef.current
         if (!span) {
           return
         }
 
-        // Find which block should be pinned (one that's off-screen left)
-        let pinnedBlockIndex = -1
-        let i = 0
-        for (const block of staticBlocks) {
-          if (block.offsetPx - offsetPx < 0) {
-            pinnedBlockIndex = i
-          } else {
-            break
-          }
-          i++
-        }
-
-        const pinnedBlock = staticBlocks.blocks[pinnedBlockIndex]
-        if (pinnedBlockIndex >= 0 && pinnedBlock?.type === 'ContentBlock') {
-          const val = scalebarDisplayPrefix()
+        const pinnedBlock = getPinnedContentBlock(staticBlocks, offsetPx)
+        if (pinnedBlock) {
+          const prefix = scalebarDisplayPrefix()
           span.style.display = ''
-          span.textContent = (val ? `${val}:` : '') + pinnedBlock.refName
+          span.textContent = (prefix ? `${prefix}:` : '') + pinnedBlock.refName
         } else {
           span.style.display = 'none'
         }
