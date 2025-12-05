@@ -365,7 +365,7 @@ any
 boolean
 ```
 
-#### getter: scaleBarHeight
+#### getter: scalebarHeight
 
 ```js
 // type
@@ -554,11 +554,11 @@ any
 
 ### LinearGenomeView - Methods
 
-#### method: scaleBarDisplayPrefix
+#### method: scalebarDisplayPrefix
 
 ```js
 // type signature
-scaleBarDisplayPrefix: () => any
+scalebarDisplayPrefix: () => any
 ```
 
 #### method: MiniControlsComponent
@@ -931,6 +931,13 @@ showAllRegionsInAssembly: (assemblyName?: string) => void
 ```js
 // type signature
 setDraggingTrackId: (idx?: string) => void
+```
+
+#### action: setLastTrackDragY
+
+```js
+// type signature
+setLastTrackDragY: (y: number) => void
 ```
 
 #### action: setScaleFactor
