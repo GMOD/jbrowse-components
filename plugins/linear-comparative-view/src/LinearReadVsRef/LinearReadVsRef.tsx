@@ -237,7 +237,7 @@ export default function ReadVsRefDialog({
                     showReverse: true,
                     showTranslation: false,
                     height: 35,
-                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                    configuration: `${sequenceTrackConf.trackId}-LinearReferenceSequenceDisplay`,
                   },
                 ],
               },

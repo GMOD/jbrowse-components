@@ -144,7 +144,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             onClick: () => {
               self.queueDialog(doneCallback => [
                 AboutDialog,
-                { config, handleClose: doneCallback },
+                { config, session: self, handleClose: doneCallback },
               ])
             },
             icon: InfoIcon,

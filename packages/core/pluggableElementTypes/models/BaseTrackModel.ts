@@ -166,7 +166,7 @@ export function createBaseTrackModel(
         const display = displayType.stateModel.create({
           ...initialSnapshot,
           type: conf.type,
-          configuration: conf,
+          configuration: displayId,
         })
         self.displays.push(display)
       },
@@ -205,7 +205,7 @@ export function createBaseTrackModel(
         self.displays.splice(idx, 1, {
           ...initialSnapshot,
           type: conf.type,
-          configuration: conf,
+          configuration: newId,
         })
       },
     }))
@@ -252,6 +252,7 @@ export function createBaseTrackModel(
               getSession(self).queueDialog(handleClose => [
                 SaveTrackDataDlg,
                 {
+                  // @ts-expect-error cast needed due to snapshotProcessor wrapper on configuration
                   model: self,
                   handleClose,
                 },

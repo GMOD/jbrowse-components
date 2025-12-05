@@ -8,13 +8,7 @@ import {
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getSnapshot,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
@@ -120,6 +114,16 @@ export function BaseWebSession({
       task: undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries([
+          ...this.tracks.map(t => [t.trackId, t]),
+          // @ts-expect-error
+          ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+        ])
+      },
       /**
        * #getter
        */
@@ -339,9 +343,13 @@ export function BaseWebSession({
       /**
        * #action
        */
-      editTrackConfiguration(configuration: AnyConfigurationModel) {
+      editTrackConfiguration(
+        configuration: AnyConfigurationModel | { trackId: string },
+      ) {
         const { adminMode, sessionTracks } = self
-        if (!adminMode && !sessionTracks.includes(configuration)) {
+        const trackId = configuration.trackId
+        const isSessionTrack = sessionTracks.some(t => t.trackId === trackId)
+        if (!adminMode && !isSessionTrack) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         self.editConfiguration(configuration)
@@ -368,6 +376,7 @@ export function BaseWebSession({
                 {
                   config,
                   handleClose,
+                  session: self,
                 },
               ])
             },
@@ -396,14 +405,16 @@ export function BaseWebSession({
             priority: 999,
             disabled: isRefSeq,
             onClick: () => {
-              const snap = structuredClone(getSnapshot(config)) as {
+              const snap = structuredClone(config) as {
                 [key: string]: unknown
-                displays: Display[]
+                displays?: Display[]
               }
               const now = Date.now()
               snap.trackId += `-${now}`
-              for (const display of snap.displays) {
-                display.displayId += `-${now}`
+              if (snap.displays) {
+                for (const display of snap.displays) {
+                  display.displayId += `-${now}`
+                }
               }
               // the -sessionTrack suffix to trackId is used as metadata for
               // the track selector to store the track in a special category,

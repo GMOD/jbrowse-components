@@ -1,14 +1,12 @@
-import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
-  getParent,
-  getRoot,
-  resolveIdentifier,
-  types,
-} from '@jbrowse/mobx-state-tree'
-import { transaction } from 'mobx'
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -53,67 +51,20 @@ export function linearSyntenyViewHelperModelFactory(
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(schema, getRoot(self), trackId)
-        if (!configuration) {
-          throw new Error(`track not found ${trackId}`)
-        }
-        const trackType = pluginManager.getTrackType(configuration.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${configuration.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)!
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
-        )
-        const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.has(d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
-          )
-        }
-
-        self.tracks.push(
-          trackType.stateModel.create({
-            ...initialSnapshot,
-            type: configuration.type,
-            configuration,
-            displays: [
-              {
-                type: displayConf.type,
-                configuration: displayConf,
-              },
-            ],
-          }),
-        )
+        return showTrackGeneric(self, trackId, initialSnapshot)
       },
 
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const config = resolveIdentifier(schema, getRoot(self), trackId)
-        const shownTracks = self.tracks.filter(t => t.configuration === config)
-        transaction(() => {
-          for (const t of shownTracks) {
-            self.tracks.remove(t)
-          }
-        })
-        return shownTracks.length
+        return hideTrackGeneric(self, trackId)
       },
       /**
        * #action
        */
       toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-          return true
-        }
-        return false
+        toggleTrackGeneric(self, trackId)
       },
     }))
     .views(self => ({
