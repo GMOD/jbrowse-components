@@ -1,3 +1,4 @@
+import { Cable } from '@jbrowse/core/ui/Icons'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import GetAppIcon from '@mui/icons-material/GetApp'
@@ -5,11 +6,9 @@ import PublishIcon from '@mui/icons-material/Publish'
 import RedoIcon from '@mui/icons-material/Redo'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
-import { Cable } from '@jbrowse/core/ui/Icons'
 
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type { AbstractViewModel } from '@jbrowse/core/util'
+import type { AbstractViewModel, SessionWithWidgets } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 interface SessionWithViews {

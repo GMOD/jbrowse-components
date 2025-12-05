@@ -15,8 +15,8 @@ import {
 import { autorun, observable, toJS } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { JobsListModel } from '@jbrowse/plugin-jobs-management/src/JobsListWidget/model'

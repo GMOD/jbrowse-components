@@ -5,6 +5,7 @@ import {
   isConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
 import {
   getContainingView,
   isSessionModelWithWidgets,
@@ -27,27 +28,28 @@ import {
   types,
   walk,
 } from '@jbrowse/mobx-state-tree'
-import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
-import { autorun, observable } from 'mobx'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
-import SettingsIcon from '@mui/icons-material/Settings'
 import Report from '@mui/icons-material/Report'
+import SettingsIcon from '@mui/icons-material/Settings'
+import { autorun, observable } from 'mobx'
 
 import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type {
+  BaseTrackConfig,
+  IBaseViewModel,
+} from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type {
   AssemblyManager,
   DialogComponentType,
@@ -621,9 +623,7 @@ export function BaseWebSession({
           const idx = self.sessionConnections.findIndex(
             c => c.connectionId === connectionId,
           )
-          return idx === -1
-            ? undefined
-            : self.sessionConnections.splice(idx, 1)
+          return idx === -1 ? undefined : self.sessionConnections.splice(idx, 1)
         }
       },
 
@@ -924,7 +924,10 @@ export function BaseWebSession({
             function sessionLocalStorageAutorun() {
               localStorageSetItem('drawerPosition', self.drawerPosition)
               localStorageSetItem('themeName', self.themeName)
-              localStorageSetBoolean('stickyViewHeaders', self.stickyViewHeaders)
+              localStorageSetBoolean(
+                'stickyViewHeaders',
+                self.stickyViewHeaders,
+              )
             },
             { name: 'SessionLocalStorage' },
           ),

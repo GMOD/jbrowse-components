@@ -5,6 +5,8 @@ import {
   isConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
+import { Indexing } from '@jbrowse/core/ui/Icons'
 import {
   getContainingView,
   isSessionModelWithWidgets,
@@ -15,8 +17,6 @@ import {
   localStorageSetItem,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { Indexing } from '@jbrowse/core/ui/Icons'
-import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
 import {
   addDisposer,
   cast,
@@ -30,33 +30,35 @@ import {
   types,
   walk,
 } from '@jbrowse/mobx-state-tree'
-import { autorun, observable } from 'mobx'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
-import SettingsIcon from '@mui/icons-material/Settings'
 import Report from '@mui/icons-material/Report'
+import SettingsIcon from '@mui/icons-material/Settings'
+import { autorun, observable } from 'mobx'
 
 import type { DesktopRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type {
+  BaseTrackConfig,
+  IBaseViewModel,
+} from '@jbrowse/core/pluggableElementTypes'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+import type {
+  AbstractSessionModel,
   AssemblyManager,
   DialogComponentType,
   NotificationLevel,
   SnackAction,
   TrackViewModel,
 } from '@jbrowse/core/util'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
@@ -672,7 +674,10 @@ export default function sessionModelFactory({
             function sessionLocalStorageAutorun() {
               localStorageSetItem('drawerPosition', self.drawerPosition)
               localStorageSetItem('themeName', self.themeName)
-              localStorageSetBoolean('stickyViewHeaders', self.stickyViewHeaders)
+              localStorageSetBoolean(
+                'stickyViewHeaders',
+                self.stickyViewHeaders,
+              )
             },
             { name: 'SessionLocalStorage' },
           ),
@@ -750,10 +755,11 @@ export default function sessionModelFactory({
                           'Name',
                           'ID',
                         ],
-                        exclude: textSearching?.indexingFeatureTypesToExclude || [
-                          'CDS',
-                          'exon',
-                        ],
+                        exclude:
+                          textSearching?.indexingFeatureTypesToExclude || [
+                            'CDS',
+                            'exon',
+                          ],
                         assemblies: assemblyNames,
                         tracks: [trackId],
                         indexType: 'perTrack',

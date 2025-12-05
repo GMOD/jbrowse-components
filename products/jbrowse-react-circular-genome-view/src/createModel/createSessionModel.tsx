@@ -23,12 +23,11 @@ import {
   types,
   walk,
 } from '@jbrowse/mobx-state-tree'
-import { autorun, observable } from 'mobx'
 import InfoIcon from '@mui/icons-material/Info'
 import Report from '@mui/icons-material/Report'
+import { autorun, observable } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type {
   AnyConfiguration,
@@ -36,6 +35,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type {
   AssemblyManager,
   DialogComponentType,

@@ -1,23 +1,21 @@
 import { lazy } from 'react'
 
 import {
-  HistoryManagementMixin,
-  RootAppMenuMixin,
-  getOpenTrackMenuItem,
-  getOpenConnectionMenuItem,
-  getUndoMenuItem,
-  getRedoMenuItem,
-  getPluginStoreMenuItem,
-  getImportSessionMenuItem,
   getExportSessionMenuItem,
+  getImportSessionMenuItem,
+  getOpenConnectionMenuItem,
+  getOpenTrackMenuItem,
+  getPluginStoreMenuItem,
+  getRedoMenuItem,
+  getUndoMenuItem,
   processMutableMenuActions,
 } from '@jbrowse/app-core'
-import type { Menu, SessionModelFactory } from '@jbrowse/app-core'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { DNA } from '@jbrowse/core/ui/Icons'
+import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import {
   addDisposer,
   getSnapshot,
@@ -25,10 +23,7 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
-import {
-  BaseRootModelFactory,
-  InternetAccountsRootModelMixin,
-} from '@jbrowse/product-core'
+import { BaseRootModelFactory } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -43,10 +38,14 @@ import jbrowseWebFactory from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
 
 import type { SessionDB, SessionMetadata } from '../types'
+import type { Menu, MenuAction, SessionModelFactory } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   AbstractSessionModel,
   SessionWithWidgets,
+  UriLocation,
 } from '@jbrowse/core/util'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
@@ -63,9 +62,6 @@ type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
  *
  * composed of
  * - [BaseRootModel](../baserootmodel)
- * - [InternetAccountsMixin](../internetaccountsmixin)
- * - [HistoryManagementMixin](../historymanagementmixin)
- * - [RootAppMenuMixin](../rootappmenumixin)
  *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
@@ -97,9 +93,14 @@ export default function RootModel({
         sessionModelType,
         assemblyConfigSchema,
       }),
-      InternetAccountsRootModelMixin(pluginManager),
-      HistoryManagementMixin(),
-      RootAppMenuMixin(),
+      types.model({
+        // InternetAccountsRootModelMixin property
+        internetAccounts: types.array(
+          pluginManager.pluggableMstType('internet account', 'stateModel'),
+        ),
+        // HistoryManagementMixin property
+        history: types.optional(TimeTraveller, { targetPath: '../session' }),
+      }),
     )
     .props({
       /**
@@ -156,6 +157,8 @@ export default function RootModel({
       ) => {
         console.error('reloadPluginManagerCallback unimplemented')
       },
+      // RootAppMenuMixin volatile
+      mutableMenuActions: [] as MenuAction[],
     }))
 
     .actions(self => ({
@@ -185,236 +188,436 @@ export default function RootModel({
       setSessionDB(sessionDB: IDBPDatabase<SessionDB>) {
         self.sessionDB = sessionDB
       },
-    }))
-    .actions(self => ({
-      /**
-       * #aftercreate
-       */
-      afterCreate() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
-              upgrade(db) {
-                db.createObjectStore('metadata')
-                db.createObjectStore('sessions')
-              },
-            })
-            self.setSessionDB(sessionDB)
 
+      // InternetAccountsRootModelMixin actions
+      /**
+       * #action
+       */
+      initializeInternetAccount(
+        internetAccountConfig: AnyConfigurationModel,
+        initialSnapshot = {},
+      ) {
+        const internetAccountType = pluginManager.getInternetAccountType(
+          internetAccountConfig.type,
+        )
+        if (!internetAccountType) {
+          throw new Error(
+            `unknown internet account type ${internetAccountConfig.type}`,
+          )
+        }
+
+        const length = self.internetAccounts.push({
+          ...initialSnapshot,
+          type: internetAccountConfig.type,
+          configuration: internetAccountConfig,
+        })
+        return self.internetAccounts[length - 1]
+      },
+
+      /**
+       * #action
+       */
+      createEphemeralInternetAccount(
+        internetAccountId: string,
+        initialSnapshot: Record<string, unknown>,
+        url: string,
+      ) {
+        let hostUri: string | undefined
+
+        try {
+          hostUri = new URL(url).origin
+        } catch {
+          // ignore
+        }
+        const internetAccountSplit = internetAccountId.split('-')
+        const configuration = {
+          type: internetAccountSplit[0]!,
+          internetAccountId: internetAccountId,
+          name: internetAccountSplit.slice(1).join('-'),
+          description: '',
+          domains: hostUri ? [hostUri] : [],
+        }
+        const type = pluginManager.getInternetAccountType(configuration.type)!
+        const internetAccount = type.stateModel.create({
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+        self.internetAccounts.push(internetAccount)
+        return internetAccount
+      },
+      /**
+       * #action
+       */
+      findAppropriateInternetAccount(location: UriLocation) {
+        const selectedId = location.internetAccountId
+        if (selectedId) {
+          const selectedAccount = self.internetAccounts.find(account => {
+            return account.internetAccountId === selectedId
+          })
+          if (selectedAccount) {
+            return selectedAccount
+          }
+        }
+
+        for (const account of self.internetAccounts) {
+          const handleResult = account.handlesLocation(location)
+          if (handleResult) {
+            return account
+          }
+        }
+
+        return selectedId
+          ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
+          : null
+      },
+
+      // RootAppMenuMixin actions
+      /**
+       * #action
+       */
+      setMenus(newMenus: Menu[]) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'setMenus', newMenus },
+        ]
+      },
+      /**
+       * #action
+       */
+      appendMenu(menuName: string) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'appendMenu', menuName },
+        ]
+      },
+      /**
+       * #action
+       */
+      insertMenu(menuName: string, position: number) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'insertMenu', menuName, position },
+        ]
+      },
+      /**
+       * #action
+       */
+      appendToMenu(menuName: string, menuItem: MenuItem) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'appendToMenu', menuName, menuItem },
+        ]
+      },
+      /**
+       * #action
+       */
+      insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
+        self.mutableMenuActions.push({
+          type: 'insertInMenu',
+          menuName,
+          menuItem,
+          position,
+        })
+      },
+      /**
+       * #action
+       */
+      appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'appendToSubMenu', menuPath, menuItem },
+        ]
+      },
+      /**
+       * #action
+       */
+      insertInSubMenu(
+        menuPath: string[],
+        menuItem: MenuItem,
+        position: number,
+      ) {
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'insertInSubMenu', menuPath, menuItem, position },
+        ]
+      },
+    }))
+    .actions(self => {
+      // HistoryManagementMixin keyboard listener
+      const keydownListener = (e: KeyboardEvent) => {
+        if (
+          self.history.canRedo &&
+          (((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyZ') ||
+            (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')) &&
+          document.activeElement?.tagName.toUpperCase() !== 'INPUT'
+        ) {
+          self.history.redo()
+        }
+        if (
+          self.history.canUndo &&
+          (e.ctrlKey || e.metaKey) &&
+          !e.shiftKey &&
+          e.code === 'KeyZ' &&
+          document.activeElement?.tagName.toUpperCase() !== 'INPUT'
+        ) {
+          self.history.undo()
+        }
+      }
+
+      return {
+        /**
+         * #aftercreate
+         */
+        afterCreate() {
+          // HistoryManagementMixin setup
+          document.addEventListener('keydown', keydownListener)
+          addDisposer(
+            self,
+            autorun(
+              function historyInitAutorun() {
+                if (self.session) {
+                  self.history.initialize()
+                }
+              },
+              { name: 'HistoryInit' },
+            ),
+          )
+
+          // InternetAccountsRootModelMixin setup
+          addDisposer(
+            self,
+            autorun(
+              function internetAccountsAutorun() {
+                for (const internetAccount of self.jbrowse.internetAccounts) {
+                  self.initializeInternetAccount(internetAccount)
+                }
+              },
+              { name: 'InternetAccounts' },
+            ),
+          )
+
+          // Session storage setup
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            try {
+              const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
+                upgrade(db) {
+                  db.createObjectStore('metadata')
+                  db.createObjectStore('sessions')
+                },
+              })
+              self.setSessionDB(sessionDB)
+
+              addDisposer(
+                self,
+                autorun(
+                  async () => {
+                    if (self.session) {
+                      try {
+                        const s = self.session
+
+                        if (self.sessionDB) {
+                          await sessionDB.put('sessions', getSnapshot(s), s.id)
+                          if (!isAlive(self)) {
+                            return
+                          }
+
+                          const ret = await self.sessionDB.get('metadata', s.id)
+                          await sessionDB.put(
+                            'metadata',
+                            {
+                              ...ret,
+                              favorite: ret?.favorite || false,
+                              name: s.name,
+                              id: s.id,
+                              createdAt: new Date(),
+                              configPath: self.configPath || '',
+                            },
+                            s.id,
+                          )
+                        }
+                        await self.fetchSessionMetadata()
+                      } catch (e) {
+                        console.error(e)
+                        self.session?.notifyError(`${e}`, e)
+                      }
+                    }
+                  },
+                  { delay: 400 },
+                ),
+              )
+            } catch (e) {
+              console.error(e)
+              self.session?.notifyError(`${e}`, e)
+            }
+
+            let savingFailed = false
             addDisposer(
               self,
               autorun(
-                async () => {
+                () => {
                   if (self.session) {
+                    const s = self.session as AbstractSessionModel
+                    const sessionSnap = getSnapshot(s)
                     try {
-                      // careful not to access self.savedSessionMetadata in
-                      // here, or else it can create an infinite loop
-                      const s = self.session
+                      sessionStorage.setItem(
+                        'current',
+                        JSON.stringify({
+                          session: sessionSnap,
+                          createdAt: new Date(),
+                        }),
+                      )
+                      if (savingFailed) {
+                        savingFailed = false
+                        s.notify('Auto-saving restored', 'info')
+                      }
 
-                      // step 1. update the idb data according to whatever
-                      // triggered the autorun
-                      if (self.sessionDB) {
-                        await sessionDB.put('sessions', getSnapshot(s), s.id)
-                        if (!isAlive(self)) {
-                          return
-                        }
-
-                        const ret = await self.sessionDB.get('metadata', s.id)
-                        await sessionDB.put(
-                          'metadata',
-                          {
-                            ...ret,
-                            favorite: ret?.favorite || false,
-                            name: s.name,
-                            id: s.id,
-                            createdAt: new Date(),
-                            configPath: self.configPath || '',
-                          },
-                          s.id,
+                      if (self.pluginsUpdated) {
+                        self.reloadPluginManagerCallback(
+                          structuredClone(getSnapshot(self.jbrowse)),
+                          structuredClone(sessionSnap),
                         )
                       }
-                      // step 2. refetch the metadata
-                      await self.fetchSessionMetadata()
                     } catch (e) {
                       console.error(e)
-                      self.session?.notifyError(`${e}`, e)
+                      const msg = `${e}`
+                      if (!savingFailed) {
+                        savingFailed = true
+                        if (msg.includes('quota')) {
+                          s.notifyError(
+                            'Unable to auto-save session, exceeded sessionStorage quota. This may be because a very large feature was stored in session',
+                            e,
+                          )
+                        } else {
+                          s.notifyError(msg, e)
+                        }
+                      }
                     }
                   }
                 },
                 { delay: 400 },
               ),
             )
-          } catch (e) {
-            console.error(e)
-            self.session?.notifyError(`${e}`, e)
-          }
-
-          let savingFailed = false
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                if (self.session) {
-                  const s = self.session as AbstractSessionModel
-                  const sessionSnap = getSnapshot(s)
-                  try {
-                    sessionStorage.setItem(
-                      'current',
-                      JSON.stringify({
-                        session: sessionSnap,
-                        createdAt: new Date(),
-                      }),
-                    )
-                    if (savingFailed) {
-                      savingFailed = false
-                      s.notify('Auto-saving restored', 'info')
-                    }
-
-                    // this check is not able to be modularized into it's own
-                    // autorun at current time because it depends on session
-                    // storage snapshot being set above
-                    if (self.pluginsUpdated) {
-                      self.reloadPluginManagerCallback(
-                        structuredClone(getSnapshot(self.jbrowse)),
-                        structuredClone(sessionSnap),
-                      )
-                    }
-                  } catch (e) {
-                    console.error(e)
-                    const msg = `${e}`
-                    if (!savingFailed) {
-                      savingFailed = true
-                      if (msg.includes('quota')) {
-                        s.notifyError(
-                          'Unable to auto-save session, exceeded sessionStorage quota. This may be because a very large feature was stored in session',
-                          e,
-                        )
-                      } else {
-                        s.notifyError(msg, e)
-                      }
-                    }
-                  }
-                }
-              },
-              { delay: 400 },
-            ),
-          )
-        })()
-      },
-      /**
-       * #action
-       */
-      setPluginsUpdated(flag: boolean) {
-        self.pluginsUpdated = flag
-      },
-      /**
-       * #action
-       */
-      setReloadPluginManagerCallback(
-        callback: (
-          configSnapshot: Record<string, unknown>,
-          sessionSnapshot: Record<string, unknown>,
-        ) => void,
-      ) {
-        self.reloadPluginManagerCallback = callback
-      },
-      /**
-       * #action
-       */
-      setDefaultSession() {
-        const { defaultSession } = self.jbrowse
-        const { setSession } = self as unknown as {
-          setSession: (arg: unknown) => void
-        }
-        setSession({
-          ...defaultSession,
-          name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
-        })
-      },
-      /**
-       * #action
-       */
-      async activateSession(id: string) {
-        const ret = await self.sessionDB?.get('sessions', id)
-        if (ret) {
+          })()
+        },
+        beforeDestroy() {
+          document.removeEventListener('keydown', keydownListener)
+        },
+        /**
+         * #action
+         */
+        setPluginsUpdated(flag: boolean) {
+          self.pluginsUpdated = flag
+        },
+        /**
+         * #action
+         */
+        setReloadPluginManagerCallback(
+          callback: (
+            configSnapshot: Record<string, unknown>,
+            sessionSnapshot: Record<string, unknown>,
+          ) => void,
+        ) {
+          self.reloadPluginManagerCallback = callback
+        },
+        /**
+         * #action
+         */
+        setDefaultSession() {
+          const { defaultSession } = self.jbrowse
           const { setSession } = self as unknown as {
             setSession: (arg: unknown) => void
           }
-          setSession(ret)
-        } else {
-          self.session.notifyError('Session not found')
-        }
-      },
-      /**
-       * #action
-       */
-      async favoriteSavedSession(id: string) {
-        if (self.sessionDB) {
-          const ret = self.savedSessionMetadata!.find(f => f.id === id)
+          setSession({
+            ...defaultSession,
+            name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
+          })
+        },
+        /**
+         * #action
+         */
+        async activateSession(id: string) {
+          const ret = await self.sessionDB?.get('sessions', id)
           if (ret) {
-            await self.sessionDB.put(
-              'metadata',
-              {
-                ...ret,
-                favorite: true,
-              },
-              ret.id,
-            )
+            const { setSession } = self as unknown as {
+              setSession: (arg: unknown) => void
+            }
+            setSession(ret)
+          } else {
+            self.session.notifyError('Session not found')
+          }
+        },
+        /**
+         * #action
+         */
+        async favoriteSavedSession(id: string) {
+          if (self.sessionDB) {
+            const ret = self.savedSessionMetadata!.find(f => f.id === id)
+            if (ret) {
+              await self.sessionDB.put(
+                'metadata',
+                {
+                  ...ret,
+                  favorite: true,
+                },
+                ret.id,
+              )
+              await self.fetchSessionMetadata()
+            }
+          }
+        },
+        /**
+         * #action
+         */
+        async unfavoriteSavedSession(id: string) {
+          if (self.sessionDB) {
+            const ret = self.savedSessionMetadata!.find(f => f.id === id)
+            if (ret) {
+              await self.sessionDB.put(
+                'metadata',
+                {
+                  ...ret,
+                  favorite: false,
+                },
+                ret.id,
+              )
+            }
             await self.fetchSessionMetadata()
           }
-        }
-      },
-      /**
-       * #action
-       */
-      async unfavoriteSavedSession(id: string) {
-        if (self.sessionDB) {
-          const ret = self.savedSessionMetadata!.find(f => f.id === id)
-          if (ret) {
-            await self.sessionDB.put(
-              'metadata',
-              {
-                ...ret,
-                favorite: false,
-              },
-              ret.id,
-            )
+        },
+        /**
+         * #action
+         */
+        async deleteSavedSession(id: string) {
+          if (self.sessionDB) {
+            await self.sessionDB.delete('metadata', id)
+            await self.sessionDB.delete('sessions', id)
+            await self.fetchSessionMetadata()
           }
-          await self.fetchSessionMetadata()
-        }
-      },
-      /**
-       * #action
-       */
-      async deleteSavedSession(id: string) {
-        if (self.sessionDB) {
-          await self.sessionDB.delete('metadata', id)
-          await self.sessionDB.delete('sessions', id)
-          await self.fetchSessionMetadata()
-        }
-      },
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        const { setSession } = self as unknown as {
-          setSession: (arg: unknown) => void
-        }
-        const snapshot = getSnapshot(self.session) as Record<string, unknown>
-        setSession({
-          ...snapshot,
-          name: sessionName,
-        })
-      },
+        },
+        /**
+         * #action
+         */
+        renameCurrentSession(sessionName: string) {
+          const { setSession } = self as unknown as {
+            setSession: (arg: unknown) => void
+          }
+          const snapshot = getSnapshot(self.session)
+          setSession({
+            ...snapshot,
+            name: sessionName,
+          })
+        },
 
-      /**
-       * #action
-       */
-      setError(error?: unknown) {
-        self.error = error
-      },
-    }))
+        /**
+         * #action
+         */
+        setError(error?: unknown) {
+          self.error = error
+        },
+      }
+    })
     .views(self => ({
       /**
        * #method

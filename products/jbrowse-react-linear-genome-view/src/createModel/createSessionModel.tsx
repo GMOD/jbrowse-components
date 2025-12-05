@@ -1,6 +1,9 @@
 import { lazy } from 'react'
 
-import { isConfigurationModel } from '@jbrowse/core/configuration'
+import {
+  isConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import {
   getContainingView,
   isSessionModelWithWidgets,
@@ -21,13 +24,11 @@ import {
   types,
   walk,
 } from '@jbrowse/mobx-state-tree'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { autorun, observable } from 'mobx'
 import InfoIcon from '@mui/icons-material/Info'
 import Report from '@mui/icons-material/Report'
+import { autorun, observable } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type {
   AnyConfiguration,
@@ -35,6 +36,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type {
   AssemblyManager,
   DialogComponentType,
@@ -43,10 +45,7 @@ import type {
   TrackViewModel,
 } from '@jbrowse/core/util'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
-import type {
-  IAnyStateTreeNode,
-  Instance,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
