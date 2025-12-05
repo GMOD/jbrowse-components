@@ -105,6 +105,16 @@ any
 any
 ```
 
+#### getter: skipFeatures
+
+Collect all skip features from rendered blocks for cross-region arc drawing Uses
+a Map to deduplicate features that appear in multiple blocks
+
+```js
+// type
+Feature[]
+```
+
 #### getter: modificationThreshold
 
 ```js
@@ -158,7 +168,7 @@ boolean
 
 ```js
 // type
-LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element>
+LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; mouseoverExtraInformation?: string; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element>
 ```
 
 #### getter: adapterConfig
@@ -206,6 +216,13 @@ adapterProps: () => any
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { onIndicatorClick(_: unknown, item: { type: string; base: string; count: number; total: number; avgLength?: number; minLength?: number; maxLength?: number; }): void; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; }
 ```
 
 #### method: contextMenuItems

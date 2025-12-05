@@ -14,7 +14,7 @@ function ScalebarPinnedLabel({ model }: { model: LGV }) {
   useEffect(() => {
     return autorun(
       function pinnedLabelAutorun() {
-        const { staticBlocks, offsetPx, scaleBarDisplayPrefix } = model
+        const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
 
         const span = spanRef.current
         if (!span) {
@@ -35,7 +35,7 @@ function ScalebarPinnedLabel({ model }: { model: LGV }) {
 
         const pinnedBlock = staticBlocks.blocks[pinnedBlockIndex]
         if (pinnedBlockIndex >= 0 && pinnedBlock?.type === 'ContentBlock') {
-          const val = scaleBarDisplayPrefix()
+          const val = scalebarDisplayPrefix()
           span.style.display = ''
           span.textContent = (val ? `${val}:` : '') + pinnedBlock.refName
         } else {

@@ -1,8 +1,8 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import OpenInNew from '@mui/icons-material/OpenInNew'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
