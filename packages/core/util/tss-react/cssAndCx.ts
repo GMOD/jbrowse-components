@@ -141,6 +141,11 @@ const increaseSpecificityToTakePrecedenceOverMediaQueries = (() => {
       }
 
       return (cache: EmotionCache, className: string, css: Css): string => {
+        // Fast path: single class with no spaces
+        if (!className.includes(' ')) {
+          return className
+        }
+
         const cssObjectMap = cssObjectMapByCache.get(cache)
 
         return classnames(
