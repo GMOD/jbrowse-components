@@ -46,7 +46,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
           onClick: () => {
             session.queueDialog(doneCallback => [
               AboutDialog,
-              { config: trackConfig, handleClose: doneCallback },
+              { config: trackConfig, session, handleClose: doneCallback },
             ])
           },
           icon: InfoIcon,
