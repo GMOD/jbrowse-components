@@ -12,13 +12,7 @@ import {
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-
-/** Minimal session snapshot shape for type checking */
-export interface BaseSessionSnapshot {
-  name: string
-  id?: string
-}
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseRootModel
@@ -103,7 +97,7 @@ export function BaseRootModelFactory({
       /**
        * #action
        */
-      setSession(sessionSnapshot?: SnapshotIn<IAnyType> & BaseSessionSnapshot) {
+      setSession(sessionSnapshot?: Record<string, unknown>) {
         const oldSession = self.session
         self.session = cast(sessionSnapshot)
         if (self.session) {

@@ -47,15 +47,13 @@ import type {
   SessionWithWidgets,
   UriLocation,
 } from '@jbrowse/core/util'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { SessionWithDialogs } from '@jbrowse/product-core'
 import type { IDBPDatabase } from 'idb'
 
 // lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
-
-type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
 
 /**
  * #stateModel JBrowseWebRootModel

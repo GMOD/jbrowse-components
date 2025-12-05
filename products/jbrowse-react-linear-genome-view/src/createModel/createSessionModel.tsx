@@ -83,7 +83,9 @@ export interface LGVRootModel {
   jbrowse: {
     tracks: AnyConfigurationModel[]
     addTrackConf: (conf: AnyConfiguration) => AnyConfigurationModel
-    deleteTrackConf: (conf: AnyConfigurationModel) => AnyConfigurationModel
+    deleteTrackConf: (
+      conf: AnyConfigurationModel,
+    ) => AnyConfigurationModel | undefined
     connections: BaseConnectionConfigModel[]
     addConnectionConf: (conf: AnyConfigurationModel) => unknown
     deleteConnectionConf: (conf: AnyConfigurationModel) => unknown

@@ -8,12 +8,8 @@ import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractViewModel, SessionWithWidgets } from '@jbrowse/core/util'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-interface SessionWithViews {
-  views: AbstractViewModel[]
-}
 
 interface HistoryManager {
   canUndo: boolean

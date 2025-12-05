@@ -23,8 +23,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
-
 /**
  * #stateModel JBrowseReactAppRootModel
  *
