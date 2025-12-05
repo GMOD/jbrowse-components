@@ -1,15 +1,13 @@
-import { Suspense, useState } from 'react'
+import { useState } from 'react'
 
-import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
-import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
-import { getEnv, getSession, useWidthSetter } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import EditIcon from '@mui/icons-material/Edit'
-import { IconButton, InputBase, Paper, Tooltip, Typography, useTheme } from '@mui/material'
+import { IconButton, InputBase, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ViewContainer from './ViewContainer'
 import ViewMenu from './ViewMenu'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -25,9 +23,6 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     overflow: 'auto',
     background: theme.palette.background.default,
-  },
-  content: {
-    padding: theme.spacing(1),
   },
   tabContainer: {
     display: 'flex',
@@ -86,31 +81,11 @@ const JBrowseViewPanel = observer(function JBrowseViewPanel({
 }: IDockviewPanelProps<JBrowseViewPanelParams>) {
   const { view, session } = params
   const { classes } = useStyles()
-  const theme = useTheme()
-  const ref = useWidthSetter(view, theme.spacing(1))
-  const { pluginManager } = getEnv(session)
-  const viewType = pluginManager.getViewType(view.type)
-
-  if (!viewType) {
-    throw new Error(`unknown view type ${view.type}`)
-  }
-
-  const { ReactComponent } = viewType
 
   return (
-    <Paper ref={ref} elevation={0} className={classes.container}>
-      <div className={classes.content}>
-        {!view.minimized ? (
-          <ErrorBoundary
-            FallbackComponent={({ error }) => <ErrorMessage error={error} />}
-          >
-            <Suspense fallback={<LoadingEllipses variant="h6" />}>
-              <ReactComponent model={view} session={session} />
-            </Suspense>
-          </ErrorBoundary>
-        ) : null}
-      </div>
-    </Paper>
+    <div className={classes.container}>
+      <ViewContainer view={view} session={session} />
+    </div>
   )
 })
 
