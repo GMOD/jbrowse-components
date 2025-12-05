@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import {
   createView,
@@ -17,6 +17,7 @@ const opts = [{}, delay]
 
 test('export svg of synteny', async () => {
   await mockConsoleWarn(async () => {
+    const user = userEvent.setup()
     const { findByTestId, findAllByText, findByText } = await createView({
       ...volvoxConfig,
       defaultSession: {
@@ -160,9 +161,9 @@ test('export svg of synteny', async () => {
       },
     })
 
-    fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-    fireEvent.click((await findAllByText('Export SVG', ...opts))[0]!)
-    fireEvent.click(await findByText('Submit', ...opts))
+    await user.click(await findByTestId('view_menu_icon', ...opts))
+    await user.click((await findAllByText('Export SVG', ...opts))[0]!)
+    await user.click(await findByText('Submit', ...opts))
 
     await exportAndVerifySvg({
       findByTestId,

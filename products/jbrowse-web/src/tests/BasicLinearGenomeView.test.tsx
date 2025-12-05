@@ -1,4 +1,5 @@
 import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { createView, hts, setupTest } from './util'
 
@@ -8,10 +9,11 @@ const delay = { timeout: 10000 }
 const opts = [{}, delay]
 
 test('access about menu', async () => {
+  const user = userEvent.setup()
   const { findByText, findAllByText } = await createView()
 
-  fireEvent.click(await findByText('Help', ...opts))
-  fireEvent.click(await findByText('About', ...opts))
+  await user.click(await findByText('Help', ...opts))
+  await user.click(await findByText('About', ...opts))
 
   await findByText(/The Evolutionary Software Foundation/, ...opts)
 
@@ -34,32 +36,35 @@ test('click and drag to move sideways', async () => {
 }, 30000)
 
 test('click and drag to rubberband', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findByText } = await createView()
   const track = await findByTestId('rubberband_controls', ...opts)
   expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
-  fireEvent.click(await findByText('Zoom to region'))
+  await user.click(await findByText('Zoom to region'))
   expect(view.bpPerPx).toEqual(0.02)
 }, 30000)
 
 test('click and drag rubberband, click get sequence to open sequenceDialog', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findByText } = await createView()
   const rubberband = await findByTestId('rubberband_controls', ...opts)
   expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
-  fireEvent.click(await findByText('Get sequence'))
+  await user.click(await findByText('Get sequence'))
   expect(view.leftOffset).toBeTruthy()
   expect(view.rightOffset).toBeTruthy()
 }, 30000)
 
 test('click and drag to reorder tracks', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId } = await createView()
-  fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
-  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
+  await user.click(await findByTestId(hts('bigbed_genes'), ...opts))
+  await user.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
 
   const trackId1 = view.tracks[1].id
   const dragHandle0 = await findByTestId(
@@ -89,10 +94,11 @@ test('click and drag to reorder tracks', async () => {
 }, 30000)
 
 test('click and zoom in and back out', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findAllByText } = await createView()
   await findAllByText('ctgA', ...opts)
   const before = view.bpPerPx
-  fireEvent.click(await findByTestId('zoom_in'))
+  await user.click(await findByTestId('zoom_in'))
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
@@ -102,7 +108,7 @@ test('click and zoom in and back out', async () => {
   await waitFor(() => {
     expect(elt).toHaveProperty('disabled', false)
   })
-  fireEvent.click(elt)
+  await user.click(elt)
 
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before)
@@ -110,17 +116,19 @@ test('click and zoom in and back out', async () => {
 }, 60000)
 
 test('opens track selector', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findAllByText } = await createView()
   await findAllByText('ctgA', ...opts)
   await findByTestId(hts('bigbed_genes'), ...opts)
   expect(view.tracks.length).toBe(0)
-  fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
+  await user.click(await findByTestId(hts('bigbed_genes'), ...opts))
   expect(view.tracks.length).toBe(1)
 }, 30000)
 
 test('opens reference sequence track and expects zoom in message', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findAllByText } = await createView()
-  fireEvent.click(await findByTestId(hts('volvox_refseq'), ...opts))
+  await user.click(await findByTestId(hts('volvox_refseq'), ...opts))
   view.setNewView(20, 0)
   await findByTestId(
     'display-volvox_refseq-LinearReferenceSequenceDisplay',
@@ -131,18 +139,20 @@ test('opens reference sequence track and expects zoom in message', async () => {
 }, 30000)
 
 test('click to display center line with correct value', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findByText } = await createView()
-  fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
+  await user.click(await findByTestId(hts('bigbed_genes'), ...opts))
 
   // opens the view menu and selects show center line
-  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Show center line', ...opts))
+  await user.click(await findByTestId('view_menu_icon', ...opts))
+  await user.click(await findByText('Show center line', ...opts))
   expect(view.showCenterLine).toBe(true)
   expect(view.centerLineInfo?.refName).toBe('ctgA')
   expect(view.centerLineInfo?.offset).toEqual(120.2)
 }, 30000)
 
 test('test choose option from dropdown refName autocomplete', async () => {
+  const user = userEvent.setup()
   const {
     findByTestId,
     findAllByText,
@@ -151,12 +161,12 @@ test('test choose option from dropdown refName autocomplete', async () => {
   } = await createView()
 
   await findAllByText('ctgA', ...opts)
-  fireEvent.click(await findByPlaceholderText('Search for location'))
+  await user.click(await findByPlaceholderText('Search for location'))
   const autocomplete = await findByTestId('autocomplete')
   autocomplete.focus()
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-  fireEvent.click((await screen.findAllByText(/ctgB/))[0]!)
+  await user.click((await screen.findAllByText(/ctgB/))[0]!)
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
   await waitFor(() => {

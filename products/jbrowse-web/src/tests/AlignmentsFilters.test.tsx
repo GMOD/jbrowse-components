@@ -5,8 +5,8 @@ import {
   createView,
   expectBlocksetCanvasMatch,
   expectCanvasMatch,
-  openTrackMenu,
   pv,
+  selectTrackMenuOption,
   setupTest,
 } from './util'
 
@@ -22,8 +22,7 @@ async function testFilterTrack(
   key: string,
 ) {
   const user = userEvent.setup()
-  await openTrackMenu(user, trackId)
-  await user.click(await screen.findByText('Filter by...'))
+  await selectTrackMenuOption(user, trackId, ['Filter by...'])
   await user.type(
     await screen.findByPlaceholderText('Enter tag name', ...opts),
     tag,
@@ -59,8 +58,7 @@ test('set jexl filters on bam pileup display', async () => {
   view.setNewView(0.465, 85055)
 
   const user = userEvent.setup()
-  await openTrackMenu(user, 'volvox_bam')
-  await user.click((await screen.findAllByText('Pileup display'))[1]!)
+  await selectTrackMenuOption(user, 'volvox_bam', ['Pileup display'])
 
   const filter = [`jexl:get(feature,'end')==40005`]
   view.tracks[0].displays[0].setJexlFilters(filter)
@@ -73,8 +71,7 @@ test('set jexl filters on snp cov display', async () => {
   view.setNewView(0.465, 85055)
 
   const user = userEvent.setup()
-  await openTrackMenu(user, 'volvox_bam')
-  await user.click(await screen.findByText('SNPCoverage display'))
+  await selectTrackMenuOption(user, 'volvox_bam', ['SNPCoverage display'])
 
   const filter = [`jexl:get(feature,'end')==40005`]
   view.tracks[0].displays[0].setJexlFilters(filter)

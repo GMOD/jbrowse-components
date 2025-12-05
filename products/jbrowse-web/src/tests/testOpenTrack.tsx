@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { createView, expectCanvasMatch, hts, pv } from './util'
 
@@ -15,8 +15,9 @@ export async function testOpenTrack({
   canvasLoc: string
   timeout?: number
 }) {
+  const user = userEvent.setup()
   const { view, findByTestId } = await createView()
   view.setNewView(bpPerPx, start)
-  fireEvent.click(await findByTestId(hts(trackId), {}, { timeout }))
+  await user.click(await findByTestId(hts(trackId), {}, { timeout }))
   expectCanvasMatch(await findByTestId(pv(canvasLoc), {}, { timeout }))
 }

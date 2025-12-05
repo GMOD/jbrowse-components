@@ -5,7 +5,13 @@ import path from 'path'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { saveAs } from 'file-saver-es'
 import { LocalFile } from 'generic-filehandle2'
@@ -396,17 +402,22 @@ export async function expectBlocksetCanvasMatch(
   failureThreshold = 0.01,
 ) {
   const opts = [{}, { timeout }] as const
-  const blockset = within(await screen.findByTestId(`Blockset-${blocksetType}`, ...opts))
-  expectCanvasMatch(await blockset.findByTestId(canvasTestId, ...opts), failureThreshold)
+  const blockset = within(
+    await screen.findByTestId(`Blockset-${blocksetType}`, ...opts),
+  )
+  expectCanvasMatch(
+    await blockset.findByTestId(canvasTestId, ...opts),
+    failureThreshold,
+  )
 }
 
 // Helper to test multiple blockset canvases at once
 export async function expectAlignmentCanvasMatch(
-  configs: Array<{
+  configs: {
     blockset: 'pileup' | 'snpcoverage'
     canvasId: string
     threshold?: number
-  }>,
+  }[],
   timeout = 30000,
 ) {
   for (const { blockset, canvasId, threshold } of configs) {
@@ -419,18 +430,24 @@ export { default as JBrowse } from './TestingJBrowse'
 export { generateReadBuffer, handleRequest } from './generateReadBuffer'
 
 // Setup helper for Launch* tests (spec URL tests that use the App loader)
-// These tests use jest.spyOn for fetch instead of fetch.mockResponse
 export function setupLaunchTest(
   resolveFile: (url: string) => string = url =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
 ) {
   setup()
 
-  jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-    if (`${url}`.includes('jb2=true')) {
-      return new Response('{}')
-    }
-    return handleRequest(() => new LocalFile(resolveFile(`${url}`)), args)
+  beforeEach(() => {
+    clearCache()
+    clearAdapterCache()
+    // @ts-expect-error
+    fetch.resetMocks()
+    // @ts-expect-error
+    fetch.mockResponse(async (request: Request) => {
+      if (request.url.includes('jb2=true')) {
+        return '{}'
+      }
+      return handleRequest(() => new LocalFile(resolveFile(request.url)), request)
+    })
   })
 
   afterEach(() => {

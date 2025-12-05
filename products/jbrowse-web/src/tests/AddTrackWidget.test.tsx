@@ -1,4 +1,5 @@
 import { fireEvent, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { createView, setupTest, waitForCanvasSnapshot } from './util'
 
@@ -8,6 +9,7 @@ const delay = { timeout: 60000 }
 const opts = [{}, delay] as const
 
 test('adds a PAF via the add track workflow', async () => {
+  const user = userEvent.setup()
   const {
     getByTestId,
     getAllByTestId,
@@ -17,14 +19,14 @@ test('adds a PAF via the add track workflow', async () => {
     view,
   } = await createView()
   view.showAllRegions()
-  fireEvent.click(await findByText('File', ...opts))
-  fireEvent.click(await findByText('Open track...', ...opts))
+  await user.click(await findByText('File', ...opts))
+  await user.click(await findByText('Open track...', ...opts))
   fireEvent.change((await findAllByTestId('urlInput'))[0]!, {
     target: {
       value: 'volvox_del.paf',
     },
   })
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
+  await user.click(getAllByTestId('addTrackNextButton')[0]!)
   fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
   fireEvent.change(getByTestId('trackNameInput'), {
     target: {
@@ -35,19 +37,20 @@ test('adds a PAF via the add track workflow', async () => {
 
   // change query assembly
   fireEvent.mouseDown(await within(selectors[0]!).findByText('volvox'))
-  fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
+  await user.click(within(await findByRole('listbox')).getByText('volvox_del'))
+  await user.click(getAllByTestId('addTrackNextButton')[0]!)
 
   await waitForCanvasSnapshot(findAllByTestId, 60000)
 }, 60000)
 
 test('bug: error message persists after fixing URL', async () => {
+  const user = userEvent.setup()
   const { getAllByTestId, findByText, findAllByTestId, queryByText } =
     await createView()
 
   // Open add track widget
-  fireEvent.click(await findByText('File', ...opts))
-  fireEvent.click(await findByText('Open track...', ...opts))
+  await user.click(await findByText('File', ...opts))
+  await user.click(await findByText('Open track...', ...opts))
 
   // Enter incorrect URL that is not guessable
   fireEvent.change((await findAllByTestId('urlInput'))[0]!, {
@@ -57,13 +60,13 @@ test('bug: error message persists after fixing URL', async () => {
   })
 
   // Click "Next" and see the message that JBrowse is not able to guess the adapter type
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
+  await user.click(getAllByTestId('addTrackNextButton')[0]!)
 
   // Should show error message about not being able to guess adapter type
   await findByText(/JBrowse was not able to guess the adapter type/, ...opts)
 
   // Click "Back" to go back to URL input
-  fireEvent.click(getAllByTestId('addTrackBackButton')[0]!)
+  await user.click(getAllByTestId('addTrackBackButton')[0]!)
 
   // Fix the URL to a valid one
   fireEvent.change((await findAllByTestId('urlInput'))[0]!, {
@@ -73,7 +76,7 @@ test('bug: error message persists after fixing URL', async () => {
   })
 
   // Click "Next" again
-  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
+  await user.click(getAllByTestId('addTrackNextButton')[0]!)
 
   // The bug: JBrowse still shows a message about not being able to guess the adapter
   // even though the URL was fixed. This should NOT happen.

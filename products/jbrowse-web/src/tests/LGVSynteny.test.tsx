@@ -32,8 +32,8 @@ test('nav to synteny from right click', async () => {
     const track = await findAllByTestId('pileup-overlay-strand', ...opts)
     fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 5 })
     fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 5 })
-    fireEvent.click(await findByText('Launch synteny view for this position'))
-    fireEvent.click(await findByText('Submit'))
+    await user.click(await findByText('Launch synteny view for this position'))
+    await user.click(await findByText('Submit'))
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
@@ -55,10 +55,10 @@ test('nav to synteny from feature details', async () => {
     const track = await findAllByTestId('pileup-overlay-strand', ...opts)
     fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 5 })
     fireEvent.click(track[0]!, { clientX: 200, clientY: 5 })
-    fireEvent.click(
+    await user.click(
       await findByText('Launch new linear synteny view on this feature'),
     )
-    fireEvent.click(await findByText('Submit'))
+    await user.click(await findByText('Submit'))
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
@@ -104,8 +104,8 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     const track = await findAllByTestId('pileup-overlay-strand', ...opts)
     fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 5 })
     fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 5 })
-    fireEvent.click(await findByText('Launch synteny view for this position'))
-    fireEvent.click(await findByText('Submit'))
+    await user.click(await findByText('Launch synteny view for this position'))
+    await user.click(await findByText('Submit'))
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)

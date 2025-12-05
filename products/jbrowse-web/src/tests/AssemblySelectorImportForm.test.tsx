@@ -1,4 +1,5 @@
 import { fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { doSetupForImportForm, setupTest } from './util'
 
@@ -7,29 +8,32 @@ setupTest()
 const delay = { timeout: 20000 }
 
 test('nav to volvox2', async () => {
+  const user = userEvent.setup()
   const { getInputValue, findByText } = await doSetupForImportForm()
   fireEvent.mouseDown(await findByText('volvox'))
-  fireEvent.click(await findByText('volvox2'))
+  await user.click(await findByText('volvox2'))
   await waitFor(() => {
     expect(getInputValue()).toBe('ctgA')
   })
-  fireEvent.click(await findByText('Open'))
+  await user.click(await findByText('Open'))
   await waitFor(() => {
     expect(getInputValue()).toBe('ctgA:1..50,001')
   }, delay)
 }, 30000)
 
 test('select volvox404', async () => {
+  const user = userEvent.setup()
   const { findByText } = await doSetupForImportForm()
   fireEvent.mouseDown(await findByText('volvox'))
-  fireEvent.click(await findByText('volvox404'))
+  await user.click(await findByText('volvox404'))
   await findByText(/HTTP 404/)
 }, 30000)
 
 test('select misc', async () => {
+  const user = userEvent.setup()
   const { getInputValue, findByText } = await doSetupForImportForm()
   fireEvent.mouseDown(await findByText('volvox'))
-  fireEvent.click(await findByText('misc'))
+  await user.click(await findByText('misc'))
   await waitFor(() => {
     expect(getInputValue()).toBe('t1')
   }, delay)

@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import {
   createView,
@@ -20,11 +20,12 @@ const opts = [{}, delay]
 
 async function testExportSvgWithError(tracks: string[], filename: string) {
   await mockConsole(async () => {
+    const user = userEvent.setup()
     const { view, findByTestId, findByText, findAllByText } = await createView()
 
     view.setNewView(0.1, 1)
     for (const track of tracks) {
-      fireEvent.click(await findByTestId(hts(track), ...opts))
+      await user.click(await findByTestId(hts(track), ...opts))
     }
 
     await findAllByText(/HTTP 404/, {}, delay)

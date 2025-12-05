@@ -1,4 +1,5 @@
-import { fireEvent, waitFor } from '@testing-library/react'
+import { waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { createView, exportAndVerifySvg, hts, setupExportSvgTest } from './util'
 
@@ -10,6 +11,7 @@ const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
 test('export svg of reversed region with gene labels', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findByText } = await createView()
 
   // Navigate to reversed region
@@ -24,7 +26,7 @@ test('export svg of reversed region with gene labels', async () => {
   )
 
   // Open gff3tabix_genes track which has labels
-  fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
+  await user.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
   // Wait for the canvas to render first
   await findByTestId(/prerendered_canvas.*done/, {}, { timeout: 30000 })

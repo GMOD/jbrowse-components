@@ -1,4 +1,5 @@
 import { fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { createView, expectCanvasMatch, hts, setupTest } from './util'
 
@@ -7,9 +8,10 @@ setupTest()
 const delay = { timeout: 20000 }
 
 async function setupReadVsRefTest() {
+  const user = userEvent.setup()
   const { view, findByTestId, findByText, findAllByTestId } = await createView()
   view.setNewView(5, 100)
-  fireEvent.click(
+  await user.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
@@ -18,28 +20,28 @@ async function setupReadVsRefTest() {
   fireEvent.click(track[0]!, { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 20 })
 
-  return { findByTestId, findByText }
+  return { findByTestId, findByText, user }
 }
 
 test('launch read vs ref panel', async () => {
   const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
-  const { findByTestId, findByText } = await setupReadVsRefTest()
+  const { findByTestId, findByText, user } = await setupReadVsRefTest()
 
-  fireEvent.click(await findByText('Linear read vs ref', {}, delay))
+  await user.click(await findByText('Linear read vs ref', {}, delay))
   const elt = await findByText('Submit', {}, delay)
 
   await waitFor(() => {
     expect(elt.getAttribute('disabled')).toBe(null)
   })
-  fireEvent.click(elt)
+  await user.click(elt)
 
   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
   consoleMock.mockRestore()
 }, 40000)
 
 test('launch read vs ref dotplot', async () => {
-  const { findByTestId, findByText } = await setupReadVsRefTest()
+  const { findByTestId, findByText, user } = await setupReadVsRefTest()
 
-  fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
+  await user.click(await findByText('Dotplot of read vs ref', {}, delay))
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 40000)

@@ -8,9 +8,7 @@ import breakpointConfig from '../../test_data/breakpoint/config.json'
 
 jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
 
-setupExportSvgTest(url =>
-  require.resolve(`../../test_data/breakpoint/${url}`),
-)
+setupExportSvgTest(url => require.resolve(`../../test_data/breakpoint/${url}`))
 
 const delay = { timeout: 50000 }
 

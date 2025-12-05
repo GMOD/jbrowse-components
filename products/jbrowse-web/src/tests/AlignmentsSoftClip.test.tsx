@@ -1,11 +1,10 @@
-import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
   createView,
   expectBlocksetCanvasMatch,
-  openTrackMenu,
   pc,
+  selectTrackMenuOption,
   setupTest,
 } from './util'
 
@@ -16,8 +15,9 @@ test('opens the track menu and enables soft clipping', async () => {
   const { view } = await createView()
   view.setNewView(0.02, 142956)
 
-  await openTrackMenu(user, 'volvox-long-reads-sv-bam')
-  await user.click(await screen.findByText('Show soft clipping'))
+  await selectTrackMenuOption(user, 'volvox-long-reads-sv-bam', [
+    'Show soft clipping',
+  ])
   // slightly higher threshold for fonts
   await expectBlocksetCanvasMatch(
     'pileup',

@@ -1,5 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { fireEvent, render, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import {
   JBrowse,
@@ -31,26 +32,27 @@ const delay = { timeout: 40000 }
 
 test('copy and delete track in admin mode', () => {
   return mockConsoleWarn(async () => {
+    const user = userEvent.setup()
     const { view, findByTestId, queryByText, findByText, findAllByTestId } =
       await createView(undefined, true)
 
     view.setNewView(0.05, 5000)
-    fireEvent.click(
+    await user.click(
       await findByTestId(
         'htsTrackEntryMenu-Tracks,volvox_filtered_vcf',
         {},
         delay,
       ),
     )
-    fireEvent.click(await findByText('Copy track'))
-    fireEvent.click(await findByText('volvox filtered vcf (copy)'))
+    await user.click(await findByText('Copy track'))
+    await user.click(await findByText('volvox filtered vcf (copy)'))
     expect(queryByText(/Session tracks/)).toBeNull()
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
     await waitForCanvasSnapshot(findAllByTestId, 40000)
-    fireEvent.click(await findByTestId('track_menu_icon'))
-    fireEvent.click(await findByText('Delete track'))
+    await user.click(await findByTestId('track_menu_icon'))
+    await user.click(await findByText('Delete track'))
     await waitFor(() => {
       expect(view.tracks.length).toBe(0)
     })
@@ -59,6 +61,7 @@ test('copy and delete track in admin mode', () => {
 
 test('copy and delete reference sequence track disabled', () => {
   return mockConsoleWarn(async () => {
+    const user = userEvent.setup()
     const { view, session, queryByText, findByTestId, findByText } =
       await createView(undefined, true)
 
@@ -71,10 +74,10 @@ test('copy and delete reference sequence track disabled', () => {
     const trackMenuItems = session.getTrackActionMenuItems(trackConf)
 
     // copy ref seq track disabled
-    fireEvent.click(
+    await user.click(
       await findByTestId('htsTrackEntryMenu-Tracks,volvox_refseq', {}, delay),
     )
-    fireEvent.click(await findByText('Copy track'))
+    await user.click(await findByText('Copy track'))
     expect(queryByText(/Session tracks/)).toBeNull()
     // clicking 'copy track' should not create a copy of a ref sequence track
     await waitFor(() => {
@@ -87,26 +90,27 @@ test('copy and delete reference sequence track disabled', () => {
 
 test('copy and delete track to session tracks', () => {
   return mockConsoleWarn(async () => {
+    const user = userEvent.setup()
     const { view, findByTestId, findByText, findAllByTestId } =
       await createView(undefined, false)
 
     view.setNewView(0.05, 5000)
-    fireEvent.click(
+    await user.click(
       await findByTestId(
         'htsTrackEntryMenu-Tracks,volvox_filtered_vcf',
         {},
         delay,
       ),
     )
-    fireEvent.click(await findByText('Copy track'))
-    fireEvent.click(await findByText('volvox filtered vcf (copy)'))
+    await user.click(await findByText('Copy track'))
+    await user.click(await findByText('volvox filtered vcf (copy)'))
     await findByText(/Session tracks/)
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
     await waitForCanvasSnapshot(findAllByTestId, 40000)
-    fireEvent.click(await findByTestId('track_menu_icon'))
-    fireEvent.click(await findByText('Delete track'))
+    await user.click(await findByTestId('track_menu_icon'))
+    await user.click(await findByText('Delete track'))
     await waitFor(() => {
       expect(view.tracks.length).toBe(0)
     })
@@ -114,6 +118,7 @@ test('copy and delete track to session tracks', () => {
 }, 40000)
 
 xtest('delete connection', async () => {
+  const user = userEvent.setup()
   const pluginManager = getPluginManager(masterConfig, true)
   const { findAllByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
@@ -121,7 +126,7 @@ xtest('delete connection', async () => {
 
   const deleteButtons = await findAllByTestId('delete-connection')
   expect(deleteButtons.length).toBe(2)
-  fireEvent.click(deleteButtons[0]!)
-  fireEvent.click(await findByText('OK'))
+  await user.click(deleteButtons[0]!)
+  await user.click(await findByText('OK'))
   expect((await findAllByTestId('delete-connection')).length).toBe(1)
 })

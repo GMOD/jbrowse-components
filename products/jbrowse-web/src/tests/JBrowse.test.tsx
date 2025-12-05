@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { fireEvent, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
@@ -11,7 +11,13 @@ import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
 import * as sessionSharing from '../sessionSharing'
 import TestPlugin from './TestPlugin'
-import { createView, hts, openTrackMenu, setupTest, waitForCanvasSnapshot } from './util'
+import {
+  createView,
+  hts,
+  selectTrackMenuOption,
+  setupTest,
+  waitForCanvasSnapshot,
+} from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -51,18 +57,20 @@ test('toplevel configuration', () => {
 })
 
 test('assembly aliases', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findAllByTestId } = await createView()
   view.setNewView(0.05, 5000)
-  fireEvent.click(
+  await user.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
   await waitForCanvasSnapshot(findAllByTestId, 30000)
 }, 30000)
 
 xtest('nclist track test with long name', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findByText } = await createView()
   view.setNewView(6.2, -301)
-  fireEvent.click(await findByTestId(hts('nclist_long_names'), {}, delay))
+  await user.click(await findByTestId(hts('nclist_long_names'), {}, delay))
 
   await findByText(
     'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuv...',
@@ -72,6 +80,7 @@ xtest('nclist track test with long name', async () => {
 }, 20000)
 
 test('test sharing', async () => {
+  const user = userEvent.setup()
   // @ts-expect-error
   sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({
     encryptedSession: 'A',
@@ -81,7 +90,7 @@ test('test sharing', async () => {
     password: '123',
   })
   const { findByLabelText, findByText } = await createView()
-  fireEvent.click(await findByText('Share'))
+  await user.click(await findByText('Share'))
   expect(
     ((await findByLabelText('URL', {}, delay)) as HTMLInputElement).value,
   ).toBe('http://localhost/?session=share-abc&password=123')
@@ -92,7 +101,6 @@ test('looks at about this track dialog', async () => {
   await createView()
 
   // load track
-  await openTrackMenu(user, 'volvox-long-reads-cram')
-  await user.click(await screen.findByText('About track'))
+  await selectTrackMenuOption(user, 'volvox-long-reads-cram', ['About track'])
   await screen.findAllByText(/SQ/, {}, delay)
 }, 30000)

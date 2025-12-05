@@ -18,7 +18,10 @@ test('color by tag', async () => {
   const user = userEvent.setup()
   const { view } = await createView()
   view.setNewView(0.465, 85055)
-  await selectTrackMenuOption(user, 'volvox_cram', ['Color by...', 'Color by tag...'])
+  await selectTrackMenuOption(user, 'volvox_cram', [
+    'Color by...',
+    'Color by tag...',
+  ])
   await user.type(
     await screen.findByPlaceholderText('Enter tag name', ...opts),
     'HP',

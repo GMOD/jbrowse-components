@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { createView, expectCanvasMatch, hts, pv, setupTest } from './util'
 import config from '../../test_data/volvox/config_auth.json'
@@ -12,6 +12,7 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('opens a bigwig track that needs httpbasic authentication', async () => {
+  const user = userEvent.setup()
   const { findByTestId, findByText, view } = await createView({
     ...config,
     tracks: [
@@ -32,16 +33,14 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
     ],
   })
   view.setNewView(5, 0)
-  fireEvent.click(
+  await user.click(
     await findByTestId(hts('volvox_microarray_httpbasic'), {}, delay),
   )
-  fireEvent.change(await findByTestId('login-httpbasic-username'), {
-    target: { value: 'username' },
-  })
-  fireEvent.change(await findByTestId('login-httpbasic-password'), {
-    target: { value: 'password' },
-  })
-  fireEvent.click(await findByText('Submit'))
+  await user.clear(await findByTestId('login-httpbasic-username'))
+  await user.type(await findByTestId('login-httpbasic-username'), 'username')
+  await user.clear(await findByTestId('login-httpbasic-password'))
+  await user.type(await findByTestId('login-httpbasic-password'), 'password')
+  await user.click(await findByText('Submit'))
 
   expect(Object.keys(sessionStorage)).toContain(
     'HTTPBasicInternetAccount-HTTPBasicTest-token',

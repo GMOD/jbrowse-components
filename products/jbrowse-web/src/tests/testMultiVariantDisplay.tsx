@@ -1,7 +1,11 @@
-import { fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, expectCanvasMatch, openTrackMenu, sleep } from './util'
+import {
+  createView,
+  expectCanvasMatch,
+  selectTrackMenuOption,
+  sleep,
+} from './util'
 
 export async function testMultiVariantDisplay({
   displayType,
@@ -24,10 +28,12 @@ export async function testMultiVariantDisplay({
   const { view, findAllByText, findByText, findAllByTestId, findByTestId } =
     await createView()
   await view.navToLocString('ctgA')
-  await openTrackMenu(user, 'volvox_test_vcf', timeout)
-
-  fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText(displayText, ...opts))
+  await selectTrackMenuOption(
+    user,
+    'volvox_test_vcf',
+    ['Display types', displayText],
+    timeout,
+  )
 
   if (useAll) {
     await sleep(1000)
@@ -41,12 +47,12 @@ export async function testMultiVariantDisplay({
   }
 
   if (useAll) {
-    fireEvent.click((await findAllByText('Force load', ...opts))[0]!)
+    await user.click((await findAllByText('Force load', ...opts))[0]!)
     expectCanvasMatch(
       (await findAllByTestId(/prerendered_canvas/, ...opts))[0]!,
     )
   } else {
-    fireEvent.click(await findByText('Force load', ...opts))
+    await user.click(await findByText('Force load', ...opts))
     expectCanvasMatch(await findByTestId(/prerendered_canvas/, ...opts))
   }
 }

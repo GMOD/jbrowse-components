@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { createView, hts, setupTest, waitForCanvasSnapshot } from './util'
 
@@ -8,15 +8,16 @@ const delay = { timeout: 20000 }
 const opts = [{}, delay] as const
 
 test('renders peptide letters on CDS features', async () => {
+  const user = userEvent.setup()
   const { view, findByTestId, findByText, findAllByTestId } = await createView()
   await view.navToLocString('ctgA:3,292..3,323')
 
   // Enable Color by CDS
-  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText(/Color by CDS/, ...opts))
+  await user.click(await findByTestId('view_menu_icon', ...opts))
+  await user.click(await findByText(/Color by CDS/, ...opts))
 
   // Open the track
-  fireEvent.click(await findByTestId(hts('bedtabix_genes'), ...opts))
+  await user.click(await findByTestId(hts('bedtabix_genes'), ...opts))
 
   // Get canvas snapshot
   await waitForCanvasSnapshot(findAllByTestId, 20000)

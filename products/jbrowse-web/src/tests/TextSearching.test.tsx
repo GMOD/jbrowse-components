@@ -1,4 +1,5 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { createView, setupTest } from './util'
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
@@ -20,6 +21,7 @@ function typeAndEnter({
 }
 
 async function doSetup(val?: unknown) {
+  const user = userEvent.setup()
   const args = await createView(val)
   const { findByTestId, findByPlaceholderText } = args
 
@@ -35,15 +37,16 @@ async function doSetup(val?: unknown) {
   return {
     autocomplete,
     input,
+    user,
     ...args,
   }
 }
 
 test('lower case refname, click ctgB', async () => {
-  const { input, findByRole } = await doSetup()
+  const { input, findByRole, user } = await doSetup()
 
   fireEvent.mouseDown(input)
-  fireEvent.click(within(await findByRole('listbox')).getByText(/ctgB/))
+  await user.click(within(await findByRole('listbox')).getByText(/ctgB/))
 
   await waitFor(() => {
     expect(input.value).toBe('ctgB:1..6,079')
@@ -105,20 +108,20 @@ test('nav lower case refnames, searching: contigb:1-100', async () => {
 }, 40_000)
 
 test('description of gene, searching: kinase', async () => {
-  const { input, findByText } = await doSetup()
+  const { input, findByText, user } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'kinase' } })
-  fireEvent.click(await findByText('EDEN (protein kinase)', ...opts))
+  await user.click(await findByText('EDEN (protein kinase)', ...opts))
   await waitFor(() => {
     expect(input.value).toBe('ctgA:1..10,590')
   }, delay)
 }, 40_000)
 
 test('search matches description for feature in two places', async () => {
-  const { input, findByText } = await doSetup()
+  const { input, findByText, user } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'fingerprint' } })
-  fireEvent.click(await findByText(/b101.2/, ...opts))
+  await user.click(await findByText(/b101.2/, ...opts))
   await findByText('Search results', ...opts)
 }, 40_000)
 

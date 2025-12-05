@@ -41,13 +41,14 @@ test('Open the bookmarks widget from the view menu', async () => {
 }, 60000)
 
 test('Create a bookmark using the click and drag rubberband', async () => {
+  const user = userEvent.setup()
   const { session, findByTestId, findByText } = await createView()
   const rubberband = await findByTestId('rubberband_controls', {}, delay)
 
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
-  fireEvent.click(await findByText('Bookmark region'))
+  await user.click(await findByText('Bookmark region'))
 
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
@@ -103,7 +104,7 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
     assemblyName: 'volvox',
   })
 
-  fireEvent.click(await findByText('ctgA:201..240', {}, delay))
+  await user.click(await findByText('ctgA:201..240', {}, delay))
   await waitFor(() => {
     expect(view.visibleLocStrings).toBe('ctgA:201..240')
   })
@@ -198,7 +199,7 @@ test('Toggle highlight visibility across all views', async () => {
   expect(highlight).toBeDefined()
   expect(highlight2).toBeDefined()
 
-  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
+  await user.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_all_switch'))
   await user.click(await findByText('Close'))
@@ -230,7 +231,7 @@ test('Toggle highlight label visibility across all views', async () => {
   // expect(highlight).toBeDefined()
   // expect(highlight2).toBeDefined()
 
-  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
+  await user.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_label_all_switch'))
   await user.click(await findByText('Close'))
@@ -257,9 +258,10 @@ test('Downloads a BED file correctly', async () => {
     assemblyName: 'volvox',
   })
 
-  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
-  fireEvent.click(await findByText('Export', ...opts))
-  fireEvent.click(await findByText(/Download/, ...opts))
+  const user = userEvent.setup()
+  await user.click(await findByTestId('grid_bookmark_menu', ...opts))
+  await user.click(await findByText('Export', ...opts))
+  await user.click(await findByText(/Download/, ...opts))
 
   await waitFor(() => {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -291,12 +293,13 @@ test('Downloads a TSV file correctly', async () => {
     end: 8,
     assemblyName: 'volvox',
   })
-  fireEvent.click(await findByTestId('grid_bookmark_menu'))
-  fireEvent.click(await findByText('Export'))
+  const user = userEvent.setup()
+  await user.click(await findByTestId('grid_bookmark_menu'))
+  await user.click(await findByText('Export'))
   fireEvent.mouseDown(await findByText('BED'))
   const listbox = within(getByRole('listbox'))
-  fireEvent.click(listbox.getByText('TSV'))
-  fireEvent.click(await findByText(/Download/))
+  await user.click(listbox.getByText('TSV'))
+  await user.click(await findByText(/Download/))
 
   await waitFor(() => {
     // eslint-disable-next-line @typescript-eslint/no-deprecated

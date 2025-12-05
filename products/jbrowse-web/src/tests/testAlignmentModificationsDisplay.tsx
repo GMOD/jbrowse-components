@@ -1,6 +1,4 @@
-import { within } from '@testing-library/react'
-
-import { createView, expectCanvasMatch } from './util'
+import { createView, expectAlignmentCanvasMatch } from './util'
 
 export async function testAlignmentModificationsDisplay({
   config,
@@ -11,12 +9,13 @@ export async function testAlignmentModificationsDisplay({
   canvasTestId: string
   timeout?: number
 }) {
-  const opts = [{}, { timeout }] as const
-  const { findByTestId } = await createView(config)
+  await createView(config)
 
-  const f1 = within(await findByTestId('Blockset-pileup'))
-  const f2 = within(await findByTestId('Blockset-snpcoverage'))
-
-  expectCanvasMatch(await f1.findByTestId(canvasTestId, ...opts))
-  expectCanvasMatch(await f2.findByTestId(canvasTestId, ...opts))
+  await expectAlignmentCanvasMatch(
+    [
+      { blockset: 'pileup', canvasId: canvasTestId },
+      { blockset: 'snpcoverage', canvasId: canvasTestId },
+    ],
+    timeout,
+  )
 }

@@ -1,7 +1,12 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, expectCanvasMatch, openTrackMenu, sleep } from './util'
+import {
+  createView,
+  expectCanvasMatch,
+  selectTrackMenuOption,
+  sleep,
+} from './util'
 
 async function waitForPileupDraw(view: any, timeout = 60000) {
   await waitFor(
@@ -26,13 +31,16 @@ export async function testLinkedReadsDisplay({
   timeout?: number
 }) {
   const user = userEvent.setup()
-  const { view, getByTestId, findByTestId, findAllByText, findByText } =
-    await createView()
+  const { view, getByTestId, findByTestId, findAllByText } = await createView()
   const opts = [{}, { timeout }] as const
 
   await view.navToLocString(loc)
-  await openTrackMenu(user, track, timeout)
-  await user.click(await findByText('Replace lower panel with...'))
+  await selectTrackMenuOption(
+    user,
+    track,
+    ['Replace lower panel with...'],
+    timeout,
+  )
 
   if (displayMode === 'arc') {
     await user.click((await findAllByText('Read arc display'))[0]!)
