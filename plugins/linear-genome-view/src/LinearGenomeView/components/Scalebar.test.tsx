@@ -2,6 +2,7 @@ import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { render, waitFor } from '@testing-library/react'
 
 import Scalebar from './Scalebar'
+
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 describe('Scalebar genome view component', () => {
@@ -102,5 +103,67 @@ describe('Scalebar genome view component', () => {
     expect(ret2).toBe(null)
     expect(ret3).toBe(null)
     expect(ret4).toBe(null)
+  })
+
+  it('displays assembly name prefix in labels when scalebarDisplayPrefix returns a value', async () => {
+    const session = createTestSession({
+      sessionSnapshot: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            offsetPx: 0,
+            bpPerPx: 1,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
+            ],
+            tracks: [],
+            configuration: {},
+          },
+        ],
+      },
+    }) as any
+    const model = session.views[0]
+
+    // Mock scalebarDisplayPrefix to simulate being in a synteny view
+    const originalScaleBarDisplayPrefix = model.scalebarDisplayPrefix
+    model.scalebarDisplayPrefix = () => 'volvox'
+
+    const { getByTestId } = render(<Scalebar model={model} />)
+    await waitFor(() => {
+      const labelA = getByTestId('refLabel-ctgA')
+      const labelB = getByTestId('refLabel-ctgB')
+      expect(labelA.textContent).toBe('volvox:ctgA')
+      expect(labelB.textContent).toBe('volvox:ctgB')
+    })
+
+    // Restore original function
+    model.scalebarDisplayPrefix = originalScaleBarDisplayPrefix
+  })
+
+  it('does not display assembly name prefix when scalebarDisplayPrefix returns empty string', async () => {
+    const session = createTestSession({
+      sessionSnapshot: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            offsetPx: 0,
+            bpPerPx: 1,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+            ],
+            tracks: [],
+            configuration: {},
+          },
+        ],
+      },
+    }) as any
+    const model = session.views[0]
+
+    const { getByTestId } = render(<Scalebar model={model} />)
+    await waitFor(() => {
+      const labelA = getByTestId('refLabel-ctgA')
+      expect(labelA.textContent).toBe('ctgA')
+    })
   })
 })

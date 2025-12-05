@@ -20,7 +20,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-extends `BaseLinearDisplay`
+Non-block-based Hi-C display that renders to a single canvas extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ### LinearHicDisplay - Properties
 
@@ -89,11 +93,11 @@ mode: 'triangular'
 
 ### LinearHicDisplay - Getters
 
-#### getter: blockType
+#### getter: drawn
 
 ```js
 // type
-string
+boolean
 ```
 
 #### getter: rendererTypeName
@@ -109,7 +113,7 @@ string
 
 ```js
 // type signature
-renderProps: () => any
+renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; displayHeight: number; }
 ```
 
 #### method: trackMenuItems
@@ -120,6 +124,55 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```
 
 ### LinearHicDisplay - Actions
+
+#### action: setLastDrawnOffsetPx
+
+```js
+// type signature
+setLastDrawnOffsetPx: (n: number) => void
+```
+
+#### action: setLoading
+
+```js
+// type signature
+setLoading: (f: boolean) => void
+```
+
+#### action: setRef
+
+```js
+// type signature
+setRef: (ref: HTMLCanvasElement) => void
+```
+
+#### action: setRenderingImageData
+
+```js
+// type signature
+setRenderingImageData: (imageData: ImageBitmap) => void
+```
+
+#### action: setRenderingStopToken
+
+```js
+// type signature
+setRenderingStopToken: (token: string) => void
+```
+
+#### action: setFlatbushData
+
+```js
+// type signature
+setFlatbushData: (flatbush: ArrayBufferLike, items: HicFlatbushItem[], maxScore: number, yScalar: number) => void
+```
+
+#### action: reload
+
+```js
+// type signature
+reload: () => void
+```
 
 #### action: setResolution
 

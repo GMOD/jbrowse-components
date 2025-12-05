@@ -287,7 +287,7 @@ export function makeImage(
       )
       const isMajorityInterbase =
         score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
-      if (interbaseEvents.length > 0 && (bpPerPx < 10 || isMajorityInterbase)) {
+      if (interbaseEvents.length > 0 && (bpPerPx < 50 || isMajorityInterbase)) {
         const maxBase = interbaseEvents.reduce((a, b) =>
           (snpinfo.noncov[a]?.entryDepth ?? 0) >
           (snpinfo.noncov[b]?.entryDepth ?? 0)
