@@ -8,9 +8,7 @@ import { IconButton, InputBase, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewContainer from './ViewContainer'
-import ViewMenu from './ViewMenu'
 
-import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { IDockviewPanelHeaderProps, IDockviewPanelProps } from 'dockview-react'
 import type {
   AbstractViewContainer,
@@ -64,10 +62,6 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.action.selected,
     borderRadius: theme.shape.borderRadius,
     flex: 1,
-  },
-  menuIcon: {
-    color: 'inherit',
-    padding: 2,
   },
 }))
 
@@ -140,11 +134,6 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <ViewMenu
-        model={view as IBaseViewModel}
-        IconButtonProps={{ className: classes.menuIcon, size: 'small' }}
-        IconProps={{ fontSize: 'small' }}
-      />
       <div className={classes.tabTitle}>
         {isEditing ? (
           <InputBase
