@@ -5,7 +5,7 @@ import path from 'path'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { saveAs } from 'file-saver-es'
 import { LocalFile } from 'generic-filehandle2'
@@ -61,9 +61,29 @@ export function setup() {
 }
 
 // Combined setup helper - use this instead of separate setup() + beforeEach(() => doBeforeEach())
-export function setupTest(customResolver?: (url: string) => string) {
+export function setupTest(
+  customResolver?: (url: string) => string,
+  options?: { clearStorageAfterEach?: boolean },
+) {
   setup()
   beforeEach(() => {
+    doBeforeEach(customResolver)
+  })
+  if (options?.clearStorageAfterEach) {
+    afterEach(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+    })
+  }
+}
+
+// Setup helper for export SVG tests - includes Blob mock and clearAllMocks
+export function setupExportSvgTest(customResolver?: (url: string) => string) {
+  // @ts-expect-error
+  global.Blob = (content: unknown, options: unknown) => ({ content, options })
+  setup()
+  beforeEach(() => {
+    jest.clearAllMocks()
     doBeforeEach(customResolver)
   })
 }
@@ -103,6 +123,34 @@ export async function openTrackMenu(
   const opts = [{}, { timeout }] as const
   await user.click(await screen.findByTestId(hts(trackId), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+}
+
+// Helper to open track menu and navigate through menu options
+export async function selectTrackMenuOption(
+  user: ReturnType<typeof userEvent.setup>,
+  trackId: string,
+  menuPath: string[],
+  timeout = 30000,
+) {
+  await openTrackMenu(user, trackId, timeout)
+  const opts = [{}, { timeout }] as const
+  for (const menuItem of menuPath) {
+    await user.click(await screen.findByText(menuItem, ...opts))
+  }
+}
+
+// Helper to wait for canvas and run expectCanvasMatch on first canvas
+export async function waitForCanvasSnapshot(
+  findAllByTestId: (
+    id: string | RegExp,
+    ...opts: readonly [Record<string, unknown>, { timeout: number }]
+  ) => Promise<HTMLElement[]>,
+  timeout = 30000,
+  failureThreshold = 0.01,
+) {
+  const opts = [{}, { timeout }] as const
+  const canvases = await findAllByTestId(/prerendered_canvas/, ...opts)
+  expectCanvasMatch(canvases[0]!, failureThreshold)
 }
 
 export async function createView(args?: any, adminMode?: boolean) {
@@ -340,6 +388,53 @@ export async function openViewWithFileInput({
   return result
 }
 
+// Helper to test canvas within a Blockset container (for alignment tests)
+export async function expectBlocksetCanvasMatch(
+  blocksetType: 'pileup' | 'snpcoverage',
+  canvasTestId: string,
+  timeout = 30000,
+  failureThreshold = 0.01,
+) {
+  const opts = [{}, { timeout }] as const
+  const blockset = within(await screen.findByTestId(`Blockset-${blocksetType}`, ...opts))
+  expectCanvasMatch(await blockset.findByTestId(canvasTestId, ...opts), failureThreshold)
+}
+
+// Helper to test multiple blockset canvases at once
+export async function expectAlignmentCanvasMatch(
+  configs: Array<{
+    blockset: 'pileup' | 'snpcoverage'
+    canvasId: string
+    threshold?: number
+  }>,
+  timeout = 30000,
+) {
+  for (const { blockset, canvasId, threshold } of configs) {
+    await expectBlocksetCanvasMatch(blockset, canvasId, timeout, threshold)
+  }
+}
+
 export { default as JBrowse } from './TestingJBrowse'
 
-export { generateReadBuffer } from './generateReadBuffer'
+export { generateReadBuffer, handleRequest } from './generateReadBuffer'
+
+// Setup helper for Launch* tests (spec URL tests that use the App loader)
+// These tests use jest.spyOn for fetch instead of fetch.mockResponse
+export function setupLaunchTest(
+  resolveFile: (url: string) => string = url =>
+    require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
+) {
+  setup()
+
+  jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+    if (`${url}`.includes('jb2=true')) {
+      return new Response('{}')
+    }
+    return handleRequest(() => new LocalFile(resolveFile(`${url}`)), args)
+  })
+
+  afterEach(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+}

@@ -1,8 +1,9 @@
-import { screen, within } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
   createView,
+  expectBlocksetCanvasMatch,
   expectCanvasMatch,
   openTrackMenu,
   pv,
@@ -30,8 +31,7 @@ async function testFilterTrack(
   await user.type(await screen.findByPlaceholderText('Enter tag value'), value)
   await user.click(await screen.findByText('Submit'))
   await screen.findAllByTestId(`pileup-overlay-normal-${tag}`, ...opts)
-  const f1 = within(await screen.findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await f1.findByTestId(pv(key), ...opts))
+  await expectBlocksetCanvasMatch('pileup', pv(key), 30000)
 }
 
 test('filter by HP tag cram', async () => {

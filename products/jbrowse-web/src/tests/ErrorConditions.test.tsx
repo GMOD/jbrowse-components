@@ -1,12 +1,10 @@
-import { createViewNoWait, doBeforeEach, mockConsole } from './util'
+import { createViewNoWait, mockConsole, setupTest } from './util'
 import chromeSizesConfig from '../../test_data/404_chrom_sizes/config.json'
 import wrongAssemblyTest from '../../test_data/wrong_assembly.json'
 
-const delay = { timeout: 30000 }
+setupTest()
 
-beforeEach(() => {
-  doBeforeEach()
-})
+const delay = { timeout: 30000 }
 
 test('404 sequence file', async () => {
   await mockConsole(async () => {

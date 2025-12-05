@@ -1,25 +1,11 @@
 import { render } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer'
 import { App } from './loaderUtil'
+import { setupLaunchTest } from './util'
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
-const getFile = (url: string) =>
-  new LocalFile(
-    require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
-  )
-
-jest.mock('../makeWorkerInstance', () => () => {})
+setupLaunchTest()
 
 const delay = { timeout: 20000 }
-
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
 
 test('can use a spec url for spreadsheet view', async () => {
   console.warn = jest.fn()

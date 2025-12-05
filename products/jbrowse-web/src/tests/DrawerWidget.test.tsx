@@ -2,13 +2,11 @@ import '@testing-library/jest-dom'
 
 import { fireEvent, getByRole } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts } from './util'
+import { createView, hts, setupTest } from './util'
+
+setupTest()
 
 const delay = { timeout: 15000 }
-
-beforeEach(() => {
-  doBeforeEach()
-})
 
 xtest('opens feature detail from left click', async () => {
   const { view, findByTestId, findAllByTestId } = await createView()

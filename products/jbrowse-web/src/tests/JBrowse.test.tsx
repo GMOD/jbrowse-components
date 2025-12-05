@@ -11,7 +11,7 @@ import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
 import * as sessionSharing from '../sessionSharing'
 import TestPlugin from './TestPlugin'
-import { createView, expectCanvasMatch, openTrackMenu, setupTest } from './util'
+import { createView, hts, openTrackMenu, setupTest, waitForCanvasSnapshot } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -56,9 +56,7 @@ test('assembly aliases', async () => {
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
-  expectCanvasMatch(
-    (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-  )
+  await waitForCanvasSnapshot(findAllByTestId, 30000)
 }, 30000)
 
 xtest('nclist track test with long name', async () => {

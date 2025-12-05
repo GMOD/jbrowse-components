@@ -1,7 +1,13 @@
 import { fireEvent, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, expectCanvasMatch, hts, pv, setupTest } from './util'
+import {
+  createView,
+  expectAlignmentCanvasMatch,
+  hts,
+  pv,
+  setupTest,
+} from './util'
 
 setupTest()
 
@@ -16,10 +22,10 @@ test('opens an alignments track and clicks feature', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
 
-  const f1 = within(await findByTestId('Blockset-pileup', ...opts))
-  const f2 = within(await findByTestId('Blockset-snpcoverage', ...opts))
-  expectCanvasMatch(await f1.findByTestId(pv('1..4000-0'), ...opts))
-  expectCanvasMatch(await f2.findByTestId(pv('1..4000-0'), ...opts))
+  await expectAlignmentCanvasMatch([
+    { blockset: 'pileup', canvasId: pv('1..4000-0') },
+    { blockset: 'snpcoverage', canvasId: pv('1..4000-0') },
+  ], 60000)
 
   const track = await findAllByTestId('pileup-overlay-normal')
   fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 20 })
@@ -50,7 +56,8 @@ test('test snpcoverage doesnt count snpcoverage', async () => {
   await user.click(
     await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts),
   )
-  const f1 = within(await findByTestId('Blockset-snpcoverage', ...opts))
-  expectCanvasMatch(await f1.findByTestId(pv('2657..2688-0'), ...opts))
-  expectCanvasMatch(await f1.findByTestId(pv('2689..2720-0'), ...opts))
+  await expectAlignmentCanvasMatch([
+    { blockset: 'snpcoverage', canvasId: pv('2657..2688-0') },
+    { blockset: 'snpcoverage', canvasId: pv('2689..2720-0') },
+  ], 60000)
 }, 60000)

@@ -1,31 +1,11 @@
 import { render, waitFor } from '@testing-library/react'
-import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer'
 import { App } from './loaderUtil'
+import { setupLaunchTest } from './util'
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
-// @ts-expect-error
-global.nodeImage = Image
-// @ts-expect-error
-global.nodeCreateCanvas = createCanvas
-
-const getFile = (url: string) =>
-  new LocalFile(
-    require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
-  )
-
-jest.mock('../makeWorkerInstance', () => () => {})
+setupLaunchTest()
 
 const delay = { timeout: 10000 }
-
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
 
 test('can use a spec url for lgv', async () => {
   const { findByText, findByPlaceholderText } = render(

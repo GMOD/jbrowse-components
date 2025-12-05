@@ -1,24 +1,10 @@
 import { fireEvent } from '@testing-library/react'
 
-import {
-  createView,
-  doBeforeEach,
-  exportAndVerifySvg,
-  hts,
-  setup,
-} from './util'
-
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
+import { createView, exportAndVerifySvg, hts, setupExportSvgTest } from './util'
 
 jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
 
-setup()
-
-beforeEach(() => {
-  jest.clearAllMocks()
-  doBeforeEach()
-})
+setupExportSvgTest()
 
 const delay = { timeout: 40000 }
 const opts = [{}, delay]

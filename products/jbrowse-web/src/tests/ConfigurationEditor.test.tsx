@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 import userEvent from '@testing-library/user-event'
 
-import { createView, expectCanvasMatch, hts, setupTest } from './util'
+import { createView, hts, setupTest, waitForCanvasSnapshot } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -34,7 +34,5 @@ test('change color on track', async () => {
   await user.clear(elt)
   await user.type(elt, 'green')
 
-  expectCanvasMatch(
-    (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-  )
+  await waitForCanvasSnapshot(findAllByTestId, 30000)
 }, 40000)

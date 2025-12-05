@@ -1,11 +1,11 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, expectCanvasMatch, hts, setupTest } from './util'
+import { createView, hts, setupTest, waitForCanvasSnapshot } from './util'
 
 setupTest()
 
 const delay = { timeout: 20000 }
-const o = [{}, delay]
+const o = [{}, delay] as const
 
 test('test stats estimation pileup, zoom in to see', async () => {
   const { view, findAllByText, findByTestId, findAllByTestId } =
@@ -20,7 +20,7 @@ test('test stats estimation pileup, zoom in to see', async () => {
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...o))[0]!)
+  await waitForCanvasSnapshot(findAllByTestId, 20000)
 }, 30000)
 
 xtest('test stats estimation pileup, force load to see', async () => {
@@ -34,7 +34,7 @@ xtest('test stats estimation pileup, force load to see', async () => {
   const buttons = await findAllByText(/Force load/, ...o)
   fireEvent.click(buttons[0]!)
 
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...o))[0]!)
+  await waitForCanvasSnapshot(findAllByTestId, 20000)
 }, 30000)
 
 xtest('test stats estimation on vcf track, zoom in to see', async () => {
@@ -50,7 +50,7 @@ xtest('test stats estimation on vcf track, zoom in to see', async () => {
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...o))[0]!)
+  await waitForCanvasSnapshot(findAllByTestId, 20000)
 }, 30000)
 
 xtest('test stats estimation on vcf track, force load to see', async () => {
@@ -60,5 +60,5 @@ xtest('test stats estimation on vcf track, force load to see', async () => {
   await findAllByText('ctgA', ...o)
   fireEvent.click(await findByTestId(hts('variant_colors'), ...o))
   fireEvent.click((await findAllByText(/Force load/, ...o))[0]!)
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...o))[0]!)
+  await waitForCanvasSnapshot(findAllByTestId, 20000)
 }, 30000)

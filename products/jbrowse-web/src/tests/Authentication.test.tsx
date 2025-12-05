@@ -1,20 +1,12 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import { RemoteFile } from 'generic-filehandle2'
 
-import {
-  createView,
-  doBeforeEach,
-  expectCanvasMatch,
-  hts,
-  pv,
-  setup,
-} from './util'
+import { createView, expectCanvasMatch, hts, pv, setupTest } from './util'
 import config from '../../test_data/volvox/config_auth.json'
 
-setup()
+setupTest(undefined, { clearStorageAfterEach: true })
 
 beforeEach(() => {
-  doBeforeEach()
   sessionStorage.clear()
 })
 

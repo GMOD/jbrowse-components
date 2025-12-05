@@ -2,7 +2,7 @@ import { fireEvent, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { saveAs } from 'file-saver-es'
 
-import { createView, doBeforeEach, setup } from './util'
+import { createView, setupTest } from './util'
 
 jest.mock('file-saver-es', () => {
   return {
@@ -10,10 +10,10 @@ jest.mock('file-saver-es', () => {
     saveAs: jest.fn(),
   }
 })
-setup()
+
+setupTest(undefined, { clearStorageAfterEach: true })
 
 beforeEach(() => {
-  doBeforeEach()
   localStorage.clear()
 })
 

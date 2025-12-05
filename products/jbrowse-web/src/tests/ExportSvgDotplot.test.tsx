@@ -1,17 +1,9 @@
-import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util'
+import { createView, exportAndVerifySvg, setupExportSvgTest } from './util'
 import volvoxConfig from '../../test_data/volvox/config.json'
-
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
 
 jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
 
-setup()
-
-beforeEach(() => {
-  jest.clearAllMocks()
-  doBeforeEach()
-})
+setupExportSvgTest()
 
 const delay = { timeout: 40000 }
 

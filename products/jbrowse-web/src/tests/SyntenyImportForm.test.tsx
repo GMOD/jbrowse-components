@@ -1,18 +1,12 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
-setup()
+import { createView, expectCanvasMatch, setupTest } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
+setupTest(undefined, { clearStorageAfterEach: true })
+
 const delay = { timeout: 20000 }
-beforeEach(() => {
-  doBeforeEach()
-})
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-})
 
 // onAction listener warning
 console.warn = jest.fn()

@@ -1,17 +1,7 @@
-import { cleanup } from '@testing-library/react'
-
 import { testLinkedReadsDisplay } from './testLinkedReadsDisplay'
-import { doBeforeEach, setup } from './util'
+import { setupTest } from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
-
-afterEach(() => {
-  cleanup()
-})
+setupTest()
 
 const timeout = 60000
 

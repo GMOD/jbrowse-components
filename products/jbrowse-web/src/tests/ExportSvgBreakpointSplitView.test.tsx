@@ -1,23 +1,20 @@
 import {
   createView,
-  doBeforeEach,
   exportAndVerifySvg,
-  setup,
+  setupExportSvgTest,
   sleep,
 } from './util'
 import breakpointConfig from '../../test_data/breakpoint/config.json'
 
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
-
 jest.mock('file-saver-es', () => ({ saveAs: jest.fn() }))
 
-setup()
+setupExportSvgTest(url =>
+  require.resolve(`../../test_data/breakpoint/${url}`),
+)
 
 const delay = { timeout: 50000 }
 
 test('export svg of breakpoint split view', async () => {
-  doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
   console.warn = jest.fn()
   const { findByTestId, findAllByText, findByText } =
     await createView(breakpointConfig)

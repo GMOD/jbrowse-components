@@ -4,10 +4,10 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import {
   JBrowse,
   createView,
-  expectCanvasMatch,
   getPluginManager,
   mockConsoleWarn,
   setupTest,
+  waitForCanvasSnapshot,
 } from './util'
 import masterConfig from '../../test_data/volvox/connection_test.json'
 
@@ -48,9 +48,7 @@ test('copy and delete track in admin mode', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    expectCanvasMatch(
-      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-    )
+    await waitForCanvasSnapshot(findAllByTestId, 40000)
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Delete track'))
     await waitFor(() => {
@@ -106,9 +104,7 @@ test('copy and delete track to session tracks', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    expectCanvasMatch(
-      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-    )
+    await waitForCanvasSnapshot(findAllByTestId, 40000)
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Delete track'))
     await waitFor(() => {

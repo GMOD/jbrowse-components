@@ -1,11 +1,11 @@
 import { fireEvent } from '@testing-library/react'
 
-import { createView, expectCanvasMatch, hts, setupTest } from './util'
+import { createView, hts, setupTest, waitForCanvasSnapshot } from './util'
 
 setupTest()
 
 const delay = { timeout: 20000 }
-const opts = [{}, delay]
+const opts = [{}, delay] as const
 
 test('renders peptide letters on CDS features', async () => {
   const { view, findByTestId, findByText, findAllByTestId } = await createView()
@@ -19,6 +19,5 @@ test('renders peptide letters on CDS features', async () => {
   fireEvent.click(await findByTestId(hts('bedtabix_genes'), ...opts))
 
   // Get canvas snapshot
-  const canvases = await findAllByTestId(/prerendered_canvas/, ...opts)
-  expectCanvasMatch(canvases[0]!)
+  await waitForCanvasSnapshot(findAllByTestId, 20000)
 }, 25000)

@@ -1,11 +1,11 @@
 import { fireEvent, within } from '@testing-library/react'
 
-import { createView, expectCanvasMatch, setupTest } from './util'
+import { createView, setupTest, waitForCanvasSnapshot } from './util'
 
 setupTest()
 
 const delay = { timeout: 60000 }
-const opts = [{}, delay]
+const opts = [{}, delay] as const
 
 test('adds a PAF via the add track workflow', async () => {
   const {
@@ -38,8 +38,7 @@ test('adds a PAF via the add track workflow', async () => {
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
 
-  const res = await findAllByTestId(/prerendered_canvas/, ...opts)
-  expectCanvasMatch(res[0]!)
+  await waitForCanvasSnapshot(findAllByTestId, 60000)
 }, 60000)
 
 test('bug: error message persists after fixing URL', async () => {

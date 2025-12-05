@@ -2,14 +2,12 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { LocalFile } from 'generic-filehandle2'
 
-import { createView, doBeforeEach, generateReadBuffer } from './util'
+import { createView, generateReadBuffer, setupTest } from './util'
 import configSnapshot from '../../test_data/volvox/config.json'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const readBuffer = generateReadBuffer(
   s => new LocalFile(require.resolve(`../../test_data/volvox/${s}`)),
