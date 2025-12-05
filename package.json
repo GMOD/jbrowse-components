@@ -75,7 +75,6 @@
     "@types/range-parser": "^1.2.3",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.2.2",
-    "@types/react-resizable": "^3.0.8",
     "@types/serve-handler": "^6.1.4",
     "@types/set-value": "^4.0.1",
     "@types/string-template": "^1.0.2",
