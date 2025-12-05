@@ -1,4 +1,4 @@
-import { getParent, isRoot } from '@jbrowse/mobx-state-tree'
+import { getParent, isRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { getEnv, getSession, objectHash } from './index'
 import { readConfObject } from '../configuration'
@@ -266,11 +266,17 @@ export function generateUnknownTrackConf(
 }
 
 export function getTrackName(
-  conf: AnyConfigurationModel,
+  conf: AnyConfigurationModel | { name?: string; type?: string },
   session: { assemblies: AnyConfigurationModel[] },
 ) {
-  const trackName = readConfObject(conf, 'name') as string
-  if (!trackName && readConfObject(conf, 'type') === 'ReferenceSequenceTrack') {
+  // Handle both MST models and plain objects
+  const trackName = isStateTreeNode(conf)
+    ? (readConfObject(conf, 'name') as string)
+    : conf.name
+  const trackType = isStateTreeNode(conf)
+    ? (readConfObject(conf, 'type') as string)
+    : conf.type
+  if (!trackName && trackType === 'ReferenceSequenceTrack') {
     const asm = session.assemblies.find(a => a.sequence === conf)
     return asm
       ? `Reference sequence (${

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { readConf } from './util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -29,7 +29,7 @@ const RefNameInfoDialog = observer(function ({
   session,
   onClose,
 }: {
-  config: AnyConfigurationModel
+  config: AnyConfigurationModel | Record<string, unknown>
   session: AbstractSessionModel
   onClose: () => void
 }) {
@@ -38,17 +38,19 @@ const RefNameInfoDialog = observer(function ({
   const [refNames, setRefNames] = useState<Record<string, string[]>>()
   const [copied, setCopied] = useState(false)
   const { rpcManager } = session
+  const trackId = readConf(config, 'trackId') as string
+  const assemblyNames = (readConf(config, 'assemblyNames') || []) as string[]
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const map = await Promise.all(
-          [...new Set(getConfAssemblyNames(config))].map(async assemblyName => {
-            const adapterConfig = readConfObject(config, 'adapter')
+          [...new Set(assemblyNames)].map(async assemblyName => {
+            const adapterConfig = readConf(config, 'adapter')
             return [
               assemblyName,
-              (await rpcManager.call(config.trackId, 'CoreGetRefNames', {
+              (await rpcManager.call(trackId, 'CoreGetRefNames', {
                 adapterConfig,
                 // hack for synteny adapters
                 regions: [
@@ -66,7 +68,7 @@ const RefNameInfoDialog = observer(function ({
         setError(e)
       }
     })()
-  }, [config, rpcManager])
+  }, [config, rpcManager, trackId, assemblyNames])
 
   const names = refNames ? Object.entries(refNames) : []
   const result = names

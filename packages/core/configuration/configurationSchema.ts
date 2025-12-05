@@ -289,8 +289,10 @@ export function ConfigurationSchema<
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      // First try to get from session.tracksById (works for frozen tracks)
-      let ret = getSession(parent).tracksById[id]
+      const session = getSession(parent)
+
+      // Try to get from session.tracksById (works for frozen tracks)
+      let ret = session.tracksById[id]
       if (!ret) {
         // Fall back to resolveIdentifier (works for MST model tracks)
         // @ts-expect-error
