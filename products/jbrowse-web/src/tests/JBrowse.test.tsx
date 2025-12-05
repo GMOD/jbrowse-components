@@ -2,7 +2,8 @@ import '@testing-library/jest-dom'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { fireEvent } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
@@ -10,7 +11,13 @@ import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
 import * as sessionSharing from '../sessionSharing'
 import TestPlugin from './TestPlugin'
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  openTrackMenu,
+  setup,
+} from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -93,11 +100,11 @@ test('test sharing', async () => {
 }, 30000)
 
 test('looks at about this track dialog', async () => {
-  const { findByTestId, findAllByText, findByText } = await createView()
+  const user = userEvent.setup()
+  await createView()
 
   // load track
-  fireEvent.click(await findByTestId(hts('volvox-long-reads-cram'), {}, delay))
-  fireEvent.click(await findByTestId('track_menu_icon', {}, delay))
-  fireEvent.click(await findByText('About track'))
-  await findAllByText(/SQ/, {}, delay)
+  await openTrackMenu(user, 'volvox-long-reads-cram')
+  await user.click(await screen.findByText('About track'))
+  await screen.findAllByText(/SQ/, {}, delay)
 }, 30000)

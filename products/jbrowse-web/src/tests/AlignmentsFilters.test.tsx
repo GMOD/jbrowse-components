@@ -3,21 +3,16 @@ import userEvent from '@testing-library/user-event'
 
 import {
   createView,
-  doBeforeEach,
   expectCanvasMatch,
-  hts,
+  openTrackMenu,
   pv,
-  setup,
+  setupTest,
 } from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 30000 }
-const opts = [{}, delay]
+const opts = [{}, delay] as const
 
 async function testFilterTrack(
   trackId: string,
@@ -26,8 +21,7 @@ async function testFilterTrack(
   key: string,
 ) {
   const user = userEvent.setup()
-  await user.click(await screen.findByTestId(hts(trackId), ...opts))
-  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await openTrackMenu(user, trackId)
   await user.click(await screen.findByText('Filter by...'))
   await user.type(
     await screen.findByPlaceholderText('Enter tag name', ...opts),
@@ -65,8 +59,7 @@ test('set jexl filters on bam pileup display', async () => {
   view.setNewView(0.465, 85055)
 
   const user = userEvent.setup()
-  await user.click(await screen.findByTestId(hts('volvox_bam'), ...opts))
-  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await openTrackMenu(user, 'volvox_bam')
   await user.click((await screen.findAllByText('Pileup display'))[1]!)
 
   const filter = [`jexl:get(feature,'end')==40005`]
@@ -80,8 +73,7 @@ test('set jexl filters on snp cov display', async () => {
   view.setNewView(0.465, 85055)
 
   const user = userEvent.setup()
-  await user.click(await screen.findByTestId(hts('volvox_bam'), ...opts))
-  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await openTrackMenu(user, 'volvox_bam')
   await user.click(await screen.findByText('SNPCoverage display'))
 
   const filter = [`jexl:get(feature,'end')==40005`]

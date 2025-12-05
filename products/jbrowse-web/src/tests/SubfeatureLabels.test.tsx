@@ -1,16 +1,17 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
+import {
+  createView,
+  expectCanvasMatch,
+  openTrackMenu,
+  setupTest,
+} from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 30000 }
-const opts = [{}, delay]
+const opts = [{}, delay] as const
 
 test('toggle subfeature labels to below and verify eden.1 label appears', async () => {
   const user = userEvent.setup()
@@ -19,14 +20,11 @@ test('toggle subfeature labels to below and verify eden.1 label appears', async 
   // Navigate to the region with gene features
   await view.navToLocString('ctgA:907..15,319')
 
-  // Load the gff3tabix_genes track
-  await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
+  // Load the gff3tabix_genes track and open its menu
+  await openTrackMenu(user, 'gff3tabix_genes')
 
   // Wait for the track to render initially
   await findAllByTestId(/prerendered_canvas/, ...opts)
-
-  // Open track menu
-  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
 
   // Navigate to Show... -> Subfeature labels -> below
   await user.click(await screen.findByText('Show...'))

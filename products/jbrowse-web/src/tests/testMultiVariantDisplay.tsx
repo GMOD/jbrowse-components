@@ -1,6 +1,7 @@
 import { fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
-import { createView, expectCanvasMatch, hts } from './util'
+import { createView, expectCanvasMatch, openTrackMenu, sleep } from './util'
 
 export async function testMultiVariantDisplay({
   displayType,
@@ -19,22 +20,22 @@ export async function testMultiVariantDisplay({
       : 'Multi-sample variant display (regular)'
   const useAll = displayType === 'regular'
 
-  const { view, findByTestId, findAllByText, findByText, findAllByTestId } =
+  const user = userEvent.setup()
+  const { view, findAllByText, findByText, findAllByTestId, findByTestId } =
     await createView()
   await view.navToLocString('ctgA')
-  fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
+  await openTrackMenu(user, 'volvox_test_vcf', timeout)
 
-  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
   fireEvent.click(await findByText(displayText, ...opts))
 
   if (useAll) {
-    await new Promise(res => setTimeout(res, 1000))
+    await sleep(1000)
   }
 
   if (phasedMode) {
     if (useAll) {
-      await new Promise(res => setTimeout(res, 1000))
+      await sleep(1000)
     }
     view.tracks[0].displays[0].setPhasedMode('phased')
   }

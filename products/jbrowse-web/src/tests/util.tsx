@@ -5,7 +5,8 @@ import path from 'path'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Image, createCanvas } from 'canvas'
 import { saveAs } from 'file-saver-es'
 import { LocalFile } from 'generic-filehandle2'
@@ -59,6 +60,16 @@ export function setup() {
   expect.extend({ toMatchImageSnapshot })
 }
 
+// Combined setup helper - use this instead of separate setup() + beforeEach(() => doBeforeEach())
+export function setupTest(
+  customResolver?: (url: string) => string,
+) {
+  setup()
+  beforeEach(() => {
+    doBeforeEach(customResolver)
+  })
+}
+
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
   // eslint-disable-next-line no-restricted-globals
   return Buffer.from(
@@ -80,6 +91,21 @@ export function expectCanvasMatch(
 export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
+
+// Sleep helper - replaces `await new Promise(resolve => setTimeout(resolve, ms))`
+export const sleep = (ms: number) =>
+  new Promise(resolve => setTimeout(resolve, ms))
+
+// Helper to open a track and its menu
+export async function openTrackMenu(
+  user: ReturnType<typeof userEvent.setup>,
+  trackId: string,
+  timeout = 30000,
+) {
+  const opts = [{}, { timeout }] as const
+  await user.click(await screen.findByTestId(hts(trackId), ...opts))
+  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+}
 
 export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)

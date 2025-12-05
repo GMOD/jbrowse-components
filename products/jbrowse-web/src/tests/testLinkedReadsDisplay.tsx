@@ -1,7 +1,7 @@
-import { waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, expectCanvasMatch, hts } from './util'
+import { createView, expectCanvasMatch, openTrackMenu, sleep } from './util'
 
 async function waitForPileupDraw(view: any, timeout = 60000) {
   await waitFor(
@@ -31,8 +31,7 @@ export async function testLinkedReadsDisplay({
   const opts = [{}, { timeout }] as const
 
   await view.navToLocString(loc)
-  await user.click(await findByTestId(hts(track), ...opts))
-  await user.click(await findByTestId('track_menu_icon', ...opts))
+  await openTrackMenu(user, track, timeout)
   await user.click(await findByText('Replace lower panel with...'))
 
   if (displayMode === 'arc') {
@@ -40,7 +39,7 @@ export async function testLinkedReadsDisplay({
   } else {
     await user.click((await findAllByText('Linked reads display'))[0]!)
     if (displayMode === 'cloud') {
-      await user.click(await findByTestId('track_menu_icon', ...opts))
+      await user.click(await screen.findByTestId('track_menu_icon', ...opts))
       await user.click((await findAllByText(/Toggle read cloud/))[0]!)
     }
   }
@@ -49,6 +48,6 @@ export async function testLinkedReadsDisplay({
   if (displayMode !== 'arc') {
     await findByTestId(canvasId, {}, { timeout })
   }
-  await new Promise(res => setTimeout(res, 2000))
+  await sleep(2000)
   expectCanvasMatch(getByTestId(canvasId))
 }

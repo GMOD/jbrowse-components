@@ -14,7 +14,7 @@
 import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
+import { createView, doBeforeEach, mockConsoleWarn, setup, sleep } from './util'
 
 import type { SvInspectorViewModel } from '../../../../plugins/sv-inspector/src/SvInspectorView/model'
 
@@ -207,7 +207,7 @@ test('SVInspector filtering updates circular view accordingly', async () => {
     const filteredRows = allRows.filter((row: any) => row.CHROM === 'B')
 
     // Wait for the change to propagate
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await sleep(100)
 
     // Verify that features are updated based on filtered rows
     const filteredFeatures = svInspectorView.features

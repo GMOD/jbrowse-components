@@ -3,18 +3,13 @@ import userEvent from '@testing-library/user-event'
 
 import {
   createView,
-  doBeforeEach,
   expectCanvasMatch,
   hts,
   pv,
-  setup,
+  setupTest,
 } from './util'
 
-setup()
-
-beforeEach(() => {
-  doBeforeEach()
-})
+setupTest()
 
 const delay = { timeout: 30000 }
 const opts = [{}, delay]

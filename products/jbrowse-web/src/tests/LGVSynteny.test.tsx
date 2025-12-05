@@ -9,6 +9,7 @@ import {
   hts,
   mockConsoleWarn,
   setup,
+  sleep,
 } from './util'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -116,7 +117,7 @@ test('nav to synteny from right click, with launch connection plugin', async () 
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,222..34,670')
       expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,499..29,810')
     }, delay)
-    await new Promise(res => setTimeout(res, 1000))
+    await sleep(1000)
     expectCanvasMatch(await findByTestId('synteny_canvas', ...opts))
   })
 }, 60000)

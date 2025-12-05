@@ -1,4 +1,10 @@
-import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util'
+import {
+  createView,
+  doBeforeEach,
+  exportAndVerifySvg,
+  setup,
+  sleep,
+} from './util'
 import breakpointConfig from '../../test_data/breakpoint/config.json'
 
 // @ts-expect-error
@@ -16,7 +22,7 @@ test('export svg of breakpoint split view', async () => {
   const { findByTestId, findAllByText, findByText } =
     await createView(breakpointConfig)
 
-  await new Promise(resolve => setTimeout(resolve, 10000))
+  await sleep(10000)
 
   await exportAndVerifySvg({
     findByTestId,
