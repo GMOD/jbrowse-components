@@ -95,7 +95,6 @@ test('nav to synteny from right click, with launch connection plugin', async () 
             connectionId: jb2asm,
           }
           s.addConnectionConf(conf)
-          // @ts-expect-error
           s.makeConnection(conf)
         }
       },

@@ -76,10 +76,9 @@ const ViewHeader = observer(function ({
   const { classes } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
-  let stickyViewHeaders = false
-  if (isSessionWithMultipleViews(session)) {
-    ;({ stickyViewHeaders } = session)
-  }
+  const stickyViewHeaders = isSessionWithMultipleViews(session)
+    ? session.stickyViewHeaders
+    : false
 
   // scroll the view into view when first mounted. note: this effect will run
   // only once, because of the empty array second param
