@@ -139,5 +139,8 @@
     "webpack-dev-server": "^5.0.0",
     "webpack-manifest-plugin": "^5.0.0"
   },
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "dependencies": {
+    "dockview-react": "^4.11.0"
+  }
 }

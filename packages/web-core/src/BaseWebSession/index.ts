@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import {
   AppFocusMixin,
+  DockviewLayoutMixin,
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
@@ -91,6 +92,7 @@ export function BaseWebSession({
         SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
         TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
         WebSessionConnectionsMixin(pluginManager),
+        DockviewLayoutMixin(),
         AppFocusMixin(),
         SnackbarModel(),
       ),
