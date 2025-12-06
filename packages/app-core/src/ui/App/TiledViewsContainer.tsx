@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
+import CloseIcon from '@mui/icons-material/Close'
 import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit'
 import TabIcon from '@mui/icons-material/Tab'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
@@ -54,6 +55,17 @@ const useStyles = makeStyles()(theme => ({
   addIcon: {
     fontSize: 16,
   },
+  closeButton: {
+    padding: 4,
+    color: theme.palette.primary.contrastText,
+    opacity: 0.7,
+    '&:hover': {
+      opacity: 1,
+    },
+  },
+  closeIcon: {
+    fontSize: 16,
+  },
 }))
 
 type SessionType = SessionWithFocusedViewAndDrawerWidgets &
@@ -75,6 +87,28 @@ const tabComponents = {
   jbrowseTab: JBrowseViewTab,
 }
 
+function createPanelConfig(panelId: string, session: SessionType, title = 'Main') {
+  return {
+    id: panelId,
+    component: 'jbrowseView' as const,
+    tabComponent: 'jbrowseTab' as const,
+    title,
+    params: { panelId, session },
+  }
+}
+
+function cleanLayoutForStorage(layout: ReturnType<DockviewApi['toJSON']>) {
+  return {
+    ...layout,
+    panels: Object.fromEntries(
+      Object.entries(layout.panels).map(([id, panel]) => [
+        id,
+        { ...panel, params: {} },
+      ]),
+    ),
+  }
+}
+
 function LeftHeaderActions({
   containerApi,
   group,
@@ -83,39 +117,15 @@ function LeftHeaderActions({
   const { addEmptyTab } = useDockview()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
+  const handleClose = () => setAnchorEl(null)
 
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
-
-  const handleNewTab = () => {
-    addEmptyTab()
-    handleClose()
-  }
-
-  const handleSplitRight = () => {
+  const handleSplit = (direction: 'right' | 'below') => {
     const activePanel = group.activePanel
     if (activePanel) {
       activePanel.api.moveTo({
         group: containerApi.addGroup({
           referenceGroup: group,
-          direction: 'right',
-        }),
-      })
-    }
-    handleClose()
-  }
-
-  const handleSplitDown = () => {
-    const activePanel = group.activePanel
-    if (activePanel) {
-      activePanel.api.moveTo({
-        group: containerApi.addGroup({
-          referenceGroup: group,
-          direction: 'below',
+          direction,
         }),
       })
     }
@@ -127,32 +137,69 @@ function LeftHeaderActions({
       <Tooltip title="Layout options">
         <IconButton
           size="small"
-          onClick={handleClick}
+          onClick={e => {
+            group.api.setActive()
+            setAnchorEl(e.currentTarget)
+          }}
           className={classes.addButton}
         >
           <AddIcon className={classes.addIcon} />
         </IconButton>
       </Tooltip>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleNewTab}>
+        <MenuItem
+          onClick={() => {
+            addEmptyTab()
+            handleClose()
+          }}
+        >
           <ListItemIcon>
             <TabIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>New empty tab</ListItemText>
         </MenuItem>
-        <MenuItem onClick={handleSplitRight}>
+        <MenuItem onClick={() => handleSplit('right')}>
           <ListItemIcon>
             <VerticalSplitIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Split right</ListItemText>
         </MenuItem>
-        <MenuItem onClick={handleSplitDown}>
+        <MenuItem onClick={() => handleSplit('below')}>
           <ListItemIcon>
             <HorizontalSplitIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Split down</ListItemText>
         </MenuItem>
       </Menu>
+    </div>
+  )
+}
+
+function RightHeaderActions({
+  containerApi,
+  group,
+}: IDockviewHeaderActionsProps) {
+  const { classes } = useStyles()
+
+  if (containerApi.groups.length <= 1) {
+    return null
+  }
+
+  return (
+    <div className={classes.headerActions}>
+      <Tooltip title="Close group">
+        <IconButton
+          size="small"
+          onClick={() => {
+            for (const panel of [...group.panels]) {
+              panel.api.close()
+            }
+          }}
+          className={classes.closeButton}
+        >
+          <CloseIcon className={classes.closeIcon} />
+        </IconButton>
+      </Tooltip>
     </div>
   )
 }
@@ -187,15 +234,10 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     if (!api) {
       return
     }
-    const activeGroup = api.activeGroup
     const panelId = `panel-${nanoid()}`
     api.addPanel({
-      id: panelId,
-      component: 'jbrowseView',
-      tabComponent: 'jbrowseTab',
-      title: 'New Tab',
-      params: { panelId, session },
-      position: activeGroup ? { referenceGroup: activeGroup } : undefined,
+      ...createPanelConfig(panelId, session, 'New Tab'),
+      position: api.activeGroup ? { referenceGroup: api.activeGroup } : undefined,
     })
 
     if (isSessionWithDockviewLayout(session)) {
@@ -210,13 +252,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
   const createInitialPanel = useCallback((dockviewApi: DockviewApi) => {
     const panelId = `panel-${nanoid()}`
-    dockviewApi.addPanel({
-      id: panelId,
-      component: 'jbrowseView',
-      tabComponent: 'jbrowseTab',
-      title: 'Main',
-      params: { panelId, session: sessionRef.current },
-    })
+    dockviewApi.addPanel(createPanelConfig(panelId, sessionRef.current))
 
     if (isSessionWithDockviewLayout(sessionRef.current)) {
       sessionRef.current.setActivePanelId(panelId)
@@ -237,17 +273,15 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         if (rearrangingRef.current) {
           return
         }
-        const panelId = e.id
-
         if (isSessionWithDockviewLayout(sessionRef.current)) {
-          const viewIds = sessionRef.current.getViewIdsForPanel(panelId)
+          const viewIds = sessionRef.current.getViewIdsForPanel(e.id)
           for (const viewId of viewIds) {
             const view = sessionRef.current.views.find(v => v.id === viewId)
             if (view) {
               sessionRef.current.removeView(view)
             }
           }
-          sessionRef.current.removePanel(panelId)
+          sessionRef.current.removePanel(e.id)
         }
       })
 
@@ -256,26 +290,9 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
           !rearrangingRef.current &&
           isSessionWithDockviewLayout(sessionRef.current)
         ) {
-          const layout = event.api.toJSON()
-          // Strip params from panels to avoid storing large session objects
-          // Params are restored dynamically when loading the layout
-          const cleanedLayout = {
-            ...layout,
-            panels: Object.fromEntries(
-              Object.entries(layout.panels).map(([id, panel]) => [
-                id,
-                { ...panel, params: {} },
-              ]),
-            ),
-          }
-          console.log(
-            'Dockview layout size:',
-            JSON.stringify(cleanedLayout).length,
-            'bytes',
-            JSON.stringify(layout).length,
+          sessionRef.current.setDockviewLayout(
+            cleanLayoutForStorage(event.api.toJSON()),
           )
-          console.log('Dockview layout:', cleanedLayout)
-          sessionRef.current.setDockviewLayout(cleanedLayout)
         }
       })
 
@@ -332,20 +349,12 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
               const firstPanel = api.panels[0]
               if (firstPanel) {
                 activePanelId = firstPanel.id
-                session.setActivePanelId(activePanelId)
               } else {
                 activePanelId = `panel-${nanoid()}`
-                api.addPanel({
-                  id: activePanelId,
-                  component: 'jbrowseView',
-                  tabComponent: 'jbrowseTab',
-                  title: 'Main',
-                  params: { panelId: activePanelId, session },
-                })
-                session.setActivePanelId(activePanelId)
+                api.addPanel(createPanelConfig(activePanelId, session))
               }
+              session.setActivePanelId(activePanelId)
             }
-
             session.assignViewToPanel(activePanelId, view.id)
           }
         }
@@ -361,9 +370,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       }
     })
 
-    return () => {
-      dispose()
-    }
+    return dispose
   }, [session, api])
 
   const themeClass =
@@ -378,6 +385,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
           components={components}
           tabComponents={tabComponents}
           leftHeaderActionsComponent={LeftHeaderActions}
+          rightHeaderActionsComponent={RightHeaderActions}
           onReady={onReady}
         />
       </div>

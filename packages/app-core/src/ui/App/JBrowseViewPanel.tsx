@@ -54,12 +54,7 @@ const useStyles = makeStyles()(theme => ({
     whiteSpace: 'nowrap',
     fontSize: '0.8rem',
   },
-  editIcon: {
-    padding: 2,
-    marginLeft: 2,
-    color: 'inherit',
-  },
-  closeIcon: {
+  tabIcon: {
     padding: 2,
     marginLeft: 2,
     color: 'inherit',
@@ -83,12 +78,48 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type SessionType = SessionWithFocusedViewAndDrawerWidgets &
-  AbstractViewContainer
+type SessionType = SessionWithFocusedViewAndDrawerWidgets & AbstractViewContainer
 
 export interface JBrowseViewPanelParams {
   panelId: string
   session: SessionType
+}
+
+function stopEvent(e: React.MouseEvent | React.PointerEvent) {
+  e.stopPropagation()
+  e.preventDefault()
+}
+
+function getViewsForPanel(
+  panelId: string,
+  session: SessionType,
+): AbstractViewModel[] {
+  if (!isSessionWithDockviewLayout(session)) {
+    return []
+  }
+  const viewIds = session.getViewIdsForPanel(panelId)
+  return [...viewIds]
+    .map(id => session.views.find(v => v.id === id))
+    .filter((v): v is AbstractViewModel => v !== undefined)
+}
+
+function getTabDisplayName(views: AbstractViewModel[], session: SessionType) {
+  if (views.length === 0) {
+    return 'Empty'
+  }
+  if (views.length === 1) {
+    const view = views[0]!
+    return (
+      view.displayName ||
+      // @ts-expect-error
+      view.assemblyNames
+        // @ts-expect-error
+        ?.map(r => session.assemblyManager.get(r)?.displayName)
+        .join(',') ||
+      'View'
+    )
+  }
+  return `${views.length} views`
 }
 
 const JBrowseViewPanel = observer(function JBrowseViewPanel({
@@ -97,21 +128,11 @@ const JBrowseViewPanel = observer(function JBrowseViewPanel({
   const { panelId, session } = params
   const { classes } = useStyles()
 
-  // Session may be undefined during layout restoration (before params are updated)
   if (!session) {
     return <div className={classes.container}>Loading...</div>
   }
 
-  // Get view IDs assigned to this panel
-  let viewIds: string[] = []
-  if (isSessionWithDockviewLayout(session)) {
-    viewIds = [...session.getViewIdsForPanel(panelId)]
-  }
-
-  // Map view IDs to actual view objects
-  const views = viewIds
-    .map(id => session.views.find(v => v.id === id))
-    .filter((v): v is AbstractViewModel => v !== undefined)
+  const views = getViewsForPanel(panelId, session)
 
   if (views.length === 0) {
     return (
@@ -147,7 +168,6 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
   const [isHovered, setIsHovered] = useState(false)
   const [editValue, setEditValue] = useState('')
 
-  // Session may be undefined during layout restoration
   if (!session) {
     return (
       <div className={classes.tabContainer}>
@@ -156,29 +176,8 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
     )
   }
 
-  // Get view IDs assigned to this panel
-  let viewIds: string[] = []
-  if (isSessionWithDockviewLayout(session)) {
-    viewIds = [...session.getViewIdsForPanel(panelId)]
-  }
-
-  // Generate display name based on views in the panel
-  let displayValue = 'Empty'
-  if (viewIds.length === 1) {
-    const view = session.views.find(v => v.id === viewIds[0])
-    if (view) {
-      displayValue =
-        view.displayName ||
-        // @ts-expect-error
-        view.assemblyNames
-          // @ts-expect-error
-          ?.map(r => session.assemblyManager.get(r)?.displayName)
-          .join(',') ||
-        'View'
-    }
-  } else if (viewIds.length > 1) {
-    displayValue = `${viewIds.length} views`
-  }
+  const views = getViewsForPanel(panelId, session)
+  const displayValue = getTabDisplayName(views, session)
 
   const handleStartEdit = () => {
     setEditValue(api.title || displayValue)
@@ -200,21 +199,11 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
     }
   }
 
-  const handleClose = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
-    api.close()
-  }
-
   return (
     <div
       className={classes.tabContainer}
-      onMouseEnter={() => {
-        setIsHovered(true)
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false)
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div className={classes.tabTitle}>
         {isEditing ? (
@@ -222,14 +211,10 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
             autoFocus
             className={classes.editInput}
             value={editValue}
-            onChange={e => {
-              setEditValue(e.target.value)
-            }}
+            onChange={e => setEditValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
-            onClick={e => {
-              e.stopPropagation()
-            }}
+            onClick={stopEvent}
           />
         ) : (
           <>
@@ -240,38 +225,28 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
               <>
                 <Tooltip title="Rename tab">
                   <IconButton
-                    className={classes.editIcon}
+                    className={classes.tabIcon}
                     size="small"
                     onClick={e => {
-                      e.stopPropagation()
-                      e.preventDefault()
+                      stopEvent(e)
                       handleStartEdit()
                     }}
-                    onMouseDown={e => {
-                      e.stopPropagation()
-                      e.preventDefault()
-                    }}
-                    onPointerDown={e => {
-                      e.stopPropagation()
-                      e.preventDefault()
-                    }}
+                    onMouseDown={stopEvent}
+                    onPointerDown={stopEvent}
                   >
                     <EditIcon className={classes.smallIcon} />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Close tab">
                   <IconButton
-                    className={classes.closeIcon}
+                    className={classes.tabIcon}
                     size="small"
-                    onClick={handleClose}
-                    onMouseDown={e => {
-                      e.stopPropagation()
-                      e.preventDefault()
+                    onClick={e => {
+                      stopEvent(e)
+                      api.close()
                     }}
-                    onPointerDown={e => {
-                      e.stopPropagation()
-                      e.preventDefault()
-                    }}
+                    onMouseDown={stopEvent}
+                    onPointerDown={stopEvent}
                   >
                     <CloseIcon className={classes.smallIcon} />
                   </IconButton>
