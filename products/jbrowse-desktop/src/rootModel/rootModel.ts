@@ -35,13 +35,18 @@ import OpenSequenceDialog from '../components/OpenSequenceDialog'
 import jobsModelFactory from '../indexJobsModel'
 import JBrowseDesktop from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
+import sessionModelFactory from '../sessionModel/sessionModel'
 
-import type { Menu, MenuAction, SessionModelFactory } from '@jbrowse/app-core'
+import type {
+  DesktopSessionModel,
+  DesktopSessionModelType,
+} from '../sessionModel/sessionModel'
+import type { Menu, MenuAction } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel, UriLocation } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { UriLocation } from '@jbrowse/core/util'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { SessionWithDialogs } from '@jbrowse/product-core'
 
 // lazies
@@ -65,15 +70,9 @@ export function getSaveSession(model: { jbrowse: unknown; session: unknown }) {
  * and we generally prefer using the session model (via e.g. getSession) over
  * the root model (via e.g. getRoot) in plugin code
  */
-export default function rootModelFactory({
-  pluginManager,
-  sessionModelFactory,
-}: {
-  pluginManager: PluginManager
-  sessionModelFactory: SessionModelFactory
-}) {
+export default function rootModelFactory(pluginManager: PluginManager) {
   const assemblyConfigSchema = assemblyConfigSchemaF(pluginManager)
-  const sessionModelType = sessionModelFactory({
+  const sessionModelType: DesktopSessionModelType = sessionModelFactory({
     pluginManager,
     assemblyConfigSchema,
   })
@@ -162,7 +161,7 @@ export default function rootModelFactory({
       /**
        * #action
        */
-      setSession(sessionSnapshot?: Record<string, unknown>) {
+      setSession(sessionSnapshot?: SnapshotIn<DesktopSessionModelType>) {
         const oldSession = self.session
         self.session = cast(sessionSnapshot)
         if (self.session) {
@@ -431,7 +430,7 @@ export default function rootModelFactory({
         /**
          * #action
          */
-        activateSession(sessionSnapshot: Record<string, unknown>) {
+        activateSession(sessionSnapshot: SnapshotIn<DesktopSessionModelType>) {
           self.setSession(sessionSnapshot)
         },
         /**
@@ -449,7 +448,7 @@ export default function rootModelFactory({
          */
         renameCurrentSession(sessionName: string) {
           if (self.session) {
-            const snapshot = getSnapshot(self.session) as Record<string, unknown>
+            const snapshot = getSnapshot(self.session)
             self.setSession({
               ...snapshot,
               name: sessionName,
@@ -581,15 +580,15 @@ export default function rootModelFactory({
                   label: 'Open assembly manager',
                   icon: DNA,
                   onClick: () => {
-                    ;(self.session as AbstractSessionModel).queueDialog(
-                      handleClose => [
+                    if (self.session) {
+                      self.session.queueDialog(handleClose => [
                         AssemblyManager,
                         {
-                          session: self.session,
+                          session: self.session as DesktopSessionModel,
                           onClose: handleClose,
                         },
-                      ],
-                    )
+                      ])
+                    }
                   },
                 },
               ],

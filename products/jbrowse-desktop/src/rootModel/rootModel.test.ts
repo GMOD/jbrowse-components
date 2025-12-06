@@ -8,7 +8,6 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from '../corePlugins'
 import rootModelFactory from './rootModel'
-import sessionModelFactory from '../sessionModel/sessionModel'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -16,10 +15,7 @@ function getRootModel() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
   pluginManager.configure()
-  return rootModelFactory({
-    pluginManager,
-    sessionModelFactory,
-  })
+  return rootModelFactory(pluginManager)
 }
 afterEach(() => {
   localStorage.clear()
@@ -117,6 +113,7 @@ test('throws if session is invalid', () => {
   expect(() => {
     getRootModel().create({
       ...mainThreadConfig,
+      // @ts-expect-error intentionally invalid
       session: {},
     })
   }).toThrow()
@@ -125,6 +122,7 @@ test('throws if session is invalid', () => {
 test('throws if session snapshot is invalid', () => {
   const root = getRootModel().create(mainThreadConfig)
   expect(() => {
+    // @ts-expect-error intentionally invalid
     root.setSession({})
   }).toThrow()
 })

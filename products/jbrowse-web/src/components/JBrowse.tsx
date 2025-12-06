@@ -67,7 +67,6 @@ const JBrowse = observer(function ({
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <App
-        // @ts-expect-error
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />

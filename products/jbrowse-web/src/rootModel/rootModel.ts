@@ -618,6 +618,7 @@ export default function RootModel({
          * #action
          */
         renameCurrentSession(sessionName: string) {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
           const snapshot = getSnapshot(self.session) as Record<string, unknown>
           self.setSession({
             ...snapshot,
@@ -669,7 +670,7 @@ export default function RootModel({
                     self.setSession(rest)
                   },
                 },
-                ...(preConfiguredSessions?.length
+                ...(preConfiguredSessions.length
                   ? [
                       {
                         label: 'Pre-configured sessions...',

@@ -344,6 +344,7 @@ export default function RootModel({
       renameCurrentSession(sessionName: string) {
         const { session } = self
         if (session) {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
           const snapshot = getSnapshot(session) as Record<string, unknown>
           self.setSession({
             ...snapshot,

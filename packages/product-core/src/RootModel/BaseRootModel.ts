@@ -1,7 +1,7 @@
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type assemblyManagerFactory from '@jbrowse/core/assemblyManager'
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 type AssemblyManager = Instance<ReturnType<typeof assemblyManagerFactory>>

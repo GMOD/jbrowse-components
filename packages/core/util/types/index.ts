@@ -190,12 +190,20 @@ export interface Widget {
   id: string
 }
 
+interface WidgetMap {
+  size: number
+  values(): Iterable<Widget>
+  entries(): Iterable<[string, Widget]>
+  get(key: string): Widget | undefined
+  has(key: string): boolean
+}
+
 /** abstract interface for a session that manages widgets */
 export interface SessionWithWidgets extends AbstractSessionModel {
   minimized: boolean
   visibleWidget?: Widget
-  widgets: Map<string | number, Widget>
-  activeWidgets: Map<string | number, Widget>
+  widgets: WidgetMap
+  activeWidgets: WidgetMap
   hideAllWidgets: () => void
   addWidget(
     typeName: string,

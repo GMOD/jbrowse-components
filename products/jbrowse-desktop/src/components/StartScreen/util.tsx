@@ -10,7 +10,6 @@ import deepmerge from 'deepmerge'
 
 import corePlugins from '../../corePlugins'
 import JBrowseRootModelFactory from '../../rootModel/rootModel'
-import sessionModelFactory from '../../sessionModel/sessionModel'
 import { fetchCJS } from '../../util'
 
 import type { JBrowseConfig } from './types'
@@ -59,10 +58,7 @@ export async function createPluginManager(
   ])
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory({
-    pluginManager,
-    sessionModelFactory,
-  })
+  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
 
   const jbrowse = deepmerge(configSnapshot, {
     internetAccounts: [

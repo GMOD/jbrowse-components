@@ -11,7 +11,6 @@ import { ipcMain, ipcRenderer } from '../../../../packages/__mocks__/electron'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
-import sessionModelFactory from '../sessionModel/sessionModel'
 
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
@@ -24,10 +23,7 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
     corePlugins.map(P => new P()),
   ).createPluggableElements()
 
-  const rootModel = JBrowseRootModelFactory({
-    pluginManager,
-    sessionModelFactory,
-  }).create(
+  const rootModel = JBrowseRootModelFactory(pluginManager).create(
     {
       jbrowse: initialState || {
         ...configSnapshot,

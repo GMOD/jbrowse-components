@@ -37,7 +37,6 @@ import Report from '@mui/icons-material/Report'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun, observable } from 'mobx'
 
-import type { DesktopRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -59,8 +58,19 @@ import type {
   SnackAction,
   TrackViewModel,
 } from '@jbrowse/core/util'
+import type { Menu } from '@jbrowse/app-core'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
+import type { JobsStateModel } from '../indexJobsModel'
+
+export interface DesktopRootModelShape {
+  version: string
+  history: { canUndo: boolean; canRedo: boolean; undo: () => void; redo: () => void }
+  menus: () => Menu[]
+  assemblyManager: AssemblyManager
+  jobsManager: JobsStateModel
+  renameCurrentSession: (name: string) => void
+}
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
@@ -173,8 +183,8 @@ export default function sessionModelFactory({
       task: undefined,
     }))
     .views(self => ({
-      get root(): DesktopRootModel {
-        return getParent<DesktopRootModel>(self)
+      get root(): DesktopRootModelShape {
+        return getParent<DesktopRootModelShape>(self)
       },
       get jbrowse() {
         return getParent<{ jbrowse: AnyConfigurationModel }>(self).jbrowse
