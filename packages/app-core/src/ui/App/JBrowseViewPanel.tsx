@@ -86,11 +86,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type SessionType = SessionWithFocusedViewAndDrawerWidgets & AbstractViewContainer
+type SessionType = SessionWithFocusedViewAndDrawerWidgets &
+  AbstractViewContainer
 
 export interface JBrowseViewPanelParams {
   panelId: string
-  session: SessionType
+  session?: SessionType
 }
 
 function stopEvent(e: React.MouseEvent | React.PointerEvent) {
@@ -100,9 +101,9 @@ function stopEvent(e: React.MouseEvent | React.PointerEvent) {
 
 function getViewsForPanel(
   panelId: string,
-  session: SessionType,
+  session: SessionType | undefined,
 ): AbstractViewModel[] {
-  if (!isSessionWithDockviewLayout(session)) {
+  if (!session || !isSessionWithDockviewLayout(session)) {
     return []
   }
   const viewIds = session.getViewIdsForPanel(panelId)
@@ -210,8 +211,12 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
   return (
     <div
       className={classes.tabContainer}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => {
+        setIsHovered(true)
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false)
+      }}
     >
       <div className={classes.tabTitle}>
         {isEditing ? (
@@ -219,7 +224,9 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
             autoFocus
             className={classes.editInput}
             value={editValue}
-            onChange={e => setEditValue(e.target.value)}
+            onChange={e => {
+              setEditValue(e.target.value)
+            }}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
             onClick={stopEvent}

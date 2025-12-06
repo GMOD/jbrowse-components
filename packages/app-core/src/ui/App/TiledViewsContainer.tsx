@@ -48,22 +48,11 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
     height: '100%',
   },
-  addButton: {
+  headerButton: {
     padding: 4,
     color: theme.palette.primary.contrastText,
   },
-  addIcon: {
-    fontSize: 16,
-  },
-  closeButton: {
-    padding: 4,
-    color: theme.palette.primary.contrastText,
-    opacity: 0.7,
-    '&:hover': {
-      opacity: 1,
-    },
-  },
-  closeIcon: {
+  headerIcon: {
     fontSize: 16,
   },
 }))
@@ -87,7 +76,11 @@ const tabComponents = {
   jbrowseTab: JBrowseViewTab,
 }
 
-function createPanelConfig(panelId: string, session: SessionType, title = 'Main') {
+function createPanelConfig(
+  panelId: string,
+  session: SessionType,
+  title = 'Main',
+) {
   return {
     id: panelId,
     component: 'jbrowseView' as const,
@@ -117,7 +110,9 @@ function LeftHeaderActions({
   const { addEmptyTab } = useDockview()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
-  const handleClose = () => setAnchorEl(null)
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
 
   const handleSplit = (direction: 'right' | 'below') => {
     const activePanel = group.activePanel
@@ -141,9 +136,9 @@ function LeftHeaderActions({
             group.api.setActive()
             setAnchorEl(e.currentTarget)
           }}
-          className={classes.addButton}
+          className={classes.headerButton}
         >
-          <AddIcon className={classes.addIcon} />
+          <AddIcon className={classes.headerIcon} />
         </IconButton>
       </Tooltip>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
@@ -158,13 +153,21 @@ function LeftHeaderActions({
           </ListItemIcon>
           <ListItemText>New empty tab</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => handleSplit('right')}>
+        <MenuItem
+          onClick={() => {
+            handleSplit('right')
+          }}
+        >
           <ListItemIcon>
             <VerticalSplitIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Split right</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => handleSplit('below')}>
+        <MenuItem
+          onClick={() => {
+            handleSplit('below')
+          }}
+        >
           <ListItemIcon>
             <HorizontalSplitIcon fontSize="small" />
           </ListItemIcon>
@@ -191,13 +194,13 @@ function RightHeaderActions({
         <IconButton
           size="small"
           onClick={() => {
-            for (const panel of [...group.panels]) {
+            for (const panel of group.panels) {
               panel.api.close()
             }
           }}
-          className={classes.closeButton}
+          className={classes.headerButton}
         >
-          <CloseIcon className={classes.closeIcon} />
+          <CloseIcon className={classes.headerIcon} />
         </IconButton>
       </Tooltip>
     </div>
@@ -237,7 +240,9 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     const panelId = `panel-${nanoid()}`
     api.addPanel({
       ...createPanelConfig(panelId, session, 'New Tab'),
-      position: api.activeGroup ? { referenceGroup: api.activeGroup } : undefined,
+      position: api.activeGroup
+        ? { referenceGroup: api.activeGroup }
+        : undefined,
     })
 
     if (isSessionWithDockviewLayout(session)) {

@@ -24,7 +24,7 @@ import type {
   IconButtonProps as IconButtonPropsType,
   SvgIconProps,
 } from '@mui/material'
-import type { DockviewApi, DockviewPanelApi } from 'dockview-react'
+import type { DockviewApi } from 'dockview-react'
 
 function renameIds(obj: Record<string, unknown>): Record<string, unknown> {
   const idMap = new Map<string, string>()
