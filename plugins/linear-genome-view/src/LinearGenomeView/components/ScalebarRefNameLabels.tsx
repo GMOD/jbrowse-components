@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { useTheme } from '@mui/material'
-import { autorun } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import { getCachedElements, getPinnedContentBlock } from '../util'
 
@@ -59,9 +59,8 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
 
     return autorun(
       function refNameLabelsLayoutAutorun() {
-        const { staticBlocks, bpPerPx, offsetPx, scalebarDisplayPrefix } = model
+        const { staticBlocks, bpPerPx } = model
         const inner = innerRef.current
-        const pinned = pinnedRef.current
         if (!inner) {
           return
         }
@@ -107,24 +106,18 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
 
         inner.replaceChildren(fragment)
 
-        // Update labels with prefix info
-        const pinnedBlock = getPinnedContentBlock(staticBlocks, offsetPx)
-        const prefix = scalebarDisplayPrefix()
-        if (pinned) {
-          if (pinnedBlock) {
-            pinned.style.display = ''
-            pinned.textContent =
-              (prefix ? `${prefix}:` : '') + pinnedBlock.refName
-          } else {
-            pinned.style.display = 'none'
+        // Apply prefix to first label (needed for initial render)
+        // Use untracked to avoid subscribing to offsetPx/scalebarDisplayPrefix
+        untracked(() => {
+          const pinnedBlock = getPinnedContentBlock(staticBlocks, model.offsetPx)
+          const prefix = model.scalebarDisplayPrefix()
+          if (firstLabelRef.current) {
+            const refName = firstLabelRef.current.dataset.refname || ''
+            const showPrefix = prefix && !pinnedBlock
+            firstLabelRef.current.textContent =
+              (showPrefix ? `${prefix}:` : '') + refName
           }
-        }
-        if (firstLabelRef.current) {
-          const refName = firstLabelRef.current.dataset.refname || ''
-          const showPrefix = prefix && !pinnedBlock
-          firstLabelRef.current.textContent =
-            (showPrefix ? `${prefix}:` : '') + refName
-        }
+        })
       },
       { name: 'RefNameLabelsLayout' },
     )
