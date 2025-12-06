@@ -201,13 +201,13 @@ function LeftHeaderActions({
           <ListItemIcon>
             <VerticalSplitIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Split right</ListItemText>
+          <ListItemText>New empty split horizontal</ListItemText>
         </MenuItem>
         <MenuItem onClick={() => handleSplit('below')}>
           <ListItemIcon>
             <HorizontalSplitIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Split down</ListItemText>
+          <ListItemText>New empty split vertical</ListItemText>
         </MenuItem>
       </Menu>
     </div>
