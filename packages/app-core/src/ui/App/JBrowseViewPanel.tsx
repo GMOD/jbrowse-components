@@ -1,9 +1,11 @@
 import { Suspense, lazy, useState } from 'react'
 
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import EditIcon from '@mui/icons-material/Edit'
-import { IconButton, InputBase, Tooltip, Typography } from '@mui/material'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { InputBase, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewContainer from './ViewContainer'
@@ -172,6 +174,46 @@ const JBrowseViewPanel = observer(function JBrowseViewPanel({
   )
 })
 
+function TabMenu({
+  isHovered,
+  classes,
+  onRename,
+  onClose,
+}: {
+  isHovered: boolean
+  classes: Record<string, string>
+  onRename: () => void
+  onClose: () => void
+}) {
+  const menuItems = [
+    {
+      label: 'Rename tab',
+      icon: EditIcon,
+      onClick: onRename,
+    },
+    {
+      label: 'Close tab',
+      icon: CloseIcon,
+      onClick: onClose,
+    },
+  ]
+
+  return (
+    <div
+      className={`${classes.tabIcons} ${isHovered ? classes.tabIconsVisible : ''}`}
+    >
+      <CascadingMenuButton
+        menuItems={menuItems}
+        size="small"
+        className={classes.tabIcon}
+        stopPropagation
+      >
+        <MoreVertIcon className={classes.smallIcon} />
+      </CascadingMenuButton>
+    </div>
+  )
+}
+
 export const JBrowseViewTab = observer(function JBrowseViewTab({
   params,
   api,
@@ -241,38 +283,14 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
             <Typography className={classes.tabTitleText} variant="body2">
               {api.title || displayValue}
             </Typography>
-            <div
-              className={`${classes.tabIcons} ${isHovered ? classes.tabIconsVisible : ''}`}
-            >
-              <Tooltip title="Rename tab">
-                <IconButton
-                  className={classes.tabIcon}
-                  size="small"
-                  onClick={e => {
-                    stopEvent(e)
-                    handleStartEdit()
-                  }}
-                  onMouseDown={stopEvent}
-                  onPointerDown={stopEvent}
-                >
-                  <EditIcon className={classes.smallIcon} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Close tab">
-                <IconButton
-                  className={classes.tabIcon}
-                  size="small"
-                  onClick={e => {
-                    stopEvent(e)
-                    api.close()
-                  }}
-                  onMouseDown={stopEvent}
-                  onPointerDown={stopEvent}
-                >
-                  <CloseIcon className={classes.smallIcon} />
-                </IconButton>
-              </Tooltip>
-            </div>
+            <TabMenu
+              isHovered={isHovered}
+              classes={classes}
+              onRename={handleStartEdit}
+              onClose={() => {
+                api.close()
+              }}
+            />
           </>
         )}
       </div>

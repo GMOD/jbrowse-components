@@ -2,34 +2,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import AddIcon from '@mui/icons-material/Add'
-import CloseIcon from '@mui/icons-material/Close'
-import ViewWeekIcon from '@mui/icons-material/ViewWeek'
-import DynamicFeedIcon from '@mui/icons-material/DynamicFeed'
-import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
-import TabIcon from '@mui/icons-material/Tab'
-import TableRowsIcon from '@mui/icons-material/TableRows'
-import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
-import ViewColumnIcon from '@mui/icons-material/ViewColumn'
-import ViewModuleIcon from '@mui/icons-material/ViewModule'
-import {
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Tooltip,
-  useTheme,
-} from '@mui/material'
+import { useTheme } from '@mui/material'
 import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-
-import { DockviewContext, useDockview } from './DockviewContext'
+import { DockviewContext } from './DockviewContext'
+import DockviewLeftHeaderActions from './DockviewLeftHeaderActions'
+import DockviewRightHeaderActions from './DockviewRightHeaderActions'
 import JBrowseViewPanel, { JBrowseViewTab } from './JBrowseViewPanel'
+import {
+  cleanLayoutForStorage,
+  createPanelConfig,
+  updatePanelParams,
+} from './dockviewUtils'
 import { isSessionWithDockviewLayout } from '../../DockviewLayout'
 
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
@@ -41,32 +27,19 @@ import type {
   DockviewApi,
   DockviewGroupPanel,
   DockviewReadyEvent,
-  IDockviewHeaderActionsProps,
 } from 'dockview-react'
 
 import 'dockview-react/dist/styles/dockview.css'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(() => ({
   container: {
     height: '100%',
     width: '100%',
     gridRow: 'components',
   },
-  headerActions: {
-    display: 'flex',
-    alignItems: 'center',
-    height: '100%',
-  },
-  headerButton: {
-    padding: 4,
-    color: theme.palette.primary.contrastText,
-  },
-  headerIcon: {
-    fontSize: 16,
-  },
 }))
 
-type SessionType = SessionWithFocusedViewAndDrawerWidgets &
+export type SessionType = SessionWithFocusedViewAndDrawerWidgets &
   AbstractViewContainer & {
     renameCurrentSession: (arg: string) => void
     snackbarMessages: SnackbarMessage[]
@@ -83,250 +56,6 @@ const components = {
 
 const tabComponents = {
   jbrowseTab: JBrowseViewTab,
-}
-
-function createPanelConfig(
-  panelId: string,
-  session: SessionType,
-  title = 'Main',
-) {
-  return {
-    id: panelId,
-    component: 'jbrowseView' as const,
-    tabComponent: 'jbrowseTab' as const,
-    title,
-    params: { panelId, session },
-  }
-}
-
-function cleanLayoutForStorage(layout: ReturnType<DockviewApi['toJSON']>) {
-  return {
-    ...layout,
-    panels: Object.fromEntries(
-      Object.entries(layout.panels).map(([id, panel]) => [
-        id,
-        { ...panel, params: {} },
-      ]),
-    ),
-  }
-}
-
-function updatePanelParams(api: DockviewApi, session: SessionType) {
-  for (const panel of api.panels) {
-    panel.update({ params: { panelId: panel.id, session } })
-  }
-}
-
-function rearrangePanelsWithDirection(
-  api: DockviewApi,
-  getPosition: (
-    idx: number,
-    panelStates: { id: string }[],
-  ) =>
-    | { referencePanel: string; direction: 'right' | 'below' | 'within' }
-    | undefined,
-) {
-  const panels = api.panels
-  if (panels.length <= 1) {
-    return
-  }
-
-  const panelStates = panels.map(p => ({
-    id: p.id,
-    component: 'jbrowseView' as const,
-    tabComponent: 'jbrowseTab' as const,
-    title: p.title,
-    params: p.params,
-  }))
-
-  for (const p of panels) {
-    api.removePanel(p)
-  }
-  for (const [idx, state] of panelStates.entries()) {
-    api.addPanel({
-      ...state,
-      position: getPosition(idx, panelStates),
-    })
-  }
-}
-
-function LeftHeaderActions({
-  containerApi,
-  group,
-}: IDockviewHeaderActionsProps) {
-  const { classes } = useStyles()
-  const { addEmptyTab } = useDockview()
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
-
-  const handleSplit = (direction: 'right' | 'below') => {
-    const newGroup = containerApi.addGroup({
-      referenceGroup: group,
-      direction,
-    })
-    addEmptyTab(newGroup)
-    handleClose()
-  }
-
-  return (
-    <div className={classes.headerActions}>
-      <Tooltip title="Add tab">
-        <IconButton
-          size="small"
-          onClick={e => {
-            group.api.setActive()
-            setAnchorEl(e.currentTarget)
-          }}
-          className={classes.headerButton}
-        >
-          <AddIcon className={classes.headerIcon} />
-        </IconButton>
-      </Tooltip>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem
-          onClick={() => {
-            addEmptyTab()
-            handleClose()
-          }}
-        >
-          <ListItemIcon>
-            <TabIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>New empty tab</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={() => handleSplit('right')}>
-          <ListItemIcon>
-            <VerticalSplitIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>New empty split horizontal</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={() => handleSplit('below')}>
-          <ListItemIcon>
-            <HorizontalSplitIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>New empty split vertical</ListItemText>
-        </MenuItem>
-      </Menu>
-    </div>
-  )
-}
-
-function RightHeaderActions({
-  containerApi,
-  group,
-}: IDockviewHeaderActionsProps) {
-  const { classes } = useStyles()
-  const { rearrangePanels } = useDockview()
-
-  const tileHorizontally = () => {
-    rearrangePanels(api => {
-      rearrangePanelsWithDirection(api, (idx, states) =>
-        idx === 0
-          ? undefined
-          : { referencePanel: states[0]!.id, direction: 'right' },
-      )
-    })
-  }
-
-  const tileVertically = () => {
-    rearrangePanels(api => {
-      rearrangePanelsWithDirection(api, (idx, states) =>
-        idx === 0
-          ? undefined
-          : { referencePanel: states[0]!.id, direction: 'below' },
-      )
-    })
-  }
-
-  const tileGrid = () => {
-    rearrangePanels(api => {
-      const panels = api.panels
-      if (panels.length <= 1) {
-        return
-      }
-      const cols = Math.ceil(Math.sqrt(panels.length))
-      rearrangePanelsWithDirection(api, (idx, states) => {
-        if (idx === 0) {
-          return undefined
-        }
-        const col = idx % cols
-        const row = Math.floor(idx / cols)
-        if (col === 0) {
-          const refIdx = (row - 1) * cols
-          return { referencePanel: states[refIdx]!.id, direction: 'below' }
-        }
-        return { referencePanel: states[idx - 1]!.id, direction: 'right' }
-      })
-    })
-  }
-
-  const stackAll = () => {
-    rearrangePanels(api => {
-      rearrangePanelsWithDirection(api, (idx, states) =>
-        idx === 0
-          ? undefined
-          : { referencePanel: states[0]!.id, direction: 'within' },
-      )
-    })
-  }
-
-  const showLayoutOptions = containerApi.panels.length > 1
-  const showCloseGroup = containerApi.groups.length > 1
-
-  const layoutMenuItems = [
-    {
-      label: 'Global: change layout into set of tabs',
-      icon: DynamicFeedIcon,
-      onClick: stackAll,
-    },
-    {
-      label: 'Global: tile horizontally',
-      icon: ViewColumnIcon,
-      onClick: tileHorizontally,
-    },
-    {
-      label: 'Global: tile vertically',
-      icon: TableRowsIcon,
-      onClick: tileVertically,
-    },
-    {
-      label: 'Global: tile grid',
-      icon: ViewModuleIcon,
-      onClick: tileGrid,
-    },
-  ]
-
-  return (
-    <div className={classes.headerActions}>
-      {showLayoutOptions && (
-        <CascadingMenuButton
-          menuItems={layoutMenuItems}
-          size="small"
-          className={classes.headerButton}
-        >
-          <MoreHorizIcon className={classes.headerIcon} />
-        </CascadingMenuButton>
-      )}
-      {showCloseGroup && (
-        <Tooltip title="Close group">
-          <IconButton
-            size="small"
-            onClick={() => {
-              for (const panel of group.panels) {
-                panel.api.close()
-              }
-            }}
-            className={classes.headerButton}
-          >
-            <CloseIcon className={classes.headerIcon} />
-          </IconButton>
-        </Tooltip>
-      )}
-    </div>
-  )
 }
 
 const TiledViewsContainer = observer(function TiledViewsContainer({
@@ -570,8 +299,8 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         <DockviewReact
           components={components}
           tabComponents={tabComponents}
-          leftHeaderActionsComponent={LeftHeaderActions}
-          rightHeaderActionsComponent={RightHeaderActions}
+          leftHeaderActionsComponent={DockviewLeftHeaderActions}
+          rightHeaderActionsComponent={DockviewRightHeaderActions}
           onReady={onReady}
         />
       </div>
