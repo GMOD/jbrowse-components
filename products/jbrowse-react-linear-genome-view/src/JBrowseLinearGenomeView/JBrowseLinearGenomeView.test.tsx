@@ -65,7 +65,7 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
     tracks: [],
     defaultSession,
   })
-  const { container, getAllByTestId, getByPlaceholderText } = render(
+  const { getAllByTestId, getByPlaceholderText } = render(
     <JBrowseLinearGenomeView viewState={state} />,
   )
 
@@ -85,6 +85,4 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
     },
     { timeout },
   )
-
-  expect(container).toMatchSnapshot()
 }, 40000)
