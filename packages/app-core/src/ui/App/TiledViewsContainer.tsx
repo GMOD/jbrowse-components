@@ -373,6 +373,52 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     return dispose
   }, [session, api])
 
+  // React to layout changes from undo/redo
+  useEffect(() => {
+    if (!api || !isSessionWithDockviewLayout(session)) {
+      return
+    }
+
+    const dispose = autorun(() => {
+      const { dockviewLayout } = session
+      if (!dockviewLayout || rearrangingRef.current) {
+        return
+      }
+
+      // Compare current dockview state with session state
+      const currentLayout = cleanLayoutForStorage(api.toJSON())
+      if (JSON.stringify(currentLayout) === JSON.stringify(dockviewLayout)) {
+        return
+      }
+
+      // Layout differs - restore from session (likely from undo/redo)
+      rearrangingRef.current = true
+      try {
+        api.fromJSON(dockviewLayout)
+
+        for (const panel of api.panels) {
+          panel.update({
+            params: { panelId: panel.id, session: sessionRef.current },
+          })
+        }
+
+        // Rebuild tracked view IDs from restored layout
+        trackedViewIdsRef.current.clear()
+        for (const viewIds of session.panelViewAssignments.values()) {
+          for (const viewId of viewIds) {
+            trackedViewIdsRef.current.add(viewId)
+          }
+        }
+      } catch (e) {
+        console.error('Failed to restore dockview layout from undo:', e)
+      } finally {
+        rearrangingRef.current = false
+      }
+    })
+
+    return dispose
+  }, [session, api])
+
   const themeClass =
     theme.palette.mode === 'dark'
       ? 'dockview-theme-dark'

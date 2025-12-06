@@ -54,6 +54,14 @@ const useStyles = makeStyles()(theme => ({
     whiteSpace: 'nowrap',
     fontSize: '0.8rem',
   },
+  tabIcons: {
+    display: 'flex',
+    alignItems: 'center',
+    visibility: 'hidden',
+  },
+  tabIconsVisible: {
+    visibility: 'visible',
+  },
   tabIcon: {
     padding: 2,
     marginLeft: 2,
@@ -221,38 +229,38 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
             <Typography className={classes.tabTitleText} variant="body2">
               {api.title || displayValue}
             </Typography>
-            {isHovered && (
-              <>
-                <Tooltip title="Rename tab">
-                  <IconButton
-                    className={classes.tabIcon}
-                    size="small"
-                    onClick={e => {
-                      stopEvent(e)
-                      handleStartEdit()
-                    }}
-                    onMouseDown={stopEvent}
-                    onPointerDown={stopEvent}
-                  >
-                    <EditIcon className={classes.smallIcon} />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Close tab">
-                  <IconButton
-                    className={classes.tabIcon}
-                    size="small"
-                    onClick={e => {
-                      stopEvent(e)
-                      api.close()
-                    }}
-                    onMouseDown={stopEvent}
-                    onPointerDown={stopEvent}
-                  >
-                    <CloseIcon className={classes.smallIcon} />
-                  </IconButton>
-                </Tooltip>
-              </>
-            )}
+            <div
+              className={`${classes.tabIcons} ${isHovered ? classes.tabIconsVisible : ''}`}
+            >
+              <Tooltip title="Rename tab">
+                <IconButton
+                  className={classes.tabIcon}
+                  size="small"
+                  onClick={e => {
+                    stopEvent(e)
+                    handleStartEdit()
+                  }}
+                  onMouseDown={stopEvent}
+                  onPointerDown={stopEvent}
+                >
+                  <EditIcon className={classes.smallIcon} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Close tab">
+                <IconButton
+                  className={classes.tabIcon}
+                  size="small"
+                  onClick={e => {
+                    stopEvent(e)
+                    api.close()
+                  }}
+                  onMouseDown={stopEvent}
+                  onPointerDown={stopEvent}
+                >
+                  <CloseIcon className={classes.smallIcon} />
+                </IconButton>
+              </Tooltip>
+            </div>
           </>
         )}
       </div>
