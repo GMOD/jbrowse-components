@@ -11,6 +11,7 @@ import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
 import { version } from '../version'
 
+import type { LGVSessionModelType } from './createSessionModel'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -27,7 +28,7 @@ export default function createModel(
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
   ).createPluggableElements()
-  const Session = createSessionModel(pluginManager)
+  const Session: LGVSessionModelType = createSessionModel(pluginManager)
   const assemblyConfig = assemblyConfigSchemaFactory(pluginManager)
   const AssemblyManager = assemblyManagerFactory(assemblyConfig, pluginManager)
   const rootModel = types

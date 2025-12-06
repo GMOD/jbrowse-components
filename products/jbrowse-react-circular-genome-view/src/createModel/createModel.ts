@@ -11,6 +11,7 @@ import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
 import { version } from '../version'
 
+import type { CGVSessionModelType } from './createSessionModel'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -28,7 +29,7 @@ export default function createModel(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
   )
   pluginManager.createPluggableElements()
-  const Session = createSessionModel(pluginManager)
+  const Session: CGVSessionModelType = createSessionModel(pluginManager)
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const assemblyManagerType = assemblyManagerFactory(
     assemblyConfigSchema,

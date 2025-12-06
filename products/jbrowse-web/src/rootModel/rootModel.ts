@@ -40,10 +40,7 @@ import jbrowseWebFactory from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
 import sessionModelFactory from '../sessionModel'
 
-import type {
-  WebSessionModel,
-  WebSessionModelType,
-} from '../sessionModel'
+import type { WebSessionModelType } from '../sessionModel'
 import type { SessionDB, SessionMetadata } from '../types'
 import type { Menu, MenuAction } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -490,7 +487,7 @@ export default function RootModel({
               autorun(
                 () => {
                   if (self.session) {
-                    const s = self.session as AbstractSessionModel
+                    const s = self.session
                     const sessionSnap = getSnapshot(s)
                     try {
                       sessionStorage.setItem(
@@ -507,13 +504,9 @@ export default function RootModel({
 
                       if (self.pluginsUpdated) {
                         self.reloadPluginManagerCallback(
-                          structuredClone(
-                            getSnapshot(self.jbrowse),
-                          ) as Record<string, unknown>,
-                          structuredClone(sessionSnap) as Record<
-                            string,
-                            unknown
-                          >,
+                          structuredClone(getSnapshot(self.jbrowse)),
+                          // @ts-expect-error
+                          structuredClone(sessionSnap),
                         )
                       }
                     } catch (e) {
@@ -824,15 +817,13 @@ export default function RootModel({
                 icon: SettingsIcon,
                 onClick: () => {
                   if (self.session) {
-                    ;(self.session as SessionWithDialogs).queueDialog(
-                      handleClose => [
-                        PreferencesDialog,
-                        {
-                          session: self.session,
-                          handleClose,
-                        },
-                      ],
-                    )
+                    self.session.queueDialog(handleClose => [
+                      PreferencesDialog,
+                      {
+                        session: self.session,
+                        handleClose,
+                      },
+                    ])
                   }
                 },
               },

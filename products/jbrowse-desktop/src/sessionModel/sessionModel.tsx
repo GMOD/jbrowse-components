@@ -37,6 +37,8 @@ import Report from '@mui/icons-material/Report'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun, observable } from 'mobx'
 
+import type { JobsStateModel } from '../indexJobsModel'
+import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -58,14 +60,17 @@ import type {
   SnackAction,
   TrackViewModel,
 } from '@jbrowse/core/util'
-import type { Menu } from '@jbrowse/app-core'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
-import type { JobsStateModel } from '../indexJobsModel'
 
 export interface DesktopRootModelShape {
   version: string
-  history: { canUndo: boolean; canRedo: boolean; undo: () => void; redo: () => void }
+  history: {
+    canUndo: boolean
+    canRedo: boolean
+    undo: () => void
+    redo: () => void
+  }
   menus: () => Menu[]
   assemblyManager: AssemblyManager
   jobsManager: JobsStateModel
