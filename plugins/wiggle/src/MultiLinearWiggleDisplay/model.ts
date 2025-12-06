@@ -276,7 +276,9 @@ export function stateModelFactory(
       get quantitativeStatsReady() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return (
-          view.initialized && self.statsReadyAndRegionNotTooLarge && !self.error
+          view.initialized &&
+          self.featureDensityStatsReadyAndRegionNotTooLarge &&
+          !self.error
         )
       },
     }))

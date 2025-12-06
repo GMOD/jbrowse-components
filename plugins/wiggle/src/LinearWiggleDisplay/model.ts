@@ -197,7 +197,11 @@ function stateModelFactory(
        */
       get quantitativeStatsReady() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        return view.initialized && !self.regionTooLarge && !self.error
+        return (
+          view.initialized &&
+          self.featureDensityStatsReadyAndRegionNotTooLarge &&
+          !self.error
+        )
       },
     }))
     .views(self => {

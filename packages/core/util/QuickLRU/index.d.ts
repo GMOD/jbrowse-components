@@ -1,14 +1,7 @@
-// vendored from quick-lru@6.1.1, didn't like being compiled as a 'pure-esm' nodejs dependency
+// vendored from quick-lru@7.3.0
 // the license is reproduced below https://github.com/sindresorhus/quick-lru/blob/main/license
 // MIT License
-
-// Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 export interface Options<KeyType, ValueType> {
   /**
 	The maximum number of milliseconds an item should remain in the cache.
@@ -16,34 +9,33 @@ export interface Options<KeyType, ValueType> {
 	@default Infinity
 
 	By default, `maxAge` will be `Infinity`, which means that items will never expire.
-	Lazy expiration upon the next write or read call.
+	Lazy expiration occurs upon the next write or read call.
 
-	Individual expiration of an item can be specified by the `set(key, value, maxAge)` method.
+	Individual expiration of an item can be specified with the `set(key, value, {maxAge})` method.
 	*/
   readonly maxAge?: number
 
   /**
-	The maximum number of items before evicting the least recently used items.
+	The target maximum number of items before evicting the least recently used items.
+
+	__Note:__ This package uses an [algorithm](https://github.com/sindresorhus/quick-lru#algorithm) which maintains between `maxSize` and `2 × maxSize` items for performance reasons. The cache may temporarily contain up to twice the specified size due to the dual-cache design that avoids expensive delete operations.
 	*/
   readonly maxSize: number
 
   /**
-	Called right before an item is evicted from the cache.
+	Called right before an item is evicted from the cache due to LRU pressure, TTL expiration, or manual eviction via `evict()`.
 
 	Useful for side effects or for items like object URLs that need explicit cleanup (`revokeObjectURL`).
+
+	__Note:__ This callback is not called for manual removals via `delete()` or `clear()`. It fires for automatic evictions and manual evictions via `evict()`.
 	*/
   onEviction?: (key: KeyType, value: ValueType) => void
 }
 
 export default class QuickLRU<KeyType, ValueType>
-  extends Map
+  extends Map<KeyType, ValueType>
   implements Iterable<[KeyType, ValueType]>
 {
-  /**
-	The stored item count.
-	*/
-  readonly size: number
-
   /**
 	Simple ["Least Recently Used" (LRU) cache](https://en.m.wikipedia.org/wiki/Cache_replacement_policies#Least_Recently_Used_.28LRU.29).
 
@@ -71,9 +63,9 @@ export default class QuickLRU<KeyType, ValueType>
   /**
 	Set an item. Returns the instance.
 
-	Individual expiration of an item can be specified with the `maxAge` option. If not specified, the global `maxAge` value will be used in case it is specified in the constructor, otherwise the item will never expire.
+	Individual expiration of an item can be specified with the `maxAge` option. If not specified, the global `maxAge` value will be used in case it is specified in the constructor; otherwise the item will never expire.
 
-	@returns The list instance.
+	@returns The cache instance.
 	*/
   set(key: KeyType, value: ValueType, options?: { maxAge?: number }): this
 
@@ -109,11 +101,38 @@ export default class QuickLRU<KeyType, ValueType>
   clear(): void
 
   /**
+	Get the remaining time to live (in milliseconds) for the given item, or `undefined` when the item is not in the cache.
+
+	- Does not mark the item as recently used.
+	- Does not trigger lazy expiration or remove the entry when it is expired.
+	- Returns `Infinity` if the item has no expiration.
+	- May return a negative number if the item is already expired but not yet lazily removed.
+
+	@returns Remaining time to live in milliseconds when set, `Infinity` when there is no expiration, or `undefined` when the item does not exist.
+	*/
+  expiresIn(key: KeyType): number | undefined
+
+  /**
 	Update the `maxSize` in-place, discarding items as necessary. Insertion order is mostly preserved, though this is not a strong guarantee.
 
 	Useful for on-the-fly tuning of cache sizes in live systems.
 	*/
   resize(maxSize: number): void
+
+  /**
+	The stored item count.
+	*/
+  get size(): number
+
+  /**
+	The set max size.
+	*/
+  get maxSize(): number
+
+  /**
+	The set max age.
+	*/
+  get maxAge(): number
 
   /**
 	Iterable for all the keys.
@@ -134,4 +153,32 @@ export default class QuickLRU<KeyType, ValueType>
 	Iterable for all entries, starting with the newest (descending in recency).
 	*/
   entriesDescending(): IterableIterator<[KeyType, ValueType]>
+
+  /**
+	Evict the least recently used items from the cache.
+
+	@param count - The number of items to evict. Defaults to 1.
+
+	It will always keep at least one item in the cache.
+
+	@example
+	```
+	import QuickLRU from 'quick-lru';
+
+	const lru = new QuickLRU({maxSize: 10});
+
+	lru.set('a', 1);
+	lru.set('b', 2);
+	lru.set('c', 3);
+
+	lru.evict(2); // Evicts 'a' and 'b'
+
+	console.log(lru.has('a'));
+	//=> false
+
+	console.log(lru.has('c'));
+	//=> true
+	```
+	*/
+  evict(count?: number): void
 }

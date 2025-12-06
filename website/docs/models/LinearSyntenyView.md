@@ -71,6 +71,17 @@ false
 drawLocationMarkers: false
 ```
 
+### LinearSyntenyView - Getters
+
+#### getter: viewsInitialized
+
+all subviews must have displayedRegions
+
+```js
+// type
+boolean
+```
+
 ### LinearSyntenyView - Methods
 
 #### method: headerMenuItems

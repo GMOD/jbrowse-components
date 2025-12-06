@@ -1607,7 +1607,7 @@
   dependencies:
     quick-lru "^4.0.0"
 
-"@gmod/indexedfasta@^4.0.0":
+"@gmod/indexedfasta@^4.0.7":
   version "4.0.7"
   resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-4.0.7.tgz#5525cf620af512bc2495e147a77204835623ec39"
   integrity sha512-WN1wDI73icrLn/OJPfBTkXsnLui9Kcz3mWtbpcOm8oRAgFVgV/qUSNtgyQnCdbfMWnAfQzRLat1C8iyNg8kVcw==
@@ -2965,7 +2965,7 @@
   resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.2.9.tgz#d229a7b7f9dac167a156992ef23c7f023653f53b"
   integrity sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==
 
-"@pmmmwh/react-refresh-webpack-plugin@^0.6.0":
+"@pmmmwh/react-refresh-webpack-plugin@^0.6.2":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@pmmmwh/react-refresh-webpack-plugin/-/react-refresh-webpack-plugin-0.6.2.tgz#c17661001ef4d7ad5c6e7dd714c142962b00b5dc"
   integrity sha512-IhIAD5n4XvGHuL9nAgWfsBR0TdxtjrUWETYKCBHxauYXEv+b+ctEbs9neEgPC7Ecgzv4bpZTBwesAoGDeFymzA==
@@ -3082,7 +3082,7 @@
   dependencies:
     "@sinonjs/commons" "^3.0.1"
 
-"@storybook/addon-docs@^10.0.1":
+"@storybook/addon-docs@^10.1.0":
   version "10.1.4"
   resolved "https://registry.yarnpkg.com/@storybook/addon-docs/-/addon-docs-10.1.4.tgz#89c8016c670794ea3381ecb030af637547073db5"
   integrity sha512-TWLDJNLS/S3AUyTf9x0Hb8k7d+VWMJCH9dWAS0QenvJG8ga9VaehO6r+e+3YyIDbO1ev3UST3GCjh9SY8tzwRA==
@@ -3174,7 +3174,7 @@
   resolved "https://registry.yarnpkg.com/@storybook/react-dom-shim/-/react-dom-shim-10.1.4.tgz#ee47873bdc3d72c2b6777466cef25bc4d10ce766"
   integrity sha512-PARu2HA5nYU1AkioNJNc430pz0oyaHFSSAdN3NEaWwkoGrCOo9ZpAXP9V7wlJANCi1pndbC84gSuHVnBXJBG6g==
 
-"@storybook/react-webpack5@^10.0.1":
+"@storybook/react-webpack5@^10.1.0":
   version "10.1.4"
   resolved "https://registry.yarnpkg.com/@storybook/react-webpack5/-/react-webpack5-10.1.4.tgz#d87fe632dcf6c76ac96820d38eca676f714f984e"
   integrity sha512-zSIFbmF9EaZUhUPklXZoELBdtawbN0So1WK2IXXuThUCTVj+peRXEBkeEa0uOY9E4RKCVjkbuJ5IYg8K3Cm3Ug==
@@ -13850,7 +13850,7 @@ stop-iteration-iterator@^1.1.0:
     es-errors "^1.3.0"
     internal-slot "^1.1.0"
 
-storybook@^10.0.1:
+storybook@^10.1.0:
   version "10.1.4"
   resolved "https://registry.yarnpkg.com/storybook/-/storybook-10.1.4.tgz#bbba27c2c1816c295499de4cbaba395d06285e94"
   integrity sha512-FrBjm8I8O+pYEOPHcdW9xWwgXSZxte7lza9q2lN3jFN4vuW79m5j0OnTQeR8z9MmIbBTvkIpp3yMBebl53Yt5Q==

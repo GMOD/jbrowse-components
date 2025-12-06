@@ -50,7 +50,7 @@ export async function writeAWSAnalytics(
       'win-w': window.innerWidth,
 
       electron: isElectron,
-      loadTime: (Date.now() - initialTimeStamp) / 1000,
+      loadTime: (performance.now() - initialTimeStamp) / 1000,
       jb2: true,
     }
 
@@ -88,7 +88,7 @@ export async function writeGAAnalytics(
     'tracks-count': rootModel.jbrowse.tracks.length, // this is all possible tracks
     ver: rootModel.version,
     electron: isElectron,
-    loadTime: Date.now() - initialTimestamp,
+    loadTime: performance.now() - initialTimestamp,
     pluginNames:
       rootModel.jbrowse.plugins?.map((plugin: any) => plugin.name) || '',
   }

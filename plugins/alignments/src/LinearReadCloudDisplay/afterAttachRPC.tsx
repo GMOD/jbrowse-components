@@ -32,7 +32,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
     if (
       !view.initialized ||
       self.error ||
-      !self.statsReadyAndRegionNotTooLarge
+      !self.featureDensityStatsReadyAndRegionNotTooLarge
     ) {
       return
     }

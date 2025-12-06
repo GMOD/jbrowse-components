@@ -1,8 +1,36 @@
+import { createEmptyBin } from './processDepth'
 import { inc, isInterbase, mismatchLen } from './util'
+import {
+  CAT_DELSKIP,
+  CAT_NONCOV,
+  ENTRY_DEPTH,
+  ENTRY_NEG,
+  ENTRY_POS,
+  MISMATCH_TYPE_DELETION,
+  MISMATCH_TYPE_DELSKIP_MASK,
+  MISMATCH_TYPE_HARDCLIP,
+  MISMATCH_TYPE_INSERTION,
+  MISMATCH_TYPE_SKIP,
+  MISMATCH_TYPE_SOFTCLIP,
+} from '../shared/types'
 
-import type { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type { FlatBaseCoverageBin, Mismatch, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
+
+const MISMATCH_TYPE_NAMES: Record<number, string> = {
+  [MISMATCH_TYPE_INSERTION]: 'insertion',
+  [MISMATCH_TYPE_DELETION]: 'deletion',
+  [MISMATCH_TYPE_SKIP]: 'skip',
+  [MISMATCH_TYPE_SOFTCLIP]: 'softclip',
+  [MISMATCH_TYPE_HARDCLIP]: 'hardclip',
+}
+
+// Strand to flat ref key
+const STRAND_TO_REF: Record<-1 | 1, 'refNeg' | 'refPos'> = {
+  [-1]: 'refNeg',
+  [1]: 'refPos',
+}
 
 export function processMismatches({
   feature,
@@ -11,15 +39,15 @@ export function processMismatches({
   skipmap,
 }: {
   region: AugmentedRegion
-  bins: PreBaseCoverageBin[]
+  bins: FlatBaseCoverageBin[]
   feature: Feature
   skipmap: SkipMap
 }) {
   const fstart = feature.get('start')
-  const fstrand = feature.get('strand') as -1 | 0 | 1
+  const fstrand = feature.get('strand') as -1 | 1
+  const strandRef = STRAND_TO_REF[fstrand]
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
 
-  // normal SNP based coloring
   for (const mismatch of mismatches) {
     const mstart = fstart + mismatch.start
     const mlen = mismatchLen(mismatch)
@@ -27,29 +55,40 @@ export function processMismatches({
     for (let j = mstart; j < mstart + mlen; j++) {
       const epos = j - region.start
       if (epos >= 0 && epos < bins.length) {
-        const bin = bins[epos]!
+        let bin = bins[epos]
+        if (!bin) {
+          bin = bins[epos] = createEmptyBin()
+        }
         const { base, altbase, type } = mismatch
         const interbase = isInterbase(type)
 
-        if (type === 'deletion' || type === 'skip') {
-          inc(bin, fstrand, 'delskips', type)
+        if ((type & MISMATCH_TYPE_DELSKIP_MASK) !== 0) {
+          inc(bin, fstrand, CAT_DELSKIP + MISMATCH_TYPE_NAMES[type]!)
           bin.depth--
         } else if (!interbase) {
-          inc(bin, fstrand, 'snps', base)
-          bin.ref.entryDepth--
-          bin.ref[fstrand]--
+          const snpBase = base as 'A' | 'G' | 'C' | 'T'
+          let entry = bin[snpBase]
+          if (!entry) {
+            entry = new Uint32Array(3)
+            bin[snpBase] = entry
+          }
+          entry[ENTRY_DEPTH] = (entry[ENTRY_DEPTH] || 0) + 1
+          entry[fstrand === 1 ? ENTRY_POS : ENTRY_NEG] =
+            (entry[fstrand === 1 ? ENTRY_POS : ENTRY_NEG] || 0) + 1
+          bin.refDepth--
+          bin[strandRef]--
           bin.refbase = altbase
         } else {
           const len =
-            type === 'insertion'
+            type === MISMATCH_TYPE_INSERTION
               ? mismatch.insertedBases?.length
               : mismatch.cliplen
-          inc(bin, fstrand, 'noncov', type, len)
+          inc(bin, fstrand, CAT_NONCOV + MISMATCH_TYPE_NAMES[type]!, len)
         }
       }
     }
 
-    if (mismatch.type === 'skip') {
+    if (mismatch.type === MISMATCH_TYPE_SKIP) {
       // for upper case XS and TS: reports the literal strand of the genomic
       // transcript
       const tags = feature.get('tags')

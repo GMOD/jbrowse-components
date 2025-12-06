@@ -1,3 +1,12 @@
+import {
+  MISMATCH_TYPE_DELETION,
+  MISMATCH_TYPE_HARDCLIP,
+  MISMATCH_TYPE_INSERTION,
+  MISMATCH_TYPE_MISMATCH,
+  MISMATCH_TYPE_SKIP,
+  MISMATCH_TYPE_SOFTCLIP,
+} from '../shared/types'
+
 import type { Mismatch } from '../shared/types'
 
 export function cigarToMismatches(
@@ -10,7 +19,7 @@ export function cigarToMismatches(
   let soffset = 0 // seq offset
   const mismatches: Mismatch[] = []
   const hasRefAndSeq = ref && seq
-  for (let i = 0, l = ops.length; i < l; i += 2) {
+  for (let i = 0; i < ops.length; i += 2) {
     const len = +ops[i]!
     const op = ops[i + 1]!
 
@@ -18,11 +27,12 @@ export function cigarToMismatches(
       if (hasRefAndSeq) {
         for (let j = 0; j < len; j++) {
           if (
-            seq[soffset + j]!.toUpperCase() !== ref[roffset + j]!.toUpperCase()
+            (seq.charCodeAt(soffset + j) | 0x20) !==
+            (ref.charCodeAt(roffset + j) | 0x20)
           ) {
             mismatches.push({
               start: roffset + j,
-              type: 'mismatch',
+              type: MISMATCH_TYPE_MISMATCH,
               base: seq[soffset + j]!,
               altbase: ref[roffset + j]!,
               length: 1,
@@ -35,7 +45,7 @@ export function cigarToMismatches(
     if (op === 'I') {
       mismatches.push({
         start: roffset,
-        type: 'insertion',
+        type: MISMATCH_TYPE_INSERTION,
         base: `${len}`,
         insertedBases: seq?.slice(soffset, soffset + len),
         length: 0,
@@ -44,14 +54,14 @@ export function cigarToMismatches(
     } else if (op === 'D') {
       mismatches.push({
         start: roffset,
-        type: 'deletion',
+        type: MISMATCH_TYPE_DELETION,
         base: '*',
         length: len,
       })
     } else if (op === 'N') {
       mismatches.push({
         start: roffset,
-        type: 'skip',
+        type: MISMATCH_TYPE_SKIP,
         base: 'N',
         length: len,
       })
@@ -62,7 +72,7 @@ export function cigarToMismatches(
       for (let j = 0; j < len; j++) {
         mismatches.push({
           start: roffset + j,
-          type: 'mismatch',
+          type: MISMATCH_TYPE_MISMATCH,
           base: r[j] || 'X',
           qual: q[j],
           length: 1,
@@ -72,7 +82,7 @@ export function cigarToMismatches(
     } else if (op === 'H') {
       mismatches.push({
         start: roffset,
-        type: 'hardclip',
+        type: MISMATCH_TYPE_HARDCLIP,
         base: `H${len}`,
         cliplen: len,
         length: 1,
@@ -80,7 +90,7 @@ export function cigarToMismatches(
     } else if (op === 'S') {
       mismatches.push({
         start: roffset,
-        type: 'softclip',
+        type: MISMATCH_TYPE_SOFTCLIP,
         base: `S${len}`,
         cliplen: len,
         length: 1,

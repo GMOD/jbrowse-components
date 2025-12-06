@@ -9,6 +9,24 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import {
+  MISMATCH_TYPE_DELETION,
+  MISMATCH_TYPE_HARDCLIP,
+  MISMATCH_TYPE_INSERTION,
+  MISMATCH_TYPE_MISMATCH,
+  MISMATCH_TYPE_MODIFICATION,
+  MISMATCH_TYPE_SOFTCLIP,
+} from '../../shared/types'
+
+const MISMATCH_TYPE_NAMES: Record<number, string> = {
+  [MISMATCH_TYPE_MISMATCH]: 'mismatch',
+  [MISMATCH_TYPE_INSERTION]: 'insertion',
+  [MISMATCH_TYPE_DELETION]: 'deletion',
+  [MISMATCH_TYPE_SOFTCLIP]: 'softclip',
+  [MISMATCH_TYPE_HARDCLIP]: 'hardclip',
+  [MISMATCH_TYPE_MODIFICATION]: 'modification',
+}
+
 const useStyles = makeStyles()(theme => ({
   root: {
     width: '80em',
@@ -40,7 +58,7 @@ const MismatchInfoDialog = observer(function ({
   handleClose,
 }: {
   item: {
-    type: string
+    type: number
     seq: string
     modType?: string
     probability?: number
@@ -49,15 +67,16 @@ const MismatchInfoDialog = observer(function ({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
+  const typeName = MISMATCH_TYPE_NAMES[item.type] ?? 'unknown'
   return (
     <Dialog
       open
       maxWidth="lg"
       onClose={handleClose}
-      title={`Info: ${item.type}`}
+      title={`Info: ${typeName}`}
     >
       <DialogContent className={classes.root}>
-        {item.type === 'insertion' && (
+        {item.type === MISMATCH_TYPE_INSERTION && (
           <div className={classes.section}>
             <Typography className={classes.label}>Sequence:</Typography>
             <TextField
@@ -79,9 +98,11 @@ const MismatchInfoDialog = observer(function ({
           </div>
         )}
 
-        {item.type === 'deletion' && <LengthDisplay length={item.seq} />}
+        {item.type === MISMATCH_TYPE_DELETION && (
+          <LengthDisplay length={item.seq} />
+        )}
 
-        {item.type === 'modification' && (
+        {item.type === MISMATCH_TYPE_MODIFICATION && (
           <>
             <div className={classes.section}>
               <Typography className={classes.label}>Modification:</Typography>
@@ -102,16 +123,20 @@ const MismatchInfoDialog = observer(function ({
           </>
         )}
 
-        {item.type === 'mismatch' && (
+        {item.type === MISMATCH_TYPE_MISMATCH && (
           <div className={classes.section}>
             <Typography className={classes.label}>Base:</Typography>
             <Typography>{item.seq}</Typography>
           </div>
         )}
 
-        {item.type === 'softclip' && <LengthDisplay length={item.seq} />}
+        {item.type === MISMATCH_TYPE_SOFTCLIP && (
+          <LengthDisplay length={item.seq} />
+        )}
 
-        {item.type === 'hardclip' && <LengthDisplay length={item.seq} />}
+        {item.type === MISMATCH_TYPE_HARDCLIP && (
+          <LengthDisplay length={item.seq} />
+        )}
 
         <DialogActions>
           <Button

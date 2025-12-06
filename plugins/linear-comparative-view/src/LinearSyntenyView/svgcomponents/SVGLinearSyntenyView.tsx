@@ -16,7 +16,7 @@ import { when } from 'mobx'
 
 import SVGBackground from './SVGBackground'
 import SVGLinearGenomeView from './SVGLinearGenomeView'
-import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
+import { drawSynteny } from '../../LinearSyntenyDisplay/drawSynteny'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
 import type { LinearSyntenyViewModel } from '../model'
@@ -82,7 +82,7 @@ export async function renderToSvg(
             level.height,
             { exportSVG: opts },
             ctx => {
-              drawRef(d, ctx)
+              drawSynteny(d, ctx)
               return undefined
             },
           )

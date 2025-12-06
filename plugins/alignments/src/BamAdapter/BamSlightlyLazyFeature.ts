@@ -1,4 +1,5 @@
-import { getMismatches } from '../MismatchParser'
+import { getMismatchesNumeric } from './getMismatchesNumeric'
+import { decodeSeq } from '../shared/decodeSeq'
 import { cacheGetter } from '../shared/util'
 
 import type BamAdapter from './BamAdapter'
@@ -20,11 +21,21 @@ export default class BamSlightlyLazyFeature implements Feature {
   id() {
     return `${this.adapter.id}-${this.record.id}`
   }
+
+  get seq() {
+    // Decode NUMERIC_SEQ on demand
+    const numericSeq = this.record.NUMERIC_SEQ
+    return decodeSeq(numericSeq, this.record.seq_length)
+  }
+
   get mismatches() {
-    return getMismatches(
-      this.record.CIGAR,
+    // Use optimized version that works directly on NUMERIC_SEQ
+    // without decoding the entire sequence string
+    return getMismatchesNumeric(
+      this.record.NUMERIC_CIGAR,
+      this.record.NUMERIC_SEQ,
+      this.record.seq_length,
       this.record.tags.MD as string | undefined,
-      this.record.seq,
       this.ref,
       this.record.qual,
     )
@@ -39,7 +50,11 @@ export default class BamSlightlyLazyFeature implements Feature {
       ? this.mismatches
       : field === 'qual'
         ? this.qual
-        : this.fields[field]
+        : field === 'seq'
+          ? this.seq
+          : field === 'NUMERIC_SEQ'
+            ? this.record.NUMERIC_SEQ
+            : this.fields[field]
   }
 
   parent() {
@@ -86,4 +101,5 @@ export default class BamSlightlyLazyFeature implements Feature {
 }
 
 cacheGetter(BamSlightlyLazyFeature, 'fields')
+cacheGetter(BamSlightlyLazyFeature, 'seq')
 cacheGetter(BamSlightlyLazyFeature, 'mismatches')

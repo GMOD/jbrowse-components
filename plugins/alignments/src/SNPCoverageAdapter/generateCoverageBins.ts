@@ -6,27 +6,9 @@ import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
 
 import type { Opts } from './util'
-import type { PreBaseCoverageBin, PreBinEntry, SkipMap } from '../shared/types'
+import type { FlatBaseCoverageBin, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-
-function finalizeBinEntry(entry: PreBinEntry) {
-  const { probabilityTotal, probabilityCount, lengthTotal, lengthCount } = entry
-  const ret = entry as PreBinEntry & {
-    avgProbability?: number
-    avgLength?: number
-    minLength?: number
-    maxLength?: number
-  }
-  if (probabilityCount) {
-    ret.avgProbability = probabilityTotal / probabilityCount
-  }
-  if (lengthCount) {
-    ret.avgLength = lengthTotal / lengthCount
-    ret.minLength = entry.lengthMin
-    ret.maxLength = entry.lengthMax
-  }
-}
 
 export async function generateCoverageBins({
   fetchSequence,
@@ -37,11 +19,11 @@ export async function generateCoverageBins({
   features: Feature[]
   region: Region
   opts: Opts
-  fetchSequence: (arg: Region) => Promise<string>
+  fetchSequence: (arg: Region) => Promise<string | undefined>
 }) {
   const { stopToken, colorBy } = opts
   const skipmap = {} as SkipMap
-  const bins = [] as PreBaseCoverageBin[]
+  const bins = [] as FlatBaseCoverageBin[]
   const start2 = Math.max(0, region.start - 1)
   const diff = region.start - start2
 
@@ -53,11 +35,7 @@ export async function generateCoverageBins({
       checkStopToken(stopToken)
       start = performance.now()
     }
-    processDepth({
-      feature,
-      bins,
-      region,
-    })
+    processDepth({ feature, bins, region })
 
     if (colorBy?.type === 'modifications') {
       if (regionSequence === undefined) {
@@ -95,23 +73,5 @@ export async function generateCoverageBins({
     processMismatches({ feature, skipmap, bins, region })
   }
 
-  for (const bin of bins) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (bin) {
-      for (const key in bin.mods) {
-        finalizeBinEntry(bin.mods[key]!)
-      }
-      for (const key in bin.nonmods) {
-        finalizeBinEntry(bin.nonmods[key]!)
-      }
-      for (const key in bin.noncov) {
-        finalizeBinEntry(bin.noncov[key]!)
-      }
-    }
-  }
-
-  return {
-    bins,
-    skipmap,
-  }
+  return { bins, skipmap }
 }
