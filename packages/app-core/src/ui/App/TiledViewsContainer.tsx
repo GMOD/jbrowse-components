@@ -115,15 +115,11 @@ function LeftHeaderActions({
   }
 
   const handleSplit = (direction: 'right' | 'below') => {
-    const activePanel = group.activePanel
-    if (activePanel) {
-      activePanel.api.moveTo({
-        group: containerApi.addGroup({
-          referenceGroup: group,
-          direction,
-        }),
-      })
-    }
+    const newGroup = containerApi.addGroup({
+      referenceGroup: group,
+      direction,
+    })
+    addEmptyTab(newGroup)
     handleClose()
   }
 
@@ -233,22 +229,24 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     [api],
   )
 
-  const addEmptyTab = useCallback(() => {
-    if (!api) {
-      return
-    }
-    const panelId = `panel-${nanoid()}`
-    api.addPanel({
-      ...createPanelConfig(panelId, session, 'New Tab'),
-      position: api.activeGroup
-        ? { referenceGroup: api.activeGroup }
-        : undefined,
-    })
+  const addEmptyTab = useCallback(
+    (targetGroup?: import('dockview-react').DockviewGroupPanel) => {
+      if (!api) {
+        return
+      }
+      const panelId = `panel-${nanoid()}`
+      const group = targetGroup ?? api.activeGroup
+      api.addPanel({
+        ...createPanelConfig(panelId, session, 'New Tab'),
+        position: group ? { referenceGroup: group } : undefined,
+      })
 
-    if (isSessionWithDockviewLayout(session)) {
-      session.setActivePanelId(panelId)
-    }
-  }, [api, session])
+      if (isSessionWithDockviewLayout(session)) {
+        session.setActivePanelId(panelId)
+      }
+    },
+    [api, session],
+  )
 
   const contextValue = useMemo(
     () => ({ api, rearrangePanels, addEmptyTab }),

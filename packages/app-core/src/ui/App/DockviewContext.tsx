@@ -1,11 +1,11 @@
 import { createContext, useContext } from 'react'
 
-import type { DockviewApi } from 'dockview-react'
+import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
 
 interface DockviewContextValue {
   api: DockviewApi | null
   rearrangePanels: (arrange: (api: DockviewApi) => void) => void
-  addEmptyTab: () => void
+  addEmptyTab: (targetGroup?: DockviewGroupPanel) => void
 }
 
 export const DockviewContext = createContext<DockviewContextValue>({
