@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { SerializedDockview } from 'dockview-react'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { SerializedDockview } from 'dockview-react'
 
 /**
  * #stateModel DockviewLayoutMixin
@@ -80,66 +80,12 @@ export function DockviewLayoutMixin() {
           const idx = viewIds.indexOf(viewId)
           if (idx !== -1) {
             viewIds.splice(idx, 1)
-            // If panel is now empty, remove the assignment
             if (viewIds.length === 0) {
               self.panelViewAssignments.delete(panelId)
             }
             break
           }
         }
-      },
-
-      /**
-       * #action
-       * Create a new panel with a view
-       */
-      createPanelWithView(panelId: string, viewId: string) {
-        self.panelViewAssignments.set(panelId, [viewId])
-      },
-
-      /**
-       * #action
-       * Move a view up within its panel stack
-       */
-      moveViewUpInPanel(viewId: string) {
-        for (const viewIds of self.panelViewAssignments.values()) {
-          const idx = viewIds.indexOf(viewId)
-          if (idx > 0) {
-            const temp = viewIds[idx - 1]!
-            viewIds[idx - 1] = viewIds[idx]!
-            viewIds[idx] = temp
-            break
-          }
-        }
-      },
-
-      /**
-       * #action
-       * Move a view down within its panel stack
-       */
-      moveViewDownInPanel(viewId: string) {
-        for (const viewIds of self.panelViewAssignments.values()) {
-          const idx = viewIds.indexOf(viewId)
-          if (idx !== -1 && idx < viewIds.length - 1) {
-            const temp = viewIds[idx + 1]!
-            viewIds[idx + 1] = viewIds[idx]!
-            viewIds[idx] = temp
-            break
-          }
-        }
-      },
-
-      /**
-       * #action
-       * Get the panel ID that contains a view
-       */
-      getPanelForView(viewId: string) {
-        for (const [panelId, viewIds] of self.panelViewAssignments.entries()) {
-          if (viewIds.includes(viewId)) {
-            return panelId
-          }
-        }
-        return undefined
       },
 
       /**

@@ -6,15 +6,18 @@ import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, InputBase, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isSessionWithDockviewLayout } from '../../DockviewLayout'
 import ViewContainer from './ViewContainer'
+import { isSessionWithDockviewLayout } from '../../DockviewLayout'
 
-import type { IDockviewPanelHeaderProps, IDockviewPanelProps } from 'dockview-react'
 import type {
   AbstractViewContainer,
   AbstractViewModel,
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
+import type {
+  IDockviewPanelHeaderProps,
+  IDockviewPanelProps,
+} from 'dockview-react'
 
 const ViewLauncher = lazy(() => import('./ViewLauncher'))
 
@@ -80,7 +83,8 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type SessionType = SessionWithFocusedViewAndDrawerWidgets & AbstractViewContainer
+type SessionType = SessionWithFocusedViewAndDrawerWidgets &
+  AbstractViewContainer
 
 export interface JBrowseViewPanelParams {
   panelId: string
@@ -92,6 +96,11 @@ const JBrowseViewPanel = observer(function JBrowseViewPanel({
 }: IDockviewPanelProps<JBrowseViewPanelParams>) {
   const { panelId, session } = params
   const { classes } = useStyles()
+
+  // Session may be undefined during layout restoration (before params are updated)
+  if (!session) {
+    return <div className={classes.container}>Loading...</div>
+  }
 
   // Get view IDs assigned to this panel
   let viewIds: string[] = []
@@ -137,6 +146,15 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
   const [isEditing, setIsEditing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [editValue, setEditValue] = useState('')
+
+  // Session may be undefined during layout restoration
+  if (!session) {
+    return (
+      <div className={classes.tabContainer}>
+        <span className={classes.tabTitleText}>Loading...</span>
+      </div>
+    )
+  }
 
   // Get view IDs assigned to this panel
   let viewIds: string[] = []
@@ -191,8 +209,12 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
   return (
     <div
       className={classes.tabContainer}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => {
+        setIsHovered(true)
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false)
+      }}
     >
       <div className={classes.tabTitle}>
         {isEditing ? (
@@ -200,10 +222,14 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
             autoFocus
             className={classes.editInput}
             value={editValue}
-            onChange={e => setEditValue(e.target.value)}
+            onChange={e => {
+              setEditValue(e.target.value)
+            }}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
-            onClick={e => e.stopPropagation()}
+            onClick={e => {
+              e.stopPropagation()
+            }}
           />
         ) : (
           <>

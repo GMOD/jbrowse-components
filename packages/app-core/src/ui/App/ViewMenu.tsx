@@ -24,6 +24,7 @@ import type {
   IconButtonProps as IconButtonPropsType,
   SvgIconProps,
 } from '@mui/material'
+import type { DockviewApi, DockviewPanelApi } from 'dockview-react'
 
 function renameIds(obj: Record<string, unknown>): Record<string, unknown> {
   const idMap = new Map<string, string>()
@@ -58,56 +59,59 @@ function renameIds(obj: Record<string, unknown>): Record<string, unknown> {
   return transformIds(obj) as Record<string, unknown>
 }
 
+type Direction = 'right' | 'below' | 'within'
+
+function rearrangePanelsWithDirection(
+  api: DockviewApi,
+  getPosition: (
+    idx: number,
+    panelStates: { id: string }[],
+  ) => { referencePanel: string; direction: Direction } | undefined,
+) {
+  const panels = api.panels
+  if (panels.length <= 1) {
+    return
+  }
+
+  const panelStates = panels.map(p => ({
+    id: p.id,
+    component: 'jbrowseView' as const,
+    tabComponent: 'jbrowseTab' as const,
+    title: p.title,
+    params: p.params,
+  }))
+
+  for (const p of panels) {
+    api.removePanel(p)
+  }
+  for (const [idx, state] of panelStates.entries()) {
+    api.addPanel({
+      ...state,
+      position: getPosition(idx, panelStates),
+    })
+  }
+}
+
 function useTilingActions() {
   const { api, rearrangePanels } = useDockview()
 
   const tileHorizontally = () => {
     rearrangePanels(api => {
-      const panels = api.panels
-      if (panels.length <= 1) {
-        return
-      }
-
-      const panelStates = panels.map(p => ({
-        id: p.id,
-        component: 'jbrowseView',
-        tabComponent: 'jbrowseTab',
-        title: p.title,
-        params: p.params,
-      }))
-
-      panels.forEach(p => api.removePanel(p))
-      panelStates.forEach((state, idx) => {
-        api.addPanel({
-          ...state,
-          position: idx === 0 ? undefined : { referencePanel: panelStates[0]?.id, direction: 'right' },
-        })
-      })
+      rearrangePanelsWithDirection(api, (idx, states) =>
+        idx === 0
+          ? undefined
+          : { referencePanel: states[0]!.id, direction: 'right' },
+      )
     })
   }
 
   const tileVertically = () => {
     rearrangePanels(api => {
-      const panels = api.panels
-      if (panels.length <= 1) {
-        return
-      }
-
-      const panelStates = panels.map(p => ({
-        id: p.id,
-        component: 'jbrowseView',
-        tabComponent: 'jbrowseTab',
-        title: p.title,
-        params: p.params,
-      }))
-
-      panels.forEach(p => api.removePanel(p))
-      panelStates.forEach((state, idx) => {
-        api.addPanel({
-          ...state,
-          position: idx === 0 ? undefined : { referencePanel: panelStates[0]?.id, direction: 'below' },
-        })
-      })
+      rearrangePanelsWithDirection(api, (idx, states) =>
+        idx === 0
+          ? undefined
+          : { referencePanel: states[0]!.id, direction: 'below' },
+      )
     })
   }
 
@@ -118,58 +122,29 @@ function useTilingActions() {
         return
       }
 
-      const panelStates = panels.map(p => ({
-        id: p.id,
-        component: 'jbrowseView',
-        tabComponent: 'jbrowseTab',
-        title: p.title,
-        params: p.params,
-      }))
-
-      panels.forEach(p => api.removePanel(p))
-
-      const cols = Math.ceil(Math.sqrt(panelStates.length))
-      panelStates.forEach((state, idx) => {
+      const cols = Math.ceil(Math.sqrt(panels.length))
+      rearrangePanelsWithDirection(api, (idx, states) => {
+        if (idx === 0) {
+          return undefined
+        }
         const col = idx % cols
         const row = Math.floor(idx / cols)
-
-        let position
-        if (idx === 0) {
-          position = undefined
-        } else if (col === 0) {
+        if (col === 0) {
           const refIdx = (row - 1) * cols
-          position = { referencePanel: panelStates[refIdx]?.id, direction: 'below' as const }
-        } else {
-          position = { referencePanel: panelStates[idx - 1]?.id, direction: 'right' as const }
+          return { referencePanel: states[refIdx]!.id, direction: 'below' }
         }
-
-        api.addPanel({ ...state, position })
+        return { referencePanel: states[idx - 1]!.id, direction: 'right' }
       })
     })
   }
 
   const stackAll = () => {
     rearrangePanels(api => {
-      const panels = api.panels
-      if (panels.length <= 1) {
-        return
-      }
-
-      const panelStates = panels.map(p => ({
-        id: p.id,
-        component: 'jbrowseView',
-        tabComponent: 'jbrowseTab',
-        title: p.title,
-        params: p.params,
-      }))
-
-      panels.forEach(p => api.removePanel(p))
-      panelStates.forEach((state, idx) => {
-        api.addPanel({
-          ...state,
-          position: idx === 0 ? undefined : { referencePanel: panelStates[0]?.id, direction: 'within' },
-        })
-      })
+      rearrangePanelsWithDirection(api, (idx, states) =>
+        idx === 0
+          ? undefined
+          : { referencePanel: states[0]!.id, direction: 'within' },
+      )
     })
   }
 
@@ -196,7 +171,8 @@ const ViewMenu = observer(function ({
     variant: 'popover',
   })
 
-  const { api, tileHorizontally, tileVertically, tileGrid, stackAll } = useTilingActions()
+  const { api, tileHorizontally, tileVertically, tileGrid, stackAll } =
+    useTilingActions()
 
   // note: This does not use CascadingMenuButton on purpose, because there was
   // a confusing bug related to it! see
