@@ -4,9 +4,15 @@ import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
+import ViewWeekIcon from '@mui/icons-material/ViewWeek'
+import DynamicFeedIcon from '@mui/icons-material/DynamicFeed'
 import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit'
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import TabIcon from '@mui/icons-material/Tab'
+import TableRowsIcon from '@mui/icons-material/TableRows'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'
+import ViewModuleIcon from '@mui/icons-material/ViewModule'
 import {
   IconButton,
   ListItemIcon,
@@ -19,6 +25,8 @@ import {
 import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
+
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 import { DockviewContext, useDockview } from './DockviewContext'
 import JBrowseViewPanel, { JBrowseViewTab } from './JBrowseViewPanel'
@@ -103,6 +111,45 @@ function cleanLayoutForStorage(layout: ReturnType<DockviewApi['toJSON']>) {
   }
 }
 
+function updatePanelParams(api: DockviewApi, session: SessionType) {
+  for (const panel of api.panels) {
+    panel.update({ params: { panelId: panel.id, session } })
+  }
+}
+
+function rearrangePanelsWithDirection(
+  api: DockviewApi,
+  getPosition: (
+    idx: number,
+    panelStates: { id: string }[],
+  ) =>
+    | { referencePanel: string; direction: 'right' | 'below' | 'within' }
+    | undefined,
+) {
+  const panels = api.panels
+  if (panels.length <= 1) {
+    return
+  }
+
+  const panelStates = panels.map(p => ({
+    id: p.id,
+    component: 'jbrowseView' as const,
+    tabComponent: 'jbrowseTab' as const,
+    title: p.title,
+    params: p.params,
+  }))
+
+  for (const p of panels) {
+    api.removePanel(p)
+  }
+  for (const [idx, state] of panelStates.entries()) {
+    api.addPanel({
+      ...state,
+      position: getPosition(idx, panelStates),
+    })
+  }
+}
+
 function LeftHeaderActions({
   containerApi,
   group,
@@ -126,7 +173,7 @@ function LeftHeaderActions({
 
   return (
     <div className={classes.headerActions}>
-      <Tooltip title="Layout options">
+      <Tooltip title="Add tab">
         <IconButton
           size="small"
           onClick={e => {
@@ -150,21 +197,13 @@ function LeftHeaderActions({
           </ListItemIcon>
           <ListItemText>New empty tab</ListItemText>
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleSplit('right')
-          }}
-        >
+        <MenuItem onClick={() => handleSplit('right')}>
           <ListItemIcon>
             <VerticalSplitIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Split right</ListItemText>
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleSplit('below')
-          }}
-        >
+        <MenuItem onClick={() => handleSplit('below')}>
           <ListItemIcon>
             <HorizontalSplitIcon fontSize="small" />
           </ListItemIcon>
@@ -180,26 +219,112 @@ function RightHeaderActions({
   group,
 }: IDockviewHeaderActionsProps) {
   const { classes } = useStyles()
+  const { rearrangePanels } = useDockview()
 
-  if (containerApi.groups.length <= 1) {
-    return null
+  const tileHorizontally = () => {
+    rearrangePanels(api => {
+      rearrangePanelsWithDirection(api, (idx, states) =>
+        idx === 0
+          ? undefined
+          : { referencePanel: states[0]!.id, direction: 'right' },
+      )
+    })
   }
+
+  const tileVertically = () => {
+    rearrangePanels(api => {
+      rearrangePanelsWithDirection(api, (idx, states) =>
+        idx === 0
+          ? undefined
+          : { referencePanel: states[0]!.id, direction: 'below' },
+      )
+    })
+  }
+
+  const tileGrid = () => {
+    rearrangePanels(api => {
+      const panels = api.panels
+      if (panels.length <= 1) {
+        return
+      }
+      const cols = Math.ceil(Math.sqrt(panels.length))
+      rearrangePanelsWithDirection(api, (idx, states) => {
+        if (idx === 0) {
+          return undefined
+        }
+        const col = idx % cols
+        const row = Math.floor(idx / cols)
+        if (col === 0) {
+          const refIdx = (row - 1) * cols
+          return { referencePanel: states[refIdx]!.id, direction: 'below' }
+        }
+        return { referencePanel: states[idx - 1]!.id, direction: 'right' }
+      })
+    })
+  }
+
+  const stackAll = () => {
+    rearrangePanels(api => {
+      rearrangePanelsWithDirection(api, (idx, states) =>
+        idx === 0
+          ? undefined
+          : { referencePanel: states[0]!.id, direction: 'within' },
+      )
+    })
+  }
+
+  const showLayoutOptions = containerApi.panels.length > 1
+  const showCloseGroup = containerApi.groups.length > 1
+
+  const layoutMenuItems = [
+    {
+      label: 'Global: change layout into set of tabs',
+      icon: DynamicFeedIcon,
+      onClick: stackAll,
+    },
+    {
+      label: 'Global: tile horizontally',
+      icon: ViewColumnIcon,
+      onClick: tileHorizontally,
+    },
+    {
+      label: 'Global: tile vertically',
+      icon: TableRowsIcon,
+      onClick: tileVertically,
+    },
+    {
+      label: 'Global: tile grid',
+      icon: ViewModuleIcon,
+      onClick: tileGrid,
+    },
+  ]
 
   return (
     <div className={classes.headerActions}>
-      <Tooltip title="Close group">
-        <IconButton
+      {showLayoutOptions && (
+        <CascadingMenuButton
+          menuItems={layoutMenuItems}
           size="small"
-          onClick={() => {
-            for (const panel of group.panels) {
-              panel.api.close()
-            }
-          }}
           className={classes.headerButton}
         >
-          <CloseIcon className={classes.headerIcon} />
-        </IconButton>
-      </Tooltip>
+          <MoreHorizIcon className={classes.headerIcon} />
+        </CascadingMenuButton>
+      )}
+      {showCloseGroup && (
+        <Tooltip title="Close group">
+          <IconButton
+            size="small"
+            onClick={() => {
+              for (const panel of group.panels) {
+                panel.api.close()
+              }
+            }}
+            className={classes.headerButton}
+          >
+            <CloseIcon className={classes.headerIcon} />
+          </IconButton>
+        </Tooltip>
+      )}
     </div>
   )
 }
@@ -249,9 +374,30 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     [api, session],
   )
 
+  const moveViewToNewTab = useCallback(
+    (viewId: string) => {
+      if (!api || !isSessionWithDockviewLayout(session)) {
+        return
+      }
+      // Remove view from current panel
+      session.removeViewFromPanel(viewId)
+
+      // Create new panel and assign the view to it
+      const panelId = `panel-${nanoid()}`
+      const group = api.activeGroup
+      api.addPanel({
+        ...createPanelConfig(panelId, session, 'New Tab'),
+        position: group ? { referenceGroup: group } : undefined,
+      })
+      session.assignViewToPanel(panelId, viewId)
+      session.setActivePanelId(panelId)
+    },
+    [api, session],
+  )
+
   const contextValue = useMemo(
-    () => ({ api, rearrangePanels, addEmptyTab }),
-    [api, rearrangePanels, addEmptyTab],
+    () => ({ api, rearrangePanels, addEmptyTab, moveViewToNewTab }),
+    [api, rearrangePanels, addEmptyTab, moveViewToNewTab],
   )
 
   const createInitialPanel = useCallback((dockviewApi: DockviewApi) => {
@@ -307,12 +453,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         try {
           rearrangingRef.current = true
           event.api.fromJSON(sessionRef.current.dockviewLayout)
-
-          for (const panel of event.api.panels) {
-            panel.update({
-              params: { panelId: panel.id, session: sessionRef.current },
-            })
-          }
+          updatePanelParams(event.api, sessionRef.current)
 
           for (const viewIds of sessionRef.current.panelViewAssignments.values()) {
             for (const viewId of viewIds) {
@@ -399,12 +540,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       rearrangingRef.current = true
       try {
         api.fromJSON(dockviewLayout)
-
-        for (const panel of api.panels) {
-          panel.update({
-            params: { panelId: panel.id, session: sessionRef.current },
-          })
-        }
+        updatePanelParams(api, sessionRef.current)
 
         // Rebuild tracked view IDs from restored layout
         trackedViewIdsRef.current.clear()
