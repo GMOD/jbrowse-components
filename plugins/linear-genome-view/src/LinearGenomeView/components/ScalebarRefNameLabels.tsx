@@ -14,7 +14,6 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
   const innerRef = useRef<HTMLDivElement>(null)
   const pinnedRef = useRef<HTMLSpanElement>(null)
   const lastBpPerPxRef = useRef<number | null>(null)
-  const firstLabelRef = useRef<HTMLSpanElement | null>(null)
 
   // Fast path: update transform and labels on scroll
   useEffect(() => {
@@ -23,7 +22,6 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
         const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
         const inner = innerRef.current
         const pinned = pinnedRef.current
-        const firstLabel = firstLabelRef.current
         if (inner) {
           inner.style.transform = `translateX(${-offsetPx}px)`
         }
@@ -43,6 +41,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
         }
 
         // Update first label prefix (only show if no pinned block)
+        const firstLabel = inner?.firstElementChild as HTMLElement | null
         if (firstLabel) {
           const refName = firstLabel.dataset.refname || ''
           const showPrefix = prefix && !pinnedBlock
@@ -73,7 +72,6 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
         )
 
         const fragment = document.createDocumentFragment()
-        firstLabelRef.current = null
 
         let index = 0
         for (const block of staticBlocks) {
@@ -97,24 +95,25 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
             span.style.paddingLeft = '1px'
             span.textContent = refName
             fragment.append(span)
-            if (!firstLabelRef.current) {
-              firstLabelRef.current = span
-            }
           }
           index++
         }
 
         inner.replaceChildren(fragment)
 
-        // Apply prefix to first label (needed for initial render)
+        // Apply prefix to first label after layout
         // Use untracked to avoid subscribing to offsetPx/scalebarDisplayPrefix
         untracked(() => {
-          const pinnedBlock = getPinnedContentBlock(staticBlocks, model.offsetPx)
-          const prefix = model.scalebarDisplayPrefix()
-          if (firstLabelRef.current) {
-            const refName = firstLabelRef.current.dataset.refname || ''
+          const firstLabel = inner.firstElementChild as HTMLElement | null
+          if (firstLabel) {
+            const pinnedBlock = getPinnedContentBlock(
+              staticBlocks,
+              model.offsetPx,
+            )
+            const prefix = model.scalebarDisplayPrefix()
+            const refName = firstLabel.dataset.refname || ''
             const showPrefix = prefix && !pinnedBlock
-            firstLabelRef.current.textContent =
+            firstLabel.textContent =
               (showPrefix ? `${prefix}:` : '') + refName
           }
         })
