@@ -11,7 +11,7 @@ export const WithImportConfigJson = () => {
   const state = createViewState({
     config,
   })
-  state.session.views[0]?.showTrack('volvox_cram')
+  state.session!.views[0]?.showTrack('volvox_cram')
 
   return (
     <div>

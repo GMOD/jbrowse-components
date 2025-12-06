@@ -84,7 +84,7 @@ export const DarkTheme = () => {
       ],
     },
   })
-  state.session.views[0]?.showTrack('volvox_cram')
+  state.session!.views[0]?.showTrack('volvox_cram')
 
   return (
     <div>

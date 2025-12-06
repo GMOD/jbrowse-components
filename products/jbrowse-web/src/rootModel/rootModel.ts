@@ -38,9 +38,14 @@ import { autorun } from 'mobx'
 import packageJSON from '../../package.json'
 import jbrowseWebFactory from '../jbrowseModel'
 import makeWorkerInstance from '../makeWorkerInstance'
+import sessionModelFactory from '../sessionModel'
 
+import type {
+  WebSessionModel,
+  WebSessionModelType,
+} from '../sessionModel'
 import type { SessionDB, SessionMetadata } from '../types'
-import type { Menu, MenuAction, SessionModelFactory } from '@jbrowse/app-core'
+import type { Menu, MenuAction } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -49,7 +54,7 @@ import type {
   SessionWithWidgets,
   UriLocation,
 } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { SessionWithDialogs } from '@jbrowse/product-core'
 import type { IDBPDatabase } from 'idb'
 
@@ -66,11 +71,9 @@ const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
  */
 export default function RootModel({
   pluginManager,
-  sessionModelFactory,
   adminMode = false,
 }: {
   pluginManager: PluginManager
-  sessionModelFactory: SessionModelFactory
   adminMode?: boolean
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
@@ -78,7 +81,7 @@ export default function RootModel({
     pluginManager,
     assemblyConfigSchema,
   })
-  const sessionModelType = sessionModelFactory({
+  const sessionModelType: WebSessionModelType = sessionModelFactory({
     pluginManager,
     assemblyConfigSchema,
   })
@@ -181,7 +184,7 @@ export default function RootModel({
       /**
        * #action
        */
-      setSession(sessionSnapshot?: Record<string, unknown>) {
+      setSession(sessionSnapshot?: SnapshotIn<WebSessionModelType>) {
         const oldSession = self.session
         self.session = cast(sessionSnapshot)
         if (self.session) {
@@ -442,7 +445,12 @@ export default function RootModel({
                         const s = self.session
 
                         if (self.sessionDB) {
-                          await sessionDB.put('sessions', getSnapshot(s), s.id)
+                          const snap = getSnapshot(s)!
+                          await sessionDB.put(
+                            'sessions',
+                            { ...snap, name: snap.name, id: snap.id },
+                            s.id,
+                          )
                           if (!isAlive(self)) {
                             return
                           }
@@ -499,8 +507,13 @@ export default function RootModel({
 
                       if (self.pluginsUpdated) {
                         self.reloadPluginManagerCallback(
-                          structuredClone(getSnapshot(self.jbrowse)),
-                          structuredClone(sessionSnap),
+                          structuredClone(
+                            getSnapshot(self.jbrowse),
+                          ) as Record<string, unknown>,
+                          structuredClone(sessionSnap) as Record<
+                            string,
+                            unknown
+                          >,
                         )
                       }
                     } catch (e) {
@@ -563,7 +576,7 @@ export default function RootModel({
           if (ret) {
             self.setSession(ret)
           } else {
-            self.session.notifyError('Session not found')
+            self.session?.notifyError('Session not found')
           }
         },
         /**
@@ -618,12 +631,12 @@ export default function RootModel({
          * #action
          */
         renameCurrentSession(sessionName: string) {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-          const snapshot = getSnapshot(self.session) as Record<string, unknown>
-          self.setSession({
-            ...snapshot,
-            name: sessionName,
-          })
+          if (self.session) {
+            self.setSession({
+              ...getSnapshot(self.session),
+              name: sessionName,
+            })
+          }
         },
         /**
          * #action
@@ -691,8 +704,8 @@ export default function RootModel({
                         label: 'Favorite sessions...',
                         subMenu: [
                           ...favs.slice(0, 5).map(r => ({
-                            label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                            disabled: r.id === self.session.id,
+                            label: `${r.name} (${r.id === self.session?.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                            disabled: r.id === self.session?.id,
                             icon: StarIcon,
                             onClick: () => {
                               // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -700,7 +713,7 @@ export default function RootModel({
                                 try {
                                   await self.activateSession(r.id)
                                 } catch (e) {
-                                  self.session.notifyError(`${e}`, e)
+                                  self.session?.notifyError(`${e}`, e)
                                 }
                               })()
                             },
@@ -726,15 +739,15 @@ export default function RootModel({
                   subMenu: rest?.length
                     ? [
                         ...rest.map(r => ({
-                          label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                          disabled: r.id === self.session.id,
+                          label: `${r.name} (${r.id === self.session?.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                          disabled: r.id === self.session?.id,
                           onClick: () => {
                             // eslint-disable-next-line @typescript-eslint/no-floating-promises
                             ;(async () => {
                               try {
                                 await self.activateSession(r.id)
                               } catch (e) {
-                                self.session.notifyError(`${e}`, e)
+                                self.session?.notifyError(`${e}`, e)
                               }
                             })()
                           },
@@ -767,7 +780,7 @@ export default function RootModel({
                     {
                       label: 'Set default session',
                       onClick: () => {
-                        self.session.queueDialog((onClose: () => void) => [
+                        self.session?.queueDialog((onClose: () => void) => [
                           SetDefaultSession,
                           {
                             rootModel: self,
@@ -795,7 +808,7 @@ export default function RootModel({
                 label: 'Assembly manager',
                 icon: DNA,
                 onClick: () => {
-                  self.session.queueDialog((onClose: () => void) => [
+                  self.session?.queueDialog((onClose: () => void) => [
                     AssemblyManager,
                     {
                       onClose,

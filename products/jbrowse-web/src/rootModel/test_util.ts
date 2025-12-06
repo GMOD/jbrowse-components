@@ -2,7 +2,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import corePlugins from '../corePlugins'
 import RootModel from './rootModel'
-import sessionModelFactory from '../sessionModel'
 
 import type { WebSessionModel } from '../sessionModel'
 
@@ -22,7 +21,6 @@ export function createTestSession(args?: {
 
   const root = RootModel({
     pluginManager,
-    sessionModelFactory,
     adminMode,
   }).create(
     {

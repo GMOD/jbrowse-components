@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
 
 const JBrowseApp = observer(function ({ viewState }: { viewState: ViewModel }) {
   const { classes } = useStyles()
-  const session = viewState.session
+  const { session } = viewState
   const theme = createJBrowseTheme(getConf(viewState.jbrowse, 'theme'))
 
   return (
@@ -28,7 +28,7 @@ const JBrowseApp = observer(function ({ viewState }: { viewState: ViewModel }) {
       <div className={classes.avoidParentStyle}>
         <ScopedCssBaseline>
           <Suspense fallback={<LoadingEllipses />}>
-            <App session={session} />
+            {session ? <App session={session} /> : null}
           </Suspense>
         </ScopedCssBaseline>
       </div>

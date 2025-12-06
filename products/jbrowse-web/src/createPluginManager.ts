@@ -5,7 +5,6 @@ import corePlugins from './corePlugins'
 import { loadHubSpec } from './loadHubSpec'
 import { loadSessionSpec } from './loadSessionSpec'
 import JBrowseRootModelFactory from './rootModel/rootModel'
-import sessionModelFactory from './sessionModel'
 
 import type { SessionLoaderModel } from './SessionLoader'
 
@@ -45,7 +44,6 @@ export function createPluginManager(
 
   const RootModel = JBrowseRootModelFactory({
     pluginManager,
-    sessionModelFactory,
     adminMode: !!model.adminKey,
   })
 
@@ -77,7 +75,10 @@ export function createPluginManager(
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw sessionError
       } else if (sessionSnapshot) {
-        rootModel.setSession(sessionSnapshot)
+        rootModel.setSession({
+          name: sessionSnapshot.name as string,
+          ...sessionSnapshot,
+        })
       } else if (hubSpec) {
         // @ts-expect-error
         afterInitializedCb = () => loadHubSpec(hubSpec, pluginManager)

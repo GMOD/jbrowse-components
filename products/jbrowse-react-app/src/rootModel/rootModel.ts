@@ -21,14 +21,16 @@ import AddIcon from '@mui/icons-material/Add'
 import { autorun } from 'mobx'
 
 import jbrowseWebFactory from '../jbrowseModel'
+import sessionModelFactory from '../sessionModel'
 import { version } from '../version'
 
-import type { Menu, MenuAction, SessionModelFactory } from '@jbrowse/app-core'
+import type { WebSessionModelType } from '../sessionModel'
+import type { Menu, MenuAction } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { UriLocation } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactAppRootModel
@@ -39,13 +41,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  */
 export default function RootModel({
   pluginManager,
-  sessionModelFactory,
   makeWorkerInstance = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
 }: {
   pluginManager: PluginManager
-  sessionModelFactory: SessionModelFactory
   makeWorkerInstance?: () => Worker
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
@@ -53,7 +53,7 @@ export default function RootModel({
     pluginManager,
     assemblyConfigSchema,
   })
-  const sessionModelType = sessionModelFactory({
+  const sessionModelType: WebSessionModelType = sessionModelFactory({
     pluginManager,
     assemblyConfigSchema,
   })
@@ -128,7 +128,7 @@ export default function RootModel({
       /**
        * #action
        */
-      setSession(sessionSnapshot?: Record<string, unknown>) {
+      setSession(sessionSnapshot?: SnapshotIn<WebSessionModelType>) {
         const oldSession = self.session
         self.session = cast(sessionSnapshot)
         if (self.session) {
@@ -344,10 +344,8 @@ export default function RootModel({
       renameCurrentSession(sessionName: string) {
         const { session } = self
         if (session) {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-          const snapshot = getSnapshot(session) as Record<string, unknown>
           self.setSession({
-            ...snapshot,
+            ...getSnapshot(session),
             name: sessionName,
           })
         }

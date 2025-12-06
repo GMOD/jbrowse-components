@@ -15,7 +15,6 @@ import { generateReadBuffer } from './generateReadBuffer'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
-import sessionModelFactory from '../sessionModel'
 import JBrowse from './TestingJBrowse'
 
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
@@ -40,7 +39,6 @@ export function getPluginManager(
 
   const rootModel = JBrowseRootModelFactory({
     pluginManager,
-    sessionModelFactory,
     adminMode,
   }).create(
     {
