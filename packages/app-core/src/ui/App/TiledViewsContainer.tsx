@@ -28,6 +28,8 @@ import { observer } from 'mobx-react'
 import { DockviewContext, useDockview } from './DockviewContext'
 import JBrowseViewPanel, { JBrowseViewTab } from './JBrowseViewPanel'
 
+import { isSessionWithDockviewLayout } from '../../DockviewLayout'
+
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type {
   AbstractViewContainer,
@@ -174,7 +176,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   const { classes } = useStyles()
   const theme = useTheme()
   const [api, setApi] = useState<DockviewApi | null>(null)
-  const viewIdsRef = useRef<Set<string>>(new Set())
+  const trackedViewIdsRef = useRef<Set<string>>(new Set())
   const rearrangingRef = useRef(false)
   const sessionRef = useRef(session)
   sessionRef.current = session
@@ -199,14 +201,20 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       return
     }
     const activeGroup = api.activeGroup
-    const emptyPanelId = `empty-${nanoid()}`
+    const panelId = `panel-${nanoid()}`
     api.addPanel({
-      id: emptyPanelId,
-      component: 'emptyPanel',
+      id: panelId,
+      component: 'jbrowseView',
+      tabComponent: 'jbrowseTab',
       title: 'New Tab',
-      params: { session },
+      params: { panelId, session },
       position: activeGroup ? { referenceGroup: activeGroup } : undefined,
     })
+
+    // Set this as the active panel
+    if (isSessionWithDockviewLayout(session)) {
+      session.setActivePanelId(panelId)
+    }
   }, [api, session])
 
   const contextValue = useMemo(
@@ -219,8 +227,8 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
     // Handle panel activation to sync focus
     event.api.onDidActivePanelChange(e => {
-      if (e?.id) {
-        sessionRef.current.setFocusedViewId?.(e.id)
+      if (e?.id && isSessionWithDockviewLayout(sessionRef.current)) {
+        sessionRef.current.setActivePanelId(e.id)
       }
     })
 
@@ -230,19 +238,77 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         return
       }
       const panelId = e.id
-      // Skip empty panels - they don't have corresponding views
-      if (panelId.startsWith('empty-')) {
-        return
-      }
-      viewIdsRef.current.delete(panelId)
-      const view = sessionRef.current.views.find(v => v.id === panelId)
-      if (view) {
-        sessionRef.current.removeView(view)
+
+      // Remove the panel and its view assignments
+      if (isSessionWithDockviewLayout(sessionRef.current)) {
+        const viewIds = sessionRef.current.getViewIdsForPanel(panelId)
+        // Remove all views assigned to this panel
+        for (const viewId of viewIds) {
+          const view = sessionRef.current.views.find(v => v.id === viewId)
+          if (view) {
+            sessionRef.current.removeView(view)
+          }
+        }
+        sessionRef.current.removePanel(panelId)
       }
     })
+
+    // Save layout when panels are added, removed, or moved
+    event.api.onDidLayoutChange(() => {
+      if (!rearrangingRef.current && isSessionWithDockviewLayout(sessionRef.current)) {
+        // Use JSON.parse/stringify because structuredClone can't handle MobX proxies
+        const layout = JSON.parse(JSON.stringify(event.api.toJSON()))
+        sessionRef.current.setDockviewLayout(layout)
+      }
+    })
+
+    // Restore layout if available, otherwise create initial panel
+    if (isSessionWithDockviewLayout(sessionRef.current) && sessionRef.current.dockviewLayout) {
+      try {
+        rearrangingRef.current = true
+        event.api.fromJSON(sessionRef.current.dockviewLayout)
+
+        // Update params for restored panels
+        for (const panel of event.api.panels) {
+          panel.update({ params: { panelId: panel.id, session: sessionRef.current } })
+        }
+
+        // Track which views are already assigned
+        for (const viewIds of sessionRef.current.panelViewAssignments.values()) {
+          for (const viewId of viewIds) {
+            trackedViewIdsRef.current.add(viewId)
+          }
+        }
+
+        rearrangingRef.current = false
+      } catch (e) {
+        console.error('Failed to restore dockview layout:', e)
+        rearrangingRef.current = false
+        // Create initial panel on failure
+        createInitialPanel(event.api)
+      }
+    } else {
+      // Create initial panel
+      createInitialPanel(event.api)
+    }
   }
 
-  // Use autorun to react to MobX observable changes
+  const createInitialPanel = (dockviewApi: DockviewApi) => {
+    const panelId = `panel-${nanoid()}`
+    dockviewApi.addPanel({
+      id: panelId,
+      component: 'jbrowseView',
+      tabComponent: 'jbrowseTab',
+      title: 'Main',
+      params: { panelId, session },
+    })
+
+    if (isSessionWithDockviewLayout(session)) {
+      session.setActivePanelId(panelId)
+    }
+  }
+
+  // Use autorun to react to MobX observable changes for views
   useEffect(() => {
     const dispose = autorun(() => {
       if (!api) {
@@ -251,57 +317,48 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
       const { views } = session
       const currentViewIds = new Set(views.map(v => v.id))
-      const trackedIds = viewIdsRef.current
+      const trackedIds = trackedViewIdsRef.current
 
-      // Add new views to the active group (as tabs), or create first panel
-      views.forEach((view, idx) => {
+      // Add new views to the active panel
+      views.forEach(view => {
         if (!trackedIds.has(view.id)) {
           trackedIds.add(view.id)
-          const activeGroup = api.activeGroup
 
-          // Find and remove any empty panel in the active group
-          if (activeGroup) {
-            const emptyPanel = activeGroup.panels.find(p =>
-              p.id.startsWith('empty-'),
-            )
-            if (emptyPanel) {
-              rearrangingRef.current = true
-              api.removePanel(emptyPanel)
-              rearrangingRef.current = false
+          if (isSessionWithDockviewLayout(session)) {
+            // Get the active panel, or create one if needed
+            let activePanelId = session.activePanelId
+            if (!activePanelId || !api.getPanel(activePanelId)) {
+              // Use the first panel or create a new one
+              const firstPanel = api.panels[0]
+              if (firstPanel) {
+                activePanelId = firstPanel.id
+                session.setActivePanelId(activePanelId)
+              } else {
+                activePanelId = `panel-${nanoid()}`
+                api.addPanel({
+                  id: activePanelId,
+                  component: 'jbrowseView',
+                  tabComponent: 'jbrowseTab',
+                  title: 'Main',
+                  params: { panelId: activePanelId, session },
+                })
+                session.setActivePanelId(activePanelId)
+              }
             }
-          }
 
-          api.addPanel({
-            id: view.id,
-            component: 'jbrowseView',
-            tabComponent: 'jbrowseTab',
-            title: view.displayName || `View ${idx + 1}`,
-            params: { view, session },
-            // Use referenceGroup without direction to add as a tab in the same group
-            position: activeGroup ? { referenceGroup: activeGroup } : undefined,
-          })
+            // Assign the view to the active panel
+            session.assignViewToPanel(activePanelId, view.id)
+          }
         }
       })
 
-      // Remove views that no longer exist (removed via session.removeView)
+      // Remove views that no longer exist
       ;[...trackedIds].forEach(id => {
         if (!currentViewIds.has(id)) {
           trackedIds.delete(id)
-          const panel = api.getPanel(id)
-          if (panel) {
-            rearrangingRef.current = true
-            api.removePanel(panel)
-            rearrangingRef.current = false
+          if (isSessionWithDockviewLayout(session)) {
+            session.removeViewFromPanel(id)
           }
-        }
-      })
-
-      // Update panel titles
-      views.forEach((view, idx) => {
-        const panel = api.getPanel(view.id)
-        if (panel) {
-          const newTitle = view.displayName || `View ${idx + 1}`
-          panel.setTitle(newTitle)
         }
       })
     })

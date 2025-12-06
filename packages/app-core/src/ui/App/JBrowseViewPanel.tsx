@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, InputBase, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { isSessionWithDockviewLayout } from '../../DockviewLayout'
 import ViewContainer from './ViewContainer'
 
 import type { IDockviewPanelHeaderProps, IDockviewPanelProps } from 'dockview-react'
@@ -16,11 +16,20 @@ import type {
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
 
+const ViewLauncher = lazy(() => import('./ViewLauncher'))
+
 const useStyles = makeStyles()(theme => ({
   container: {
     height: '100%',
-    overflow: 'auto',
+    overflowY: 'auto',
     background: theme.palette.background.default,
+  },
+  viewStack: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  spacer: {
+    height: 300,
   },
   tabContainer: {
     display: 'flex',
@@ -63,22 +72,58 @@ const useStyles = makeStyles()(theme => ({
     borderRadius: theme.shape.borderRadius,
     flex: 1,
   },
+  emptyPanel: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
 }))
 
+type SessionType = SessionWithFocusedViewAndDrawerWidgets & AbstractViewContainer
+
 export interface JBrowseViewPanelParams {
-  view: AbstractViewModel
-  session: SessionWithFocusedViewAndDrawerWidgets & AbstractViewContainer
+  panelId: string
+  session: SessionType
 }
 
 const JBrowseViewPanel = observer(function JBrowseViewPanel({
   params,
 }: IDockviewPanelProps<JBrowseViewPanelParams>) {
-  const { view, session } = params
+  const { panelId, session } = params
   const { classes } = useStyles()
+
+  // Get view IDs assigned to this panel
+  let viewIds: string[] = []
+  if (isSessionWithDockviewLayout(session)) {
+    viewIds = [...session.getViewIdsForPanel(panelId)]
+  }
+
+  // Map view IDs to actual view objects
+  const views = viewIds
+    .map(id => session.views.find(v => v.id === id))
+    .filter((v): v is AbstractViewModel => v !== undefined)
+
+  if (views.length === 0) {
+    return (
+      <div className={classes.container}>
+        <div className={classes.emptyPanel}>
+          <Suspense fallback={null}>
+            <ViewLauncher session={session} />
+          </Suspense>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={classes.container}>
-      <ViewContainer view={view} session={session} />
+      <div className={classes.viewStack}>
+        {views.map(view => (
+          <ViewContainer key={view.id} view={view} session={session} />
+        ))}
+        <div className={classes.spacer} />
+      </div>
     </div>
   )
 })
@@ -87,28 +132,43 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
   params,
   api,
 }: IDockviewPanelHeaderProps<JBrowseViewPanelParams>) {
-  const { view } = params
+  const { panelId, session } = params
   const { classes } = useStyles()
-  const session = getSession(view)
-  const { assemblyManager } = session
   const [isEditing, setIsEditing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [editValue, setEditValue] = useState('')
 
-  const displayValue =
-    view.displayName ||
-    // @ts-expect-error
-    view.assemblyNames?.map(r => assemblyManager.get(r)?.displayName).join(',') ||
-    'Untitled view'
+  // Get view IDs assigned to this panel
+  let viewIds: string[] = []
+  if (isSessionWithDockviewLayout(session)) {
+    viewIds = [...session.getViewIdsForPanel(panelId)]
+  }
+
+  // Generate display name based on views in the panel
+  let displayValue = 'Empty'
+  if (viewIds.length === 1) {
+    const view = session.views.find(v => v.id === viewIds[0])
+    if (view) {
+      displayValue =
+        view.displayName ||
+        // @ts-expect-error
+        view.assemblyNames
+          // @ts-expect-error
+          ?.map(r => session.assemblyManager.get(r)?.displayName)
+          .join(',') ||
+        'View'
+    }
+  } else if (viewIds.length > 1) {
+    displayValue = `${viewIds.length} views`
+  }
 
   const handleStartEdit = () => {
-    setEditValue(displayValue)
+    setEditValue(api.title || displayValue)
     setIsEditing(true)
   }
 
   const handleSave = () => {
     if (editValue.trim()) {
-      view.setDisplayName(editValue.trim())
       api.setTitle(editValue.trim())
     }
     setIsEditing(false)
@@ -148,11 +208,11 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
         ) : (
           <>
             <Typography className={classes.tabTitleText} variant="body2">
-              {displayValue}
+              {api.title || displayValue}
             </Typography>
             {isHovered && (
               <>
-                <Tooltip title="Rename view">
+                <Tooltip title="Rename tab">
                   <IconButton
                     className={classes.editIcon}
                     size="small"
@@ -173,7 +233,7 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
                     <EditIcon className={classes.smallIcon} />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Close view">
+                <Tooltip title="Close tab">
                   <IconButton
                     className={classes.closeIcon}
                     size="small"
