@@ -78,7 +78,9 @@ export function drawMatchSimple({
 
   // drawing a line if the results are thin: drawing a line results in much
   // less pixellation than filling in a thin polygon
-  if (l1 <= 1 && l2 <= 1) {
+  // use lineLimit of 3 to match the main drawing logic in drawRef()
+  const lineLimit = 3
+  if (l1 <= lineLimit && l2 <= lineLimit) {
     // hideTiny can be used to avoid drawing mouseover for thin lines in this
     // case
     if (!hideTiny) {
