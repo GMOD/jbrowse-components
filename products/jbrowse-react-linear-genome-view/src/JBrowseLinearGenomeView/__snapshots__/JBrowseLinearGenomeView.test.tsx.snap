@@ -2095,6 +2095,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     <div
                       class="css-1pa3giq"
                       data-testid="display-volvox_refseq-LinearReferenceSequenceDisplay"
+                      style=""
                     >
                       <div
                         class="css-u3tbwy"

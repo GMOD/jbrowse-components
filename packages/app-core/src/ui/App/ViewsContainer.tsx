@@ -9,6 +9,7 @@ import type {
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
 
+const ClassicViewsContainer = lazy(() => import('./ClassicViewsContainer'))
 const TiledViewsContainer = lazy(() => import('./TiledViewsContainer'))
 const ViewLauncher = lazy(() => import('./ViewLauncher'))
 
@@ -33,11 +34,20 @@ const ViewsContainer = observer(function ViewsContainer(props: Props) {
   const { session } = props
   const { views } = session
   const { classes } = useStyles()
+
+  // Check if useWorkspaces property exists and is true (defaults to true if property exists)
+  const useWorkspaces =
+    'useWorkspaces' in session ? (session.useWorkspaces as boolean) : true
+
   return (
     <div className={classes.viewsContainer}>
       {views.length > 0 ? (
         <Suspense fallback={null}>
-          <TiledViewsContainer session={session} />
+          {useWorkspaces ? (
+            <TiledViewsContainer session={session} />
+          ) : (
+            <ClassicViewsContainer session={session} />
+          )}
         </Suspense>
       ) : (
         <Suspense fallback={null}>

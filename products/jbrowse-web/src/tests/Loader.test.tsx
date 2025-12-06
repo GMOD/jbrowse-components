@@ -27,7 +27,7 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
       JSON.stringify({
         plugins: [
           {
-            url: 'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+            url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
           },
         ],
       }),
@@ -86,7 +86,7 @@ test('can use config from a url with shared session ', async () => {
 test('approves sessionPlugins from plugin list', async () => {
   expect(sessionStorage.length).toBe(0)
   render(
-    <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js","name":"MsaView"}]}}' />,
+    <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://jbrowse.org/plugins/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js","name":"MsaView"}]}}' />,
   )
   await waitFor(
     () => {
