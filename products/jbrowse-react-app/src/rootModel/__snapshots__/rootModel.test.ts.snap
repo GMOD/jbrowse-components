@@ -69,7 +69,12 @@ exports[`adds menus 1`] = `
   },
   {
     "label": "Tools",
-    "menuItems": [],
+    "menuItems": [
+      {
+        "label": "Make all views non-floating",
+        "onClick": [Function],
+      },
+    ],
   },
 ]
 `;
@@ -143,7 +148,12 @@ exports[`adds menus 2`] = `
   },
   {
     "label": "Tools",
-    "menuItems": [],
+    "menuItems": [
+      {
+        "label": "Make all views non-floating",
+        "onClick": [Function],
+      },
+    ],
   },
   {
     "label": "Second Menu",

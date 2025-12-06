@@ -386,7 +386,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get rubberbandTop() {
         let pinnedTracksTop = 0
         if (this.stickyViewHeaders) {
-          pinnedTracksTop = VIEW_HEADER_HEIGHT
+          if (!self.isFloating) {
+            pinnedTracksTop = VIEW_HEADER_HEIGHT
+          }
           if (!self.hideHeader) {
             pinnedTracksTop += HEADER_BAR_HEIGHT
             if (!self.hideHeaderOverview) {

@@ -300,6 +300,16 @@ export default function rootModelFactory({
                   },
                 },
                 {
+                  label: 'Make all views non-floating',
+                  onClick: () => {
+                    if (self.session) {
+                      for (const view of self.session.views) {
+                        view.setIsFloating(false)
+                      }
+                    }
+                  },
+                },
+                {
                   label: 'Preferences',
                   icon: SettingsIcon,
                   onClick: () => {

@@ -84,7 +84,10 @@ const LinearGenomeViewContainer = observer(function ({
     >
       <div
         className={classes.header}
-        style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
+        style={{
+          position: stickyViewHeaders ? 'sticky' : undefined,
+          top: model.isFloating ? 0 : undefined,
+        }}
       >
         <HeaderComponent model={model} />
         <MiniControlsComponent model={model} />

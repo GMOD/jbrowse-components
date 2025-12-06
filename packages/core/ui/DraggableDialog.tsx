@@ -1,5 +1,3 @@
-import { useRef } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import {
@@ -11,7 +9,8 @@ import {
   ScopedCssBaseline,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import Draggable from 'react-draggable'
+
+import useDraggable from './useDraggable'
 
 import type { DialogProps, PaperProps } from '@mui/material'
 
@@ -25,16 +24,14 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 function PaperComponent(props: PaperProps) {
-  const ref = useRef<HTMLDivElement>(null)
+  const { ref, style, onMouseDown } = useDraggable('.MuiDialogTitle-root')
   return (
-    <Draggable
-      nodeRef={ref}
-      cancel={'[class*="MuiDialogContent-root"]'}
-      // @ts-expect-error
-      onStart={arg => `${arg.target?.className}`.includes('MuiDialogTitle')}
-    >
-      <Paper ref={ref} {...props} />
-    </Draggable>
+    <Paper
+      ref={ref}
+      {...props}
+      style={{ ...props.style, ...style }}
+      onMouseDown={onMouseDown}
+    />
   )
 }
 

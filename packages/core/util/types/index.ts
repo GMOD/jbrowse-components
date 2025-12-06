@@ -279,11 +279,21 @@ export interface AbstractViewModel {
   id: string
   type: string
   width: number
+  isFloating: boolean
   minimized: boolean
+  displayName: string | undefined
+  floatingCoord: { x: number; y: number; width: number; height: number }
+
   setWidth(width: number): void
   setMinimized(flag: boolean): void
-  displayName: string | undefined
   setDisplayName: (arg: string) => void
+  setIsFloating: (arg: boolean) => void
+  setFloatingCoord: (coord: {
+    x?: number
+    y?: number
+    width?: number
+    height?: number
+  }) => void
   menuItems: () => MenuItem[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {

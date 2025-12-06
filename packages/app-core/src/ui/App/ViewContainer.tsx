@@ -6,12 +6,9 @@ import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewHeader from './ViewHeader'
-import ViewWrapper from './ViewWrapper'
 
-import type {
-  AbstractViewModel,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { AppSession } from './types'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
@@ -21,6 +18,12 @@ const useStyles = makeStyles()(theme => ({
     // xref https://stackoverflow.com/questions/43909940/why-does-overflowhidden-prevent-positionsticky-from-working
     // note that contain:paint also seems to work
   },
+  floatingViewContainer: {
+    padding: 0,
+    margin: 0,
+    border: `${theme.spacing(1)} solid`,
+    borderColor: theme.palette.secondary.main,
+  },
   focusedView: {
     background: theme.palette.secondary.main,
   },
@@ -29,55 +32,83 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewContainer = observer(function ({
-  view,
-  session,
-}: {
-  view: AbstractViewModel
-  session: SessionWithFocusedViewAndDrawerWidgets
-}) {
-  const theme = useTheme()
-  const ref = useWidthSetter(view, theme.spacing(1))
-  const { classes } = useStyles()
-
+function useFocusEffect(
+  ref: React.RefObject<HTMLDivElement | null>,
+  session: AppSession,
+  viewId: string,
+) {
   useEffect(() => {
     function handleSelectView(e: Event) {
       if (e.target instanceof Element && ref.current?.contains(e.target)) {
-        session.setFocusedViewId(view.id)
+        session.setFocusedViewId(viewId)
       }
     }
-
     document.addEventListener('mousedown', handleSelectView)
     document.addEventListener('keydown', handleSelectView)
     return () => {
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref, session, view])
+  }, [ref, session, viewId])
+}
 
-  const backgroundColorClassName =
-    session.focusedViewId === view.id
-      ? classes.focusedView
-      : classes.unfocusedView
+const ViewContainer = observer(function ({
+  view,
+  onClose,
+  onMinimize,
+  session,
+  children,
+  contentHeight,
+}: {
+  view: AbstractViewModel
+  onClose: () => void
+  onMinimize: () => void
+  session: AppSession
+  children: React.ReactNode
+  contentHeight?: number
+}) {
+  const theme = useTheme()
+  const ref = useWidthSetter(view, theme.spacing(1))
+  const { classes } = useStyles()
+  const { isFloating } = view
+
+  useFocusEffect(ref, session, view.id)
+
+  const isFocused = session.focusedViewId === view.id
+  const backgroundColorClassName = isFocused
+    ? classes.focusedView
+    : classes.unfocusedView
   const viewContainerClassName = cx(
     classes.viewContainer,
     backgroundColorClassName,
+    isFloating && classes.floatingViewContainer,
+  )
+
+  const header = (
+    <ViewHeader
+      view={view}
+      onClose={onClose}
+      onMinimize={onMinimize}
+      className={isFloating ? undefined : backgroundColorClassName}
+    />
   )
 
   return (
     <Paper ref={ref} elevation={12} className={viewContainerClassName}>
-      <ViewHeader
-        view={view}
-        onClose={() => {
-          session.removeView(view)
-        }}
-        onMinimize={() => {
-          view.setMinimized(!view.minimized)
-        }}
-        className={backgroundColorClassName}
-      />
-      <Paper elevation={0}>
-        <ViewWrapper view={view} session={session} />
+      {isFloating ? (
+        <div style={{ cursor: 'all-scroll' }}>{header}</div>
+      ) : (
+        header
+      )}
+      <Paper
+        elevation={isFloating ? undefined : 0}
+        style={
+          contentHeight !== undefined
+            ? { height: contentHeight, overflow: 'auto' }
+            : undefined
+        }
+      >
+        {children}
       </Paper>
     </Paper>
   )

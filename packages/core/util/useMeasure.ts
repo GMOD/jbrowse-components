@@ -19,14 +19,16 @@ export default function useMeasure() {
       return
     }
     const observer = new RS(entries => {
-      setDims({
-        width: entries[0]!.contentRect.width,
-        height: entries[0]!.contentRect.height,
-      })
+      const entry = entries[0]
+      if (entry) {
+        setDims({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        })
+      }
     })
     observer.observe(ref.current)
 
-    // Callback fired when component is unmounted
     return () => {
       observer.disconnect()
     }
