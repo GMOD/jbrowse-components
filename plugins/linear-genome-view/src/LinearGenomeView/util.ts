@@ -3,7 +3,29 @@ import type { RefObject } from 'react'
 import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
+
+/**
+ * Find the pinned content block (one that's scrolled off-screen to the left).
+ * Returns the block if found, undefined otherwise.
+ */
+export function getPinnedContentBlock(
+  staticBlocks: BlockSet,
+  offsetPx: number,
+) {
+  let pinnedBlockIndex = -1
+  let i = 0
+  for (const block of staticBlocks) {
+    if (block.offsetPx - offsetPx < 0) {
+      pinnedBlockIndex = i
+    } else {
+      break
+    }
+    i++
+  }
+  const pinnedBlock = staticBlocks.blocks[pinnedBlockIndex]
+  return pinnedBlock?.type === 'ContentBlock' ? pinnedBlock : undefined
+}
 
 /**
  * Gets a map of existing child elements keyed by their data-* attribute,

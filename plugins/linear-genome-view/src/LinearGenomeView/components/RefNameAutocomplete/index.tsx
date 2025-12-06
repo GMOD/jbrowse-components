@@ -1,18 +1,11 @@
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession, measureText, useDebounce } from '@jbrowse/core/util'
 import { Autocomplete } from '@mui/material'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import AutocompleteTextField from './AutocompleteTextField'
@@ -178,8 +171,9 @@ const RefNameAutocomplete = observer(function ({
   const [searchOptions, setSearchOptions] = useState<Option[]>()
   const debouncedSearch = useDebounce(currentSearch, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
-  const { coarseVisibleLocStrings, hasDisplayedRegions } = model
+  const { hasDisplayedRegions } = model
   const inputRef = useRef<HTMLInputElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const isCurrent = { cancelled: false }
@@ -213,16 +207,28 @@ const RefNameAutocomplete = observer(function ({
     }
   }, [assemblyName, fetchResults, debouncedSearch, session])
 
-  const inputBoxVal = coarseVisibleLocStrings || value || ''
+  // Use autorun to imperatively update input value and width without re-rendering
+  // This avoids observing coarseVisibleLocStrings in the render path
+  useEffect(() => {
+    return autorun(
+      function refNameAutocompleteAutorun() {
+        const inputBoxVal = model.coarseVisibleLocStrings || value || ''
+        const input = inputRef.current
+        const wrapper = wrapperRef.current
 
-  // Imperatively update input value without re-rendering the Autocomplete
-  // Only update when input is not focused to avoid interfering with user typing
-  // useLayoutEffect ensures value is set before browser paint
-  useLayoutEffect(() => {
-    if (inputRef.current && document.activeElement !== inputRef.current) {
-      inputRef.current.value = inputBoxVal
-    }
-  }, [inputBoxVal])
+        // Update input value only when not focused
+        if (input && document.activeElement !== input) {
+          input.value = inputBoxVal
+        }
+
+        // Update wrapper width imperatively
+        if (wrapper) {
+          wrapper.style.width = `${Math.min(Math.max(measureText(inputBoxVal, 14) + 100, minWidth), maxWidth)}px`
+        }
+      },
+      { name: 'RefNameAutocompleteValue' },
+    )
+  }, [model, value, minWidth, maxWidth])
 
   const handleOpen = useCallback(() => {
     setOpen(true)
@@ -235,21 +241,13 @@ const RefNameAutocomplete = observer(function ({
       setCurrentSearch('')
       setSearchOptions(undefined)
       if (inputRef.current) {
-        inputRef.current.value = inputBoxVal
+        inputRef.current.value = model.coarseVisibleLocStrings || value || ''
       }
     }
-  }, [hasDisplayedRegions, inputBoxVal])
+  }, [hasDisplayedRegions, model, value])
 
-  // Wrapper div handles dynamic width without re-rendering MemoizedAutocomplete
   return (
-    <div
-      style={{
-        width: Math.min(
-          Math.max(measureText(inputBoxVal, 14) + 100, minWidth),
-          maxWidth,
-        ),
-      }}
-    >
+    <div ref={wrapperRef} style={{ width: minWidth }}>
       <MemoizedAutocomplete
         assembly={assembly}
         assemblyName={assemblyName}

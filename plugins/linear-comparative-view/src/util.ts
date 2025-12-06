@@ -12,7 +12,7 @@ export interface ReducedLinearGenomeView {
   dynamicBlocks: Region[]
   displayedRegions: Region[]
   headerHeight: number
-  scaleBarHeight: number
+  scalebarHeight: number
   height: number
   features: Feature[]
   tracks: {
@@ -42,7 +42,7 @@ function heightFromSpecificLevel(
   return (
     heightUpUntilThisPoint +
     v.headerHeight +
-    v.scaleBarHeight +
+    v.scalebarHeight +
     getTrackPos(v, trackConfigId) +
     1
   )

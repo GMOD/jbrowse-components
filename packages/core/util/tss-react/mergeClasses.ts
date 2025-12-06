@@ -10,6 +10,12 @@ export function mergeClasses<T extends string, U extends string>(
       Partial<Record<Exclude<U, T>, string>>
   }
 
+  const overrideKeys = Object.keys(classesOverrides)
+  if (overrideKeys.length === 0) {
+    return classesFromUseStyles as Record<T, string> &
+      Partial<Record<Exclude<U, T>, string>>
+  }
+
   const out: Record<string, string> = {}
 
   for (const ruleName of Object.keys(classesFromUseStyles)) {
@@ -19,7 +25,7 @@ export function mergeClasses<T extends string, U extends string>(
     )
   }
 
-  for (const ruleName of Object.keys(classesOverrides)) {
+  for (const ruleName of overrideKeys) {
     if (ruleName in classesFromUseStyles) {
       continue
     }

@@ -405,7 +405,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      scaleBarDisplayPrefix() {
+      scalebarDisplayPrefix() {
         return getParent<any>(self, 2).type === 'LinearSyntenyView'
           ? self.assemblyDisplayNames[0]
           : ''
@@ -476,7 +476,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get scaleBarHeight() {
+      get scalebarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
 
@@ -514,7 +514,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return (
           this.trackHeightsWithResizeHandles +
           this.headerHeight +
-          this.scaleBarHeight
+          this.scalebarHeight
         )
       },
 
@@ -1942,7 +1942,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
               }
             },
-            { delay: 100, name: 'LGVCoarseDynamicBlocks' },
+            { delay: 500, name: 'LGVCoarseDynamicBlocks' },
           ),
         )
 

@@ -390,7 +390,7 @@ export function makeImage(
       )
       const isMajorityInterbase =
         score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
-      if (noncovEntries.length > 0 && (bpPerPx < 10 || isMajorityInterbase)) {
+      if (noncovEntries.length > 0 && (bpPerPx < 50 || isMajorityInterbase)) {
         const maxNoncovEntry = noncovEntries.reduce((a, b) =>
           (a[1][ENTRY_DEPTH] ?? 0) > (b[1][ENTRY_DEPTH] ?? 0) ? a : b,
         )
