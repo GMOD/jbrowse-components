@@ -53,8 +53,7 @@
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "react-d3-axis-mod": "^0.1.9",
-    "rxjs": "^7.0.0",
-    "tss-react": "^4.0.0"
+    "rxjs": "^7.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0"
