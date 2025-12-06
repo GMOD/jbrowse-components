@@ -137,7 +137,7 @@ describe('Scalebar genome view component', () => {
       expect(labelA.textContent).toBe('volvox:ctgA')
       expect(labelB.textContent).toBe('ctgB')
       // Verify only one instance of the prefix exists
-      expect(container.textContent?.match(/volvox:/g)?.length).toBe(1)
+      expect(container.textContent.match(/volvox:/g)?.length).toBe(1)
     })
 
     // Restore original function
@@ -173,7 +173,7 @@ describe('Scalebar genome view component', () => {
     await waitFor(() => {
       // The pinned label should have the prefix, non-pinned labels should not
       // Verify only one instance of the prefix exists (on the pinned label)
-      expect(container.textContent?.match(/volvox:/g)?.length).toBe(1)
+      expect(container.textContent.match(/volvox:/g)?.length).toBe(1)
       // The pinned label contains volvox:ctgA
       expect(container.textContent).toContain('volvox:ctgA')
       // ctgB should appear without prefix

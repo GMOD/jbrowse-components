@@ -9,7 +9,10 @@ import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
  * Find the pinned content block (one that's scrolled off-screen to the left).
  * Returns the block if found, undefined otherwise.
  */
-export function getPinnedContentBlock(staticBlocks: BlockSet, offsetPx: number) {
+export function getPinnedContentBlock(
+  staticBlocks: BlockSet,
+  offsetPx: number,
+) {
   let pinnedBlockIndex = -1
   let i = 0
   for (const block of staticBlocks) {
