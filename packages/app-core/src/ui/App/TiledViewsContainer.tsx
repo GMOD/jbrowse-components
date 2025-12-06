@@ -16,12 +16,7 @@ import {
   Tooltip,
   useTheme,
 } from '@mui/material'
-import {
-  type DockviewApi,
-  DockviewReact,
-  type DockviewReadyEvent,
-  type IDockviewHeaderActionsProps,
-} from 'dockview-react'
+import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -34,6 +29,12 @@ import type {
   AbstractViewContainer,
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
+import type {
+  DockviewApi,
+  DockviewGroupPanel,
+  DockviewReadyEvent,
+  IDockviewHeaderActionsProps,
+} from 'dockview-react'
 
 import 'dockview-react/dist/styles/dockview.css'
 
@@ -230,7 +231,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   )
 
   const addEmptyTab = useCallback(
-    (targetGroup?: import('dockview-react').DockviewGroupPanel) => {
+    (targetGroup?: DockviewGroupPanel) => {
       if (!api) {
         return
       }
