@@ -1,9 +1,10 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  BaseSequenceAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -18,7 +19,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
     if (!adapter) {
       throw new Error('Error getting subadapter')
     }
-    return adapter.dataAdapter as BaseFeatureDataAdapter
+    return adapter.dataAdapter as BaseSequenceAdapter
   }
 
   public async getRefNames(opts?: BaseOptions) {
@@ -47,19 +48,15 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
         return
       }
 
-      const feats = await firstValueFrom(
-        sequenceAdapter
-          .getFeatures(
-            {
-              ...query,
-              start: qs,
-              end: qe,
-            },
-            opts,
-          )
-          .pipe(toArray()),
-      )
-      const residues = feats[0]?.get('seq') || ''
+      const residues =
+        (await sequenceAdapter.getSequence(
+          {
+            ...query,
+            start: qs,
+            end: qe,
+          },
+          opts,
+        )) ?? ''
 
       await updateStatus('Calculating GC', statusCallback, () => {
         // Initialize the first window

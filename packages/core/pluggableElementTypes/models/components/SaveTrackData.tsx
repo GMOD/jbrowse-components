@@ -49,7 +49,11 @@ async function fetchFeatures(track: IAnyStateTreeNode, regions: Region[]) {
   const sessionId = getRpcSessionId(track)
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
-    regions,
+    regions: regions.map(r => ({
+      ...r,
+      start: Math.floor(r.start),
+      end: Math.ceil(r.end),
+    })),
     sessionId,
   }) as Promise<Feature[]>
 }
