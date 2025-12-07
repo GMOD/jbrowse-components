@@ -407,7 +407,33 @@ export default class PluginManager {
     if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
     }
-    return types.union(...pluggableTypes) as IAnyModelType
+
+    // Create a map of type name to schema for efficient dispatch
+    // Schema names are like 'XxxConfigurationSchema' but snapshot.type is 'Xxx'
+    const typeMap = new Map<string, IAnyType>()
+    for (const t of pluggableTypes) {
+      // Extract the base name by removing 'ConfigurationSchema' suffix
+      const baseName = t.name.replace(/ConfigurationSchema$/, '')
+      typeMap.set(baseName, t)
+    }
+
+    // Use a dispatcher that selects the correct schema based on the 'type' property
+    return types.union(
+      {
+        dispatcher: (snapshot: { type?: string } | undefined) => {
+          if (snapshot?.type) {
+            const match = typeMap.get(snapshot.type)
+            if (match) {
+              return match
+            }
+          }
+          // Fall back to first type if no match or no snapshot
+          // This handles: undefined snapshots during validation, missing type field, etc.
+          return pluggableTypes[0]!
+        },
+      },
+      ...pluggableTypes,
+    ) as IAnyModelType
   }
 
   jbrequireCache = new Map()

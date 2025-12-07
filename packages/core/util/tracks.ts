@@ -334,10 +334,7 @@ export function showTrackGeneric(
     supportedDisplays.has(d.type),
   )
 
-  // Generate displayId if not found in config
-  const displayId =
-    displayConf?.displayId ??
-    `${trackId}-${displayConf?.type ?? trackType.displayTypes[0]?.name}`
+  // Find a compatible display type for this view
   const displayType =
     displayConf?.type ??
     trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
@@ -347,6 +344,9 @@ export function showTrackGeneric(
       `Could not find a compatible display for view type ${self.type}`,
     )
   }
+
+  // Generate displayId if not found in config - must use the actual displayType
+  const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
 
   // Create track with just the trackId - the ConfigurationReference will resolve it
   const track = trackType.stateModel.create({

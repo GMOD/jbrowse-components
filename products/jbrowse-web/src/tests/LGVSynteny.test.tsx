@@ -21,7 +21,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 50000 }
+const delay = { timeout: 5000 }
 const opts = [{}, delay]
 
 test('nav to synteny from right click', async () => {
