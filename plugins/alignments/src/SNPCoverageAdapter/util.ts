@@ -54,7 +54,10 @@ export function inc(
   }
   if (sequence !== undefined) {
     entry.sequenceCounts ??= new Map()
-    entry.sequenceCounts.set(sequence, (entry.sequenceCounts.get(sequence) ?? 0) + 1)
+    entry.sequenceCounts.set(
+      sequence,
+      (entry.sequenceCounts.get(sequence) ?? 0) + 1,
+    )
   }
 }
 
