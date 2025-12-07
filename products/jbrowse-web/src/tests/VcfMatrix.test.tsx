@@ -8,7 +8,10 @@ beforeEach(() => {
 })
 
 test('matrix', async () => {
-  await testMultiVariantDisplay({ displayType: 'matrix', timeout: 90000 })
+  await testMultiVariantDisplay({
+    displayType: 'matrix',
+    timeout: 90000,
+  })
 }, 90000)
 
 test('mphased', async () => {
