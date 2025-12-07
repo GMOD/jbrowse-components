@@ -48,6 +48,7 @@ export default function RubberbandSpan({
 }) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLSpanElement | null>(null)
+
   return (
     <>
       {anchorEl ? (
@@ -75,9 +76,7 @@ export default function RubberbandSpan({
       <div className={classes.rubberband} style={{ left, width }}>
         {numOfBpSelected ? (
           <Typography
-            ref={el => {
-              setAnchorEl(el)
-            }}
+            ref={setAnchorEl}
             variant="h6"
             className={classes.rubberbandText}
             style={{

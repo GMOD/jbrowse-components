@@ -11,5 +11,3 @@ exports[`cram read features mismatches 1`] = `
   },
 ]
 `;
-
-exports[`cram read features to CIGAR 1`] = `"24M1I75M"`;

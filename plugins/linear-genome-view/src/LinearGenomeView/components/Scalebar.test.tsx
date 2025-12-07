@@ -105,7 +105,7 @@ describe('Scalebar genome view component', () => {
     expect(ret4).toBe(null)
   })
 
-  it('displays assembly name prefix in labels when scalebarDisplayPrefix returns a value', async () => {
+  it('displays assembly name prefix only on the leftmost label when no pinned block', async () => {
     const session = createTestSession({
       sessionSnapshot: {
         views: [
@@ -129,12 +129,56 @@ describe('Scalebar genome view component', () => {
     const originalScaleBarDisplayPrefix = model.scalebarDisplayPrefix
     model.scalebarDisplayPrefix = () => 'volvox'
 
-    const { getByTestId } = render(<Scalebar model={model} />)
+    const { getByTestId, container } = render(<Scalebar model={model} />)
     await waitFor(() => {
       const labelA = getByTestId('refLabel-ctgA')
       const labelB = getByTestId('refLabel-ctgB')
+      // Only leftmost label should have the prefix
       expect(labelA.textContent).toBe('volvox:ctgA')
-      expect(labelB.textContent).toBe('volvox:ctgB')
+      expect(labelB.textContent).toBe('ctgB')
+      // Verify only one instance of the prefix exists
+      expect(container.textContent.match(/volvox:/g)?.length).toBe(1)
+    })
+
+    // Restore original function
+    model.scalebarDisplayPrefix = originalScaleBarDisplayPrefix
+  })
+
+  it('displays assembly name prefix only on pinned label when scrolled', async () => {
+    const session = createTestSession({
+      sessionSnapshot: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            // Scrolled so ctgA is off-screen left (pinned)
+            offsetPx: 50,
+            bpPerPx: 1,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
+            ],
+            tracks: [],
+            configuration: {},
+          },
+        ],
+      },
+    }) as any
+    const model = session.views[0]
+
+    // Mock scalebarDisplayPrefix to simulate being in a synteny view
+    const originalScaleBarDisplayPrefix = model.scalebarDisplayPrefix
+    model.scalebarDisplayPrefix = () => 'volvox'
+
+    const { container } = render(<Scalebar model={model} />)
+    await waitFor(() => {
+      // The pinned label should have the prefix, non-pinned labels should not
+      // Verify only one instance of the prefix exists (on the pinned label)
+      expect(container.textContent.match(/volvox:/g)?.length).toBe(1)
+      // The pinned label contains volvox:ctgA
+      expect(container.textContent).toContain('volvox:ctgA')
+      // ctgB should appear without prefix
+      expect(container.textContent).toContain('ctgB')
+      expect(container.textContent).not.toContain('volvox:ctgB')
     })
 
     // Restore original function

@@ -1,3 +1,5 @@
+import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
+
 import type { Mismatch } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
 
@@ -8,31 +10,36 @@ export function readFeaturesToMismatches(
   start: number,
   qual?: number[] | null,
 ) {
-  const mismatches: Mismatch[] = new Array(readFeatures.length)
+  const len = readFeatures.length
+  const mismatches: Mismatch[] = new Array(len)
   let j = 0
   let refPos = 0
   let sublen = 0
   let lastPos = start
   let insertedBases = ''
+  let insertedBasesLen = 0
 
-  for (const ret of readFeatures) {
-    const { refPos: p, code, pos, data, sub, ref } = ret
+  for (let i = 0; i < len; i++) {
+    const { refPos: p, code, pos, data, sub, ref } = readFeatures[i]!
     sublen = refPos - lastPos
     lastPos = refPos
 
-    if (sublen && insertedBases.length > 0) {
+    if (sublen && insertedBasesLen > 0) {
       mismatches[j++] = {
         start: refPos,
         type: 'insertion',
-        base: `${insertedBases.length}`,
+        base: String(insertedBasesLen),
         insertedBases,
         length: 0,
       }
       insertedBases = ''
+      insertedBasesLen = 0
     }
     refPos = p - 1 - start
 
-    if (code === 'X') {
+    const codeChar = code.charCodeAt(0)
+
+    if (codeChar === CODE_X) {
       // substitution
       mismatches[j++] = {
         start: refPos,
@@ -42,16 +49,16 @@ export function readFeaturesToMismatches(
         altbase: ref?.toUpperCase(),
         type: 'mismatch',
       }
-    } else if (code === 'I') {
+    } else if (codeChar === CODE_I) {
       // insertion
       mismatches[j++] = {
         start: refPos,
         type: 'insertion',
-        base: `${data.length}`,
+        base: String(data.length),
         insertedBases: data,
         length: 0,
       }
-    } else if (code === 'N') {
+    } else if (codeChar === CODE_N) {
       // reference skip
       mismatches[j++] = {
         type: 'skip',
@@ -59,29 +66,26 @@ export function readFeaturesToMismatches(
         start: refPos,
         base: 'N',
       }
-    } else if (code === 'S') {
+    } else if (codeChar === CODE_S) {
       // soft clip
-      const len = data.length
+      const dataLen = data.length
       mismatches[j++] = {
         start: refPos,
         type: 'softclip',
-        base: `S${len}`,
-        cliplen: len,
+        base: `S${dataLen}`,
+        cliplen: dataLen,
         length: 1,
       }
-    } else if (code === 'P') {
-      // padding
-    } else if (code === 'H') {
+    } else if (codeChar === CODE_H) {
       // hard clip
-      const len = data
       mismatches[j++] = {
         start: refPos,
         type: 'hardclip',
-        base: `H${len}`,
-        cliplen: len,
+        base: `H${data}`,
+        cliplen: data,
         length: 1,
       }
-    } else if (code === 'D') {
+    } else if (codeChar === CODE_D) {
       // deletion
       mismatches[j++] = {
         type: 'deletion',
@@ -89,31 +93,24 @@ export function readFeaturesToMismatches(
         start: refPos,
         base: '*',
       }
-    } else if (code === 'b') {
-      // stretch of bases
-    } else if (code === 'q') {
-      // stretch of qual scores
-    } else if (code === 'B') {
-      // a pair of [base, qual]
-    } else if (code === 'i') {
+    } else if (codeChar === CODE_i) {
       // single-base insertion, we collect these if there are multiple in a row
       // into a single insertion entry
       insertedBases += data
-    } else if (code === 'Q') {
-      // single quality value
+      insertedBasesLen++
     }
+    // Skip CODE_P, CODE_b, CODE_q, CODE_B, CODE_Q (no-ops)
   }
 
-  if (sublen && insertedBases.length > 0) {
+  if (sublen && insertedBasesLen > 0) {
     mismatches[j++] = {
       start: refPos,
       type: 'insertion',
-      base: `${insertedBases.length}`,
+      base: String(insertedBasesLen),
       insertedBases,
       length: 0,
     }
-    insertedBases = ''
   }
 
-  return mismatches.slice(0, j)
+  return j !== len ? mismatches.slice(0, j) : mismatches
 }

@@ -10,7 +10,7 @@ export function cigarToMismatches(
   let soffset = 0 // seq offset
   const mismatches: Mismatch[] = []
   const hasRefAndSeq = ref && seq
-  for (let i = 0, l = ops.length; i < l; i += 2) {
+  for (let i = 0; i < ops.length; i += 2) {
     const len = +ops[i]!
     const op = ops[i + 1]!
 
@@ -18,7 +18,8 @@ export function cigarToMismatches(
       if (hasRefAndSeq) {
         for (let j = 0; j < len; j++) {
           if (
-            seq[soffset + j]!.toUpperCase() !== ref[roffset + j]!.toUpperCase()
+            (seq.charCodeAt(soffset + j) | 0x20) !==
+            (ref.charCodeAt(roffset + j) | 0x20)
           ) {
             mismatches.push({
               start: roffset + j,

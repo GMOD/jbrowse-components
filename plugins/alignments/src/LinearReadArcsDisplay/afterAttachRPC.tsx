@@ -28,7 +28,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
     if (
       !view.initialized ||
       self.error ||
-      !self.statsReadyAndRegionNotTooLarge
+      !self.featureDensityStatsReadyAndRegionNotTooLarge
     ) {
       return
     }

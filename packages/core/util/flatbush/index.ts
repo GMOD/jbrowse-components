@@ -1,3 +1,7 @@
+// adapted from https://github.com/mourner/flatbush (ISC) by Colin Diesh
+//
+// changes to the code include:
+// non-recursive sort implementation
 import FlatQueue from '../flatqueue'
 
 type TypedArrayConstructor =

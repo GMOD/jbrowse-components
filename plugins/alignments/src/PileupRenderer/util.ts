@@ -3,7 +3,7 @@ import { measureText } from '@jbrowse/core/util'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
-export function fillRect(
+export function fillRectCtx(
   ctx: CanvasRenderingContext2D,
   l: number,
   t: number,
@@ -19,6 +19,23 @@ export function fillRect(
     ctx.fillStyle = color
   }
   ctx.fillRect(l, t, w, h)
+}
+
+export function fillTextCtx(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  cw: number,
+  color?: string,
+) {
+  if (x < 0 || x > cw) {
+    return
+  }
+  if (color) {
+    ctx.fillStyle = color
+  }
+  ctx.fillText(text, x, y)
 }
 
 export function getColorBaseMap(theme: Theme) {

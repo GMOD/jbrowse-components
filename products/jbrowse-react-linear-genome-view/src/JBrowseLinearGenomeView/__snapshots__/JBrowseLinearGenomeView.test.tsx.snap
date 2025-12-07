@@ -2004,6 +2004,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     <span
                       data-label-key="refLabel-{volvox}ctgA:1..40-0-1"
+                      data-refname="ctgA"
                       data-testid="refLabel-ctgA"
                       style="font-size: 11px; position: absolute; left: -1px; top: -1px; font-weight: bold; line-height: normal; z-index: 1; background: rgb(255, 255, 255); padding-left: 1px;"
                     >

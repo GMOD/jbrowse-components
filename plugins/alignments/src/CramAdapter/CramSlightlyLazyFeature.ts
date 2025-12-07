@@ -1,5 +1,5 @@
-import { readFeaturesToCIGAR } from './readFeaturesToCIGAR'
 import { readFeaturesToMismatches } from './readFeaturesToMismatches'
+import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
 import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
@@ -7,12 +7,14 @@ import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class CramSlightlyLazyFeature implements Feature {
+  private record: CramRecord
+  private _store: CramAdapter
   // uses parameter properties to automatically create fields on the class
   // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
-  constructor(
-    private record: CramRecord,
-    private _store: CramAdapter,
-  ) {}
+  constructor(record: CramRecord, _store: CramAdapter) {
+    this.record = record
+    this._store = _store
+  }
 
   get name() {
     return this.record.readName
@@ -86,17 +88,34 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get seq() {
+    // CRAM stores sequences as strings, not packed like BAM
+    // So we return the string directly without encoding/decoding
     return this.record.getReadBases()
   }
 
-  // generate a CIGAR, based on code from jkbonfield
-  get CIGAR() {
-    return readFeaturesToCIGAR(
+  // generate packed NUMERIC_CIGAR as Uint32Array
+  get NUMERIC_CIGAR() {
+    return readFeaturesToNumericCIGAR(
       this.record.readFeatures,
       this.record.alignmentStart,
       this.record.readLength,
-      this.record._refRegion,
     )
+  }
+
+  // generate a CIGAR string from NUMERIC_CIGAR
+  get CIGAR() {
+    const NUMERIC_CIGAR_CODES = [
+      77, 73, 68, 78, 83, 72, 80, 61, 88, 63, 63, 63, 63, 63, 63, 63,
+    ]
+    const numeric = this.NUMERIC_CIGAR
+    let result = ''
+    for (let i = 0, l = numeric.length; i < l; i++) {
+      const packed = numeric[i]!
+      const length = packed >> 4
+      const opCode = NUMERIC_CIGAR_CODES[packed & 0xf]!
+      result += length + String.fromCharCode(opCode)
+    }
+    return result
   }
 
   id() {
@@ -110,7 +129,9 @@ export default class CramSlightlyLazyFeature implements Feature {
         ? this.qual
         : field === 'CIGAR'
           ? this.CIGAR
-          : this.fields[field]
+          : field === 'NUMERIC_CIGAR'
+            ? this.NUMERIC_CIGAR
+            : this.fields[field]
   }
 
   parent() {
@@ -175,4 +196,5 @@ export default class CramSlightlyLazyFeature implements Feature {
 
 cacheGetter(CramSlightlyLazyFeature, 'fields')
 cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
+cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_CIGAR')
 cacheGetter(CramSlightlyLazyFeature, 'mismatches')
