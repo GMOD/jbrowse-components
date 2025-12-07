@@ -15,10 +15,9 @@ export function validateLoadOption(load?: string): void {
 
 export function validateTrackArg(track?: string): void {
   if (!track) {
-    console.error('Missing 1 required arg:')
-    console.error('track  Track file or URL')
-    console.error('See more help with --help')
-    process.exit(1)
+    throw new Error(
+      'Missing 1 required arg:\ntrack  Track file or URL\nSee more help with --help',
+    )
   }
 }
 

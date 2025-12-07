@@ -1,7 +1,10 @@
-import fs from 'fs'
-import path from 'path'
-
-import { getTrackConfigs, readConf, writeConf } from './config-utils'
+import {
+  ensureTrixDir,
+  getConfigPath,
+  getTrackConfigs,
+  readConf,
+  writeConf,
+} from './config-utils'
 import { indexDriver } from './indexing-utils'
 
 import type { TrixTextSearchAdapter } from '../../base'
@@ -19,16 +22,9 @@ export async function aggregateIndex(flags: any) {
     dryrun,
     prefixSize,
   } = flags
-  const outFlag = target || out || '.'
-  const isDir = fs.lstatSync(outFlag).isDirectory()
-  const confPath = isDir ? path.join(outFlag, 'config.json') : outFlag
-  const outLocation = path.dirname(confPath)
+  const { configPath: confPath, outLocation } = getConfigPath(target || out || '.')
   const config = readConf(confPath)
-
-  const trixDir = path.join(outLocation, 'trix')
-  if (!fs.existsSync(trixDir)) {
-    fs.mkdirSync(trixDir)
-  }
+  ensureTrixDir(outLocation)
 
   const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters || []
   const asms =

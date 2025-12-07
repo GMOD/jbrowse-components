@@ -1,19 +1,9 @@
 import { parseArgs } from 'util'
 
 import { printHelp } from '../utils'
-import {
-  SORT_BED_DESCRIPTION,
-  SORT_BED_EXAMPLES,
-} from './sort-bed-utils/constants'
-import {
-  handleProcessError,
-  waitForProcessClose,
-} from './sort-bed-utils/process-utils'
-import { spawnSortProcess } from './sort-bed-utils/sort-utils'
-import {
-  validateFileArgument,
-  validateRequiredCommands,
-} from './sort-bed-utils/validators'
+import { waitForProcessClose } from './process-utils'
+import { BED_CONFIG, spawnSortProcess } from './sort-utils'
+import { validateFileArgument, validateRequiredCommands } from './validators'
 
 export async function run(args?: string[]) {
   const options = {
@@ -28,13 +18,10 @@ export async function run(args?: string[]) {
     allowPositionals: true,
   })
 
-  const description = SORT_BED_DESCRIPTION
-  const examples = SORT_BED_EXAMPLES
-
   if (flags.help) {
     printHelp({
-      description,
-      examples,
+      description: BED_CONFIG.description,
+      examples: BED_CONFIG.examples,
       usage: 'jbrowse sort-bed [file] [options]',
       options,
     })
@@ -42,20 +29,13 @@ export async function run(args?: string[]) {
   }
 
   const file = positionals[0]
-  if (file) {
-    validateFileArgument(file)
-  }
-  validateRequiredCommands()
+  validateFileArgument(file, 'sort-bed', 'bed')
+  validateRequiredCommands(['sh', 'sort', 'grep'])
 
-  try {
-    const child = spawnSortProcess({ file: file || '-' })
-    const exitCode = await waitForProcessClose(child)
+  const child = spawnSortProcess(file, BED_CONFIG.sortColumn)
+  const exitCode = await waitForProcessClose(child)
 
-    if (exitCode !== 0) {
-      console.error(`Sort process exited with code ${exitCode}`)
-      process.exit(exitCode || 1)
-    }
-  } catch (error) {
-    handleProcessError(error)
+  if (exitCode !== 0) {
+    throw new Error(`Sort process exited with code ${exitCode}`)
   }
 }

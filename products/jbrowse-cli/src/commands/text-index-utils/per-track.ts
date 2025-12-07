@@ -1,8 +1,11 @@
-import fs from 'fs'
-import path from 'path'
-
 import { createPerTrackTrixAdapter } from './adapter-utils'
-import { getTrackConfigs, readConf, writeConf } from './config-utils'
+import {
+  ensureTrixDir,
+  getConfigPath,
+  getTrackConfigs,
+  readConf,
+  writeConf,
+} from './config-utils'
 import { indexDriver } from './indexing-utils'
 import { validateAssembliesForPerTrack } from './validators'
 
@@ -18,17 +21,10 @@ export async function perTrackIndex(flags: any) {
     exclude,
     prefixSize,
   } = flags
-  const outFlag = target || out || '.'
-
-  const isDir = fs.lstatSync(outFlag).isDirectory()
-  const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
-  const outLocation = path.dirname(confFilePath)
+  const { configPath: confFilePath, outLocation } = getConfigPath(target || out || '.')
   const config = readConf(confFilePath)
   const configTracks = config.tracks || []
-  const trixDir = path.join(outLocation, 'trix')
-  if (!fs.existsSync(trixDir)) {
-    fs.mkdirSync(trixDir)
-  }
+  ensureTrixDir(outLocation)
   validateAssembliesForPerTrack(assemblies)
   const confs = getTrackConfigs(confFilePath, tracks?.split(','))
   if (!confs.length) {

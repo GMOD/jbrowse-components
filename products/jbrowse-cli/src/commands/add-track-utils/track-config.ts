@@ -79,8 +79,7 @@ export function buildTrackConfig({
       // @ts-expect-error
       trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
     } else if (!skipCheck) {
-      console.error(`Error: Failed to find assemblyName ${finalAssemblyNames}`)
-      process.exit(1)
+      throw new Error(`Failed to find assemblyName ${finalAssemblyNames}`)
     }
   }
 
