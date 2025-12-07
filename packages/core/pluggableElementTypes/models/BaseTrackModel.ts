@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import { types } from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
-import { transaction } from 'mobx'
 
 import { ConfigurationReference, getConf } from '../../configuration'
 import { adapterConfigCacheKey } from '../../data_adapters/util'
@@ -24,6 +23,11 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 // lazies
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
 
+interface DisplayConf {
+  displayId: string
+  type: string
+}
+
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
@@ -31,6 +35,14 @@ export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const compatTypes = new Set(viewType.displayTypes.map(d => d.name))
   const displays = self.configuration.displays as AnyConfigurationModel[]
   return displays.filter(d => compatTypes.has(d.type))
+}
+
+function getDisplayConf(displays: DisplayConf[], displayId: string) {
+  const displayConf = displays.find(d => d.displayId === displayId)
+  if (!displayConf) {
+    throw new Error(`could not find display config ${displayId}`)
+  }
+  return displayConf
 }
 
 /**
@@ -157,21 +169,19 @@ export function createBaseTrackModel(
        * #action
        */
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const displayConfs = self.configuration.displays as { displayId: string; type: string }[]
-        const displayConf = displayConfs.find(d => d.displayId === displayId)
-        if (!displayConf) {
-          throw new Error(`could not find display config ${displayId}`)
-        }
+        const displays = self.configuration.displays as DisplayConf[]
+        const displayConf = getDisplayConf(displays, displayId)
         const displayType = pm.getDisplayType(displayConf.type)
         if (!displayType) {
           throw new Error(`unknown display type ${displayConf.type}`)
         }
-        const display = displayType.stateModel.create({
-          ...initialSnapshot,
-          type: displayConf.type,
-          configuration: displayId,
-        })
-        self.displays.push(display)
+        self.displays.push(
+          displayType.stateModel.create({
+            ...initialSnapshot,
+            type: displayConf.type,
+            configuration: displayId,
+          }),
+        )
       },
 
       /**
@@ -181,11 +191,9 @@ export function createBaseTrackModel(
         const displaysToRemove = self.displays.filter(
           d => d.configuration.displayId === displayId,
         )
-        transaction(() => {
-          for (const display of displaysToRemove) {
-            self.displays.remove(display)
-          }
-        })
+        for (const display of displaysToRemove) {
+          self.displays.remove(display)
+        }
         return displaysToRemove.length
       },
 
@@ -199,11 +207,8 @@ export function createBaseTrackModel(
         if (idx === -1) {
           throw new Error(`could not find display id ${oldDisplayId} to replace`)
         }
-        const displayConfs = self.configuration.displays as { displayId: string; type: string }[]
-        const displayConf = displayConfs.find(d => d.displayId === newDisplayId)
-        if (!displayConf) {
-          throw new Error(`could not find display config ${newDisplayId}`)
-        }
+        const displays = self.configuration.displays as DisplayConf[]
+        const displayConf = getDisplayConf(displays, newDisplayId)
         const displayType = pm.getDisplayType(displayConf.type)
         if (!displayType) {
           throw new Error(`unknown display type ${displayConf.type}`)
