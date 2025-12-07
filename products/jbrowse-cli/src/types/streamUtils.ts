@@ -1,9 +1,40 @@
-import readline from 'readline'
-import { createGunzip } from 'zlib'
-
 import { Presets, SingleBar } from 'cli-progress'
 
 import { getLocalOrRemoteStream } from '../util'
+
+async function* readLines(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  progressBar: SingleBar,
+) {
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let receivedBytes = 0
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+      receivedBytes += value.length
+      progressBar.update(receivedBytes)
+      buffer += decoder.decode(value, { stream: true })
+
+      const lines = buffer.split('\n')
+      buffer = lines.pop()!
+      for (const line of lines) {
+        yield line
+      }
+    }
+  } finally {
+    reader.releaseLock()
+  }
+
+  buffer += decoder.decode()
+  if (buffer) {
+    yield buffer
+  }
+}
 
 export async function createIndexingStream({
   inLocation,
@@ -24,7 +55,6 @@ export async function createIndexingStream({
     Presets.shades_classic,
   )
 
-  let receivedBytes = 0
   const { totalBytes, stream } = await getLocalOrRemoteStream(
     inLocation,
     outLocation,
@@ -34,23 +64,28 @@ export async function createIndexingStream({
     progressBar.start(totalBytes, 0)
   }
 
-  // @ts-expect-error
-  stream.on('data', chunk => {
-    receivedBytes += chunk.length
-    progressBar.update(receivedBytes)
-  })
+  if (!stream) {
+    throw new Error(`Failed to fetch ${inLocation}: no response body`)
+  }
 
-  // @ts-expect-error
-  const inputStream = /.b?gz$/.exec(inLocation) ? stream.pipe(createGunzip()) : stream
+  const decompressor =
+    new DecompressionStream('gzip') as ReadableWritablePair<
+      Uint8Array,
+      Uint8Array
+    >
+  const inputStream = /.b?gz$/.exec(inLocation)
+    ? stream.pipeThrough(decompressor)
+    : stream
 
-  const rl = readline.createInterface({
-    input: inputStream,
-  })
+  const rl = readLines(inputStream.getReader(), progressBar)
 
   return { rl, progressBar }
 }
 
-export function parseAttributes(infoString: string, decodeFunc: (s: string) => string) {
+export function parseAttributes(
+  infoString: string,
+  decodeFunc: (s: string) => string,
+) {
   return Object.fromEntries(
     infoString
       .split(';')

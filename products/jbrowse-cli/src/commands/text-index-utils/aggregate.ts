@@ -1,6 +1,5 @@
 import path from 'path'
 
-import { resolveConfigPath } from '../../utils'
 import { createTrixAdapter } from './adapter-utils'
 import {
   ensureTrixDir,
@@ -9,6 +8,7 @@ import {
   writeConf,
 } from './config-utils'
 import { indexDriver } from './indexing-utils'
+import { resolveConfigPath } from '../../utils'
 
 export async function aggregateIndex(flags: any) {
   const {
