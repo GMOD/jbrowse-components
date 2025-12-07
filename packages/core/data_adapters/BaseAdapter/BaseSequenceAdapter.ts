@@ -28,7 +28,7 @@ export abstract class BaseSequenceAdapter
    */
   async getSequence(region: NoAssemblyRegion, opts?: BaseOptions) {
     const features = await firstValueFrom(
-      this.getFeatures(region, opts).pipe(toArray()),
+      this.getFeatures({ ...region, assemblyName: '' }, opts).pipe(toArray()),
     )
     return features[0]?.get('seq') as string | undefined
   }
