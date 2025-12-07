@@ -1,4 +1,4 @@
-import { realpathSync, rmSync, readFileSync } from 'fs'
+import { readFileSync, realpathSync, rmSync } from 'fs'
 import { mkdir, mkdtemp, open } from 'fs/promises'
 import os from 'os'
 import path from 'path'
@@ -179,7 +179,9 @@ export async function openWebStream(filePath: string) {
 export function mockFetch(
   mockOrHandler:
     | MockFetchResponse
-    | ((url: string) => MockFetchResponse | Promise<MockFetchResponse> | undefined),
+    | ((
+        url: string,
+      ) => MockFetchResponse | Promise<MockFetchResponse> | undefined),
 ) {
   const fetchWithProxy = require('./fetchWithProxy')
     .default as jest.MockedFunction<

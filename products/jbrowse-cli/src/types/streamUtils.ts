@@ -11,20 +11,18 @@ async function* readLines(
   let receivedBytes = 0
 
   try {
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) {
-        break
-      }
-      receivedBytes += value.length
+    let result = await reader.read()
+    while (!result.done) {
+      receivedBytes += result.value.length
       progressBar.update(receivedBytes)
-      buffer += decoder.decode(value, { stream: true })
+      buffer += decoder.decode(result.value, { stream: true })
 
       const lines = buffer.split('\n')
       buffer = lines.pop()!
       for (const line of lines) {
         yield line
       }
+      result = await reader.read()
     }
   } finally {
     reader.releaseLock()
@@ -68,11 +66,10 @@ export async function createIndexingStream({
     throw new Error(`Failed to fetch ${inLocation}: no response body`)
   }
 
-  const decompressor =
-    new DecompressionStream('gzip') as ReadableWritablePair<
-      Uint8Array,
-      Uint8Array
-    >
+  const decompressor = new DecompressionStream('gzip') as ReadableWritablePair<
+    Uint8Array,
+    Uint8Array
+  >
   const inputStream = /.b?gz$/.exec(inLocation)
     ? stream.pipeThrough(decompressor)
     : stream
