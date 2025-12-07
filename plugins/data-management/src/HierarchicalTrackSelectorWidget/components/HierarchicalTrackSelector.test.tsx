@@ -8,8 +8,6 @@ import conf from '../../../../../test_data/test_order/config.json'
 
 import type { HierarchicalTrackSelectorModel } from '../model'
 
-// test data
-
 // mock
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
