@@ -2,7 +2,8 @@ import { forwardRef } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Paper, Typography, alpha } from '@mui/material'
@@ -48,10 +49,10 @@ const TrackLabel = observer(
   ) {
     const { classes } = useStyles()
     const view = getContainingView(track) as LGV
+    const session = getSession(track)
     const { minimized } = track
     const trackId = getConf(track, 'trackId')
-    // Use track.name which checks effectiveConfiguration for live edits
-    const trackName = track.name
+    const trackName = getTrackName(track.configuration, session)
 
     return (
       <Paper

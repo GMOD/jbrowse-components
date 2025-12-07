@@ -1,6 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -26,20 +27,24 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
       setTarget(newTarget: AnyConfigurationModel | undefined) {
         self.target = newTarget
       },
-      /**
-       * #action
-       * Saves the current configuration back to the frozen tracks array.
-       * This is needed because track.configuration creates an MST model
-       * from frozen data, and edits need to be persisted back.
-       */
-      saveConfig() {
-        if (!self.target) {
-          return
-        }
-        const snapshot = getSnapshot(self.target)
-        const session = getSession(self)
-        const jbrowse = session.jbrowse
-        jbrowse.updateTrackConf(snapshot)
+      afterCreate() {
+        let timeout: ReturnType<typeof setTimeout> | undefined
+        // Auto-save configuration changes with 400ms debounce. The autorun
+        // reacts to any changes in the target configuration model and persists
+        // them back to the session after a short delay.
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.target) {
+              const snapshot = getSnapshot(self.target)
+              clearTimeout(timeout)
+              timeout = setTimeout(() => {
+                const session = getSession(self)
+                session.jbrowse.updateTrackConf(snapshot)
+              }, 400)
+            }
+          }),
+        )
       },
     }))
 }

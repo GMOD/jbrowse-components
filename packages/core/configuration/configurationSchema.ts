@@ -296,6 +296,7 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
       if (!ret) {
         // Fall back to resolveIdentifier for view-specific tracks (e.g. viewTrackConfigs)
         // that are MST models but not in session.tracks
+        // @ts-expect-error
         ret = resolveIdentifier(schemaType, getRoot(parent), id)
       }
       if (!ret) {

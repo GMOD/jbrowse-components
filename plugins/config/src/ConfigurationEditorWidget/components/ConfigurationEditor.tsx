@@ -8,12 +8,10 @@ import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import SaveIcon from '@mui/icons-material/Save'
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Button,
   FormGroup,
   Typography,
 } from '@mui/material'
@@ -41,9 +39,6 @@ const useStyles = makeStyles()(theme => ({
   noOverflow: {
     width: '100%',
     overflowX: 'auto',
-  },
-  saveButton: {
-    marginTop: theme.spacing(2),
   },
 }))
 
@@ -138,7 +133,6 @@ const ConfigurationEditor = observer(function ({
   model: {
     target?: AnyConfigurationModel
     effectiveTarget?: AnyConfigurationModel
-    saveConfig?: () => void
   }
   session?: AbstractSessionModel
 }) {
@@ -154,34 +148,21 @@ const ConfigurationEditor = observer(function ({
   const key = readConfObject(target, 'trackId')
   const name = readConfObject(target, 'name')
   return (
-    <>
-      <Accordion key={key} defaultExpanded className={classes.accordion}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.icon} />}
-        >
-          <Typography>
-            <SanitizedHTML html={name ?? 'Configuration'} />
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails
-          className={classes.expansionPanelDetails}
-          data-testid="configEditor"
-        >
-          <Schema schema={target} />
-        </AccordionDetails>
-      </Accordion>
-      {model.saveConfig ? (
-        <Button
-          className={classes.saveButton}
-          variant="contained"
-          color="primary"
-          startIcon={<SaveIcon />}
-          onClick={() => model.saveConfig?.()}
-        >
-          Save configuration
-        </Button>
-      ) : null}
-    </>
+    <Accordion key={key} defaultExpanded className={classes.accordion}>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon className={classes.icon} />}
+      >
+        <Typography>
+          <SanitizedHTML html={name ?? 'Configuration'} />
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails
+        className={classes.expansionPanelDetails}
+        data-testid="configEditor"
+      >
+        <Schema schema={target} />
+      </AccordionDetails>
+    </Accordion>
   )
 })
 
