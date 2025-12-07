@@ -18,11 +18,6 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
       // an MST model from frozen config via ConfigurationReference).
       target: undefined as AnyConfigurationModel | undefined,
     }))
-    .views(self => ({
-      get effectiveTarget() {
-        return self.target
-      },
-    }))
     .actions(self => ({
       setTarget(newTarget: AnyConfigurationModel | undefined) {
         self.target = newTarget

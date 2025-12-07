@@ -132,7 +132,6 @@ const ConfigurationEditor = observer(function ({
 }: {
   model: {
     target?: AnyConfigurationModel
-    effectiveTarget?: AnyConfigurationModel
   }
   session?: AbstractSessionModel
 }) {
@@ -140,8 +139,7 @@ const ConfigurationEditor = observer(function ({
   // key forces a re-render, otherwise the same field can end up being used for
   // different tracks since only the backing model changes for example see pr
   // #804
-  // Use effectiveTarget if available, otherwise target
-  const target = model.effectiveTarget ?? model.target
+  const target = model.target
   if (!target) {
     return <Typography>No configuration target</Typography>
   }

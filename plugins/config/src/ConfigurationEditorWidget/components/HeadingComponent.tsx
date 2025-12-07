@@ -6,11 +6,9 @@ const HeadingComponent = observer(function ({
 }: {
   model?: {
     target?: { type: string }
-    effectiveTarget?: { type: string }
   }
 }) {
-  // Use effectiveTarget if available (for frozen configs), otherwise target
-  const target = model?.effectiveTarget ?? model?.target
+  const target = model?.target
   if (target) {
     if (target.type) {
       return `${target.type} settings`
