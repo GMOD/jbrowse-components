@@ -41,6 +41,7 @@ export function inc(
   type: keyof PreBaseCoverageBinSubtypes,
   field: string,
   length?: number,
+  sequence?: string,
 ) {
   const entry = (bin[type][field] ??= createPreBinEntry())
   entry.entryDepth++
@@ -50,6 +51,10 @@ export function inc(
     entry.lengthCount++
     entry.lengthMin = Math.min(entry.lengthMin, length)
     entry.lengthMax = Math.max(entry.lengthMax, length)
+  }
+  if (sequence !== undefined) {
+    entry.sequenceCounts ??= new Map()
+    entry.sequenceCounts.set(sequence, (entry.sequenceCounts.get(sequence) ?? 0) + 1)
   }
 }
 

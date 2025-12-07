@@ -17,6 +17,7 @@ function finalizeBinEntry(entry: PreBinEntry) {
     avgLength?: number
     minLength?: number
     maxLength?: number
+    topSequence?: string
   }
   if (probabilityCount) {
     ret.avgProbability = probabilityTotal / probabilityCount
@@ -25,6 +26,18 @@ function finalizeBinEntry(entry: PreBinEntry) {
     ret.avgLength = lengthTotal / lengthCount
     ret.minLength = entry.lengthMin
     ret.maxLength = entry.lengthMax
+  }
+  if (entry.sequenceCounts?.size) {
+    let maxCount = 0
+    let topSeq: string | undefined
+    for (const [seq, count] of entry.sequenceCounts) {
+      if (count > maxCount) {
+        maxCount = count
+        topSeq = seq
+      }
+    }
+    ret.topSequence = topSeq
+    entry.sequenceCounts = undefined
   }
 }
 

@@ -21,6 +21,7 @@ export interface BinEntry {
   avgLength?: number
   minLength?: number
   maxLength?: number
+  topSequence?: string
 }
 
 type BinType = Record<string, BinEntry>
@@ -53,6 +54,7 @@ export interface PreBinEntry {
   lengthCount: number
   lengthMin: number
   lengthMax: number
+  sequenceCounts?: Map<string, number>
 }
 
 type PreBinType = Record<string, PreBinEntry>

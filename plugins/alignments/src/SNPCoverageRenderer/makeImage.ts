@@ -312,6 +312,7 @@ export function makeImage(
           avgLength: maxEntry?.avgLength,
           minLength: maxEntry?.minLength,
           maxLength: maxEntry?.maxLength,
+          topSequence: maxEntry?.topSequence,
         })
       }
     }
@@ -361,6 +362,7 @@ export function makeImage(
           avgLength: maxEntry?.avgLength,
           minLength: maxEntry?.minLength,
           maxLength: maxEntry?.maxLength,
+          topSequence: maxEntry?.topSequence,
         })
       }
     }

@@ -44,7 +44,8 @@ export function processMismatches({
             type === 'insertion'
               ? mismatch.insertedBases?.length
               : mismatch.cliplen
-          inc(bin, fstrand, 'noncov', type, len)
+          const seq = type === 'insertion' ? mismatch.insertedBases : undefined
+          inc(bin, fstrand, 'noncov', type, len, seq)
         }
       }
     }
