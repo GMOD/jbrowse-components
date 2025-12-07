@@ -84,6 +84,27 @@ test.each([
     expect(filename).toBe(expectedFilename)
     expect(content).toMatchSnapshot()
 
+    // For GFF3 tracks, verify that full gene features are exported even when
+    // viewing a small region inside the gene (tests redispatch behavior)
+    if (ext === 'gff3') {
+      // The viewed region ctgA:4,318..4,440 is inside the EDEN gene (1050-9000)
+      // Verify the full gene is exported with correct coordinates
+      expect(content).toContain('1050\t9000')
+      expect(content).toContain('ID=EDEN')
+      expect(content).toContain('EDEN.1')
+      expect(content).toContain('EDEN.2')
+      expect(content).toContain('EDEN.3')
+
+      // Verify CDS features are present, including those outside the viewed
+      // region (e.g. 1201-1500 and 7000-7608 are outside ctgA:4,318..4,440)
+      expect(content).toContain('CDS\t1201\t1500')
+      expect(content).toContain('CDS\t3000\t3902')
+      expect(content).toContain('CDS\t3301\t3902')
+      expect(content).toContain('CDS\t5000\t5500')
+      expect(content).toContain('CDS\t7000\t7600')
+      expect(content).toContain('CDS\t7000\t7608')
+    }
+
     const snapshotPath = path.join(
       __dirname,
       '__file_snapshots__',
