@@ -2,7 +2,7 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { getMethBins } from '../../ModificationParser/getMethBins'
-import { fillRect } from '../util'
+import { fillRectCtx } from '../util'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
@@ -26,7 +26,7 @@ export function renderMethylation({
   bpPerPx: number
   renderArgs: ProcessedRenderArgs
   canvasWidth: number
-  cigarOps: string[]
+  cigarOps: Uint32Array | number[]
 }) {
   const { regionSequence } = renderArgs
   const { feature, topPx, heightPx } = feat
@@ -74,16 +74,16 @@ export function renderMethylation({
         const [leftPx, rightPx] = bpSpanPx(j, j + 2, region, bpPerPx)
         const w = rightPx - leftPx + 0.5
         const c = getCol(i) || getCol(i + 1) || 'blue'
-        fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+        fillRectCtx(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
       } else {
         const [leftPx, rightPx] = bpSpanPx(j, j + 1, region, bpPerPx)
         const w = rightPx - leftPx + 0.5
         const c = getCol(i) || 'blue'
-        fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+        fillRectCtx(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
         const [leftPx2, rightPx2] = bpSpanPx(j + 1, j + 2, region, bpPerPx)
         const w2 = rightPx2 - leftPx2 + 0.5
         const c2 = getCol(i + 1) || 'blue'
-        fillRect(ctx, leftPx2, topPx, w2, heightPx, canvasWidth, c2)
+        fillRectCtx(ctx, leftPx2, topPx, w2, heightPx, canvasWidth, c2)
       }
     }
   }

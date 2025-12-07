@@ -1,7 +1,7 @@
 import { max, sum } from '@jbrowse/core/util'
 
 import { createPreBinEntry, incWithProbabilities } from './util'
-import { parseCigar } from '../MismatchParser'
+import { parseCigar2 } from '../MismatchParser'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 
 import type { ColorBy, PreBaseCoverageBin } from '../shared/types'
@@ -34,7 +34,8 @@ export function processModifications({
     return
   }
 
-  const cigarOps = parseCigar(feature.get('CIGAR'))
+  const cigarOps =
+    feature.get('NUMERIC_CIGAR') ?? parseCigar2(feature.get('CIGAR'))
 
   // Get only the maximum probability modification at each position
   // this is a hole-y array, does not work with normal for loop

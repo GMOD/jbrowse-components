@@ -1,12 +1,21 @@
 import { bpSpanPx, measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { fillRect } from '../util'
+import { fillRectCtx, fillTextCtx } from '../util'
 
 import type { Mismatch } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
+
+// Helper to apply alpha to color based on quality score
+function applyQualAlpha(baseColor: string, qual: number | undefined) {
+  return qual !== undefined
+    ? colord(baseColor)
+        .alpha(Math.min(1, qual / 50))
+        .toHslString()
+    : baseColor
+}
 
 export function renderMismatches({
   ctx,
@@ -55,16 +64,20 @@ export function renderMismatches({
   const start = featStart
 
   const pxPerBp = Math.min(1 / bpPerPx, 2)
+  const invBpPerPx = 1 / bpPerPx
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
   const heightLim = charHeight - 2
+  const canRenderText = heightPx >= heightLim
+  const useAlpha = mismatchAlpha === true
 
   // extraHorizontallyFlippedOffset is used to draw interbase items, which are
   // located to the left when forward and right when reversed
-  const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx + 1 : -1
+  const extraHorizontallyFlippedOffset = region.reversed ? invBpPerPx + 1 : -1
 
   // two pass rendering: first pass, draw all the mismatches except wide
   // insertion markers
-  for (const mismatch of mismatches) {
+  for (let i = 0, l = mismatches.length; i < l; i++) {
+    const mismatch = mismatches[i]!
     const mstart = start + mismatch.start
     const mlen = mismatch.length
     const mbase = mismatch.base
@@ -82,14 +95,11 @@ export function renderMismatches({
 
       if (!drawSNPsMuted) {
         const baseColor = colorMap[mismatch.base] || '#888'
-        const c =
-          mismatchAlpha && mismatch.qual !== undefined
-            ? colord(baseColor)
-                .alpha(Math.min(1, mismatch.qual / 50))
-                .toHslString()
-            : baseColor
+        const c = useAlpha
+          ? applyQualAlpha(baseColor, mismatch.qual)
+          : baseColor
 
-        fillRect(
+        fillRectCtx(
           ctx,
           Math.round(leftPx),
           topPx,
@@ -100,27 +110,27 @@ export function renderMismatches({
         )
       }
 
-      if (widthPx >= charWidth && heightPx >= heightLim) {
+      if (widthPx >= charWidth && canRenderText) {
         // normal SNP coloring
         const contrastColor = drawSNPsMuted
           ? 'black'
           : colorContrastMap[mismatch.base] || 'black'
-        ctx.fillStyle =
-          mismatchAlpha && mismatch.qual !== undefined
-            ? colord(contrastColor)
-                .alpha(Math.min(1, mismatch.qual / 50))
-                .toHslString()
-            : contrastColor
-        ctx.fillText(
+        const textColor = useAlpha
+          ? applyQualAlpha(contrastColor, mismatch.qual)
+          : contrastColor
+        fillTextCtx(
+          ctx,
           mbase,
           leftPx + (widthPx - charWidth) / 2 + 1,
           topPx + heightPx,
+          canvasWidth,
+          textColor,
         )
       }
     } else if (mismatch.type === 'deletion' && drawIndels) {
       const len = mismatch.length
       if (!hideSmallIndels || len >= 10) {
-        fillRect(
+        fillRectCtx(
           ctx,
           leftPx,
           topPx,
@@ -136,37 +146,39 @@ export function renderMismatches({
           })
           coords.push(leftPx, topPx, rightPx, topPx + heightPx)
         }
-        const txt = `${mismatch.length}`
+        const txt = String(len)
         const rwidth = measureText(txt, 10)
-        if (widthPx >= rwidth && heightPx >= heightLim) {
-          ctx.fillStyle = colorContrastMap.deletion!
-          ctx.fillText(
+        if (widthPx >= rwidth && canRenderText) {
+          fillTextCtx(
+            ctx,
             txt,
             (leftPx + rightPx) / 2 - rwidth / 2,
             topPx + heightPx,
+            canvasWidth,
+            colorContrastMap.deletion,
           )
         }
       }
     } else if (mismatch.type === 'insertion' && drawIndels) {
       const pos = leftPx + extraHorizontallyFlippedOffset
       const len = +mismatch.base || mismatch.length
-      const insW = Math.max(0, Math.min(1.2, 1 / bpPerPx))
+      const insW = Math.max(0, Math.min(1.2, invBpPerPx))
       if (len < 10) {
         if (!hideSmallIndels) {
-          fillRect(
-            ctx,
-            pos,
-            topPx,
-            insW,
-            heightPx,
-            canvasWidth,
-            colorMap.insertion,
-          )
-          if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
+          ctx.fillStyle = colorMap.insertion!
+          fillRectCtx(ctx, pos, topPx, insW, heightPx, canvasWidth)
+          if (invBpPerPx >= charWidth && canRenderText) {
             const l = Math.round(pos - insW)
-            fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
-            fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
-            ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
+            const insW3 = insW * 3
+            fillRectCtx(ctx, l, topPx, insW3, 1, canvasWidth)
+            fillRectCtx(ctx, l, topPx + heightPx - 1, insW3, 1, canvasWidth)
+            fillTextCtx(
+              ctx,
+              `(${mismatch.base})`,
+              pos + 3,
+              topPx + heightPx,
+              canvasWidth,
+            )
           }
           if (bpPerPx < 3) {
             items.push({
@@ -177,42 +189,48 @@ export function renderMismatches({
           }
         }
       }
-    } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
+    } else if (mismatch.type === 'softclip' || mismatch.type === 'hardclip') {
       const pos = leftPx + extraHorizontallyFlippedOffset
       const c = colorMap[mismatch.type]
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
-      fillRect(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
+      fillRectCtx(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
       items.push({
         type: mismatch.type,
         seq: mismatch.base,
       })
       coords.push(pos - clipW, topPx, pos + clipW * 2, topPx + heightPx)
-      if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
+      if (invBpPerPx >= charWidth && canRenderText) {
         const l = pos - clipW
-        fillRect(ctx, l, topPx, clipW * 3, 1, canvasWidth)
-        fillRect(ctx, l, topPx + heightPx - 1, clipW * 3, 1, canvasWidth)
-        ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
+        const clipW3 = clipW * 3
+        fillRectCtx(ctx, l, topPx, clipW3, 1, canvasWidth, c)
+        fillRectCtx(ctx, l, topPx + heightPx - 1, clipW3, 1, canvasWidth, c)
+        fillTextCtx(
+          ctx,
+          `(${mismatch.base})`,
+          pos + 3,
+          topPx + heightPx,
+          canvasWidth,
+          colorContrastMap[mismatch.type],
+        )
       }
     } else if (mismatch.type === 'skip') {
-      // fix to avoid bad rendering note that this was also related to chrome
-      // bug https://bugs.chromium.org/p/chromium/issues/detail?id=1131528
-      //
-      // also affected firefox ref #1236 #2750
-      if (leftPx + widthPx > 0) {
-        // make small exons more visible when zoomed far out
-        const adjustPx = widthPx - (bpPerPx > 10 ? 1.5 : 0)
-        const l = Math.max(0, leftPx)
-        const t = topPx + heightPx / 2 - 1
-        const w = adjustPx + Math.min(leftPx, 0)
-        const h = 1
-        fillRect(ctx, l, t, w, h, canvasWidth, colorMap.skip)
-      }
+      const t = topPx + heightPx / 2 - 1
+      fillRectCtx(
+        ctx,
+        leftPx,
+        t,
+        Math.max(widthPx, 1.5),
+        1,
+        canvasWidth,
+        colorMap.skip,
+      )
     }
   }
 
   // second pass, draw wide insertion markers on top
   if (drawIndels) {
-    for (const mismatch of mismatches) {
+    for (let i = 0, l = mismatches.length; i < l; i++) {
+      const mismatch = mismatches[i]!
       const mstart = start + mismatch.start
       const mlen = mismatch.length
       const len = +mismatch.base || mismatch.length
@@ -225,7 +243,7 @@ export function renderMismatches({
         })
         if (bpPerPx > largeInsertionIndicatorScale) {
           coords.push(leftPx - 1, topPx, leftPx + 1, topPx + heightPx)
-          fillRect(
+          fillRectCtx(
             ctx,
             leftPx - 1,
             topPx,
@@ -243,7 +261,7 @@ export function renderMismatches({
             leftPx + rwidth / 2 + padding,
             topPx + heightPx,
           )
-          fillRect(
+          fillRectCtx(
             ctx,
             leftPx - rwidth / 2 - padding,
             topPx,
@@ -252,8 +270,14 @@ export function renderMismatches({
             canvasWidth,
             'purple',
           )
-          ctx.fillStyle = colorContrastMap.insertion!
-          ctx.fillText(txt, leftPx - rwidth / 2, topPx + heightPx)
+          fillTextCtx(
+            ctx,
+            txt,
+            leftPx - rwidth / 2,
+            topPx + heightPx,
+            canvasWidth,
+            colorContrastMap.insertion,
+          )
         } else {
           const padding = 2
           coords.push(
@@ -262,7 +286,7 @@ export function renderMismatches({
             leftPx + padding,
             topPx + heightPx,
           )
-          fillRect(
+          fillRectCtx(
             ctx,
             leftPx - padding,
             topPx,

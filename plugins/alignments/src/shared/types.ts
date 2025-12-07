@@ -123,7 +123,7 @@ export interface Mismatch {
   start: number
   length: number
   insertedBases?: string
-  type: string
+  type: MismatchType
   base: string
   altbase?: string
   seq?: string
@@ -157,3 +157,11 @@ export interface ChainData {
   stats?: ChainStats
   chains: Feature[][]
 }
+
+export type MismatchType =
+  | 'mismatch'
+  | 'insertion'
+  | 'deletion'
+  | 'skip'
+  | 'softclip'
+  | 'hardclip'

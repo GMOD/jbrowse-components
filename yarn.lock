@@ -1607,7 +1607,7 @@
   dependencies:
     quick-lru "^4.0.0"
 
-"@gmod/indexedfasta@^4.0.0":
+"@gmod/indexedfasta@^4.0.7":
   version "4.0.7"
   resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-4.0.7.tgz#5525cf620af512bc2495e147a77204835623ec39"
   integrity sha512-WN1wDI73icrLn/OJPfBTkXsnLui9Kcz3mWtbpcOm8oRAgFVgV/qUSNtgyQnCdbfMWnAfQzRLat1C8iyNg8kVcw==
