@@ -1,3 +1,6 @@
+import fs from 'fs'
+import path from 'path'
+
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { saveAs } from 'file-saver-es'
@@ -45,21 +48,19 @@ function readBlobAsText(blob: Blob): Promise<string> {
   })
 }
 
-const trackTestCases = [
-  ['VCF', 'volvox_filtered_vcf', 'jbrowse_track_data.vcf'],
-  ['BAM', 'volvox_bam', 'jbrowse_track_data.sam'],
-  ['CRAM', 'volvox_cram', 'jbrowse_track_data.sam'],
-  ['GFF', 'gff3tabix_genes', 'jbrowse_track_data.gff3'],
-  ['BED', 'bedtabix_genes', 'jbrowse_track_data.gff3'],
-  ['BigWig', 'volvox_microarray', 'jbrowse_track_data.bedgraph'],
-] as const
-
-test.each(trackTestCases)(
+test.each([
+  ['VCF', 'volvox_filtered_vcf', 'jbrowse_track_data.vcf', 'vcf'],
+  ['BAM', 'volvox_bam', 'jbrowse_track_data.sam', 'sam'],
+  ['CRAM', 'volvox_cram', 'jbrowse_track_data.sam', 'cram.sam'],
+  ['GFF', 'gff3tabix_genes', 'jbrowse_track_data.gff3', 'gff3'],
+  ['BED', 'bedtabix_genes', 'jbrowse_track_data.gff3', 'bed.gff3'],
+  ['BigWig', 'volvox_microarray', 'jbrowse_track_data.bedgraph', 'bedgraph'],
+])(
   'save track data for %s track',
-  async (_, trackId, expectedFilename) => {
+  async (_, trackId, expectedFilename, ext) => {
     const user = userEvent.setup()
     const { view } = await createView()
-    view.setNewView(0.05, 5000)
+    view.navToLocString('ctgA:4,318..4,440')
 
     await openSaveTrackDataDialog(user, trackId)
 
@@ -82,6 +83,13 @@ test.each(trackTestCases)(
 
     expect(filename).toBe(expectedFilename)
     expect(content).toMatchSnapshot()
+
+    const snapshotPath = path.join(
+      __dirname,
+      '__file_snapshots__',
+      `save_track_data.${ext}`,
+    )
+    fs.writeFileSync(snapshotPath, content)
 
     await user.click(await screen.findByText('Close'))
   },
