@@ -30,7 +30,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { autorun, observable, transaction } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
@@ -524,6 +524,23 @@ export default function stateModelFactory(pm: PluginManager) {
       },
       /**
        * #action
+       */
+      initializeDisplayedRegions() {
+        const { hview, vview, assemblyNames } = self
+        if (hview.displayedRegions.length && vview.displayedRegions.length) {
+          return
+        }
+        const { assemblyManager } = getSession(self)
+        hview.setDisplayedRegions(
+          assemblyManager.get(assemblyNames[0]!)?.regions || [],
+        )
+        vview.setDisplayedRegions(
+          assemblyManager.get(assemblyNames[1]!)?.regions || [],
+        )
+        this.showAllRegions()
+      },
+      /**
+       * #action
        * creates a linear synteny view from the clicked and dragged region
        */
       onDotplotView(mousedown: Coord, mouseup: Coord) {
@@ -641,35 +658,9 @@ export default function stateModelFactory(pm: PluginManager) {
           self,
           autorun(
             function dotplotRegionsAutorun() {
-              const session = getSession(self)
-
-              // don't operate if width not set yet
-              if (
-                self.volatileWidth === undefined ||
-                !self.assembliesInitialized
-              ) {
-                return
+              if (self.volatileWidth !== undefined && self.assembliesInitialized) {
+                self.initializeDisplayedRegions()
               }
-
-              const { hview, assemblyNames, vview } = self
-              // also don't operate if displayedRegions already set, this is a
-              // helper autorun to load regions from assembly
-              if (
-                hview.displayedRegions.length &&
-                vview.displayedRegions.length
-              ) {
-                return
-              }
-
-              transaction(() => {
-                hview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[0]!)?.regions || [],
-                )
-                vview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[1]!)?.regions || [],
-                )
-                self.showAllRegions()
-              })
             },
             { delay: 1000, name: 'DotplotRegions' },
           ),
