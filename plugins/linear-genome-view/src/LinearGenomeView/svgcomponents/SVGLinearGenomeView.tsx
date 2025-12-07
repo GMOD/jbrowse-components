@@ -13,6 +13,7 @@ import { when } from 'mobx'
 
 import { isReadyOrHasError } from '../svgExportUtil'
 import SVGBackground from './SVGBackground'
+import SVGGridlines from './SVGGridlines'
 import SVGHeader from './SVGHeader'
 import SVGTracks from './SVGTracks'
 import { totalHeight } from './util'
@@ -33,6 +34,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     cytobandHeight = 100,
     trackLabels = 'offset',
     themeName = 'default',
+    showGridlines = false,
     Wrapper = ({ children }) => children,
   } = opts
   const session = getSession(model)
@@ -60,6 +62,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
+  const tracksHeight = totalHeight(tracks, textHeight, trackLabels)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -82,6 +85,11 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 cytobandHeight={cytobandHeight}
               />
             </g>
+            {showGridlines ? (
+              <g transform={`translate(${trackLabelOffset} ${offset})`}>
+                <SVGGridlines model={model} height={tracksHeight} />
+              </g>
+            ) : null}
             <g transform={`translate(0 ${offset})`}>
               <SVGTracks
                 textHeight={textHeight}
