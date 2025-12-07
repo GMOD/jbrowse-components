@@ -17,7 +17,7 @@ export interface FeatPos {
   p21: Pos
   p22: Pos
   f: Feature
-  cigar: number[]
+  cigar: string[]
 }
 
 /**
