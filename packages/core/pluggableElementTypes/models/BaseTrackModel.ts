@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
 import { transaction } from 'mobx'
 
@@ -157,15 +157,18 @@ export function createBaseTrackModel(
        * #action
        */
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const displayType = pm.getDisplayType(conf.type)
+        const displayConfs = self.configuration.displays as { displayId: string; type: string }[]
+        const displayConf = displayConfs.find(d => d.displayId === displayId)
+        if (!displayConf) {
+          throw new Error(`could not find display config ${displayId}`)
+        }
+        const displayType = pm.getDisplayType(displayConf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${conf.type}`)
+          throw new Error(`unknown display type ${displayConf.type}`)
         }
         const display = displayType.stateModel.create({
           ...initialSnapshot,
-          type: conf.type,
+          type: displayConf.type,
           configuration: displayId,
         })
         self.displays.push(display)
@@ -175,37 +178,40 @@ export function createBaseTrackModel(
        * #action
        */
       hideDisplay(displayId: string) {
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const t = self.displays.filter(d => d.configuration === conf)
+        const displaysToRemove = self.displays.filter(
+          d => d.configuration.displayId === displayId,
+        )
         transaction(() => {
-          for (const d of t) {
-            self.displays.remove(d)
+          for (const display of displaysToRemove) {
+            self.displays.remove(display)
           }
         })
-        return t.length
+        return displaysToRemove.length
       },
 
       /**
        * #action
        */
-      replaceDisplay(oldId: string, newId: string, initialSnapshot = {}) {
+      replaceDisplay(oldDisplayId: string, newDisplayId: string, initialSnapshot = {}) {
         const idx = self.displays.findIndex(
-          d => d.configuration.displayId === oldId,
+          d => d.configuration.displayId === oldDisplayId,
         )
         if (idx === -1) {
-          throw new Error(`could not find display id ${oldId} to replace`)
+          throw new Error(`could not find display id ${oldDisplayId} to replace`)
         }
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), newId)
-        const displayType = pm.getDisplayType(conf.type)
+        const displayConfs = self.configuration.displays as { displayId: string; type: string }[]
+        const displayConf = displayConfs.find(d => d.displayId === newDisplayId)
+        if (!displayConf) {
+          throw new Error(`could not find display config ${newDisplayId}`)
+        }
+        const displayType = pm.getDisplayType(displayConf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${conf.type}`)
+          throw new Error(`unknown display type ${displayConf.type}`)
         }
         self.displays.splice(idx, 1, {
           ...initialSnapshot,
-          type: conf.type,
-          configuration: newId,
+          type: displayConf.type,
+          configuration: newDisplayId,
         })
       },
     }))
