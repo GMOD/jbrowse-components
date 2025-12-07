@@ -301,7 +301,7 @@ export function drawLongReadChains({
           ctx,
           feat: layoutFeat,
           bpPerPx,
-          regions,
+          region,
           hideSmallIndels,
           mismatchAlpha,
           drawSNPsMuted,

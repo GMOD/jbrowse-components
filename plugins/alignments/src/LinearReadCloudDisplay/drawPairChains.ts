@@ -251,7 +251,7 @@ export function drawPairChains({
           ctx,
           feat: layoutFeat,
           bpPerPx,
-          regions,
+          region,
           hideSmallIndels,
           mismatchAlpha,
           drawSNPsMuted,

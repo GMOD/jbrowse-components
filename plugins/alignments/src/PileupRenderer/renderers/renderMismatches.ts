@@ -20,7 +20,7 @@ export function renderMismatches({
   ctx,
   feat,
   bpPerPx,
-  regions,
+  region,
   minSubfeatureWidth,
   largeInsertionIndicatorScale,
   mismatchAlpha,
@@ -36,7 +36,7 @@ export function renderMismatches({
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   bpPerPx: number
-  regions: Region[]
+  region: Region
   colorMap: Record<string, string>
   colorContrastMap: Record<string, string>
   mismatchAlpha?: boolean
@@ -54,12 +54,6 @@ export function renderMismatches({
   const { heightPx, topPx, feature } = feat
   const bottomPx = topPx + heightPx
   const featStart = feature.get('start')
-  const region =
-    regions.find(r => {
-      const rn = feature.get('refName')
-      const end = feature.get('end')
-      return r.refName === rn && r.start <= featStart && end <= r.end
-    }) || regions[0]!
 
   const pxPerBp = Math.min(1 / bpPerPx, 2)
   const invBpPerPx = 1 / bpPerPx

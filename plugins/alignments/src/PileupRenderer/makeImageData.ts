@@ -121,7 +121,7 @@ function renderFeatures({
       ctx,
       feat,
       bpPerPx: renderArgs.bpPerPx,
-      regions: renderArgs.regions,
+      region: renderArgs.regions[0]!,
       hideSmallIndels,
       mismatchAlpha,
       drawSNPsMuted,
