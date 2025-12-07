@@ -77,7 +77,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
         // Access reactive properties so autorun is triggered when they change
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { clickId, mouseoverId } = self
+        const { clickId, mouseoverId, cigarMouseoverId } = self
         drawMouseoverClickMap(self)
       },
       { name: 'SyntenyMouseover' },

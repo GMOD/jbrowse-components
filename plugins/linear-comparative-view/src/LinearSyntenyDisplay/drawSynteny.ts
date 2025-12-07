@@ -85,6 +85,53 @@ export function getId(r: number, g: number, b: number, unitMultiplier: number) {
   return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
 }
 
+// Threshold in pixels for considering a gap "large" enough to break chunks
+const chunkBreakThreshold = 10
+
+export function getChunkCount({
+  cigar,
+  bpPerPxs,
+  level,
+}: {
+  cigar: string[]
+  bpPerPxs: number[]
+  level: number
+}) {
+  if (cigar.length === 0) {
+    return 1
+  }
+  const bpPerPxInv0 = 1 / bpPerPxs[level]!
+  const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
+
+  let tempCx1 = 0
+  let tempCx2 = 0
+  let chunkCount = 0
+
+  for (let j = 0; j < cigar.length; j += 2) {
+    const len = +cigar[j]!
+    const op = cigar[j + 1]!
+    const d1 = len * bpPerPxInv0
+    const d2 = len * bpPerPxInv1
+    const prevX1 = tempCx1
+    const prevX2 = tempCx2
+
+    if (op === 'M' || op === '=' || op === 'X') {
+      tempCx1 += d1
+      tempCx2 += d2
+    } else if (op === 'D' || op === 'N') {
+      tempCx1 += d1
+    } else if (op === 'I') {
+      tempCx2 += d2
+    }
+
+    const gapSize = Math.max(Math.abs(tempCx1 - prevX1), Math.abs(tempCx2 - prevX2))
+    if ((op === 'D' || op === 'N' || op === 'I') && gapSize > chunkBreakThreshold) {
+      chunkCount++
+    }
+  }
+  return chunkCount + 1
+}
+
 export function drawCigarClickMap(
   model: LinearSyntenyDisplayModel,
   cigarClickMapCanvas: CanvasRenderingContext2D,
@@ -133,19 +180,49 @@ export function drawCigarClickMap(
       let cx1 = k1
       let cx2 = s1 === -1 ? x22 : x21
       if (cigar.length && drawCIGAR) {
-        let continuingFlag = false
+        // Track chunk start positions for grouping small operations together
+        let chunkStartX1 = cx1
+        let chunkStartX2 = cx2
+        let chunkIdx = 0
+        // Use chunk count for color encoding instead of cigar.length
+        // First pass: count chunks to determine unitMultiplier
+        let tempCx1 = k1
+        let tempCx2 = s1 === -1 ? x22 : x21
+        let chunkCount = 0
+        for (let j = 0; j < cigar.length; j += 2) {
+          const len = +cigar[j]!
+          const op = cigar[j + 1]!
+          const d1 = len * bpPerPxInv0
+          const d2 = len * bpPerPxInv1
+          const prevX1 = tempCx1
+          const prevX2 = tempCx2
+          if (op === 'M' || op === '=' || op === 'X') {
+            tempCx1 += d1 * rev1
+            tempCx2 += d2 * rev2
+          } else if (op === 'D' || op === 'N') {
+            tempCx1 += d1 * rev1
+          } else if (op === 'I') {
+            tempCx2 += d2 * rev2
+          }
+          // Check if this is a large gap that should break the chunk
+          const gapSize = Math.max(Math.abs(tempCx1 - prevX1), Math.abs(tempCx2 - prevX2))
+          if ((op === 'D' || op === 'N' || op === 'I') && gapSize > chunkBreakThreshold) {
+            chunkCount++
+          }
+        }
+        chunkCount++ // Add one for the final chunk
+        const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / Math.max(chunkCount, 1))
+
         let px1 = 0
         let px2 = 0
-        const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+        let hasContent = false
 
         for (let j = 0; j < cigar.length; j += 2) {
           const len = +cigar[j]!
           const op = cigar[j + 1] as keyof typeof defaultCigarColors
 
-          if (!continuingFlag) {
-            px1 = cx1
-            px2 = cx2
-          }
+          const prevCx1 = cx1
+          const prevCx2 = cx2
 
           const d1 = len * bpPerPxInv0
           const d2 = len * bpPerPxInv1
@@ -153,54 +230,62 @@ export function drawCigarClickMap(
           if (op === 'M' || op === '=' || op === 'X') {
             cx1 += d1 * rev1
             cx2 += d2 * rev2
+            hasContent = true
           } else if (op === 'D' || op === 'N') {
             cx1 += d1 * rev1
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          else if (op === 'I') {
+          } else if (op === 'I') {
             cx2 += d2 * rev2
           }
 
-          if (
-            !(
-              Math.max(px1, px2, cx1, cx2) < 0 ||
-              Math.min(px1, px2, cx1, cx2) > width
-            )
-          ) {
-            const isNotLast = j < cigar.length - 2
-            if (
-              Math.abs(cx1 - px1) <= 1 &&
-              Math.abs(cx2 - px2) <= 1 &&
-              isNotLast
-            ) {
-              continuingFlag = true
-            } else {
-              continuingFlag = false
-              // When drawCIGARMatchesOnly is enabled, only draw match operations (M, =, X)
-              // Skip insertions (I) and deletions (D, N)
-              // Also skip very thin rectangles which tend to be glitchy
-              const shouldDraw =
-                !drawCIGARMatchesOnly ||
-                ((op === 'M' || op === '=' || op === 'X') &&
-                  Math.abs(cx1 - px1) > 1 &&
-                  Math.abs(cx2 - px2) > 1)
+          // Check if this is a large gap that should break the chunk
+          const gapSize = Math.max(Math.abs(cx1 - prevCx1), Math.abs(cx2 - prevCx2))
+          const isLargeGap = (op === 'D' || op === 'N' || op === 'I') && gapSize > chunkBreakThreshold
+          const isLast = j >= cigar.length - 2
 
-              if (shouldDraw) {
-                const idx = j * unitMultiplier2 + 1
-                cigarClickMapCanvas.fillStyle = makeColor(idx)
-                draw(
-                  cigarClickMapCanvas,
-                  px1,
-                  cx1,
-                  y1,
-                  cx2,
-                  px2,
-                  y2,
-                  mid,
-                  drawCurves,
+          if (isLargeGap || isLast) {
+            // Draw the current chunk if it has content
+            if (hasContent) {
+              px1 = chunkStartX1
+              px2 = chunkStartX2
+              const endX1 = isLargeGap ? prevCx1 : cx1
+              const endX2 = isLargeGap ? prevCx2 : cx2
+
+              if (
+                !(
+                  Math.max(px1, px2, endX1, endX2) < 0 ||
+                  Math.min(px1, px2, endX1, endX2) > width
                 )
-                cigarClickMapCanvas.fill()
+              ) {
+                const chunkWidth1 = Math.abs(endX1 - px1)
+                const chunkWidth2 = Math.abs(endX2 - px2)
+                const shouldDraw =
+                  !drawCIGARMatchesOnly || (chunkWidth1 > 1 && chunkWidth2 > 1)
+
+                if (shouldDraw) {
+                  const idx = chunkIdx * unitMultiplier2 + 1
+                  cigarClickMapCanvas.fillStyle = makeColor(idx)
+                  draw(
+                    cigarClickMapCanvas,
+                    px1,
+                    endX1,
+                    y1,
+                    endX2,
+                    px2,
+                    y2,
+                    mid,
+                    drawCurves,
+                  )
+                  cigarClickMapCanvas.fill()
+                }
               }
+            }
+
+            if (isLargeGap) {
+              // Start a new chunk after the gap
+              chunkIdx++
+              chunkStartX1 = cx1
+              chunkStartX2 = cx2
+              hasContent = false
             }
           }
         }
@@ -588,15 +673,113 @@ export function drawRef(
   }
 }
 
+function drawCigarChunk({
+  feature,
+  chunkIdx,
+  ctx,
+  level,
+  offsets,
+  bpPerPxs,
+  height,
+  drawCurves,
+  cb,
+}: {
+  feature: { p11: { offsetPx: number }; p12: { offsetPx: number }; p21: { offsetPx: number }; p22: { offsetPx: number }; f: { get: (key: string) => unknown }; cigar: string[] }
+  chunkIdx: number
+  ctx: CanvasRenderingContext2D
+  level: number
+  offsets: number[]
+  bpPerPxs: number[]
+  height: number
+  drawCurves: boolean
+  cb: (ctx: CanvasRenderingContext2D) => void
+}) {
+  const { p11, p12, p21, p22, f, cigar } = feature
+
+  const x11 = p11.offsetPx - offsets[level]!
+  const x12 = p12.offsetPx - offsets[level]!
+  const x21 = p21.offsetPx - offsets[level + 1]!
+  const x22 = p22.offsetPx - offsets[level + 1]!
+
+  const y1 = 0
+  const y2 = height
+  const mid = (y2 - y1) / 2
+
+  const s1 = f.get('strand') as number
+  const k1 = s1 === -1 ? x12 : x11
+  const rev1 = k1 < (s1 === -1 ? x11 : x12) ? 1 : -1
+  const rev2 = (x21 < x22 ? 1 : -1) * s1
+
+  const bpPerPxInv0 = 1 / bpPerPxs[level]!
+  const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
+
+  let cx1 = k1
+  let cx2 = s1 === -1 ? x22 : x21
+
+  // Track chunk boundaries - same logic as drawCigarClickMap
+  let chunkStartX1 = cx1
+  let chunkStartX2 = cx2
+  let currentChunkIdx = 0
+  let hasContent = false
+
+  for (let j = 0; j < cigar.length; j += 2) {
+    const len = +cigar[j]!
+    const op = cigar[j + 1] as keyof typeof defaultCigarColors
+
+    const prevCx1 = cx1
+    const prevCx2 = cx2
+
+    const d1 = len * bpPerPxInv0
+    const d2 = len * bpPerPxInv1
+
+    if (op === 'M' || op === '=' || op === 'X') {
+      cx1 += d1 * rev1
+      cx2 += d2 * rev2
+      hasContent = true
+    } else if (op === 'D' || op === 'N') {
+      cx1 += d1 * rev1
+    } else if (op === 'I') {
+      cx2 += d2 * rev2
+    }
+
+    // Check if this is a large gap that should break the chunk
+    const gapSize = Math.max(Math.abs(cx1 - prevCx1), Math.abs(cx2 - prevCx2))
+    const isLargeGap = (op === 'D' || op === 'N' || op === 'I') && gapSize > chunkBreakThreshold
+    const isLast = j >= cigar.length - 2
+
+    if (isLargeGap || isLast) {
+      // Check if this is the chunk we're looking for
+      if (currentChunkIdx === chunkIdx && hasContent) {
+        const endX1 = isLargeGap ? prevCx1 : cx1
+        const endX2 = isLargeGap ? prevCx2 : cx2
+        draw(ctx, chunkStartX1, endX1, y1, endX2, chunkStartX2, y2, mid, drawCurves)
+        cb(ctx)
+        return
+      }
+
+      if (isLargeGap) {
+        // Start a new chunk after the gap
+        currentChunkIdx++
+        chunkStartX1 = cx1
+        chunkStartX2 = cx2
+        hasContent = false
+      }
+    }
+  }
+}
+
 export function drawMouseoverClickMap(model: LinearSyntenyDisplayModel) {
-  const { level, clickId, mouseoverId } = model
+  const { level, clickId, mouseoverId, cigarMouseoverId } = model
   const highResolutionScaling = 1
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
+  const drawCIGAR = view.drawCIGAR
+  const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
   const height = model.height
   const width = view.width
   const ctx = model.mouseoverCanvas?.getContext('2d')
   const offsets = view.views.map(v => v.offsetPx)
+  const bpPerPxs = view.views.map(v => v.bpPerPx)
 
   if (!ctx) {
     return
@@ -608,19 +791,36 @@ export function drawMouseoverClickMap(model: LinearSyntenyDisplayModel) {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
   const feature1 = model.featMap[mouseoverId || '']
   if (feature1) {
-    drawMatchSimple({
-      cb: ctx => {
-        ctx.fill()
-      },
-      feature: feature1,
-      level,
-      ctx,
-      oobLimit,
-      viewWidth: view.width,
-      drawCurves,
-      offsets,
-      height,
-    })
+    if (drawCIGAR && cigarMouseoverId >= 0 && feature1.cigar.length > 0) {
+      drawCigarChunk({
+        feature: feature1,
+        chunkIdx: cigarMouseoverId,
+        ctx,
+        level,
+        offsets,
+        bpPerPxs,
+        height,
+        drawCurves,
+        cb: ctx => {
+          ctx.fill()
+        },
+      })
+    } else if (!drawCIGARMatchesOnly) {
+      // Only draw the full feature if we're not in "draw CIGAR matches only" mode
+      drawMatchSimple({
+        cb: ctx => {
+          ctx.fill()
+        },
+        feature: feature1,
+        level,
+        ctx,
+        oobLimit,
+        viewWidth: view.width,
+        drawCurves,
+        offsets,
+        height,
+      })
+    }
   }
   const feature2 = model.featMap[clickId || '']
   if (feature2) {

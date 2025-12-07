@@ -5,7 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
+import { MAX_COLOR_RANGE, getChunkCount, getId } from '../drawSynteny'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
 
@@ -197,23 +197,29 @@ const LinearSyntenyRendering = observer(function ({
             model.setMouseoverId(model.featPositions[id]?.f.id())
             if (id === -1) {
               setTooltip('')
+              model.setCigarMouseoverId(-1)
             } else if (model.featPositions[id]) {
               const { f, cigar } = model.featPositions[id]
-              const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
-              const cigarIdx = getId(r2!, g2!, b2!, unitMultiplier2)
-              // this is hacky but the index sometimes returns odd number which
-              // is invalid due to the color-to-id mapping, check it is even to
-              // ensure better validity
-              // Also check that the CIGAR pixel data is not all zeros (no CIGAR data drawn)
-              if (cigarIdx % 2 === 0 && (r2 !== 0 || g2 !== 0 || b2 !== 0)) {
+              const bpPerPxs = view.views.map(v => v.bpPerPx)
+              const chunkCount = getChunkCount({
+                cigar,
+                bpPerPxs,
+                level: model.level,
+              })
+              const unitMultiplier2 = Math.floor(
+                MAX_COLOR_RANGE / Math.max(chunkCount, 1),
+              )
+              const chunkIdx = getId(r2!, g2!, b2!, unitMultiplier2)
+              // Check that the CIGAR pixel data is not all zeros (no CIGAR data drawn)
+              if (chunkIdx >= 0 && (r2 !== 0 || g2 !== 0 || b2 !== 0)) {
+                model.setCigarMouseoverId(chunkIdx)
                 setTooltip(
                   getTooltip({
                     feature: f,
-                    cigarOp: cigar[cigarIdx + 1],
-                    cigarOpLen: cigar[cigarIdx],
                   }),
                 )
               } else {
+                model.setCigarMouseoverId(-1)
                 setTooltip('')
               }
             }
@@ -221,6 +227,7 @@ const LinearSyntenyRendering = observer(function ({
         }}
         onMouseLeave={() => {
           model.setMouseoverId(undefined)
+          model.setCigarMouseoverId(-1)
           setMouseInitialDownX(undefined)
           setMouseCurrDownX(undefined)
         }}
