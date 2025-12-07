@@ -13,12 +13,3 @@ export async function waitForProcessClose(
     })
   })
 }
-
-export function handleProcessError(error: unknown): void {
-  if (error instanceof Error) {
-    console.error(`Process error: ${error.message}`)
-  } else {
-    console.error('Unknown process error:', error)
-  }
-  process.exit(1)
-}

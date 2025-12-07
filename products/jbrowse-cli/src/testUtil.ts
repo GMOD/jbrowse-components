@@ -1,17 +1,16 @@
-import fs from 'fs'
+import { readFileSync, realpathSync, rmSync } from 'fs'
+import { mkdir, mkdtemp, open } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 
 import { main as nativeMain } from './index'
-
-const { mkdir, mkdtemp } = fs.promises
 
 // increase test timeout for all tests
 // jest.setTimeout(20000)
 
 // On macOS, os.tmpdir() is not a real path:
 // https://github.com/nodejs/node/issues/11422
-const tmpDir = fs.realpathSync(os.tmpdir())
+const tmpDir = realpathSync(os.tmpdir())
 
 export async function runInTmpDir(
   callbackFn: (args: { dir: string; originalDir: string }) => Promise<void>,
@@ -26,7 +25,7 @@ export async function runInTmpDir(
     await callbackFn({ dir, originalDir })
   } finally {
     if (dir) {
-      fs.rmSync(dir, { recursive: true, force: true })
+      rmSync(dir, { recursive: true, force: true })
     }
     process.chdir(originalDir)
   }
@@ -146,12 +145,12 @@ type Conf = Record<string, any>
 
 export function readConf(ctx: { dir: string }, ...rest: string[]): Conf {
   return JSON.parse(
-    fs.readFileSync(path.join(ctx.dir, ...rest, 'config.json'), 'utf8'),
+    readFileSync(path.join(ctx.dir, ...rest, 'config.json'), 'utf8'),
   )
 }
 
 export function readConfAlt(ctx: { dir: string }, ...rest: string[]): Conf {
-  return JSON.parse(fs.readFileSync(path.join(ctx.dir, ...rest), 'utf8'))
+  return JSON.parse(readFileSync(path.join(ctx.dir, ...rest), 'utf8'))
 }
 
 export function dataDir(str: string) {
@@ -169,13 +168,20 @@ interface MockFetchResponse {
   headers?: Record<string, string>
   json?: unknown
   arrayBuffer?: ArrayBuffer
-  body?: NodeJS.ReadableStream
+  body?: ReadableStream<Uint8Array>
+}
+
+export async function openWebStream(filePath: string) {
+  const handle = await open(filePath, 'r')
+  return handle.readableWebStream() as ReadableStream<Uint8Array>
 }
 
 export function mockFetch(
   mockOrHandler:
     | MockFetchResponse
-    | ((url: string) => MockFetchResponse | undefined),
+    | ((
+        url: string,
+      ) => MockFetchResponse | Promise<MockFetchResponse> | undefined),
 ) {
   const fetchWithProxy = require('./fetchWithProxy')
     .default as jest.MockedFunction<
@@ -187,7 +193,7 @@ export function mockFetch(
     const urlStr = url.toString()
     const response =
       typeof mockOrHandler === 'function'
-        ? mockOrHandler(urlStr)
+        ? await mockOrHandler(urlStr)
         : mockOrHandler
 
     if (!response) {
@@ -201,7 +207,7 @@ export function mockFetch(
       headers: new Headers(response.headers),
       json: async () => response.json,
       arrayBuffer: async () => response.arrayBuffer,
-      body: response.body,
+      body: response.body ?? null,
     } as unknown as Response
   })
 

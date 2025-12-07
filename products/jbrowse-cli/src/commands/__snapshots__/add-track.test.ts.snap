@@ -664,7 +664,7 @@ exports[`fails if load flag is not passed in for a localFile 1`] = `
 `;
 
 exports[`fails if no track is specified 1`] = `
-"Missing 1 required arg:
+"Error: Missing 1 required arg:
 track  Track file or URL
 See more help with --help"
 `;
