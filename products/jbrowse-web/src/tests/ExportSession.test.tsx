@@ -2,6 +2,11 @@ import { fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { saveAs } from 'file-saver-es'
 
+let mockCounter = 0
+jest.mock('@jbrowse/core/util/nanoid', () => ({
+  nanoid: () => `test-id-${mockCounter++}`,
+}))
+
 import { createView, doBeforeEach, hts, setup } from './util'
 
 // @ts-expect-error
@@ -15,6 +20,7 @@ jest.mock('file-saver-es', () => ({
 setup()
 
 beforeEach(() => {
+  mockCounter = 0
   jest.clearAllMocks()
   doBeforeEach()
 })
@@ -49,8 +55,7 @@ test('export session with alignments and gff tracks', async () => {
   expect(blob.options.type).toBe('text/plain;charset=utf-8')
 
   const content = JSON.parse(blob.content[0])
-  // Remove dynamic fields for snapshot stability
-  delete content.session.id
+  // Remove dynamic session name for snapshot stability (contains timestamp)
   delete content.session.name
   expect(content).toMatchSnapshot()
 }, 40000)
