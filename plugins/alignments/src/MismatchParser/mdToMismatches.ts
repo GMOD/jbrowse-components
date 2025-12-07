@@ -69,10 +69,7 @@ export function mdToMismatches(
       if (hasSkips) {
         while (lastSkipPos < cigarLength) {
           const mismatch = cigarMismatches[lastSkipPos]!
-          if (
-            mismatch.type === 'skip' &&
-            currStart >= mismatch.start
-          ) {
+          if (mismatch.type === 'skip' && currStart >= mismatch.start) {
             currStart += mismatch.length
             lastSkipPos++
           } else if (mismatch.type === 'skip') {

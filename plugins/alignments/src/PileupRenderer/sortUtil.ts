@@ -59,8 +59,7 @@ export function sortFeature(
         for (const m of mismatches) {
           const start = feature.get('start')
           const offset = start + m.start + 1
-          const consuming =
-            m.type === 'insertion' || m.type === 'softclip'
+          const consuming = m.type === 'insertion' || m.type === 'softclip'
           const len = consuming ? 0 : m.length
           if (pos >= offset && pos < offset + len) {
             baseSortArray.push([feature.id(), m])

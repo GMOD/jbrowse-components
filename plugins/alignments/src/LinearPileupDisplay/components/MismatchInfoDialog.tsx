@@ -9,7 +9,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-
 const useStyles = makeStyles()(theme => ({
   root: {
     width: '80em',

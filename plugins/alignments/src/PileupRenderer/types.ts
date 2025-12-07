@@ -14,8 +14,16 @@ export interface LayoutFeature {
   feature: Feature
 }
 
+export type FlatbushItemType =
+  | 'mismatch'
+  | 'insertion'
+  | 'deletion'
+  | 'softclip'
+  | 'hardclip'
+  | 'modification'
+
 export interface FlatbushItem {
-  type: string
+  type: FlatbushItemType
   seq: string
   modType?: string
   probability?: number

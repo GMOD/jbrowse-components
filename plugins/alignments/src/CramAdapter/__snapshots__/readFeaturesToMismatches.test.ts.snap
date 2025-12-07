@@ -7,7 +7,7 @@ exports[`cram read features mismatches 1`] = `
     "insertedBases": "C",
     "length": 0,
     "start": 24,
-    "type": 2,
+    "type": "insertion",
   },
 ]
 `;

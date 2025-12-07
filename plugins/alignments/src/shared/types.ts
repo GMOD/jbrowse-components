@@ -96,12 +96,20 @@ export interface SortedBy {
   tag?: string
 }
 
+export type MismatchType =
+  | 'mismatch'
+  | 'insertion'
+  | 'deletion'
+  | 'skip'
+  | 'softclip'
+  | 'hardclip'
+
 export interface Mismatch {
   qual?: number
   start: number
   length: number
   insertedBases?: string
-  type: string
+  type: MismatchType
   base: string
   altbase?: string
   seq?: string
