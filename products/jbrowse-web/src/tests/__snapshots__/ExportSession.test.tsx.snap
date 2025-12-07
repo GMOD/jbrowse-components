@@ -1,0 +1,126 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`export session with alignments and gff tracks 1`] = `
+{
+  "session": {
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+    },
+    "connectionInstances": [],
+    "drawerPosition": "right",
+    "drawerWidth": 384,
+    "margin": 0,
+    "minimized": false,
+    "sessionAssemblies": [],
+    "sessionConnections": [],
+    "sessionPlugins": [],
+    "sessionTracks": [],
+    "stickyViewHeaders": true,
+    "temporaryAssemblies": [],
+    "views": [
+      {
+        "bookmarkHighlightsVisible": true,
+        "bookmarkLabelsVisible": true,
+        "bpPerPx": 0.5,
+        "colorByCDS": false,
+        "displayedRegions": [
+          {
+            "assemblyName": "volvox",
+            "end": 50001,
+            "refName": "ctgA",
+            "start": 0,
+          },
+        ],
+        "hideHeader": false,
+        "hideHeaderOverview": false,
+        "hideNoTracksActive": false,
+        "highlight": [],
+        "id": "integration_test",
+        "minimized": false,
+        "offsetPx": 0,
+        "showCenterLine": false,
+        "showCytobandsSetting": true,
+        "showGridlines": true,
+        "showTrackOutlines": true,
+        "trackLabels": "",
+        "trackSelectorType": "hierarchical",
+        "tracks": [
+          {
+            "configuration": "volvox_alignments_pileup_coverage",
+            "displays": [
+              {
+                "PileupDisplay": {
+                  "configuration": {
+                    "displayId": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay_LinearPileupDisplay_xyz",
+                    "type": "LinearPileupDisplay",
+                  },
+                  "heightPreConfig": 205,
+                  "id": "86U96U_kptzFojrhRS4Ri",
+                  "jexlFilters": [],
+                  "showSoftClipping": false,
+                  "type": "LinearPileupDisplay",
+                },
+                "SNPCoverageDisplay": {
+                  "configuration": {
+                    "displayId": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay_snpcoverage_xyz",
+                    "type": "LinearSNPCoverageDisplay",
+                  },
+                  "constraints": {},
+                  "heightPreConfig": 45,
+                  "id": "fKv4YH2E0hDOHJUfXzh9Y",
+                  "jexlFilters": [],
+                  "resolution": 1,
+                  "selectedRendering": "",
+                  "type": "LinearSNPCoverageDisplay",
+                },
+                "configuration": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay",
+                "id": "r_aVx1ZJzGjL2vPbAxr0b",
+                "lowerPanelType": "LinearPileupDisplay",
+                "snpCovHeight": 45,
+                "type": "LinearAlignmentsDisplay",
+              },
+            ],
+            "id": "JGuy_j1Lm60IEQXQ52x_m",
+            "minimized": false,
+            "pinned": false,
+            "type": "AlignmentsTrack",
+          },
+          {
+            "configuration": "gff3tabix_genes",
+            "displays": [
+              {
+                "configuration": "gff3tabix_genes-LinearBasicDisplay",
+                "id": "CZmjoHhBIi1FKbSor9dbb",
+                "type": "LinearBasicDisplay",
+              },
+            ],
+            "id": "S58HK6NcxEWH4IcBeqDwR",
+            "minimized": false,
+            "pinned": false,
+            "type": "FeatureTrack",
+          },
+        ],
+        "type": "LinearGenomeView",
+      },
+    ],
+    "widgets": {
+      "GridBookmark": {
+        "id": "GridBookmark",
+        "type": "GridBookmarkWidget",
+      },
+      "hierarchicalTrackSelector": {
+        "faceted": {
+          "filterText": "",
+          "panelWidth": 400,
+          "showFilters": true,
+          "showOptions": false,
+          "showSparse": false,
+        },
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "view": "integration_test",
+      },
+    },
+  },
+}
+`;
