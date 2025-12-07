@@ -23,4 +23,5 @@ export interface ExportSvgOptions {
   cytobandHeight?: number
   themeName?: string
   trackLabels?: string
+  showGridlines?: boolean
 }
