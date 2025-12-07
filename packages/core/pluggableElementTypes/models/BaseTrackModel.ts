@@ -21,7 +21,6 @@ import type {
 import type { MenuItem } from '../../ui'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
-// lazies
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
 
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {

@@ -125,6 +125,12 @@ ctgA_4435_4920_3:0:0_3:0:0_2555	0	ctgA	4435	255	100M	*	0	0	TAAAGAATGATTGCTTGCTTA
 ctgA_3982_4535_3:0:0_5:0:0_2229	0	ctgA	4436	255	100M	*	0	0	AAAGAATGATTGCTTGCTTAACTATGACAAACCCAATAGGCACGCACGTGTCGCCAGTGGAAAACCACCATCCGACAAGACGCTGAAAATCGAGATAGAT	2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
 `;
 
+exports[`save track data for FASTA track 1`] = `
+">ctgA:4318-4441
+caacatagtgagcgatgcttaaaacactgcatgcgaacaacgaccggaacgagagcctaatagaaccaaatggataggtg
+gttacgaaatccgcgcacaagtgtcgtgccactctcgtaaagaa"
+`;
+
 exports[`save track data for GFF track 1`] = `
 "##gff-version 3
 ctgA	example	contig	1	50001	.	.	.	Name=ctgA;multivalue=val1,val2,val3

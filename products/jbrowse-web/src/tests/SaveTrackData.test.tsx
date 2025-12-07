@@ -31,7 +31,6 @@ async function openSaveTrackDataDialog(
   trackId: string,
 ) {
   await user.click(await screen.findByTestId(hts(trackId), ...opts))
-  await screen.findAllByTestId(/prerendered_canvas/, ...opts)
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Save track data'))
 }
@@ -55,6 +54,7 @@ test.each([
   ['GFF', 'gff3tabix_genes', 'jbrowse_track_data.gff3', 'gff3'],
   ['BED', 'bedtabix_genes', 'jbrowse_track_data.gff3', 'bed.gff3'],
   ['BigWig', 'volvox_microarray', 'jbrowse_track_data.bedgraph', 'bedgraph'],
+  ['FASTA', 'volvox_refseq', 'jbrowse_track_data.fa', 'fa'],
 ])(
   'save track data for %s track',
   async (_, trackId, expectedFilename, ext) => {
@@ -65,6 +65,15 @@ test.each([
     await openSaveTrackDataDialog(user, trackId)
 
     await screen.findByText('File type', ...opts)
+
+    // Wait for loading to complete before downloading
+    await waitFor(
+      async () => {
+        const textField = document.querySelector('textarea')
+        expect(textField?.value).not.toBe('Loading...')
+      },
+      { timeout: 30000 },
+    )
 
     await user.click(await screen.findByText('Download'))
 
