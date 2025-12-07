@@ -1,18 +1,15 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { toLocale, updateStatus } from '@jbrowse/core/util'
+import { updateStatus } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
-import type { CramRecord } from '@gmod/cram'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -111,41 +108,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       throw new Error('unknown')
     }
 
-    const seqChunks = await firstValueFrom(
-      sequenceAdapter
-        .getFeatures({
-          refName,
-          start,
-          end,
-          assemblyName: '',
-        })
-        .pipe(toArray()),
-    )
+    const sequence = await sequenceAdapter.getSequence({
+      refName,
+      start,
+      end,
+    })
 
-    const sequence = seqChunks
-      .sort((a, b) => a.get('start') - b.get('start'))
-      .map(chunk => {
-        const chunkStart = chunk.get('start')
-        const chunkEnd = chunk.get('end')
-        const trimStart = Math.max(start - chunkStart, 0)
-        const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
-        const trimLength = trimEnd - trimStart
-        const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        return chunkSeq.slice(trimStart, trimStart + trimLength)
-      })
-      .join('')
-
-    const qlen = end - start
-    if (sequence.length !== qlen) {
-      throw new Error(
-        `fetching ${refName}:${toLocale(
-          start - 1,
-        )}-${toLocale(end)} returned ${toLocale(sequence.length)} bases, should have returned ${toLocale(
-          qlen,
-        )}`,
-      )
-    }
-    return sequence
+    return sequence ?? ''
   }
 
   private async setupPre(_opts?: BaseOptions) {
@@ -285,7 +254,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
           const ret = this.ultraLongFeatureCache.get(`${record.uniqueId}`)
           if (!ret) {
-            const elt = this.cramRecordToFeature(record)
+            const elt = new CramSlightlyLazyFeature(record, this)
             this.ultraLongFeatureCache.set(`${record.uniqueId}`, elt)
             observer.next(elt)
           } else {
@@ -296,10 +265,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         observer.complete()
       })
     }, stopToken)
-  }
-
-  cramRecordToFeature(record: CramRecord) {
-    return new CramSlightlyLazyFeature(record, this)
   }
 
   // we return the configured fetchSizeLimit, and the bytes for the region

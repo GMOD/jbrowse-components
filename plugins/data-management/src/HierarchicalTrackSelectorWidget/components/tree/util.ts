@@ -1,4 +1,3 @@
-// locals
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { TreeNode } from '../../types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

@@ -26,7 +26,9 @@ test('export session with alignments and gff tracks', async () => {
   const { view, findByTestId, findByText } = await createView()
 
   view.setNewView(0.5, 0)
-  fireEvent.click(await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts))
+  fireEvent.click(
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
+  )
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
   const user = userEvent.setup()

@@ -1,0 +1,35 @@
+##gff-version 3
+ctgA	example	contig	1	50001	.	.	.	Name=ctgA;multivalue=val1,val2,val3
+ctgA	example	remark	3014	6130	.	+	.	Name=f06;Note=This is another example
+ctgA	example	BAC	1000	20000	.	.	.	ID=b101.2;Name=b101.2;Note=Fingerprinted BAC with end reads
+ctgA	example	clone_start	1000	1500	.	+	.	Parent=b101.2
+ctgA	example	clone_end	19500	20000	.	-	.	Parent=b101.2
+ctgA	est	EST_match	1050	7300	.	+	.	ID=Match3;Name=agt221.5;Target=agt221.5 1 1253
+ctgA	est	match_part	1050	1500	.	+	.	Parent=Match3;Name=agt221.5;Target=agt221.5 1 451
+ctgA	est	match_part	5000	5500	.	+	.	Parent=Match3;Name=agt221.5;Target=agt221.5 452 952
+ctgA	est	match_part	7000	7300	.	+	.	Parent=Match3;Name=agt221.5;Target=agt221.5 953 1253
+ctgA	example	gene	1050	9000	.	+	.	ID=EDEN;Name=EDEN;Note=protein kinase
+ctgA	example	mRNA	1050	9000	.	+	.	Parent=EDEN;ID=EDEN.1;Name=EDEN.1;Note=Eden splice form 1;index=1
+ctgA	example	five_prime_UTR	1050	1200	.	+	.	Parent=EDEN.1
+ctgA	example	CDS	1201	1500	.	+	0	Parent=EDEN.1
+ctgA	example	CDS	3000	3902	.	+	0	Parent=EDEN.1
+ctgA	example	CDS	5000	5500	.	+	0	Parent=EDEN.1
+ctgA	example	CDS	7000	7608	.	+	0	Parent=EDEN.1
+ctgA	example	three_prime_UTR	7609	9000	.	+	.	Parent=EDEN.1
+ctgA	example	mRNA	1050	9000	.	+	.	Parent=EDEN;ID=EDEN.2;Name=EDEN.2;Note=Eden splice form 2;index=1
+ctgA	example	five_prime_UTR	1050	1200	.	+	.	Parent=EDEN.2
+ctgA	example	CDS	1201	1500	.	+	0	Parent=EDEN.2
+ctgA	example	CDS	5000	5500	.	+	0	Parent=EDEN.2
+ctgA	example	CDS	7000	7608	.	+	0	Parent=EDEN.2
+ctgA	example	three_prime_UTR	7609	9000	.	+	.	Parent=EDEN.2
+ctgA	example	mRNA	1300	9000	.	+	.	Parent=EDEN;ID=EDEN.3;Name=EDEN.3;Note=Eden splice form 3;index=1
+ctgA	example	five_prime_UTR	1300	1500	.	+	.	Parent=EDEN.3
+ctgA	example	five_prime_UTR	3000	3300	.	+	.	Parent=EDEN.3
+ctgA	example	CDS	3301	3902	.	+	0	Parent=EDEN.3
+ctgA	example	CDS	5000	5500	.	+	1	Parent=EDEN.3
+ctgA	example	CDS	7000	7600	.	+	1	Parent=EDEN.3
+ctgA	example	three_prime_UTR	7601	9000	.	+	.	Parent=EDEN.3
+ctgA	est	EST_match	1150	7200	.	+	.	ID=Match5;Name=agt767.5;Target=agt767.5 1 1153
+ctgA	est	match_part	1150	1500	.	+	.	Parent=Match5;Name=agt767.5;Target=agt767.5 1 351
+ctgA	est	match_part	5000	5500	.	+	.	Parent=Match5;Name=agt767.5;Target=agt767.5 352 852
+ctgA	est	match_part	7000	7200	.	+	.	Parent=Match5;Name=agt767.5;Target=agt767.5 853 1153

@@ -3,7 +3,7 @@ import { HtsgetFile } from '@gmod/bam'
 import BamAdapter from '../BamAdapter/BamAdapter'
 
 import type { BamFile } from '@gmod/bam'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class HtsgetBamAdapter extends BamAdapter {
   protected async configurePre() {
@@ -19,7 +19,7 @@ export default class HtsgetBamAdapter extends BamAdapter {
       const adapter = await this.getSubAdapter(adapterConfig)
       return {
         bam,
-        sequenceAdapter: adapter.dataAdapter as BaseFeatureDataAdapter,
+        sequenceAdapter: adapter.dataAdapter as BaseSequenceAdapter,
       }
     }
     return { bam }

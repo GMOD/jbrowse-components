@@ -2,7 +2,6 @@ import Dialog from '@jbrowse/core/ui/Dialog'
 import { getEnv } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
-// locals
 import AboutContents from './AboutDialogContents'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -17,7 +16,7 @@ export function AboutDialog({
   session: AbstractSessionModel
   handleClose: () => void
 }) {
-  const trackName = getTrackName(config as AnyConfigurationModel, session)
+  const trackName = getTrackName(config, session)
   const { pluginManager } = getEnv(session)
 
   const AboutComponent = pluginManager.evaluateExtensionPoint(

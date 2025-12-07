@@ -1,6 +1,5 @@
 import { getConf } from '../configuration'
 
-import type { Feature } from './simpleFeature'
 import type { AbstractSessionModel } from './types'
 
 export async function fetchSeq({
@@ -25,19 +24,16 @@ export async function fetchSeq({
   const sessionId = 'getSequence'
   const canonicalRefName = assembly.getCanonicalRefName(refName)
 
-  const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
+  const seq = (await rpcManager.call(sessionId, 'CoreGetSequence', {
     adapterConfig: getConf(assembly, ['sequence', 'adapter']),
     sessionId,
-    regions: [
-      {
-        start,
-        end,
-        refName: canonicalRefName,
-        assemblyName,
-      },
-    ],
-  })
+    region: {
+      start,
+      end,
+      refName: canonicalRefName,
+      assemblyName,
+    },
+  })) as string | undefined
 
-  const [feat] = feats as Feature[]
-  return (feat?.get('seq') as string | undefined) || ''
+  return seq ?? ''
 }

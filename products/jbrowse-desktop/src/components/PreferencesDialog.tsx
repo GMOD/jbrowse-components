@@ -31,6 +31,8 @@ const PreferencesDialog = observer(function ({
     stickyViewHeaders: boolean
     setStickyViewHeaders(sticky: boolean): void
     setThemeName: (arg: string) => void
+    useWorkspaces: boolean
+    setUseWorkspaces(useWorkspaces: boolean): void
   }
 }) {
   const { classes } = useStyles()
@@ -58,6 +60,13 @@ const PreferencesDialog = observer(function ({
               session.setStickyViewHeaders(checked)
             }}
             label="Keep view header visible"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={session.useWorkspaces} />}
+            onChange={(_, checked) => {
+              session.setUseWorkspaces(checked)
+            }}
+            label="Use workspaces (tabbed/tiled view layout)"
           />
         </FormGroup>
       </DialogContent>
