@@ -12,48 +12,70 @@ export type SkipMap = Record<
   }
 >
 
-// Entry array indices for strand counts (no strand 0 tracking)
-export const ENTRY_DEPTH = 0
-export const ENTRY_NEG = 1 // strand -1
-export const ENTRY_POS = 2 // strand 1
-export const ENTRY_PROB_TOTAL = 3
-export const ENTRY_PROB_COUNT = 4
-// Length tracking indices (for noncov entries)
-export const ENTRY_LEN_TOTAL = 5
-export const ENTRY_LEN_COUNT = 6
-export const ENTRY_LEN_MIN = 7
-export const ENTRY_LEN_MAX = 8
+export interface BinEntry {
+  entryDepth: number
+  '-1': number
+  '0': number
+  '1': number
+  avgProbability?: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
+}
 
-// Entry category prefixes for flat map keys
-export const CAT_MOD = 'm:' // e.g., 'm:h' for mod_h
-export const CAT_NONMOD = 'n:' // e.g., 'n:h' for nonmod_h
-export const CAT_DELSKIP = 'd:' // e.g., 'd:deletion'
-export const CAT_NONCOV = 'c:' // e.g., 'c:insertion'
+type BinType = Record<string, BinEntry>
 
-// Flat entry: [entryDepth, negCount, posCount]
-// For mods with probability: [entryDepth, neg, pos, probTotal, probCount]
-// For noncov with length: [entryDepth, neg, pos, probTotal, probCount, lenTotal, lenCount, lenMin, lenMax]
-export type FlatEntry = Uint32Array
-
-// SNP entry type: [depth, neg, pos]
-export type SNPEntry = Uint32Array
-
-// Flat bin structure for performance
-export interface FlatBaseCoverageBin {
+// bins contain:
+// - snps feature if they contribute to coverage
+// - mods feature for read modifications like methylation
+// - noncov are insertions/clip features that don't contribute to coverage
+// - delskips deletions or introns that don't contribute to coverage
+export interface BaseCoverageBin {
   refbase?: string
   depth: number
   readsCounted: number
-  // ref counts flattened
-  refDepth: number
-  refNeg: number
-  refPos: number
-  // SNP bases at root for fast access
-  A?: SNPEntry
-  G?: SNPEntry
-  C?: SNPEntry
-  T?: SNPEntry
-  // Other variable entries (mods, delskip, noncov)
-  entries: Map<string, FlatEntry>
+  ref: BinEntry
+  snps: BinType
+  mods: BinType
+  nonmods: BinType
+  delskips: BinType
+  noncov: BinType
+}
+
+export interface PreBinEntry {
+  entryDepth: number
+  '-1': number
+  '0': number
+  '1': number
+  probabilityTotal: number
+  probabilityCount: number
+  lengthTotal: number
+  lengthCount: number
+  lengthMin: number
+  lengthMax: number
+}
+
+type PreBinType = Record<string, PreBinEntry>
+
+// bins contain:
+// - snps feature if they contribute to coverage
+// - mods feature for read modifications like methylation
+// - nonmods feature for read modifications like methylation (2-color)
+// - noncov are insertions/clip features that don't contribute to coverage
+// - delskips deletions or introns that don't contribute to coverage
+export interface PreBaseCoverageBin extends PreBaseCoverageBinSubtypes {
+  refbase?: string
+  depth: number
+  readsCounted: number
+  ref: PreBinEntry
+}
+
+export interface PreBaseCoverageBinSubtypes {
+  snps: PreBinType
+  mods: PreBinType
+  nonmods: PreBinType
+  delskips: PreBinType
+  noncov: PreBinType
 }
 
 export interface ModificationType {
@@ -96,14 +118,6 @@ export interface SortedBy {
   tag?: string
 }
 
-export type MismatchType =
-  | 'mismatch'
-  | 'insertion'
-  | 'deletion'
-  | 'skip'
-  | 'softclip'
-  | 'hardclip'
-
 export interface Mismatch {
   qual?: number
   start: number
@@ -143,3 +157,11 @@ export interface ChainData {
   stats?: ChainStats
   chains: Feature[][]
 }
+
+export type MismatchType =
+  | 'mismatch'
+  | 'insertion'
+  | 'deletion'
+  | 'skip'
+  | 'softclip'
+  | 'hardclip'

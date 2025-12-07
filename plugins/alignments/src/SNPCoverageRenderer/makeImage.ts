@@ -10,88 +10,25 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { getOrigin, getScale } from '@jbrowse/plugin-wiggle'
 import { rpcResult } from 'librpc-web-mod'
 
-import { getAvgProbability, getLengthStats } from '../SNPCoverageAdapter/util'
-import {
-  CAT_MOD,
-  CAT_NONCOV,
-  CAT_NONMOD,
-  ENTRY_DEPTH,
-  ENTRY_NEG,
-  ENTRY_POS,
-} from '../shared/types'
+import { calculateModificationCounts } from './calculateModificationCounts'
 import { alphaColor } from '../shared/util'
 
 import type {
   InterbaseIndicatorItem,
   RenderArgsDeserializedWithFeatures,
 } from './types'
-import type { FlatBaseCoverageBin } from '../shared/types'
+import type { BaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
 const INTERBASE_INDICATOR_HEIGHT = 4.5
 
-// Minimum read depth to draw the insertion indicators, below this the
+// minimum read depth to draw the insertion indicators, below this the
 // 'statistical significance' is low
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
 const fudgeFactor = 0.6
-
-const complementBase = {
-  C: 'G',
-  G: 'C',
-  A: 'T',
-  T: 'A',
-} as const
-
-interface ModificationCountsParams {
-  readonly base: string
-  readonly isSimplex: boolean
-  readonly refbase: string | undefined
-  readonly snpinfo: FlatBaseCoverageBin
-  readonly score0: number
-}
-
-interface ModificationCountsResult {
-  readonly modifiable: number
-  readonly detectable: number
-}
-
-function calculateModificationCounts({
-  base,
-  isSimplex,
-  refbase,
-  snpinfo,
-  score0,
-}: ModificationCountsParams): ModificationCountsResult {
-  if (base === 'N') {
-    return { modifiable: score0, detectable: score0 }
-  }
-
-  const cmp = complementBase[base as keyof typeof complementBase]
-
-  // Get SNP entry for base and complement from root fields
-  const baseEntry = snpinfo[base as 'A' | 'G' | 'C' | 'T']
-  const cmpEntry = snpinfo[cmp]
-
-  // Calculate total reads for base and complement
-  const baseCount =
-    (baseEntry?.[ENTRY_DEPTH] || 0) + (refbase === base ? snpinfo.refDepth : 0)
-  const complCount =
-    (cmpEntry?.[ENTRY_DEPTH] || 0) + (refbase === cmp ? snpinfo.refDepth : 0)
-
-  const modifiable = baseCount + complCount
-
-  const detectable = isSimplex
-    ? (baseEntry?.[ENTRY_POS] || 0) +
-      (cmpEntry?.[ENTRY_NEG] || 0) +
-      (refbase === base ? snpinfo.refPos : 0) +
-      (refbase === cmp ? snpinfo.refNeg : 0)
-    : modifiable
-
-  return { modifiable, detectable }
-}
 
 export function makeImage(
   ctx: CanvasRenderingContext2D,
@@ -131,22 +68,18 @@ export function makeImage(
     range: [0, height / 2],
     scaleType: 'linear',
   })
-
-  // Precompute origin scaled values to avoid redundant calls in toHeight/toHeight2
-  const originYScaled = viewScale(getOrigin(scaleOpts.scaleType)) || 0
-  const originLinearScaled = indicatorViewScale(getOrigin('linear')) || 0
+  const originY = getOrigin(scaleOpts.scaleType)
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
   const showInterbaseIndicators = readConfObject(cfg, 'showInterbaseIndicators')
 
-  // Get the y coordinate that we are plotting at, this can be log scale
+  // get the y coordinate that we are plotting at, this can be log scale
   const toY = (n: number) => height - (viewScale(n) || 0) + offset
-  // Simplified: toY(origin) - toY(n) = viewScale(n) - viewScale(origin)
-  const toHeight = (n: number) => (viewScale(n) || 0) - originYScaled
-  // used specifically for indicator
-  const toHeight2 = (n: number) =>
-    (indicatorViewScale(n) || 0) - originLinearScaled
+  const toHeight = (n: number) => toY(originY) - toY(n)
+  // used specifically for indicator, origin is always 0 for linear scale
+  const toY2 = (n: number) => height - (indicatorViewScale(n) || 0) + offset
+  const toHeight2 = (n: number) => toY2(0) - toY2(n)
 
   const { bases, softclip, hardclip, insertion } = theme.palette
   const colorMap: Record<string, string> = {
@@ -207,34 +140,23 @@ export function makeImage(
       return
     }
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-    const snpinfo = feature.get('snpinfo') as FlatBaseCoverageBin
+    const snpinfo = feature.get('snpinfo') as BaseCoverageBin
     const w = Math.max(rightPx - leftPx, 1)
     const score0 = feature.get('score')
-    const entries = snpinfo.entries
     const h = toHeight(score0)
     const bottom = toY(score0) + h
-
     if (drawingModifications) {
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
-
-      // Get nonmod entries (keys starting with CAT_NONMOD)
-      const nonmodEntries: [string, Uint32Array][] = []
-      const modEntries: [string, Uint32Array][] = []
-      for (const [key, entry] of entries) {
-        if (key.startsWith(CAT_NONMOD)) {
-          nonmodEntries.push([key.slice(CAT_NONMOD.length), entry])
-        } else if (key.startsWith(CAT_MOD)) {
-          modEntries.push([key.slice(CAT_MOD.length), entry])
-        }
-      }
-      nonmodEntries.sort((a, b) => b[0].localeCompare(a[0]))
-      modEntries.sort((a, b) => b[0].localeCompare(a[0]))
-
-      for (const [modType, entry] of nonmodEntries) {
-        const mod = visibleModifications[modType]
+      const { nonmods, mods, snps, ref } = snpinfo
+      // Sort keys once outside the loop
+      const nonmodKeys = Object.keys(nonmods).sort().reverse()
+      for (const m of nonmodKeys) {
+        // Remove prefix once for lookup
+        const modKey = m.replace(/^(nonmod_|mod_)/, '')
+        const mod = visibleModifications[modKey]
         if (!mod) {
-          console.warn(`${modType} not known yet`)
+          console.warn(`${m} not known yet`)
           continue
         }
         if (isolatedModification && mod.type !== isolatedModification) {
@@ -244,12 +166,12 @@ export function makeImage(
           base: mod.base,
           isSimplex: simplexSet.has(mod.type),
           refbase,
-          snpinfo,
+          snps,
+          ref,
           score0,
         })
 
-        const entryDepth = entry[ENTRY_DEPTH]!
-        const avgProbability = getAvgProbability(entry)
+        const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const c = alphaColor('blue', avgProbability)
 
@@ -262,11 +184,13 @@ export function makeImage(
         )
         curr += modFraction * h
       }
-
-      for (const [modType, entry] of modEntries) {
-        const mod = visibleModifications[modType]
+      // Sort keys once outside the loop
+      const modKeys = Object.keys(mods).sort().reverse()
+      for (const m of modKeys) {
+        const modKey = m.replace('mod_', '')
+        const mod = visibleModifications[modKey]
         if (!mod) {
-          console.warn(`${modType} not known yet`)
+          console.warn(`${m} not known yet`)
           continue
         }
         if (isolatedModification && mod.type !== isolatedModification) {
@@ -276,12 +200,12 @@ export function makeImage(
           base: mod.base,
           isSimplex: simplexSet.has(mod.type),
           refbase,
-          snpinfo,
+          snps,
+          ref,
           score0,
         })
 
-        const entryDepth = entry[ENTRY_DEPTH]!
-        const avgProbability = getAvgProbability(entry)
+        const { entryDepth, avgProbability = 0 } = mods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const c = alphaColor(mod.color || 'black', avgProbability)
 
@@ -295,24 +219,11 @@ export function makeImage(
         curr += modFraction * h
       }
     } else if (drawingMethylation) {
-      const depth = snpinfo.depth
+      const { depth, nonmods, mods } = snpinfo
       let curr = 0
 
-      // Get mod and nonmod entries
-      const modEntries: [string, Uint32Array][] = []
-      const nonmodEntries: [string, Uint32Array][] = []
-      for (const [key, entry] of entries) {
-        if (key.startsWith(CAT_MOD)) {
-          modEntries.push([key.slice(CAT_MOD.length), entry])
-        } else if (key.startsWith(CAT_NONMOD)) {
-          nonmodEntries.push([key.slice(CAT_NONMOD.length), entry])
-        }
-      }
-      modEntries.sort((a, b) => b[0].localeCompare(a[0]))
-      nonmodEntries.sort((a, b) => b[0].localeCompare(a[0]))
-
-      for (const [base, entry] of modEntries) {
-        const entryDepth = entry[ENTRY_DEPTH]!
+      for (const base of Object.keys(mods).sort().reverse()) {
+        const { entryDepth } = mods[base]!
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
@@ -322,8 +233,8 @@ export function makeImage(
         )
         curr += entryDepth
       }
-      for (const [base, entry] of nonmodEntries) {
-        const entryDepth = entry[ENTRY_DEPTH]!
+      for (const base of Object.keys(nonmods).sort().reverse()) {
+        const { entryDepth } = nonmods[base]!
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
@@ -334,43 +245,29 @@ export function makeImage(
         curr += entryDepth
       }
     } else {
-      const depth = snpinfo.depth
+      const { depth, snps } = snpinfo
       let curr = 0
-
-      // Draw SNP bases from root fields (T, G, C, A order for consistent stacking)
-      for (const base of ['T', 'G', 'C', 'A'] as const) {
-        const entry = snpinfo[base]
-        if (entry) {
-          const entryDepth = entry[ENTRY_DEPTH] || 0
-          if (entryDepth > 0) {
-            ctx.fillStyle = colorMap[base]!
-            ctx.fillRect(
-              Math.round(leftPx),
-              bottom - ((entryDepth + curr) / depth) * h,
-              w,
-              (entryDepth / depth) * h,
-            )
-            curr += entryDepth
-          }
-        }
+      for (const base of Object.keys(snps).sort().reverse()) {
+        const { entryDepth } = snps[base]!
+        ctx.fillStyle = colorMap[base] || 'black'
+        ctx.fillRect(
+          Math.round(leftPx),
+          bottom - ((entryDepth + curr) / depth) * h,
+          w,
+          (entryDepth / depth) * h,
+        )
+        curr += entryDepth
       }
     }
 
-    // Get noncov entries for interbase indicators
-    const noncovEntries: [string, Uint32Array][] = []
-    for (const [key, entry] of entries) {
-      if (key.startsWith(CAT_NONCOV)) {
-        noncovEntries.push([key.slice(CAT_NONCOV.length), entry])
-      }
-    }
-
+    const interbaseEvents = Object.keys(snpinfo.noncov)
     if (showInterbaseCounts) {
       let curr = 0
       const r = 0.6
       const x = leftPx - r + extraHorizontallyFlippedOffset
       let totalHeight = 0
-      for (const [base, entry] of noncovEntries) {
-        const entryDepth = entry[ENTRY_DEPTH]!
+      for (const base of interbaseEvents) {
+        const { entryDepth } = snpinfo.noncov[base]!
         ctx.fillStyle = colorMap[base]!
         ctx.fillRect(
           x,
@@ -384,19 +281,20 @@ export function makeImage(
 
       // Add to clickmap when zoomed in enough for meaningful interaction,
       // or when interbase events represent a significant fraction of reads
-      const totalInterbaseCount = noncovEntries.reduce(
-        (sum, [, entry]) => sum + (entry[ENTRY_DEPTH] ?? 0),
+      const totalInterbaseCount = interbaseEvents.reduce(
+        (sum, base) => sum + (snpinfo.noncov[base]?.entryDepth ?? 0),
         0,
       )
       const isMajorityInterbase =
         score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
-      if (noncovEntries.length > 0 && (bpPerPx < 50 || isMajorityInterbase)) {
-        const maxNoncovEntry = noncovEntries.reduce((a, b) =>
-          (a[1][ENTRY_DEPTH] ?? 0) > (b[1][ENTRY_DEPTH] ?? 0) ? a : b,
+      if (interbaseEvents.length > 0 && (bpPerPx < 50 || isMajorityInterbase)) {
+        const maxBase = interbaseEvents.reduce((a, b) =>
+          (snpinfo.noncov[a]?.entryDepth ?? 0) >
+          (snpinfo.noncov[b]?.entryDepth ?? 0)
+            ? a
+            : b,
         )
-        const maxBase = maxNoncovEntry[0]
-        const maxEntry = maxNoncovEntry[1]
-        const lengthStats = getLengthStats(maxEntry)
+        const maxEntry = snpinfo.noncov[maxBase]
         // Extend hitbox horizontally for easier mouse targeting
         const hitboxPadding = 2
         const clickWidth = Math.max(r * 2, 1.5) + hitboxPadding * 2
@@ -411,9 +309,9 @@ export function makeImage(
           base: maxBase,
           count: curr,
           total: score0,
-          avgLength: lengthStats?.avgLength,
-          minLength: lengthStats?.minLength,
-          maxLength: lengthStats?.maxLength,
+          avgLength: maxEntry?.avgLength,
+          minLength: maxEntry?.minLength,
+          maxLength: maxEntry?.maxLength,
         })
       }
     }
@@ -422,14 +320,12 @@ export function makeImage(
       let accum = 0
       let max = 0
       let maxBase = ''
-      let maxEntry: Uint32Array | undefined
-      for (const [base, entry] of noncovEntries) {
-        const entryDepth = entry[ENTRY_DEPTH]!
+      for (const base of interbaseEvents) {
+        const { entryDepth } = snpinfo.noncov[base]!
         accum += entryDepth
         if (entryDepth > max) {
           max = entryDepth
           maxBase = base
-          maxEntry = entry
         }
       }
 
@@ -448,7 +344,7 @@ export function makeImage(
         ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
         ctx.fill()
 
-        const lengthStats = maxEntry ? getLengthStats(maxEntry) : undefined
+        const maxEntry = snpinfo.noncov[maxBase]
         // Add to Flatbush clickmap with extended hitbox for easier mouse targeting
         const hitboxPadding = 3
         coords.push(
@@ -462,9 +358,9 @@ export function makeImage(
           base: maxBase,
           count: accum,
           total: indicatorComparatorScore,
-          avgLength: lengthStats?.avgLength,
-          minLength: lengthStats?.minLength,
-          maxLength: lengthStats?.maxLength,
+          avgLength: maxEntry?.avgLength,
+          minLength: maxEntry?.minLength,
+          maxLength: maxEntry?.maxLength,
         })
       }
     }

@@ -57,7 +57,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
       let index = 0
       for (const bin of bins) {
-        // Note: bins is a 'hole-y' array
+        // bins is a holey array
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (bin) {
           const start = region.start + index
@@ -77,7 +77,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         index++
       }
 
-      // Make fake features from the coverage
+      // make fake features from the coverage
       for (const [key, skip] of Object.entries(skipmap)) {
         observer.next(
           new SimpleFeature({
