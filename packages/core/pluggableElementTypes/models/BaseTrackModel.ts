@@ -21,7 +21,6 @@ import type {
 import type { MenuItem } from '../../ui'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
-// lazies
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
 
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
@@ -248,6 +247,7 @@ export function createBaseTrackModel(
           {
             label: 'Save track data',
             icon: Save,
+            priority: 998,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SaveTrackDataDlg,

@@ -5,14 +5,15 @@ import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  BaseSequenceAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -36,7 +37,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private configureP?: Promise<{
     bam: BamFile
-    sequenceAdapter?: BaseFeatureDataAdapter
+    sequenceAdapter?: BaseSequenceAdapter
   }>
 
   // derived classes may not use the same configuration so a custom configure
@@ -58,7 +59,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const { dataAdapter } = await this.getSubAdapter(adapterConfig)
       return {
         bam,
-        sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
+        sequenceAdapter: dataAdapter as BaseSequenceAdapter,
       }
     }
     return { bam }
@@ -129,46 +130,15 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private async seqFetch(refName: string, start: number, end: number) {
     const { sequenceAdapter } = await this.configure()
-    const refSeqStore = sequenceAdapter
-    if (!refSeqStore) {
-      return undefined
-    }
-    if (!refName) {
+    if (!sequenceAdapter || !refName) {
       return undefined
     }
 
-    const features = refSeqStore.getFeatures({
+    return sequenceAdapter.getSequence({
       refName,
       start,
       end,
-      assemblyName: '',
     })
-
-    const seqChunks = await firstValueFrom(features.pipe(toArray()))
-
-    let sequence = ''
-    for (const chunk of seqChunks.sort(
-      (a, b) => a.get('start') - b.get('start'),
-    )) {
-      const chunkStart = chunk.get('start')
-      const chunkEnd = chunk.get('end')
-      const trimStart = Math.max(start - chunkStart, 0)
-      const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
-      const trimLength = trimEnd - trimStart
-      const chunkSeq = chunk.get('seq') || chunk.get('residues')
-      sequence += chunkSeq.slice(trimStart, trimStart + trimLength)
-    }
-
-    if (sequence.length !== end - start) {
-      throw new Error(
-        `sequence fetch failed: fetching ${refName}:${(
-          start - 1
-        ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
-          end - start
-        ).toLocaleString()}`,
-      )
-    }
-    return sequence
   }
 
   getFeatures(
@@ -246,7 +216,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     if (bam.index) {
       const bytes = await bytesForRegions(regions, bam)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
-      return { bytes, fetchSizeLimit }
+      return {
+        bytes,
+        fetchSizeLimit,
+      }
     }
     return super.getMultiRegionFeatureDensityStats(regions, opts)
   }
