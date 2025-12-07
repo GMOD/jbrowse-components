@@ -419,10 +419,10 @@ export default class PluginManager {
 
     // Use a dispatcher that selects the correct schema based on the 'type' property
     return types.union(
-      {
-        dispatcher: (snapshot: { type?: string } | undefined) =>
-          (snapshot?.type && typeMap.get(snapshot.type)) || pluggableTypes[0]!,
-      },
+      // {
+      //   dispatcher: (snapshot: { type?: string } | undefined) =>
+      //     (snapshot?.type && typeMap.get(snapshot.type)) || pluggableTypes[0]!,
+      // },
       ...pluggableTypes,
     ) as IAnyModelType
   }
