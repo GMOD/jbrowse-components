@@ -7,14 +7,26 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-test('regular', async () => {
-  await testMultiVariantDisplay({ displayType: 'regular', timeout: 90000 })
-}, 90000)
+const timeout = 90_000
+test(
+  'regular',
+  async () => {
+    await testMultiVariantDisplay({
+      displayType: 'regular',
+      timeout,
+    })
+  },
+  timeout,
+)
 
-test('rphased', async () => {
-  await testMultiVariantDisplay({
-    displayType: 'regular',
-    phasedMode: 'phased',
-    timeout: 90000,
-  })
-}, 90000)
+test(
+  'rphased',
+  async () => {
+    await testMultiVariantDisplay({
+      displayType: 'regular',
+      phasedMode: 'phased',
+      timeout,
+    })
+  },
+  timeout,
+)
