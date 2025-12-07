@@ -320,13 +320,14 @@ function stateModelFactory(
             onIndicatorClick(
               _: unknown,
               item: {
-                type: string
+                type: 'insertion' | 'softclip' | 'hardclip'
                 base: string
                 count: number
                 total: number
                 avgLength?: number
                 minLength?: number
                 maxLength?: number
+                topSequence?: string
               },
             ) {
               getSession(self).queueDialog(handleClose => [

@@ -25,18 +25,20 @@ const InterbaseInfoDialog = observer(function ({
   handleClose,
 }: {
   item: {
-    type: string
+    type: 'insertion' | 'softclip' | 'hardclip'
     base: string
     count: number
     total: number
     avgLength?: number
     minLength?: number
     maxLength?: number
+    topSequence?: string
   }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const { type, count, total, avgLength, minLength, maxLength } = item
+  const { type, count, total, avgLength, minLength, maxLength, topSequence } =
+    item
   return (
     <Dialog
       open
@@ -52,10 +54,11 @@ const InterbaseInfoDialog = observer(function ({
         <div className={classes.section}>
           <Typography className={classes.label}>Count:</Typography>
           <Typography style={{ whiteSpace: 'pre-wrap' }}>
-            {formatInterbaseStats(count, total, {
+            {formatInterbaseStats(count, total, type, {
               avgLength,
               minLength,
               maxLength,
+              topSequence,
             })}
           </Typography>
         </div>

@@ -12,6 +12,7 @@ export interface InterbaseIndicatorItem {
   avgLength?: number
   minLength?: number
   maxLength?: number
+  topSequence?: string
 }
 
 const typeLabels: Record<string, string> = {
@@ -27,18 +28,31 @@ export function getInterbaseTypeLabel(type: string) {
 export function formatInterbaseStats(
   count: number,
   total: number,
-  lengthStats?: { avgLength?: number; minLength?: number; maxLength?: number },
+  type: 'insertion' | 'softclip' | 'hardclip',
+  lengthStats?: {
+    avgLength?: number
+    minLength?: number
+    maxLength?: number
+    topSequence?: string
+  },
 ) {
   const pct = total > 0 ? ((count / total) * 100).toFixed(1) : '0'
   let result = `${count}/${total} (${pct}% of reads)`
   if (lengthStats?.avgLength !== undefined) {
-    const { avgLength, minLength, maxLength } = lengthStats
+    const { avgLength, minLength, maxLength, topSequence } = lengthStats
     const avgStr = reducePrecision(avgLength, 1)
     if (minLength !== undefined && maxLength !== undefined) {
-      result +=
-        minLength === maxLength
-          ? `\nLength: ${toLocale(minLength)}bp`
-          : `\nLength: ${toLocale(minLength)}bp - ${toLocale(maxLength)}bp (avg ${avgStr}bp)`
+      if (minLength === maxLength) {
+        result +=
+          topSequence !== undefined
+            ? `\n${topSequence} (${toLocale(minLength)}bp ${type})`
+            : `\n${toLocale(minLength)}bp ${type}`
+      } else {
+        result += `\n${toLocale(minLength)}bp - ${toLocale(maxLength)}bp ${type} (avg ${avgStr}bp)`
+        if (topSequence !== undefined) {
+          result += `\nMost common: ${topSequence}`
+        }
+      }
     } else {
       result += `\nAvg length: ${avgStr}bp`
     }

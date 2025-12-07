@@ -14,8 +14,9 @@ function getItemLabel(item: InterbaseIndicatorItem | undefined) {
   if (!item) {
     return undefined
   }
-  const { type, count, total, avgLength, minLength, maxLength } = item
-  return `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total, { avgLength, minLength, maxLength })}`
+  const { type, count, total, avgLength, minLength, maxLength, topSequence } =
+    item
+  return `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total, type, { avgLength, minLength, maxLength, topSequence })}`
 }
 
 const SNPCoverageRendering = observer(function (props: {
@@ -99,7 +100,17 @@ const SNPCoverageRendering = observer(function (props: {
       offsetX + tolerance,
       offsetY + tolerance,
     )
-    return search.length ? items[search[0]!] : undefined
+    if (search.length === 0) {
+      return undefined
+    }
+    if (search.length === 1) {
+      return items[search[0]!]
+    }
+    // When multiple items overlap, prioritize those with higher read percentage
+    const sorted = search
+      .map(idx => items[idx]!)
+      .sort((a, b) => b.count / b.total - a.count / a.total)
+    return sorted[0]
   }
 
   return (
