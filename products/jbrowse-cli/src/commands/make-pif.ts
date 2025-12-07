@@ -7,10 +7,7 @@ import {
   spawnSortProcess,
   waitForProcessClose,
 } from './make-pif-utils/pif-generator'
-import {
-  validateFileArgument,
-  validateRequiredCommands,
-} from './make-pif-utils/validators'
+import { validateFileArgument, validateRequiredCommands } from './validators'
 
 export async function run(args?: string[]) {
   const options = {
@@ -53,19 +50,14 @@ export async function run(args?: string[]) {
   }
 
   const file = positionals[0]
-  validateFileArgument(file)
-  validateRequiredCommands()
+  validateFileArgument(file, 'make-pif', 'paf')
+  validateRequiredCommands(['sh', 'sort', 'grep', 'tabix', 'bgzip'])
 
   const { out, csi = false } = flags
   const outputFile = getOutputFilename(file, out)
 
-  try {
-    const child = spawnSortProcess(outputFile, csi)
-    await createPIF(file, child.stdin)
-    child.stdin.end()
-    await waitForProcessClose(child)
-  } catch (error) {
-    console.error('Error during PIF creation:', error)
-    process.exit(1)
-  }
+  const child = spawnSortProcess(outputFile, csi)
+  await createPIF(file, child.stdin)
+  child.stdin.end()
+  await waitForProcessClose(child)
 }

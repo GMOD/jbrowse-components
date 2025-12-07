@@ -2,7 +2,7 @@ import path from 'path'
 
 import parseJSON from 'json-parse-better-errors'
 
-import { isUrl } from './validators'
+import { isURL } from '../../types/common'
 
 import type { Config, Track } from '../../base'
 
@@ -21,7 +21,7 @@ export function mapLocationForFiles(
   load?: string,
   subDir?: string,
 ): string {
-  return !p || isUrl(p) || load === 'inPlace'
+  return !p || isURL(p) || load === 'inPlace'
     ? p
     : path.join(subDir || '', path.basename(p))
 }
@@ -79,8 +79,7 @@ export function buildTrackConfig({
       // @ts-expect-error
       trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
     } else if (!skipCheck) {
-      console.error(`Error: Failed to find assemblyName ${finalAssemblyNames}`)
-      process.exit(1)
+      throw new Error(`Failed to find assemblyName ${finalAssemblyNames}`)
     }
   }
 
