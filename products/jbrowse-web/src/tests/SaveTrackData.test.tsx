@@ -1,12 +1,21 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { saveAs } from 'file-saver-es'
 
 import { createView, doBeforeEach, hts, setup } from './util'
+
+jest.mock('file-saver-es', () => {
+  return {
+    ...jest.requireActual('file-saver-es'),
+    saveAs: jest.fn(),
+  }
+})
 
 setup()
 
 beforeEach(() => {
   doBeforeEach()
+  ;(saveAs as unknown as jest.Mock).mockClear()
 })
 
 const delay = { timeout: 40000 }
@@ -20,113 +29,55 @@ async function openSaveTrackDataDialog(
   await screen.findAllByTestId(/prerendered_canvas/, ...opts)
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Save track data'))
-  await screen.findByText('Save track data', ...opts)
 }
 
-test('save track data for VCF track', async () => {
-  const user = userEvent.setup()
-  const { view } = await createView()
-  view.setNewView(0.05, 5000)
+function readBlobAsText(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      resolve(reader.result as string)
+    }
+    reader.onerror = reject
+    // eslint-disable-next-line unicorn/prefer-blob-reading-methods
+    reader.readAsText(blob)
+  })
+}
 
-  await openSaveTrackDataDialog(user, 'volvox_filtered_vcf')
+const trackTestCases = [
+  ['VCF', 'volvox_filtered_vcf', 'jbrowse_track_data.vcf'],
+  ['BAM', 'volvox_bam', 'jbrowse_track_data.sam'],
+  ['CRAM', 'volvox_cram', 'jbrowse_track_data.sam'],
+  ['GFF', 'gff3tabix_genes', 'jbrowse_track_data.gff3'],
+  ['BED', 'bedtabix_genes', 'jbrowse_track_data.gff3'],
+  ['BigWig', 'volvox_microarray', 'jbrowse_track_data.bedgraph'],
+] as const
 
-  await waitFor(
-    async () => {
-      const textField = await screen.findByRole('textbox', { name: /region/i })
-      expect(textField).toHaveValue()
-    },
-    { timeout: 30000 },
-  )
+test.each(trackTestCases)(
+  'save track data for %s track',
+  async (_, trackId, expectedFilename) => {
+    const user = userEvent.setup()
+    const { view } = await createView()
+    view.setNewView(0.05, 5000)
 
-  await user.click(await screen.findByText('Close'))
-}, 60000)
+    await openSaveTrackDataDialog(user, trackId)
 
-test('save track data for BAM track', async () => {
-  const user = userEvent.setup()
-  const { view } = await createView()
-  view.setNewView(0.05, 5000)
+    expect(await screen.findByText('File type', ...opts)).toBeTruthy()
 
-  await openSaveTrackDataDialog(user, 'volvox_bam')
+    await user.click(await screen.findByText('Download'))
 
-  await waitFor(
-    async () => {
-      const textField = await screen.findByRole('textbox', { name: /region/i })
-      expect(textField).toHaveValue()
-    },
-    { timeout: 30000 },
-  )
+    await waitFor(() => {
+      expect(saveAs).toHaveBeenCalled()
+    }, delay)
 
-  await user.click(await screen.findByText('Close'))
-}, 60000)
+    const call = (saveAs as unknown as jest.Mock).mock.calls[0]
+    const blob = call[0] as Blob
+    const filename = call[1] as string
+    const content = await readBlobAsText(blob)
 
-test('save track data for CRAM track', async () => {
-  const user = userEvent.setup()
-  const { view } = await createView()
-  view.setNewView(0.05, 5000)
+    expect(filename).toBe(expectedFilename)
+    expect(content).toMatchSnapshot()
 
-  await openSaveTrackDataDialog(user, 'volvox_cram')
-
-  await waitFor(
-    async () => {
-      const textField = await screen.findByRole('textbox', { name: /region/i })
-      expect(textField).toHaveValue()
-    },
-    { timeout: 30000 },
-  )
-
-  await user.click(await screen.findByText('Close'))
-}, 60000)
-
-test('save track data for GFF track', async () => {
-  const user = userEvent.setup()
-  const { view } = await createView()
-  view.setNewView(0.05, 5000)
-
-  await openSaveTrackDataDialog(user, 'gff3tabix_genes')
-
-  await waitFor(
-    async () => {
-      const textField = await screen.findByRole('textbox', { name: /region/i })
-      expect(textField).toHaveValue()
-    },
-    { timeout: 30000 },
-  )
-
-  await user.click(await screen.findByText('Close'))
-}, 60000)
-
-test('save track data for BED track', async () => {
-  const user = userEvent.setup()
-  const { view } = await createView()
-  view.setNewView(0.05, 5000)
-
-  await openSaveTrackDataDialog(user, 'bedtabix_genes')
-
-  await waitFor(
-    async () => {
-      const textField = await screen.findByRole('textbox', { name: /region/i })
-      expect(textField).toHaveValue()
-    },
-    { timeout: 30000 },
-  )
-
-  await user.click(await screen.findByText('Close'))
-}, 60000)
-
-test('save track data for BigWig track', async () => {
-  const user = userEvent.setup()
-  const { view } = await createView()
-  view.setNewView(0.05, 5000)
-
-  await openSaveTrackDataDialog(user, 'volvox_microarray')
-
-  await waitFor(
-    async () => {
-      const textField = await screen.findByRole('textbox', { name: /region/i })
-      expect(textField).toHaveValue()
-    },
-    { timeout: 30000 },
-  )
-
-  await user.click(await screen.findByText('Close'))
-}, 60000)
+    await user.click(await screen.findByText('Close'))
+  },
+  60000,
+)

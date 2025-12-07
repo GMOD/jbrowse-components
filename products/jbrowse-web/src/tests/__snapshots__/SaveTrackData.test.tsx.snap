@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`save track data for BAM track 1`] = `
+"ctgA_153_667_0:0:0_6:0:0_1f51	0	ctgA	153	255	100M	*	0	0	CTGATTCAGCCTGACTTCTCTTGGAACCCTGCCCATAAATCAAAGGGTTAGTGCGGCCAAAACGTTGGACAACGGTATTAGAAGACCAACCTGACCACCA	2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222
+ctgA_187_683_2:1:0_7:0:0_9e1	0	ctgA	187	255	100M	*	0	0	ATAAATCAAAGGGTTAGTGCGGCCAAAACGTTGGACAACGGTATTAGAAGACCAACCGGACCACCTAACCGTCAATTAACCGGTATCTTCCCGGAAACGG	2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222
+ctgA_238_789_0:1:0_1:0:0_e0d	0	ctgA	238	255	100M	*	0	0	CCAACCTGACCACCAAACCGTCAATTAACCGGTATCTTCCCGGAAACGGCGGTTCTCTCCTAGATAGCGATCTGTGGTCTCACCATGCAATTTAAACAGG	2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222
+ctgA_259_775_1:1:0_2:0:0_5fc	0	ctgA	259	255	100M	*	0	0	CAATTAACCGGTATCTTCCCGGAAACGGCGGTTCTCTCCTAGATAGCGATCTGTGGTCTCACCATGCAATTTAAACAGGTGAGTAAAGATTGTTACAAAT	2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
+`;
+
+exports[`save track data for BED track 1`] = `"##gff-version 3"`;
+
+exports[`save track data for BigWig track 1`] = `"ctgA	200	300	213"`;
+
+exports[`save track data for CRAM track 1`] = `
+"ctgA_153_667_0:0:0_6:0:0_1f51	0	ctgA	153	255	100M	*	0	0	CTGATTCAGCCTGACTTCTCTTGGAACCCTGCCCATAAATCAAAGGGTTAGTGCGGCCAAAACGTTGGACAACGGTATTAGAAGACCAACCTGACCACCA	2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222
+ctgA_187_683_2:1:0_7:0:0_9e1	0	ctgA	187	255	100M	*	0	0	ATAAATCAAAGGGTTAGTGCGGCCAAAACGTTGGACAACGGTATTAGAAGACCAACCGGACCACCTAACCGTCAATTAACCGGTATCTTCCCGGAAACGG	2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222
+ctgA_238_789_0:1:0_1:0:0_e0d	0	ctgA	238	255	100M	*	0	0	CCAACCTGACCACCAAACCGTCAATTAACCGGTATCTTCCCGGAAACGGCGGTTCTCTCCTAGATAGCGATCTGTGGTCTCACCATGCAATTTAAACAGG	2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222
+ctgA_259_775_1:1:0_2:0:0_5fc	0	ctgA	259	255	100M	*	0	0	CAATTAACCGGTATCTTCCCGGAAACGGCGGTTCTCTCCTAGATAGCGATCTGTGGTCTCACCATGCAATTTAAACAGGTGAGTAAAGATTGTTACAAAT	2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
+`;
+
+exports[`save track data for GFF track 1`] = `
+"##gff-version 3
+ctgA	example	contig	1	50001	.	.	.	Name=ctgA;multivalue=val1,val2,val3"
+`;
+
+exports[`save track data for VCF track 1`] = `
+"##fileformat=VCFv4.1
+##samtoolsVersion=0.1.18 (r982:295)
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=MQ,Number=1,Type=Integer,Description="Root-mean-square mapping quality of covering reads">
+##INFO=<ID=FQ,Number=1,Type=Float,Description="Phred probability of all samples being the same">
+##INFO=<ID=AF1,Number=1,Type=Float,Description="Max-likelihood estimate of the first ALT allele frequency (assuming HWE)">
+##INFO=<ID=AC1,Number=1,Type=Float,Description="Max-likelihood estimate of the first ALT allele count (no HWE assumption)">
+##INFO=<ID=G3,Number=3,Type=Float,Description="ML estimate of genotype frequencies">
+##INFO=<ID=HWE,Number=1,Type=Float,Description="Chi^2 based HWE test P-value based on G3">
+##INFO=<ID=CLR,Number=1,Type=Integer,Description="Log ratio of genotype likelihoods with and without the constraint">
+##INFO=<ID=UGT,Number=1,Type=String,Description="The most probable unconstrained genotype configuration in the trio">
+##INFO=<ID=CGT,Number=1,Type=String,Description="The most probable constrained genotype configuration in the trio">
+##INFO=<ID=PV4,Number=4,Type=Float,Description="P-values for strand bias, baseQ bias, mapQ bias and tail distance bias">
+##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
+##INFO=<ID=PC2,Number=2,Type=Integer,Description="Phred probability of the nonRef allele frequency in group1 samples being larger (,smaller) than in group2.">
+##INFO=<ID=PCHI2,Number=1,Type=Float,Description="Posterior weighted chi^2 P-value for testing the association between group1 and group2 samples.">
+##INFO=<ID=QCHI2,Number=1,Type=Integer,Description="Phred scaled PCHI2.">
+##INFO=<ID=PR,Number=1,Type=Integer,Description="# permutations yielding a smaller PCHI2.">
+##INFO=<ID=VDB,Number=1,Type=Float,Description="Variant Distance Bias">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
+##FORMAT=<ID=GL,Number=3,Type=Float,Description="Likelihoods for RR,RA,AA genotypes (R=ref,A=alt)">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="# high-quality bases">
+##FORMAT=<ID=SP,Number=1,Type=Integer,Description="Phred-scaled strand bias P-value">
+##FORMAT=<ID=PL,Number=G,Type=Integer,Description="List of Phred-scaled genotype likelihoods">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample_data/raw/volvox/volvox-sorted.bam
+ctgA	277	.	T	C	10.4	.	DP=3;VDB=0.0186;AF1=1;AC1=2;DP4=0,0,3,0;MQ=37;FQ=-36	GT:PL:GQ	1/1:42,9,0:13"
+`;
