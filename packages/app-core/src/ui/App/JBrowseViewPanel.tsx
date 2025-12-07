@@ -274,13 +274,20 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
             onChange={e => {
               setEditValue(e.target.value)
             }}
+            onFocus={e => {
+              e.target.select()
+            }}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
             onClick={stopEvent}
           />
         ) : (
           <>
-            <Typography className={classes.tabTitleText} variant="body2">
+            <Typography
+              className={classes.tabTitleText}
+              variant="body2"
+              onDoubleClick={handleStartEdit}
+            >
               {api.title || displayValue}
             </Typography>
             <TabMenu
