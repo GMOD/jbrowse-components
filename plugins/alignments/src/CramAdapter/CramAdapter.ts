@@ -1,9 +1,10 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { sum, toLocale, updateStatus } from '@jbrowse/core/util'
+import { toLocale, updateStatus } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -11,6 +12,7 @@ import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
+import type { CramRecord } from '@gmod/cram'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -252,6 +254,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         statusCallback,
         () => cram.getRecordsForRange(refId, start, end),
       )
+      checkStopToken(stopToken)
       await updateStatus('Processing alignments', statusCallback, () => {
         const {
           flagInclude = 0,
@@ -282,7 +285,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
           const ret = this.ultraLongFeatureCache.get(`${record.uniqueId}`)
           if (!ret) {
-            const elt = new CramSlightlyLazyFeature(record, this)
+            const elt = this.cramRecordToFeature(record)
             this.ultraLongFeatureCache.set(`${record.uniqueId}`, elt)
             observer.next(elt)
           } else {
@@ -293,6 +296,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         observer.complete()
       })
     }, stopToken)
+  }
+
+  cramRecordToFeature(record: CramRecord) {
+    return new CramSlightlyLazyFeature(record, this)
   }
 
   // we return the configured fetchSizeLimit, and the bytes for the region
@@ -326,6 +333,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       }),
     )
 
-    return sum(blockResults.flat().map(a => a.sliceBytes))
+    return blockResults.flat().reduce((a, b) => a + b.sliceBytes, 0)
   }
 }

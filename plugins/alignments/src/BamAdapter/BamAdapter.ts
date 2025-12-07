@@ -26,8 +26,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private setupP?: Promise<Header>
 
-  // Used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
-  // mismatches in cache. At an average of 100kb-300kb, keeping even just 500
+  // used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
+  // mismatches in cache. at an average of 100kb-300kb, keeping even just 500
   // of these in memory is memory intensive but can reduce recomputation on
   // these objects
   private ultraLongFeatureCache = new QuickLRU<string, Feature>({
@@ -39,7 +39,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     sequenceAdapter?: BaseFeatureDataAdapter
   }>
 
-  // Derived classes may not use the same configuration so a custom configure
+  // derived classes may not use the same configuration so a custom configure
   // method allows derived classes to override this behavior
   protected async configurePre() {
     const bamLocation = this.getConf('bamLocation')
@@ -83,8 +83,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { bam } = await this.configure()
     const samHeader = await bam.getHeader()
 
-    // Use the @SQ lines in the header to figure out the mapping between ref
-    // ref ID numbers and names
+    // use the @SQ lines in the header to figure out the
+    // mapping between ref ref ID numbers and names
     const idToName: string[] = []
     const nameToId: Record<string, number> = {}
     if (samHeader) {
@@ -198,8 +198,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           readName,
         } = filterBy || {}
 
-        for (let i = 0, l = records.length; i < l; i++) {
-          const record = records[i]!
+        for (const record of records) {
           let ref: string | undefined
           if (!record.tags.MD) {
             ref = await this.seqFetch(
@@ -224,18 +223,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             continue
           }
 
-          const featureLength = record.end - record.start
-          if (featureLength > 10_000) {
-            const ret = this.ultraLongFeatureCache.get(`${record.id}`)
-            if (ret) {
-              observer.next(ret)
-            } else {
-              const elt = new BamSlightlyLazyFeature(record, this, ref)
-              this.ultraLongFeatureCache.set(`${record.id}`, elt)
-              observer.next(elt)
-            }
+          const ret = this.ultraLongFeatureCache.get(`${record.id}`)
+          if (!ret) {
+            const elt = new BamSlightlyLazyFeature(record, this, ref)
+            this.ultraLongFeatureCache.set(`${record.id}`, elt)
+            observer.next(elt)
           } else {
-            observer.next(new BamSlightlyLazyFeature(record, this, ref))
+            observer.next(ret)
           }
         }
         observer.complete()
@@ -248,20 +242,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     opts?: BaseOptions,
   ) {
     const { bam } = await this.configure()
-    // This is a method to avoid calling on htsget adapters
+    // this is a method to avoid calling on htsget adapters
     if (bam.index) {
       const bytes = await bytesForRegions(regions, bam)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
-      return {
-        bytes,
-        fetchSizeLimit,
-      }
-    } else {
-      return super.getMultiRegionFeatureDensityStats(regions, opts)
+      return { bytes, fetchSizeLimit }
     }
+    return super.getMultiRegionFeatureDensityStats(regions, opts)
   }
 
-  // Depends on setup being called before the BAM constructor
+  // depends on setup being called before the BAM constructor
   refIdToName(refId: number) {
     return this.samHeader?.idToName[refId]
   }
