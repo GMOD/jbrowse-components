@@ -95,8 +95,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sanitize-filename": "^1.6.3",
-    "swr": "^2.3.3",
-    "tss-react": "^4.4.1"
+    "swr": "^2.3.3"
   },
   "devDependencies": {
     "electron": "39.2.1"

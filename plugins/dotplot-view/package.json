@@ -45,8 +45,7 @@
     "@types/file-saver-es": "^2.0.1",
     "file-saver-es": "^2.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "tss-react": "^4.0.0"
+    "mobx-react": "^9.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
