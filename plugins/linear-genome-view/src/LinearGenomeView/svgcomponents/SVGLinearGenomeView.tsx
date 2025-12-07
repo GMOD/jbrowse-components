@@ -107,5 +107,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   )
 }
 
+export { default as SVGGridlines } from './SVGGridlines'
 export { default as SVGRuler } from './SVGRuler'
 export { default as SVGTracks } from './SVGTracks'

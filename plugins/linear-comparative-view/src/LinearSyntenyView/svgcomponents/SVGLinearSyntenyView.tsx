@@ -37,6 +37,7 @@ export async function renderToSvg(
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
+    showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
   } = opts
@@ -117,6 +118,9 @@ export async function renderToSvg(
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
   const theme = createJBrowseTheme(themeVar)
+  const tracksHeights = views.map(v =>
+    totalHeight(v.tracks, textHeight, trackLabels),
+  )
   const RenderList = [
     <SVGLinearGenomeView
       rulerHeight={rulerHeight}
@@ -128,6 +132,8 @@ export async function renderToSvg(
       key={views[0]!.id}
       view={views[0]!}
       fontSize={fontSize}
+      showGridlines={showGridlines}
+      tracksHeight={tracksHeights[0]!}
     />,
   ] as React.ReactNode[]
   let currOffset = heights[0]! + fontSize + rulerHeight
@@ -165,6 +171,8 @@ export async function renderToSvg(
             key={view.id}
             view={view}
             fontSize={fontSize}
+            showGridlines={showGridlines}
+            tracksHeight={tracksHeights[i]!}
           />
         </g>
       </g>,

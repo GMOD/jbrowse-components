@@ -101,6 +101,7 @@ export {
   SearchBox,
 } from './LinearGenomeView'
 export {
+  SVGGridlines,
   SVGRuler,
   SVGTracks,
   renderToSvg,

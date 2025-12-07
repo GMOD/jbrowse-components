@@ -36,9 +36,13 @@ export default function SVGGridlines({
                 <rect x={0} y={0} width={widthPx} height={height} />
               </clipPath>
             </defs>
-            <g transform={`translate(${offset} 0)`} clipPath={`url(#${clipid})`}>
+            <g
+              transform={`translate(${offset} 0)`}
+              clipPath={`url(#${clipid})`}
+            >
               {ticks.map(tick => {
-                const x = (reversed ? end - tick.base : tick.base - start) / bpPerPx
+                const x =
+                  (reversed ? end - tick.base : tick.base - start) / bpPerPx
                 const isMajor = tick.type === 'major'
                 return (
                   <line
