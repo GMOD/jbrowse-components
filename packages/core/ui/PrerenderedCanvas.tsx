@@ -37,10 +37,8 @@ function PrerenderedCanvas(props: {
       return
     }
     drawImageOntoCanvasContext(imageData, context)
-    if (typeof jest !== 'undefined') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setDone(true)
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDone(true)
   }, [imageData])
 
   return (
