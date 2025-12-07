@@ -40,7 +40,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        * enables the dockview-based tabbed/tiled workspace layout
        */
       useWorkspaces: types.optional(types.boolean, () =>
-        localStorageGetBoolean('useWorkspaces', true),
+        localStorageGetBoolean('useWorkspaces', false),
       ),
     })
     .actions(self => ({

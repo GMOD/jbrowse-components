@@ -69,6 +69,8 @@ const ViewMenu = observer(function ({
     moveViewUp: (arg: string) => void
     moveViewToBottom: (arg: string) => void
     moveViewToTop: (arg: string) => void
+    useWorkspaces: boolean
+    setUseWorkspaces: (arg: boolean) => void
   }
 
   const popupState = usePopupState({
@@ -121,6 +123,9 @@ const ViewMenu = observer(function ({
                 label: 'Move to new tab',
                 icon: OpenInNewIcon,
                 onClick: () => {
+                  if (!session.useWorkspaces) {
+                    session.setUseWorkspaces(true)
+                  }
                   moveViewToNewTab(model.id)
                 },
               },
