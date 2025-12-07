@@ -60,11 +60,11 @@ test.each([
   async (_, trackId, expectedFilename, ext) => {
     const user = userEvent.setup()
     const { view } = await createView()
-    view.navToLocString('ctgA:4,318..4,440')
+    await view.navToLocString('ctgA:4,318..4,440')
 
     await openSaveTrackDataDialog(user, trackId)
 
-    expect(await screen.findByText('File type', ...opts)).toBeTruthy()
+    await screen.findByText('File type', ...opts)
 
     await user.click(await screen.findByText('Download'))
 

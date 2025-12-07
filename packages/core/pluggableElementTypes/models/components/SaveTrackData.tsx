@@ -42,36 +42,25 @@ const useStyles = makeStyles()({
   },
 })
 
-async function fetchFeatures(
-  track: IAnyStateTreeNode,
-  regions: Region[],
-  signal?: AbortSignal,
-) {
+async function fetchFeatures(track: IAnyStateTreeNode, regions: Region[]) {
   const { rpcManager } = getSession(track)
   const adapterConfig = getConf(track, ['adapter'])
-  const sessionId = 'getFeatures'
+  const sessionId = getRpcSessionId(track)
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
     regions,
     sessionId,
-    signal,
   }) as Promise<Feature[]>
 }
 
 async function stringifyExportData(
-  features: Feature[] | undefined,
+  features: Feature[],
   type: string,
   options: Record<string, FileTypeExporter>,
   session: AbstractSessionModel,
   visibleRegions: Region[],
-): Promise<string | null> {
-  if (!features) {
-    return null
-  }
-  const generator = options[type] || {
-    callback: () => 'Unknown',
-  }
-  return generator.callback({
+) {
+  return options[type]!.callback({
     features,
     session,
     assemblyName: visibleRegions[0]!.assemblyName,
@@ -134,7 +123,6 @@ const SaveTrackDataDialog = observer(function ({
           adapterType?.adapterCapabilities?.includes('exportData')
 
         if (supportsExport) {
-          // Try to use adapter's getExportData method via RPC
           const { rpcManager } = session
           const sessionId = getRpcSessionId(model)
           const exportResult = (await rpcManager.call(
@@ -151,11 +139,7 @@ const SaveTrackDataDialog = observer(function ({
           setUsedAdapterExport(true)
           setStr(exportResult || 'No export data received')
         } else {
-          const view = getContainingView(model) as { visibleRegions?: Region[] }
-          setError(undefined)
-          const visibleRegions = view.visibleRegions || []
           const features = await fetchFeatures(model, visibleRegions)
-          // Use stringify callback
           const stringifyResult = await stringifyExportData(
             features,
             type,
@@ -217,7 +201,7 @@ const SaveTrackDataDialog = observer(function ({
                   <IconButton
                     size="small"
                     onClick={() => {
-                      setHelpDialogContent(val.helpText || '')
+                      setHelpDialogContent(val.helpText!)
                       setHelpDialogOpen(true)
                     }}
                     title="Show help for this format"
@@ -255,10 +239,7 @@ const SaveTrackDataDialog = observer(function ({
       <DialogActions>
         <Button
           onClick={async () => {
-            if (!type) {
-              return
-            }
-            const ext = options[type]?.extension || 'unknown'
+            const ext = options[type!]!.extension
             const blob = new Blob([str], { type: 'text/plain;charset=utf-8' })
 
             // eslint-disable-next-line @typescript-eslint/no-deprecated
