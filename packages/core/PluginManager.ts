@@ -420,17 +420,8 @@ export default class PluginManager {
     // Use a dispatcher that selects the correct schema based on the 'type' property
     return types.union(
       {
-        dispatcher: (snapshot: { type?: string } | undefined) => {
-          if (snapshot?.type) {
-            const match = typeMap.get(snapshot.type)
-            if (match) {
-              return match
-            }
-          }
-          // Fall back to first type if no match or no snapshot
-          // This handles: undefined snapshots during validation, missing type field, etc.
-          return pluggableTypes[0]!
-        },
+        dispatcher: (snapshot: { type?: string } | undefined) =>
+          (snapshot?.type && typeMap.get(snapshot.type)) || pluggableTypes[0]!,
       },
       ...pluggableTypes,
     ) as IAnyModelType

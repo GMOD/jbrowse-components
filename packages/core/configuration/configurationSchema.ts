@@ -354,16 +354,18 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const displays = track.configuration.displays || []
       // Find in the track's displays array (may be frozen/plain objects)
-      let ret = displays.find((d: { displayId: string }) => d.displayId === id)
+      let ret = displays.find(
+        (d: { displayId: string }) => d.displayId === id,
+      ) as { displayId: string; type: string } | undefined
 
       // If not found in config, create a default configuration for this display type
       // This handles the common case where displays are auto-generated from track types
       if (!ret) {
         // Extract display type from the displayId (format: trackId-DisplayType)
-        const displayType = `${id}`.split('-').slice(1).join('-')
+        const idStr = String(id)
+        const displayType = idStr.split('-').slice(1).join('-')
         if (displayType) {
-          // @ts-expect-error
-          ret = { displayId: `${id}`, type: displayType }
+          ret = { displayId: idStr, type: displayType }
         }
       }
 
