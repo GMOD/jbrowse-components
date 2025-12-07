@@ -1,13 +1,14 @@
+import path from 'path'
+
+import { resolveConfigPath } from '../../utils'
+import { createTrixAdapter } from './adapter-utils'
 import {
   ensureTrixDir,
-  getConfigPath,
   getTrackConfigs,
   readConf,
   writeConf,
 } from './config-utils'
 import { indexDriver } from './indexing-utils'
-
-import type { TrixTextSearchAdapter } from '../../base'
 
 export async function aggregateIndex(flags: any) {
   const {
@@ -22,7 +23,8 @@ export async function aggregateIndex(flags: any) {
     dryrun,
     prefixSize,
   } = flags
-  const { configPath: confPath, outLocation } = getConfigPath(target || out || '.')
+  const confPath = await resolveConfigPath(target, out)
+  const outLocation = path.dirname(confPath)
   const config = readConf(confPath)
   ensureTrixDir(outLocation)
 
@@ -71,23 +73,7 @@ export async function aggregateIndex(flags: any) {
         prefixSize,
       })
 
-      const trixConf = {
-        type: 'TrixTextSearchAdapter',
-        textSearchAdapterId: id,
-        ixFilePath: {
-          uri: `trix/${asm}.ix`,
-          locationType: 'UriLocation',
-        },
-        ixxFilePath: {
-          uri: `trix/${asm}.ixx`,
-          locationType: 'UriLocation',
-        },
-        metaFilePath: {
-          uri: `trix/${asm}_meta.json`,
-          locationType: 'UriLocation',
-        },
-        assemblyNames: [asm],
-      } as TrixTextSearchAdapter
+      const trixConf = createTrixAdapter(asm, [asm])
 
       if (idx === -1) {
         aggregateTextSearchAdapters.push(trixConf)

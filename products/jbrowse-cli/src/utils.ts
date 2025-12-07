@@ -28,6 +28,7 @@ export async function resolveConfigPath(target?: string, out?: string) {
   return stat.isDirectory() ? `${output}/config.json` : output
 }
 
+
 export async function readFile(location: string) {
   return fsPromises.readFile(location, { encoding: 'utf8' })
 }

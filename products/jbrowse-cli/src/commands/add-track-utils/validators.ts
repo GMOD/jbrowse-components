@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import type { Config } from '../../base'
+import { isURL } from '../../types/common'
 
-const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
+import type { Config } from '../../base'
 
 export function validateLoadOption(load?: string): void {
   if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {
@@ -22,11 +22,11 @@ export function validateTrackArg(track?: string): void {
 }
 
 export function validateLoadAndLocation(location: string, load?: string): void {
-  if (isUrl(location) && load) {
+  if (isURL(location) && load) {
     throw new Error(
       'The --load flag is used for local files only, but a URL was provided',
     )
-  } else if (!isUrl(location) && !load) {
+  } else if (!isURL(location) && !load) {
     throw new Error(
       `The --load flag should be used if a local file is used, example --load
         copy to copy the file into the config directory. Options for load are
@@ -91,4 +91,3 @@ export function createTargetDirectory(
   }
 }
 
-export { isUrl }

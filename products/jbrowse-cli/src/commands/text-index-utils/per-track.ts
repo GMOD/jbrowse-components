@@ -1,7 +1,9 @@
-import { createPerTrackTrixAdapter } from './adapter-utils'
+import path from 'path'
+
+import { resolveConfigPath } from '../../utils'
+import { createTrixAdapter } from './adapter-utils'
 import {
   ensureTrixDir,
-  getConfigPath,
   getTrackConfigs,
   readConf,
   writeConf,
@@ -21,7 +23,8 @@ export async function perTrackIndex(flags: any) {
     exclude,
     prefixSize,
   } = flags
-  const { configPath: confFilePath, outLocation } = getConfigPath(target || out || '.')
+  const confFilePath = await resolveConfigPath(target, out)
+  const outLocation = path.dirname(confFilePath)
   const config = readConf(confFilePath)
   const configTracks = config.tracks || []
   ensureTrixDir(outLocation)
@@ -60,14 +63,11 @@ export async function perTrackIndex(flags: any) {
           ...trackConfig,
           textSearching: {
             ...textSearching,
-            textSearchAdapter: createPerTrackTrixAdapter(
-              trackId,
-              assemblyNames,
-            ),
+            textSearchAdapter: createTrixAdapter(trackId, assemblyNames),
           },
         }
       } else {
-        console.log("Error: can't find trackId")
+        console.warn(`Warning: can't find trackId ${trackId}`)
       }
     }
     writeConf({ ...config, tracks: configTracks }, confFilePath)

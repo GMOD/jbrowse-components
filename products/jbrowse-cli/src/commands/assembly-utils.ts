@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
+import { isURL } from '../types/common'
 import {
   debug,
   readInlineOrFileJson,
@@ -55,16 +56,7 @@ export function guessSequenceType(sequence: string) {
 }
 
 export function needLoadData(location: string) {
-  let locationUrl: URL | undefined
-  try {
-    locationUrl = new URL(location)
-  } catch (error) {
-    // ignore
-  }
-  if (locationUrl) {
-    return false
-  }
-  return true
+  return !isURL(location)
 }
 
 export async function loadData({
@@ -76,56 +68,38 @@ export async function loadData({
   filePaths: string[]
   destination: string
 }) {
-  let locationUrl: URL | undefined
-  try {
-    locationUrl = new URL(filePaths[0]!)
-  } catch (error) {
-    // ignore
-  }
-
-  if (locationUrl) {
+  if (isURL(filePaths[0]!)) {
     return false
   }
+
+  const destDir = path.dirname(destination)
+  const validPaths = filePaths.filter(f => !!f)
+
   switch (load) {
     case 'copy': {
       await Promise.all(
-        filePaths.map(async filePath => {
-          if (!filePath) {
-            return undefined
-          }
-          return copyFile(
-            filePath,
-            path.join(path.dirname(destination), path.basename(filePath)),
-          )
-        }),
+        validPaths.map(filePath =>
+          copyFile(filePath, path.join(destDir, path.basename(filePath))),
+        ),
       )
       return true
     }
     case 'symlink': {
       await Promise.all(
-        filePaths.map(async filePath => {
-          if (!filePath) {
-            return undefined
-          }
-          return symlink(
+        validPaths.map(filePath =>
+          symlink(
             path.resolve(filePath),
-            path.join(path.dirname(destination), path.basename(filePath)),
-          )
-        }),
+            path.join(destDir, path.basename(filePath)),
+          ),
+        ),
       )
       return true
     }
     case 'move': {
       await Promise.all(
-        filePaths.map(async filePath => {
-          if (!filePath) {
-            return undefined
-          }
-          return rename(
-            filePath,
-            path.join(path.dirname(destination), path.basename(filePath)),
-          )
-        }),
+        validPaths.map(filePath =>
+          rename(filePath, path.join(destDir, path.basename(filePath))),
+        ),
       )
       return true
     }

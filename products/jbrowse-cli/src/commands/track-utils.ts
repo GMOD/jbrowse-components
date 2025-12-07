@@ -1,4 +1,3 @@
-import fs from 'fs'
 import path from 'path'
 
 import { debug, readJsonFile, writeJsonFile } from '../utils'
@@ -8,11 +7,6 @@ import { buildTrackConfig } from './add-track-utils/track-config'
 import { validateTrackId } from './add-track-utils/validators'
 
 import type { Config } from '../base'
-
-export function resolveTrackConfigPath(output: string): string {
-  const isDir = fs.lstatSync(output).isDirectory()
-  return isDir ? `${output}/config.json` : output
-}
 
 export async function loadTrackConfig(
   targetConfigPath: string,
