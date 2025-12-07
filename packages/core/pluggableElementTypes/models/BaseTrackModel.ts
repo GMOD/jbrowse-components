@@ -248,6 +248,7 @@ export function createBaseTrackModel(
           {
             label: 'Save track data',
             icon: Save,
+            priority: 998,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SaveTrackDataDlg,

@@ -24,6 +24,7 @@ import { observer } from 'mobx-react'
 
 import { getRpcSessionId } from '../../../util/tracks'
 
+import type { FileTypeExporter } from '../saveTrackFileTypes/types'
 import type {
   AbstractSessionModel,
   AbstractTrackModel,
@@ -66,16 +67,7 @@ async function stringifyExportData(
     assemblyName: visibleRegions[0]!.assemblyName,
   })
 }
-interface FileTypeExporter {
-  name: string
-  extension: string
-  helpText?: string
-  callback: (arg: {
-    features: Feature[]
-    session: AbstractSessionModel
-    assemblyName: string
-  }) => Promise<string> | string
-}
+
 const SaveTrackDataDialog = observer(function ({
   model,
   handleClose,
