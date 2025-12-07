@@ -15,7 +15,7 @@ export interface LayoutFeature {
 }
 
 export interface FlatbushItem {
-  type: number
+  type: string
   seq: string
   modType?: string
   probability?: number

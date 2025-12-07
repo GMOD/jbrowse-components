@@ -1,12 +1,3 @@
-import {
-  MISMATCH_TYPE_DELETION,
-  MISMATCH_TYPE_HARDCLIP,
-  MISMATCH_TYPE_INSERTION,
-  MISMATCH_TYPE_MISMATCH,
-  MISMATCH_TYPE_SKIP,
-  MISMATCH_TYPE_SOFTCLIP,
-} from '../shared/types'
-
 import type { Mismatch } from '../shared/types'
 
 // CIGAR operation indices (from BAM spec)
@@ -125,7 +116,7 @@ function cigarToMismatchesNumeric(
             const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
             mismatches.push({
               start: roffset + j,
-              type: MISMATCH_TYPE_MISMATCH,
+              type: 'mismatch',
               base: SEQRET_STRING_DECODER[nibble]!,
               altbase: ref[roffset + j]!,
               length: 1,
@@ -138,7 +129,7 @@ function cigarToMismatchesNumeric(
     } else if (op === CIGAR_I) {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_INSERTION,
+        type: 'insertion',
         base: `${len}`,
         insertedBases: getSeqSlice(
           numericSeq,
@@ -152,7 +143,7 @@ function cigarToMismatchesNumeric(
     } else if (op === CIGAR_D) {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_DELETION,
+        type: 'deletion',
         base: '*',
         length: len,
       })
@@ -160,7 +151,7 @@ function cigarToMismatchesNumeric(
     } else if (op === CIGAR_N) {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_SKIP,
+        type: 'skip',
         base: 'N',
         length: len,
       })
@@ -170,7 +161,7 @@ function cigarToMismatchesNumeric(
         const seqBase = getSeqBase(numericSeq, soffset + j, seqLength)
         mismatches.push({
           start: roffset + j,
-          type: MISMATCH_TYPE_MISMATCH,
+          type: 'mismatch',
           base: seqBase,
           qual: qual?.[soffset + j],
           length: 1,
@@ -181,7 +172,7 @@ function cigarToMismatchesNumeric(
     } else if (op === CIGAR_H) {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_HARDCLIP,
+        type: 'hardclip',
         base: `H${len}`,
         cliplen: len,
         length: 1,
@@ -189,7 +180,7 @@ function cigarToMismatchesNumeric(
     } else if (op === CIGAR_S) {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_SOFTCLIP,
+        type: 'softclip',
         base: `S${len}`,
         cliplen: len,
         length: 1,
@@ -216,7 +207,7 @@ function mdToMismatchesNumeric(
   const cigarLength = mismatches.length
   let hasSkips = false
   for (let k = 0; k < cigarLength; k++) {
-    if (mismatches[k]!.type === MISMATCH_TYPE_SKIP) {
+    if (mismatches[k]!.type === 'skip') {
       hasSkips = true
       break
     }
@@ -263,7 +254,7 @@ function mdToMismatchesNumeric(
       if (hasSkips && cigarLength > 0) {
         for (let k = lastSkipPos; k < cigarLength; k++) {
           const m = mismatches[k]!
-          if (m.type === MISMATCH_TYPE_SKIP && currStart >= m.start) {
+          if (m.type === 'skip' && currStart >= m.start) {
             currStart += m.length
             lastSkipPos = k
           }
@@ -303,7 +294,7 @@ function mdToMismatchesNumeric(
         qual: hasQual ? qual[s] : undefined,
         altbase: letter,
         length: 1,
-        type: MISMATCH_TYPE_MISMATCH,
+        type: 'mismatch',
       })
 
       currStart++

@@ -5,15 +5,6 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import {
-  MISMATCH_TYPE_DELETION,
-  MISMATCH_TYPE_HARDCLIP,
-  MISMATCH_TYPE_INSERTION,
-  MISMATCH_TYPE_MISMATCH,
-  MISMATCH_TYPE_MODIFICATION,
-  MISMATCH_TYPE_SOFTCLIP,
-} from '../../shared/types'
-
 import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
@@ -27,19 +18,19 @@ function getItemLabel(item: FlatbushItem | undefined): string | undefined {
   }
 
   switch (item.type) {
-    case MISMATCH_TYPE_INSERTION:
+    case 'insertion':
       return item.seq.length > LARGE_INSERTION_THRESHOLD
         ? `${item.seq.length}bp insertion (click to see)`
         : `Insertion: ${item.seq}`
-    case MISMATCH_TYPE_DELETION:
+    case 'deletion':
       return `Deletion: ${item.seq}bp`
-    case MISMATCH_TYPE_SOFTCLIP:
+    case 'softclip':
       return `Soft clip: ${item.seq}bp`
-    case MISMATCH_TYPE_HARDCLIP:
+    case 'hardclip':
       return `Hard clip: ${item.seq}bp`
-    case MISMATCH_TYPE_MODIFICATION:
+    case 'modification':
       return item.seq
-    case MISMATCH_TYPE_MISMATCH:
+    case 'mismatch':
       return `Mismatch: ${item.seq}`
     default:
       return undefined

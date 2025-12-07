@@ -1,12 +1,3 @@
-import {
-  MISMATCH_TYPE_DELETION,
-  MISMATCH_TYPE_HARDCLIP,
-  MISMATCH_TYPE_INSERTION,
-  MISMATCH_TYPE_MISMATCH,
-  MISMATCH_TYPE_SKIP,
-  MISMATCH_TYPE_SOFTCLIP,
-} from '../shared/types'
-
 import type { Mismatch } from '../shared/types'
 
 export function cigarToMismatches(
@@ -32,7 +23,7 @@ export function cigarToMismatches(
           ) {
             mismatches.push({
               start: roffset + j,
-              type: MISMATCH_TYPE_MISMATCH,
+              type: 'mismatch',
               base: seq[soffset + j]!,
               altbase: ref[roffset + j]!,
               length: 1,
@@ -45,7 +36,7 @@ export function cigarToMismatches(
     if (op === 'I') {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_INSERTION,
+        type: 'insertion',
         base: `${len}`,
         insertedBases: seq?.slice(soffset, soffset + len),
         length: 0,
@@ -54,14 +45,14 @@ export function cigarToMismatches(
     } else if (op === 'D') {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_DELETION,
+        type: 'deletion',
         base: '*',
         length: len,
       })
     } else if (op === 'N') {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_SKIP,
+        type: 'skip',
         base: 'N',
         length: len,
       })
@@ -72,7 +63,7 @@ export function cigarToMismatches(
       for (let j = 0; j < len; j++) {
         mismatches.push({
           start: roffset + j,
-          type: MISMATCH_TYPE_MISMATCH,
+          type: 'mismatch',
           base: r[j] || 'X',
           qual: q[j],
           length: 1,
@@ -82,7 +73,7 @@ export function cigarToMismatches(
     } else if (op === 'H') {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_HARDCLIP,
+        type: 'hardclip',
         base: `H${len}`,
         cliplen: len,
         length: 1,
@@ -90,7 +81,7 @@ export function cigarToMismatches(
     } else if (op === 'S') {
       mismatches.push({
         start: roffset,
-        type: MISMATCH_TYPE_SOFTCLIP,
+        type: 'softclip',
         base: `S${len}`,
         cliplen: len,
         length: 1,

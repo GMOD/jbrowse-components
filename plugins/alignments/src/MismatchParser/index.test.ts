@@ -1,14 +1,6 @@
 import { cigarToMismatches } from './cigarToMismatches'
 import { getMismatches, parseCigar } from './index'
 import { mdToMismatches } from './mdToMismatches'
-import {
-  MISMATCH_TYPE_DELETION,
-  MISMATCH_TYPE_HARDCLIP,
-  MISMATCH_TYPE_INSERTION,
-  MISMATCH_TYPE_MISMATCH,
-  MISMATCH_TYPE_SKIP,
-  MISMATCH_TYPE_SOFTCLIP,
-} from '../shared/types'
 
 import type { Mismatch } from '../shared/types'
 
@@ -29,16 +21,14 @@ function mdToMismatchesOriginal(
     start: 0,
     base: '',
     length: 0,
-    type: MISMATCH_TYPE_MISMATCH,
+    type: 'mismatch',
   }
   let lastCigar = 0
   let lastTemplateOffset = 0
   let lastRefOffset = 0
   let lastSkipPos = 0
   const mismatchRecords: Mismatch[] = []
-  const skips = cigarMismatches.filter(
-    cigar => cigar.type === MISMATCH_TYPE_SKIP,
-  )
+  const skips = cigarMismatches.filter(cigar => cigar.type === 'skip')
 
   function nextRecord(): void {
     mismatchRecords.push(curr)
@@ -47,7 +37,7 @@ function mdToMismatchesOriginal(
       start: curr.start + curr.length,
       length: 0,
       base: '',
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     }
   }
 
@@ -115,7 +105,7 @@ function mdToMismatchesOriginal(
 
 test('cigar to mismatches', () => {
   expect(cigarToMismatches(parseCigar('56M1D45M'), seq)).toEqual([
-    { start: 56, type: MISMATCH_TYPE_DELETION, base: '*', length: 1 },
+    { start: 56, type: 'deletion', base: '*', length: 1 },
   ])
 })
 
@@ -126,7 +116,7 @@ test('md to mismatches', () => {
   ).toEqual([
     {
       start: 10,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
       base: 'C',
       altbase: 'A',
       length: 1,
@@ -137,7 +127,7 @@ test('md to mismatches', () => {
 test('simple deletion', () => {
   // simple deletion
   expect(getMismatches('56M1D45M', '56^A45', seq)).toEqual([
-    { start: 56, type: MISMATCH_TYPE_DELETION, base: '*', length: 1 },
+    { start: 56, type: 'deletion', base: '*', length: 1 },
   ])
 })
 
@@ -152,7 +142,7 @@ test('simple insertion', () => {
   ).toEqual([
     {
       start: 89,
-      type: MISMATCH_TYPE_INSERTION,
+      type: 'insertion',
       insertedBases: 'T',
       base: '1',
       length: 0,
@@ -166,10 +156,10 @@ test('deletion and a SNP', () => {
   //      |||||   ||||||
   //      GGGGGACCTTTTTT
   expect(getMismatches('5M2D6M', '5^AC0C5', 'GGGGGATTTTTT')).toEqual([
-    { start: 5, type: MISMATCH_TYPE_DELETION, base: '*', length: 2 },
+    { start: 5, type: 'deletion', base: '*', length: 2 },
     {
       start: 7,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
       base: 'A',
       altbase: 'C',
       length: 1,
@@ -191,14 +181,14 @@ test('0-length MD entries', () => {
       base: 'C',
       length: 1,
       start: 5,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
     {
       altbase: 'C',
       base: 'A',
       length: 1,
       start: 6,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
@@ -212,34 +202,34 @@ test('non-0-length-MD string', () => {
       base: 'C',
       length: 1,
       start: 5,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
     {
       altbase: 'C',
       base: 'A',
       length: 1,
       start: 6,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
 
 test('basic skip', () => {
   expect(getMismatches('6M200N6M', '5AC5', 'GGGGGCATTTTT')).toEqual([
-    { base: 'N', length: 200, start: 6, type: MISMATCH_TYPE_SKIP },
+    { base: 'N', length: 200, start: 6, type: 'skip' },
     {
       altbase: 'A',
       base: 'C',
       length: 1,
       start: 5,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
     {
       altbase: 'C',
       base: 'A',
       length: 1,
       start: 206,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
@@ -258,7 +248,7 @@ test('vsbuffalo', () => {
       base: '1',
       length: 0,
       start: 89,
-      type: MISMATCH_TYPE_INSERTION,
+      type: 'insertion',
       insertedBases: 'A',
     },
   ])
@@ -276,7 +266,7 @@ test('vsbuffalo', () => {
       base: '1',
       length: 0,
       start: 9,
-      type: MISMATCH_TYPE_INSERTION,
+      type: 'insertion',
       insertedBases: 'A',
     },
     {
@@ -285,7 +275,7 @@ test('vsbuffalo', () => {
       length: 1,
       qual: undefined,
       start: 48,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
     {
       altbase: 'G',
@@ -293,21 +283,21 @@ test('vsbuffalo', () => {
       length: 1,
       qual: undefined,
       start: 91,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
 
 test('more skip', () => {
   expect(getMismatches('3M200N3M200N3M', '8A', 'GGGGGCATTTTT')).toEqual([
-    { base: 'N', length: 200, start: 3, type: MISMATCH_TYPE_SKIP },
-    { base: 'N', length: 200, start: 206, type: MISMATCH_TYPE_SKIP },
+    { base: 'N', length: 200, start: 3, type: 'skip' },
+    { base: 'N', length: 200, start: 206, type: 'skip' },
     {
       altbase: 'A',
       base: 'T',
       length: 1,
       start: 408,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
   expect(
@@ -324,21 +314,21 @@ test('clipping', () => {
       base: 'H200',
       length: 1,
       start: 0,
-      type: MISMATCH_TYPE_HARDCLIP,
+      type: 'hardclip',
     },
     {
       cliplen: 200,
       base: 'H200',
       length: 1,
       start: 10,
-      type: MISMATCH_TYPE_HARDCLIP,
+      type: 'hardclip',
     },
     {
       altbase: 'A',
       base: 'C',
       length: 1,
       start: 9,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 
@@ -348,21 +338,21 @@ test('clipping', () => {
       base: 'S10',
       length: 1,
       start: 0,
-      type: MISMATCH_TYPE_SOFTCLIP,
+      type: 'softclip',
     },
     {
       cliplen: 10,
       base: 'S10',
       length: 1,
       start: 10,
-      type: MISMATCH_TYPE_SOFTCLIP,
+      type: 'softclip',
     },
     {
       altbase: 'A',
       base: 'C',
       length: 1,
       start: 9,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
@@ -375,7 +365,7 @@ test('multiple consecutive mismatches', () => {
       base: 'T',
       length: 1,
       start: 10,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
@@ -388,28 +378,28 @@ test('consecutive mismatches with 0-length runs', () => {
       base: 'C',
       length: 1,
       start: 0,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
     {
       altbase: 'T',
       base: 'A',
       length: 1,
       start: 1,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
     {
       altbase: 'G',
       base: 'T',
       length: 1,
       start: 2,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
     {
       altbase: 'C',
       base: 'G',
       length: 1,
       start: 3,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
@@ -417,7 +407,7 @@ test('consecutive mismatches with 0-length runs', () => {
 test('long deletion', () => {
   // Multiple base deletion
   expect(getMismatches('5M10D5M', '5^ACGTACGTAC5', 'AAAAABBBBB')).toEqual([
-    { start: 5, type: MISMATCH_TYPE_DELETION, base: '*', length: 10 },
+    { start: 5, type: 'deletion', base: '*', length: 10 },
   ])
 })
 
@@ -434,7 +424,7 @@ test('MD string starting with mismatch', () => {
       base: 'A',
       length: 1,
       start: 0,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
@@ -447,7 +437,7 @@ test('MD string ending with mismatch', () => {
       base: 'A',
       length: 1,
       start: 4,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
@@ -455,14 +445,14 @@ test('MD string ending with mismatch', () => {
 test('deletion at start', () => {
   // Deletion at beginning
   expect(getMismatches('5D10M', '^ACGTA10', 'TTTTTTTTTT')).toEqual([
-    { start: 0, type: MISMATCH_TYPE_DELETION, base: '*', length: 5 },
+    { start: 0, type: 'deletion', base: '*', length: 5 },
   ])
 })
 
 test('deletion at end', () => {
   // Deletion at end
   expect(getMismatches('10M5D', '10^ACGTA', 'TTTTTTTTTT')).toEqual([
-    { start: 10, type: MISMATCH_TYPE_DELETION, base: '*', length: 5 },
+    { start: 10, type: 'deletion', base: '*', length: 5 },
   ])
 })
 
@@ -472,18 +462,18 @@ test('complex pattern with insertions, deletions, and mismatches', () => {
   expect(getMismatches('10M2I5M3D18M', '5T4^GCA2A15', complexSeq)).toEqual([
     {
       start: 10,
-      type: MISMATCH_TYPE_INSERTION,
+      type: 'insertion',
       base: '2',
       insertedBases: 'NN',
       length: 0,
     },
-    { start: 15, type: MISMATCH_TYPE_DELETION, base: '*', length: 3 },
+    { start: 15, type: 'deletion', base: '*', length: 3 },
     {
       altbase: 'T',
       base: 'C',
       length: 1,
       start: 5,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
       qual: undefined,
     },
     {
@@ -491,7 +481,7 @@ test('complex pattern with insertions, deletions, and mismatches', () => {
       base: 'G',
       length: 1,
       start: 15,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
       qual: undefined,
     },
   ])
@@ -501,14 +491,14 @@ test('multiple skips with mismatches', () => {
   // Multiple N operations (spliced alignment)
   expect(getMismatches('5M100N5M50N5M', '3A1C4A4', 'AAATAACCCCCAAAAA')).toEqual(
     [
-      { base: 'N', length: 100, start: 5, type: MISMATCH_TYPE_SKIP },
-      { base: 'N', length: 50, start: 110, type: MISMATCH_TYPE_SKIP },
+      { base: 'N', length: 100, start: 5, type: 'skip' },
+      { base: 'N', length: 50, start: 110, type: 'skip' },
       {
         altbase: 'A',
         base: 'T',
         length: 1,
         start: 3,
-        type: MISMATCH_TYPE_MISMATCH,
+        type: 'mismatch',
         qual: undefined,
       },
       {
@@ -516,7 +506,7 @@ test('multiple skips with mismatches', () => {
         base: 'A',
         length: 1,
         start: 105,
-        type: MISMATCH_TYPE_MISMATCH,
+        type: 'mismatch',
         qual: undefined,
       },
       {
@@ -524,7 +514,7 @@ test('multiple skips with mismatches', () => {
         base: 'C',
         length: 1,
         start: 160,
-        type: MISMATCH_TYPE_MISMATCH,
+        type: 'mismatch',
         qual: undefined,
       },
     ],
@@ -545,29 +535,29 @@ test('soft clipping with complex operations', () => {
       base: 'S5',
       length: 1,
       start: 0,
-      type: MISMATCH_TYPE_SOFTCLIP,
+      type: 'softclip',
     },
     {
       start: 10,
-      type: MISMATCH_TYPE_INSERTION,
+      type: 'insertion',
       base: '2',
       insertedBases: 'NN',
       length: 0,
     },
-    { start: 15, type: MISMATCH_TYPE_DELETION, base: '*', length: 3 },
+    { start: 15, type: 'deletion', base: '*', length: 3 },
     {
       cliplen: 5,
       base: 'S5',
       length: 1,
       start: 23,
-      type: MISMATCH_TYPE_SOFTCLIP,
+      type: 'softclip',
     },
     {
       altbase: 'T',
       base: 'T',
       length: 1,
       start: 5,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
       qual: undefined,
     },
     {
@@ -575,7 +565,7 @@ test('soft clipping with complex operations', () => {
       base: 'A',
       length: 1,
       start: 15,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
       qual: undefined,
     },
   ])
@@ -589,21 +579,21 @@ test('edge case: empty MD string components', () => {
       base: 'C',
       length: 1,
       start: 0,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
     {
       altbase: 'T',
       base: 'T',
       length: 1,
       start: 1,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
     {
       altbase: 'G',
       base: 'G',
       length: 1,
       start: 2,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })
@@ -617,7 +607,7 @@ test('large numbers in MD string', () => {
       base: 'C',
       length: 1,
       start: 1000,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
     },
   ])
 })

@@ -1,30 +1,12 @@
 import { bpSpanPx, measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import {
-  MISMATCH_TYPE_CLIP_MASK,
-  MISMATCH_TYPE_DELETION,
-  MISMATCH_TYPE_HARDCLIP,
-  MISMATCH_TYPE_INSERTION,
-  MISMATCH_TYPE_MISMATCH,
-  MISMATCH_TYPE_SKIP,
-  MISMATCH_TYPE_SOFTCLIP,
-} from '../../shared/types'
 import { fillRectCtx, fillTextCtx } from '../util'
 
 import type { Mismatch } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
-
-const MISMATCH_TYPE_NAMES: Record<number, string> = {
-  [MISMATCH_TYPE_MISMATCH]: 'mismatch',
-  [MISMATCH_TYPE_INSERTION]: 'insertion',
-  [MISMATCH_TYPE_DELETION]: 'deletion',
-  [MISMATCH_TYPE_SKIP]: 'skip',
-  [MISMATCH_TYPE_SOFTCLIP]: 'softclip',
-  [MISMATCH_TYPE_HARDCLIP]: 'hardclip',
-}
 
 // Helper to apply alpha to color based on quality score
 function applyQualAlpha(baseColor: string, qual: number | undefined) {
@@ -102,10 +84,10 @@ export function renderMismatches({
     const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
     const w = rightPx - leftPx
-    if (mismatch.type === MISMATCH_TYPE_MISMATCH) {
+    if (mismatch.type === 'mismatch') {
       if (w >= 0.2) {
         items.push({
-          type: MISMATCH_TYPE_MISMATCH,
+          type: 'mismatch',
           seq: mismatch.base,
         })
         coords.push(leftPx, topPx, rightPx, topPx + heightPx)
@@ -145,7 +127,7 @@ export function renderMismatches({
           textColor,
         )
       }
-    } else if (mismatch.type === MISMATCH_TYPE_DELETION && drawIndels) {
+    } else if (mismatch.type === 'deletion' && drawIndels) {
       const len = mismatch.length
       if (!hideSmallIndels || len >= 10) {
         fillRectCtx(
@@ -159,7 +141,7 @@ export function renderMismatches({
         )
         if (bpPerPx < 3) {
           items.push({
-            type: MISMATCH_TYPE_DELETION,
+            type: 'deletion',
             seq: `${mismatch.length}`,
           })
           coords.push(leftPx, topPx, rightPx, topPx + heightPx)
@@ -177,7 +159,7 @@ export function renderMismatches({
           )
         }
       }
-    } else if (mismatch.type === MISMATCH_TYPE_INSERTION && drawIndels) {
+    } else if (mismatch.type === 'insertion' && drawIndels) {
       const pos = leftPx + extraHorizontallyFlippedOffset
       const len = +mismatch.base || mismatch.length
       const insW = Math.max(0, Math.min(1.2, invBpPerPx))
@@ -200,17 +182,16 @@ export function renderMismatches({
           }
           if (bpPerPx < 3) {
             items.push({
-              type: MISMATCH_TYPE_INSERTION,
+              type: 'insertion',
               seq: mismatch.insertedBases || 'unknown',
             })
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, topPx + heightPx)
           }
         }
       }
-    } else if ((mismatch.type & MISMATCH_TYPE_CLIP_MASK) !== 0) {
+    } else if (mismatch.type === 'softclip' || mismatch.type === 'hardclip') {
       const pos = leftPx + extraHorizontallyFlippedOffset
-      const typeName = MISMATCH_TYPE_NAMES[mismatch.type]!
-      const c = colorMap[typeName]
+      const c = colorMap[mismatch.type]
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       fillRectCtx(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
       items.push({
@@ -229,10 +210,10 @@ export function renderMismatches({
           pos + 3,
           topPx + heightPx,
           canvasWidth,
-          colorContrastMap[typeName],
+          colorContrastMap[mismatch.type],
         )
       }
-    } else if (mismatch.type === MISMATCH_TYPE_SKIP) {
+    } else if (mismatch.type === 'skip') {
       const t = topPx + heightPx / 2 - 1
       fillRectCtx(
         ctx,
@@ -253,11 +234,11 @@ export function renderMismatches({
       const mstart = start + mismatch.start
       const mlen = mismatch.length
       const len = +mismatch.base || mismatch.length
-      if (mismatch.type === MISMATCH_TYPE_INSERTION && len >= 10) {
+      if (mismatch.type === 'insertion' && len >= 10) {
         const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
         const txt = `${len}`
         items.push({
-          type: MISMATCH_TYPE_INSERTION,
+          type: 'insertion',
           seq: mismatch.insertedBases || 'unknown',
         })
         if (bpPerPx > largeInsertionIndicatorScale) {

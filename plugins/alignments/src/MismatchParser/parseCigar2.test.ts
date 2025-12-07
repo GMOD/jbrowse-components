@@ -11,13 +11,6 @@ import {
   CIGAR_S,
   CIGAR_X,
 } from '../PileupRenderer/renderers/cigarUtil'
-import {
-  MISMATCH_TYPE_DELETION,
-  MISMATCH_TYPE_INSERTION,
-  MISMATCH_TYPE_MISMATCH,
-  MISMATCH_TYPE_SKIP,
-  MISMATCH_TYPE_SOFTCLIP,
-} from '../shared/types'
 
 const ml = (currLen: number, opIndex: number) => (currLen << 4) | opIndex
 const parseCigar3 = (args: string) => [...parseCigar2(args)]
@@ -67,7 +60,7 @@ describe('cigarToMismatches2', () => {
     const ops = parseCigar2('56M1D45M')
     const result = cigarToMismatches2(ops, seq)
     expect(result).toEqual([
-      { start: 56, type: MISMATCH_TYPE_DELETION, base: '*', length: 1 },
+      { start: 56, type: 'deletion', base: '*', length: 1 },
     ])
   })
 
@@ -79,7 +72,7 @@ describe('cigarToMismatches2', () => {
     expect(result).toEqual([
       {
         start: 89,
-        type: MISMATCH_TYPE_INSERTION,
+        type: 'insertion',
         insertedBases: 'T',
         base: '1',
         length: 0,
@@ -94,7 +87,7 @@ describe('cigarToMismatches2', () => {
       base: 'N',
       length: 100,
       start: 50,
-      type: MISMATCH_TYPE_SKIP,
+      type: 'skip',
     })
   })
 
@@ -107,7 +100,7 @@ describe('cigarToMismatches2', () => {
       base: 'S10',
       length: 1,
       start: 0,
-      type: MISMATCH_TYPE_SOFTCLIP,
+      type: 'softclip',
     })
 
     expect(result).toContainEqual({
@@ -115,7 +108,7 @@ describe('cigarToMismatches2', () => {
       base: 'S10',
       length: 1,
       start: 90,
-      type: MISMATCH_TYPE_SOFTCLIP,
+      type: 'softclip',
     })
   })
 
@@ -156,14 +149,14 @@ describe('cigarToMismatches2', () => {
     expect(result.length).toBe(2)
     expect(result[0]).toMatchObject({
       start: 0,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
       base: 'A',
       altbase: 'T',
       length: 1,
     })
     expect(result[1]).toMatchObject({
       start: 9,
-      type: MISMATCH_TYPE_MISMATCH,
+      type: 'mismatch',
       base: 'C',
       altbase: 'G',
       length: 1,

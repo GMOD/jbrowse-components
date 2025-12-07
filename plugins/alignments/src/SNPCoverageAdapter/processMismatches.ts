@@ -6,25 +6,11 @@ import {
   ENTRY_DEPTH,
   ENTRY_NEG,
   ENTRY_POS,
-  MISMATCH_TYPE_DELETION,
-  MISMATCH_TYPE_DELSKIP_MASK,
-  MISMATCH_TYPE_HARDCLIP,
-  MISMATCH_TYPE_INSERTION,
-  MISMATCH_TYPE_SKIP,
-  MISMATCH_TYPE_SOFTCLIP,
 } from '../shared/types'
 
 import type { FlatBaseCoverageBin, Mismatch, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
-
-const MISMATCH_TYPE_NAMES: Record<number, string> = {
-  [MISMATCH_TYPE_INSERTION]: 'insertion',
-  [MISMATCH_TYPE_DELETION]: 'deletion',
-  [MISMATCH_TYPE_SKIP]: 'skip',
-  [MISMATCH_TYPE_SOFTCLIP]: 'softclip',
-  [MISMATCH_TYPE_HARDCLIP]: 'hardclip',
-}
 
 // Strand to flat ref key
 const STRAND_TO_REF: Record<-1 | 1, 'refNeg' | 'refPos'> = {
@@ -62,8 +48,8 @@ export function processMismatches({
         const { base, altbase, type } = mismatch
         const interbase = isInterbase(type)
 
-        if ((type & MISMATCH_TYPE_DELSKIP_MASK) !== 0) {
-          inc(bin, fstrand, CAT_DELSKIP + MISMATCH_TYPE_NAMES[type]!)
+        if (type === 'deletion' || type === 'skip') {
+          inc(bin, fstrand, CAT_DELSKIP + type)
           bin.depth--
         } else if (!interbase) {
           const snpBase = base as 'A' | 'G' | 'C' | 'T'
@@ -80,15 +66,15 @@ export function processMismatches({
           bin.refbase = altbase
         } else {
           const len =
-            type === MISMATCH_TYPE_INSERTION
+            type === 'insertion'
               ? mismatch.insertedBases?.length
               : mismatch.cliplen
-          inc(bin, fstrand, CAT_NONCOV + MISMATCH_TYPE_NAMES[type]!, len)
+          inc(bin, fstrand, CAT_NONCOV + type, len)
         }
       }
     }
 
-    if (mismatch.type === MISMATCH_TYPE_SKIP) {
+    if (mismatch.type === 'skip') {
       // for upper case XS and TS: reports the literal strand of the genomic
       // transcript
       const tags = feature.get('tags')

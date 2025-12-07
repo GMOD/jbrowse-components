@@ -3,7 +3,7 @@ import { doesIntersect2 } from '@jbrowse/core/util'
 import { parseCigar2 } from '../MismatchParser'
 import { incWithProbabilities } from './util'
 import { getMethBins } from '../ModificationParser/getMethBins'
-import { CAT_MOD, CAT_NONMOD, MISMATCH_TYPE_DELETION } from '../shared/types'
+import { CAT_MOD, CAT_NONMOD } from '../shared/types'
 
 import type { FlatBaseCoverageBin, Mismatch } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
@@ -35,7 +35,7 @@ export function processReferenceCpGs({
   if (seq) {
     const cigarOps = parseCigar2(feature.get('CIGAR'))
     const { methBins, methProbs } = getMethBins(feature, cigarOps)
-    const dels = mismatches.filter(f => f.type === MISMATCH_TYPE_DELETION)
+    const dels = mismatches.filter(f => f.type === 'deletion')
 
     for (let i = 0; i < fend - fstart; i++) {
       const j = i + fstart

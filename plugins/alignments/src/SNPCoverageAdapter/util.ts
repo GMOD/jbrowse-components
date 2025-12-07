@@ -8,7 +8,6 @@ import {
   ENTRY_POS,
   ENTRY_PROB_COUNT,
   ENTRY_PROB_TOTAL,
-  MISMATCH_TYPE_INTERBASE_MASK,
 } from '../shared/types'
 
 import type { ColorBy, FlatBaseCoverageBin, Mismatch } from '../shared/types'
@@ -23,8 +22,8 @@ export function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1
 }
 
-export function isInterbase(type: number) {
-  return (type & MISMATCH_TYPE_INTERBASE_MASK) !== 0
+export function isInterbase(type: string) {
+  return type === 'insertion' || type === 'softclip' || type === 'hardclip'
 }
 
 // Strand to entry array index: -1 -> ENTRY_NEG (1), 1 -> ENTRY_POS (2)

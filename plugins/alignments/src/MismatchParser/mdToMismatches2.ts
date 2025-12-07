@@ -1,5 +1,3 @@
-import { MISMATCH_TYPE_MISMATCH, MISMATCH_TYPE_SKIP } from '../shared/types'
-
 import type { Mismatch } from '../shared/types'
 
 // CIGAR operation indices (from BAM spec)
@@ -33,7 +31,7 @@ export function mdToMismatches2(
   const cigarLength = cigarMismatches.length
   let hasSkips = false
   for (let k = 0; k < cigarLength; k++) {
-    if (cigarMismatches[k]!.type === MISMATCH_TYPE_SKIP) {
+    if (cigarMismatches[k]!.type === 'skip') {
       hasSkips = true
       break
     }
@@ -82,7 +80,7 @@ export function mdToMismatches2(
         for (let k = lastSkipPos; k < cigarLength; k++) {
           const mismatch = cigarMismatches[k]!
           if (
-            mismatch.type === MISMATCH_TYPE_SKIP &&
+            mismatch.type === 'skip' &&
             currStart >= mismatch.start
           ) {
             currStart += mismatch.length
@@ -126,7 +124,7 @@ export function mdToMismatches2(
         qual: hasQual ? qual[s] : undefined,
         altbase: letter,
         length: 1,
-        type: MISMATCH_TYPE_MISMATCH,
+        type: 'mismatch',
       })
 
       currStart++
