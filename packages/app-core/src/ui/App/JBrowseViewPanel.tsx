@@ -11,12 +11,8 @@ import { observer } from 'mobx-react'
 import ViewContainer from './ViewContainer'
 import { isSessionWithDockviewLayout } from '../../DockviewLayout'
 
-import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type {
-  AbstractViewContainer,
-  AbstractViewModel,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { DockviewSessionType } from './types'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 import type {
   IDockviewPanelHeaderProps,
   IDockviewPanelProps,
@@ -89,16 +85,9 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type SessionType = SessionWithFocusedViewAndDrawerWidgets &
-  AbstractViewContainer & {
-    snackbarMessages: SnackbarMessage[]
-    renameCurrentSession: (arg: string) => void
-    popSnackbarMessage: () => unknown
-  }
-
 export interface JBrowseViewPanelParams {
   panelId: string
-  session?: SessionType
+  session?: DockviewSessionType
 }
 
 function stopEvent(e: React.MouseEvent | React.PointerEvent) {
@@ -108,7 +97,7 @@ function stopEvent(e: React.MouseEvent | React.PointerEvent) {
 
 function getViewsForPanel(
   panelId: string,
-  session: SessionType | undefined,
+  session: DockviewSessionType | undefined,
 ): AbstractViewModel[] {
   if (!session || !isSessionWithDockviewLayout(session)) {
     return []
@@ -119,7 +108,10 @@ function getViewsForPanel(
     .filter((v): v is AbstractViewModel => v !== undefined)
 }
 
-function getTabDisplayName(views: AbstractViewModel[], session: SessionType) {
+function getTabDisplayName(
+  views: AbstractViewModel[],
+  session: DockviewSessionType,
+) {
   if (views.length === 0) {
     return 'Empty'
   }
@@ -176,15 +168,14 @@ const JBrowseViewPanel = observer(function JBrowseViewPanel({
 
 function TabMenu({
   isHovered,
-  classes,
   onRename,
   onClose,
 }: {
   isHovered: boolean
-  classes: Record<string, string>
   onRename: () => void
   onClose: () => void
 }) {
+  const { classes } = useStyles()
   const menuItems = [
     {
       label: 'Rename tab',
@@ -292,7 +283,6 @@ export const JBrowseViewTab = observer(function JBrowseViewTab({
             </Typography>
             <TabMenu
               isHovered={isHovered}
-              classes={classes}
               onRename={handleStartEdit}
               onClose={() => {
                 api.close()

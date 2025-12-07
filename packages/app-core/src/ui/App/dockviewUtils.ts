@@ -1,9 +1,9 @@
-import type { SessionType } from './TiledViewsContainer'
+import type { DockviewSessionType } from './types'
 import type { DockviewApi } from 'dockview-react'
 
 export function createPanelConfig(
   panelId: string,
-  session: SessionType,
+  session: DockviewSessionType,
   title = 'Main',
 ) {
   return {
@@ -29,7 +29,10 @@ export function cleanLayoutForStorage(
   }
 }
 
-export function updatePanelParams(api: DockviewApi, session: SessionType) {
+export function updatePanelParams(
+  api: DockviewApi,
+  session: DockviewSessionType,
+) {
   for (const panel of api.panels) {
     panel.update({ params: { panelId: panel.id, session } })
   }

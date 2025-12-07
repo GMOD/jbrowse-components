@@ -69,7 +69,15 @@ exports[`adds menus 1`] = `
   },
   {
     "label": "Tools",
-    "menuItems": [],
+    "menuItems": [
+      {
+        "checked": false,
+        "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "label": "Use workspaces",
+        "onClick": [Function],
+        "type": "checkbox",
+      },
+    ],
   },
 ]
 `;
@@ -143,7 +151,15 @@ exports[`adds menus 2`] = `
   },
   {
     "label": "Tools",
-    "menuItems": [],
+    "menuItems": [
+      {
+        "checked": false,
+        "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "label": "Use workspaces",
+        "onClick": [Function],
+        "type": "checkbox",
+      },
+    ],
   },
   {
     "label": "Second Menu",

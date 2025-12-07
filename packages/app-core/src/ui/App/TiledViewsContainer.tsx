@@ -18,11 +18,7 @@ import {
 } from './dockviewUtils'
 import { isSessionWithDockviewLayout } from '../../DockviewLayout'
 
-import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type {
-  AbstractViewContainer,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { DockviewSessionType } from './types'
 import type {
   DockviewApi,
   DockviewGroupPanel,
@@ -39,15 +35,8 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-export type SessionType = SessionWithFocusedViewAndDrawerWidgets &
-  AbstractViewContainer & {
-    renameCurrentSession: (arg: string) => void
-    snackbarMessages: SnackbarMessage[]
-    popSnackbarMessage: () => unknown
-  }
-
 interface Props {
-  session: SessionType
+  session: DockviewSessionType
 }
 
 const components = {
