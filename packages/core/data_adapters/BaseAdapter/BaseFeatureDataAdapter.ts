@@ -2,7 +2,10 @@ import { type Observable, firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { BaseAdapter } from './BaseAdapter'
-import { aggregateQuantitativeStats } from './stats'
+import {
+  aggregateQuantitativeStats,
+  calculateFeatureDensityStats,
+} from './stats'
 import { ObservableCreate } from '../../util/rxjs'
 import { blankStats, scoresToStats } from '../../util/stats'
 
