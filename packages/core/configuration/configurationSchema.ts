@@ -16,7 +16,11 @@ import { ElementId } from '../util/types/mst'
 
 import type { ConfigSlotDefinition } from './configurationSlot'
 import type { AnyConfigurationSchemaType } from './types'
-import type { IAnyType, SnapshotOut } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IAnyType,
+  SnapshotOut,
+} from '@jbrowse/mobx-state-tree'
 
 export type {
   AnyConfigurationModel,
@@ -280,6 +284,15 @@ export function ConfigurationSchema<
   return schemaType
 }
 
+// Cache for track configuration MST instances created from frozen tracks.
+// This ensures the same MST node is returned for repeated accesses to the same
+// trackId, which is required for object identity comparisons in getReferring().
+// WeakMap keyed by session prevents memory leaks when sessions are destroyed.
+const trackConfigCache = new WeakMap<
+  object,
+  Map<string, IAnyStateTreeNode>
+>()
+
 /**
  * Creates a reference type for track configurations that:
  * - Resolves trackId strings to configuration objects at runtime
@@ -290,6 +303,15 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
       const session = getSession(parent)
+      const idStr = String(id)
+
+      // Check cache first - if track was recently deleted but UI is still
+      // rendering, we can return the cached instance to avoid errors
+      let sessionCache = trackConfigCache.get(session)
+      if (!sessionCache) {
+        sessionCache = new Map()
+        trackConfigCache.set(session, sessionCache)
+      }
 
       // Try to get from session.tracksById (works for frozen tracks)
       let ret = session.tracksById[id]
@@ -298,11 +320,29 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
         // @ts-expect-error
         ret = resolveIdentifier(schemaType, getRoot(parent), id)
       }
+
+      // If track not found, return cached instance if available (handles
+      // race condition where track is deleted but UI still rendering)
       if (!ret) {
+        const cached = sessionCache.get(idStr)
+        if (cached) {
+          return cached
+        }
         throw new Error(`Could not resolve identifier "${id}"`)
       }
-      // If it's a frozen/plain object, we need to instantiate it
-      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
+
+      // If it's already an MST node, return it directly
+      if (isStateTreeNode(ret)) {
+        return ret
+      }
+
+      // For frozen/plain objects, check cache to maintain object identity
+      let cached = sessionCache.get(idStr)
+      if (!cached) {
+        cached = schemaType.create(ret, getEnv(parent))
+        sessionCache.set(idStr, cached)
+      }
+      return cached
     },
     set(value) {
       return value.trackId
@@ -336,6 +376,12 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
   )
 }
 
+// Cache for display configuration MST instances
+const displayConfigCache = new WeakMap<
+  object,
+  Map<string, IAnyStateTreeNode>
+>()
+
 /**
  * Creates a reference type for display configurations that:
  * - Resolves displayId strings to configuration objects at runtime
@@ -350,7 +396,28 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
-      const track = getContainingTrack(parent)
+      const session = getSession(parent)
+      const idStr = String(id)
+
+      // Check/initialize cache
+      let sessionCache = displayConfigCache.get(session)
+      if (!sessionCache) {
+        sessionCache = new Map()
+        displayConfigCache.set(session, sessionCache)
+      }
+
+      let track
+      try {
+        track = getContainingTrack(parent)
+      } catch {
+        // Track may be detached during deletion - return cached if available
+        const cached = sessionCache.get(idStr)
+        if (cached) {
+          return cached
+        }
+        throw new Error(`Display configuration "${id}" not found - track detached`)
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const displays = track.configuration.displays || []
       // Find in the track's displays array (may be frozen/plain objects)
@@ -362,7 +429,6 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // This handles the common case where displays are auto-generated from track types
       if (!ret) {
         // Extract display type from the displayId (format: trackId-DisplayType)
-        const idStr = String(id)
         const displayType = idStr.split('-').slice(1).join('-')
         if (displayType) {
           ret = { displayId: idStr, type: displayType }
@@ -372,8 +438,19 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       if (!ret) {
         throw new Error(`Display configuration "${id}" not found`)
       }
-      // If it's a frozen/plain object, instantiate it as an MST model
-      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
+
+      // If it's already an MST node, return it directly
+      if (isStateTreeNode(ret)) {
+        return ret
+      }
+
+      // For frozen/plain objects, check cache to maintain object identity
+      let cached = sessionCache.get(idStr)
+      if (!cached) {
+        cached = schemaType.create(ret, getEnv(parent))
+        sessionCache.set(idStr, cached)
+      }
+      return cached
     },
     set(value) {
       return value.displayId
