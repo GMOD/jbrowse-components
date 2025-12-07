@@ -658,7 +658,10 @@ export default function stateModelFactory(pm: PluginManager) {
           self,
           autorun(
             function dotplotRegionsAutorun() {
-              if (self.volatileWidth !== undefined && self.assembliesInitialized) {
+              if (
+                self.volatileWidth !== undefined &&
+                self.assembliesInitialized
+              ) {
                 self.initializeDisplayedRegions()
               }
             },

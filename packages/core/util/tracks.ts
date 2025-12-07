@@ -313,10 +313,7 @@ export function showTrackGeneric(
     return found
   }
 
-  // Find the track configuration (works for both frozen and MST model tracks)
-  const conf =
-    session.tracksById[trackId] ??
-    session.tracks.find(t => t.trackId === trackId)
+  const conf = session.tracksById[trackId]
   if (!conf) {
     throw new Error(`Could not resolve identifier "${trackId}"`)
   }

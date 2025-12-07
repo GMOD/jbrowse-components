@@ -200,12 +200,18 @@ export function createBaseTrackModel(
       /**
        * #action
        */
-      replaceDisplay(oldDisplayId: string, newDisplayId: string, initialSnapshot = {}) {
+      replaceDisplay(
+        oldDisplayId: string,
+        newDisplayId: string,
+        initialSnapshot = {},
+      ) {
         const idx = self.displays.findIndex(
           d => d.configuration.displayId === oldDisplayId,
         )
         if (idx === -1) {
-          throw new Error(`could not find display id ${oldDisplayId} to replace`)
+          throw new Error(
+            `could not find display id ${oldDisplayId} to replace`,
+          )
         }
         const displays = self.configuration.displays as DisplayConf[]
         const displayConf = getDisplayConf(displays, newDisplayId)

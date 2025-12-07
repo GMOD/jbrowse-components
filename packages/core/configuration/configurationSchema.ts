@@ -291,11 +291,11 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     get(id, parent) {
       const session = getSession(parent)
 
-      // Try to get from session.tracksById (works for frozen tracks)
+      // Try session.tracksById first (works for frozen tracks)
       let ret = session.tracksById[id]
       if (!ret) {
-        // Fall back to resolveIdentifier (works for MST model tracks)
-        // @ts-expect-error
+        // Fall back to resolveIdentifier for view-specific tracks (e.g. viewTrackConfigs)
+        // that are MST models but not in session.tracks
         ret = resolveIdentifier(schemaType, getRoot(parent), id)
       }
       if (!ret) {
