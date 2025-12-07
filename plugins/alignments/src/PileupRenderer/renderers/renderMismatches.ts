@@ -74,8 +74,7 @@ export function renderMismatches({
   // located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = region.reversed ? invBpPerPx + 1 : -1
 
-  // two pass rendering: first pass, draw all the mismatches except wide
-  // insertion markers
+  // two pass rendering: first pass, draw all mismatches except insertions
   for (let i = 0, l = mismatches.length; i < l; i++) {
     const mismatch = mismatches[i]!
     const mstart = start + mismatch.start
@@ -159,10 +158,32 @@ export function renderMismatches({
           )
         }
       }
-    } else if (mismatch.type === 'insertion' && drawIndels) {
-      const pos = leftPx + extraHorizontallyFlippedOffset
+    } else if (mismatch.type === 'skip') {
+      const t = topPx + heightPx / 2 - 1
+      fillRectCtx(
+        ctx,
+        leftPx,
+        t,
+        Math.max(widthPx, 1.5),
+        1,
+        canvasWidth,
+        colorMap.skip,
+      )
+    }
+  }
+
+  // second pass, draw insertions and softclip/hardclip text on top
+  for (let i = 0, l = mismatches.length; i < l; i++) {
+    const mismatch = mismatches[i]!
+    const mstart = start + mismatch.start
+    const mlen = mismatch.length
+    const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
+    const pos = leftPx + extraHorizontallyFlippedOffset
+
+    if (mismatch.type === 'insertion' && drawIndels) {
       const len = +mismatch.base || mismatch.length
       const insW = Math.max(0, Math.min(1.2, invBpPerPx))
+
       if (len < 10) {
         if (!hideSmallIndels) {
           ctx.fillStyle = colorMap.insertion!
@@ -188,54 +209,7 @@ export function renderMismatches({
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, topPx + heightPx)
           }
         }
-      }
-    } else if (mismatch.type === 'softclip' || mismatch.type === 'hardclip') {
-      const pos = leftPx + extraHorizontallyFlippedOffset
-      const c = colorMap[mismatch.type]
-      const clipW = Math.max(minSubfeatureWidth, pxPerBp)
-      fillRectCtx(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
-      items.push({
-        type: mismatch.type,
-        seq: mismatch.base,
-      })
-      coords.push(pos - clipW, topPx, pos + clipW * 2, topPx + heightPx)
-      if (invBpPerPx >= charWidth && canRenderText) {
-        const l = pos - clipW
-        const clipW3 = clipW * 3
-        fillRectCtx(ctx, l, topPx, clipW3, 1, canvasWidth, c)
-        fillRectCtx(ctx, l, topPx + heightPx - 1, clipW3, 1, canvasWidth, c)
-        fillTextCtx(
-          ctx,
-          `(${mismatch.base})`,
-          pos + 3,
-          topPx + heightPx,
-          canvasWidth,
-          colorContrastMap[mismatch.type],
-        )
-      }
-    } else if (mismatch.type === 'skip') {
-      const t = topPx + heightPx / 2 - 1
-      fillRectCtx(
-        ctx,
-        leftPx,
-        t,
-        Math.max(widthPx, 1.5),
-        1,
-        canvasWidth,
-        colorMap.skip,
-      )
-    }
-  }
-
-  // second pass, draw wide insertion markers on top
-  if (drawIndels) {
-    for (let i = 0, l = mismatches.length; i < l; i++) {
-      const mismatch = mismatches[i]!
-      const mstart = start + mismatch.start
-      const mlen = mismatch.length
-      const len = +mismatch.base || mismatch.length
-      if (mismatch.type === 'insertion' && len >= 10) {
-        const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
+      } else {
         const txt = `${len}`
         items.push({
           type: 'insertion',
@@ -296,6 +270,29 @@ export function renderMismatches({
             colorMap.insertion,
           )
         }
+      }
+    } else if (mismatch.type === 'softclip' || mismatch.type === 'hardclip') {
+      const c = colorMap[mismatch.type]
+      const clipW = Math.max(minSubfeatureWidth, pxPerBp)
+      fillRectCtx(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
+      items.push({
+        type: mismatch.type,
+        seq: mismatch.base,
+      })
+      coords.push(pos - clipW, topPx, pos + clipW * 2, topPx + heightPx)
+      if (invBpPerPx >= charWidth && canRenderText) {
+        const l = pos - clipW
+        const clipW3 = clipW * 3
+        fillRectCtx(ctx, l, topPx, clipW3, 1, canvasWidth, c)
+        fillRectCtx(ctx, l, topPx + heightPx - 1, clipW3, 1, canvasWidth, c)
+        fillTextCtx(
+          ctx,
+          `(${mismatch.base})`,
+          pos + 3,
+          topPx + heightPx,
+          canvasWidth,
+          colorMap[mismatch.type],
+        )
       }
     }
   }
