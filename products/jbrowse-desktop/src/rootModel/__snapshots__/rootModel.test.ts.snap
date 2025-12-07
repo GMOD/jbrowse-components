@@ -146,6 +146,13 @@ exports[`adds menus 1`] = `
         "label": "Open assembly manager",
         "onClick": [Function],
       },
+      {
+        "checked": false,
+        "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "label": "Use workspaces",
+        "onClick": [Function],
+        "type": "checkbox",
+      },
     ],
   },
 ]
@@ -296,6 +303,13 @@ exports[`adds menus 2`] = `
         "icon": [Function],
         "label": "Open assembly manager",
         "onClick": [Function],
+      },
+      {
+        "checked": false,
+        "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "label": "Use workspaces",
+        "onClick": [Function],
+        "type": "checkbox",
       },
     ],
   },

@@ -35,6 +35,13 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       stickyViewHeaders: types.optional(types.boolean, () =>
         localStorageGetBoolean('stickyViewHeaders', true),
       ),
+      /**
+       * #property
+       * enables the dockview-based tabbed/tiled workspace layout
+       */
+      useWorkspaces: types.optional(types.boolean, () =>
+        localStorageGetBoolean('useWorkspaces', false),
+      ),
     })
     .actions(self => ({
       /**
@@ -112,6 +119,13 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         self.stickyViewHeaders = sticky
       },
 
+      /**
+       * #action
+       */
+      setUseWorkspaces(useWorkspaces: boolean) {
+        self.useWorkspaces = useWorkspaces
+      },
+
       afterAttach() {
         addDisposer(
           self,
@@ -123,6 +137,15 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
               )
             },
             { name: 'StickyViewHeaders' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function useWorkspacesAutorun() {
+              localStorageSetBoolean('useWorkspaces', self.useWorkspaces)
+            },
+            { name: 'UseWorkspaces' },
           ),
         )
       },
