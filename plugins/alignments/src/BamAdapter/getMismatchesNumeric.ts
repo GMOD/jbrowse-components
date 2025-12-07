@@ -30,7 +30,7 @@ export function getMismatchesNumeric(
   ref?: string,
   qual?: Uint8Array,
 ): Mismatch[] {
-  const mismatches = cigarToMismatchesNumeric(
+  const { mismatches, hasSkips } = cigarToMismatchesNumeric(
     cigar,
     numericSeq,
     seqLength,
@@ -40,30 +40,18 @@ export function getMismatchesNumeric(
 
   // Parse MD tag if available
   if (md) {
-    mdToMismatchesNumeric(md, cigar, mismatches, numericSeq, seqLength, qual)
+    mdToMismatchesNumeric(
+      md,
+      cigar,
+      mismatches,
+      numericSeq,
+      seqLength,
+      hasSkips,
+      qual,
+    )
   }
 
   return mismatches
-}
-
-// Helper to get base from NUMERIC_SEQ at position (returns string)
-function getSeqBase(numericSeq: Uint8Array, idx: number, seqLength: number) {
-  if (idx < seqLength) {
-    const sb = numericSeq[idx >> 1]!
-    // Use bitwise: (idx & 1) is 0 for even, 1 for odd
-    // even: shift right 4, odd: no shift. Then mask with 0xf
-    const nibble = (sb >> ((1 - (idx & 1)) << 2)) & 0xf
-    return SEQRET_STRING_DECODER[nibble]!
-  }
-  return 'X'
-}
-
-// Helper to get base char code from NUMERIC_SEQ at position (returns lowercase char code)
-// Inlined version without bounds check for hot loops where bounds are known
-function getSeqBaseNumericUnchecked(numericSeq: Uint8Array, idx: number) {
-  const sb = numericSeq[idx >> 1]!
-  const nibble = (sb >> ((1 - (idx & 1)) << 2)) & 0xf
-  return SEQRET_NUMERIC_DECODER[nibble]!
 }
 
 // Helper to get sequence slice from NUMERIC_SEQ
@@ -93,10 +81,11 @@ function cigarToMismatchesNumeric(
   seqLength: number,
   ref?: string,
   qual?: Uint8Array,
-): Mismatch[] {
+): { mismatches: Mismatch[]; hasSkips: boolean } {
   let roffset = 0
   let soffset = 0
   const mismatches: Mismatch[] = []
+  let hasSkips = false
   const hasRef = !!ref
   for (let i = 0, l = ops.length; i < l; i++) {
     const packed = ops[i]!
@@ -109,11 +98,11 @@ function cigarToMismatchesNumeric(
         const safeEnd = endIdx <= seqLength ? len : seqLength - soffset
         for (let j = 0; j < safeEnd; j++) {
           const seqIdx = soffset + j
-          const seqBaseCode = getSeqBaseNumericUnchecked(numericSeq, seqIdx)
+          const sb = numericSeq[seqIdx >> 1]!
+          const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
+          const seqBaseCode = SEQRET_NUMERIC_DECODER[nibble]!
           const refBaseCode = ref.charCodeAt(roffset + j) | 0x20
           if (seqBaseCode !== refBaseCode) {
-            const sb = numericSeq[seqIdx >> 1]!
-            const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
             mismatches.push({
               start: roffset + j,
               type: 'mismatch',
@@ -149,6 +138,7 @@ function cigarToMismatchesNumeric(
       })
       roffset += len
     } else if (op === CIGAR_N) {
+      hasSkips = true
       mismatches.push({
         start: roffset,
         type: 'skip',
@@ -158,12 +148,14 @@ function cigarToMismatchesNumeric(
       roffset += len
     } else if (op === CIGAR_X) {
       for (let j = 0; j < len; j++) {
-        const seqBase = getSeqBase(numericSeq, soffset + j, seqLength)
+        const seqIdx = soffset + j
+        const sb = numericSeq[seqIdx >> 1]!
+        const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
         mismatches.push({
           start: roffset + j,
           type: 'mismatch',
-          base: seqBase,
-          qual: qual?.[soffset + j],
+          base: SEQRET_STRING_DECODER[nibble]!,
+          qual: qual?.[seqIdx],
           length: 1,
         })
       }
@@ -189,7 +181,7 @@ function cigarToMismatchesNumeric(
     }
   }
 
-  return mismatches
+  return { mismatches, hasSkips }
 }
 
 function mdToMismatchesNumeric(
@@ -198,20 +190,12 @@ function mdToMismatchesNumeric(
   mismatches: Mismatch[],
   numericSeq: Uint8Array,
   seqLength: number,
+  hasSkips: boolean,
   qual?: Uint8Array,
 ) {
   const opsLength = ops.length
   const hasQual = qual !== undefined
-
-  // Check for skips in existing mismatches from CIGAR
   const cigarLength = mismatches.length
-  let hasSkips = false
-  for (let k = 0; k < cigarLength; k++) {
-    if (mismatches[k]!.type === 'skip') {
-      hasSkips = true
-      break
-    }
-  }
 
   let currStart = 0
   let lastCigar = 0
@@ -247,7 +231,7 @@ function mdToMismatchesNumeric(
       }
     } else if (char >= 65) {
       // letter (mismatch)
-      const letter = mdstring[i]!
+      const letter = String.fromCharCode(char)
       i++
 
       // Handle skips
@@ -287,7 +271,14 @@ function mdToMismatchesNumeric(
       lastRefOffset = refOffset
       const s = templateOffset - (refOffset - currStart)
 
-      const base = getSeqBase(numericSeq, s, seqLength)
+      let base: string
+      if (s < seqLength) {
+        const sb = numericSeq[s >> 1]!
+        const nibble = (sb >> ((1 - (s & 1)) << 2)) & 0xf
+        base = SEQRET_STRING_DECODER[nibble]!
+      } else {
+        base = 'X'
+      }
       mismatches.push({
         start: currStart,
         base,
