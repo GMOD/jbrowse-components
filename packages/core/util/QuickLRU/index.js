@@ -321,6 +321,7 @@ export default class QuickLRU extends Map {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   get [Symbol.toStringTag]() {
     return 'QuickLRU'
   }
