@@ -80,7 +80,7 @@
     "@jbrowse/text-indexing": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
-    "@mui/x-data-grid": "^8.20.0",
+    "@mui/x-data-grid": "^8.0.0",
     "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.0.0",
     "deepmerge": "^4.2.2",

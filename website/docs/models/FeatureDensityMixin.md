@@ -101,7 +101,7 @@ stats don't produce any helpful message besides to zoom in
 string
 ```
 
-#### getter: featureDensityStatsReadyAndRegionNotTooLarge
+#### getter: statsReadyAndRegionNotTooLarge
 
 ```js
 // type

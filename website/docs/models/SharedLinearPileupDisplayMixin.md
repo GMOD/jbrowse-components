@@ -222,7 +222,7 @@ adapterRenderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onClick(): void; onMismatchClick(_: unknown, item: { type: number; seq: string; modType?: string; probability?: number; }, featureId?: string): Promise<...>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<...>; displayModel: { ...;...
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onClick(): void; onMismatchClick(_: unknown, item: { type: string; seq: string; modType?: string; probability?: number; }, featureId?: string): Promise<...>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<...>; displayModel: { ...;...
 ```
 
 #### method: colorSchemeSubMenuItems
