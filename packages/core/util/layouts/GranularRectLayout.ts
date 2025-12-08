@@ -92,13 +92,19 @@ class LayoutRow<T> {
       return false
     }
 
-    const len = this.intervals.length
+    const intervals = this.intervals
+    const len = intervals.length
+
+    // Empty row is always clear
+    if (len === 0) {
+      return true
+    }
 
     // Linear scan for small arrays (better cache locality)
     if (len < 40) {
       for (let i = 0; i < len; i += 2) {
-        const start = this.intervals[i]!
-        const end = this.intervals[i + 1]!
+        const start = intervals[i]!
+        const end = intervals[i + 1]!
         // Intersection check: end > left && start < right
         if (end > left && start < right) {
           return false
@@ -108,33 +114,34 @@ class LayoutRow<T> {
     }
 
     // Binary search for larger arrays
-    // Find first interval that could overlap
+    // Find first interval whose end > left (first potential overlap)
     let low = 0
-    let high = len >> 1 // Divide by 2 using bit shift
+    let high = len >> 1
 
     while (low < high) {
       const mid = (low + high) >>> 1
-      const midIdx = mid << 1 // Multiply by 2
-      if (this.intervals[midIdx + 1]! <= left) {
+      const midIdx = mid << 1
+      if (intervals[midIdx + 1]! <= left) {
         low = mid + 1
       } else {
         high = mid
       }
     }
 
-    // Check overlaps from that point
-    for (let i = low << 1; i < len; i += 2) {
-      const start = this.intervals[i]!
-      if (start >= right) {
-        break // No more possible overlaps
-      }
-      const end = this.intervals[i + 1]!
-      if (end > left) {
-        return false
-      }
+    // Check if found interval overlaps
+    const idx = low << 1
+    if (idx >= len) {
+      return true
     }
 
-    return true
+    // If the first candidate's start is >= right, no overlap possible
+    const start = intervals[idx]!
+    if (start >= right) {
+      return true
+    }
+
+    // This interval overlaps (we know end > left from binary search, and start < right)
+    return false
   }
 
   addRect(rect: Rectangle<T>, data: Record<string, T> | string): void {
@@ -389,25 +396,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return false
   }
 
-  /**
-   * make a subarray if it does not exist
-   */
-  private autovivifyRow(bitmap: LayoutRow<T>[], y: number) {
-    let row = bitmap[y]
-    if (!row) {
-      if (y > this.hardRowLimit) {
-        throw new Error(
-          `layout hard limit (${
-            this.hardRowLimit * this.pitchY
-          }px) exceeded, aborting layout`,
-        )
-      }
-      row = new LayoutRow()
-      bitmap[y] = row
-    }
-    return row
-  }
-
   addRectToBitmap(rect: Rectangle<T>) {
     if (rect.top === null) {
       return
@@ -415,6 +403,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     const data = rect.id
     const yEnd = rect.top + rect.h
+    const bitmap = this.bitmap
+    const hardRowLimit = this.hardRowLimit
+    const pitchY = this.pitchY
+
     if (rect.r - rect.l > maxFeaturePitchWidth) {
       // the rect is very big in relation to the view size, just pretend, for
       // the purposes of layout, that it extends infinitely.  this will cause
@@ -422,11 +414,31 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       // along the genome at the same zoom level.  but most users will not do
       // that.  hopefully.
       for (let y = rect.top; y < yEnd; y += 1) {
-        this.autovivifyRow(this.bitmap, y).setAllFilled(data)
+        let row = bitmap[y]
+        if (!row) {
+          if (y > hardRowLimit) {
+            throw new Error(
+              `layout hard limit (${hardRowLimit * pitchY}px) exceeded, aborting layout`,
+            )
+          }
+          row = new LayoutRow()
+          bitmap[y] = row
+        }
+        row.setAllFilled(data)
       }
     } else {
       for (let y = rect.top; y < yEnd; y += 1) {
-        this.autovivifyRow(this.bitmap, y).addRect(rect, data)
+        let row = bitmap[y]
+        if (!row) {
+          if (y > hardRowLimit) {
+            throw new Error(
+              `layout hard limit (${hardRowLimit * pitchY}px) exceeded, aborting layout`,
+            )
+          }
+          row = new LayoutRow()
+          bitmap[y] = row
+        }
+        row.addRect(rect, data)
       }
     }
   }

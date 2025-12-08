@@ -46,6 +46,14 @@ export default class BamSlightlyLazyFeature implements Feature {
     switch (field) {
       case 'mismatches':
         return this.mismatches
+      case 'name':
+        return this.record.name
+      case 'start':
+        return this.record.start
+      case 'end':
+        return this.record.end
+      case 'strand':
+        return this.record.strand
       case 'qual':
         return this.qual
       case 'seq':
