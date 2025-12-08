@@ -26,7 +26,7 @@ function getSemicirclePath(centerX: number, radius: number) {
   const start = polarToCartesian(centerX, 0, radius, 270)
   const end = polarToCartesian(centerX, 0, radius, 90)
   return {
-    d: `M ${start.x} ${start.y} A ${radius} ${radius} 0 1 0 ${end.x} ${end.y}`,
+    d: `M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}`,
     textYCoord: radius,
   }
 }
