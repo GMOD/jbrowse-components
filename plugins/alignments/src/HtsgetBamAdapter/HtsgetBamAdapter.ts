@@ -3,7 +3,6 @@ import { HtsgetFile } from '@gmod/bam'
 import BamAdapter from '../BamAdapter/BamAdapter'
 
 import type { BamFile } from '@gmod/bam'
-import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class HtsgetBamAdapter extends BamAdapter {
   protected async configurePre() {
@@ -13,15 +12,6 @@ export default class HtsgetBamAdapter extends BamAdapter {
       baseUrl: htsgetBase,
       trackId: htsgetTrackId,
     }) as unknown as BamFile
-
-    const adapterConfig = this.getConf('sequenceAdapter')
-    if (adapterConfig && this.getSubAdapter) {
-      const adapter = await this.getSubAdapter(adapterConfig)
-      return {
-        bam,
-        sequenceAdapter: adapter.dataAdapter as BaseSequenceAdapter,
-      }
-    }
     return { bam }
   }
 }

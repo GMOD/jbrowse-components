@@ -10,6 +10,7 @@ import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -37,8 +38,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private configureP?: Promise<{
     bam: BamFile
-    sequenceAdapter?: BaseSequenceAdapter
   }>
+
+  private sequenceAdapterP?: Promise<BaseSequenceAdapter>
 
   // derived classes may not use the same configuration so a custom configure
   // method allows derived classes to override this behavior
@@ -53,16 +55,19 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       csiFilehandle: csi ? openLocation(location, pm) : undefined,
       baiFilehandle: !csi ? openLocation(location, pm) : undefined,
     })
-
-    const adapterConfig = this.getConf('sequenceAdapter')
-    if (adapterConfig && this.getSubAdapter) {
-      const { dataAdapter } = await this.getSubAdapter(adapterConfig)
-      return {
-        bam,
-        sequenceAdapter: dataAdapter as BaseSequenceAdapter,
-      }
-    }
     return { bam }
+  }
+
+  async getSequenceAdapter(sequenceAdapterConfig?: Record<string, unknown>) {
+    if (!sequenceAdapterConfig || !this.getSubAdapter) {
+      return undefined
+    }
+    if (!this.sequenceAdapterP) {
+      this.sequenceAdapterP = this.getSubAdapter(sequenceAdapterConfig).then(
+        r => r.dataAdapter as BaseSequenceAdapter,
+      )
+    }
+    return this.sequenceAdapterP
   }
 
   protected async configure() {
@@ -128,8 +133,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return idToName
   }
 
-  private async seqFetch(refName: string, start: number, end: number) {
-    const { sequenceAdapter } = await this.configure()
+  private async seqFetch(
+    refName: string,
+    start: number,
+    end: number,
+    sequenceAdapter?: BaseSequenceAdapter,
+  ) {
     if (!sequenceAdapter || !refName) {
       return undefined
     }
@@ -144,13 +153,22 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: FilterBy
+      filterBy?: FilterBy
+      sequenceAdapter?: Record<string, unknown>
     },
   ) {
     const { refName, start, end, originalRefName } = region
-    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
+    const {
+      stopToken,
+      filterBy,
+      sequenceAdapter: sequenceAdapterConfig,
+      statusCallback = () => {},
+    } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       const { bam } = await this.configure()
+      const sequenceAdapter = await this.getSequenceAdapter(
+        sequenceAdapterConfig,
+      )
       await this.setup(opts)
       checkStopToken(stopToken)
       const records = await updateStatus(
@@ -175,6 +193,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
               originalRefName || refName,
               record.start,
               record.end,
+              sequenceAdapter,
             )
           }
 

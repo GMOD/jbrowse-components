@@ -10,6 +10,7 @@ import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -28,13 +29,15 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<{
     samHeader: Header
     cram: IndexedCramFile
-    sequenceAdapter: BaseSequenceAdapter
   }>
 
   private configureP?: Promise<{
     cram: IndexedCramFile
-    sequenceAdapter: BaseSequenceAdapter
   }>
+
+  private sequenceAdapterP?: Promise<BaseSequenceAdapter>
+
+  private sequenceAdapter?: BaseSequenceAdapter
 
   // used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
   // mismatches in cache. at an average of 100kb-300kb, keeping even just 500
@@ -64,20 +67,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       checkSequenceMD5: false,
     })
 
-    if (!this.getSubAdapter) {
-      throw new Error('Error getting subadapter')
-    }
-
-    const seqConf = this.getConf('sequenceAdapter')
-    if (!seqConf) {
-      throw new Error('no sequenceAdapter supplied to CramAdapter config')
-    }
-    const subadapter = await this.getSubAdapter(seqConf)
-
-    return {
-      cram,
-      sequenceAdapter: subadapter.dataAdapter as BaseSequenceAdapter,
-    }
+    return { cram }
   }
 
   public async configure() {
@@ -88,6 +78,18 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       })
     }
     return this.configureP
+  }
+
+  async getSequenceAdapter(sequenceAdapterConfig?: Record<string, unknown>) {
+    if (!sequenceAdapterConfig || !this.getSubAdapter) {
+      return undefined
+    }
+    if (!this.sequenceAdapterP) {
+      this.sequenceAdapterP = this.getSubAdapter(sequenceAdapterConfig).then(
+        r => r.dataAdapter as BaseSequenceAdapter,
+      )
+    }
+    return this.sequenceAdapterP
   }
 
   async getHeader(_opts?: BaseOptions) {
@@ -102,13 +104,17 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   ): Promise<string> {
     start -= 1 // convert from 1-based closed to interbase
 
-    const { sequenceAdapter } = await this.configure()
+    if (!this.sequenceAdapter) {
+      throw new Error(
+        'no sequenceAdapter available, is it configured in the assembly?',
+      )
+    }
     const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
     if (!refName) {
-      throw new Error('unknown')
+      throw new Error('unknown refName')
     }
 
-    const sequence = await sequenceAdapter.getSequence({
+    const sequence = await this.sequenceAdapter.getSequence({
       refName,
       start,
       end,
@@ -118,8 +124,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setupPre(_opts?: BaseOptions) {
-    const conf = await this.configure()
-    const { cram } = conf
+    const { cram } = await this.configure()
     const samHeader = await cram.cram.getSamHeader()
 
     // use the @SQ lines in the header to figure out the mapping between ref
@@ -145,7 +150,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     this.samHeader = data
     return {
       samHeader: data,
-      ...conf,
+      cram,
     }
   }
 
@@ -199,13 +204,25 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: FilterBy
+      filterBy?: FilterBy
+      sequenceAdapter?: Record<string, unknown>
     },
   ) {
-    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
+    const {
+      stopToken,
+      filterBy,
+      sequenceAdapter: sequenceAdapterConfig,
+      statusCallback = () => {},
+    } = opts || {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
+      // Set up the sequence adapter before fetching records since seqFetch
+      // is called internally by the CRAM library during decoding
+      const seqAdapter = await this.getSequenceAdapter(sequenceAdapterConfig)
+      if (seqAdapter) {
+        this.sequenceAdapter = seqAdapter
+      }
       const { cram, samHeader } = await this.setup(opts)
 
       const refId = this.refNameToId(refName)

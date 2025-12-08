@@ -22,6 +22,10 @@ const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
   }
 }
 
+// Mock sequenceAdapter config - the actual config doesn't matter since
+// getVolvoxSequenceSubAdapter ignores it and returns the test adapter
+const sequenceAdapterConfig = { type: 'TestSequenceAdapter' }
+
 async function getFeats(f1: string, f2: string) {
   const cramAdapter = new CramAdapter(
     cramConfigSchema.create({
@@ -31,7 +35,6 @@ async function getFeats(f1: string, f2: string) {
       craiLocation: {
         localPath: require.resolve(`${f1}.crai`),
       },
-      sequenceAdapter: {},
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
@@ -48,6 +51,8 @@ async function getFeats(f1: string, f2: string) {
         },
       },
     }),
+    getVolvoxSequenceSubAdapter,
+    pluginManager,
   )
   const query = {
     assemblyName: 'volvox',
@@ -55,8 +60,9 @@ async function getFeats(f1: string, f2: string) {
     start: 1,
     end: 10200,
   }
-  const bamFeatures = bamAdapter.getFeatures(query)
-  const cramFeatures = cramAdapter.getFeatures(query)
+  const opts = { sequenceAdapter: sequenceAdapterConfig }
+  const bamFeatures = bamAdapter.getFeatures(query, opts)
+  const cramFeatures = cramAdapter.getFeatures(query, opts)
   const bamFeaturesArray = await firstValueFrom(bamFeatures.pipe(toArray()))
   const cramFeaturesArray = await firstValueFrom(cramFeatures.pipe(toArray()))
   return { bamFeaturesArray, cramFeaturesArray }

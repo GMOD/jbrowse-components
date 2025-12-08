@@ -119,6 +119,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
+      get sequenceAdapter() {
+        const { assemblyManager } = getSession(self)
+        const track = getParent<{ configuration: AnyConfigurationModel }>(
+          self,
+          2,
+        )
+        const assemblyNames = readConfObject(
+          track.configuration,
+          'assemblyNames',
+        ) as string[]
+        const assembly = assemblyManager.get(assemblyNames[0]!)
+        return assembly ? getConf(assembly, ['sequence', 'adapter']) : undefined
+      },
+
+      /**
+       * #getter
+       */
       get showLabels() {
         return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
       },
@@ -264,37 +281,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         renderProps() {
           const superProps = superRenderProps()
-          const session = getSession(self)
-          const { assemblyManager } = session
-
-          // Get the assembly's sequenceAdapter configuration
-          let sequenceAdapter
-          // Get assembly names from the parent track's configuration
-          const track = getParent<{ configuration: AnyConfigurationModel }>(
-            self,
-            2,
-          )
-          const assemblyNames = readConfObject(
-            track.configuration,
-            'assemblyNames',
-          ) as string[]
-
-          const assembly = assemblyManager.get(assemblyNames[0]!)
-          if (assembly) {
-            // Get the sequence adapter config and ensure it's a plain object
-            const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
-            sequenceAdapter = adapterConfig
-          } else {
-            console.warn('No assembly found for:', assemblyNames[0])
-          }
-
           return {
             ...(superProps as Omit<typeof superProps, symbol>),
             config: self.rendererConfig,
             filters: new SerializableFilterChain({
               filters: self.activeFilters,
             }),
-            sequenceAdapter,
+            sequenceAdapter: self.sequenceAdapter,
           }
         },
 

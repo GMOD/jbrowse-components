@@ -70,19 +70,6 @@ export function buildTrackConfig({
     ...configObj,
   }
 
-  // Special handling for AlignmentsTrack
-  if (trackType === 'AlignmentsTrack') {
-    const assembly = configContents.assemblies?.find(
-      asm => asm.name === finalAssemblyNames,
-    )
-    if (assembly) {
-      // @ts-expect-error
-      trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
-    } else if (!skipCheck) {
-      throw new Error(`Failed to find assemblyName ${finalAssemblyNames}`)
-    }
-  }
-
   return trackConfig
 }
 
