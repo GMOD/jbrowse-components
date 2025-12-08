@@ -96,7 +96,18 @@ interface ArcDisplayModel {
 }
 
 const Arcs = observer(function ({ model }: { model: ArcDisplayModel }) {
-  const { showArcsSetting, height, skipFeatures } = model
+  const { showArcsSetting } = model
+
+  // Early return before any expensive operations when arcs are disabled
+  if (!showArcsSetting) {
+    return null
+  }
+
+  return <ArcsInner model={model} />
+})
+
+const ArcsInner = observer(function ({ model }: { model: ArcDisplayModel }) {
+  const { height, skipFeatures } = model
   const view = getContainingView(model) as LGV
   const [hoverInfo, setHoverInfo] = useState<{
     arc: ArcData
@@ -122,7 +133,7 @@ const Arcs = observer(function ({ model }: { model: ArcDisplayModel }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skipFeatures, view.bpPerPx, effectiveHeight])
 
-  if (!showArcsSetting || !view.initialized) {
+  if (!view.initialized) {
     return null
   }
 
