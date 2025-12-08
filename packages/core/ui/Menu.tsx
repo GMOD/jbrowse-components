@@ -7,6 +7,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import {
+  CircularProgress,
   Divider,
   Grow,
   ListItemIcon,
@@ -18,8 +19,10 @@ import {
   Popover,
 } from '@mui/material'
 
+import { useAsyncMenuItems } from './CascadingMenuHooks'
 import { findLastIndex } from '../util'
 
+import type { MenuItemsGetter } from './CascadingMenuHooks'
 import type {
   MenuItemProps,
   MenuProps as MUIMenuProps,
@@ -425,15 +428,38 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
 )
 
 export interface MenuProps extends PopoverProps {
-  menuItems: MenuItem[]
+  menuItems: MenuItemsGetter
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement>,
     callback: (...args: any[]) => void,
   ) => void
 }
 
+function LoadingMenuItems() {
+  return (
+    <MUIMenuItem disabled>
+      <ListItemIcon>
+        <CircularProgress size={20} />
+      </ListItemIcon>
+      <ListItemText primary="Loading..." />
+    </MUIMenuItem>
+  )
+}
+
+function ErrorMenuItems({ error }: { error: unknown }) {
+  return (
+    <MUIMenuItem disabled>
+      <ListItemText
+        primary="Error loading menu"
+        secondary={error instanceof Error ? error.message : String(error)}
+      />
+    </MUIMenuItem>
+  )
+}
+
 function Menu(props: MenuProps) {
   const { open, onClose, menuItems, onMenuItemClick, ...other } = props
+  const { items, loading, error } = useAsyncMenuItems(menuItems, open)
 
   return (
     <Popover
@@ -452,15 +478,27 @@ function Menu(props: MenuProps) {
       }}
       {...other}
     >
-      <MenuPage
-        open={open}
-        onClose={onClose}
-        menuItems={menuItems}
-        onMenuItemClick={onMenuItemClick}
-        top
-      />
+      {loading ? (
+        <MenuList dense>
+          <LoadingMenuItems />
+        </MenuList>
+      ) : error ? (
+        <MenuList dense>
+          <ErrorMenuItems error={error} />
+        </MenuList>
+      ) : (
+        <MenuPage
+          open={open}
+          onClose={onClose}
+          menuItems={items}
+          onMenuItemClick={onMenuItemClick}
+          top
+        />
+      )}
     </Popover>
   )
 }
+
+export type { MenuItemsGetter }
 
 export default Menu

@@ -61,7 +61,12 @@ const FacetedSelector = observer(function FacetedSelector({
         return (
           <div className={classes.cell}>
             <SanitizedHTML html={value as string} />
-            <TrackSelectorTrackMenu id={id} conf={conf} trackId={id} model={model} />
+            <TrackSelectorTrackMenu
+              id={id}
+              conf={conf}
+              trackId={id}
+              model={model}
+            />
           </div>
         )
       },

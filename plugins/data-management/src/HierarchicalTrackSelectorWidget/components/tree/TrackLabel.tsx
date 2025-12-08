@@ -143,7 +143,12 @@ const TrackLabel = memo(function TrackLabel({
           }
         />
       </Tooltip>
-      <TrackSelectorTrackMenu model={model} trackId={trackId} id={id} conf={conf} />
+      <TrackSelectorTrackMenu
+        model={model}
+        trackId={trackId}
+        id={id}
+        conf={conf}
+      />
     </>
   )
 })

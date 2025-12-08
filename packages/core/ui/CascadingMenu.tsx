@@ -29,8 +29,6 @@ import type { MenuItem as JBMenuItem } from './Menu'
 import type { PopupState } from './hooks'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'
 
-
-
 // ============================================================================
 // Small UI components
 // ============================================================================
@@ -102,7 +100,10 @@ function HelpButton({
 
   if (hasHelpText) {
     return (
-      <CascadingMenuHelpIconButton helpText={item.helpText} label={item.label} />
+      <CascadingMenuHelpIconButton
+        helpText={item.helpText}
+        label={item.label}
+      />
     )
   }
   if (isCheckOrRadio && showSpacer) {
@@ -141,7 +142,9 @@ function CascadingMenuItem({
         }
         onClick?.(event)
       }}
-      onMouseOver={() => { closeSiblingSubmenus(parentPopupState) }}
+      onMouseOver={() => {
+        closeSiblingSubmenus(parentPopupState)
+      }}
     >
       {children}
     </MenuItem>
@@ -326,7 +329,10 @@ function CascadingMenuList({
         }
         if (item.type === 'divider') {
           return (
-            <Divider key={`divider-${JSON.stringify(item)}-${idx}`} component="li" />
+            <Divider
+              key={`divider-${JSON.stringify(item)}-${idx}`}
+              component="li"
+            />
           )
         }
         if (item.type === 'subHeader') {
@@ -386,4 +392,4 @@ function CascadingMenuChildren(props: {
 
 export default CascadingMenuChildren
 
-export {type MenuItemsGetter} from './CascadingMenuHooks'
+export { type MenuItemsGetter } from './CascadingMenuHooks'
