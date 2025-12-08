@@ -39,7 +39,9 @@ const WiggleClusterDialog = lazy(
 // using a map because it preserves order
 const rendererTypes = new Map([
   ['xyplot', 'MultiXYPlotRenderer'],
+  ['xypoint', 'MultiXYPointRenderer'],
   ['multirowxy', 'MultiRowXYPlotRenderer'],
+  ['multirowxypoint', 'MultiRowXYPointRenderer'],
   ['multirowdensity', 'MultiDensityRenderer'],
   ['multiline', 'MultiLineRenderer'],
   ['multirowline', 'MultiRowLineRenderer'],
@@ -166,7 +168,9 @@ export function stateModelFactory(
       get graphType() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiXYPointRenderer' ||
           self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowXYPointRenderer' ||
           self.rendererTypeName === 'MultiLineRenderer' ||
           self.rendererTypeName === 'MultiRowLineRenderer'
         )
@@ -177,6 +181,7 @@ export function stateModelFactory(
       get needsFullHeightScalebar() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiXYPointRenderer' ||
           self.rendererTypeName === 'MultiLineRenderer'
         )
       },
@@ -186,6 +191,7 @@ export function stateModelFactory(
       get isMultiRow() {
         return (
           self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowXYPointRenderer' ||
           self.rendererTypeName === 'MultiRowLineRenderer' ||
           self.rendererTypeName === 'MultiDensityRenderer'
         )
@@ -201,15 +207,6 @@ export function stateModelFactory(
 
       /**
        * #getter
-       */
-      get canHaveFill() {
-        return (
-          self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPlotRenderer'
-        )
-      },
-      /**
-       * #getter
        * the multirowxy and multiline don't need to use colors on the legend
        * boxes since their track is drawn with the color. sort of a stylistic
        * choice
@@ -217,7 +214,8 @@ export function stateModelFactory(
       get renderColorBoxes() {
         return !(
           self.rendererTypeName === 'MultiRowLineRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPlotRenderer'
+          self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowXYPointRenderer'
         )
       },
       /**
@@ -438,18 +436,6 @@ export function stateModelFactory(
         return self.adapterCapabilities.includes('hasGlobalStats')
       },
 
-      /**
-       * #getter
-       */
-      get fillSetting() {
-        if (self.filled) {
-          return 0
-        } else if (self.minSize === 1) {
-          return 1
-        } else {
-          return 2
-        }
-      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
@@ -466,31 +452,15 @@ export function stateModelFactory(
               subMenu: self.scoreTrackMenuItems(),
             },
 
-            ...(self.canHaveFill
-              ? [
-                  {
-                    label: 'Fill mode',
-                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
-                      (elt, idx) => ({
-                        label: elt,
-                        type: 'radio',
-                        checked: self.fillSetting === idx,
-                        onClick: () => {
-                          self.setFill(idx)
-                        },
-                      }),
-                    ),
-                  },
-                ]
-              : []),
-
             ...(hasRenderings
               ? [
                   {
                     label: 'Renderer type',
                     subMenu: [
                       'xyplot',
+                      'xypoint',
                       'multirowxy',
+                      'multirowxypoint',
                       'multirowdensity',
                       'multiline',
                       'multirowline',
@@ -517,18 +487,22 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-            {
-              label: 'Cluster by score',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  WiggleClusterDialog,
+            ...(self.isMultiRow
+              ? [
                   {
-                    model: self,
-                    handleClose,
+                    label: 'Cluster rows by score',
+                    onClick: () => {
+                      getSession(self).queueDialog(handleClose => [
+                        WiggleClusterDialog,
+                        {
+                          model: self,
+                          handleClose,
+                        },
+                      ])
+                    },
                   },
-                ])
-              },
-            },
+                ]
+              : []),
             {
               label: 'Show sidebar',
               type: 'checkbox',

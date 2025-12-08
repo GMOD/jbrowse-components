@@ -50,6 +50,8 @@ export function drawXY(
     colorCallback: (f: Feature, score: number) => string
     // when color is static (e.g. in Multi renderers), set fillStyle once and skip callback
     staticColor?: string
+    // override config filled value (for point renderers)
+    filled?: boolean
   },
 ) {
   const {
@@ -66,13 +68,15 @@ export function drawXY(
     inverted,
     stopToken,
     staticColor,
+    filled: filledProp,
   } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
   const height = unadjustedHeight - offset * 2
 
-  const filled = readConfObject(config, 'filled')
+  // allow filled prop to override config value (for point renderers)
+  const filled = filledProp ?? readConfObject(config, 'filled')
   const clipColor = readConfObject(config, 'clipColor')
   const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
