@@ -15,7 +15,6 @@ const ServerSideRenderedBlockContent = observer(function ({
     error?: unknown
     reload: () => void
     message: React.ReactNode
-    filled?: boolean
     status?: string
     reactElement?: React.ReactElement
     isRenderingPending?: boolean
@@ -27,32 +26,22 @@ const ServerSideRenderedBlockContent = observer(function ({
         <BlockErrorMessage model={model} />
       </Suspense>
     )
-  } else if (model.message) {
-    // the message can be a fully rendered react component, e.g. the region too
-    // large message
+  }
+  if (model.message) {
     return isValidElement(model.message) ? (
       model.message
     ) : (
       <BlockMsg message={`${model.message}`} severity="info" />
     )
-  } else if (
-    model.isRenderingPending ||
-    (!model.filled && !model.reactElement)
-  ) {
-    // Render is in flight, or we have no content and not filled yet
-    // Show old content with overlay if available, otherwise show just overlay
+  }
+  if (model.isRenderingPending) {
     return (
       <LoadingOverlay message={model.status}>
         {model.reactElement}
       </LoadingOverlay>
     )
-  } else if (model.filled) {
-    // Render completed - show new content without overlay
-    return model.reactElement
-  } else {
-    // No content and not rendering - show nothing
-    return null
   }
+  return model.reactElement ?? null
 })
 
 export default ServerSideRenderedBlockContent

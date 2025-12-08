@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import FacetFilters from './FacetFilters'
 import FacetedDataGrid from './FacetedDataGrid'
 import FacetedHeader from './FacetedHeader'
-import TrackLabelMenu from '../tree/TrackLabelMenu'
+import TrackSelectorTrackMenu from '../tree/TrackSelectorTrackMenu'
 
 import type { FacetedRow } from '../../facetedModel'
 import type { HierarchicalTrackSelectorModel } from '../../model'
@@ -61,7 +61,12 @@ const FacetedSelector = observer(function FacetedSelector({
         return (
           <div className={classes.cell}>
             <SanitizedHTML html={value as string} />
-            <TrackLabelMenu id={id} conf={conf} trackId={id} model={model} />
+            <TrackSelectorTrackMenu
+              id={id}
+              conf={conf}
+              trackId={id}
+              model={model}
+            />
           </div>
         )
       },

@@ -29,7 +29,7 @@ type MaybeCollapsedKeys = [string, boolean][] | undefined
 
 const defaultItemHeight = 22
 const categoryItemHeight = 40
-const overscan = 5
+const overscan = 20
 
 // for settings that are config dependent
 function keyConfigPostFix() {
@@ -526,7 +526,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       itemOffsets(height: number, scrollTop: number) {
-        const { flattenedItems, flattenedItemOffsets } = self
+        const { flattenedItemOffsets } = self
         const { cumulativeHeight, offsets } = flattenedItemOffsets
 
         if (offsets.length === 0) {
@@ -538,7 +538,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           }
         }
 
-        // Binary search to find the start index based on scroll position
+        // Binary search to find the index at a given offset
         const findIndexAtOffset = (offset: number) => {
           let low = 0
           let high = offsets.length - 1
@@ -562,16 +562,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
         const start = Math.max(0, findIndexAtOffset(scrollTop) - overscan)
         const targetHeight = scrollTop + height + overscan * defaultItemHeight
-
-        let end = start
-        let currentHeight = offsets[start]!
-        while (
-          end < flattenedItems.length - 1 &&
-          currentHeight < targetHeight
-        ) {
-          end++
-          currentHeight = offsets[end]! + getItemHeight(flattenedItems[end]!)
-        }
+        const end = Math.min(
+          offsets.length - 1,
+          findIndexAtOffset(targetHeight) + overscan,
+        )
 
         return {
           startIndex: start,

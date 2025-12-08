@@ -1,6 +1,12 @@
 import { isConfigurationModel } from '@jbrowse/core/configuration'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getEnv,
+  isAlive,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { isBaseSession } from './BaseSession'
@@ -169,19 +175,36 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        * #action
        * opens a configuration editor to configure the given thing,
        * and sets the current task to be configuring it
-       * @param configuration -
+       * @param configuration - can be an MST model or a frozen/plain object with trackId
        */
-      editConfiguration(configuration: AnyConfigurationModel) {
-        if (!isConfigurationModel(configuration)) {
+      editConfiguration(
+        configuration: AnyConfigurationModel | { trackId: string },
+      ) {
+        let targetConfig: AnyConfigurationModel
+
+        if (
+          isStateTreeNode(configuration) &&
+          isConfigurationModel(configuration)
+        ) {
+          // Already an MST model (e.g., from track.configuration), use directly
+          targetConfig = configuration
+        } else if ('trackId' in configuration) {
+          // Frozen/plain object - create a temporary MST model for editing
+          const trackSchema = pluginManager.pluggableConfigSchemaType('track')
+          targetConfig = trackSchema.create(configuration, getEnv(self))
+        } else {
           throw new Error(
-            'must pass a configuration model to editConfiguration',
+            'must pass a configuration model or frozen config with trackId to editConfiguration',
           )
         }
+
         const editor = this.addWidget(
           'ConfigurationEditorWidget',
           'configEditor',
-          { target: configuration },
+          {},
         )
+        // Set target via action since it's now volatile
+        editor.setTarget(targetConfig)
         this.showWidget(editor)
       },
 

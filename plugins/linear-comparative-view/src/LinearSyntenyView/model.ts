@@ -7,7 +7,7 @@ import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { observable, transaction } from 'mobx'
+import { observable } from 'mobx'
 
 import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
@@ -109,11 +109,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showAllRegions() {
-        transaction(() => {
-          for (const view of self.views) {
-            view.showAllRegionsInAssembly()
-          }
-        })
+        for (const view of self.views) {
+          view.showAllRegionsInAssembly()
+        }
       },
     }))
     .actions(self => ({

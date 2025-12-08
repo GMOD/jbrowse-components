@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -43,12 +45,12 @@ function ContentBlock({
   )
 }
 
-function ElidedBlock({ width }: { width: number }) {
+const ElidedBlock = memo(function ElidedBlock({ width }: { width: number }) {
   const { classes } = useStyles()
   return <div className={classes.elidedBlock} style={{ width }} />
-}
+})
 
-function InterRegionPaddingBlock({
+const InterRegionPaddingBlock = memo(function InterRegionPaddingBlock({
   boundary,
   width,
   style = {},
@@ -71,6 +73,6 @@ function InterRegionPaddingBlock({
       }
     />
   )
-}
+})
 
 export { ContentBlock, ElidedBlock, InterRegionPaddingBlock }

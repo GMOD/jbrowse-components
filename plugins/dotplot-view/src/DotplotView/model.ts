@@ -14,20 +14,23 @@ import {
   measureText,
   minmax,
 } from '@jbrowse/core/util'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   addDisposer,
   cast,
   getParent,
-  getRoot,
   getSnapshot,
-  resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { autorun, observable, transaction } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
@@ -416,54 +419,20 @@ export default function stateModelFactory(pm: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pm.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const trackType = pm.getTrackType(conf.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${conf.type}`)
-        }
-        const viewType = pm.getViewType(self.type)!
-        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          viewType.displayTypes.find(type => type.name === d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
-          )
-        }
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
-        })
-        self.tracks.push(track)
+        return showTrackGeneric(self, trackId, initialSnapshot)
       },
 
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pm.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const tracks = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => {
-          for (const track of tracks) {
-            self.tracks.remove(track)
-          }
-        })
-        return tracks.length
+        return hideTrackGeneric(self, trackId)
       },
       /**
        * #action
        */
       toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-          return true
-        }
-        return false
+        toggleTrackGeneric(self, trackId)
       },
       /**
        * #action
@@ -552,6 +521,23 @@ export default function stateModelFactory(pm: PluginManager) {
         self.vview.zoomTo(self.vview.maxBpPerPx)
         self.vview.center()
         self.hview.center()
+      },
+      /**
+       * #action
+       */
+      initializeDisplayedRegions() {
+        const { hview, vview, assemblyNames } = self
+        if (hview.displayedRegions.length && vview.displayedRegions.length) {
+          return
+        }
+        const { assemblyManager } = getSession(self)
+        hview.setDisplayedRegions(
+          assemblyManager.get(assemblyNames[0]!)?.regions || [],
+        )
+        vview.setDisplayedRegions(
+          assemblyManager.get(assemblyNames[1]!)?.regions || [],
+        )
+        this.showAllRegions()
       },
       /**
        * #action
@@ -672,35 +658,12 @@ export default function stateModelFactory(pm: PluginManager) {
           self,
           autorun(
             function dotplotRegionsAutorun() {
-              const session = getSession(self)
-
-              // don't operate if width not set yet
               if (
-                self.volatileWidth === undefined ||
-                !self.assembliesInitialized
+                self.volatileWidth !== undefined &&
+                self.assembliesInitialized
               ) {
-                return
+                self.initializeDisplayedRegions()
               }
-
-              const { hview, assemblyNames, vview } = self
-              // also don't operate if displayedRegions already set, this is a
-              // helper autorun to load regions from assembly
-              if (
-                hview.displayedRegions.length &&
-                vview.displayedRegions.length
-              ) {
-                return
-              }
-
-              transaction(() => {
-                hview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[0]!)?.regions || [],
-                )
-                vview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[1]!)?.regions || [],
-                )
-                self.showAllRegions()
-              })
             },
             { delay: 1000, name: 'DotplotRegions' },
           ),

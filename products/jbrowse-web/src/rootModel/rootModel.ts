@@ -93,6 +93,7 @@ export default function RootModel({
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const jbrowseModelType = jbrowseWebFactory({
+    adminMode,
     pluginManager,
     assemblyConfigSchema,
   })
