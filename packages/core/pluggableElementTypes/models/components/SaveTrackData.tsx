@@ -28,7 +28,8 @@ import { observer } from 'mobx-react'
 import { getRpcSessionId } from '../../../util/tracks'
 
 import type { FileTypeExporter } from '../saveTrackFileTypes/types'
-import type { AbstractTrackModel, Feature, Region } from '@jbrowse/core/util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()({
@@ -64,7 +65,8 @@ const SaveTrackDataDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: AbstractTrackModel & {
+  model: IAnyStateTreeNode & {
+    configuration: AnyConfigurationModel
     saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
   }
   handleClose: () => void
@@ -80,8 +82,7 @@ const SaveTrackDataDialog = observer(function ({
   const [helpDialogContent, setHelpDialogContent] = useState('')
   const [copied, setCopied] = useState(false)
 
-  // @ts-expect-error
-  const view = getContainingView(model) as {
+  const view = getContainingView(model) as unknown as {
     coarseVisibleLocStrings: string[]
     visibleRegions?: Region[]
   }
