@@ -91,25 +91,6 @@ function stateModelFactory(
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
       },
-
-      /**
-       * #getter
-       * Collect all skip features from rendered blocks for cross-region arc drawing
-       * Uses a Map to deduplicate features that appear in multiple blocks
-       */
-      get skipFeatures(): Feature[] {
-        const skipFeaturesMap = new Map<string, Feature>()
-        for (const block of self.blockState.values()) {
-          if (block.features) {
-            for (const feature of block.features.values()) {
-              if (feature.get('type') === 'skip') {
-                skipFeaturesMap.set(feature.id(), feature)
-              }
-            }
-          }
-        }
-        return [...skipFeaturesMap.values()]
-      },
     }))
     .actions(self => ({
       /**
@@ -180,6 +161,28 @@ function stateModelFactory(
           return (
             self.showArcs ?? readConfObject(this.rendererConfig, 'showArcs')
           )
+        },
+        /**
+         * #getter
+         * Collect all skip features from rendered blocks for cross-region arc drawing
+         * Uses a Map to deduplicate features that appear in multiple blocks
+         * Only computed when showArcsSetting is true for performance
+         */
+        get skipFeatures(): Feature[] {
+          if (!this.showArcsSetting) {
+            return []
+          }
+          const skipFeaturesMap = new Map<string, Feature>()
+          for (const block of self.blockState.values()) {
+            if (block.features) {
+              for (const feature of block.features.values()) {
+                if (feature.get('type') === 'skip') {
+                  skipFeaturesMap.set(feature.id(), feature)
+                }
+              }
+            }
+          }
+          return [...skipFeaturesMap.values()]
         },
         /**
          * #getter

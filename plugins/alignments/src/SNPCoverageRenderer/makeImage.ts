@@ -59,27 +59,37 @@ export function makeImage(
   // and bottom of the display
   const height = unadjustedHeight - offset * 2
 
-  const opts = { ...scaleOpts, range: [0, height] }
-  const viewScale = getScale(opts)
-
-  // clipping and insertion indicators, uses a smaller height/2 scale
-  const indicatorViewScale = getScale({
-    ...opts,
-    range: [0, height / 2],
-    scaleType: 'linear',
-  })
+  // Use d3-scale only to get the "niced" domain, then use simple arithmetic
+  const viewScale = getScale({ ...scaleOpts, range: [0, height] })
+  const [domainMin, domainMax] = viewScale.domain() as [number, number]
+  const domainSpan = domainMax - domainMin
   const originY = getOrigin(scaleOpts.scaleType)
+  const isLog = scaleOpts.scaleType === 'log'
+
+  // Precompute values for linear scale
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+
+  // Precompute values for log scale (base 2)
+  const log2 = Math.log(2)
+  const logMin = Math.log(domainMin) / log2
+  const logMax = Math.log(domainMax) / log2
+  const logSpan = logMax - logMin
+  const logRatio = logSpan !== 0 ? height / logSpan : 0
+
+  // For indicator scale, always linear with half height
+  const indicatorRatio = domainSpan !== 0 ? height / 2 / domainSpan : 0
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
   const showInterbaseIndicators = readConfObject(cfg, 'showInterbaseIndicators')
 
-  // get the y coordinate that we are plotting at, this can be log scale
-  const toY = (n: number) => height - (viewScale(n) || 0) + offset
+  // Simple arithmetic scale functions - avoid d3-scale overhead in hot path
+  const toY = isLog
+    ? (n: number) => height - (Math.log(n) / log2 - logMin) * logRatio + offset
+    : (n: number) => height - (n - domainMin) * linearRatio + offset
   const toHeight = (n: number) => toY(originY) - toY(n)
-  // used specifically for indicator, origin is always 0 for linear scale
-  const toY2 = (n: number) => height - (indicatorViewScale(n) || 0) + offset
-  const toHeight2 = (n: number) => toY2(0) - toY2(n)
+  // Indicator scale is always linear, origin always 0
+  const toHeight2 = (n: number) => n * indicatorRatio
 
   const { bases, softclip, hardclip, insertion } = theme.palette
   const colorMap: Record<string, string> = {

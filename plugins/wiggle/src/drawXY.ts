@@ -75,13 +75,41 @@ export function drawXY(
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const minSize = readConfObject(config, 'minSize')
 
+  // Use d3-scale only to get the "niced" domain, then use simple arithmetic
   const scale = getScale({ ...scaleOpts, range: [0, height], inverted })
   const originY = getOrigin(scaleOpts.scaleType)
-  const domain = scale.domain()
-  const niceMin = domain[0]!
-  const niceMax = domain[1]!
+  const domain = scale.domain() as [number, number]
+  const niceMin = domain[0]
+  const niceMax = domain[1]
+  const domainSpan = niceMax - niceMin
+  const isLog = scaleOpts.scaleType === 'log'
 
-  const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
+  // Precompute values for linear scale
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+
+  // Precompute values for log scale (base 2)
+  const log2 = Math.log(2)
+  const logMin = Math.log(niceMin) / log2
+  const logMax = Math.log(niceMax) / log2
+  const logSpan = logMax - logMin
+  const logRatio = logSpan !== 0 ? height / logSpan : 0
+
+  // Simple arithmetic scale function - avoid d3-scale overhead in hot path
+  const toY = isLog
+    ? (n: number) => {
+        const scaled = (Math.log(n) / log2 - logMin) * logRatio
+        return (
+          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
+          offset
+        )
+      }
+    : (n: number) => {
+        const scaled = (n - niceMin) * linearRatio
+        return (
+          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
+          offset
+        )
+      }
   const toOrigin = (n: number) => toY(originY) - toY(n)
   const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
   let hasClipping = false
