@@ -37,9 +37,7 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   showSoftClip: boolean
   highResolutionScaling: number
   statusCallback?: (arg: string) => void
-  adapterConfig: AnyConfigurationModel & {
-    sequenceAdapter?: AnyConfigurationModel
-  }
+  sequenceAdapter?: AnyConfigurationModel
 }
 
 export interface ProcessedRenderArgs extends RenderArgsDeserialized {

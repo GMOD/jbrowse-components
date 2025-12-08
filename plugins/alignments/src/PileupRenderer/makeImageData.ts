@@ -34,8 +34,7 @@ async function fetchRegionSequence(
   renderArgs: PreProcessedRenderArgs,
   pluginManager: PluginManager,
 ) {
-  const { colorBy, features, sessionId, adapterConfig, regions } = renderArgs
-  const { sequenceAdapter } = adapterConfig
+  const { colorBy, features, sessionId, regions, sequenceAdapter } = renderArgs
   if (colorBy?.type !== 'methylation' || !features.size || !sequenceAdapter) {
     return undefined
   }
