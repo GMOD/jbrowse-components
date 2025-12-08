@@ -24,13 +24,9 @@ export default class CoreGetRefNames extends RpcMethodType {
     // cache sequenceAdapter config on the adapter if provided (for BAM/CRAM)
     if (sequenceAdapter) {
       const adapter = dataAdapter as { sequenceAdapterConfig?: unknown }
-      console.log('CoreGetRefNames: sequenceAdapter provided, adapter.sequenceAdapterConfig was=', adapter.sequenceAdapterConfig ? 'present' : 'undefined')
       if (adapter.sequenceAdapterConfig === undefined) {
-        console.log('CoreGetRefNames: setting sequenceAdapterConfig on adapter')
         adapter.sequenceAdapterConfig = sequenceAdapter
       }
-    } else {
-      console.log('CoreGetRefNames: no sequenceAdapter provided')
     }
     return dataAdapter.getRefNames(deserializedArgs)
   }

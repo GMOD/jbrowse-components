@@ -126,7 +126,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   ): Promise<string> {
     start -= 1 // convert from 1-based closed to interbase
 
-    if (!this.sequenceAdapter) {
+    const sequenceAdapter = await this.getSequenceAdapter()
+    if (!sequenceAdapter) {
       throw new Error(
         'no sequenceAdapter available, is it configured in the assembly?',
       )
@@ -136,7 +137,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       throw new Error('unknown refName')
     }
 
-    const sequence = await this.sequenceAdapter.getSequence({
+    const sequence = await sequenceAdapter.getSequence({
       refName,
       start,
       end,

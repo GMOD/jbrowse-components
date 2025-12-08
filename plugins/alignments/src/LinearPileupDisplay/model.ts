@@ -157,9 +157,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     })
 
     .views(self => ({
-      get blockType() {
-        return 'dynamicBlocks'
-      },
       /**
        * #getter
        */
