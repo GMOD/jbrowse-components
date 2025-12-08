@@ -29,7 +29,11 @@ export function generateHierarchy({
   const leafCounts = new Map<TreeNode, number>()
   const categoryMaps = new Map<TreeNode, Map<string, TreeNode>>()
 
-  for (const conf of sortConfs(confs, activeSortTrackNames, activeSortCategories)) {
+  for (const conf of sortConfs(
+    confs,
+    activeSortTrackNames,
+    activeSortCategories,
+  )) {
     const isSessionTrack = conf.trackId.endsWith('sessionTrack')
     const baseCategories = readConfObject(conf, 'category') ?? []
     const categories = isSessionTrack
@@ -41,8 +45,8 @@ export function generateHierarchy({
 
     if (!noCategories) {
       let categoryPath = ''
-      for (let i = 0; i < categories.length; i++) {
-        const category = categories[i]!
+      for (const [i, category_] of categories.entries()) {
+        const category = category_!
         categoryPath = categoryPath ? `${categoryPath},${category}` : category
 
         let categoryMap = categoryMaps.get(currLevel)
