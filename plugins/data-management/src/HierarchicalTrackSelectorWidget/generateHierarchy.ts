@@ -26,6 +26,7 @@ export function generateHierarchy({
   const { filterText, activeSortTrackNames, activeSortCategories } = model
   const session = getSession(model)
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
+  const leafCounts = new Map<TreeNode, number>()
 
   // uses getConf
   for (const conf of sortConfs(
@@ -73,9 +74,8 @@ export function generateHierarchy({
     // uses splice to try to put all leaf nodes above "category nodes" if you
     // change the splice to a simple push and open
     // test_data/test_order/config.json you will see the weirdness
-    const r = currLevel.children.findIndex(elt => elt.children.length)
-    const idx = r === -1 ? currLevel.children.length : r
-    currLevel.children.splice(idx, 0, {
+    const leafCount = leafCounts.get(currLevel) ?? 0
+    currLevel.children.splice(leafCount, 0, {
       id: [extra, conf.trackId].filter(f => !!f).join(','),
       trackId: conf.trackId,
       name: getTrackName(conf, session),
@@ -84,6 +84,7 @@ export function generateHierarchy({
       nestingLevel: categories.length + 1,
       type: 'track' as const,
     })
+    leafCounts.set(currLevel, leafCount + 1)
   }
 
   return hierarchy.children
