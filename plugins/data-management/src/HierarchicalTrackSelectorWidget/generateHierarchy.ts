@@ -29,54 +29,47 @@ export function generateHierarchy({
   const leafCounts = new Map<TreeNode, number>()
   const categoryMaps = new Map<TreeNode, Map<string, TreeNode>>()
 
-  // uses getConf
-  for (const conf of sortConfs(
-    confs,
-    activeSortTrackNames,
-    activeSortCategories,
-  )) {
+  for (const conf of sortConfs(confs, activeSortTrackNames, activeSortCategories)) {
     const isSessionTrack = conf.trackId.endsWith('sessionTrack')
     const baseCategories = readConfObject(conf, 'category') ?? []
-    // prepend session tracks category to force sort to the top
     const categories = isSessionTrack
       ? [' Session tracks', ...baseCategories]
       : baseCategories
 
     let currLevel = hierarchy
+    let nestingLevel = 0
 
     if (!noCategories) {
-      // find existing category to put track into or create it
+      let categoryPath = ''
       for (let i = 0; i < categories.length; i++) {
         const category = categories[i]!
+        categoryPath = categoryPath ? `${categoryPath},${category}` : category
+
         let categoryMap = categoryMaps.get(currLevel)
         if (!categoryMap) {
           categoryMap = new Map()
           categoryMaps.set(currLevel, categoryMap)
         }
-        const existing = categoryMap.get(category)
-        if (existing) {
-          currLevel = existing
-        } else {
-          const categoryPath = categories.slice(0, i + 1).join(',')
+
+        let existing = categoryMap.get(category)
+        if (!existing) {
           const id = extra ? `${extra}-${categoryPath}` : categoryPath
-          const n = {
+          existing = {
             children: [],
             name: category,
             id,
-            nestingLevel: (currLevel.nestingLevel ?? 0) + 1,
+            nestingLevel: i + 1,
             menuItems,
             type: 'category' as const,
           } as TreeNode
-          currLevel.children.push(n)
-          categoryMap.set(category, n)
-          currLevel = n
+          currLevel.children.push(existing)
+          categoryMap.set(category, existing)
         }
+        currLevel = existing
+        nestingLevel = i + 1
       }
     }
 
-    // uses splice to try to put all leaf nodes above "category nodes" if you
-    // change the splice to a simple push and open
-    // test_data/test_order/config.json you will see the weirdness
     const leafCount = leafCounts.get(currLevel) ?? 0
     currLevel.children.splice(leafCount, 0, {
       id: extra ? `${extra},${conf.trackId}` : conf.trackId,
@@ -84,7 +77,7 @@ export function generateHierarchy({
       name: getTrackName(conf, session),
       conf,
       children: [],
-      nestingLevel: categories.length + 1,
+      nestingLevel: nestingLevel + 1,
       type: 'track' as const,
     })
     leafCounts.set(currLevel, leafCount + 1)

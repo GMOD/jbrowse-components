@@ -14,7 +14,7 @@ import {
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
 import { isRetryException } from '@jbrowse/core/util/types'
-import { cast, getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 

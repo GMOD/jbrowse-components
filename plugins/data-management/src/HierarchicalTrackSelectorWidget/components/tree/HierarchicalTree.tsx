@@ -47,7 +47,9 @@ const HierarchicalTree = observer(function ({
     }
 
     container.addEventListener('scroll', onScroll, { passive: true })
-    return () => container.removeEventListener('scroll', onScroll)
+    return () => {
+      container.removeEventListener('scroll', onScroll)
+    }
   }, [height, model])
 
   return (

@@ -388,7 +388,10 @@ function CascadingMenuChildren(props: {
   popupState: PopupState
 }) {
   const { closeAfterItemClick = true, menuItems, popupState, ...rest } = props
-  const { items, loading, error } = useAsyncMenuItems(menuItems, popupState.isOpen)
+  const { items, loading, error } = useAsyncMenuItems(
+    menuItems,
+    popupState.isOpen,
+  )
 
   return (
     <CascadingMenu {...rest} popupState={popupState} menuItems={items}>
