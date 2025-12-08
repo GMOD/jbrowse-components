@@ -91,3 +91,4 @@ export type GlyphType =
   | 'Segments'
   | 'Subfeatures'
   | 'CDS'
+  | 'RepeatRegion'
