@@ -10,27 +10,24 @@ import type {
 } from '@jbrowse/core/util/simpleFeature'
 
 export default class BamSlightlyLazyFeature implements Feature {
-  // uses parameter properties to automatically create fields on the class
-  // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
-  constructor(
-    private record: BamRecord,
-    private adapter: BamAdapter,
-    private ref?: string,
-  ) {}
+  private record: BamRecord
+  private adapter: BamAdapter
+  private ref?: string
+  constructor(record: BamRecord, adapter: BamAdapter, ref?: string) {
+    this.record = record
+    this.adapter = adapter
+    this.ref = ref
+  }
 
   id() {
     return `${this.adapter.id}-${this.record.id}`
   }
 
   get seq() {
-    // Decode NUMERIC_SEQ on demand
-    const numericSeq = this.record.NUMERIC_SEQ
-    return decodeSeq(numericSeq, this.record.seq_length)
+    return decodeSeq(this.record.NUMERIC_SEQ, this.record.seq_length)
   }
 
   get mismatches() {
-    // Use optimized version that works directly on NUMERIC_SEQ
-    // without decoding the entire sequence string
     return getMismatchesNumeric(
       this.record.NUMERIC_CIGAR,
       this.record.NUMERIC_SEQ,
@@ -46,15 +43,21 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   get(field: string): any {
-    return field === 'mismatches'
-      ? this.mismatches
-      : field === 'qual'
-        ? this.qual
-        : field === 'seq'
-          ? this.seq
-          : field === 'NUMERIC_SEQ'
-            ? this.record.NUMERIC_SEQ
-            : this.fields[field]
+    switch (field) {
+      case 'mismatches':
+        return this.mismatches
+      case 'qual':
+        return this.qual
+      case 'seq':
+        return this.seq
+      case 'NUMERIC_SEQ':
+        return this.record.NUMERIC_SEQ
+      case 'NUMERIC_CIGAR':
+        return this.record.NUMERIC_CIGAR
+
+      default:
+        return this.fields[field]
+    }
   }
 
   parent() {
@@ -79,8 +82,6 @@ export default class BamSlightlyLazyFeature implements Feature {
       flags: r.flags,
       tags: r.tags,
       refName: a.refIdToName(r.ref_id)!,
-      CIGAR: r.CIGAR,
-      seq: r.seq,
       type: 'match',
       pair_orientation: r.pair_orientation,
       next_ref: p ? a.refIdToName(r.next_refid) : undefined,
@@ -95,11 +96,11 @@ export default class BamSlightlyLazyFeature implements Feature {
   toJSON(): SimpleFeatureSerialized {
     return {
       ...this.fields,
+      seq: this.seq,
       qual: this.qual,
     }
   }
 }
 
 cacheGetter(BamSlightlyLazyFeature, 'fields')
-cacheGetter(BamSlightlyLazyFeature, 'seq')
 cacheGetter(BamSlightlyLazyFeature, 'mismatches')
