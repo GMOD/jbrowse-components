@@ -54,11 +54,7 @@ const TimeTraveller = types
         self.notTrackingUndo = false
       },
       addUndoState(todos: unknown) {
-        if (self.notTrackingUndo) {
-          return
-        }
-        if (skipNextUndoState) {
-          // skip recording if this state was caused by undo / redo
+        if (self.notTrackingUndo || skipNextUndoState) {
           skipNextUndoState = false
           return
         }
@@ -106,6 +102,7 @@ const TimeTraveller = types
       },
       redo() {
         self.undoIdx++
+        skipNextUndoState = true
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (targetStore) {
