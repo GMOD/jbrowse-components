@@ -41,7 +41,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
-  private sequenceAdapterConfig?: Record<string, unknown>
+  public sequenceAdapterConfig?: Record<string, unknown>
 
   // derived classes may not use the same configuration so a custom configure
   // method allows derived classes to override this behavior
@@ -59,11 +59,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return { bam }
   }
 
-  async getSequenceAdapter(sequenceAdapterConfig?: Record<string, unknown>) {
-    // cache the config on first call so subsequent calls don't need it
-    if (sequenceAdapterConfig) {
-      this.sequenceAdapterConfig = sequenceAdapterConfig
-    }
+  async getSequenceAdapter() {
     const config = this.sequenceAdapterConfig
     if (!config || !this.getSubAdapter) {
       return undefined
@@ -168,21 +164,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
       filterBy?: FilterBy
-      sequenceAdapter?: Record<string, unknown>
     },
   ) {
     const { refName, start, end, originalRefName } = region
-    const {
-      stopToken,
-      filterBy,
-      sequenceAdapter: sequenceAdapterConfig,
-      statusCallback = () => {},
-    } = opts || {}
+    const { stopToken, filterBy, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       const { bam } = await this.configure()
-      const sequenceAdapter = await this.getSequenceAdapter(
-        sequenceAdapterConfig,
-      )
+      const sequenceAdapter = await this.getSequenceAdapter()
       await this.setup(opts)
       checkStopToken(stopToken)
       const records = await updateStatus(
@@ -240,15 +228,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  async getMultiRegionFeatureDensityStats(
-    regions: Region[],
-    opts?: BaseOptions & { sequenceAdapter?: Record<string, unknown> },
-  ) {
-    // cache sequenceAdapter config if provided, so subsequent getFeatures
-    // calls don't need to pass it
-    if (opts?.sequenceAdapter) {
-      this.sequenceAdapterConfig = opts.sequenceAdapter
-    }
+  async getMultiRegionFeatureDensityStats(regions: Region[], opts?: BaseOptions) {
     const { bam } = await this.configure()
     // this is a method to avoid calling on htsget adapters
     if (bam.index) {

@@ -19,7 +19,6 @@ import {
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from './util'
-import { fetchSequence } from '../util'
 
 import type {
   FlatbushItem,
@@ -28,30 +27,35 @@ import type {
   ProcessedRenderArgs,
 } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 async function fetchRegionSequence(
   renderArgs: PreProcessedRenderArgs,
   pluginManager: PluginManager,
 ) {
-  const { colorBy, features, sessionId, regions, sequenceAdapter } = renderArgs
-  if (colorBy?.type !== 'methylation' || !features.size || !sequenceAdapter) {
+  const { colorBy, features, sessionId, regions, adapterConfig } = renderArgs
+  if (colorBy?.type !== 'methylation' || !features.size) {
     return undefined
   }
-  const region = regions[0]!
-  const { dataAdapter } = await getAdapter(
+  // Get the BAM/CRAM adapter to access its cached sequenceAdapterConfig
+  const { dataAdapter } = await getAdapter(pluginManager, sessionId, adapterConfig)
+  const sequenceAdapterConfig = (
+    dataAdapter as { sequenceAdapterConfig?: Record<string, unknown> }
+  ).sequenceAdapterConfig
+  if (!sequenceAdapterConfig) {
+    return undefined
+  }
+  const { dataAdapter: seqAdapter } = await getAdapter(
     pluginManager,
     sessionId,
-    sequenceAdapter,
+    sequenceAdapterConfig,
   )
-  return fetchSequence(
-    {
-      ...region,
-      start: Math.max(0, region.start - 1),
-      end: region.end + 1,
-    },
-    dataAdapter as BaseFeatureDataAdapter,
-  )
+  const region = regions[0]!
+  return (seqAdapter as BaseSequenceAdapter).getSequence({
+    ...region,
+    start: Math.max(0, region.start - 1),
+    end: region.end + 1,
+  })
 }
 
 function renderFeatures({

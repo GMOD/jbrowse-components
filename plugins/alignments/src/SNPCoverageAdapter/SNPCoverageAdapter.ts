@@ -18,7 +18,7 @@ import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
-  private sequenceAdapterConfig?: AnyConfigurationModel
+  public sequenceAdapterConfig?: AnyConfigurationModel
 
   protected async configure() {
     const subadapterConfig = this.getConf('subadapter')
@@ -33,11 +33,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  async getSequenceAdapter(sequenceAdapterConfig?: AnyConfigurationModel) {
-    // cache the config on first call so subsequent calls don't need it
-    if (sequenceAdapterConfig) {
-      this.sequenceAdapterConfig = sequenceAdapterConfig
-    }
+  async getSequenceAdapter() {
     const config = this.sequenceAdapterConfig
     if (!config || !this.getSubAdapter) {
       return undefined
@@ -57,18 +53,11 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     return this.sequenceAdapterP
   }
 
-  getFeatures(
-    region: Region,
-    opts: BaseOptions & { sequenceAdapter?: AnyConfigurationModel } = {},
-  ) {
+  getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { subadapter } = await this.configure()
-      const { sequenceAdapter: sequenceAdapterConfig, ...rest } = opts
-      const sequenceAdapter = await this.getSequenceAdapter(
-        sequenceAdapterConfig,
-      )
+      const sequenceAdapter = await this.getSequenceAdapter()
 
-      // Pass sequenceAdapter through to subadapter (BAM/CRAM)
       const features = await firstValueFrom(
         subadapter.getFeatures(region, opts).pipe(toArray()),
       )
@@ -76,7 +65,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       const { bins, skipmap } = await generateCoverageBins({
         features,
         region,
-        opts: rest,
+        opts,
         fetchSequence: sequenceAdapter
           ? (region: Region) => fetchSequence(region, sequenceAdapter)
           : undefined,

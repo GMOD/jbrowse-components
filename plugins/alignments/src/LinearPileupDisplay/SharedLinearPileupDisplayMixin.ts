@@ -151,28 +151,6 @@ export function SharedLinearPileupDisplayMixin(
       get hideSmallIndels() {
         return self.hideSmallIndelsSetting
       },
-
-      /**
-       * #getter
-       */
-      get sequenceAdapter() {
-        try {
-          const { assemblyManager } = getSession(self)
-          const track = getContainingTrack(self) as {
-            configuration: AnyConfigurationModel
-          }
-          const assemblyNames = readConfObject(
-            track.configuration,
-            'assemblyNames',
-          ) as string[]
-          const assembly = assemblyManager.get(assemblyNames[0]!)
-          return assembly
-            ? getConf(assembly, ['sequence', 'adapter'])
-            : undefined
-        } catch (e) {
-          return undefined
-        }
-      },
     }))
     .actions(self => ({
       /**
@@ -428,7 +406,7 @@ export function SharedLinearPileupDisplayMixin(
          * #method
          */
         adapterRenderProps() {
-          const { colorTagMap, colorBy, filterBy, sequenceAdapter } = self
+          const { colorTagMap, colorBy, filterBy } = self
           const superProps = superRenderProps()
           return {
             ...superProps,
@@ -438,7 +416,6 @@ export function SharedLinearPileupDisplayMixin(
             filters: self.filters,
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
             config: self.rendererConfig,
-            sequenceAdapter,
           }
         },
         /**

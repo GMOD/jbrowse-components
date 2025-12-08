@@ -2,11 +2,7 @@ import { lazy } from 'react'
 
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -217,28 +213,6 @@ function stateModelFactory(
         },
 
         /**
-         * #getter
-         */
-        get sequenceAdapter() {
-          try {
-            const { assemblyManager } = getSession(self)
-            const track = getContainingTrack(self) as {
-              configuration: AnyConfigurationModel
-            }
-            const assemblyNames = readConfObject(
-              track.configuration,
-              'assemblyNames',
-            ) as string[]
-            const assembly = assemblyManager.get(assemblyNames[0]!)
-            return assembly
-              ? getConf(assembly, ['sequence', 'adapter'])
-              : undefined
-          } catch (e) {
-            return undefined
-          }
-        },
-
-        /**
          * #method
          */
         adapterProps() {
@@ -249,7 +223,6 @@ function stateModelFactory(
             filters,
             filterBy,
             modificationThreshold: this.modificationThreshold,
-            sequenceAdapter: this.sequenceAdapter,
           }
         },
       }

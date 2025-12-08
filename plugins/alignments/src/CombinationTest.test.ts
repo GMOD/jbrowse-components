@@ -39,6 +39,8 @@ async function getFeats(f1: string, f2: string) {
     getVolvoxSequenceSubAdapter,
     pluginManager,
   )
+  // Set sequenceAdapterConfig directly on adapter (normally done by CoreGetRefNames)
+  cramAdapter.sequenceAdapterConfig = sequenceAdapterConfig
 
   const bamAdapter = new BamAdapter(
     bamConfigSchema.create({
@@ -54,15 +56,17 @@ async function getFeats(f1: string, f2: string) {
     getVolvoxSequenceSubAdapter,
     pluginManager,
   )
+  // Set sequenceAdapterConfig directly on adapter (normally done by CoreGetRefNames)
+  bamAdapter.sequenceAdapterConfig = sequenceAdapterConfig
+
   const query = {
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 1,
     end: 10200,
   }
-  const opts = { sequenceAdapter: sequenceAdapterConfig }
-  const bamFeatures = bamAdapter.getFeatures(query, opts)
-  const cramFeatures = cramAdapter.getFeatures(query, opts)
+  const bamFeatures = bamAdapter.getFeatures(query)
+  const cramFeatures = cramAdapter.getFeatures(query)
   const bamFeaturesArray = await firstValueFrom(bamFeatures.pipe(toArray()))
   const cramFeaturesArray = await firstValueFrom(cramFeatures.pipe(toArray()))
   return { bamFeaturesArray, cramFeaturesArray }
