@@ -1,27 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
-import type { MenuItem as JBMenuItem } from './Menu'
+import type { MenuItem, MenuItemsGetter } from './MenuTypes'
 import type { PopupState } from './hooks'
-
-export type MenuItemsGetter =
-  | JBMenuItem[]
-  | (() => JBMenuItem[])
-  | (() => Promise<JBMenuItem[]>)
-
-export const CascadingContext = createContext({
-  parentPopupState: undefined,
-  rootPopupState: undefined,
-} as {
-  parentPopupState: PopupState | undefined
-  rootPopupState: PopupState | undefined
-})
 
 export function useAsyncMenuItems(
   menuItems: MenuItemsGetter,
   isOpen: boolean,
-): { items: JBMenuItem[]; loading: boolean; error: unknown } {
+): { items: MenuItem[]; loading: boolean; error: unknown } {
   const [asyncState, setAsyncState] = useState<{
-    items: JBMenuItem[]
+    items: MenuItem[]
     error: unknown
     fetchedFor: MenuItemsGetter | null
   }>({
@@ -74,6 +61,16 @@ export function useAsyncMenuItems(
   const loading = asyncState.fetchedFor !== menuItems
   return { items: asyncState.items, loading, error: asyncState.error }
 }
+
+// Cascading menu specific context and hooks
+
+export const CascadingContext = createContext({
+  parentPopupState: undefined,
+  rootPopupState: undefined,
+} as {
+  parentPopupState: PopupState | undefined
+  rootPopupState: PopupState | undefined
+})
 
 export function useCascadingContext(popupState: PopupState) {
   const { rootPopupState } = useContext(CascadingContext)

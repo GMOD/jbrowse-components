@@ -4,7 +4,6 @@ import { useContext } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
-  CircularProgress,
   Divider,
   ListItemIcon,
   ListItemText,
@@ -14,24 +13,33 @@ import {
 } from '@mui/material'
 
 import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton'
+import HoverMenu from './HoverMenu'
+import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
 import {
   CascadingContext,
   closeSiblingSubmenus,
   useAsyncMenuItems,
   useCascadingContext,
-} from './CascadingMenuHooks'
-import HoverMenu from './HoverMenu'
-import { MenuItemEndDecoration } from './Menu'
-import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
+} from './menuHooks'
+import {
+  ErrorMenuItem,
+  LoadingMenuItem,
+  MenuItemEndDecoration,
+} from './MenuItems'
 
-import type { MenuItemsGetter } from './CascadingMenuHooks'
-import type { MenuItem as JBMenuItem } from './Menu'
+import type {
+  MenuItem as JBMenuItem,
+  MenuItemsGetter,
+  NormalMenuItem,
+  CheckboxMenuItem,
+  RadioMenuItem,
+} from './MenuTypes'
+
+type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
 import type { PopupState } from './hooks'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'
 
-// ============================================================================
-// Small UI components
-// ============================================================================
+export type { MenuItemsGetter } from './MenuTypes'
 
 function HelpIconSpacer() {
   return (
@@ -48,28 +56,6 @@ function HelpIconSpacer() {
 
 function CascadingSpacer() {
   return <div style={{ flexGrow: 1, minWidth: 10 }} />
-}
-
-function LoadingMenuItem() {
-  return (
-    <MenuItem disabled>
-      <ListItemIcon>
-        <CircularProgress size={20} />
-      </ListItemIcon>
-      <ListItemText primary="Loading..." />
-    </MenuItem>
-  )
-}
-
-function ErrorMenuItem({ error }: { error: unknown }) {
-  return (
-    <MenuItem disabled>
-      <ListItemText
-        primary="Error loading menu"
-        secondary={error instanceof Error ? error.message : String(error)}
-      />
-    </MenuItem>
-  )
 }
 
 function EndDecoration({ item }: { item: JBMenuItem }) {
@@ -95,14 +81,14 @@ function HelpButton({
   item: JBMenuItem
   showSpacer: boolean
 }) {
-  const hasHelpText = 'helpText' in item && item.helpText
+  const helpText = 'helpText' in item ? item.helpText : undefined
   const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
 
-  if (hasHelpText) {
+  if (helpText) {
     return (
       <CascadingMenuHelpIconButton
-        helpText={item.helpText}
-        label={item.label}
+        helpText={helpText}
+        label={'label' in item ? item.label : undefined}
       />
     )
   }
@@ -111,10 +97,6 @@ function HelpButton({
   }
   return null
 }
-
-// ============================================================================
-// Menu item components
-// ============================================================================
 
 function CascadingMenuItem({
   onClick,
@@ -211,7 +193,7 @@ function ActionMenuItem({
   closeAfterItemClick,
   onMenuItemClick,
 }: {
-  item: JBMenuItem
+  item: ActionableMenuItem
   hasIcon: boolean
   hasCheckboxOrRadioWithHelp: boolean
   closeAfterItemClick: boolean
@@ -220,11 +202,7 @@ function ActionMenuItem({
   return (
     <CascadingMenuItem
       closeAfterItemClick={closeAfterItemClick}
-      onClick={
-        'onClick' in item
-          ? event => onMenuItemClick(event, item.onClick)
-          : undefined
-      }
+      onClick={event => onMenuItemClick(event, item.onClick)}
       disabled={Boolean(item.disabled)}
     >
       {item.icon ? (
@@ -243,10 +221,6 @@ function ActionMenuItem({
     </CascadingMenuItem>
   )
 }
-
-// ============================================================================
-// Menu container components
-// ============================================================================
 
 function CascadingSubmenuHover({
   popupState,
@@ -342,10 +316,11 @@ function CascadingMenuList({
             </ListSubheader>
           )
         }
+        const actionItem = item as ActionableMenuItem
         return (
           <ActionMenuItem
-            key={`${item.label}-${idx}`}
-            item={item}
+            key={`${actionItem.label}-${idx}`}
+            item={actionItem}
             hasIcon={hasIcon}
             hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
             closeAfterItemClick={closeAfterItemClick}
@@ -356,10 +331,6 @@ function CascadingMenuList({
     </>
   )
 }
-
-// ============================================================================
-// Main export
-// ============================================================================
 
 function CascadingMenuChildren(props: {
   onMenuItemClick: Function
@@ -391,5 +362,3 @@ function CascadingMenuChildren(props: {
 }
 
 export default CascadingMenuChildren
-
-export { type MenuItemsGetter } from './CascadingMenuHooks'
