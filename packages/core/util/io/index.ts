@@ -10,25 +10,14 @@ import {
 
 import type PluginManager from '../../PluginManager'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
-import type {
-  BlobLocation,
-  FileLocation,
-  LocalPathLocation,
-  UriLocation,
-} from '../types'
+import type { BlobLocation, FileLocation, UriLocation } from '../types'
 import type { Fetcher, GenericFilehandle } from 'generic-filehandle2'
-
-function isLocalPathLocation(
-  location: FileLocation,
-): location is LocalPathLocation {
-  return 'localPath' in location
-}
 
 function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
-// Pluggable fetch function for local files
+// Pluggable fetch function for file:// URLs
 // Desktop app sets this to use Node's fs module
 let localFileFetch: Fetcher | undefined
 
@@ -47,20 +36,6 @@ export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
 ): GenericFilehandle {
-  if (isLocalPathLocation(location)) {
-    if (!location.localPath) {
-      throw new Error('No local path provided')
-    }
-    if (!localFileFetch) {
-      throw new Error(
-        "Local file access not configured. Use setLocalFileFetch() to enable.",
-      )
-    }
-    return new RemoteFileWithRangeCache(
-      `file://${location.localPath}`,
-      { fetch: localFileFetch },
-    )
-  }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter
     const blob = getBlob(location.blobId)
@@ -79,6 +54,18 @@ export function openLocation(
 
     // Resolve any relative URLs to absolute URLs
     const absoluteLocation = resolveUriLocation(location)
+
+    // Handle file:// URLs with pluggable local file fetch
+    if (absoluteLocation.uri.startsWith('file://')) {
+      if (!localFileFetch) {
+        throw new Error(
+          'Local file access not configured. Use setLocalFileFetch() to enable.',
+        )
+      }
+      return new RemoteFileWithRangeCache(absoluteLocation.uri, {
+        fetch: localFileFetch,
+      })
+    }
 
     // If there is a plugin manager, we can try internet accounts
     if (pluginManager) {
