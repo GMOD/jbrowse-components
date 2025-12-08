@@ -62,6 +62,8 @@ export default class BamSlightlyLazyFeature implements Feature {
         return this.record.NUMERIC_SEQ
       case 'NUMERIC_CIGAR':
         return this.record.NUMERIC_CIGAR
+      case 'CIGAR':
+        return this.record.CIGAR
 
       default:
         return this.fields[field]
@@ -104,6 +106,7 @@ export default class BamSlightlyLazyFeature implements Feature {
   toJSON(): SimpleFeatureSerialized {
     return {
       ...this.fields,
+      CIGAR: this.record.CIGAR,
       seq: this.seq,
       qual: this.qual,
     }
