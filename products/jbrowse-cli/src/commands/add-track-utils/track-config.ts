@@ -37,7 +37,6 @@ export function buildTrackConfig({
   config,
   adapter,
   configContents,
-  skipCheck,
 }: {
   location: string
   trackType?: string
@@ -49,7 +48,6 @@ export function buildTrackConfig({
   config?: string
   adapter: any
   configContents: Config
-  skipCheck?: boolean
 }): Track {
   const configObj = config ? parseJSON(config) : {}
 

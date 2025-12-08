@@ -10,7 +10,6 @@ import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -38,6 +37,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   private sequenceAdapterP?: Promise<BaseSequenceAdapter>
 
   private sequenceAdapter?: BaseSequenceAdapter
+
+  private sequenceAdapterConfig?: Record<string, unknown>
 
   // used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
   // mismatches in cache. at an average of 100kb-300kb, keeping even just 500
@@ -81,13 +82,28 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSequenceAdapter(sequenceAdapterConfig?: Record<string, unknown>) {
-    if (!sequenceAdapterConfig || !this.getSubAdapter) {
+    // cache the config on first call so subsequent calls don't need it
+    if (sequenceAdapterConfig) {
+      console.log('CramAdapter.getSequenceAdapter: received new config')
+      this.sequenceAdapterConfig = sequenceAdapterConfig
+    }
+    const config = this.sequenceAdapterConfig
+    console.log('CramAdapter.getSequenceAdapter: config=', config ? 'present' : 'undefined', 'getSubAdapter=', !!this.getSubAdapter, 'sequenceAdapterP=', this.sequenceAdapterP ? 'present' : 'undefined')
+    if (!config || !this.getSubAdapter) {
       return undefined
     }
     if (!this.sequenceAdapterP) {
-      this.sequenceAdapterP = this.getSubAdapter(sequenceAdapterConfig).then(
-        r => r.dataAdapter as BaseSequenceAdapter,
-      )
+      console.log('CramAdapter.getSequenceAdapter: creating new promise')
+      this.sequenceAdapterP = this.getSubAdapter(config)
+        .then(r => {
+          console.log('CramAdapter.getSequenceAdapter: promise resolved successfully')
+          return r.dataAdapter as BaseSequenceAdapter
+        })
+        .catch((e: unknown) => {
+          console.log('CramAdapter.getSequenceAdapter: promise rejected, clearing cache:', e)
+          this.sequenceAdapterP = undefined
+          throw e
+        })
     }
     return this.sequenceAdapterP
   }
@@ -104,6 +120,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   ): Promise<string> {
     start -= 1 // convert from 1-based closed to interbase
 
+    console.log('CramAdapter.seqFetch: sequenceAdapter=', this.sequenceAdapter ? 'present' : 'undefined')
     if (!this.sequenceAdapter) {
       throw new Error(
         'no sequenceAdapter available, is it configured in the assembly?',
@@ -219,10 +236,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       // Set up the sequence adapter before fetching records since seqFetch
       // is called internally by the CRAM library during decoding
+      console.log('CramAdapter.getFeatures: sequenceAdapterConfig=', sequenceAdapterConfig ? 'present' : 'undefined')
       const seqAdapter = await this.getSequenceAdapter(sequenceAdapterConfig)
+      console.log('CramAdapter.getFeatures: seqAdapter result=', seqAdapter ? 'present' : 'undefined')
       if (seqAdapter) {
         this.sequenceAdapter = seqAdapter
       }
+      console.log('CramAdapter.getFeatures: this.sequenceAdapter=', this.sequenceAdapter ? 'present' : 'undefined')
       const { cram, samHeader } = await this.setup(opts)
 
       const refId = this.refNameToId(refName)
@@ -287,8 +307,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   // we return the configured fetchSizeLimit, and the bytes for the region
   async getMultiRegionFeatureDensityStats(
     regions: Region[],
-    opts?: BaseOptions,
+    opts?: BaseOptions & { sequenceAdapter?: Record<string, unknown> },
   ) {
+    // cache sequenceAdapter config if provided, so subsequent getFeatures
+    // calls don't need to pass it
+    if (opts?.sequenceAdapter) {
+      this.sequenceAdapterConfig = opts.sequenceAdapter
+    }
     const bytes = await this.bytesForRegions(regions, opts)
     const fetchSizeLimit = this.getConf('fetchSizeLimit')
     return {

@@ -210,7 +210,6 @@ export async function run(args?: string[]) {
     flags: { category, description: trackDescription, config },
     adapter,
     configContents,
-    skipCheck,
   })
 
   const { updatedConfig, wasOverwritten } = addTrackToConfig({

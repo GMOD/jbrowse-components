@@ -159,10 +159,7 @@ export function SharedLinearPileupDisplayMixin(
         try {
           const { assemblyManager } = getSession(self)
           const track = getContainingTrack(self) as {
-            configuration?: AnyConfigurationModel
-          }
-          if (!track?.configuration) {
-            return undefined
+            configuration: AnyConfigurationModel
           }
           const assemblyNames = readConfObject(
             track.configuration,

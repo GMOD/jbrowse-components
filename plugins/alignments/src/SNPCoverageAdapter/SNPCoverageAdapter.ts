@@ -16,7 +16,9 @@ import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
-  private sequenceAdapterP?: Promise<BaseSequenceAdapter>
+  private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
+
+  private sequenceAdapterConfig?: AnyConfigurationModel
 
   protected async configure() {
     const subadapterConfig = this.getConf('subadapter')
@@ -32,13 +34,25 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSequenceAdapter(sequenceAdapterConfig?: AnyConfigurationModel) {
-    if (!sequenceAdapterConfig || !this.getSubAdapter) {
+    // cache the config on first call so subsequent calls don't need it
+    if (sequenceAdapterConfig) {
+      this.sequenceAdapterConfig = sequenceAdapterConfig
+    }
+    const config = this.sequenceAdapterConfig
+    if (!config || !this.getSubAdapter) {
       return undefined
     }
     if (!this.sequenceAdapterP) {
-      this.sequenceAdapterP = this.getSubAdapter(sequenceAdapterConfig).then(
-        r => r.dataAdapter as BaseSequenceAdapter,
-      )
+      this.sequenceAdapterP = this.getSubAdapter(config)
+        .then(r => {
+          const adapter = r.dataAdapter as BaseSequenceAdapter
+          // verify adapter has getSequence method (e.g. ChromSizesAdapter doesn't)
+          return 'getSequence' in adapter ? adapter : undefined
+        })
+        .catch((e: unknown) => {
+          this.sequenceAdapterP = undefined
+          throw e
+        })
     }
     return this.sequenceAdapterP
   }

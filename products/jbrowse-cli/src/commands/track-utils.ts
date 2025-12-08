@@ -132,14 +132,12 @@ export function createTrackConfiguration({
   flags,
   adapter,
   configContents,
-  skipCheck,
 }: {
   location: string
   trackParams: ReturnType<typeof buildTrackParams>
   flags: any
   adapter: any
   configContents: Config
-  skipCheck: boolean | undefined
 }) {
   return buildTrackConfig({
     location,
@@ -152,6 +150,5 @@ export function createTrackConfiguration({
     config: flags.config,
     adapter,
     configContents,
-    skipCheck,
   })
 }

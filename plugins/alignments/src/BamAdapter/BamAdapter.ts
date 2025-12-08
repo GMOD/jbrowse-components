@@ -10,7 +10,6 @@ import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { filterReadFlag, filterTagValue } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -40,7 +39,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     bam: BamFile
   }>
 
-  private sequenceAdapterP?: Promise<BaseSequenceAdapter>
+  private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
+
+  private sequenceAdapterConfig?: Record<string, unknown>
 
   // derived classes may not use the same configuration so a custom configure
   // method allows derived classes to override this behavior
@@ -59,13 +60,26 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSequenceAdapter(sequenceAdapterConfig?: Record<string, unknown>) {
-    if (!sequenceAdapterConfig || !this.getSubAdapter) {
+    // cache the config on first call so subsequent calls don't need it
+    if (sequenceAdapterConfig) {
+      this.sequenceAdapterConfig = sequenceAdapterConfig
+    }
+    const config = this.sequenceAdapterConfig
+    if (!config || !this.getSubAdapter) {
       return undefined
     }
     if (!this.sequenceAdapterP) {
-      this.sequenceAdapterP = this.getSubAdapter(sequenceAdapterConfig).then(
-        r => r.dataAdapter as BaseSequenceAdapter,
-      )
+      this.sequenceAdapterP = this.getSubAdapter(config)
+        .then(r => {
+          const adapter = r.dataAdapter as BaseSequenceAdapter
+          // workaround for ChromSizesAdapter which doesn't have getSequence.
+          // sequence adapter is optional for BAM
+          return 'getSequence' in adapter ? adapter : undefined
+        })
+        .catch((e: unknown) => {
+          this.sequenceAdapterP = undefined
+          throw e
+        })
     }
     return this.sequenceAdapterP
   }
@@ -228,8 +242,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   async getMultiRegionFeatureDensityStats(
     regions: Region[],
-    opts?: BaseOptions,
+    opts?: BaseOptions & { sequenceAdapter?: Record<string, unknown> },
   ) {
+    // cache sequenceAdapter config if provided, so subsequent getFeatures
+    // calls don't need to pass it
+    if (opts?.sequenceAdapter) {
+      this.sequenceAdapterConfig = opts.sequenceAdapter
+    }
     const { bam } = await this.configure()
     // this is a method to avoid calling on htsget adapters
     if (bam.index) {

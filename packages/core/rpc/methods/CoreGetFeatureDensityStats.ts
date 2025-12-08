@@ -33,16 +33,25 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
       stopToken?: string
       headers?: Record<string, string>
       sessionId: string
+      sequenceAdapter?: Record<string, unknown>
     },
     rpcDriver: string,
   ) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { adapterConfig, sessionId, regions } = deserializedArgs
+    const { adapterConfig, sessionId, regions, sequenceAdapter } =
+      deserializedArgs as typeof args
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
+    }
+    // cache sequenceAdapter config on the adapter if provided (for BAM/CRAM)
+    if (sequenceAdapter) {
+      const adapter = dataAdapter as { sequenceAdapterConfig?: unknown }
+      if (adapter.sequenceAdapterConfig === undefined) {
+        adapter.sequenceAdapterConfig = sequenceAdapter
+      }
     }
     return dataAdapter.getMultiRegionFeatureDensityStats(
       regions,

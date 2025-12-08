@@ -61,10 +61,10 @@ const refNameColors = [
 async function loadRefNameMap(
   assembly: Assembly,
   adapterConfig: unknown,
-  options: BaseOptions,
+  options: BaseOptions & { sequenceAdapter?: unknown },
   stopToken?: string,
 ) {
-  const { sessionId } = options
+  const { sessionId, sequenceAdapter } = options
   await when(() => !!(assembly.regions && assembly.refNameAliases), {
     name: 'when assembly ready',
   })
@@ -74,6 +74,7 @@ async function loadRefNameMap(
     'CoreGetRefNames',
     {
       adapterConfig,
+      sequenceAdapter,
       stopToken,
       ...options,
     },
@@ -149,7 +150,19 @@ export default function assemblyFactory(
       statusCallback?: (arg: string) => void,
     ) {
       const { adapterConf, self, options } = args
-      return loadRefNameMap(self, adapterConf, { ...options, statusCallback })
+      // pass the assembly's sequence adapter config so BAM/CRAM adapters can
+      // cache it for later use when fetching features
+      let sequenceAdapter
+      try {
+        sequenceAdapter = self.configuration?.sequence?.adapter
+      } catch (e) {
+        // configuration might not be fully loaded yet
+      }
+      return loadRefNameMap(self, adapterConf, {
+        ...options,
+        statusCallback,
+        sequenceAdapter,
+      })
     },
   })
   return types
