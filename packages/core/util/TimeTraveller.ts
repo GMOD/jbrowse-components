@@ -15,7 +15,7 @@ import type {
 
 const MAX_HISTORY_LENGTH = 20
 
-interface PatchEntry {
+export interface PatchEntry {
   patches: IJsonPatch[]
   inversePatches: IJsonPatch[]
 }
@@ -39,7 +39,7 @@ const TimeTraveller = types
   }))
   .actions(self => {
     let targetStore: IAnyStateTreeNode
-    let patchDisposer: IDisposer
+    let patchDisposer: IDisposer | undefined
     let skipNextUndoState = false
     let pendingPatches: IJsonPatch[] = []
     let pendingInversePatches: IJsonPatch[] = []
@@ -77,7 +77,9 @@ const TimeTraveller = types
       },
 
       beforeDestroy() {
-        patchDisposer?.()
+        if (patchDisposer) {
+          patchDisposer()
+        }
         if (debounceTimer) {
           clearTimeout(debounceTimer)
         }
@@ -115,16 +117,15 @@ const TimeTraveller = types
         if (!entry) {
           return
         }
-        self.undoIdx--
         skipNextUndoState = true
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (targetStore) {
-          // apply inverse patches in reverse order
           for (let i = entry.inversePatches.length - 1; i >= 0; i--) {
             applyPatch(targetStore, entry.inversePatches[i]!)
           }
         }
+        self.undoIdx--
         skipNextUndoState = false
       },
       redo() {
@@ -132,7 +133,6 @@ const TimeTraveller = types
         if (!entry) {
           return
         }
-        self.undoIdx++
         skipNextUndoState = true
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -141,6 +141,7 @@ const TimeTraveller = types
             applyPatch(targetStore, patch)
           }
         }
+        self.undoIdx++
         skipNextUndoState = false
       },
     }
