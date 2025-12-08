@@ -104,8 +104,7 @@ const TrackLabel = memo(function TrackLabel({
 }) {
   const { classes } = useStyles()
   const { drawerPosition } = getSession(model)
-  const { id, name, conf } = item
-  const trackId = readConfObject(conf, 'trackId')
+  const { id, name, conf, trackId } = item
   const description = readConfObject(conf, 'description')
 
   return (

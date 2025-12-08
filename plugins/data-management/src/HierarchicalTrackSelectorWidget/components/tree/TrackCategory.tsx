@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { CascadingMenuButton, SanitizedHTML } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -48,7 +48,7 @@ const TrackCategory = observer(function ({
   const { name, id } = item
   const isOpen = !model.collapsed.get(id)
 
-  const subcategoryIds = getAllSubcategories(item)
+  const subcategoryIds = useMemo(() => getAllSubcategories(item), [item])
   const hasSubcategories = subcategoryIds.length > 0
 
   return (

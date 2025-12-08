@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
@@ -30,6 +30,29 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const NestingMarkers = memo(function NestingMarkers({
+  nestingLevel,
+  height,
+  className,
+}: {
+  nestingLevel: number
+  height: number
+  className: string
+}) {
+  const markers = useMemo(
+    () =>
+      Array.from({ length: nestingLevel }, (_, idx) => (
+        <div
+          key={idx}
+          style={{ left: idx * levelWidth + 4, height }}
+          className={className}
+        />
+      )),
+    [nestingLevel, height, className],
+  )
+  return <>{markers}</>
+})
+
 // Memoized to prevent re-renders when parent re-renders but props haven't changed
 const TreeItem = memo(function TreeItem({
   item,
@@ -57,14 +80,11 @@ const TreeItem = memo(function TreeItem({
         top,
       }}
     >
-      {new Array(nestingLevel).fill(0).map((_, idx) => (
-        <div
-          /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          key={`mark-${idx}`}
-          style={{ left: idx * levelWidth + 4, height }}
-          className={classes.nestingLevelMarker}
-        />
-      ))}
+      <NestingMarkers
+        nestingLevel={nestingLevel}
+        height={height}
+        className={classes.nestingLevelMarker}
+      />
       <div
         className={isCategory ? classes.accordionCard : undefined}
         style={{
