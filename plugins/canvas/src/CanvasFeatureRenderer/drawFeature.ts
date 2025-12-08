@@ -1,6 +1,7 @@
 import { drawArrow } from './drawArrow'
 import { drawBox } from './drawBox'
 import { drawCDS } from './drawCDS'
+import { drawRepeatRegion } from './drawRepeatRegion'
 import { drawSegments } from './drawSegments'
 import { chooseGlyphType } from './util'
 
@@ -23,6 +24,9 @@ export function drawFeature(args: DrawFeatureArgs) {
         })
       }
       drawArrow(args)
+      break
+    case 'RepeatRegion':
+      drawRepeatRegion(args)
       break
     case 'CDS':
       drawCDS(args)
