@@ -8,7 +8,7 @@ import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { isUnsupported } from '../util'
-import TrackLabelMenu from './TrackLabelMenu'
+import TrackSelectorTrackMenu from './TrackSelectorTrackMenu'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { TreeTrackNode } from '../../types'
@@ -143,7 +143,7 @@ const TrackLabel = memo(function TrackLabel({
           }
         />
       </Tooltip>
-      <TrackLabelMenu model={model} trackId={trackId} id={id} conf={conf} />
+      <TrackSelectorTrackMenu model={model} trackId={trackId} id={id} conf={conf} />
     </>
   )
 })

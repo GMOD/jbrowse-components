@@ -16,7 +16,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const TrackLabelMenu = function ({
+const TrackSelectorTrackMenu = function ({
   id,
   trackId,
   stopPropagation,
@@ -84,4 +84,4 @@ const TrackLabelMenu = function ({
   )
 }
 
-export default TrackLabelMenu
+export default TrackSelectorTrackMenu
