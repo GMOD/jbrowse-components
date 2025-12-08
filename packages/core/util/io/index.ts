@@ -29,6 +29,51 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
+// Creates a fetch function for local files using Node's fs module
+// Used in Electron where nodeIntegration is enabled
+function createLocalFileFetch(filePath: string) {
+  return async (_url: RequestInfo, init?: RequestInit): Promise<Response> => {
+    const fs = await import('fs/promises')
+
+    const rangeHeader = init?.headers
+      ? new Headers(init.headers).get('range')
+      : null
+
+    if (rangeHeader) {
+      const match = /bytes=(\d+)-(\d+)?/.exec(rangeHeader)
+      if (match) {
+        const start = Number.parseInt(match[1]!, 10)
+        const end = match[2] ? Number.parseInt(match[2], 10) : undefined
+        const stats = await fs.stat(filePath)
+        const actualEnd = end ?? stats.size - 1
+        const length = actualEnd - start + 1
+
+        const fileHandle = await fs.open(filePath, 'r')
+        const buffer = new Uint8Array(length)
+        await fileHandle.read(buffer, 0, length, start)
+        await fileHandle.close()
+
+        return new Response(buffer, {
+          status: 206,
+          headers: {
+            'content-range': `bytes ${start}-${actualEnd}/${stats.size}`,
+            'content-length': String(length),
+          },
+        })
+      }
+    }
+
+    // Full file read
+    const data = await fs.readFile(filePath)
+    return new Response(data, {
+      status: 200,
+      headers: {
+        'content-length': String(data.length),
+      },
+    })
+  }
+}
+
 /** if a UriLocation has a baseUri, resolves its uri with respect to that base */
 export function resolveUriLocation(location: UriLocation) {
   return location.baseUri
@@ -47,10 +92,9 @@ export function openLocation(
     if (!isElectron) {
       throw new Error("Can't use local file paths in the browser")
     }
-    // Use jbfile:// custom protocol which is handled by Electron's main process
-    // See products/jbrowse-desktop/electron/electron.ts
-    return new RemoteFileWithRangeCache(`jbfile://${location.localPath}`, {
-      fetch: checkAuthNeededFetch,
+    // Use custom fetch that reads local files using Node's fs module
+    return new RemoteFileWithRangeCache(location.localPath, {
+      fetch: createLocalFileFetch(location.localPath),
     })
   }
   if (isBlobLocation(location)) {
