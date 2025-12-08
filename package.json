@@ -8,7 +8,7 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "yarn useDist && node --experimental-strip-types scripts/build.ts && yarn useSrc",
+    "build": "yarn useDist && NODE_OPTIONS='--max-old-space-size=7000' node --experimental-strip-types scripts/build.ts && yarn useSrc",
     "changelog": "lerna-changelog --silent",
     "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
     "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
