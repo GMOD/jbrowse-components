@@ -28,6 +28,7 @@ export interface RenderedProps {
   layout: any
   maxHeightReached: boolean
   renderProps: any
+  renderArgs: Record<string, unknown>
 }
 // the MST state of a single server-side-rendered block in a display
 const blockState = types
@@ -100,6 +101,10 @@ const blockState = types
     renderProps: undefined as any,
     /**
      * #volatile
+     */
+    renderArgs: undefined as Record<string, unknown> | undefined,
+    /**
+     * #volatile
      * Whether a render is currently in flight (but data is not ready yet)
      */
     isRenderingPending: true,
@@ -149,6 +154,7 @@ const blockState = types
       self.error = undefined
       self.maxHeightReached = false
       self.renderProps = undefined
+      self.renderArgs = undefined
       self.stopToken = undefined
     },
     /**
@@ -158,8 +164,14 @@ const blockState = types
       if (!props) {
         return
       }
-      const { reactElement, features, layout, maxHeightReached, renderProps } =
-        props
+      const {
+        reactElement,
+        features,
+        layout,
+        maxHeightReached,
+        renderProps,
+        renderArgs,
+      } = props
       self.filled = true
       self.isRenderingPending = false
       self.message = undefined
@@ -169,6 +181,7 @@ const blockState = types
       self.error = undefined
       self.maxHeightReached = maxHeightReached
       self.renderProps = renderProps
+      self.renderArgs = renderArgs
       self.stopToken = undefined
     },
     /**
@@ -188,6 +201,7 @@ const blockState = types
       self.maxHeightReached = false
       self.error = error
       self.renderProps = undefined
+      self.renderArgs = undefined
       self.stopToken = undefined
       if (isRetryException(error as Error)) {
         this.reload()
@@ -208,6 +222,7 @@ const blockState = types
       self.maxHeightReached = false
       self.ReactComponent = ServerSideRenderedBlockContent
       self.renderProps = undefined
+      self.renderArgs = undefined
       getParent<any>(self, 2).reload()
     },
     beforeDestroy() {
@@ -217,16 +232,15 @@ const blockState = types
           if (self.stopToken !== undefined) {
             stopStopToken(self.stopToken)
           }
-          const display = getContainingDisplay(self)
-          const { rpcManager } = getSession(self)
-          const { rendererType } = display
-          const { renderArgs } = renderBlockData(cast(self))
-          // renderArgs can be undefined if an error occurred in this block
-          if (renderArgs) {
+          // use stored renderArgs from last successful render instead of
+          // recalculating via renderBlockData which is expensive
+          if (self.renderArgs) {
+            const display = getContainingDisplay(self)
+            const { rpcManager } = getSession(self)
+            const { rendererType } = display
             await rendererType.freeResourcesInClient(
               rpcManager,
-              // error if use structuredClone: can't clone Function, presumably a statusCallback
-              JSON.parse(JSON.stringify(renderArgs)),
+              JSON.parse(JSON.stringify(self.renderArgs)),
             )
           }
         } catch (e) {
@@ -369,6 +383,7 @@ async function renderBlockEffect(
       layout,
       maxHeightReached,
       renderProps,
+      renderArgs,
     }
   }
 }

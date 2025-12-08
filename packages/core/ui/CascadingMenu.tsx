@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import type React from 'react'
-import { createContext, useContext, useMemo } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
+  CircularProgress,
   Divider,
   ListItemIcon,
   ListItemText,
@@ -20,6 +21,59 @@ import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
 import type { MenuItem as JBMenuItem } from './Menu'
 import type { PopupState } from './hooks'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'
+
+export type MenuItemsGetter =
+  | JBMenuItem[]
+  | (() => JBMenuItem[])
+  | (() => Promise<JBMenuItem[]>)
+
+function useAsyncMenuItems(
+  menuItems: MenuItemsGetter,
+  isOpen: boolean,
+): { items: JBMenuItem[]; loading: boolean; error: unknown } {
+  const [state, setState] = useState<{
+    items: JBMenuItem[]
+    loading: boolean
+    error: unknown
+  }>({
+    items: [],
+    loading: false,
+    error: null,
+  })
+
+  useEffect(() => {
+    if (!isOpen) {
+      setState({ items: [], loading: false, error: null })
+      return
+    }
+
+    if (Array.isArray(menuItems)) {
+      setState({ items: menuItems, loading: false, error: null })
+      return
+    }
+
+    let cancelled = false
+    setState(s => ({ ...s, loading: true, error: null }))
+
+    Promise.resolve(menuItems())
+      .then(items => {
+        if (!cancelled) {
+          setState({ items, loading: false, error: null })
+        }
+      })
+      .catch(error => {
+        if (!cancelled) {
+          setState({ items: [], loading: false, error })
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [menuItems, isOpen])
+
+  return state
+}
 
 const CascadingContext = createContext({
   parentPopupState: undefined,
@@ -164,11 +218,13 @@ function CascadingMenu({
   popupState,
   onMenuItemClick,
   menuItems,
+  children,
   ...props
 }: {
   popupState: PopupState
   onMenuItemClick: Function
   menuItems: JBMenuItem[]
+  children?: React.ReactNode
 }) {
   const { rootPopupState } = useContext(CascadingContext)
   const context = useMemo(
@@ -182,7 +238,9 @@ function CascadingMenu({
   return (
     <CascadingContext.Provider value={context}>
       {/* @ts-expect-error */}
-      <Menu {...props} {...bindMenu(popupState)} />
+      <Menu {...props} {...bindMenu(popupState)}>
+        {children}
+      </Menu>
     </CascadingContext.Provider>
   )
 }
@@ -301,16 +359,50 @@ function CascadingSpacer() {
   return <div style={{ flexGrow: 1, minWidth: 10 }} />
 }
 
+function LoadingMenuItem() {
+  return (
+    <MenuItem disabled>
+      <ListItemIcon>
+        <CircularProgress size={20} />
+      </ListItemIcon>
+      <ListItemText primary="Loading..." />
+    </MenuItem>
+  )
+}
+
+function ErrorMenuItem({ error }: { error: unknown }) {
+  return (
+    <MenuItem disabled>
+      <ListItemText
+        primary="Error loading menu"
+        secondary={error instanceof Error ? error.message : String(error)}
+      />
+    </MenuItem>
+  )
+}
+
 function CascadingMenuChildren(props: {
   onMenuItemClick: Function
   closeAfterItemClick?: boolean
-  menuItems: JBMenuItem[]
+  menuItems: MenuItemsGetter
   popupState: PopupState
 }) {
-  const { closeAfterItemClick = true, ...rest } = props
+  const { closeAfterItemClick = true, menuItems, popupState, ...rest } = props
+  const { items, loading, error } = useAsyncMenuItems(menuItems, popupState.isOpen)
+
   return (
-    <CascadingMenu {...rest}>
-      <CascadingMenuList {...rest} closeAfterItemClick={closeAfterItemClick} />
+    <CascadingMenu {...rest} popupState={popupState} menuItems={items}>
+      {loading ? (
+        <LoadingMenuItem />
+      ) : error ? (
+        <ErrorMenuItem error={error} />
+      ) : (
+        <CascadingMenuList
+          {...rest}
+          menuItems={items}
+          closeAfterItemClick={closeAfterItemClick}
+        />
+      )}
     </CascadingMenu>
   )
 }
