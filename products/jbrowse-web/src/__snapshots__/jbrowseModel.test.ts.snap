@@ -2082,7 +2082,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "maxFeatureScreenDensity": 0.0006,
           "renderer": {
             "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'",
-            "type": "SvgFeatureRenderer",
+            "type": "CanvasFeatureRenderer",
           },
           "type": "LinearVariantDisplay",
         },
