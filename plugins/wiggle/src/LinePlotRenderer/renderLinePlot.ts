@@ -4,6 +4,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawLine } from '../drawLine'
+import { serializeWiggleFeature } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -43,7 +44,7 @@ export async function renderLinePlot(
 
   const serialized = {
     ...rest,
-    features: reducedFeatures.map(f => f.toJSON()),
+    features: reducedFeatures.map(serializeWiggleFeature),
     height,
     width,
   }

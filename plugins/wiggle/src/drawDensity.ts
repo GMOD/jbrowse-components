@@ -52,8 +52,10 @@ export function drawDensity(
   const niceMax = domain[1]!
 
   let prevLeftPx = Number.NEGATIVE_INFINITY
-  let hasClipping = false
   const reducedFeatures = []
+  const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
+  const isLog = scaleOpts.scaleType === 'log'
+  const domainMin = scaleOpts.domain[0]!
   let start = performance.now()
   for (const feature of features.values()) {
     if (performance.now() - start > 400) {
@@ -63,14 +65,22 @@ export function drawDensity(
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
     // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
+    // bitwise OR is faster than Math.floor for positive numbers
+    if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
       reducedFeatures.push(feature)
       prevLeftPx = leftPx
     }
     const score = feature.get('score')
-    hasClipping = hasClipping || score > niceMax || score < niceMin
     const w = rightPx - leftPx + fudgeFactor
-    if (score >= scaleOpts.domain[0]!) {
+
+    // track clipping during first pass
+    if (score > niceMax) {
+      clippingFeatures.push({ leftPx, w, high: true })
+    } else if (score < niceMin && !isLog) {
+      clippingFeatures.push({ leftPx, w, high: false })
+    }
+
+    if (score >= domainMin) {
       ctx.fillStyle = cb(feature, score)
       ctx.fillRect(leftPx, 0, w, height)
     } else {
@@ -79,27 +89,15 @@ export function drawDensity(
     }
   }
 
-  // second pass: draw clipping
-  // avoid persisting the red fillstyle with save/restore
-  ctx.save()
-  if (hasClipping) {
+  // draw clipping indicators from cached data
+  if (clippingFeatures.length > 0) {
+    ctx.save()
     ctx.fillStyle = clipColor
-    for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const w = rightPx - leftPx + fudgeFactor
-      const score = feature.get('score')
-      if (score > niceMax) {
-        fillRectCtx(leftPx, 0, w, clipHeight, ctx)
-      } else if (score < niceMin && scaleOpts.scaleType !== 'log') {
-        fillRectCtx(leftPx, 0, w, clipHeight, ctx)
-      }
+    for (const { leftPx, w } of clippingFeatures) {
+      fillRectCtx(leftPx, 0, w, clipHeight, ctx)
     }
+    ctx.restore()
   }
-  ctx.restore()
 
   return {
     reducedFeatures,
