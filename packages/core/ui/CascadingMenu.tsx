@@ -14,6 +14,11 @@ import {
 
 import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton'
 import HoverMenu from './HoverMenu'
+import {
+  ErrorMenuItem,
+  LoadingMenuItem,
+  MenuItemEndDecoration,
+} from './MenuItems'
 import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
 import {
   CascadingContext,
@@ -21,25 +26,19 @@ import {
   useAsyncMenuItems,
   useCascadingContext,
 } from './menuHooks'
-import {
-  ErrorMenuItem,
-  LoadingMenuItem,
-  MenuItemEndDecoration,
-} from './MenuItems'
 
 import type {
+  CheckboxMenuItem,
   MenuItem as JBMenuItem,
   MenuItemsGetter,
   NormalMenuItem,
-  CheckboxMenuItem,
   RadioMenuItem,
 } from './MenuTypes'
-
-type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
 import type { PopupState } from './hooks'
 import type { PopoverOrigin, SvgIconProps } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes'
+type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
 
 function HelpIconSpacer() {
   return (

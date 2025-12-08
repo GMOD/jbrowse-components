@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
@@ -13,25 +13,29 @@ import {
   Popover,
 } from '@mui/material'
 
-import { useAsyncMenuItems } from './menuHooks'
 import {
   ErrorMenuItem,
   LoadingMenuItem,
   MenuItemEndDecoration,
 } from './MenuItems'
+import { useAsyncMenuItems } from './menuHooks'
 import { findLastIndex } from '../util'
 
 import type { MenuItem, MenuItemsGetter } from './MenuTypes'
-import type { MenuItemProps, MenuProps as MUIMenuProps, PopoverProps } from '@mui/material'
+import type {
+  MenuItemProps,
+  MenuProps as MUIMenuProps,
+  PopoverProps,
+} from '@mui/material'
 
 export type {
+  BaseMenuItem,
+  CheckboxMenuItem,
+  MenuDivider,
   MenuItem,
   MenuItemsGetter,
-  MenuDivider,
   MenuSubHeader,
-  BaseMenuItem,
   NormalMenuItem,
-  CheckboxMenuItem,
   RadioMenuItem,
   SubMenuItem,
 } from './MenuTypes'
@@ -92,10 +96,6 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
     const [openSubMenuIdx, setOpenSubMenuIdx] = useState<number>()
     const [isSubMenuOpen, setIsSubMenuOpen] = useState(false)
     const [selectedMenuItemIdx, setSelectedMenuItemIdx] = useState<number>()
-    const [position, setPosition] = useState<{
-      top?: number
-      left?: number
-    }>()
     const paperRef = useRef<HTMLDivElement | null>(null)
     const { classes } = useStyles()
 
@@ -108,15 +108,12 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
       top = false,
     } = props
 
-    useEffect(() => {
-      if (!open) {
-        setSubMenuAnchorEl(undefined)
-        setOpenSubMenuIdx(undefined)
-      }
-    }, [open])
+    // Derive effective submenu state - when menu is closed, submenu is also closed
+    const effectiveSubMenuAnchorEl = open ? subMenuAnchorEl : undefined
+    const effectiveOpenSubMenuIdx = open ? openSubMenuIdx : undefined
 
     useEffect(() => {
-      const shouldSubMenuBeOpen = open && Boolean(subMenuAnchorEl)
+      const shouldSubMenuBeOpen = open && Boolean(effectiveSubMenuAnchorEl)
       let timer: ReturnType<typeof setTimeout>
       if (shouldSubMenuBeOpen && !isSubMenuOpen) {
         timer = setTimeout(() => {
@@ -130,25 +127,15 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
       return () => {
         clearTimeout(timer)
       }
-    }, [isSubMenuOpen, open, subMenuAnchorEl])
+    }, [isSubMenuOpen, open, effectiveSubMenuAnchorEl])
 
-    useLayoutEffect(() => {
+    const position = useMemo(() => {
       if (anchorEl) {
         const rect = (anchorEl as HTMLElement).getBoundingClientRect()
-        if (position) {
-          if (
-            rect.top !== position.top ||
-            rect.left + rect.width !== position.left
-          ) {
-            setPosition({ top: rect.top, left: rect.left + rect.width })
-          }
-        } else {
-          setPosition({ top: rect.top, left: rect.left + rect.width })
-        }
-      } else if (!position) {
-        setPosition({})
+        return { top: rect.top, left: rect.left + rect.width }
       }
-    }, [position, anchorEl])
+      return {}
+    }, [anchorEl])
 
     const hasIcon = menuItems.some(
       menuItem => 'icon' in menuItem && menuItem.icon,
@@ -222,7 +209,7 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
                       setSelectedMenuItemIdx(idx)
                     }
                     if ('subMenu' in menuItem) {
-                      if (openSubMenuIdx !== idx) {
+                      if (effectiveOpenSubMenuIdx !== idx) {
                         setSubMenuAnchorEl(e.currentTarget)
                         setOpenSubMenuIdx(idx)
                       }
@@ -280,8 +267,8 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
             subMenu = (
               <MenuPage
                 key={menuItem.id || String(menuItem.label)}
-                anchorEl={subMenuAnchorEl}
-                open={isSubMenuOpen && openSubMenuIdx === idx}
+                anchorEl={effectiveSubMenuAnchorEl}
+                open={isSubMenuOpen && effectiveOpenSubMenuIdx === idx}
                 onClose={() => {
                   setIsSubMenuOpen(false)
                   setSubMenuAnchorEl(undefined)
