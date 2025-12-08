@@ -83,3 +83,38 @@ export function shouldRenderChevrons(bpPerPx: number, featureHeight: number) {
  * Width of chevron pointer in pixels
  */
 export const CHEVRON_WIDTH = 5
+
+interface SamHeaderLine {
+  tag: string
+  data: { tag: string; value: string }[]
+}
+
+export interface ParsedSamHeader {
+  idToName: string[]
+  nameToId: Record<string, number>
+  readGroups: (string | undefined)[]
+}
+
+/**
+ * Parse SAM header lines into idToName, nameToId mappings and readGroups
+ */
+export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
+  const idToName: string[] = []
+  const nameToId: Record<string, number> = {}
+  for (const [refId, sqLine] of samHeader
+    .filter(l => l.tag === 'SQ')
+    .entries()) {
+    const SN = sqLine.data.find(item => item.tag === 'SN')
+    if (SN) {
+      const refName = SN.value
+      nameToId[refName] = refId
+      idToName[refId] = refName
+    }
+  }
+
+  const readGroups = samHeader
+    .filter(l => l.tag === 'RG')
+    .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
+
+  return { idToName, nameToId, readGroups }
+}

@@ -25,7 +25,9 @@ test('test stats estimation pileup, zoom in to see', async () => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
   // wait for canvas to be done rendering to avoid flaky layout differences
-  expectCanvasMatch((await findAllByTestId(/prerendered_canvas_.*_done/, ...o))[0]!)
+  expectCanvasMatch(
+    (await findAllByTestId(/prerendered_canvas_.*_done/, ...o))[0]!,
+  )
 }, 30000)
 
 xtest('test stats estimation pileup, force load to see', async () => {

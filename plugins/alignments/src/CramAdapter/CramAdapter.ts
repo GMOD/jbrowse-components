@@ -7,26 +7,21 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
-import { filterReadFlag, filterTagValue } from '../shared/util'
+import { filterReadFlag, filterTagValue, parseSamHeader } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
+import type { ParsedSamHeader } from '../shared/util'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-interface Header {
-  idToName?: string[]
-  nameToId?: Record<string, number>
-  readGroups?: (string | undefined)[]
-}
-
 export default class CramAdapter extends BaseFeatureDataAdapter {
-  samHeader: Header = {}
+  samHeader: ParsedSamHeader = { idToName: [], nameToId: {}, readGroups: [] }
 
   private setupP?: Promise<{
-    samHeader: Header
+    samHeader: ParsedSamHeader
     cram: IndexedCramFile
   }>
 
@@ -36,15 +31,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   public sequenceAdapterConfig?: Record<string, unknown>
 
-  // used for avoiding re-creation new BamSlightlyLazyFeatures, keeping
-  // mismatches in cache. at an average of 100kb-300kb, keeping even just 500
-  // of these in memory is fairly intensive but can reduce recomputation on
-  // these objects
-  private ultraLongFeatureCache = new QuickLRU<string, Feature>({
+  private ultraLongFeatureCache = new QuickLRU<number, Feature>({
     maxSize: 500,
   })
 
-  // maps a seqId to original refname, passed specially to render args, to a seqid
   private seqIdToOriginalRefName: string[] = []
 
   private configure() {
@@ -107,30 +97,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   private async setup(_opts?: BaseOptions) {
     this.setupP ??= (async () => {
       const { cram } = this.configure()
-      const samHeader = await cram.cram.getSamHeader()
-
-      // use the @SQ lines in the header to figure out the mapping between ref
-      // ID numbers and names
-      const idToName: string[] = []
-      const nameToId: Record<string, number> = {}
-      for (const [refId, sqLine] of samHeader
-        .filter(l => l.tag === 'SQ')
-        .entries()) {
-        const SN = sqLine.data.find(item => item.tag === 'SN')
-        if (SN) {
-          const refName = SN.value
-          nameToId[refName] = refId
-          idToName[refId] = refName
-        }
-      }
-
-      const readGroups = samHeader
-        .filter(l => l.tag === 'RG')
-        .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
-
-      const data = { idToName, nameToId, readGroups }
-      this.samHeader = data
-      return { samHeader: data, cram }
+      const rawHeader = await cram.cram.getSamHeader()
+      const samHeader = parseSamHeader(rawHeader)
+      this.samHeader = samHeader
+      return { samHeader, cram }
     })().catch((e: unknown) => {
       this.setupP = undefined
       this.configureResult = undefined
@@ -142,18 +112,15 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   async getRefNames(opts?: BaseOptions) {
     const { samHeader } = await this.setup(opts)
-    if (!samHeader.idToName) {
-      throw new Error('CRAM file has no header lines')
-    }
     return samHeader.idToName
   }
 
   refNameToId(refName: string) {
-    return this.samHeader.nameToId?.[refName]
+    return this.samHeader.nameToId[refName]
   }
 
   refIdToName(refId: number) {
-    return this.samHeader.idToName?.[refId]
+    return this.samHeader.idToName[refId]
   }
 
   refIdToOriginalName(refId: number) {
@@ -212,25 +179,24 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
             tagFilter &&
             filterTagValue(
               tagFilter.tag === 'RG'
-                ? samHeader.readGroups?.[record.readGroupId]
+                ? samHeader.readGroups[record.readGroupId]
                 : record.tags[tagFilter.tag],
               tagFilter.value,
             )
           ) {
             continue
           }
-
           if (readName && record.readName !== readName) {
             continue
           }
 
-          const ret = this.ultraLongFeatureCache.get(`${record.uniqueId}`)
-          if (!ret) {
-            const elt = new CramSlightlyLazyFeature(record, this)
-            this.ultraLongFeatureCache.set(`${record.uniqueId}`, elt)
-            observer.next(elt)
-          } else {
+          const ret = this.ultraLongFeatureCache.get(record.uniqueId)
+          if (ret) {
             observer.next(ret)
+          } else {
+            const elt = new CramSlightlyLazyFeature(record, this)
+            this.ultraLongFeatureCache.set(record.uniqueId, elt)
+            observer.next(elt)
           }
         }
 
