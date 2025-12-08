@@ -55,6 +55,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   private seqIdToOriginalRefName: string[] = []
 
   public async configurePre() {
+    console.log('CramAdapter.configurePre: starting')
     const cramLocation = this.getConf('cramLocation')
     const craiLocation = this.getConf('craiLocation')
     const pm = this.pluginManager
@@ -67,13 +68,15 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       seqFetch: (...args) => this.seqFetch(...args),
       checkSequenceMD5: false,
     })
-
+    console.log('CramAdapter.configurePre: done')
     return { cram }
   }
 
   public async configure() {
     if (!this.configureP) {
+      console.log('CramAdapter.configure: creating new configureP promise')
       this.configureP = this.configurePre().catch((e: unknown) => {
+        console.log('CramAdapter.configure: configureP rejected, clearing', e)
         this.configureP = undefined
         throw e
       })
@@ -83,13 +86,27 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   async getSequenceAdapter() {
     const config = this.sequenceAdapterConfig
+    console.log(
+      'CramAdapter.getSequenceAdapter: sequenceAdapterConfig=',
+      config ? 'present' : 'undefined',
+    )
     if (!config || !this.getSubAdapter) {
       return undefined
     }
     if (!this.sequenceAdapterP) {
+      console.log(
+        'CramAdapter.getSequenceAdapter: creating new sequenceAdapterP promise',
+      )
       this.sequenceAdapterP = this.getSubAdapter(config)
-        .then(r => r.dataAdapter as BaseSequenceAdapter)
+        .then(r => {
+          console.log('CramAdapter.getSequenceAdapter: promise resolved')
+          return r.dataAdapter as BaseSequenceAdapter
+        })
         .catch((e: unknown) => {
+          console.log(
+            'CramAdapter.getSequenceAdapter: promise rejected, clearing',
+            e,
+          )
           this.sequenceAdapterP = undefined
           throw e
         })
@@ -129,8 +146,11 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setupPre(_opts?: BaseOptions) {
+    console.log('CramAdapter.setupPre: starting')
     const { cram } = await this.configure()
+    console.log('CramAdapter.setupPre: got cram, fetching header')
     const samHeader = await cram.cram.getSamHeader()
+    console.log('CramAdapter.setupPre: got header')
 
     // use the @SQ lines in the header to figure out the mapping between ref
     // ID numbers and names
@@ -161,7 +181,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private async setupPre2(opts?: BaseOptions) {
     if (!this.setupP) {
+      console.log('CramAdapter.setupPre2: creating new setupP promise')
       this.setupP = this.setupPre(opts).catch((e: unknown) => {
+        console.log('CramAdapter.setupPre2: setupP rejected, clearing', e)
         this.setupP = undefined
         throw e
       })
@@ -216,13 +238,33 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
+      console.log(
+        'CramAdapter.getFeatures: called, sequenceAdapterConfig=',
+        this.sequenceAdapterConfig ? 'present' : 'undefined',
+      )
       // Set up the sequence adapter before fetching records since seqFetch
       // is called internally by the CRAM library during decoding
       const seqAdapter = await this.getSequenceAdapter()
+      console.log(
+        'CramAdapter.getFeatures: seqAdapter result=',
+        seqAdapter ? 'present' : 'undefined',
+      )
       if (seqAdapter) {
         this.sequenceAdapter = seqAdapter
       }
-      const { cram, samHeader } = await this.setup(opts)
+      console.log(
+        'CramAdapter.getFeatures: this.sequenceAdapter=',
+        this.sequenceAdapter ? 'present' : 'undefined',
+      )
+      let cram, samHeader
+      try {
+        const result = await this.setup(opts)
+        cram = result.cram
+        samHeader = result.samHeader
+      } catch (e) {
+        console.log('CramAdapter.getFeatures: setup failed', e)
+        throw e
+      }
 
       const refId = this.refNameToId(refName)
       if (refId === undefined) {
@@ -234,11 +276,20 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       if (originalRefName) {
         this.seqIdToOriginalRefName[refId] = originalRefName
       }
-      const records = await updateStatus(
-        'Downloading alignments',
-        statusCallback,
-        () => cram.getRecordsForRange(refId, start, end),
-      )
+      let records
+      try {
+        records = await updateStatus(
+          'Downloading alignments',
+          statusCallback,
+          () => cram.getRecordsForRange(refId, start, end),
+        )
+      } catch (e) {
+        // Clear cached promises on network errors so reload works
+        console.log('CramAdapter.getFeatures: getRecordsForRange failed, clearing caches', e)
+        this.configureP = undefined
+        this.setupP = undefined
+        throw e
+      }
       checkStopToken(stopToken)
       await updateStatus('Processing alignments', statusCallback, () => {
         const {
@@ -284,7 +335,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   // we return the configured fetchSizeLimit, and the bytes for the region
-  async getMultiRegionFeatureDensityStats(regions: Region[], opts?: BaseOptions) {
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     const bytes = await this.bytesForRegions(regions, opts)
     const fetchSizeLimit = this.getConf('fetchSizeLimit')
     return {

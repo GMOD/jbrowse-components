@@ -1,5 +1,10 @@
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
-import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getParent,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { getConf } from '../configuration'
@@ -154,7 +159,9 @@ export default function assemblyFactory(
       // cache it for later use when fetching features
       let sequenceAdapter
       try {
-        sequenceAdapter = self.configuration?.sequence?.adapter
+        const adapterConfig = self.configuration?.sequence?.adapter
+        // Convert to snapshot since MST objects can't be assigned elsewhere
+        sequenceAdapter = adapterConfig ? getSnapshot(adapterConfig) : undefined
       } catch (e) {
         // configuration might not be fully loaded yet
       }
