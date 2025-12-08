@@ -66,7 +66,7 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
 })
 
 export const FileLocation = types.snapshotProcessor(
-  types.union(UriLocation, BlobLocation),
+  types.union(LocalPathLocation, UriLocation, BlobLocation),
   {
     // @ts-expect-error
     preProcessor(snap) {
@@ -78,34 +78,19 @@ export const FileLocation = types.snapshotProcessor(
       // @ts-expect-error
       // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       const { locationType, ...rest } = snap as Omit<typeof snap, symbol>
-
-      // Convert LocalPathLocation to UriLocation with file:// prefix
-      if (locationType === 'LocalPathLocation') {
-        // @ts-expect-error
-        const { localPath } = rest
-        return {
-          locationType: 'UriLocation',
-          uri: new URL(`file://${localPath}`).href,
-        }
-      }
-
       if (!locationType) {
         // @ts-expect-error
         const { uri, localPath, blob } = rest
-
-        // Convert localPath to file:// URI
-        if (localPath !== undefined) {
-          return {
-            locationType: 'UriLocation',
-            uri: new URL(`file://${localPath}`).href,
-          }
-        }
+        let locationType = ''
         if (uri !== undefined) {
-          return { ...rest, locationType: 'UriLocation' }
+          locationType = 'UriLocation'
+        } else if (localPath !== undefined) {
+          locationType = 'LocalPathLocation'
+        } else if (blob !== undefined) {
+          locationType = 'BlobLocation'
         }
-        if (blob !== undefined) {
-          return { ...rest, locationType: 'BlobLocation' }
-        }
+
+        return { ...rest, locationType }
       }
       return snap
     },
