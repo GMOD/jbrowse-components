@@ -93,12 +93,11 @@ const SNPCoverageRendering = observer(function (props: {
     const offsetX = clientX - rect.left
     const offsetY = clientY - rect.top
     // Use a small search box around the cursor for better hit detection
-    const tolerance = 2
     const search = flatbush.search(
-      offsetX - tolerance,
-      offsetY - tolerance,
-      offsetX + tolerance,
-      offsetY + tolerance,
+      offsetX,
+      offsetY,
+      offsetX + 1.5,
+      offsetY + 1.5,
     )
     if (search.length === 0) {
       return undefined

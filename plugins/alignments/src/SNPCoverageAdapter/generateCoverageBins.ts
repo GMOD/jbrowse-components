@@ -50,7 +50,7 @@ export async function generateCoverageBins({
   features: Feature[]
   region: Region
   opts: Opts
-  fetchSequence: (arg: Region) => Promise<string>
+  fetchSequence?: (arg: Region) => Promise<string | undefined>
 }) {
   const { stopToken, colorBy } = opts
   const skipmap = {} as SkipMap
@@ -72,7 +72,7 @@ export async function generateCoverageBins({
       region,
     })
 
-    if (colorBy?.type === 'modifications') {
+    if (colorBy?.type === 'modifications' && fetchSequence) {
       if (regionSequence === undefined) {
         regionSequence =
           (await fetchSequence({
@@ -90,7 +90,7 @@ export async function generateCoverageBins({
         region,
         regionSequence: slicedSequence!,
       })
-    } else if (colorBy?.type === 'methylation') {
+    } else if (colorBy?.type === 'methylation' && fetchSequence) {
       regionSequence ??=
         (await fetchSequence({
           ...region,

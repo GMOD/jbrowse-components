@@ -510,13 +510,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
         "uri": "volvox-sorted-altname.cram",
       },
@@ -541,13 +534,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "uri": "volvox-sorted-altname.cram",
         },
         "fetchSizeLimit": 1000,
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
       },
       "assemblyNames": [
@@ -588,13 +574,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram",
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
       },
       "assemblyNames": [
@@ -623,13 +602,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
       },
       "assemblyNames": [
@@ -651,13 +623,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "cramLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "CramAdapter",
       },
@@ -686,13 +651,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "cramLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "CramAdapter",
       },
@@ -1313,13 +1271,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-long-reads-sv.cram",
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
       },
       "assemblyNames": [
@@ -1341,13 +1292,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "cramLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-long-reads.fastq.sorted.cram",
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "CramAdapter",
       },
@@ -1395,13 +1339,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-samspec.cram",
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
       },
       "assemblyNames": [
@@ -1447,13 +1384,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "cramLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-sv.cram",
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "CramAdapter",
       },
@@ -1528,13 +1458,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "cramLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "CramAdapter",
       },
@@ -1983,13 +1906,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox-rg.bam.bai",
           },
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "BamAdapter",
       },
       "assemblyNames": [
@@ -2011,13 +1927,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "cramLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-rg.cram",
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "CramAdapter",
       },
@@ -2104,13 +2013,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "MM-chebi-volvox.bam.bai",
           },
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "BamAdapter",
       },
       "assemblyNames": [
@@ -2135,13 +2037,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "MM-double-volvox.bam.bai",
           },
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "BamAdapter",
       },
@@ -2168,13 +2063,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "MM-multi-volvox.bam.bai",
           },
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "BamAdapter",
       },
       "assemblyNames": [
@@ -2199,13 +2087,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "MM-orient-volvox.bam.bai",
           },
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "BamAdapter",
       },
@@ -2300,13 +2181,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "cramLocation": {
           "locationType": "UriLocation",
           "uri": "deep_sequencing.cram",
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "CramAdapter",
       },
@@ -2410,13 +2284,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "spliced.bam.bai",
           },
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "BamAdapter",
       },
@@ -2595,13 +2462,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox-simple-inv.bam.bai",
           },
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "BamAdapter",
       },
       "assemblyNames": [
@@ -2624,13 +2484,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-simple-inv.cram",
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
       },
       "assemblyNames": [
@@ -2652,13 +2505,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "cramLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-simple-inv-paired.cram",
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "CramAdapter",
       },
@@ -2684,13 +2530,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox-simple-inv-paired.bam.bai",
           },
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "BamAdapter",
       },
@@ -2737,13 +2576,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-inv-pbsim.cram",
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
       },
       "assemblyNames": [
@@ -2768,13 +2600,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "paired_end_stranded_rnaseq.bam.bai",
           },
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
         },
         "type": "BamAdapter",
       },
@@ -2888,13 +2713,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "locationType": "UriLocation",
           "uri": "volvox-sorted.noref.cram",
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
       },
       "assemblyNames": [
@@ -2982,13 +2800,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "uri": "volvox-sv.renamed.bam.bai",
           },
         },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "BamAdapter",
       },
       "assemblyNames": [
@@ -3003,13 +2814,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
         "uri": "volvox-sorted-altname.cram",
       },
@@ -3026,13 +2830,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
         "type": "CramAdapter",
         "uri": "volvox-sorted-altname.cram",
       },

@@ -83,7 +83,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get tags() {
-    const RG = this._store.samHeader.readGroups?.[this.record.readGroupId]
+    const RG = this._store.samHeader?.readGroups[this.record.readGroupId]
     return RG !== undefined ? { ...this.record.tags, RG } : this.record.tags
   }
 
