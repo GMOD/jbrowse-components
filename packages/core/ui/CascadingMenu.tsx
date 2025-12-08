@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import type React from 'react'
-import { useContext } from 'react'
+import { useContext, useId, useState } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
@@ -19,12 +19,14 @@ import {
   LoadingMenuItem,
   MenuItemEndDecoration,
 } from './MenuItems'
-import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
+import { bindMenu } from './hooks'
 import {
   CascadingContext,
-  closeSiblingSubmenus,
   useAsyncMenuItems,
   useCascadingContext,
+  useCloseSubmenu,
+  useSubmenuContext,
+  useSubmenuState,
 } from './menuHooks'
 
 import type {
@@ -108,7 +110,8 @@ function CascadingMenuItem({
   disabled?: boolean
   children: React.ReactNode
 }) {
-  const { rootPopupState, parentPopupState } = useContext(CascadingContext)
+  const { rootPopupState } = useContext(CascadingContext)
+  const closeSubmenu = useCloseSubmenu()
 
   if (!rootPopupState) {
     throw new Error('must be used inside a CascadingMenu')
@@ -123,9 +126,7 @@ function CascadingMenuItem({
         }
         onClick?.(event)
       }}
-      onMouseOver={() => {
-        closeSiblingSubmenus(parentPopupState)
-      }}
+      onMouseOver={closeSubmenu}
     >
       {children}
     </MenuItem>
@@ -147,21 +148,13 @@ function CascadingSubmenu({
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
 }) {
-  const { parentPopupState } = useContext(CascadingContext)
-  const popupState = usePopupState({ parentPopupState })
-  const { onMouseOver: originalOnMouseOver, ...hoverProps } =
-    bindHover(popupState)
+  const submenuId = useId()
+  const { isOpen, open, close } = useSubmenuState(submenuId)
+  const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
 
   return (
     <>
-      <MenuItem
-        {...bindFocus(popupState)}
-        {...hoverProps}
-        onMouseOver={event => {
-          closeSiblingSubmenus(parentPopupState)
-          originalOnMouseOver(event)
-        }}
-      >
+      <MenuItem ref={setAnchorEl} onMouseOver={open} onFocus={open}>
         {Icon ? (
           <ListItemIcon>
             <Icon />
@@ -173,7 +166,9 @@ function CascadingSubmenu({
       <CascadingSubmenuHover
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        popupState={popupState}
+        isOpen={isOpen}
+        anchorEl={anchorEl}
+        onClose={close}
       >
         <CascadingMenuList
           closeAfterItemClick={closeAfterItemClick}
@@ -222,21 +217,31 @@ function ActionMenuItem({
 }
 
 function CascadingSubmenuHover({
-  popupState,
+  isOpen,
+  anchorEl,
+  onClose,
   children,
-  ...props
+  anchorOrigin,
+  transformOrigin,
 }: {
-  popupState: PopupState
+  isOpen: boolean
+  anchorEl: Element | null
+  onClose: () => void
   anchorOrigin: PopoverOrigin
   transformOrigin: PopoverOrigin
   children: React.ReactNode
 }) {
-  const context = useCascadingContext(popupState)
+  const context = useSubmenuContext()
 
   return (
     <CascadingContext.Provider value={context}>
-      {/* @ts-expect-error */}
-      <HoverMenu {...props} {...bindMenu(popupState)}>
+      <HoverMenu
+        open={isOpen}
+        anchorEl={anchorEl}
+        onClose={onClose}
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
+      >
         {children}
       </HoverMenu>
     </CascadingContext.Provider>
@@ -246,17 +251,22 @@ function CascadingSubmenuHover({
 function CascadingMenu({
   popupState,
   children,
-  ...props
 }: {
   popupState: PopupState
   children?: React.ReactNode
 }) {
   const context = useCascadingContext(popupState)
+  const { anchorEl, onClose, ...menuProps } = bindMenu(popupState)
 
   return (
     <CascadingContext.Provider value={context}>
-      {/* @ts-expect-error */}
-      <Menu {...props} {...bindMenu(popupState)}>
+      <Menu
+        {...menuProps}
+        anchorEl={anchorEl ?? null}
+        onClose={() => {
+          onClose()
+        }}
+      >
         {children}
       </Menu>
     </CascadingContext.Provider>

@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import type { MenuItem, MenuItemsGetter } from './MenuTypes'
 import type { PopupState } from './hooks'
@@ -65,27 +72,63 @@ export function useAsyncMenuItems(
 // Cascading menu specific context and hooks
 
 export const CascadingContext = createContext({
-  parentPopupState: undefined,
-  rootPopupState: undefined,
-} as {
-  parentPopupState: PopupState | undefined
-  rootPopupState: PopupState | undefined
+  rootPopupState: undefined as PopupState | undefined,
+  openSubmenuId: undefined as string | undefined,
+  setOpenSubmenuId: (() => {}) as (id: string | undefined) => void,
 })
 
-export function useCascadingContext(popupState: PopupState) {
-  const { rootPopupState } = useContext(CascadingContext)
+export function useCascadingContext(rootPopupState: PopupState) {
+  const [openSubmenuId, setOpenSubmenuId] = useState<string | undefined>()
+
   return useMemo(
     () => ({
-      rootPopupState: rootPopupState || popupState,
-      parentPopupState: popupState,
+      rootPopupState,
+      openSubmenuId,
+      setOpenSubmenuId,
     }),
-    [rootPopupState, popupState],
+    [rootPopupState, openSubmenuId],
   )
 }
 
-export function closeSiblingSubmenus(parentPopupState: PopupState | undefined) {
-  if (parentPopupState?.childHandle) {
-    parentPopupState.childHandle.close()
-    parentPopupState.setChildHandle(undefined)
-  }
+export function useSubmenuContext() {
+  const { rootPopupState } = useContext(CascadingContext)
+  const [openSubmenuId, setOpenSubmenuId] = useState<string | undefined>()
+
+  return useMemo(
+    () => ({
+      rootPopupState,
+      openSubmenuId,
+      setOpenSubmenuId,
+    }),
+    [rootPopupState, openSubmenuId],
+  )
+}
+
+export function useSubmenuState(submenuId: string) {
+  const { openSubmenuId, setOpenSubmenuId, rootPopupState } =
+    useContext(CascadingContext)
+  const isOpen = openSubmenuId === submenuId
+
+  const open = useCallback(() => {
+    setOpenSubmenuId(submenuId)
+  }, [setOpenSubmenuId, submenuId])
+
+  const close = useCallback(() => {
+    if (openSubmenuId === submenuId) {
+      setOpenSubmenuId(undefined)
+    }
+  }, [openSubmenuId, setOpenSubmenuId, submenuId])
+
+  const closeAll = useCallback(() => {
+    rootPopupState?.close()
+  }, [rootPopupState])
+
+  return { isOpen, open, close, closeAll }
+}
+
+export function useCloseSubmenu() {
+  const { setOpenSubmenuId } = useContext(CascadingContext)
+  return useCallback(() => {
+    setOpenSubmenuId(undefined)
+  }, [setOpenSubmenuId])
 }
