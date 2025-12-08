@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { CascadingMenuButton, SanitizedHTML } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -48,8 +48,83 @@ const TrackCategory = observer(function ({
   const { name, id } = item
   const isOpen = !model.collapsed.get(id)
 
-  const subcategoryIds = useMemo(() => getAllSubcategories(item), [item])
-  const hasSubcategories = subcategoryIds.length > 0
+  const getMenuItems = useCallback(() => {
+    const subcategoryIds = getAllSubcategories(item)
+    const hasSubcategories = subcategoryIds.length > 0
+
+    return [
+      {
+        label: 'Add to selection',
+        onClick: () => {
+          const r = treeToMap(item).get(id)
+          model.addToSelection(getAllChildren(r))
+        },
+        helpText:
+          'Add all tracks in this category to the current selection. This allows you to perform bulk operations on multiple tracks at once, such as configuring settings or exporting track configurations.',
+      },
+      {
+        label: 'Remove from selection',
+        onClick: () => {
+          const r = treeToMap(item).get(id)
+          model.removeFromSelection(getAllChildren(r))
+        },
+        helpText:
+          'Remove all tracks in this category from the current selection. Use this to deselect tracks that were previously added to your selection.',
+      },
+      {
+        label: 'Show all',
+        onClick: () => {
+          for (const entry of treeToMap(item).get(id)?.children || []) {
+            if (entry.type === 'track') {
+              model.view.showTrack(entry.trackId)
+            }
+          }
+        },
+        helpText:
+          'Display all tracks in this category on the current view. This is useful when you want to visualize multiple related tracks simultaneously to compare their data.',
+      },
+      {
+        label: 'Hide all',
+        onClick: () => {
+          for (const entry of treeToMap(item).get(id)?.children || []) {
+            if (entry.type === 'track') {
+              model.view.hideTrack(entry.trackId)
+            }
+          }
+        },
+        helpText:
+          'Hide all tracks in this category from the current view. This helps declutter your view by removing tracks you are not currently analyzing.',
+      },
+      ...(hasSubcategories
+        ? [
+            {
+              label: 'Collapse all subcategories',
+              onClick: () => {
+                for (const subcategoryId of subcategoryIds) {
+                  if (!model.collapsed.get(subcategoryId)) {
+                    model.toggleCategory(subcategoryId)
+                  }
+                }
+              },
+              helpText:
+                'Collapse all nested subcategories within this category. This provides a cleaner, more compact view of the track hierarchy by hiding the detailed contents of subcategories.',
+            },
+            {
+              label: 'Expand all subcategories',
+              onClick: () => {
+                for (const subcategoryId of subcategoryIds) {
+                  if (model.collapsed.get(subcategoryId)) {
+                    model.toggleCategory(subcategoryId)
+                  }
+                }
+              },
+              helpText:
+                'Expand all nested subcategories within this category. This reveals all tracks and subcategories at once, making it easier to browse and select tracks from the entire hierarchy.',
+            },
+          ]
+        : []),
+    ]
+  }, [item, id, model])
 
   return (
     <div
@@ -64,80 +139,7 @@ const TrackCategory = observer(function ({
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         <SanitizedHTML html={name} />
         <CascadingMenuButton
-          menuItems={[
-            {
-              label: 'Add to selection',
-              onClick: () => {
-                const r = treeToMap(item).get(id)
-                model.addToSelection(getAllChildren(r))
-              },
-              helpText:
-                'Add all tracks in this category to the current selection. This allows you to perform bulk operations on multiple tracks at once, such as configuring settings or exporting track configurations.',
-            },
-            {
-              label: 'Remove from selection',
-              onClick: () => {
-                const r = treeToMap(item).get(id)
-                model.removeFromSelection(getAllChildren(r))
-              },
-              helpText:
-                'Remove all tracks in this category from the current selection. Use this to deselect tracks that were previously added to your selection.',
-            },
-            {
-              label: 'Show all',
-              onClick: () => {
-                for (const entry of treeToMap(item).get(id)?.children || []) {
-                  if (entry.type === 'track') {
-                    model.view.showTrack(entry.trackId)
-                  }
-                }
-              },
-              helpText:
-                'Display all tracks in this category on the current view. This is useful when you want to visualize multiple related tracks simultaneously to compare their data.',
-            },
-            {
-              label: 'Hide all',
-              onClick: () => {
-                for (const entry of treeToMap(item).get(id)?.children || []) {
-                  if (entry.type === 'track') {
-                    model.view.hideTrack(entry.trackId)
-                  }
-                }
-              },
-              helpText:
-                'Hide all tracks in this category from the current view. This helps declutter your view by removing tracks you are not currently analyzing.',
-            },
-            ...(hasSubcategories
-              ? [
-                  {
-                    label: 'Collapse all subcategories',
-                    onClick: () => {
-                      for (const subcategoryId of subcategoryIds) {
-                        // Only collapse if currently open
-                        if (!model.collapsed.get(subcategoryId)) {
-                          model.toggleCategory(subcategoryId)
-                        }
-                      }
-                    },
-                    helpText:
-                      'Collapse all nested subcategories within this category. This provides a cleaner, more compact view of the track hierarchy by hiding the detailed contents of subcategories.',
-                  },
-                  {
-                    label: 'Expand all subcategories',
-                    onClick: () => {
-                      for (const subcategoryId of subcategoryIds) {
-                        // Only expand if currently collapsed
-                        if (model.collapsed.get(subcategoryId)) {
-                          model.toggleCategory(subcategoryId)
-                        }
-                      }
-                    },
-                    helpText:
-                      'Expand all nested subcategories within this category. This reveals all tracks and subcategories at once, making it easier to browse and select tracks from the entire hierarchy.',
-                  },
-                ]
-              : []),
-          ]}
+          menuItems={getMenuItems}
           className={classes.contrastColor}
           stopPropagation
           setOpen={setMenuOpen}
