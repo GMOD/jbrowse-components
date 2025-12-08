@@ -30,9 +30,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     cram: IndexedCramFile
   }>
 
-  private configureP?: Promise<{
-    cram: IndexedCramFile
-  }>
+  private configureResult?: { cram: IndexedCramFile }
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter>
 
@@ -49,8 +47,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   // maps a seqId to original refname, passed specially to render args, to a seqid
   private seqIdToOriginalRefName: string[] = []
 
-  private async configure() {
-    this.configureP ??= (async () => {
+  private configure() {
+    if (!this.configureResult) {
       const cramLocation = this.getConf('cramLocation')
       const craiLocation = this.getConf('craiLocation')
 
@@ -59,15 +57,32 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         index: new CraiIndex({
           filehandle: openLocation(craiLocation, this.pluginManager),
         }),
-        seqFetch: (...args) => this.seqFetch(...args),
+        seqFetch: async (seqId: number, start: number, end: number) => {
+          start -= 1 // convert from 1-based closed to interbase
+
+          const sequenceAdapter = await this.getSequenceAdapter()
+          if (!sequenceAdapter) {
+            throw new Error('no sequenceAdapter available')
+          }
+          const refName =
+            this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
+          if (!refName) {
+            throw new Error('unknown refName')
+          }
+
+          return (
+            (await sequenceAdapter.getSequence({
+              refName,
+              start,
+              end,
+            })) ?? ''
+          )
+        },
         checkSequenceMD5: false,
       })
-      return { cram }
-    })().catch((e: unknown) => {
-      this.configureP = undefined
-      throw e
-    })
-    return this.configureP
+      this.configureResult = { cram }
+    }
+    return this.configureResult
   }
 
   async getSequenceAdapter() {
@@ -85,40 +100,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader(_opts?: BaseOptions) {
-    const { cram } = await this.configure()
+    const { cram } = this.configure()
     return cram.cram.getHeaderText()
-  }
-
-  private async seqFetch(
-    seqId: number,
-    start: number,
-    end: number,
-  ): Promise<string> {
-    start -= 1 // convert from 1-based closed to interbase
-
-    const sequenceAdapter = await this.getSequenceAdapter()
-    if (!sequenceAdapter) {
-      throw new Error(
-        'no sequenceAdapter available, is it configured in the assembly?',
-      )
-    }
-    const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
-    if (!refName) {
-      throw new Error('unknown refName')
-    }
-
-    const sequence = await sequenceAdapter.getSequence({
-      refName,
-      start,
-      end,
-    })
-
-    return sequence ?? ''
   }
 
   private async setup(_opts?: BaseOptions) {
     this.setupP ??= (async () => {
-      const { cram } = await this.configure()
+      const { cram } = this.configure()
       const samHeader = await cram.cram.getSamHeader()
 
       // use the @SQ lines in the header to figure out the mapping between ref
@@ -145,7 +133,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       return { samHeader: data, cram }
     })().catch((e: unknown) => {
       this.setupP = undefined
-      this.configureP = undefined
+      this.configureResult = undefined
       throw e
     })
 
@@ -202,9 +190,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           () => cram.getRecordsForRange(refId, start, end),
         )
       } catch (e) {
-        // Clear cached promises on network errors so reload works
-        this.configureP = undefined
+        // Clear caches on error so reload works
         this.setupP = undefined
+        this.configureResult = undefined
         throw e
       }
       checkStopToken(stopToken)
@@ -268,7 +256,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
    * @param regions - list of query regions
    */
   private async bytesForRegions(regions: Region[]) {
-    const { cram } = await this.configure()
+    const { cram } = this.configure()
     const blockResults = await Promise.all(
       regions.map(region => {
         const { refName, start, end } = region
