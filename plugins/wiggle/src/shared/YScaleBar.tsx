@@ -43,7 +43,9 @@ const YScaleBar = observer(function ({
           >
             <line stroke={fg} x2={k * 6} y1={0.5} y2={0.5} />
             <text
-              style={{ stroke: bg, strokeWidth: 2.5, paintOrder: 'stroke' }}
+              stroke={bg}
+              strokeWidth={2.5}
+              paintOrder="stroke"
               fill={fg}
               dy="0.32em"
               x={k * 9}
