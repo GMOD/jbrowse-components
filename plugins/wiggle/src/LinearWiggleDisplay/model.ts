@@ -6,9 +6,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

@@ -52,7 +52,6 @@
     "file-saver-es": "^2.0.5",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "react-d3-axis-mod": "^0.1.9",
     "rxjs": "^7.0.0"
   },
   "peerDependencies": {
