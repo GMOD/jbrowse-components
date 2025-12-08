@@ -369,7 +369,7 @@ async function renderBlockEffect(
     // Just return without rendering - isRenderingPending will stay true from setLoading
     // so old content remains visible with loading overlay
     return undefined
-  } else {
+  } else if (renderArgs) {
     const { reactElement, features, layout, maxHeightReached } =
       await rendererType.renderInClient(rpcManager, {
         ...renderArgs,
@@ -385,5 +385,7 @@ async function renderBlockEffect(
       renderProps,
       renderArgs,
     }
+  } else {
+    return undefined
   }
 }
