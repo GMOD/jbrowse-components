@@ -75,9 +75,11 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       stopToken,
       statusCallback = () => {},
     } = opts
+    const source = this.getConf('source')
+    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+    const idPrefix = `${source}:${refName}:`
+
     return ObservableCreate<Feature>(async observer => {
-      const source = this.getConf('source')
-      const resolutionMultiplier = this.getConf('resolutionMultiplier')
       const { bigwig } = await this.setup(opts)
       const feats = await updateStatus(
         'Downloading bigwig data',
@@ -90,14 +92,14 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       )
 
       for (const data of feats) {
+        const uniqueId = `${idPrefix}${data.start}-${data.end}`
+        // @ts-expect-error
+        data.refName = refName
+        data.uniqueId = uniqueId
         if (source) {
           // @ts-expect-error
           data.source = source
         }
-        const uniqueId = `${source}:${region.refName}:${data.start}-${data.end}`
-        // @ts-expect-error
-        data.refName = refName
-        data.uniqueId = uniqueId
         observer.next({
           // @ts-expect-error
           get: (str: string) => (data as Record<string, unknown>)[str],
