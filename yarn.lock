@@ -12613,11 +12613,6 @@ rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-d3-axis-mod@^0.1.9:
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/react-d3-axis-mod/-/react-d3-axis-mod-0.1.9.tgz#4c38ab2e21f1135ed43604bb9fbae52a4cac0447"
-  integrity sha512-RL5p4hMlPivSZTdQGZKT9dQO6EvEpuJr7TvIZRt3Rn5hCVbCHmQsyfXhrndTa5mn9aQl+X6HgDL6DyJIR2Oj6Q==
-
 react-dev-utils@^12.0.1:
   version "12.0.1"
   resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-12.0.1.tgz#ba92edb4a1f379bd46ccd6bcd4e7bc398df33e73"
