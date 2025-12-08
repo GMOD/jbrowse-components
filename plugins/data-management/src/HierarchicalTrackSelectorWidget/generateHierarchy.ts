@@ -27,6 +27,7 @@ export function generateHierarchy({
   const session = getSession(model)
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
   const leafCounts = new Map<TreeNode, number>()
+  const categoryMaps = new Map<TreeNode, Map<string, TreeNode>>()
 
   // uses getConf
   for (const conf of sortConfs(
@@ -34,39 +35,41 @@ export function generateHierarchy({
     activeSortTrackNames,
     activeSortCategories,
   )) {
-    // copy the categories since this array can be mutated downstream
-    const categories = [...(readConfObject(conf, 'category') || [])]
-
-    // hack where if trackId ends with sessionTrack, then push it to a
-    // category that starts with a space to force sort to the top
-    if (conf.trackId.endsWith('sessionTrack')) {
-      categories.unshift(' Session tracks')
-    }
+    const isSessionTrack = conf.trackId.endsWith('sessionTrack')
+    const baseCategories = readConfObject(conf, 'category') ?? []
+    // prepend session tracks category to force sort to the top
+    const categories = isSessionTrack
+      ? [' Session tracks', ...baseCategories]
+      : baseCategories
 
     let currLevel = hierarchy
 
     if (!noCategories) {
       // find existing category to put track into or create it
       for (let i = 0; i < categories.length; i++) {
-        const category = categories[i]
-        const ret = currLevel.children.find(c => c.name === category)
-        const id = [extra, categories.slice(0, i + 1).join(',')]
-          .filter(f => !!f)
-          .join('-')
-        if (!ret) {
+        const category = categories[i]!
+        let categoryMap = categoryMaps.get(currLevel)
+        if (!categoryMap) {
+          categoryMap = new Map()
+          categoryMaps.set(currLevel, categoryMap)
+        }
+        const existing = categoryMap.get(category)
+        if (existing) {
+          currLevel = existing
+        } else {
+          const categoryPath = categories.slice(0, i + 1).join(',')
+          const id = extra ? `${extra}-${categoryPath}` : categoryPath
           const n = {
             children: [],
             name: category,
             id,
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            nestingLevel: (currLevel?.nestingLevel || 0) + 1,
+            nestingLevel: (currLevel.nestingLevel ?? 0) + 1,
             menuItems,
             type: 'category' as const,
-          }
+          } as TreeNode
           currLevel.children.push(n)
+          categoryMap.set(category, n)
           currLevel = n
-        } else {
-          currLevel = ret
         }
       }
     }
@@ -76,7 +79,7 @@ export function generateHierarchy({
     // test_data/test_order/config.json you will see the weirdness
     const leafCount = leafCounts.get(currLevel) ?? 0
     currLevel.children.splice(leafCount, 0, {
-      id: [extra, conf.trackId].filter(f => !!f).join(','),
+      id: extra ? `${extra},${conf.trackId}` : conf.trackId,
       trackId: conf.trackId,
       name: getTrackName(conf, session),
       conf,
