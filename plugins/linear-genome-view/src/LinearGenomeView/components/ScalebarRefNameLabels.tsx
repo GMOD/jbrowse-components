@@ -25,7 +25,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
         const pinned = pinnedRef.current
         const firstLabel = firstLabelRef.current
         if (inner) {
-          inner.style.transform = `translateX(${-offsetPx}px)`
+          inner.style.transform = `translateX(${Math.round(-offsetPx)}px)`
         }
 
         const pinnedBlock = getPinnedContentBlock(staticBlocks, offsetPx)

@@ -38,7 +38,8 @@ const LinearBlocks = observer(function ({
           const { offsetPx } = viewModel
           const div = ref.current
           if (div) {
-            div.style.transform = `translateX(${blockDefinitions.offsetPx - offsetPx}px)`
+            const x = Math.round(blockDefinitions.offsetPx - offsetPx)
+            div.style.transform = `translateX(${x}px)`
           }
         } catch (e) {
           // may error during cleanup

@@ -62,7 +62,7 @@ const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
         const { staticBlocks, offsetPx } = model
         const scalebar = scalebarRef.current
         if (scalebar) {
-          const offsetLeft = staticBlocks.offsetPx - offsetPx
+          const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
           scalebar.style.transform = `translateX(${offsetLeft - 1}px)`
           scalebar.style.width = `${staticBlocks.totalWidthPx}px`
         }

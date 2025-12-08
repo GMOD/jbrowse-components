@@ -116,7 +116,7 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
         const { staticBlocks, offsetPx } = model
         const inner = innerRef.current
         if (inner) {
-          const offsetLeft = staticBlocks.offsetPx - offsetPx
+          const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
           inner.style.transform = `translateX(${offsetLeft - offset}px)`
           inner.style.width = `${staticBlocks.totalWidthPx}px`
         }
