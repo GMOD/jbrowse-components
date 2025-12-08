@@ -50,6 +50,8 @@ export function drawXY(
     colorCallback: (f: Feature, score: number) => string
     // when color is static (e.g. in Multi renderers), set fillStyle once and skip callback
     staticColor?: string
+    // override config filled value (for point renderers)
+    filled?: boolean
   },
 ) {
   const {
@@ -66,13 +68,15 @@ export function drawXY(
     inverted,
     stopToken,
     staticColor,
+    filled: filledProp,
   } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
   const height = unadjustedHeight - offset * 2
 
-  const filled = readConfObject(config, 'filled')
+  // allow filled prop to override config value (for point renderers)
+  const filled = filledProp ?? readConfObject(config, 'filled')
   const clipColor = readConfObject(config, 'clipColor')
   const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
@@ -142,13 +146,14 @@ export function drawXY(
       mixedColor?: string
     }[] = []
     const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
-    const isLog = scaleOpts.scaleType === 'log'
     // inline featureSpanPx: pre-compute region values for pixel calculation
     const regionStart = region.start
     const regionEnd = region.end
     const reversed = region.reversed
     const rpx = (bp: number) =>
-      Math.round(((reversed ? regionEnd - bp : bp - regionStart) / bpPerPx) * 10) / 10
+      Math.round(
+        ((reversed ? regionEnd - bp : bp - regionStart) / bpPerPx) * 10,
+      ) / 10
 
     // when staticColor is set, pre-compute all color variants once
     let staticLightened: string | undefined
@@ -198,9 +203,17 @@ export function drawXY(
       })
       // track clipping during data collection pass
       if (score > niceMax) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: true })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: true,
+        })
       } else if (score < niceMin && !isLog) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: false })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: false,
+        })
       }
     }
 
@@ -217,7 +230,14 @@ export function drawXY(
             (color === lastCol
               ? lastMix
               : (lastMix = lighten(colord(color), 0.4).toHex()))
-        fillRectCtx(leftPx, toY(maxScore), w, getHeight(maxScore), ctx, effectiveC)
+        fillRectCtx(
+          leftPx,
+          toY(maxScore),
+          w,
+          getHeight(maxScore),
+          ctx,
+          effectiveC,
+        )
         lastCol = color
       }
     }
@@ -225,7 +245,17 @@ export function drawXY(
     lastCol = undefined
     // pass 2: draw average scores
     for (const fd of featureData) {
-      const { feature, leftPx, rightPx, score, maxScore, minScore, summary, color, mixedColor } = fd
+      const {
+        feature,
+        leftPx,
+        rightPx,
+        score,
+        maxScore,
+        minScore,
+        summary,
+        color,
+        mixedColor,
+      } = fd
       const effectiveC =
         crossingOrigin && summary
           ? mixedColor ||
@@ -258,7 +288,14 @@ export function drawXY(
               ? lastMix
               : (lastMix = darken(colord(color), 0.4).toHex()))
 
-        fillRectCtx(leftPx, toY(minScore), w, getHeight(minScore), ctx, effectiveC)
+        fillRectCtx(
+          leftPx,
+          toY(minScore),
+          w,
+          getHeight(minScore),
+          ctx,
+          effectiveC,
+        )
         lastCol = color
       }
     }
@@ -304,9 +341,17 @@ export function drawXY(
 
       // track clipping during first pass
       if (score > niceMax) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: true })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: true,
+        })
       } else if (score < niceMin && !isLog) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: false })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: false,
+        })
       }
 
       // skip colorCallback when staticColor is set

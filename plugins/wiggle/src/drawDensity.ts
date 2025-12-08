@@ -41,15 +41,16 @@ export function drawDensity(
     range: crossing ? [negColor, '#eee', posColor] : ['#eee', posColor],
   })
 
+  // Use d3-scale only to get the "niced" domain, color scale still uses d3
   const scale2 = getScale({ ...scaleOpts, range: [0, height] })
   const cb =
     color === '#f0f'
       ? (_: Feature, score: number) => scale(score)
       : (feature: Feature, score: number) =>
           readConfObject(config, 'color', { feature, score })
-  const domain = scale2.domain()
-  const niceMin = domain[0]!
-  const niceMax = domain[1]!
+  const domain = scale2.domain() as [number, number]
+  const niceMin = domain[0]
+  const niceMax = domain[1]
 
   let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []

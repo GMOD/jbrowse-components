@@ -78,7 +78,6 @@ export function drawLine(
   let lastVal: number | undefined
   let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []
-  const isLog = scaleOpts.scaleType === 'log'
   const reversed = region.reversed
 
   // when staticColor is set, batch all path operations into a single stroke
@@ -106,9 +105,17 @@ export function drawLine(
 
       // track clipping
       if (score > niceMax) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: true })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: true,
+        })
       } else if (score < niceMin && !isLog) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: false })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: false,
+        })
       }
 
       const startY = lastVal !== undefined ? toY(lastVal) : scoreY

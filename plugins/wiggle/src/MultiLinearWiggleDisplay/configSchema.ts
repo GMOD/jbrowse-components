@@ -16,11 +16,17 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
   const MultiXYPlotRendererConfigSchema = pluginManager.getRendererType(
     'MultiXYPlotRenderer',
   )!.configSchema
+  const MultiXYPointRendererConfigSchema = pluginManager.getRendererType(
+    'MultiXYPointRenderer',
+  )!.configSchema
   const MultiDensityRendererConfigSchema = pluginManager.getRendererType(
     'MultiDensityRenderer',
   )!.configSchema
   const MultiRowXYPlotRendererConfigSchema = pluginManager.getRendererType(
     'MultiRowXYPlotRenderer',
+  )!.configSchema
+  const MultiRowXYPointRendererConfigSchema = pluginManager.getRendererType(
+    'MultiRowXYPointRenderer',
   )!.configSchema
   const MultiLineRendererConfigSchema =
     pluginManager.getRendererType('MultiLineRenderer')!.configSchema
@@ -39,6 +45,8 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         model: types.enumeration('Rendering', [
           'multirowxy',
           'xyplot',
+          'multirowxypoint',
+          'xypoint',
           'multirowdensity',
           'multiline',
           'multirowline',
@@ -51,8 +59,10 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
        */
       renderers: ConfigurationSchema('RenderersConfiguration', {
         MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
+        MultiXYPointRenderer: MultiXYPointRendererConfigSchema,
         MultiDensityRenderer: MultiDensityRendererConfigSchema,
         MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
+        MultiRowXYPointRenderer: MultiRowXYPointRendererConfigSchema,
         MultiLineRenderer: MultiLineRendererConfigSchema,
         MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
       }),
