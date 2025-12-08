@@ -8,6 +8,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawDensity } from '../drawDensity'
+import { serializeWiggleFeature } from '../util'
 
 import type { MultiRenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -38,10 +39,9 @@ export async function renderMultiDensity(
         let feats: Feature[] = []
         ctx.save()
         forEachWithStopTokenCheck(sources, stopToken, source => {
-          const sourceFeatures = groups[source.name] || []
           const { reducedFeatures } = drawDensity(ctx, {
             ...renderProps,
-            features: new Map(sourceFeatures.map(f => [f.id(), f])),
+            features: groups[source.name] || [],
             height: rowHeight,
           })
           ctx.translate(0, rowHeight)
@@ -54,7 +54,7 @@ export async function renderMultiDensity(
 
   const serialized = {
     ...rest,
-    features: reducedFeatures.map(f => f.toJSON()),
+    features: reducedFeatures.map(serializeWiggleFeature),
     height,
     width,
   }

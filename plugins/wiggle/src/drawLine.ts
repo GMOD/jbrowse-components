@@ -25,6 +25,8 @@ export function drawLine(
     config: AnyConfigurationModel
     offset?: number
     stopToken?: string
+    // when color is static (e.g. in Multi renderers), set strokeStyle once and skip callback
+    staticColor?: string
   },
 ) {
   const {
@@ -39,6 +41,7 @@ export function drawLine(
     config,
     offset = 0,
     stopToken,
+    staticColor,
   } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
@@ -54,47 +57,109 @@ export function drawLine(
   let lastVal: number | undefined
   let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []
-  let start = performance.now()
-  for (const feature of features.values()) {
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+  const isLog = scaleOpts.scaleType === 'log'
+  const reversed = region.reversed
 
-    // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
-      reducedFeatures.push(feature)
-      prevLeftPx = leftPx
-    }
-    const score = feature.get('score')
-    const lowClipping = score < niceMin
-    const highClipping = score > niceMax
-    const w = rightPx - leftPx + fudgeFactor
-
-    const c = colorCallback(feature, score)
-
+  // when staticColor is set, batch all path operations into a single stroke
+  if (staticColor) {
     ctx.beginPath()
-    ctx.strokeStyle = c
-    const startPos = lastVal !== undefined ? lastVal : score
-    if (!region.reversed) {
-      ctx.moveTo(leftPx, toY(startPos))
-      ctx.lineTo(leftPx, toY(score))
-      ctx.lineTo(rightPx, toY(score))
-    } else {
-      ctx.moveTo(rightPx, toY(startPos))
-      ctx.lineTo(rightPx, toY(score))
-      ctx.lineTo(leftPx, toY(score))
-    }
-    ctx.stroke()
-    lastVal = score
+    ctx.strokeStyle = staticColor
+    const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
 
-    if (highClipping) {
+    let start = performance.now()
+    for (const feature of features.values()) {
+      if (performance.now() - start > 400) {
+        checkStopToken(stopToken)
+        start = performance.now()
+      }
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+
+      // create reduced features, avoiding multiple features per px
+      // bitwise OR is faster than Math.floor for positive numbers
+      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+        reducedFeatures.push(feature)
+        prevLeftPx = leftPx
+      }
+      const score = feature.get('score')
+      const scoreY = toY(score)
+
+      // track clipping
+      if (score > niceMax) {
+        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: true })
+      } else if (score < niceMin && !isLog) {
+        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: false })
+      }
+
+      const startY = lastVal !== undefined ? toY(lastVal) : scoreY
+      if (!reversed) {
+        ctx.moveTo(leftPx, startY)
+        ctx.lineTo(leftPx, scoreY)
+        ctx.lineTo(rightPx, scoreY)
+      } else {
+        ctx.moveTo(rightPx, startY)
+        ctx.lineTo(rightPx, scoreY)
+        ctx.lineTo(leftPx, scoreY)
+      }
+      lastVal = score
+    }
+    // single stroke for entire path
+    ctx.stroke()
+
+    // draw clipping indicators
+    if (clippingFeatures.length > 0) {
       ctx.fillStyle = clipColor
-      ctx.fillRect(leftPx, offset, w, clipHeight)
-    } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-      ctx.fillStyle = clipColor
-      ctx.fillRect(leftPx, height - clipHeight, w, height)
+      for (const { leftPx, w, high } of clippingFeatures) {
+        if (high) {
+          ctx.fillRect(leftPx, offset, w, clipHeight)
+        } else {
+          ctx.fillRect(leftPx, height - clipHeight, w, height)
+        }
+      }
+    }
+  } else {
+    // non-static color: stroke per feature (original behavior)
+    let start = performance.now()
+    for (const feature of features.values()) {
+      if (performance.now() - start > 400) {
+        checkStopToken(stopToken)
+        start = performance.now()
+      }
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+
+      // create reduced features, avoiding multiple features per px
+      // bitwise OR is faster than Math.floor for positive numbers
+      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+        reducedFeatures.push(feature)
+        prevLeftPx = leftPx
+      }
+      const score = feature.get('score')
+      const scoreY = toY(score)
+      const w = rightPx - leftPx + fudgeFactor
+
+      const c = colorCallback(feature, score)
+
+      ctx.beginPath()
+      ctx.strokeStyle = c
+      const startY = lastVal !== undefined ? toY(lastVal) : scoreY
+      if (!reversed) {
+        ctx.moveTo(leftPx, startY)
+        ctx.lineTo(leftPx, scoreY)
+        ctx.lineTo(rightPx, scoreY)
+      } else {
+        ctx.moveTo(rightPx, startY)
+        ctx.lineTo(rightPx, scoreY)
+        ctx.lineTo(leftPx, scoreY)
+      }
+      ctx.stroke()
+      lastVal = score
+
+      if (score > niceMax) {
+        ctx.fillStyle = clipColor
+        ctx.fillRect(leftPx, offset, w, clipHeight)
+      } else if (score < niceMin && !isLog) {
+        ctx.fillStyle = clipColor
+        ctx.fillRect(leftPx, height - clipHeight, w, height)
+      }
     }
   }
 
