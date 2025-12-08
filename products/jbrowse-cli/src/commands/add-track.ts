@@ -159,7 +159,6 @@ export async function run(args?: string[]) {
 
   const {
     config,
-    skipCheck,
     force,
     overwrite,
     category,

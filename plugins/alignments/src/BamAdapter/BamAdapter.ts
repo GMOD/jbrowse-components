@@ -228,7 +228,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  async getMultiRegionFeatureDensityStats(regions: Region[], opts?: BaseOptions) {
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     const { bam } = await this.configure()
     // this is a method to avoid calling on htsget adapters
     if (bam.index) {

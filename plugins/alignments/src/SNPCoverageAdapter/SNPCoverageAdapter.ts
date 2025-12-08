@@ -32,7 +32,10 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     const subadapter = dataAdapter.dataAdapter as BaseFeatureDataAdapter & {
       sequenceAdapterConfig?: unknown
     }
-    if (this.sequenceAdapterConfig && subadapter.sequenceAdapterConfig === undefined) {
+    if (
+      this.sequenceAdapterConfig &&
+      subadapter.sequenceAdapterConfig === undefined
+    ) {
       subadapter.sequenceAdapterConfig = this.sequenceAdapterConfig
     }
 

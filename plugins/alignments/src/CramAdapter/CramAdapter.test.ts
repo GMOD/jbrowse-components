@@ -43,16 +43,15 @@ function makeAdapter(arg: string) {
 
 test('adapter can fetch features from volvox-sorted.cram', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
+  // Set sequenceAdapterConfig directly on adapter (normally done by CoreGetRefNames)
+  adapter.sequenceAdapterConfig = sequenceAdapterConfig
 
-  const features = adapter.getFeatures(
-    {
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start: 0,
-      end: 20000,
-    },
-    { sequenceAdapter: sequenceAdapterConfig },
-  )
+  const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  })
 
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   expect(featuresArray[0]!.get('refName')).toBe('ctgA')
@@ -68,17 +67,15 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
 
 test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
-  const features = adapter.getFeatures(
-    {
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start: 0,
-      end: 100,
-    },
-    {
-      sequenceAdapter: sequenceAdapterConfig,
-    },
-  )
+  // Set sequenceAdapterConfig directly on adapter (normally done by CoreGetRefNames)
+  adapter.sequenceAdapterConfig = sequenceAdapterConfig
+
+  const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   const f = featuresArray[0]!.toJSON()
   expect(f.refName).toBe('ctgA')

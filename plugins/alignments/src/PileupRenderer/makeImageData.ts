@@ -38,7 +38,11 @@ async function fetchRegionSequence(
     return undefined
   }
   // Get the BAM/CRAM adapter to access its cached sequenceAdapterConfig
-  const { dataAdapter } = await getAdapter(pluginManager, sessionId, adapterConfig)
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  )
   const sequenceAdapterConfig = (
     dataAdapter as { sequenceAdapterConfig?: Record<string, unknown> }
   ).sequenceAdapterConfig

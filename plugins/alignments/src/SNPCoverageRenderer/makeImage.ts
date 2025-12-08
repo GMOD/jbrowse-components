@@ -296,10 +296,9 @@ export function makeImage(
         )
         const maxEntry = snpinfo.noncov[maxBase]
         // Extend hitbox horizontally for easier mouse targeting
-        const hitboxPadding = 2
-        const clickWidth = Math.max(r * 2, 1.5) + hitboxPadding * 2
+        const clickWidth = Math.max(r * 2, 1.5)
         coords.push(
-          x - hitboxPadding,
+          x,
           INTERBASE_INDICATOR_HEIGHT,
           x + clickWidth,
           INTERBASE_INDICATOR_HEIGHT + totalHeight,

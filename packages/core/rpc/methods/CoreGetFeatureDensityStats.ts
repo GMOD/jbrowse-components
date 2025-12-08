@@ -38,7 +38,7 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
   ) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { adapterConfig, sessionId, regions } = deserializedArgs as typeof args
+    const { adapterConfig, sessionId, regions } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     if (!isFeatureAdapter(dataAdapter)) {

@@ -182,9 +182,6 @@ export function mockFile404(
   // @ts-expect-error
   fetch.mockResponse(async request => {
     const matches = request.url.includes(str)
-    if (matches) {
-      console.log('mockFile404: returning 404 for', request.url)
-    }
     return matches ? { status: 404 } : readBuffer(request)
   })
 }
