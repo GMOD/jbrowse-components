@@ -405,8 +405,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Gene glyph',
                   subMenu: [
-                    { value: 'all', label: 'All transcripts' },
-                    { value: 'longest', label: 'Longest transcript' },
+                    {
+                      value: 'all',
+                      label: 'All transcripts',
+                    },
+                    {
+                      value: 'longest',
+                      label: 'Longest transcript',
+                    },
                     {
                       value: 'longestCoding',
                       label: 'Longest coding transcript',
