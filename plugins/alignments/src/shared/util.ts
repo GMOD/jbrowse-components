@@ -92,7 +92,7 @@ interface SamHeaderLine {
 export interface ParsedSamHeader {
   idToName: string[]
   nameToId: Record<string, number>
-  readGroups: (string | undefined)[]
+  readGroups: string[]
 }
 
 /**
@@ -101,20 +101,36 @@ export interface ParsedSamHeader {
 export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
   const idToName: string[] = []
   const nameToId: Record<string, number> = {}
-  for (const [refId, sqLine] of samHeader
-    .filter(l => l.tag === 'SQ')
-    .entries()) {
-    const SN = sqLine.data.find(item => item.tag === 'SN')
-    if (SN) {
-      const refName = SN.value
-      nameToId[refName] = refId
-      idToName[refId] = refName
+  const readGroups: string[] = []
+  let refId = 0
+  let rgId = 0
+
+  for (const element of samHeader) {
+    const line = element
+    if (line.tag === 'SQ') {
+      const data = line.data
+      for (const datum of data) {
+        const item = datum
+        if (item.tag === 'SN') {
+          const refName = item.value
+          nameToId[refName] = refId
+          idToName[refId] = refName
+          break
+        }
+      }
+      refId++
+    } else if (line.tag === 'RG') {
+      const data = line.data
+      for (const datum of data) {
+        const item = datum
+        if (item.tag === 'ID') {
+          readGroups[rgId] = item.value
+          break
+        }
+      }
+      rgId++
     }
   }
-
-  const readGroups = samHeader
-    .filter(l => l.tag === 'RG')
-    .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
 
   return { idToName, nameToId, readGroups }
 }

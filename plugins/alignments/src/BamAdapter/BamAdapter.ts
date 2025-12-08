@@ -19,7 +19,7 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
 export default class BamAdapter extends BaseFeatureDataAdapter {
-  private samHeader?: ParsedSamHeader
+  public samHeader?: ParsedSamHeader
 
   private setupP?: Promise<ParsedSamHeader>
 
@@ -38,14 +38,18 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const bamLocation = this.getConf('bamLocation')
       const location = this.getConf(['index', 'location'])
       const indexType = this.getConf(['index', 'indexType'])
-      const pm = this.pluginManager
       const csi = indexType === 'CSI'
-      const bam = new BamFile({
-        bamFilehandle: openLocation(bamLocation, pm),
-        csiFilehandle: csi ? openLocation(location, pm) : undefined,
-        baiFilehandle: !csi ? openLocation(location, pm) : undefined,
-      })
-      this.configureResult = { bam }
+      this.configureResult = {
+        bam: new BamFile({
+          bamFilehandle: openLocation(bamLocation, this.pluginManager),
+          csiFilehandle: csi
+            ? openLocation(location, this.pluginManager)
+            : undefined,
+          baiFilehandle: !csi
+            ? openLocation(location, this.pluginManager)
+            : undefined,
+        }),
+      }
     }
     return this.configureResult
   }
@@ -136,9 +140,23 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             continue
           }
 
-          const ret = this.ultraLongFeatureCache.get(record.id)
-          if (ret) {
-            observer.next(ret)
+          if (record.end - record.start > 5_000) {
+            const ret = this.ultraLongFeatureCache.get(record.id)
+            if (ret) {
+              observer.next(ret)
+            } else {
+              const ref =
+                !record.tags.MD && sequenceAdapter
+                  ? await sequenceAdapter.getSequence({
+                      refName: originalRefName || refName,
+                      start: record.start,
+                      end: record.end,
+                    })
+                  : undefined
+              const elt = new BamSlightlyLazyFeature(record, this, ref)
+              this.ultraLongFeatureCache.set(record.id, elt)
+              observer.next(elt)
+            }
           } else {
             const ref =
               !record.tags.MD && sequenceAdapter
@@ -148,9 +166,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
                     end: record.end,
                   })
                 : undefined
-            const elt = new BamSlightlyLazyFeature(record, this, ref)
-            this.ultraLongFeatureCache.set(record.id, elt)
-            observer.next(elt)
+
+            observer.next(new BamSlightlyLazyFeature(record, this, ref))
           }
         }
         observer.complete()

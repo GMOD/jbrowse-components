@@ -6823,10 +6823,10 @@ domhandler@^4.0.0, domhandler@^4.2.0, domhandler@^4.3.1:
   dependencies:
     domelementtype "^2.2.0"
 
-dompurify@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.3.0.tgz#aaaadbb83d87e1c2fbb066452416359e5b62ec97"
-  integrity sha512-r+f6MYR1gGN1eJv0TVQbhA7if/U7P87cdPl3HN5rikqaBSBxLiCb/b9O+2eG0cxz0ghyU+mU1QkbsOwERMYlWQ==
+dompurify@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.3.1.tgz#c7e1ddebfe3301eacd6c0c12a4af284936dbbb86"
+  integrity sha512-qkdCKzLNtrgPFP1Vo+98FRzJnBRGe4ffyCea9IwHB1fyxPOeNTHpLKYGd4Uk9xvNoH0ZoOjwZxNptyMwqrId1Q==
   optionalDependencies:
     "@types/trusted-types" "^2.0.7"
 
@@ -7009,10 +7009,10 @@ electron-window-state@^5.0.3:
     jsonfile "^4.0.0"
     mkdirp "^0.5.1"
 
-electron@39.2.1:
-  version "39.2.1"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-39.2.1.tgz#4affdbfd409e31d9ceaa6d6b745a94862f30fc5c"
-  integrity sha512-5oSki3qzLBsJAcXl0yWOLRArkufugbXd1qBb2UNZRrrKkYiVhM8GLE+KE3P16PC8UxGxGqCCfaB3Y1TK1dUuHg==
+electron@39.2.6:
+  version "39.2.6"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-39.2.6.tgz#7e1fdc01020418ea6c5cc92a3dd05fe65ad94941"
+  integrity sha512-dHBgTodWBZd+tL1Dt0PSh/CFLHeDkFCTKCTXu1dgPhlE9Z3k2zzlBQ9B2oW55CFsKanBDHiUomHJNw0XaSdQpA==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^22.7.7"
@@ -12514,10 +12514,10 @@ pupa@^3.1.0:
   dependencies:
     escape-goat "^4.0.0"
 
-puppeteer-core@24.32.0:
-  version "24.32.0"
-  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-24.32.0.tgz#6dfe044bff236e4047b7834d93a72940b3891c32"
-  integrity sha512-MqzLLeJjqjtHK9J44+KE3kjtXXhFpPvg+AvXl/oy/jB8MeeNH66/4MNotOTqGZ6MPaxWi51YJ1ASga6OIff6xw==
+puppeteer-core@24.32.1:
+  version "24.32.1"
+  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-24.32.1.tgz#def7d96620d3460cb36a6e0dcd79cb897c19af30"
+  integrity sha512-GdWTOgy3RqaW6Etgx93ydlVJ4FBJ6TmhMksG5W7v4uawKAzLHNj33k4kBQ1SFZ9NvoXNjhdQuIQ+uik2kWnarA==
   dependencies:
     "@puppeteer/browsers" "2.11.0"
     chromium-bidi "11.0.0"
@@ -12527,16 +12527,16 @@ puppeteer-core@24.32.0:
     webdriver-bidi-protocol "0.3.9"
     ws "^8.18.3"
 
-puppeteer@^24.0.0:
-  version "24.32.0"
-  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-24.32.0.tgz#0f0e20b8024b3fdc46c9f06afee69f0e450473d4"
-  integrity sha512-exyxHPV5DSsigIhM/pzLcyzl5XU4Dp5lNP+APwIeStDxAdYqpMnJ1qN0QHXghjJx+cQJczby+ySH5rgv/5GQLw==
+puppeteer@^24.32.1:
+  version "24.32.1"
+  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-24.32.1.tgz#d11e204138750eeada834fdd6746ffba30733655"
+  integrity sha512-wa8vGswFjH1iCyG6bGGydIYssEBluXixbMibK4x2x6/lIAuR87gF+c+Jjzom2Wiw/dDOtuki89VBurRWrgYaUA==
   dependencies:
     "@puppeteer/browsers" "2.11.0"
     chromium-bidi "11.0.0"
     cosmiconfig "^9.0.0"
     devtools-protocol "0.0.1534754"
-    puppeteer-core "24.32.0"
+    puppeteer-core "24.32.1"
     typed-query-selector "^2.12.0"
 
 pure-rand@^7.0.0:

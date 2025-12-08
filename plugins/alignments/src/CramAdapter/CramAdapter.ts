@@ -1,6 +1,6 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import { sum, updateStatus } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -18,7 +18,7 @@ import type {
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class CramAdapter extends BaseFeatureDataAdapter {
-  samHeader: ParsedSamHeader = { idToName: [], nameToId: {}, readGroups: [] }
+  public samHeader?: ParsedSamHeader
 
   private setupP?: Promise<{
     samHeader: ParsedSamHeader
@@ -42,35 +42,34 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       const cramLocation = this.getConf('cramLocation')
       const craiLocation = this.getConf('craiLocation')
 
-      const cram = new IndexedCramFile({
-        cramFilehandle: openLocation(cramLocation, this.pluginManager),
-        index: new CraiIndex({
-          filehandle: openLocation(craiLocation, this.pluginManager),
+      this.configureResult = {
+        cram: new IndexedCramFile({
+          cramFilehandle: openLocation(cramLocation, this.pluginManager),
+          index: new CraiIndex({
+            filehandle: openLocation(craiLocation, this.pluginManager),
+          }),
+          seqFetch: async (seqId: number, start: number, end: number) => {
+            const sequenceAdapter = await this.getSequenceAdapter()
+            if (!sequenceAdapter) {
+              throw new Error('no sequenceAdapter available')
+            }
+            const refName =
+              this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
+            if (!refName) {
+              throw new Error('unknown refName')
+            }
+
+            return (
+              (await sequenceAdapter.getSequence({
+                refName,
+                start: start - 1,
+                end,
+              })) ?? ''
+            )
+          },
+          checkSequenceMD5: false,
         }),
-        seqFetch: async (seqId: number, start: number, end: number) => {
-          start -= 1 // convert from 1-based closed to interbase
-
-          const sequenceAdapter = await this.getSequenceAdapter()
-          if (!sequenceAdapter) {
-            throw new Error('no sequenceAdapter available')
-          }
-          const refName =
-            this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
-          if (!refName) {
-            throw new Error('unknown refName')
-          }
-
-          return (
-            (await sequenceAdapter.getSequence({
-              refName,
-              start,
-              end,
-            })) ?? ''
-          )
-        },
-        checkSequenceMD5: false,
-      })
-      this.configureResult = { cram }
+      }
     }
     return this.configureResult
   }
@@ -116,11 +115,11 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   refNameToId(refName: string) {
-    return this.samHeader.nameToId[refName]
+    return this.samHeader?.nameToId[refName]
   }
 
   refIdToName(refId: number) {
-    return this.samHeader.idToName[refId]
+    return this.samHeader?.idToName[refId]
   }
 
   refIdToOriginalName(refId: number) {
@@ -190,13 +189,17 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
             continue
           }
 
-          const ret = this.ultraLongFeatureCache.get(record.uniqueId)
-          if (ret) {
-            observer.next(ret)
+          if (record.readLength > 5_000) {
+            const ret = this.ultraLongFeatureCache.get(record.uniqueId)
+            if (ret) {
+              observer.next(ret)
+            } else {
+              const elt = new CramSlightlyLazyFeature(record, this)
+              this.ultraLongFeatureCache.set(record.uniqueId, elt)
+              observer.next(elt)
+            }
           } else {
-            const elt = new CramSlightlyLazyFeature(record, this)
-            this.ultraLongFeatureCache.set(record.uniqueId, elt)
-            observer.next(elt)
+            observer.next(new CramSlightlyLazyFeature(record, this))
           }
         }
 
@@ -205,7 +208,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     }, stopToken)
   }
 
-  // we return the configured fetchSizeLimit, and the bytes for the region
+  /**
+   * we return the configured fetchSizeLimit, and the bytes for the region
+   */
   async getMultiRegionFeatureDensityStats(regions: Region[]) {
     const bytes = await this.bytesForRegions(regions)
     const fetchSizeLimit = this.getConf('fetchSizeLimit')
@@ -218,8 +223,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   /**
    * get the approximate number of bytes queried from the file for the given
    * query regions
-   *
-   * @param regions - list of query regions
    */
   private async bytesForRegions(regions: Region[]) {
     const { cram } = this.configure()
@@ -233,6 +236,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       }),
     )
 
-    return blockResults.flat().reduce((a, b) => a + b.sliceBytes, 0)
+    return sum(blockResults.flat().map(a => a.sliceBytes))
   }
 }
