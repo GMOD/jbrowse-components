@@ -28,9 +28,15 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       throw new Error('Failed to get subadapter')
     }
 
-    return {
-      subadapter: dataAdapter.dataAdapter as BaseFeatureDataAdapter,
+    // Propagate sequenceAdapterConfig to subadapter (e.g. CramAdapter)
+    const subadapter = dataAdapter.dataAdapter as BaseFeatureDataAdapter & {
+      sequenceAdapterConfig?: unknown
     }
+    if (this.sequenceAdapterConfig && subadapter.sequenceAdapterConfig === undefined) {
+      subadapter.sequenceAdapterConfig = this.sequenceAdapterConfig
+    }
+
+    return { subadapter }
   }
 
   async getSequenceAdapter() {

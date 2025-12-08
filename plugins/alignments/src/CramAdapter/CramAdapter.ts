@@ -186,6 +186,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       this.setupP = this.setupPre(opts).catch((e: unknown) => {
         console.log('CramAdapter.setupPre2: setupP rejected, clearing', e)
         this.setupP = undefined
+        this.configureP = undefined
         throw e
       })
     }
