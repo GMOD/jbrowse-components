@@ -58,10 +58,12 @@ const TreeItem = memo(function TreeItem({
   item,
   model,
   top,
+  checked,
 }: {
   item: TreeNode
   model: HierarchicalTrackSelectorModel
   top: number
+  checked?: boolean
 }) {
   const { classes } = useStyles()
   const isCategory = item.type === 'category'
@@ -97,7 +99,7 @@ const TreeItem = memo(function TreeItem({
           {isCategory ? (
             <TrackCategory model={model} item={item} />
           ) : (
-            <TrackLabel model={model} item={item} />
+            <TrackLabel model={model} item={item} checked={checked!} />
           )}
         </div>
       </div>

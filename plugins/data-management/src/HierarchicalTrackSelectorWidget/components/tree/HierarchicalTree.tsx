@@ -13,7 +13,7 @@ const HierarchicalTree = observer(function ({
   height: number
   model: HierarchicalTrackSelectorModel
 }) {
-  const { flattenedItems } = model
+  const { flattenedItems, shownTrackIds } = model
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const { startIndex, endIndex, totalHeight, itemOffsets } = model.itemOffsets(
@@ -74,6 +74,11 @@ const HierarchicalTree = observer(function ({
               model={model}
               item={item}
               top={itemOffsets[index]!}
+              checked={
+                item.type === 'track'
+                  ? shownTrackIds.has(item.trackId)
+                  : undefined
+              }
             />
           ) : null
         })}

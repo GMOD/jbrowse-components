@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
@@ -36,28 +36,25 @@ export interface InfoArgs {
   conf: AnyConfigurationModel
 }
 
-// Small observer component that only re-renders when track visibility changes
-const TrackCheckbox = observer(function TrackCheckbox({
-  model,
-  trackId,
+// Memoized checkbox - only re-renders when checked state changes
+const TrackCheckbox = memo(function TrackCheckbox({
+  checked,
+  onChange,
   id,
   disabled,
   className,
 }: {
-  model: HierarchicalTrackSelectorModel
-  trackId: string
+  checked: boolean
+  onChange: () => void
   id: string
   disabled: boolean
   className: string
 }) {
-  const checked = model.shownTrackIds.has(trackId)
   return (
     <Checkbox
       className={className}
       checked={checked}
-      onChange={() => {
-        model.view.toggleTrack(trackId)
-      }}
+      onChange={onChange}
       disabled={disabled}
       slotProps={{
         input: {
@@ -94,18 +91,23 @@ const TrackLabelText = observer(function TrackLabelText({
   )
 })
 
-// Memoized outer component - expensive MUI components don't re-render on track toggle
+// Memoized component - receives checked from parent to avoid observing shownTrackIds
 const TrackLabel = memo(function TrackLabel({
   model,
   item,
+  checked,
 }: {
   model: HierarchicalTrackSelectorModel
   item: TreeTrackNode
+  checked: boolean
 }) {
   const { classes } = useStyles()
   const { drawerPosition } = getSession(model)
   const { id, name, conf, trackId } = item
   const description = readConfObject(conf, 'description')
+  const onChange = useCallback(() => {
+    model.view.toggleTrack(trackId)
+  }, [model.view, trackId])
 
   return (
     <>
@@ -123,8 +125,8 @@ const TrackLabel = memo(function TrackLabel({
           }}
           control={
             <TrackCheckbox
-              model={model}
-              trackId={trackId}
+              checked={checked}
+              onChange={onChange}
               id={id}
               disabled={isUnsupported(name)}
               className={classes.compactCheckbox}
