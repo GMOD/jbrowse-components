@@ -510,7 +510,7 @@ export function isRetryException(exception: Error): boolean {
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
-export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
+export type FileLocation = UriLocation | BlobLocation
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the

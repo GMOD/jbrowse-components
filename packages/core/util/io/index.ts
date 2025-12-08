@@ -1,8 +1,6 @@
-import isNode from 'detect-node'
-import { BlobFile, LocalFile } from 'generic-filehandle2'
+import { BlobFile } from 'generic-filehandle2'
 
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
-import { isElectron } from '../'
 import { getBlob } from '../tracks'
 import {
   AuthNeededError,
@@ -12,19 +10,8 @@ import {
 
 import type PluginManager from '../../PluginManager'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
-import type {
-  BlobLocation,
-  FileLocation,
-  LocalPathLocation,
-  UriLocation,
-} from '../types'
+import type { BlobLocation, FileLocation, UriLocation } from '../types'
 import type { Fetcher, GenericFilehandle } from 'generic-filehandle2'
-
-function isLocalPathLocation(
-  location: FileLocation,
-): location is LocalPathLocation {
-  return 'localPath' in location
-}
 
 function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
@@ -41,17 +28,6 @@ export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
 ): GenericFilehandle {
-  if (isLocalPathLocation(location)) {
-    if (!location.localPath) {
-      throw new Error('No local path provided')
-    }
-
-    if (isNode || isElectron) {
-      return new LocalFile(location.localPath)
-    } else {
-      throw new Error("can't use local files in the browser")
-    }
-  }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter
     const blob = getBlob(location.blobId)
