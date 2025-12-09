@@ -42,4 +42,7 @@ export interface InitState {
   loc?: string
   assembly: string
   tracks?: string[]
+  tracklist?: boolean
+  nav?: boolean
+  highlight?: string[]
 }

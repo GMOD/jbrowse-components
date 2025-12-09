@@ -17,6 +17,7 @@ import {
   localStorageGetItem,
   localStorageSetItem,
   measureText,
+  parseLocString,
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
@@ -1870,12 +1871,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 return
               }
               if (init) {
+                const session = getSession(self)
+                const { assemblyManager } = session
+
                 if (init.loc) {
                   self
                     .navToLocString(init.loc, init.assembly)
                     .catch((e: unknown) => {
                       console.error(init, e)
-                      getSession(self).notifyError(`${e}`, e)
+                      session.notifyError(`${e}`, e)
                     })
                 } else {
                   self.showAllRegionsInAssembly(init.assembly)
@@ -1884,6 +1888,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 if (init.tracks) {
                   for (const t of init.tracks) {
                     self.showTrack(t)
+                  }
+                }
+
+                if (init.tracklist) {
+                  self.activateTrackSelector()
+                }
+
+                if (init.nav !== undefined) {
+                  self.setHideHeader(!init.nav)
+                }
+
+                if (init.highlight) {
+                  for (const h of init.highlight) {
+                    const p = parseLocString(h, refName =>
+                      assemblyManager.isValidRefName(refName, init.assembly),
+                    )
+                    const { start, end } = p
+                    if (start !== undefined && end !== undefined) {
+                      self.addToHighlights({
+                        ...p,
+                        start,
+                        end,
+                        assemblyName: init.assembly,
+                      })
+                    }
                   }
                 }
 

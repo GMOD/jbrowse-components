@@ -16,11 +16,11 @@ const LinearSyntenyView = observer(function ({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { initialized, showLoading, loadingMessage } = model
+  const { showLoading, showImportForm, loadingMessage } = model
 
   if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
-  } else if (!initialized) {
+  } else if (showImportForm) {
     return <LinearSyntenyImportForm model={model} />
   } else {
     return <LinearComparativeViewComponent model={model} />
