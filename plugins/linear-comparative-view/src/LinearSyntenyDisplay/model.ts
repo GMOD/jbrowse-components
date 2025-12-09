@@ -159,6 +159,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * stop token for cancelling worker rendering
        */
       stopToken: undefined as string | undefined,
+
+      /**
+       * #volatile
+       * status message for worker rendering
+       */
+      workerStatus: undefined as string | undefined,
     }))
     .actions(self => ({
       /**
@@ -256,6 +262,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setStopToken(token: string | undefined) {
         self.stopToken = token
+      },
+      /**
+       * #action
+       */
+      setWorkerStatus(status: string | undefined) {
+        self.workerStatus = status
       },
     }))
 

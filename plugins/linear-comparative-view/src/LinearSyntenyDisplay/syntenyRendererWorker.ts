@@ -96,6 +96,11 @@ export interface DrawResultMessage {
   cigarClickMapBitmap: ImageBitmap
 }
 
+export interface StatusMessage {
+  type: 'status'
+  message: string
+}
+
 let mainCanvas: OffscreenCanvas | null = null
 let cachedFeatPositions: SerializedFeatPos[] = []
 
@@ -814,6 +819,10 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
     mainCanvas = msg.canvas
   } else if (msg.type === 'updateFeatures') {
     cachedFeatPositions = msg.featPositions
+    self.postMessage({
+      type: 'status',
+      message: `Received ${cachedFeatPositions.length.toLocaleString()} synteny features`,
+    })
   } else if (msg.type === 'draw') {
     if (!mainCanvas || cachedFeatPositions.length === 0) {
       return

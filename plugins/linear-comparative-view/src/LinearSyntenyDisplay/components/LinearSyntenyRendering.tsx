@@ -9,7 +9,7 @@ import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
 
-import type { DrawResultMessage } from '../syntenyRendererWorker'
+import type { DrawResultMessage, StatusMessage } from '../syntenyRendererWorker'
 import type { ClickCoord } from './util'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
@@ -89,8 +89,13 @@ const LinearSyntenyRendering = observer(function ({
             new URL('../syntenyRendererWorker', import.meta.url),
           )
 
-          worker.onmessage = (e: MessageEvent<DrawResultMessage>) => {
-            if (e.data.type === 'done') {
+          worker.onmessage = (
+            e: MessageEvent<DrawResultMessage | StatusMessage>,
+          ) => {
+            if (e.data.type === 'status') {
+              model.setWorkerStatus(e.data.message)
+            } else if (e.data.type === 'done') {
+              model.setWorkerStatus(undefined)
               // Draw the click map bitmaps onto the main thread canvases
               const clickMapCtx = model.clickMapCanvas?.getContext('2d')
               const cigarClickMapCtx =

@@ -17,7 +17,17 @@ const ServerSideRenderedBlockContent = observer(function ({
   } else if (model.message) {
     return <BlockMessage messageText={model.message} />
   } else if (!model.features) {
-    return <LoadingMessage message={model.loadingStatus} />
+    return (
+      <LoadingMessage
+        message={model.loadingStatus || 'Loading synteny features'}
+      />
+    )
+  } else if (!model.worker || model.featPositions.length === 0) {
+    return (
+      <LoadingMessage
+        message={model.workerStatus || 'Initializing renderer'}
+      />
+    )
   } else {
     return <LinearSyntenyRendering model={model} />
   }
