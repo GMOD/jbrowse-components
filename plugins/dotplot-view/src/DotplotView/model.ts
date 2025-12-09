@@ -289,23 +289,9 @@ export default function stateModelFactory(pm: PluginManager) {
 
       /**
        * #getter
-       * Returns a message describing what is currently loading, or undefined if
-       * not loading
        */
       get loadingMessage() {
-        if (self.volatileWidth === undefined) {
-          return 'Measuring view size'
-        }
-        if (!self.assembliesInitialized) {
-          return 'Loading assemblies'
-        }
-        if (
-          self.hview.displayedRegions.length === 0 ||
-          self.vview.displayedRegions.length === 0
-        ) {
-          return 'Loading view regions'
-        }
-        return undefined
+        return this.showLoading ? 'Loading' : undefined
       },
 
       /**

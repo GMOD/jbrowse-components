@@ -477,20 +477,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Returns a message describing what is currently loading, or undefined if
-       * not loading
        */
       get loadingMessage() {
-        if (self.volatileWidth === undefined) {
-          return 'Measuring view size'
-        }
-        if (!this.assembliesInitialized) {
-          return 'Loading assemblies'
-        }
-        if (self.init) {
-          return 'Navigating to location'
-        }
-        return undefined
+        return this.showLoading ? 'Loading' : undefined
       },
 
       /**
@@ -498,10 +487,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
-        return (
-          !this.error &&
-          ((!this.initialized && this.hasDisplayedRegions) || !!self.init)
-        )
+        return !this.initialized && !this.error
       },
 
       /**

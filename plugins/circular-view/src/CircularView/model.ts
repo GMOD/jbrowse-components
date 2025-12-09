@@ -341,17 +341,9 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Returns a message describing what is currently loading, or undefined if
-       * not loading
        */
       get loadingMessage() {
-        if (self.volatileWidth === undefined) {
-          return 'Measuring view size'
-        }
-        if (!this.initialized) {
-          return 'Loading assemblies'
-        }
-        return undefined
+        return this.showLoading ? 'Loading' : undefined
       },
 
       /**
@@ -360,9 +352,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get showLoading() {
         return (
-          !this.initialized &&
-          !self.error &&
-          self.displayedRegions.length > 0
+          !this.initialized && !self.error && self.displayedRegions.length > 0
         )
       },
 

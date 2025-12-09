@@ -32,10 +32,13 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
       views: ViewData[]
       tracks?: string[] | string[][]
     }) => {
-      try {
-        const { assemblyManager } = session
-        const model = session.addView('LinearSyntenyView', {}) as LSV
+      const { assemblyManager } = session
+      const model = session.addView('LinearSyntenyView', {}) as LSV
 
+      // Set loading state to prevent import form from flashing
+      model.setIsLoading(true)
+
+      try {
         await when(() => !!model.width)
 
         model.setViews(
@@ -105,6 +108,8 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
       } catch (e) {
         session.notifyError(`${e}`, e)
         throw e
+      } finally {
+        model.setIsLoading(false)
       }
     },
   )
