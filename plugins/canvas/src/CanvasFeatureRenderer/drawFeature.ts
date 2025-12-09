@@ -1,14 +1,49 @@
 import { drawArrow } from './drawArrow'
 import { drawBox } from './drawBox'
 import { drawCDS } from './drawCDS'
-import { drawRepeatRegion } from './drawRepeatRegion'
 import { drawSegments } from './drawSegments'
 import { chooseGlyphType } from './util'
 
 import type { DrawFeatureArgs } from './types'
 
+function findMatchingGlyph(args: DrawFeatureArgs) {
+  const { feature, pluginManager } = args
+  if (!pluginManager) {
+    return undefined
+  }
+  const glyphTypes = pluginManager.getGlyphTypes()
+  // Sort by priority descending (higher priority first)
+  const sortedGlyphs = [...glyphTypes].sort((a, b) => b.priority - a.priority)
+  return sortedGlyphs.find(glyph => glyph.match?.(feature))
+}
+
 export function drawFeature(args: DrawFeatureArgs) {
   const { feature, configContext, topLevel, featureLayout } = args
+
+  const pluggableGlyph = findMatchingGlyph(args)
+  if (pluggableGlyph) {
+    pluggableGlyph.draw({
+      ctx: args.ctx,
+      feature: args.feature,
+      featureLayout: {
+        feature: args.featureLayout.feature,
+        x: args.featureLayout.x,
+        y: args.featureLayout.y,
+        width: args.featureLayout.width,
+        height: args.featureLayout.height,
+        children: args.featureLayout.children,
+      },
+      region: args.region,
+      bpPerPx: args.bpPerPx,
+      config: args.config,
+      theme: args.theme,
+      reversed: args.reversed,
+      topLevel: args.topLevel,
+      canvasWidth: args.canvasWidth,
+    })
+    return
+  }
+
   const glyphType = chooseGlyphType({ feature, configContext })
 
   switch (glyphType) {
@@ -24,9 +59,6 @@ export function drawFeature(args: DrawFeatureArgs) {
         })
       }
       drawArrow(args)
-      break
-    case 'RepeatRegion':
-      drawRepeatRegion(args)
       break
     case 'CDS':
       drawCDS(args)

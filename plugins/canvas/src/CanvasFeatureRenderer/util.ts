@@ -90,9 +90,7 @@ export function chooseGlyphType({
   const subfeatures = feature.get('subfeatures')
   const { transcriptTypes, containerTypes } = configContext
 
-  if (type === 'repeat_region' && subfeatures?.length) {
-    return 'RepeatRegion'
-  } else if (subfeatures?.length && type !== 'CDS') {
+  if (subfeatures?.length && type !== 'CDS') {
     const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
     const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
     if (transcriptTypes.includes(type) && hasCDS) {
