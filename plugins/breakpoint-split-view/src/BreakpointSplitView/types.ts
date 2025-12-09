@@ -13,6 +13,14 @@ export interface ExportSvgOptions {
   showGridlines?: boolean
 }
 
+export interface BreakpointSplitViewInit {
+  views: {
+    loc?: string
+    assembly: string
+    tracks?: string[]
+  }[]
+}
+
 export interface Breakend {
   MateDirection: string
   Join: string

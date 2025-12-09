@@ -7,3 +7,10 @@ export type ImportFormSyntenyTrack =
   | { type: 'preConfigured'; value: string }
   | { type: 'userOpened'; value: Conf }
   | { type: 'none' }
+
+export interface DotplotViewInit {
+  views: {
+    assembly: string
+  }[]
+  tracks?: string[]
+}

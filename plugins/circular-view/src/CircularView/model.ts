@@ -14,7 +14,8 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
@@ -31,6 +32,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
 
+export interface CircularViewInit {
+  assembly: string
+  tracks?: string[]
+}
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
@@ -134,6 +139,11 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         trackSelectorType: 'hierarchical',
+        /**
+         * #property
+         * used for initializing the view from a session snapshot
+         */
+        init: types.frozen<CircularViewInit | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -347,12 +357,17 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       */
+      get hasSomethingToShow() {
+        return self.displayedRegions.length > 0 || !!self.init
+      },
+
+      /**
+       * #getter
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
-        return (
-          !this.initialized && !self.error && self.displayedRegions.length > 0
-        )
+        return !this.initialized && !self.error && this.hasSomethingToShow
       },
 
       /**
@@ -374,7 +389,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * form is enabled, or when there's an error)
        */
       get showImportForm() {
-        return (!this.showView && !self.disableImportForm) || !!self.error
+        return (
+          (!this.hasSomethingToShow && !self.disableImportForm) || !!self.error
+        )
       },
     }))
     .views(self => ({
@@ -535,6 +552,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setInit(init?: CircularViewInit) {
+        self.init = init
+      },
+
+      /**
+       * #action
+       */
       showTrack(trackId: string, initialSnapshot = {}) {
         showTrackGeneric(self, trackId, initialSnapshot)
       },
@@ -599,6 +623,47 @@ function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            async function circularViewInitAutorun() {
+              const { init, volatileWidth } = self
+              if (!volatileWidth || !init) {
+                return
+              }
+
+              const session = getSession(self)
+              const { assemblyManager } = session
+
+              try {
+                const asm = await assemblyManager.waitForAssembly(init.assembly)
+                if (!asm) {
+                  throw new Error(
+                    `Assembly "${init.assembly}" not found when launching circular genome view`,
+                  )
+                }
+
+                self.setDisplayedRegions(asm.regions || [])
+
+                if (init.tracks) {
+                  for (const trackId of init.tracks) {
+                    self.showTrack(trackId)
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notifyError(`${e}`, e)
+              } finally {
+                self.setInit(undefined)
+              }
+            },
+            { name: 'CircularViewInit' },
+          ),
+        )
+      },
+    }))
     .views(self => ({
       /**
        * #method
@@ -631,6 +696,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
+    .postProcessSnapshot(snap => {
+      const { init, ...rest } = snap as Omit<typeof snap, symbol>
+      return rest
+    })
 }
 
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>

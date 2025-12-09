@@ -35,7 +35,7 @@ import { autorun, observable } from 'mobx'
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
 
-import type { ImportFormSyntenyTrack } from './types'
+import type { DotplotViewInit, ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
@@ -150,6 +150,11 @@ export default function stateModelFactory(pm: PluginManager) {
          * elsewhere
          */
         viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track')),
+        /**
+         * #property
+         * used for initializing the view from a session snapshot
+         */
+        init: types.frozen<DotplotViewInit | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -276,15 +281,28 @@ export default function stateModelFactory(pm: PluginManager) {
       },
       /**
        * #getter
+       */
+      get hasSomethingToShow() {
+        return self.assemblyNames.length > 0 || !!self.init
+      },
+      /**
+       * #getter
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
         return (
-          self.assemblyNames.length > 0 &&
+          this.hasSomethingToShow &&
           !this.initialized &&
           !self.volatileError &&
           !self.assemblyErrors
         )
+      },
+      /**
+       * #getter
+       * Whether to show the import form
+       */
+      get showImportForm() {
+        return !this.hasSomethingToShow || !!self.volatileError
       },
 
       /**
@@ -392,6 +410,13 @@ export default function stateModelFactory(pm: PluginManager) {
        */
       setError(e: unknown) {
         self.volatileError = e
+      },
+
+      /**
+       * #action
+       */
+      setInit(init?: DotplotViewInit) {
+        self.init = init
       },
 
       /**
@@ -653,6 +678,39 @@ export default function stateModelFactory(pm: PluginManager) {
         addDisposer(
           self,
           autorun(
+            function dotplotInitAutorun() {
+              const { init, volatileWidth } = self
+              if (!volatileWidth || !init) {
+                return
+              }
+
+              const session = getSession(self)
+
+              // Set assembly names from init
+              const assemblyNames = init.views.map(v => v.assembly)
+              self.setAssemblyNames(assemblyNames[0]!, assemblyNames[1]!)
+
+              // Show tracks
+              if (init.tracks) {
+                for (const trackId of init.tracks) {
+                  try {
+                    self.showTrack(trackId)
+                  } catch (e) {
+                    console.error(e)
+                    session.notifyError(`${e}`, e)
+                  }
+                }
+              }
+
+              // Clear init state
+              self.setInit(undefined)
+            },
+            { name: 'DotplotInit' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
             function dotplotLocalStorageAutorun() {
               const s = (s: unknown) => JSON.stringify(s)
               const { showPanButtons, wheelMode, cursorMode } = self
@@ -779,6 +837,10 @@ export default function stateModelFactory(pm: PluginManager) {
         return self.volatileError || self.assemblyErrors
       },
     }))
+    .postProcessSnapshot(snap => {
+      const { init, ...rest } = snap as Omit<typeof snap, symbol>
+      return rest
+    })
 }
 
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>

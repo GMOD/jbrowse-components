@@ -124,7 +124,12 @@ test('LinearSyntenyView showImportForm is false when init is set', async () => {
   expect(view.hasSomethingToShow).toBe(true)
 
   // Wait for async operations to settle
-  await waitFor(() => { expect(view.initialized).toBe(true) }, { timeout: 30000 })
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
 }, 40000)
 
 test('LinearSyntenyView showImportForm is true when no init and no views', () => {

@@ -2,15 +2,21 @@ import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
-import { addDisposer, getPath, onAction, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getPath,
+  onAction,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
-import { autorun } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import { getClip } from './getClip'
 import { calc, getBlockFeatures, intersect } from './util'
 
-import type { ExportSvgOptions } from './types'
+import type { BreakpointSplitViewInit, ExportSvgOptions } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -66,6 +72,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         ),
+        /**
+         * #property
+         * used for initializing the view from a session snapshot
+         */
+        init: types.frozen<BreakpointSplitViewInit | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -77,6 +88,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get hasSomethingToShow() {
+        return self.views.length > 0 || !!self.init
+      },
     }))
     .views(self => ({
       /**
@@ -277,9 +296,66 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       reverseViewOrder() {
         self.views.reverse()
       },
+
+      /**
+       * #action
+       */
+      setInit(init?: BreakpointSplitViewInit) {
+        self.init = init
+      },
+
     }))
     .actions(self => ({
       afterAttach() {
+        // Init autorun for initializing from session snapshot
+        addDisposer(
+          self,
+          autorun(
+            async function breakpointSplitViewInitAutorun() {
+              const { init, width } = self
+              if (!width || !init) {
+                return
+              }
+
+              const session = getSession(self)
+              const { assemblyManager } = session
+
+              try {
+                // Wait for all assemblies to be ready
+                await Promise.all(
+                  init.views.map(v =>
+                    assemblyManager.waitForAssembly(v.assembly),
+                  ),
+                )
+
+                // Set up the views with their own init properties
+                self.views = cast(
+                  init.views.map(viewInit => ({
+                    type: 'LinearGenomeView' as const,
+                    init: {
+                      loc: viewInit.loc,
+                      assembly: viewInit.assembly,
+                      tracks: viewInit.tracks,
+                    },
+                  })),
+                )
+
+                // Wait for child views to initialize
+                await Promise.all(
+                  self.views.map(view => when(() => view.initialized)),
+                )
+
+                // Clear init state
+                self.setInit(undefined)
+              } catch (e) {
+                console.error(e)
+                session.notifyError(`${e}`, e)
+                self.setInit(undefined)
+              }
+            },
+            { name: 'BreakpointSplitViewInit' },
+          ),
+        )
         addDisposer(
           self,
           autorun(async () => {
@@ -382,6 +458,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
+    .postProcessSnapshot(snap => {
+      const { init, ...rest } = snap as Omit<typeof snap, symbol>
+      return rest
+    })
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>
