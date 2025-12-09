@@ -1,8 +1,9 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { autorun, reaction } from 'mobx'
+import { autorun, reaction, untracked } from 'mobx'
 
 import { serializeFeatPos } from './model'
 
@@ -45,6 +46,16 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
+        // Cancel any previous rendering operation (use untracked to avoid triggering the autorun)
+        const previousToken = untracked(() => self.stopToken)
+        if (previousToken) {
+          stopStopToken(previousToken)
+        }
+
+        // Create a new stop token for this render (use untracked to avoid triggering the autorun)
+        const stopToken = createStopToken()
+        untracked(() => self.setStopToken(stopToken))
+
         const height = self.height
         const width = view.width
 
@@ -63,6 +74,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           alpha,
           minAlignmentLength,
           colorBy,
+          stopToken,
         }
 
         worker.postMessage(message)

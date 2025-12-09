@@ -2,6 +2,18 @@ import { colord } from 'colord'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255
 
+function checkStopToken(stopToken: string | undefined) {
+  if (stopToken !== undefined) {
+    const xhr = new XMLHttpRequest()
+    xhr.open('GET', stopToken, false)
+    try {
+      xhr.send(null)
+    } catch {
+      throw new Error('aborted')
+    }
+  }
+}
+
 const category10 = [
   '#1f77b4',
   '#ff7f0e',
@@ -57,6 +69,7 @@ export interface DrawSyntenyMessage {
   alpha: number
   minAlignmentLength: number
   colorBy: string
+  stopToken?: string
 }
 
 export interface InitCanvasMessage {
@@ -335,7 +348,13 @@ function drawCigarClickMapImpl(
   const bpPerPxInv0 = 1 / bpPerPxs[level]!
   const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
-  for (const { p11, p12, p21, p22, strand, cigar } of featPositions) {
+  for (let i = 0; i < featPositions.length; i++) {
+    // Check stop token every 100 features
+    if (i % 100 === 0) {
+      checkStopToken(msg.stopToken)
+    }
+
+    const { p11, p12, p21, p22, strand, cigar } = featPositions[i]!
     const x11 = p11.offsetPx - offsets[level]!
     const x12 = p12.offsetPx - offsets[level]!
     const x21 = p21.offsetPx - offsets[level + 1]!
@@ -503,7 +522,13 @@ function drawRefImpl(
     { x11: number; x21: number; y1: number; y2: number; mid: number }[]
   >()
 
-  for (const feat of featPositions) {
+  for (let i = 0; i < featPositions.length; i++) {
+    // Check stop token every 100 features
+    if (i % 100 === 0) {
+      checkStopToken(msg.stopToken)
+    }
+
+    const feat = featPositions[i]!
     if (minAlignmentLength > 0) {
       const queryName = feat.name || feat.id
       const totalLength = queryTotalLengths.get(queryName) || 0
@@ -577,7 +602,13 @@ function drawRefImpl(
   mainCtx.fillStyle = colorMapWithAlpha.M
   mainCtx.strokeStyle = colorMapWithAlpha.M
 
-  for (const feat of featPositions) {
+  for (let i = 0; i < featPositions.length; i++) {
+    // Check stop token every 100 features
+    if (i % 100 === 0) {
+      checkStopToken(msg.stopToken)
+    }
+
+    const feat = featPositions[i]!
     const { strand, refName, cigar, p11, p12, p21, p22 } = feat
 
     if (minAlignmentLength > 0) {
@@ -731,6 +762,11 @@ function drawRefImpl(
   clickMapCtx.clearRect(0, 0, width, height)
 
   for (let i = 0; i < featPositions.length; i++) {
+    // Check stop token every 100 features
+    if (i % 100 === 0) {
+      checkStopToken(msg.stopToken)
+    }
+
     const feature = featPositions[i]!
 
     if (minAlignmentLength > 0) {
@@ -790,19 +826,29 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
       return
     }
 
-    drawRefImpl(msg, mainCtx, clickMapCtx)
-    drawCigarClickMapImpl(msg, cigarClickMapCtx)
+    try {
+      drawRefImpl(msg, mainCtx, clickMapCtx)
+      checkStopToken(msg.stopToken)
+      drawCigarClickMapImpl(msg, cigarClickMapCtx)
+      checkStopToken(msg.stopToken)
 
-    // Transfer click map bitmaps back to main thread
-    const clickMapBitmap = clickMapCanvas.transferToImageBitmap()
-    const cigarClickMapBitmap = cigarClickMapCanvas.transferToImageBitmap()
+      // Transfer click map bitmaps back to main thread
+      const clickMapBitmap = clickMapCanvas.transferToImageBitmap()
+      const cigarClickMapBitmap = cigarClickMapCanvas.transferToImageBitmap()
 
-    const result: DrawResultMessage = {
-      type: 'done',
-      clickMapBitmap,
-      cigarClickMapBitmap,
+      const result: DrawResultMessage = {
+        type: 'done',
+        clickMapBitmap,
+        cigarClickMapBitmap,
+      }
+
+      self.postMessage(result, [clickMapBitmap, cigarClickMapBitmap])
+    } catch (e) {
+      // Aborted - don't send result
+      if (e instanceof Error && e.message === 'aborted') {
+        return
+      }
+      throw e
     }
-
-    self.postMessage(result, [clickMapBitmap, cigarClickMapBitmap])
   }
 }

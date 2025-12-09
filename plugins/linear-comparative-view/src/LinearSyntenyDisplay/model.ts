@@ -153,6 +153,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * minimum alignment length to display (in bp)
        */
       minAlignmentLength: 0,
+
+      /**
+       * #volatile
+       * stop token for cancelling worker rendering
+       */
+      stopToken: undefined as string | undefined,
     }))
     .actions(self => ({
       /**
@@ -244,6 +250,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setColorBy(value: string) {
         self.colorBy = value
+      },
+      /**
+       * #action
+       */
+      setStopToken(token: string | undefined) {
+        self.stopToken = token
       },
     }))
 
