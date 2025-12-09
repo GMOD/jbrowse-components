@@ -459,10 +459,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (self.volatileWidth === undefined) {
           return false
         }
-        const { assemblyManager } = getSession(self)
-        // if init is set, wait for that assembly to be initialized
+        // if init is set, wait for that assembly to have regions loaded
         if (self.init) {
-          return !!assemblyManager.get(self.init.assembly)?.initialized
+          const { assemblyManager } = getSession(self)
+          const asm = assemblyManager.get(self.init.assembly)
+          return !!(asm?.initialized && asm.regions)
         }
         return this.assembliesInitialized
       },
@@ -1894,8 +1895,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 }
 
                 if (init.tracks) {
+                  const idsNotFound = [] as string[]
                   for (const t of init.tracks) {
-                    self.showTrack(t)
+                    try {
+                      self.showTrack(t)
+                    } catch (e) {
+                      if (/Could not resolve identifier/.exec(`${e}`)) {
+                        idsNotFound.push(t)
+                      } else {
+                        throw e
+                      }
+                    }
+                  }
+                  if (idsNotFound.length) {
+                    session.notifyError(
+                      `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+                      new Error(
+                        `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+                      ),
+                    )
                   }
                 }
 

@@ -345,11 +345,14 @@ function stateModelFactory(pluginManager: PluginManager) {
           return false
         }
         const { assemblyManager } = getSession(self)
-        // if init is set, wait for that assembly to be initialized
+        // if init is set, wait for that assembly to have regions loaded
         if (self.init) {
-          return !!assemblyManager.get(self.init.assembly)?.initialized
+          const asm = assemblyManager.get(self.init.assembly)
+          return !!(asm?.initialized && asm.regions)
         }
-        return this.assemblyNames.every(a => assemblyManager.get(a)?.initialized)
+        return this.assemblyNames.every(
+          a => assemblyManager.get(a)?.initialized,
+        )
       },
 
       /**
