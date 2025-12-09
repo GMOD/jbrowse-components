@@ -14,7 +14,8 @@ const MultiLinearWiggleDisplayComponent = observer(function (props: {
 }) {
   const { model } = props
   const ref = useRef<HTMLDivElement>(null)
-  const { mouseState, handleMouseMove, handleMouseLeave } = useMouseTracking(ref)
+  const { mouseState, handleMouseMove, handleMouseLeave } =
+    useMouseTracking(ref)
 
   return (
     <div
