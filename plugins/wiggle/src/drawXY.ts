@@ -5,12 +5,53 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 // required to import this for typescript purposes
 import mix from 'colord/plugins/mix' // eslint-disable-line @typescript-eslint/no-unused-vars
 
-import { fillRectCtx, getOrigin, getScale } from './util'
+import { getOrigin, getScale } from './util'
 
 import type { ScaleOpts } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { Colord } from '@jbrowse/core/util/colord'
+
+function fillRectCtx(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  ctx: CanvasRenderingContext2D,
+  color?: string,
+) {
+  if (width < 0) {
+    x += width
+    width = -width
+  }
+  if (height < 0) {
+    y += height
+    height = -height
+  }
+
+  if (color) {
+    ctx.fillStyle = color
+  }
+  ctx.fillRect(x, y, width, height)
+}
+
+function addRectToPath(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  ctx: CanvasRenderingContext2D,
+) {
+  if (width < 0) {
+    x += width
+    width = -width
+  }
+  if (height < 0) {
+    y += height
+    height = -height
+  }
+  ctx.rect(x, y, width, height)
+}
 
 function lighten(color: Colord, amount: number) {
   const hslColor = color.toHsl()
@@ -96,118 +137,254 @@ export function drawXY(
   // passes. this reduces subpixel rendering issues. note: for stylistic
   // reasons, clipping indicator is only drawn for score, not min/max score
   if (summaryScoreMode === 'whiskers') {
-    let lastCol: string | undefined
-    let lastMix: string | undefined
-    start = performance.now()
-    for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
+    const featuresArray = [...features.values()]
+    let constantColor: string | undefined
+    let canBatch = !crossingOrigin && featuresArray.length > 0
+
+    if (canBatch) {
+      const firstFeature = featuresArray[0]!
+      const firstScore = firstFeature.get('score')
+      constantColor = colorCallback(firstFeature, firstScore)
+
+      for (const feature of featuresArray) {
+        const score = feature.get('score')
+        if (colorCallback(feature, score) !== constantColor) {
+          canBatch = false
+          break
+        }
       }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      if (feature.get('summary')) {
+    }
+
+    if (canBatch && constantColor) {
+      const lightenedColor = lighten(colord(constantColor), 0.4).toHex()
+      const darkenedColor = darken(colord(constantColor), 0.4).toHex()
+
+      // pass 1: max scores (lightened)
+      ctx.beginPath()
+      start = performance.now()
+      for (const feature of featuresArray) {
+        if (performance.now() - start > 400) {
+          checkStopToken(stopToken)
+          start = performance.now()
+        }
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+        if (feature.get('summary')) {
+          const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+          const max = feature.get('maxScore')
+          addRectToPath(leftPx, toY(max), w, getHeight(max), ctx)
+        }
+      }
+      ctx.fillStyle = lightenedColor
+      ctx.fill()
+
+      // pass 2: mean scores
+      ctx.beginPath()
+      start = performance.now()
+      for (const feature of featuresArray) {
+        if (performance.now() - start > 400) {
+          checkStopToken(stopToken)
+          start = performance.now()
+        }
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+        const score = feature.get('score')
         const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+        if (
+          Math.floor(leftPx) !== Math.floor(prevLeftPx) ||
+          rightPx - leftPx > 1
+        ) {
+          reducedFeatures.push(feature)
+          prevLeftPx = leftPx
+        }
+        hasClipping = hasClipping || score < niceMin || score > niceMax
+        addRectToPath(leftPx, toY(score), w, getHeight(score), ctx)
+      }
+      ctx.fillStyle = constantColor
+      ctx.fill()
+
+      // pass 3: min scores (darkened)
+      ctx.beginPath()
+      start = performance.now()
+      for (const feature of featuresArray) {
+        if (performance.now() - start > 400) {
+          checkStopToken(stopToken)
+          start = performance.now()
+        }
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+        if (feature.get('summary')) {
+          const min = feature.get('minScore')
+          const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+          addRectToPath(leftPx, toY(min), w, getHeight(min), ctx)
+        }
+      }
+      ctx.fillStyle = darkenedColor
+      ctx.fill()
+    } else {
+      let lastCol: string | undefined
+      let lastMix: string | undefined
+      start = performance.now()
+      for (const feature of features.values()) {
+        if (performance.now() - start > 400) {
+          checkStopToken(stopToken)
+          start = performance.now()
+        }
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+        if (feature.get('summary')) {
+          const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+          const max = feature.get('maxScore')
+          const c = colorCallback(feature, max)
+          const effectiveC = crossingOrigin
+            ? c
+            : c === lastCol
+              ? lastMix
+              : (lastMix = lighten(colord(c), 0.4).toHex())
+          fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, effectiveC)
+          lastCol = c
+        }
+      }
+      lastMix = undefined
+      lastCol = undefined
+      start = performance.now()
+      for (const feature of features.values()) {
+        if (performance.now() - start > 400) {
+          checkStopToken(stopToken)
+          start = performance.now()
+        }
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+        const score = feature.get('score')
         const max = feature.get('maxScore')
-        const c = colorCallback(feature, max)
-        const effectiveC = crossingOrigin
-          ? c
-          : c === lastCol
-            ? lastMix
-            : (lastMix = lighten(colord(c), 0.4).toHex())
-        fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, effectiveC)
-        lastCol = c
-      }
-    }
-    lastMix = undefined
-    lastCol = undefined
-    start = performance.now()
-    for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const score = feature.get('score')
-      const max = feature.get('maxScore')
-      const min = feature.get('minScore')
-      const summary = feature.get('summary')
-      const c = colorCallback(feature, score)
-      const effectiveC =
-        crossingOrigin && summary
-          ? c === lastCol
-            ? lastMix
-            : (lastMix = colord(colorCallback(feature, max))
-                .mix(colord(colorCallback(feature, min)))
-                .toString())
-          : c
-      const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
-      if (
-        Math.floor(leftPx) !== Math.floor(prevLeftPx) ||
-        rightPx - leftPx > 1
-      ) {
-        reducedFeatures.push(feature)
-        prevLeftPx = leftPx
-      }
-      hasClipping = hasClipping || score < niceMin || score > niceMax
-      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, effectiveC)
-      lastCol = c
-    }
-    lastMix = undefined
-    lastCol = undefined
-    start = performance.now()
-    for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-
-      if (feature.get('summary')) {
         const min = feature.get('minScore')
-        const c = colorCallback(feature, min)
+        const summary = feature.get('summary')
+        const c = colorCallback(feature, score)
+        const effectiveC =
+          crossingOrigin && summary
+            ? c === lastCol
+              ? lastMix
+              : (lastMix = colord(colorCallback(feature, max))
+                  .mix(colord(colorCallback(feature, min)))
+                  .toString())
+            : c
         const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
-        const effectiveC = crossingOrigin
-          ? c
-          : c === lastCol
-            ? lastMix
-            : (lastMix = darken(colord(c), 0.4).toHex())
-
-        fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, effectiveC)
+        if (
+          Math.floor(leftPx) !== Math.floor(prevLeftPx) ||
+          rightPx - leftPx > 1
+        ) {
+          reducedFeatures.push(feature)
+          prevLeftPx = leftPx
+        }
+        hasClipping = hasClipping || score < niceMin || score > niceMax
+        fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, effectiveC)
         lastCol = c
+      }
+      lastMix = undefined
+      lastCol = undefined
+      start = performance.now()
+      for (const feature of features.values()) {
+        if (performance.now() - start > 400) {
+          checkStopToken(stopToken)
+          start = performance.now()
+        }
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+
+        if (feature.get('summary')) {
+          const min = feature.get('minScore')
+          const c = colorCallback(feature, min)
+          const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+          const effectiveC = crossingOrigin
+            ? c
+            : c === lastCol
+              ? lastMix
+              : (lastMix = darken(colord(c), 0.4).toHex())
+
+          fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, effectiveC)
+          lastCol = c
+        }
       }
     }
   } else {
+    // check if we can use batched drawing (constant color, not crossing origin)
+    const featuresArray = [...features.values()]
+    let constantColor: string | undefined
+    let canBatch = !crossingOrigin && featuresArray.length > 0
+
+    if (canBatch) {
+      const firstFeature = featuresArray[0]!
+      const firstScore = firstFeature.get('score')
+      constantColor = colorCallback(firstFeature, firstScore)
+
+      for (const feature of featuresArray) {
+        const score = feature.get('score')
+        if (colorCallback(feature, score) !== constantColor) {
+          canBatch = false
+          break
+        }
+      }
+    }
+
     start = performance.now()
-    for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
+    if (canBatch && constantColor) {
+      ctx.beginPath()
+      for (const feature of featuresArray) {
+        if (performance.now() - start > 400) {
+          checkStopToken(stopToken)
+          start = performance.now()
+        }
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+
+        if (
+          Math.floor(leftPx) !== Math.floor(prevLeftPx) ||
+          rightPx - leftPx > 1
+        ) {
+          reducedFeatures.push(feature)
+          prevLeftPx = leftPx
+        }
+
+        const score = feature.get('score')
+        hasClipping = hasClipping || score < niceMin || score > niceMax
+        const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+
+        if (summaryScoreMode === 'max') {
+          const s = feature.get('summary') ? feature.get('maxScore') : score
+          addRectToPath(leftPx, toY(s), w, getHeight(s), ctx)
+        } else if (summaryScoreMode === 'min') {
+          const s = feature.get('summary') ? feature.get('minScore') : score
+          addRectToPath(leftPx, toY(s), w, getHeight(s), ctx)
+        } else {
+          addRectToPath(leftPx, toY(score), w, getHeight(score), ctx)
+        }
       }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      ctx.fillStyle = constantColor
+      ctx.fill()
+    } else {
+      for (const feature of featuresArray) {
+        if (performance.now() - start > 400) {
+          checkStopToken(stopToken)
+          start = performance.now()
+        }
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-      // create reduced features, avoiding multiple features per px
-      if (
-        Math.floor(leftPx) !== Math.floor(prevLeftPx) ||
-        rightPx - leftPx > 1
-      ) {
-        reducedFeatures.push(feature)
-        prevLeftPx = leftPx
-      }
+        if (
+          Math.floor(leftPx) !== Math.floor(prevLeftPx) ||
+          rightPx - leftPx > 1
+        ) {
+          reducedFeatures.push(feature)
+          prevLeftPx = leftPx
+        }
 
-      const score = feature.get('score')
-      const c = colorCallback(feature, score)
+        const score = feature.get('score')
+        const c = colorCallback(feature, score)
 
-      hasClipping = hasClipping || score < niceMin || score > niceMax
-      const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+        hasClipping = hasClipping || score < niceMin || score > niceMax
+        const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
 
-      if (summaryScoreMode === 'max') {
-        const s = feature.get('summary') ? feature.get('maxScore') : score
-        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
-      } else if (summaryScoreMode === 'min') {
-        const s = feature.get('summary') ? feature.get('minScore') : score
-        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
-      } else {
-        fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+        if (summaryScoreMode === 'max') {
+          const s = feature.get('summary') ? feature.get('maxScore') : score
+          fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
+        } else if (summaryScoreMode === 'min') {
+          const s = feature.get('summary') ? feature.get('minScore') : score
+          fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
+        } else {
+          fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+        }
       }
     }
   }
