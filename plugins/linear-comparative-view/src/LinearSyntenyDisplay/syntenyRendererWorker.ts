@@ -824,8 +824,12 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
       return
     }
 
-    // Resize main canvas if needed
+    // Resize main canvas if needed - this clears the canvas!
     if (mainCanvas.width !== msg.width || mainCanvas.height !== msg.height) {
+      console.log('worker: RESIZING canvas', {
+        from: { w: mainCanvas.width, h: mainCanvas.height },
+        to: { w: msg.width, h: msg.height },
+      })
       mainCanvas.width = msg.width
       mainCanvas.height = msg.height
     }
@@ -855,11 +859,10 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
       // Draw to buffer canvas instead of main canvas
       drawRefImpl(drawParams, bufferCtx, clickMapCtx)
       checkStopToken(msg.stopToken)
-      drawCigarClickMapImpl(drawParams, cigarClickMapCtx)
-      checkStopToken(msg.stopToken)
+      // drawCigarClickMapImpl(drawParams, cigarClickMapCtx)
+      // checkStopToken(msg.stopToken)
 
-      // Copy buffer to main canvas atomically (clear + draw in one go)
-      mainCtx.clearRect(0, 0, msg.width, msg.height)
+      // Copy buffer to main canvas
       mainCtx.drawImage(bufferCanvas, 0, 0)
 
       // Transfer click map bitmaps back to main thread
