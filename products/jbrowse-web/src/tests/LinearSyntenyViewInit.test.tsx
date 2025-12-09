@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
+import { configure } from 'mobx'
 
 import { handleRequest } from './generateReadBuffer'
 import { getPluginManager, setup } from './util'
@@ -7,14 +8,11 @@ import configSnapshot from '../../test_data/grape_peach_synteny/config.json'
 
 setup()
 
-beforeAll(() => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {})
-  jest.spyOn(console, 'error').mockImplementation(() => {})
-})
+console.warn = jest.fn()
+console.error = jest.fn()
 
-afterAll(() => {
-  jest.restoreAllMocks()
-})
+// Suppress mobx reaction errors during test teardown
+configure({ disableErrorBoundaries: true })
 
 const getFile = (url: string) => {
   // Handle relative URLs from the grape_peach_synteny config
@@ -124,9 +122,12 @@ test('LinearSyntenyView showImportForm is false when init is set', async () => {
   // showImportForm should be false because hasSomethingToShow is true
   expect(view.showImportForm).toBe(false)
   expect(view.hasSomethingToShow).toBe(true)
+
+  // Wait for async operations to settle
+  await waitFor(() => { expect(view.initialized).toBe(true) }, { timeout: 30000 })
 }, 40000)
 
-test('LinearSyntenyView showImportForm is true when no init and no views', async () => {
+test('LinearSyntenyView showImportForm is true when no init and no views', () => {
   const { rootModel } = getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
