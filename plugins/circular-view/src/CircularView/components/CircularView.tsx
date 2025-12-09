@@ -49,12 +49,11 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
 })
 
 const CircularView = observer(({ model }: { model: CircularViewModel }) => {
-  const { disableImportForm, error, showLoading, showView, loadingMessage } =
-    model
+  const { showLoading, showView, showImportForm, loadingMessage } = model
 
   if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
-  } else if ((!showView && !disableImportForm) || error) {
+  } else if (showImportForm) {
     return <ImportForm model={model} />
   } else if (showView) {
     return <CircularViewLoaded model={model} />

@@ -25,9 +25,8 @@ import type { SliceRegion } from './slices'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Region as IRegion } from '@jbrowse/core/util/types'
-import type { Region } from '@jbrowse/core/util/types/mst'
-import type { Instance, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
+import type { Region } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -97,7 +96,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         /*
          * #property
          */
-        displayedRegions: types.optional(types.frozen<IRegion[]>(), []),
+        displayedRegions: types.optional(types.frozen<Region[]>(), []),
         /**
          * #property
          */
@@ -368,6 +367,15 @@ function stateModelFactory(pluginManager: PluginManager) {
           this.initialized
         )
       },
+
+      /**
+       * #getter
+       * Whether to show the import form (when not ready to display and import
+       * form is enabled, or when there's an error)
+       */
+      get showImportForm() {
+        return (!this.showView && !self.disableImportForm) || !!self.error
+      },
     }))
     .views(self => ({
       /**
@@ -480,7 +488,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
+      setDisplayedRegions(regions: Region[]) {
         const previouslyEmpty = self.displayedRegions.length === 0
         self.displayedRegions = cast(regions)
 

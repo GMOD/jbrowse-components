@@ -79,7 +79,7 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
-import type { Region, Region as IRegion } from '@jbrowse/core/util/types'
+import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
@@ -140,7 +140,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * advised to use the entire set of chromosomes if your assembly is very
          * fragmented
          */
-        displayedRegions: types.optional(types.frozen<IRegion[]>(), []),
+        displayedRegions: types.optional(types.frozen<Region[]>(), []),
 
         /**
          * #property
@@ -226,7 +226,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * color by CDS
+         * show the track outlines
          */
         showTrackOutlines: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showTrackOutlines', true),
@@ -269,12 +269,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       volatileError: undefined as unknown,
 
-      /**
-       * #volatile
-       * array of callbacks to run after the next set of the displayedRegions,
-       * which is basically like an onLoad
-       */
-      afterDisplayedRegionsSetCallbacks: [] as (() => void)[],
       /**
        * #volatile
        */
@@ -347,19 +341,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyNames() {
-        return [
-          ...new Set(self.displayedRegions.map(region => region.assemblyName)),
-        ]
+        return [...new Set(self.displayedRegions.map(r => r.assemblyName))]
       },
       /**
        * #getter
        */
       get assemblyDisplayNames() {
         const { assemblyManager } = getSession(self)
-        return this.assemblyNames.map(assemblyName => {
-          const assembly = assemblyManager.get(assemblyName)
-          return assembly?.displayName ?? assemblyName
-        })
+        return this.assemblyNames.map(
+          a => assemblyManager.get(a)?.displayName ?? a,
+        )
       },
       /**
        * #getter
@@ -367,8 +358,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * capability, sticky positioning
        */
       get isTopLevelView() {
-        const session = getSession(self)
-        return session.views.some(r => r.id === self.id)
+        return getSession(self).views.some(r => r.id === self.id)
       },
       /**
        * #getter
@@ -484,10 +474,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       */
+      get hasSomethingToShow() {
+        return this.hasDisplayedRegions || !!self.init
+      },
+
+      /**
+       * #getter
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
-        return !this.initialized && !this.error
+        return !this.initialized && !this.error && this.hasSomethingToShow
+      },
+
+      /**
+       * #getter
+       * Whether to show the import form
+       */
+      get showImportForm() {
+        return !this.hasSomethingToShow || !!this.error
       },
 
       /**
@@ -854,10 +859,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       moveTrackDown(id: string) {
         const idx = self.tracks.findIndex(v => v.id === id)
-        if (idx === -1) {
-          return
-        }
-
         if (idx !== -1 && idx < self.tracks.length - 1) {
           self.tracks.splice(idx, 2, self.tracks[idx + 1], self.tracks[idx])
         }
@@ -875,21 +876,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       moveTrackToTop(id: string) {
-        const idx = self.tracks.findIndex(track => track.id === id)
-        self.tracks = cast([
-          self.tracks[idx],
-          ...self.tracks.filter(track => track.id !== id),
-        ])
+        const track = self.tracks.find(track => track.id === id)
+        if (track) {
+          self.tracks = cast([track, ...self.tracks.filter(t => t.id !== id)])
+        }
       },
       /**
        * #action
        */
       moveTrackToBottom(id: string) {
-        const idx = self.tracks.findIndex(track => track.id === id)
-        self.tracks = cast([
-          ...self.tracks.filter(track => track.id !== id),
-          self.tracks[idx],
-        ])
+        const track = self.tracks.find(track => track.id === id)
+        if (track) {
+          self.tracks = cast([...self.tracks.filter(t => t.id !== id), track])
+        }
       },
       /**
        * #action
@@ -920,7 +919,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
-        localStorage.setItem('lgv-trackLabels', setting)
+        localStorageSetItem('lgv-trackLabels', setting)
         self.trackLabels = setting
       },
 
@@ -990,15 +989,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * schedule something to be run after the next time displayedRegions is
-       * set
-       */
-      afterDisplayedRegionsSet(cb: () => void) {
-        self.afterDisplayedRegionsSetCallbacks.push(cb)
-      },
-
-      /**
-       * #action
        */
       horizontalScroll(distance: number) {
         const oldOffsetPx = self.offsetPx
@@ -1040,15 +1030,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           ;[assemblyName] = [...names]
         }
-        const assembly = assemblyManager.get(assemblyName!)
-        if (assembly) {
-          const { regions } = assembly
-          if (regions) {
-            this.setDisplayedRegions(regions)
-            self.zoomTo(self.maxBpPerPx)
-            this.center()
-          }
+        const regions = assemblyManager.get(assemblyName!)?.regions
+        if (!regions) {
+          return
         }
+        this.setDisplayedRegions(regions)
+        self.zoomTo(self.maxBpPerPx)
+        this.center()
       },
 
       /**
@@ -1219,7 +1207,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Return to import form',
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              session.queueDialog(handleClose => [
                 ReturnToImportFormDialog,
                 { model: self, handleClose },
               ])
@@ -1232,7 +1220,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   label: 'Sequence search',
                   icon: SearchIcon,
                   onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
+                    session.queueDialog(handleClose => [
                       SequenceSearchDialog,
                       {
                         model: self,
@@ -1247,7 +1235,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              session.queueDialog(handleClose => [
                 ExportSvgDialog,
                 {
                   model: self,
@@ -1893,7 +1881,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   self.showAllRegionsInAssembly(init.assembly)
                 }
 
-                init.tracks?.map(t => self.showTrack(t))
+                if (init.tracks) {
+                  for (const t of init.tracks) {
+                    self.showTrack(t)
+                  }
+                }
 
                 // clear init state
                 self.setInit(undefined)
@@ -1919,10 +1911,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
           autorun(
             function localStorageAutorun() {
               const s = (s: unknown) => JSON.stringify(s)
-              const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+              const {
+                showCytobandsSetting,
+                showCenterLine,
+                colorByCDS,
+                showTrackOutlines,
+              } = self
               localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
               localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
               localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
+              localStorageSetItem('lgv-showTrackOutlines', s(showTrackOutlines))
             },
             { name: 'LGVLocalStorage' },
           ),

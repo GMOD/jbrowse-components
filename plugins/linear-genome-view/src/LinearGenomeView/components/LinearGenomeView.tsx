@@ -15,11 +15,11 @@ const LinearGenomeView = observer(function ({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { showLoading, hasDisplayedRegions, error, loadingMessage } = model
+  const { showLoading, showImportForm, loadingMessage } = model
 
   if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
-  } else if (!hasDisplayedRegions || error) {
+  } else if (showImportForm) {
     return <ImportForm model={model} />
   } else {
     return <LinearGenomeViewContainer model={model} />
