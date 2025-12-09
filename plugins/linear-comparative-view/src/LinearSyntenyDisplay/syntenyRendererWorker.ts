@@ -830,13 +830,18 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
       mainCanvas.height = msg.height
     }
 
+    // Use double buffering: draw to a temporary canvas first, then copy to main canvas
+    // This prevents the flash of blank canvas while drawing
+    const bufferCanvas = new OffscreenCanvas(msg.width, msg.height)
+    const bufferCtx = bufferCanvas.getContext('2d')
+
     // Create temporary offscreen canvases for click maps
     const clickMapCanvas = new OffscreenCanvas(msg.width, msg.height)
     const cigarClickMapCanvas = new OffscreenCanvas(msg.width, msg.height)
     const clickMapCtx = clickMapCanvas.getContext('2d')
     const cigarClickMapCtx = cigarClickMapCanvas.getContext('2d')
 
-    if (!clickMapCtx || !cigarClickMapCtx) {
+    if (!bufferCtx || !clickMapCtx || !cigarClickMapCtx) {
       return
     }
 
@@ -847,10 +852,15 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
     }
 
     try {
-      drawRefImpl(drawParams, mainCtx, clickMapCtx)
+      // Draw to buffer canvas instead of main canvas
+      drawRefImpl(drawParams, bufferCtx, clickMapCtx)
       checkStopToken(msg.stopToken)
       drawCigarClickMapImpl(drawParams, cigarClickMapCtx)
       checkStopToken(msg.stopToken)
+
+      // Copy buffer to main canvas atomically (clear + draw in one go)
+      mainCtx.clearRect(0, 0, msg.width, msg.height)
+      mainCtx.drawImage(bufferCanvas, 0, 0)
 
       // Transfer click map bitmaps back to main thread
       const clickMapBitmap = clickMapCanvas.transferToImageBitmap()

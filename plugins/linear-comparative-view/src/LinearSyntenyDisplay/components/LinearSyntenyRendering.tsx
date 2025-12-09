@@ -298,8 +298,7 @@ const LinearSyntenyRendering = observer(function ({
         }}
         data-testid="synteny_canvas"
         className={classes.mainCanvas}
-        width={width}
-        height={height}
+        style={{ width, height }}
       />
       <canvas
         ref={clickMapCanvasRef}

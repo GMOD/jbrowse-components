@@ -71,16 +71,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        // Cancel any previous rendering operation (use untracked to avoid triggering the autorun)
-        const previousToken = untracked(() => self.stopToken)
-        if (previousToken) {
-          stopStopToken(previousToken)
-        }
-
-        // Create a new stop token for this render (use untracked to avoid triggering the autorun)
-        const stopToken = createStopToken()
-        untracked(() => self.setStopToken(stopToken))
-
         const height = self.height
         const width = view.width
 
@@ -98,7 +88,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           alpha,
           minAlignmentLength,
           colorBy,
-          stopToken,
         }
 
         worker.postMessage(message)
