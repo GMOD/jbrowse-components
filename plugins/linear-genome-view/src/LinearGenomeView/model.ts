@@ -456,7 +456,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get initialized() {
-        return self.volatileWidth !== undefined && this.assembliesInitialized
+        if (self.volatileWidth === undefined) {
+          return false
+        }
+        const { assemblyManager } = getSession(self)
+        // if init is set, wait for that assembly to be initialized
+        if (self.init) {
+          return !!assemblyManager.get(self.init.assembly)?.initialized
+        }
+        return this.assembliesInitialized
       },
 
       /**

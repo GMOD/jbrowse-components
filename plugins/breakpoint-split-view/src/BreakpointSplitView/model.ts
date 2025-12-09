@@ -96,6 +96,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get hasSomethingToShow() {
         return self.views.length > 0 || !!self.init
       },
+
+      /**
+       * #getter
+       */
+      get initialized() {
+        return self.views.length > 0 && self.views.every(v => v.initialized)
+      },
+
+      /**
+       * #getter
+       */
+      get showImportForm() {
+        return !this.hasSomethingToShow
+      },
     }))
     .views(self => ({
       /**
@@ -329,24 +343,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(
-            async function breakpointSplitViewInitAutorun() {
+            function breakpointSplitViewInitAutorun() {
               const { init, width } = self
               if (!width || !init) {
                 return
               }
 
-              try {
-                // Set up the views with their init properties
-                // The child LinearGenomeViews will handle their own initialization
-                self.setViews(init.views)
+              // Set up the views with their init properties
+              // The child LinearGenomeViews will handle their own initialization
+              self.setViews(init.views)
 
-                // Clear init state
-                self.setInit(undefined)
-              } catch (e) {
-                console.error(e)
-                getSession(self).notifyError(`${e}`, e)
-                self.setInit(undefined)
-              }
+              // Clear init state
+              self.setInit(undefined)
             },
             { name: 'BreakpointSplitViewInit' },
           ),

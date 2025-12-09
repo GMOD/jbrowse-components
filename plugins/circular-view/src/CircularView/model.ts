@@ -341,11 +341,15 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get initialized() {
+        if (self.volatileWidth === undefined) {
+          return false
+        }
         const { assemblyManager } = getSession(self)
-        return (
-          self.volatileWidth !== undefined &&
-          this.assemblyNames.every(a => assemblyManager.get(a)?.initialized)
-        )
+        // if init is set, wait for that assembly to be initialized
+        if (self.init) {
+          return !!assemblyManager.get(self.init.assembly)?.initialized
+        }
+        return this.assemblyNames.every(a => assemblyManager.get(a)?.initialized)
       },
 
       /**
@@ -628,34 +632,26 @@ function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(
-            async function circularViewInitAutorun() {
-              const { init, volatileWidth } = self
-              if (!volatileWidth || !init) {
+            function circularViewInitAutorun() {
+              const { init, initialized } = self
+              if (!initialized) {
                 return
               }
+              if (init) {
+                const session = getSession(self)
+                const { assemblyManager } = session
+                const regions = assemblyManager.get(init.assembly)?.regions
 
-              const session = getSession(self)
-              const { assemblyManager } = session
-
-              try {
-                const asm = await assemblyManager.waitForAssembly(init.assembly)
-                if (!asm) {
-                  throw new Error(
-                    `Assembly "${init.assembly}" not found when launching circular genome view`,
-                  )
+                if (regions) {
+                  self.setDisplayedRegions(regions)
                 }
-
-                self.setDisplayedRegions(asm.regions || [])
 
                 if (init.tracks) {
                   for (const trackId of init.tracks) {
                     self.showTrack(trackId)
                   }
                 }
-              } catch (e) {
-                console.error(e)
-                session.notifyError(`${e}`, e)
-              } finally {
+
                 self.setInit(undefined)
               }
             },
