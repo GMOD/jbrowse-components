@@ -303,6 +303,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       setInit(init?: BreakpointSplitViewInit) {
         self.init = init
       },
+
+      /**
+       * #action
+       */
+      setViews(
+        views: {
+          type: 'LinearGenomeView'
+          bpPerPx: number
+          offsetPx: number
+          hideHeader: boolean
+          displayedRegions: { refName: string; start: number; end: number }[]
+        }[],
+      ) {
+        self.views = cast(views)
+        for (const view of self.views) {
+          view.setWidth(self.width)
+        }
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -320,28 +338,51 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               const { assemblyManager } = session
 
               try {
-                // Wait for all assemblies to be ready
-                await Promise.all(
-                  init.views.map(v =>
-                    assemblyManager.waitForAssembly(v.assembly),
-                  ),
+                // Wait for all assemblies to be ready and get their regions
+                const assemblies = await Promise.all(
+                  init.views.map(async v => {
+                    const asm = await assemblyManager.waitForAssembly(v.assembly)
+                    if (!asm) {
+                      throw new Error(`Assembly ${v.assembly} failed to load`)
+                    }
+                    return asm
+                  }),
                 )
 
-                // Set up the views with their own init properties
-                self.views = cast(
-                  init.views.map(viewInit => ({
+                // Set up the views with displayed regions directly
+                self.setViews(
+                  assemblies.map(asm => ({
                     type: 'LinearGenomeView' as const,
-                    init: {
-                      loc: viewInit.loc,
-                      assembly: viewInit.assembly,
-                      tracks: viewInit.tracks,
-                    },
+                    bpPerPx: 1,
+                    offsetPx: 0,
+                    hideHeader: true,
+                    displayedRegions: asm.regions,
                   })),
                 )
 
                 // Wait for child views to initialize
                 await Promise.all(
                   self.views.map(view => when(() => view.initialized)),
+                )
+
+                // Navigate to locations and show tracks on child views
+                await Promise.all(
+                  init.views.map(async (viewInit, idx) => {
+                    const view = self.views[idx]
+                    if (!view) {
+                      return
+                    }
+                    if (viewInit.loc) {
+                      await view.navToLocString(viewInit.loc, viewInit.assembly)
+                    } else {
+                      view.showAllRegionsInAssembly(viewInit.assembly)
+                    }
+                    if (viewInit.tracks) {
+                      for (const trackId of viewInit.tracks) {
+                        view.showTrack(trackId)
+                      }
+                    }
+                  }),
                 )
 
                 // Clear init state
