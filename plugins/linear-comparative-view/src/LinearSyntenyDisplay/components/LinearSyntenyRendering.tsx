@@ -9,6 +9,7 @@ import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
 
+import type { DrawResultMessage } from '../drawSyntenyWorker'
 import type { ClickCoord } from './util'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
@@ -72,11 +73,69 @@ const LinearSyntenyRendering = observer(function ({
   const mainSyntenyCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
-      mainSyntenyCanvasRefp.current = ref // this ref is additionally used in useEffect below
+      mainSyntenyCanvasRefp.current = ref
+
+      // Set up worker and transfer offscreen canvas
+      if (ref && !model.worker && typeof OffscreenCanvas !== 'undefined') {
+        try {
+          const offscreen = ref.transferControlToOffscreen()
+          const worker = new Worker(
+            new URL('../drawSyntenyWorker', import.meta.url),
+          )
+
+          worker.onmessage = (e: MessageEvent<DrawResultMessage>) => {
+            if (e.data.type === 'done') {
+              // Draw the click map bitmaps onto the main thread canvases
+              const clickMapCtx = model.clickMapCanvas?.getContext('2d')
+              const cigarClickMapCtx =
+                model.cigarClickMapCanvas?.getContext('2d')
+
+              if (clickMapCtx && e.data.clickMapBitmap) {
+                clickMapCtx.clearRect(
+                  0,
+                  0,
+                  model.clickMapCanvas!.width,
+                  model.clickMapCanvas!.height,
+                )
+                clickMapCtx.drawImage(e.data.clickMapBitmap, 0, 0)
+                e.data.clickMapBitmap.close()
+              }
+
+              if (cigarClickMapCtx && e.data.cigarClickMapBitmap) {
+                cigarClickMapCtx.clearRect(
+                  0,
+                  0,
+                  model.cigarClickMapCanvas!.width,
+                  model.cigarClickMapCanvas!.height,
+                )
+                cigarClickMapCtx.drawImage(e.data.cigarClickMapBitmap, 0, 0)
+                e.data.cigarClickMapBitmap.close()
+              }
+            }
+          }
+
+          worker.postMessage({ type: 'init', canvas: offscreen }, [offscreen])
+
+          model.setWorker(worker)
+          model.setOffscreenCanvas(offscreen)
+        } catch (e) {
+          console.error('Failed to set up offscreen canvas worker:', e)
+        }
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
+  // Cleanup worker on unmount
+  useEffect(() => {
+    return () => {
+      if (model.worker) {
+        model.worker.terminate()
+        model.setWorker(null)
+      }
+    }
+  }, [model])
+
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     function onWheel(event: WheelEvent) {
