@@ -343,8 +343,16 @@ Expanded
     {
       "type": "BreakpointSplitView",
       "views": [
-        { "loc": "ctgA:1-5000", "assembly": "volvox", "tracks": ["volvox_cram"] },
-        { "loc": "ctgB:1-5000", "assembly": "volvox", "tracks": ["volvox_cram"] }
+        {
+          "loc": "ctgA:1-5000",
+          "assembly": "volvox",
+          "tracks": ["volvox_cram"]
+        },
+        {
+          "loc": "ctgB:1-5000",
+          "assembly": "volvox",
+          "tracks": ["volvox_cram"]
+        }
       ]
     }
   ]

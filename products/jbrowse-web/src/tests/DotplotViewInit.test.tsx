@@ -1,5 +1,4 @@
 import { waitFor } from '@testing-library/react'
-import path from 'path'
 import { LocalFile } from 'generic-filehandle2'
 import { configure } from 'mobx'
 

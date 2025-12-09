@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
-import { autorun, when } from 'mobx'
+import { autorun } from 'mobx'
 
 import { getClip } from './getClip'
 import { calc, getBlockFeatures, intersect } from './util'
@@ -308,18 +308,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setViews(
-        views: {
-          type: 'LinearGenomeView'
-          bpPerPx: number
-          offsetPx: number
-          hideHeader: boolean
-          displayedRegions: { refName: string; start: number; end: number }[]
+        viewInits: {
+          loc?: string
+          assembly: string
+          tracks?: string[]
         }[],
       ) {
-        self.views = cast(views)
-        for (const view of self.views) {
-          view.setWidth(self.width)
-        }
+        self.views = cast(
+          viewInits.map(viewInit => ({
+            type: 'LinearGenomeView' as const,
+            hideHeader: true,
+            init: viewInit,
+          })),
+        )
       },
     }))
     .actions(self => ({
@@ -334,62 +335,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 return
               }
 
-              const session = getSession(self)
-              const { assemblyManager } = session
-
               try {
-                // Wait for all assemblies to be ready and get their regions
-                const assemblies = await Promise.all(
-                  init.views.map(async v => {
-                    const asm = await assemblyManager.waitForAssembly(v.assembly)
-                    if (!asm) {
-                      throw new Error(`Assembly ${v.assembly} failed to load`)
-                    }
-                    return asm
-                  }),
-                )
-
-                // Set up the views with displayed regions directly
-                self.setViews(
-                  assemblies.map(asm => ({
-                    type: 'LinearGenomeView' as const,
-                    bpPerPx: 1,
-                    offsetPx: 0,
-                    hideHeader: true,
-                    displayedRegions: asm.regions,
-                  })),
-                )
-
-                // Wait for child views to initialize
-                await Promise.all(
-                  self.views.map(view => when(() => view.initialized)),
-                )
-
-                // Navigate to locations and show tracks on child views
-                await Promise.all(
-                  init.views.map(async (viewInit, idx) => {
-                    const view = self.views[idx]
-                    if (!view) {
-                      return
-                    }
-                    if (viewInit.loc) {
-                      await view.navToLocString(viewInit.loc, viewInit.assembly)
-                    } else {
-                      view.showAllRegionsInAssembly(viewInit.assembly)
-                    }
-                    if (viewInit.tracks) {
-                      for (const trackId of viewInit.tracks) {
-                        view.showTrack(trackId)
-                      }
-                    }
-                  }),
-                )
+                // Set up the views with their init properties
+                // The child LinearGenomeViews will handle their own initialization
+                self.setViews(init.views)
 
                 // Clear init state
                 self.setInit(undefined)
               } catch (e) {
                 console.error(e)
-                session.notifyError(`${e}`, e)
+                getSession(self).notifyError(`${e}`, e)
                 self.setInit(undefined)
               }
             },

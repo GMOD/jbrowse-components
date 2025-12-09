@@ -19,7 +19,7 @@ export default function LaunchBreakpointSplitViewF(
         tracks?: string[]
       }[]
     }) => {
-      if (!views || views.length < 2) {
+      if (views.length < 2) {
         throw new Error(
           'BreakpointSplitView requires at least 2 views to be specified',
         )
