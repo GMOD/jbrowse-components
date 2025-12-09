@@ -39,9 +39,7 @@ const WiggleClusterDialog = lazy(
 // using a map because it preserves order
 const rendererTypes = new Map([
   ['xyplot', 'MultiXYPlotRenderer'],
-  ['xypoint', 'MultiXYPointRenderer'],
   ['multirowxy', 'MultiRowXYPlotRenderer'],
-  ['multirowxypoint', 'MultiRowXYPointRenderer'],
   ['multirowdensity', 'MultiDensityRenderer'],
   ['multiline', 'MultiLineRenderer'],
   ['multirowline', 'MultiRowLineRenderer'],
@@ -160,28 +158,6 @@ export function stateModelFactory(
         }
         return rendererType
       },
-      /**
-       * #getter
-       */
-      get isPointRenderer() {
-        return (
-          self.rendererTypeName === 'MultiXYPointRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPointRenderer'
-        )
-      },
-      /**
-       * #getter
-       */
-      get currentPointSize(): 'small' | 'medium' | 'large' {
-        const minSize = self.minSize ?? 0.7
-        if (minSize >= 4) {
-          return 'large'
-        }
-        if (minSize >= 2) {
-          return 'medium'
-        }
-        return 'small'
-      },
     }))
     .views(self => ({
       /**
@@ -190,9 +166,7 @@ export function stateModelFactory(
       get graphType() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiXYPointRenderer' ||
           self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPointRenderer' ||
           self.rendererTypeName === 'MultiLineRenderer' ||
           self.rendererTypeName === 'MultiRowLineRenderer'
         )
@@ -203,7 +177,6 @@ export function stateModelFactory(
       get needsFullHeightScalebar() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiXYPointRenderer' ||
           self.rendererTypeName === 'MultiLineRenderer'
         )
       },
@@ -213,9 +186,17 @@ export function stateModelFactory(
       get isMultiRow() {
         return (
           self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPointRenderer' ||
           self.rendererTypeName === 'MultiRowLineRenderer' ||
           self.rendererTypeName === 'MultiDensityRenderer'
+        )
+      },
+      /**
+       * #getter
+       */
+      get canHaveFill() {
+        return (
+          self.rendererTypeName === 'MultiXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowXYPlotRenderer'
         )
       },
       /**
@@ -236,8 +217,7 @@ export function stateModelFactory(
       get renderColorBoxes() {
         return !(
           self.rendererTypeName === 'MultiRowLineRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPointRenderer'
+          self.rendererTypeName === 'MultiRowXYPlotRenderer'
         )
       },
       /**
@@ -414,6 +394,18 @@ export function stateModelFactory(
         )
       },
       /**
+       * #getter
+       */
+      get fillSetting() {
+        if (self.filled) {
+          return 0
+        } else if (self.minSize === 1) {
+          return 1
+        } else {
+          return 2
+        }
+      },
+      /**
        * #method
        */
       renderProps() {
@@ -479,9 +471,7 @@ export function stateModelFactory(
                     label: 'Renderer type',
                     subMenu: [
                       'xyplot',
-                      'xypoint',
                       'multirowxy',
-                      'multirowxypoint',
                       'multirowdensity',
                       'multiline',
                       'multirowline',
@@ -508,21 +498,41 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-            ...(self.isPointRenderer
+            ...(self.canHaveFill
               ? [
                   {
-                    label: 'Point size',
-                    subMenu: (['small', 'medium', 'large'] as const).map(
-                      size => ({
-                        label: size.charAt(0).toUpperCase() + size.slice(1),
+                    label: 'Fill mode',
+                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
+                      (elt, idx) => ({
+                        label: elt,
                         type: 'radio',
-                        checked: self.currentPointSize === size,
+                        checked: self.fillSetting === idx,
                         onClick: () => {
-                          self.setPointSize(size)
+                          self.setFill(idx)
                         },
                       }),
                     ),
                   },
+                  // Show point size menu when in unfilled mode
+                  ...(!self.filled
+                    ? [
+                        {
+                          label: 'Point size',
+                          subMenu: [
+                            { label: 'Small', value: 0.7 },
+                            { label: 'Medium', value: 2 },
+                            { label: 'Large', value: 4 },
+                          ].map(({ label, value }) => ({
+                            label,
+                            type: 'radio',
+                            checked: self.minSize === value,
+                            onClick: () => {
+                              self.setPointSize(value)
+                            },
+                          })),
+                        },
+                      ]
+                    : []),
                 ]
               : []),
             {

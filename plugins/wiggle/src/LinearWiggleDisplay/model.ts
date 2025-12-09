@@ -247,6 +247,26 @@ function stateModelFactory(
                       }),
                     ),
                   },
+                  // Show point size menu when in unfilled mode
+                  ...(!self.filled
+                    ? [
+                        {
+                          label: 'Point size',
+                          subMenu: [
+                            { label: 'Small', value: 0.7 },
+                            { label: 'Medium', value: 2 },
+                            { label: 'Large', value: 4 },
+                          ].map(({ label, value }) => ({
+                            label,
+                            type: 'radio',
+                            checked: self.minSize === value,
+                            onClick: () => {
+                              self.setPointSize(value)
+                            },
+                          })),
+                        },
+                      ]
+                    : []),
                 ]
               : []),
 
