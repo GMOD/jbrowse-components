@@ -3,7 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
 
-import type { SerializedFeatPos } from './drawSyntenyWorker'
+import type { SerializedFeatPos } from './syntenyRendererWorker'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'

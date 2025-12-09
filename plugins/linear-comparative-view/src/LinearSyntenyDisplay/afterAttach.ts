@@ -6,7 +6,7 @@ import { autorun, reaction } from 'mobx'
 
 import { serializeFeatPos } from './model'
 
-import type { DrawSyntenyMessage } from './drawSyntenyWorker'
+import type { DrawSyntenyMessage } from './syntenyRendererWorker'
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import type { Feature } from '@jbrowse/core/util'

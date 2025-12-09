@@ -9,7 +9,7 @@ import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
 
-import type { DrawResultMessage } from '../drawSyntenyWorker'
+import type { DrawResultMessage } from '../syntenyRendererWorker'
 import type { ClickCoord } from './util'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
@@ -69,18 +69,24 @@ const LinearSyntenyRendering = observer(function ({
     [model, height, width],
   )
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const workerInitialized = useRef(false)
+
   const mainSyntenyCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
       mainSyntenyCanvasRefp.current = ref
 
-      // Set up worker and transfer offscreen canvas
-      if (ref && !model.worker && typeof OffscreenCanvas !== 'undefined') {
+      // Set up worker and transfer offscreen canvas - only once
+      if (
+        ref &&
+        !workerInitialized.current &&
+        typeof OffscreenCanvas !== 'undefined'
+      ) {
+        workerInitialized.current = true
         try {
           const offscreen = ref.transferControlToOffscreen()
           const worker = new Worker(
-            new URL('../drawSyntenyWorker', import.meta.url),
+            new URL('../syntenyRendererWorker', import.meta.url),
           )
 
           worker.onmessage = (e: MessageEvent<DrawResultMessage>) => {
@@ -120,21 +126,12 @@ const LinearSyntenyRendering = observer(function ({
           model.setOffscreenCanvas(offscreen)
         } catch (e) {
           console.error('Failed to set up offscreen canvas worker:', e)
+          workerInitialized.current = false
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
+    [model],
   )
-  // Cleanup worker on unmount
-  useEffect(() => {
-    return () => {
-      if (model.worker) {
-        model.worker.terminate()
-        model.setWorker(null)
-      }
-    }
-  }, [model])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
