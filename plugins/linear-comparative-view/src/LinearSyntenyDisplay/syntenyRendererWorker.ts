@@ -96,13 +96,10 @@ export interface DrawResultMessage {
   cigarClickMapBitmap: ImageBitmap
 }
 
-export interface StatusMessage {
-  type: 'status'
-  message: string
-}
-
 let mainCanvas: OffscreenCanvas | null = null
 let cachedFeatPositions: SerializedFeatPos[] = []
+let pendingDrawMessage: DrawSyntenyMessage | null = null
+let rafId: number | null = null
 
 function makeColor(idx: number) {
   const r = Math.floor(idx / (255 * 255)) % 255
@@ -814,6 +811,69 @@ function drawRefImpl(
   }
 }
 
+function performDraw() {
+  rafId = null
+  const msg = pendingDrawMessage
+  pendingDrawMessage = null
+
+  if (!msg || !mainCanvas || cachedFeatPositions.length === 0) {
+    return
+  }
+
+  const mainCtx = mainCanvas.getContext('2d')
+  if (!mainCtx) {
+    return
+  }
+
+  // Resize main canvas if needed - this clears the canvas!
+  if (mainCanvas.width !== msg.width || mainCanvas.height !== msg.height) {
+    mainCanvas.width = msg.width
+    mainCanvas.height = msg.height
+  }
+
+  // Create temporary offscreen canvases for click maps
+  const clickMapCanvas = new OffscreenCanvas(msg.width, msg.height)
+  const cigarClickMapCanvas = new OffscreenCanvas(msg.width, msg.height)
+  const clickMapCtx = clickMapCanvas.getContext('2d')
+  const cigarClickMapCtx = cigarClickMapCanvas.getContext('2d')
+
+  if (!clickMapCtx || !cigarClickMapCtx) {
+    return
+  }
+
+  // Combine message with cached features
+  const drawParams: DrawParams = {
+    ...msg,
+    featPositions: cachedFeatPositions,
+  }
+
+  try {
+    // Draw directly to main canvas - we have full control via transferControlToOffscreen
+    drawRefImpl(drawParams, mainCtx, clickMapCtx)
+    checkStopToken(msg.stopToken)
+    // drawCigarClickMapImpl(drawParams, cigarClickMapCtx)
+    // checkStopToken(msg.stopToken)
+
+    // Transfer click map bitmaps back to main thread
+    const clickMapBitmap = clickMapCanvas.transferToImageBitmap()
+    const cigarClickMapBitmap = cigarClickMapCanvas.transferToImageBitmap()
+
+    const result: DrawResultMessage = {
+      type: 'done',
+      clickMapBitmap,
+      cigarClickMapBitmap,
+    }
+
+    self.postMessage(result, [clickMapBitmap, cigarClickMapBitmap])
+  } catch (e) {
+    // Aborted - don't send result
+    if (e instanceof Error && e.message === 'aborted') {
+      return
+    }
+    throw e
+  }
+}
+
 self.onmessage = (e: MessageEvent<WorkerMessage>) => {
   const msg = e.data
 
@@ -821,66 +881,12 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
     mainCanvas = msg.canvas
   } else if (msg.type === 'updateFeatures') {
     cachedFeatPositions = msg.featPositions
-    self.postMessage({
-      type: 'status',
-      message: `Received ${cachedFeatPositions.length.toLocaleString()} synteny features`,
-    })
   } else if (msg.type === 'draw') {
-    if (!mainCanvas || cachedFeatPositions.length === 0) {
-      return
-    }
-
-    const mainCtx = mainCanvas.getContext('2d')
-    if (!mainCtx) {
-      return
-    }
-
-    // Resize main canvas if needed - this clears the canvas!
-    if (mainCanvas.width !== msg.width || mainCanvas.height !== msg.height) {
-      mainCanvas.width = msg.width
-      mainCanvas.height = msg.height
-    }
-
-    // Create temporary offscreen canvases for click maps
-    const clickMapCanvas = new OffscreenCanvas(msg.width, msg.height)
-    const cigarClickMapCanvas = new OffscreenCanvas(msg.width, msg.height)
-    const clickMapCtx = clickMapCanvas.getContext('2d')
-    const cigarClickMapCtx = cigarClickMapCanvas.getContext('2d')
-
-    if (!clickMapCtx || !cigarClickMapCtx) {
-      return
-    }
-
-    // Combine message with cached features
-    const drawParams: DrawParams = {
-      ...msg,
-      featPositions: cachedFeatPositions,
-    }
-
-    try {
-      // Draw directly to main canvas - we have full control via transferControlToOffscreen
-      drawRefImpl(drawParams, mainCtx, clickMapCtx)
-      checkStopToken(msg.stopToken)
-      // drawCigarClickMapImpl(drawParams, cigarClickMapCtx)
-      // checkStopToken(msg.stopToken)
-
-      // Transfer click map bitmaps back to main thread
-      const clickMapBitmap = clickMapCanvas.transferToImageBitmap()
-      const cigarClickMapBitmap = cigarClickMapCanvas.transferToImageBitmap()
-
-      const result: DrawResultMessage = {
-        type: 'done',
-        clickMapBitmap,
-        cigarClickMapBitmap,
-      }
-
-      self.postMessage(result, [clickMapBitmap, cigarClickMapBitmap])
-    } catch (e) {
-      // Aborted - don't send result
-      if (e instanceof Error && e.message === 'aborted') {
-        return
-      }
-      throw e
+    // Store the latest draw message and schedule a draw on the next animation frame
+    // This coalesces multiple draw requests and syncs with the display refresh
+    pendingDrawMessage = msg
+    if (rafId === null) {
+      rafId = requestAnimationFrame(performDraw)
     }
   }
 }

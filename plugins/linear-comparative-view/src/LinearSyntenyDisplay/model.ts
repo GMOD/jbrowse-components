@@ -156,15 +156,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #volatile
-       * stop token for cancelling worker rendering
+       * whether the worker is currently rendering (for loading overlay)
        */
-      stopToken: undefined as string | undefined,
-
-      /**
-       * #volatile
-       * status message for worker rendering
-       */
-      workerStatus: undefined as string | undefined,
+      isRendering: false,
     }))
     .actions(self => ({
       /**
@@ -260,14 +254,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setStopToken(token: string | undefined) {
-        self.stopToken = token
-      },
-      /**
-       * #action
-       */
-      setWorkerStatus(status: string | undefined) {
-        self.workerStatus = status
+      setIsRendering(value: boolean) {
+        self.isRendering = value
       },
     }))
 

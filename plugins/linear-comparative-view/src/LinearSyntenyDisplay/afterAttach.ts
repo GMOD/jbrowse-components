@@ -1,9 +1,8 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { autorun, reaction, untracked } from 'mobx'
+import { autorun, reaction } from 'mobx'
 
 import { serializeFeatPos } from './model'
 

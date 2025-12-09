@@ -1,5 +1,6 @@
 import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
@@ -9,7 +10,7 @@ import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
 
-import type { DrawResultMessage, StatusMessage } from '../syntenyRendererWorker'
+import type { DrawResultMessage } from '../syntenyRendererWorker'
 import type { ClickCoord } from './util'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
@@ -34,6 +35,21 @@ const useStyles = makeStyles()({
   },
   mainCanvas: {
     position: 'absolute',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundImage:
+      'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.05) 8px, rgba(0, 0, 0, 0.05) 16px)',
+    pointerEvents: 'none',
+    zIndex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })
 
@@ -89,13 +105,17 @@ const LinearSyntenyRendering = observer(function ({
             new URL('../syntenyRendererWorker', import.meta.url),
           )
 
-          worker.onmessage = (
-            e: MessageEvent<DrawResultMessage | StatusMessage>,
-          ) => {
-            if (e.data.type === 'status') {
-              model.setWorkerStatus(e.data.message)
-            } else if (e.data.type === 'done') {
-              model.setWorkerStatus(undefined)
+          let renderingTimeout: ReturnType<typeof setTimeout> | undefined
+
+          worker.onmessage = (e: MessageEvent<DrawResultMessage>) => {
+            if (e.data.type === 'done') {
+              // Clear the loading overlay timeout and hide overlay
+              if (renderingTimeout) {
+                clearTimeout(renderingTimeout)
+                renderingTimeout = undefined
+              }
+              model.setIsRendering(false)
+
               // Draw the click map bitmaps onto the main thread canvases
               const clickMapCtx = model.clickMapCanvas?.getContext('2d')
               const cigarClickMapCtx =
@@ -122,6 +142,31 @@ const LinearSyntenyRendering = observer(function ({
                 cigarClickMapCtx.drawImage(e.data.cigarClickMapBitmap, 0, 0)
                 e.data.cigarClickMapBitmap.close()
               }
+            }
+          }
+
+          // Intercept postMessage to track when rendering starts
+          const originalPostMessage = worker.postMessage.bind(worker)
+          worker.postMessage = (message: unknown, transfer?: Transferable[]) => {
+            if (
+              typeof message === 'object' &&
+              message !== null &&
+              'type' in message &&
+              message.type === 'draw'
+            ) {
+              // Clear any existing timeout
+              if (renderingTimeout) {
+                clearTimeout(renderingTimeout)
+              }
+              // Show loading overlay after 50ms if rendering hasn't completed
+              renderingTimeout = setTimeout(() => {
+                model.setIsRendering(true)
+              }, 50)
+            }
+            if (transfer) {
+              originalPostMessage(message, transfer)
+            } else {
+              originalPostMessage(message)
             }
           }
 
@@ -209,7 +254,7 @@ const LinearSyntenyRendering = observer(function ({
   )
 
   return (
-    <div className={classes.rel}>
+    <div className={classes.rel} style={{ width, height }}>
       <canvas
         ref={mouseoverDetectionCanvasRef}
         width={width}
@@ -317,6 +362,11 @@ const LinearSyntenyRendering = observer(function ({
         width={width}
         height={height}
       />
+      {model.isRendering ? (
+        <div className={classes.loadingOverlay}>
+          <LoadingEllipses message="Rendering" />
+        </div>
+      ) : null}
       {mouseoverId && tooltip && currX && currY ? (
         <SyntenyTooltip title={tooltip} />
       ) : null}
