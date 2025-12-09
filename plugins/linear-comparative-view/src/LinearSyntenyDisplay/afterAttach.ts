@@ -7,11 +7,11 @@ import { autorun, reaction, untracked } from 'mobx'
 
 import { serializeFeatPos } from './model'
 
+import type { LinearSyntenyDisplayModel } from './model'
 import type {
   DrawSyntenyMessage,
   UpdateFeaturesMessage,
 } from './syntenyRendererWorker'
-import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import type { Feature } from '@jbrowse/core/util'
 

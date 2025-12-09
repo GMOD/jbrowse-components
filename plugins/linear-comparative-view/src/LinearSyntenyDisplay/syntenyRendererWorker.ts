@@ -365,7 +365,7 @@ function drawCigarClickMapImpl(
   const bpPerPxInv0 = 1 / bpPerPxs[level]!
   const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
-  for (let i = 0; i < featPositions.length; i++) {
+  for (let i = 0, l = featPositions.length; i < l; i++) {
     // Check stop token every 100 features
     if (i % 100 === 0) {
       checkStopToken(msg.stopToken)
@@ -539,7 +539,7 @@ function drawRefImpl(
     { x11: number; x21: number; y1: number; y2: number; mid: number }[]
   >()
 
-  for (let i = 0; i < featPositions.length; i++) {
+  for (let i = 0, l = featPositions.length; i < l; i++) {
     // Check stop token every 100 features
     if (i % 100 === 0) {
       checkStopToken(msg.stopToken)
@@ -619,7 +619,7 @@ function drawRefImpl(
   mainCtx.fillStyle = colorMapWithAlpha.M
   mainCtx.strokeStyle = colorMapWithAlpha.M
 
-  for (let i = 0; i < featPositions.length; i++) {
+  for (let i = 0, l = featPositions.length; i < l; i++) {
     // Check stop token every 100 features
     if (i % 100 === 0) {
       checkStopToken(msg.stopToken)
@@ -778,7 +778,7 @@ function drawRefImpl(
   clickMapCtx.imageSmoothingEnabled = false
   clickMapCtx.clearRect(0, 0, width, height)
 
-  for (let i = 0; i < featPositions.length; i++) {
+  for (let i = 0, l = featPositions.length; i < l; i++) {
     // Check stop token every 100 features
     if (i % 100 === 0) {
       checkStopToken(msg.stopToken)
@@ -798,7 +798,9 @@ function drawRefImpl(
     clickMapCtx.fillStyle = makeColor(idx)
 
     drawMatchSimple({
-      cb: ctx => ctx.fill(),
+      cb: ctx => {
+        ctx.fill()
+      },
       feature,
       ctx: clickMapCtx,
       drawCurves,
@@ -835,18 +837,9 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 
     // Resize main canvas if needed - this clears the canvas!
     if (mainCanvas.width !== msg.width || mainCanvas.height !== msg.height) {
-      console.log('worker: RESIZING canvas', {
-        from: { w: mainCanvas.width, h: mainCanvas.height },
-        to: { w: msg.width, h: msg.height },
-      })
       mainCanvas.width = msg.width
       mainCanvas.height = msg.height
     }
-
-    // Use double buffering: draw to a temporary canvas first, then copy to main canvas
-    // This prevents the flash of blank canvas while drawing
-    const bufferCanvas = new OffscreenCanvas(msg.width, msg.height)
-    const bufferCtx = bufferCanvas.getContext('2d')
 
     // Create temporary offscreen canvases for click maps
     const clickMapCanvas = new OffscreenCanvas(msg.width, msg.height)
@@ -854,7 +847,7 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
     const clickMapCtx = clickMapCanvas.getContext('2d')
     const cigarClickMapCtx = cigarClickMapCanvas.getContext('2d')
 
-    if (!bufferCtx || !clickMapCtx || !cigarClickMapCtx) {
+    if (!clickMapCtx || !cigarClickMapCtx) {
       return
     }
 
@@ -865,14 +858,11 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
     }
 
     try {
-      // Draw to buffer canvas instead of main canvas
-      drawRefImpl(drawParams, bufferCtx, clickMapCtx)
+      // Draw directly to main canvas - we have full control via transferControlToOffscreen
+      drawRefImpl(drawParams, mainCtx, clickMapCtx)
       checkStopToken(msg.stopToken)
       // drawCigarClickMapImpl(drawParams, cigarClickMapCtx)
       // checkStopToken(msg.stopToken)
-
-      // Copy buffer to main canvas
-      mainCtx.drawImage(bufferCanvas, 0, 0)
 
       // Transfer click map bitmaps back to main thread
       const clickMapBitmap = clickMapCanvas.transferToImageBitmap()

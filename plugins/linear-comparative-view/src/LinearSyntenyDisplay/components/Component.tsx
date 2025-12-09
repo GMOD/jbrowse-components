@@ -22,10 +22,12 @@ const ServerSideRenderedBlockContent = observer(function ({
         message={model.loadingStatus || 'Loading synteny features'}
       />
     )
-  } else if (!model.worker || model.featPositions.length === 0) {
+  } else if (!model.worker) {
+    return <LoadingMessage message="Initializing worker" />
+  } else if (model.featPositions.length === 0) {
     return (
       <LoadingMessage
-        message={model.workerStatus || 'Initializing renderer'}
+        message={model.workerStatus || 'Calculating feature positions'}
       />
     )
   } else {

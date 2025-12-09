@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 // This file is a ponyfill for the HTML5 OffscreenCanvas API.
 
 import { CanvasSequence } from 'canvas-sequencer-ts'
@@ -49,7 +48,9 @@ export async function createImageBitmap(canvas: any) {
     // @ts-expect-error
     const img = new nodeImage()
     return new Promise((resolve, reject) => {
-      img.onload = () => resolve(img)
+      img.onload = () => {
+        resolve(img)
+      }
       img.onerror = reject
       img.src = dataUri
     })
