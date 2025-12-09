@@ -501,38 +501,37 @@ export function stateModelFactory(
             ...(self.canHaveFill
               ? [
                   {
-                    label: 'Fill mode',
-                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
-                      (elt, idx) => ({
-                        label: elt,
-                        type: 'radio',
-                        checked: self.fillSetting === idx,
-                        onClick: () => {
-                          self.setFill(idx)
-                        },
-                      }),
-                    ),
+                    label: 'Display mode',
+                    subMenu: [
+                      { label: 'Filled', value: { fill: true } },
+                      {
+                        label: 'Point (small)',
+                        value: { fill: false, minSize: 0.7 },
+                      },
+                      {
+                        label: 'Point (medium)',
+                        value: { fill: false, minSize: 2 },
+                      },
+                      {
+                        label: 'Point (large)',
+                        value: { fill: false, minSize: 4 },
+                      },
+                    ].map(({ label, value }) => ({
+                      label,
+                      type: 'radio',
+                      checked: value.fill
+                        ? self.filled
+                        : !self.filled && self.minSize === value.minSize,
+                      onClick: () => {
+                        if (value.fill) {
+                          self.setFill(0)
+                        } else {
+                          self.setFill(1)
+                          self.setPointSize(value.minSize!)
+                        }
+                      },
+                    })),
                   },
-                  // Show point size menu when in unfilled mode
-                  ...(!self.filled
-                    ? [
-                        {
-                          label: 'Point size',
-                          subMenu: [
-                            { label: 'Small', value: 0.7 },
-                            { label: 'Medium', value: 2 },
-                            { label: 'Large', value: 4 },
-                          ].map(({ label, value }) => ({
-                            label,
-                            type: 'radio',
-                            checked: self.minSize === value,
-                            onClick: () => {
-                              self.setPointSize(value)
-                            },
-                          })),
-                        },
-                      ]
-                    : []),
                 ]
               : []),
             {
