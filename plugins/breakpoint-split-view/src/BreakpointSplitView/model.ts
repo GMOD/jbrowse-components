@@ -303,7 +303,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       setInit(init?: BreakpointSplitViewInit) {
         self.init = init
       },
-
     }))
     .actions(self => ({
       afterAttach() {

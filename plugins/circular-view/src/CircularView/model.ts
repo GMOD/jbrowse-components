@@ -15,9 +15,9 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import { autorun } from 'mobx'
 
 import { calculateStaticSlices, sliceIsVisible } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
