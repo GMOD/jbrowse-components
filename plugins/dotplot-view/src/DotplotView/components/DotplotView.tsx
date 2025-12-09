@@ -215,7 +215,7 @@ const DotplotViewInternal = observer(function ({
 const DotplotView = observer(function ({ model }: { model: DotplotViewModel }) {
   const { initialized, showLoading, error, loadingMessage } = model
 
-  if (showLoading && !error) {
+  if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
   } else if (!initialized || error) {
     return <ImportForm model={model} />

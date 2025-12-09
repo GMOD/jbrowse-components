@@ -279,7 +279,12 @@ export default function stateModelFactory(pm: PluginManager) {
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
-        return self.assemblyNames.length > 0 && !this.initialized
+        return (
+          self.assemblyNames.length > 0 &&
+          !this.initialized &&
+          !self.volatileError &&
+          !self.assemblyErrors
+        )
       },
 
       /**

@@ -365,6 +365,19 @@ function stateModelFactory(pluginManager: PluginManager) {
           self.displayedRegions.length > 0
         )
       },
+
+      /**
+       * #getter
+       * Whether the view is fully initialized and ready to display
+       */
+      get showView() {
+        return (
+          !!self.displayedRegions.length &&
+          !!this.figureWidth &&
+          !!this.figureHeight &&
+          this.initialized
+        )
+      },
     }))
     .views(self => ({
       /**

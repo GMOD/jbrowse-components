@@ -49,25 +49,14 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
 })
 
 const CircularView = observer(({ model }: { model: CircularViewModel }) => {
-  const {
-    displayedRegions,
-    figureWidth,
-    figureHeight,
-    initialized,
-    disableImportForm,
-    error,
-    showLoading,
-    loadingMessage,
-  } = model
-
-  const fullyInitialized =
-    !!displayedRegions.length && !!figureWidth && !!figureHeight && initialized
+  const { disableImportForm, error, showLoading, showView, loadingMessage } =
+    model
 
   if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
-  } else if ((!fullyInitialized && !disableImportForm) || error) {
+  } else if ((!showView && !disableImportForm) || error) {
     return <ImportForm model={model} />
-  } else if (fullyInitialized) {
+  } else if (showView) {
     return <CircularViewLoaded model={model} />
   } else {
     return null
