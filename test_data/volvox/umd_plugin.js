@@ -8,6 +8,43 @@
 
     install(pluginManager) {
       const React = pluginManager.jbrequire('react')
+      const { GlyphType } = pluginManager.jbrequire(
+        '@jbrowse/core/pluggableElementTypes',
+      )
+
+      // Example pluggable glyph: draws SNV features as purple diamonds
+      pluginManager.addGlyphType(
+        () =>
+          new GlyphType({
+            name: 'SNVGlyph',
+            displayName: 'SNV Diamond',
+            draw: ctx => {
+              const { ctx: context, featureLayout } = ctx
+              const { x, y, width, height } = featureLayout
+
+              const centerX = x + width / 2
+              const centerY = y + height / 2
+              const halfWidth = Math.max(width / 2, 4)
+              const halfHeight = height / 2
+
+              // Purple diamond fill
+              context.fillStyle = '#800080'
+              context.beginPath()
+              context.moveTo(centerX, centerY - halfHeight) // top
+              context.lineTo(centerX + halfWidth, centerY) // right
+              context.lineTo(centerX, centerY + halfHeight) // bottom
+              context.lineTo(centerX - halfWidth, centerY) // left
+              context.closePath()
+              context.fill()
+
+              // Indigo stroke
+              context.strokeStyle = '#4B0082'
+              context.lineWidth = 1
+              context.stroke()
+            },
+            match: feature => feature.get('type') === 'SNV',
+          }),
+      )
 
       pluginManager.addToExtensionPoint(
         'Core-handleUnrecognizedAssembly',
