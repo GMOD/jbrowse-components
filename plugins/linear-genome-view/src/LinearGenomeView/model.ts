@@ -477,6 +477,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * Returns a message describing what is currently loading, or undefined if
+       * not loading
+       */
+      get loadingMessage() {
+        if (self.volatileWidth === undefined) {
+          return 'Measuring view size'
+        }
+        if (!this.assembliesInitialized) {
+          const { assemblyManager } = getSession(self)
+          const loading = self.assemblyNames.filter(
+            a => !assemblyManager.get(a)?.initialized,
+          )
+          return loading.length > 0
+            ? `Loading assembl${loading.length > 1 ? 'ies' : 'y'} ${loading.join(', ')}`
+            : 'Loading assemblies'
+        }
+        if (self.init) {
+          return 'Navigating to location'
+        }
+        return undefined
+      },
+
+      /**
+       * #getter
        */
       get scalebarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT

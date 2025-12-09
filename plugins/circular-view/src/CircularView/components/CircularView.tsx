@@ -1,4 +1,4 @@
-import { ResizeHandle } from '@jbrowse/core/ui'
+import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -49,20 +49,30 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
 })
 
 const CircularView = observer(({ model }: { model: CircularViewModel }) => {
-  const initialized =
-    !!model.displayedRegions.length &&
-    !!model.figureWidth &&
-    !!model.figureHeight &&
-    model.initialized
+  const {
+    displayedRegions,
+    figureWidth,
+    figureHeight,
+    initialized,
+    disableImportForm,
+    error,
+    loadingMessage,
+  } = model
 
-  const showImportForm = !initialized && !model.disableImportForm
-  const showFigure = initialized && !showImportForm
+  const fullyInitialized =
+    !!displayedRegions.length && !!figureWidth && !!figureHeight && initialized
 
-  return showImportForm || model.error ? (
-    <ImportForm model={model} />
-  ) : showFigure ? (
-    <CircularViewLoaded model={model} />
-  ) : null
+  // Show loading if regions exist but not yet initialized (e.g., share link
+  // waiting for assemblies to load)
+  if (!initialized && !error && displayedRegions.length > 0) {
+    return <LoadingEllipses variant="h6" message={loadingMessage} />
+  } else if ((!fullyInitialized && !disableImportForm) || error) {
+    return <ImportForm model={model} />
+  } else if (fullyInitialized) {
+    return <CircularViewLoaded model={model} />
+  } else {
+    return null
+  }
 })
 
 const CircularViewLoaded = observer(function ({

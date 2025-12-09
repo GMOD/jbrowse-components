@@ -126,6 +126,28 @@ function stateModelFactory(pluginManager: PluginManager) {
       get assemblyNames() {
         return [...new Set(self.views.flatMap(v => v.assemblyNames))]
       },
+
+      /**
+       * #getter
+       * Returns a message describing what is currently loading, or undefined if
+       * not loading
+       */
+      get loadingMessage() {
+        if (self.width === undefined) {
+          return 'Measuring view size'
+        }
+        if (self.views.length === 0) {
+          return undefined
+        }
+        const loadingViews = self.views
+          .map((view, idx) => (view.loadingMessage ? idx + 1 : undefined))
+          .filter((x): x is number => x !== undefined)
+        if (loadingViews.length > 0) {
+          const viewMsg = self.views.find(v => v.loadingMessage)?.loadingMessage
+          return `Row ${loadingViews.join(', ')}: ${viewMsg}`
+        }
+        return undefined
+      },
     }))
     .actions(self => ({
       afterAttach() {

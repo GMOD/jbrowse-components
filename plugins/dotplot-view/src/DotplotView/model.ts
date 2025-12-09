@@ -280,6 +280,34 @@ export default function stateModelFactory(pm: PluginManager) {
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },
+
+      /**
+       * #getter
+       * Returns a message describing what is currently loading, or undefined if
+       * not loading
+       */
+      get loadingMessage() {
+        if (self.volatileWidth === undefined) {
+          return 'Measuring view size'
+        }
+        if (!self.assembliesInitialized) {
+          const { assemblyManager } = getSession(self)
+          const loading = self.assemblyNames.filter(
+            a => !assemblyManager.get(a)?.initialized,
+          )
+          return loading.length > 0
+            ? `Loading assembl${loading.length > 1 ? 'ies' : 'y'} ${loading.join(', ')}`
+            : 'Loading assemblies'
+        }
+        if (
+          self.hview.displayedRegions.length === 0 ||
+          self.vview.displayedRegions.length === 0
+        ) {
+          return 'Loading view regions'
+        }
+        return undefined
+      },
+
       /**
        * #getter
        */

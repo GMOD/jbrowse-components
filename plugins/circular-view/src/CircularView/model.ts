@@ -338,6 +338,25 @@ function stateModelFactory(pluginManager: PluginManager) {
           this.assemblyNames.every(a => assemblyManager.get(a)?.initialized)
         )
       },
+
+      /**
+       * #getter
+       * Returns a message describing what is currently loading, or undefined if
+       * not loading
+       */
+      get loadingMessage() {
+        if (self.volatileWidth === undefined) {
+          return 'Measuring view size'
+        }
+        const { assemblyManager } = getSession(self)
+        const loading = this.assemblyNames.filter(
+          a => !assemblyManager.get(a)?.initialized,
+        )
+        if (loading.length > 0) {
+          return `Loading assembl${loading.length > 1 ? 'ies' : 'y'} ${loading.join(', ')}`
+        }
+        return undefined
+      },
     }))
     .views(self => ({
       /**
