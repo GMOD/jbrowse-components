@@ -4,28 +4,12 @@
 import { CanvasSequence } from 'canvas-sequencer-ts'
 import isNode from 'detect-node'
 
-type AbstractCanvas = any
+// Re-export transferable utilities for convenience
+export { collectTransferables, isDetachedBuffer } from './transferables'
 
-type AbstractImageBitmap = any
-
-export let createCanvas: (width: number, height: number) => AbstractCanvas
-export let createImageBitmap: (
-  canvas: AbstractCanvas,
-) => Promise<AbstractImageBitmap>
-
-/** the JS class (constructor) for offscreen-generated image bitmap data */
-export let ImageBitmapType: unknown
-
-/**
- * Safely check if a value is an ImageBitmap.
- * Works in both browser and Node.js environments.
- */
 export function isImageBitmap(value: unknown): value is ImageBitmap {
   return typeof ImageBitmap !== 'undefined' && value instanceof ImageBitmap
 }
-
-// Re-export transferable utilities for convenience
-export { collectTransferables, isDetachedBuffer } from './transferables'
 
 export function drawImageOntoCanvasContext(
   imageData: any,
@@ -39,42 +23,13 @@ export function drawImageOntoCanvasContext(
   }
 }
 
-const weHave = {
-  realOffscreenCanvas: typeof OffscreenCanvas === 'function',
-  node: isNode,
-}
-
-if (weHave.realOffscreenCanvas) {
-  createCanvas = (width, height) => new OffscreenCanvas(width, height)
-
-  // Use transferToImageBitmap for zero-copy transfer from OffscreenCanvas
-  // This is synchronous and more efficient than createImageBitmap which copies
-  createImageBitmap = canvas =>
-    Promise.resolve((canvas as OffscreenCanvas).transferToImageBitmap())
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  ImageBitmapType = window.ImageBitmap || self.ImageBitmap
-} else if (weHave.node) {
-  // use node-canvas if we are running in node (i.e. automated tests)
-  createCanvas = (...args) => {
+export function createCanvas(width: number, height: number) {
+  if (typeof OffscreenCanvas === 'function') {
+    return new OffscreenCanvas(width, height)
+  } else if (isNode) {
     // @ts-expect-error
-    return nodeCreateCanvas(...args)
-  }
-  createImageBitmap = async canvas => {
-    const dataUri = canvas.toDataURL()
-    // @ts-expect-error
-    const img = new nodeImage()
-    return new Promise((resolve, reject) => {
-      // need onload for jest
-      img.onload = () => {
-        resolve(img)
-      }
-      img.onerror = reject
-      img.src = dataUri
-    })
-  }
-} else {
-  createCanvas = (width: number, height: number) => {
+    return nodeCreateCanvas(width, height)
+  } else {
     const context = new CanvasSequence()
     return {
       width,
@@ -84,7 +39,21 @@ if (weHave.realOffscreenCanvas) {
       },
     }
   }
-  createImageBitmap = async canvas => {
+}
+
+export async function createImageBitmap(canvas: any) {
+  if (typeof OffscreenCanvas === 'function') {
+    return (canvas as OffscreenCanvas).transferToImageBitmap()
+  } else if (isNode) {
+    const dataUri = canvas.toDataURL()
+    // @ts-expect-error
+    const img = new nodeImage()
+    return new Promise((resolve, reject) => {
+      img.onload = () => resolve(img)
+      img.onerror = reject
+      img.src = dataUri
+    })
+  } else {
     const ctx = canvas.getContext('2d')
     return {
       height: canvas.height,
@@ -92,5 +61,4 @@ if (weHave.realOffscreenCanvas) {
       serializedCommands: ctx.toJSON(),
     }
   }
-  ImageBitmapType = String
 }
