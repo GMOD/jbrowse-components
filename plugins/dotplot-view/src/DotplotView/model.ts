@@ -276,8 +276,9 @@ export default function stateModelFactory(pm: PluginManager) {
       },
       /**
        * #getter
+       * Whether to show a loading indicator instead of the import form or view
        */
-      get loading() {
+      get showLoading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },
 
@@ -291,13 +292,7 @@ export default function stateModelFactory(pm: PluginManager) {
           return 'Measuring view size'
         }
         if (!self.assembliesInitialized) {
-          const { assemblyManager } = getSession(self)
-          const loading = self.assemblyNames.filter(
-            a => !assemblyManager.get(a)?.initialized,
-          )
-          return loading.length > 0
-            ? `Loading assembl${loading.length > 1 ? 'ies' : 'y'} ${loading.join(', ')}`
-            : 'Loading assemblies'
+          return 'Loading assemblies'
         }
         if (
           self.hview.displayedRegions.length === 0 ||

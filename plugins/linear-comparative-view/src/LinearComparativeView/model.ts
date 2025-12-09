@@ -133,9 +133,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        * not loading
        */
       get loadingMessage() {
-        if (self.width === undefined) {
-          return 'Measuring view size'
-        }
         if (self.views.length === 0) {
           return undefined
         }
@@ -147,6 +144,14 @@ function stateModelFactory(pluginManager: PluginManager) {
           return `Row ${loadingViews.join(', ')}: ${viewMsg}`
         }
         return undefined
+      },
+
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return !this.initialized && self.views.length > 0
       },
     }))
     .actions(self => ({

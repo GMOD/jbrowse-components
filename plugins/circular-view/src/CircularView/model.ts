@@ -348,14 +348,22 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (self.volatileWidth === undefined) {
           return 'Measuring view size'
         }
-        const { assemblyManager } = getSession(self)
-        const loading = this.assemblyNames.filter(
-          a => !assemblyManager.get(a)?.initialized,
-        )
-        if (loading.length > 0) {
-          return `Loading assembl${loading.length > 1 ? 'ies' : 'y'} ${loading.join(', ')}`
+        if (!this.initialized) {
+          return 'Loading assemblies'
         }
         return undefined
+      },
+
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return (
+          !this.initialized &&
+          !self.error &&
+          self.displayedRegions.length > 0
+        )
       },
     }))
     .views(self => ({

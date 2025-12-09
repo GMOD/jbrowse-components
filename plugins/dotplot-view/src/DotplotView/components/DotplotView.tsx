@@ -213,11 +213,9 @@ const DotplotViewInternal = observer(function ({
   )
 })
 const DotplotView = observer(function ({ model }: { model: DotplotViewModel }) {
-  const { initialized, loading, error, loadingMessage } = model
+  const { initialized, showLoading, error, loadingMessage } = model
 
-  // Show loading if assemblies are set but not yet initialized (e.g., share
-  // link waiting for assemblies to load)
-  if (loading && !error) {
+  if (showLoading && !error) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
   } else if (!initialized || error) {
     return <ImportForm model={model} />

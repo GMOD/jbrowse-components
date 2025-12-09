@@ -15,14 +15,9 @@ const LinearGenomeView = observer(function ({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { error, init, initialized, hasDisplayedRegions, loadingMessage } =
-    model
+  const { showLoading, hasDisplayedRegions, error, loadingMessage } = model
 
-  // Show loading if no error and either:
-  // 1. Regions exist but not yet initialized (e.g., share link waiting for
-  //    assemblies to load)
-  // 2. init is set (waiting for autorun to navigate, will populate regions)
-  if (!error && ((!initialized && hasDisplayedRegions) || init)) {
+  if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
   } else if (!hasDisplayedRegions || error) {
     return <ImportForm model={model} />

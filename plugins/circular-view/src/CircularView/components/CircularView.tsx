@@ -56,15 +56,14 @@ const CircularView = observer(({ model }: { model: CircularViewModel }) => {
     initialized,
     disableImportForm,
     error,
+    showLoading,
     loadingMessage,
   } = model
 
   const fullyInitialized =
     !!displayedRegions.length && !!figureWidth && !!figureHeight && initialized
 
-  // Show loading if regions exist but not yet initialized (e.g., share link
-  // waiting for assemblies to load)
-  if (!initialized && !error && displayedRegions.length > 0) {
+  if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
   } else if ((!fullyInitialized && !disableImportForm) || error) {
     return <ImportForm model={model} />
