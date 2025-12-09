@@ -76,15 +76,7 @@ export interface DrawSyntenyMessage {
   stopToken?: string
 }
 
-export interface InitCanvasMessage {
-  type: 'init'
-  canvas: OffscreenCanvas
-}
-
-export type WorkerMessage =
-  | DrawSyntenyMessage
-  | InitCanvasMessage
-  | UpdateFeaturesMessage
+export type WorkerMessage = DrawSyntenyMessage | UpdateFeaturesMessage
 
 interface DrawParams extends Omit<DrawSyntenyMessage, 'type'> {
   featPositions: SerializedFeatPos[]
@@ -92,11 +84,11 @@ interface DrawParams extends Omit<DrawSyntenyMessage, 'type'> {
 
 export interface DrawResultMessage {
   type: 'done'
+  mainBitmap: ImageBitmap
   clickMapBitmap: ImageBitmap
   cigarClickMapBitmap: ImageBitmap
 }
 
-let mainCanvas: OffscreenCanvas | null = null
 let cachedFeatPositions: SerializedFeatPos[] = []
 let pendingDrawMessage: DrawSyntenyMessage | null = null
 let rafId: number | null = null
@@ -340,6 +332,7 @@ function drawMatchSimple({
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function drawCigarClickMapImpl(
   msg: DrawParams,
   ctx: OffscreenCanvasRenderingContext2D,
@@ -363,10 +356,10 @@ function drawCigarClickMapImpl(
   const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
   for (let i = 0, l = featPositions.length; i < l; i++) {
-    // Check stop token every 100 features
-    if (i % 100 === 0) {
-      checkStopToken(msg.stopToken)
-    }
+    // // Check stop token every 100 features
+    // if (i % 100 === 0) {
+    //   checkStopToken(msg.stopToken)
+    // }
 
     const { p11, p12, p21, p22, strand, cigar } = featPositions[i]!
     const x11 = p11.offsetPx - offsets[level]!
@@ -417,6 +410,7 @@ function drawCigarClickMapImpl(
             cx2 += d2 * rev2
           } else if (op === 'D' || op === 'N') {
             cx1 += d1 * rev1
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           } else if (op === 'I') {
             cx2 += d2 * rev2
           }
@@ -488,7 +482,9 @@ function drawRefImpl(
   }
 
   const schemeConfig =
-    colorSchemes[colorBy as ColorScheme] || colorSchemes.default
+    (colorBy in colorSchemes
+      ? colorSchemes[colorBy as ColorScheme]
+      : undefined) ?? colorSchemes.default
   const activeColorMap = schemeConfig.cigarColors
 
   const posColor = colorBy === 'strand' ? colorSchemes.strand.posColor : 'red'
@@ -537,10 +533,10 @@ function drawRefImpl(
   >()
 
   for (let i = 0, l = featPositions.length; i < l; i++) {
-    // Check stop token every 100 features
-    if (i % 100 === 0) {
-      checkStopToken(msg.stopToken)
-    }
+    // // Check stop token every 100 features
+    // if (i % 100 === 0) {
+    //   checkStopToken(msg.stopToken)
+    // }
 
     const feat = featPositions[i]!
     if (minAlignmentLength > 0) {
@@ -617,10 +613,10 @@ function drawRefImpl(
   mainCtx.strokeStyle = colorMapWithAlpha.M
 
   for (let i = 0, l = featPositions.length; i < l; i++) {
-    // Check stop token every 100 features
-    if (i % 100 === 0) {
-      checkStopToken(msg.stopToken)
-    }
+    // // Check stop token every 100 features
+    // if (i % 100 === 0) {
+    //   checkStopToken(msg.stopToken)
+    // }
 
     const feat = featPositions[i]!
     const { strand, refName, cigar, p11, p12, p21, p22 } = feat
@@ -678,6 +674,7 @@ function drawRefImpl(
             cx2 += d2 * rev2
           } else if (op === 'D' || op === 'N') {
             cx1 += d1 * rev1
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           } else if (op === 'I') {
             cx2 += d2 * rev2
           }
@@ -816,57 +813,44 @@ function performDraw() {
   const msg = pendingDrawMessage
   pendingDrawMessage = null
 
-  if (!msg || !mainCanvas || cachedFeatPositions.length === 0) {
+  if (!msg || cachedFeatPositions.length === 0) {
     return
   }
 
+  // Create offscreen canvases for drawing
+  const mainCanvas = new OffscreenCanvas(msg.width, msg.height)
   const mainCtx = mainCanvas.getContext('2d')
-  if (!mainCtx) {
-    return
-  }
-
-  // Resize main canvas if needed - this clears the canvas!
-  if (mainCanvas.width !== msg.width || mainCanvas.height !== msg.height) {
-    mainCanvas.width = msg.width
-    mainCanvas.height = msg.height
-  }
-
-  // Create temporary offscreen canvases for click maps
   const clickMapCanvas = new OffscreenCanvas(msg.width, msg.height)
   const cigarClickMapCanvas = new OffscreenCanvas(msg.width, msg.height)
   const clickMapCtx = clickMapCanvas.getContext('2d')
   const cigarClickMapCtx = cigarClickMapCanvas.getContext('2d')
 
-  if (!clickMapCtx || !cigarClickMapCtx) {
+  if (!mainCtx || !clickMapCtx || !cigarClickMapCtx) {
     return
   }
 
-  // Combine message with cached features
   const drawParams: DrawParams = {
     ...msg,
     featPositions: cachedFeatPositions,
   }
 
   try {
-    // Draw directly to main canvas - we have full control via transferControlToOffscreen
     drawRefImpl(drawParams, mainCtx, clickMapCtx)
-    checkStopToken(msg.stopToken)
-    // drawCigarClickMapImpl(drawParams, cigarClickMapCtx)
-    // checkStopToken(msg.stopToken)
 
-    // Transfer click map bitmaps back to main thread
+    // Transfer all bitmaps back to main thread
+    const mainBitmap = mainCanvas.transferToImageBitmap()
     const clickMapBitmap = clickMapCanvas.transferToImageBitmap()
     const cigarClickMapBitmap = cigarClickMapCanvas.transferToImageBitmap()
 
     const result: DrawResultMessage = {
       type: 'done',
+      mainBitmap,
       clickMapBitmap,
       cigarClickMapBitmap,
     }
 
-    self.postMessage(result, [clickMapBitmap, cigarClickMapBitmap])
+    self.postMessage(result, [mainBitmap, clickMapBitmap, cigarClickMapBitmap])
   } catch (e) {
-    // Aborted - don't send result
     if (e instanceof Error && e.message === 'aborted') {
       return
     }
@@ -877,10 +861,9 @@ function performDraw() {
 self.onmessage = (e: MessageEvent<WorkerMessage>) => {
   const msg = e.data
 
-  if (msg.type === 'init') {
-    mainCanvas = msg.canvas
-  } else if (msg.type === 'updateFeatures') {
+  if (msg.type === 'updateFeatures') {
     cachedFeatPositions = msg.featPositions
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   } else if (msg.type === 'draw') {
     // Store the latest draw message and schedule a draw on the next animation frame
     // This coalesces multiple draw requests and syncs with the display refresh

@@ -85,99 +85,88 @@ const LinearSyntenyRendering = observer(function ({
     [model, height, width],
   )
 
-  const workerInitialized = useRef(false)
+  const workerRef = useRef<Worker | null>(null)
+  const renderingTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
   const mainSyntenyCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
       mainSyntenyCanvasRefp.current = ref
 
-      // Set up worker and transfer offscreen canvas - only once
-      if (
-        ref &&
-        !workerInitialized.current &&
-        typeof OffscreenCanvas !== 'undefined'
-      ) {
-        workerInitialized.current = true
-        try {
-          const offscreen = ref.transferControlToOffscreen()
-          const worker = new Worker(
-            new URL('../syntenyRendererWorker', import.meta.url),
-          )
+      // Set up worker - only once
+      if (ref && !workerRef.current && typeof OffscreenCanvas !== 'undefined') {
+        const worker = new Worker(
+          new URL('../syntenyRendererWorker', import.meta.url),
+        )
 
-          let renderingTimeout: ReturnType<typeof setTimeout> | undefined
+        worker.onmessage = (e: MessageEvent<DrawResultMessage>) => {
+          // Clear the loading overlay timeout and hide overlay
+          clearTimeout(renderingTimeoutRef.current)
+          renderingTimeoutRef.current = undefined
+          model.setIsRendering(false)
 
-          worker.onmessage = (e: MessageEvent<DrawResultMessage>) => {
-            if (e.data.type === 'done') {
-              // Clear the loading overlay timeout and hide overlay
-              if (renderingTimeout) {
-                clearTimeout(renderingTimeout)
-                renderingTimeout = undefined
-              }
-              model.setIsRendering(false)
-
-              // Draw the click map bitmaps onto the main thread canvases
-              const clickMapCtx = model.clickMapCanvas?.getContext('2d')
-              const cigarClickMapCtx =
-                model.cigarClickMapCanvas?.getContext('2d')
-
-              if (clickMapCtx && e.data.clickMapBitmap) {
-                clickMapCtx.clearRect(
-                  0,
-                  0,
-                  model.clickMapCanvas!.width,
-                  model.clickMapCanvas!.height,
-                )
-                clickMapCtx.drawImage(e.data.clickMapBitmap, 0, 0)
-                e.data.clickMapBitmap.close()
-              }
-
-              if (cigarClickMapCtx && e.data.cigarClickMapBitmap) {
-                cigarClickMapCtx.clearRect(
-                  0,
-                  0,
-                  model.cigarClickMapCanvas!.width,
-                  model.cigarClickMapCanvas!.height,
-                )
-                cigarClickMapCtx.drawImage(e.data.cigarClickMapBitmap, 0, 0)
-                e.data.cigarClickMapBitmap.close()
-              }
-            }
+          // Draw the main bitmap onto the visible canvas
+          // Using 'copy' composite operation for atomic replacement (no flash)
+          const mainCtx = model.mainCanvas?.getContext('2d')
+          if (mainCtx) {
+            mainCtx.globalCompositeOperation = 'copy'
+            mainCtx.drawImage(e.data.mainBitmap, 0, 0)
+            mainCtx.globalCompositeOperation = 'source-over'
+            e.data.mainBitmap.close()
           }
 
-          // Intercept postMessage to track when rendering starts
-          const originalPostMessage = worker.postMessage.bind(worker)
-          worker.postMessage = (message: unknown, transfer?: Transferable[]) => {
-            if (
-              typeof message === 'object' &&
-              message !== null &&
-              'type' in message &&
-              message.type === 'draw'
-            ) {
-              // Clear any existing timeout
-              if (renderingTimeout) {
-                clearTimeout(renderingTimeout)
-              }
-              // Show loading overlay after 50ms if rendering hasn't completed
-              renderingTimeout = setTimeout(() => {
-                model.setIsRendering(true)
-              }, 50)
-            }
-            if (transfer) {
-              originalPostMessage(message, transfer)
-            } else {
-              originalPostMessage(message)
-            }
+          // Draw the click map bitmaps onto the main thread canvases
+          const clickMapCtx = model.clickMapCanvas?.getContext('2d')
+          const cigarClickMapCtx = model.cigarClickMapCanvas?.getContext('2d')
+
+          if (clickMapCtx) {
+            clickMapCtx.clearRect(
+              0,
+              0,
+              model.clickMapCanvas!.width,
+              model.clickMapCanvas!.height,
+            )
+            clickMapCtx.drawImage(e.data.clickMapBitmap, 0, 0)
+            e.data.clickMapBitmap.close()
           }
 
-          worker.postMessage({ type: 'init', canvas: offscreen }, [offscreen])
-
-          model.setWorker(worker)
-          model.setOffscreenCanvas(offscreen)
-        } catch (e) {
-          console.error('Failed to set up offscreen canvas worker:', e)
-          workerInitialized.current = false
+          if (cigarClickMapCtx) {
+            cigarClickMapCtx.clearRect(
+              0,
+              0,
+              model.cigarClickMapCanvas!.width,
+              model.cigarClickMapCanvas!.height,
+            )
+            cigarClickMapCtx.drawImage(e.data.cigarClickMapBitmap, 0, 0)
+            e.data.cigarClickMapBitmap.close()
+          }
         }
+
+        // Intercept postMessage to track when rendering starts
+        const originalPostMessage = worker.postMessage.bind(worker)
+        worker.postMessage = (message: unknown, transfer?: Transferable[]) => {
+          if (
+            typeof message === 'object' &&
+            message !== null &&
+            'type' in message &&
+            message.type === 'draw'
+          ) {
+            // Clear any existing timeout
+            clearTimeout(renderingTimeoutRef.current)
+            // Show loading overlay after 50ms if rendering hasn't completed
+            renderingTimeoutRef.current = setTimeout(() => {
+              model.setIsRendering(true)
+            }, 50)
+          }
+          if (transfer) {
+            originalPostMessage(message, transfer)
+          } else {
+            originalPostMessage(message)
+          }
+        }
+
+        workerRef.current = worker
+        model.setWorker(worker)
       }
     },
     [model],
@@ -348,7 +337,8 @@ const LinearSyntenyRendering = observer(function ({
         }}
         data-testid="synteny_canvas"
         className={classes.mainCanvas}
-        style={{ width, height }}
+        width={width}
+        height={height}
       />
       <canvas
         ref={clickMapCanvasRef}

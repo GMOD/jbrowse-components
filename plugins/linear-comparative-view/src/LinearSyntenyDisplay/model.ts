@@ -72,25 +72,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #volatile
-       * offscreen canvas transferred to worker for main drawing
-       */
-      offscreenCanvas: null as OffscreenCanvas | null,
-
-      /**
-       * #volatile
-       * offscreen canvas for click map
-       */
-      offscreenClickMapCanvas: null as OffscreenCanvas | null,
-
-      /**
-       * #volatile
-       * offscreen canvas for cigar click map
-       */
-      offscreenCigarClickMapCanvas: null as OffscreenCanvas | null,
-
-      /**
-       * #volatile
-       * canvas used for drawing visible screen (kept for hit testing)
+       * canvas used for drawing visible screen
        */
       mainCanvas: null as HTMLCanvasElement | null,
 
@@ -172,24 +154,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setWorker(worker: Worker | null) {
         self.worker = worker
-      },
-      /**
-       * #action
-       */
-      setOffscreenCanvas(canvas: OffscreenCanvas | null) {
-        self.offscreenCanvas = canvas
-      },
-      /**
-       * #action
-       */
-      setOffscreenClickMapCanvas(canvas: OffscreenCanvas | null) {
-        self.offscreenClickMapCanvas = canvas
-      },
-      /**
-       * #action
-       */
-      setOffscreenCigarClickMapCanvas(canvas: OffscreenCanvas | null) {
-        self.offscreenCigarClickMapCanvas = canvas
       },
       /**
        * #action
