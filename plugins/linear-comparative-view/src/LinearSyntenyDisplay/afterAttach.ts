@@ -7,7 +7,10 @@ import { autorun, reaction, untracked } from 'mobx'
 
 import { serializeFeatPos } from './model'
 
-import type { DrawSyntenyMessage } from './syntenyRendererWorker'
+import type {
+  DrawSyntenyMessage,
+  UpdateFeaturesMessage,
+} from './syntenyRendererWorker'
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import type { Feature } from '@jbrowse/core/util'
@@ -28,6 +31,28 @@ interface FeatPos {
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
+  // Autorun to send features to worker when they change
+  addDisposer(
+    self,
+    autorun(
+      function syntenyUpdateFeaturesAutorun() {
+        const { worker, featPositions } = self
+        if (!worker || featPositions.length === 0) {
+          return
+        }
+
+        const message: UpdateFeaturesMessage = {
+          type: 'updateFeatures',
+          featPositions: featPositions.map(serializeFeatPos),
+        }
+
+        worker.postMessage(message)
+      },
+      { name: 'SyntenyUpdateFeatures' },
+    ),
+  )
+
+  // Autorun to trigger drawing when view parameters change
   addDisposer(
     self,
     autorun(
@@ -42,7 +67,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         const { worker, featPositions, alpha, minAlignmentLength, colorBy } =
           self
-        if (!worker) {
+        if (!worker || featPositions.length === 0) {
           return
         }
 
@@ -61,7 +86,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         const message: DrawSyntenyMessage = {
           type: 'draw',
-          featPositions: featPositions.map(serializeFeatPos),
           width,
           height,
           level: self.level,
@@ -172,7 +196,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         self.setFeatPositions(map)
       },
-      { fireImmediately: true },
+      {
+        fireImmediately: true,
+      },
     ),
   )
 }

@@ -54,9 +54,13 @@ export interface SerializedFeatPos {
   cigar: string[]
 }
 
+export interface UpdateFeaturesMessage {
+  type: 'updateFeatures'
+  featPositions: SerializedFeatPos[]
+}
+
 export interface DrawSyntenyMessage {
   type: 'draw'
-  featPositions: SerializedFeatPos[]
   width: number
   height: number
   level: number
@@ -77,7 +81,14 @@ export interface InitCanvasMessage {
   canvas: OffscreenCanvas
 }
 
-export type WorkerMessage = DrawSyntenyMessage | InitCanvasMessage
+export type WorkerMessage =
+  | DrawSyntenyMessage
+  | InitCanvasMessage
+  | UpdateFeaturesMessage
+
+interface DrawParams extends Omit<DrawSyntenyMessage, 'type'> {
+  featPositions: SerializedFeatPos[]
+}
 
 export interface DrawResultMessage {
   type: 'done'
@@ -86,6 +97,7 @@ export interface DrawResultMessage {
 }
 
 let mainCanvas: OffscreenCanvas | null = null
+let cachedFeatPositions: SerializedFeatPos[] = []
 
 function makeColor(idx: number) {
   const r = Math.floor(idx / (255 * 255)) % 255
@@ -327,7 +339,7 @@ function drawMatchSimple({
 }
 
 function drawCigarClickMapImpl(
-  msg: DrawSyntenyMessage,
+  msg: DrawParams,
   ctx: OffscreenCanvasRenderingContext2D,
 ) {
   const {
@@ -443,7 +455,7 @@ function drawCigarClickMapImpl(
 }
 
 function drawRefImpl(
-  msg: DrawSyntenyMessage,
+  msg: DrawParams,
   mainCtx: OffscreenCanvasRenderingContext2D,
   clickMapCtx: OffscreenCanvasRenderingContext2D,
 ) {
@@ -800,8 +812,10 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
 
   if (msg.type === 'init') {
     mainCanvas = msg.canvas
+  } else if (msg.type === 'updateFeatures') {
+    cachedFeatPositions = msg.featPositions
   } else if (msg.type === 'draw') {
-    if (!mainCanvas) {
+    if (!mainCanvas || cachedFeatPositions.length === 0) {
       return
     }
 
@@ -826,10 +840,16 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
       return
     }
 
+    // Combine message with cached features
+    const drawParams: DrawParams = {
+      ...msg,
+      featPositions: cachedFeatPositions,
+    }
+
     try {
-      drawRefImpl(msg, mainCtx, clickMapCtx)
+      drawRefImpl(drawParams, mainCtx, clickMapCtx)
       checkStopToken(msg.stopToken)
-      drawCigarClickMapImpl(msg, cigarClickMapCtx)
+      drawCigarClickMapImpl(drawParams, cigarClickMapCtx)
       checkStopToken(msg.stopToken)
 
       // Transfer click map bitmaps back to main thread
