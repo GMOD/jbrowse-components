@@ -77,6 +77,7 @@ export async function doAll({
           displayMode: configContext.displayMode,
           peptideDataMap,
           colorByCDS: (renderProps as any).colorByCDS,
+          pluginManager,
         },
         configContext,
       }),
