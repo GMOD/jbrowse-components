@@ -1,5 +1,6 @@
 import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
@@ -9,6 +10,7 @@ import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
 
+import type { DrawResultMessage } from '../syntenyRendererWorker'
 import type { ClickCoord } from './util'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
@@ -33,6 +35,21 @@ const useStyles = makeStyles()({
   },
   mainCanvas: {
     position: 'absolute',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundImage:
+      'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.05) 8px, rgba(0, 0, 0, 0.05) 16px)',
+    pointerEvents: 'none',
+    zIndex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })
 
@@ -68,15 +85,93 @@ const LinearSyntenyRendering = observer(function ({
     [model, height, width],
   )
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const workerRef = useRef<Worker | null>(null)
+  const renderingTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+
   const mainSyntenyCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
-      mainSyntenyCanvasRefp.current = ref // this ref is additionally used in useEffect below
+      mainSyntenyCanvasRefp.current = ref
+
+      // Set up worker - only once
+      if (ref && !workerRef.current && typeof OffscreenCanvas !== 'undefined') {
+        const worker = new Worker(
+          new URL('../syntenyRendererWorker', import.meta.url),
+        )
+
+        worker.onmessage = (e: MessageEvent<DrawResultMessage>) => {
+          // Clear the loading overlay timeout and hide overlay
+          clearTimeout(renderingTimeoutRef.current)
+          renderingTimeoutRef.current = undefined
+          model.setIsRendering(false)
+
+          // Draw the main bitmap onto the visible canvas
+          // Using 'copy' composite operation for atomic replacement (no flash)
+          const mainCtx = model.mainCanvas?.getContext('2d')
+          if (mainCtx) {
+            mainCtx.globalCompositeOperation = 'copy'
+            mainCtx.drawImage(e.data.mainBitmap, 0, 0)
+            mainCtx.globalCompositeOperation = 'source-over'
+            e.data.mainBitmap.close()
+          }
+
+          // Draw the click map bitmaps onto the main thread canvases
+          const clickMapCtx = model.clickMapCanvas?.getContext('2d')
+          const cigarClickMapCtx = model.cigarClickMapCanvas?.getContext('2d')
+
+          if (clickMapCtx) {
+            clickMapCtx.clearRect(
+              0,
+              0,
+              model.clickMapCanvas!.width,
+              model.clickMapCanvas!.height,
+            )
+            clickMapCtx.drawImage(e.data.clickMapBitmap, 0, 0)
+            e.data.clickMapBitmap.close()
+          }
+
+          if (cigarClickMapCtx) {
+            cigarClickMapCtx.clearRect(
+              0,
+              0,
+              model.cigarClickMapCanvas!.width,
+              model.cigarClickMapCanvas!.height,
+            )
+            cigarClickMapCtx.drawImage(e.data.cigarClickMapBitmap, 0, 0)
+            e.data.cigarClickMapBitmap.close()
+          }
+        }
+
+        // Intercept postMessage to track when rendering starts
+        const originalPostMessage = worker.postMessage.bind(worker)
+        worker.postMessage = (message: unknown, transfer?: Transferable[]) => {
+          if (
+            typeof message === 'object' &&
+            message !== null &&
+            'type' in message &&
+            message.type === 'draw'
+          ) {
+            // Clear any existing timeout
+            clearTimeout(renderingTimeoutRef.current)
+            // Show loading overlay after 50ms if rendering hasn't completed
+            renderingTimeoutRef.current = setTimeout(() => {
+              model.setIsRendering(true)
+            }, 50)
+          }
+          if (transfer) {
+            originalPostMessage(message, transfer)
+          } else {
+            originalPostMessage(message)
+          }
+        }
+
+        workerRef.current = worker
+        model.setWorker(worker)
+      }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
+    [model],
   )
+
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     function onWheel(event: WheelEvent) {
@@ -148,7 +243,7 @@ const LinearSyntenyRendering = observer(function ({
   )
 
   return (
-    <div className={classes.rel}>
+    <div className={classes.rel} style={{ width, height }}>
       <canvas
         ref={mouseoverDetectionCanvasRef}
         width={width}
@@ -257,6 +352,11 @@ const LinearSyntenyRendering = observer(function ({
         width={width}
         height={height}
       />
+      {model.isRendering ? (
+        <div className={classes.loadingOverlay}>
+          <LoadingEllipses message="Rendering" />
+        </div>
+      ) : null}
       {mouseoverId && tooltip && currX && currY ? (
         <SyntenyTooltip title={tooltip} />
       ) : null}
