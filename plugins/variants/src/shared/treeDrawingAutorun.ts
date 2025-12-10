@@ -2,19 +2,20 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import type { ClusterHierarchyNode } from './components/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface TreeDrawingModel {
   treeCanvas?: HTMLCanvasElement
   mouseoverCanvas?: HTMLCanvasElement
-  hierarchy?: any
+  hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   height: number
   scrollTop: number
   rowHeight: number
   totalHeight: number
   hoveredTreeNode?: {
-    node: any
+    node: ClusterHierarchyNode
     descendantNames: string[]
   }
 }
@@ -57,25 +58,24 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         ctx.strokeStyle = '#0008'
         ctx.lineWidth = 1
 
+        // Use single path for all tree lines for better performance
+        ctx.beginPath()
         for (const link of hierarchy.links()) {
           const { source, target } = link
           const sy = source.x!
           const ty = target.x!
-          const tx = target.y
-          const sx = source.y
+          const tx = target.y!
+          const sx = source.y!
 
           // Vertical line
-          ctx.beginPath()
           ctx.moveTo(sx, sy)
           ctx.lineTo(sx, ty)
-          ctx.stroke()
 
           // Horizontal line
-          ctx.beginPath()
           ctx.moveTo(sx, ty)
           ctx.lineTo(tx, ty)
-          ctx.stroke()
         }
+        ctx.stroke()
 
         // Restore the context state
         ctx.restore()
@@ -120,13 +120,11 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           // Translate to simulate scrolling
           ctx.translate(0, -scrollTop)
 
-          // Draw highlight rectangles for descendant rows
+          // Draw highlight rectangles for descendant leaf rows
           // Note: accessing totalHeight ensures we redraw when row height changes
           ctx.fillStyle = 'rgba(255,165,0,0.2)'
           for (const name of hoveredTreeNode.descendantNames) {
-            const leaf = hierarchy
-              .leaves()
-              .find((l: any) => l.data.name === name)
+            const leaf = hierarchy.leaves().find(l => l.data.name === name)
             if (leaf) {
               const y = leaf.x!
               ctx.fillRect(0, y - rowHeight / 2, viewWidth, rowHeight)
@@ -137,10 +135,10 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           const { node } = hoveredTreeNode
           ctx.fillStyle = 'rgba(255,165,0,0.8)'
           ctx.beginPath()
-          ctx.arc(node.y, node.x, 4, 0, 2 * Math.PI)
+          ctx.arc(node.y!, node.x!, 4, 0, 2 * Math.PI)
           ctx.fill()
 
-          // Optional: add a border to the circle
+          // Add a border to the circle
           ctx.strokeStyle = 'rgba(255,140,0,1)'
           ctx.lineWidth = 1
           ctx.stroke()
