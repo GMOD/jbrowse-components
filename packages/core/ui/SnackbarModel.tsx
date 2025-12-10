@@ -1,8 +1,8 @@
 import { lazy } from 'react'
 
+import { types } from '@jbrowse/mobx-state-tree'
 import Report from '@mui/icons-material/Report'
 import { observable } from 'mobx'
-import { types } from 'mobx-state-tree'
 
 import type { NotificationLevel, SnackAction } from '../util/types'
 

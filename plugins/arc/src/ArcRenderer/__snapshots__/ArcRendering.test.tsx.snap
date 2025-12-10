@@ -21,6 +21,7 @@ exports[`one feature 1`] = `
         fill="transparent"
         pointer-events="stroke"
         stroke-width="2"
+        style="cursor: pointer;"
       />
       <text
         stroke="white"
@@ -50,6 +51,7 @@ exports[`one semicircle 1`] = `
         fill="transparent"
         pointer-events="stroke"
         stroke-width="2"
+        style="cursor: pointer;"
       />
       <text
         stroke="white"

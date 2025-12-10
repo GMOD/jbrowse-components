@@ -10,13 +10,11 @@ export function generateTracks({
   trackDb,
   trackDbLoc,
   assemblyName,
-  sequenceAdapter,
   baseUrl,
 }: {
   trackDb: TrackDbFile
   trackDbLoc: FileLocation
   assemblyName: string
-  sequenceAdapter: any
   baseUrl: string
 }) {
   const parentTrackKeys = new Set([
@@ -61,7 +59,6 @@ export function generateTracks({
             track,
             trackDbLoc,
             trackDb,
-            sequenceAdapter,
           }),
         }
       }
@@ -78,12 +75,10 @@ function makeTrackConfig({
   track,
   trackDbLoc,
   trackDb,
-  sequenceAdapter,
 }: {
   track: RaStanza
   trackDbLoc: FileLocation
   trackDb: TrackDbFile
-  sequenceAdapter: any
 }) {
   const { data } = track
 
@@ -129,7 +124,6 @@ function makeTrackConfig({
         craiLocation: isUri
           ? makeLocAlt(bigDataIdx, `${bigDataUrl}.crai`, trackDbLoc)
           : makeLoc2(bigDataIdx, `${bigDataUrl}.crai`),
-        sequenceAdapter,
       },
     }
   } else if (baseTrackType === 'bigWig') {

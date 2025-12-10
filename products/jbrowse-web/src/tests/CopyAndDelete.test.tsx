@@ -25,7 +25,7 @@ const delay = { timeout: 40000 }
 // getConf(track,'trackId') to the TrackContainer but this seems odd, so just
 // silence the warning in test. exact warn is this:
 //
-// "Error: [mobx-state-tree] You are trying
+// "Error: [@jbrowse/mobx-state-tree] You are trying
 // to read or write to an object that is no longer part of a state tree.
 // (Object type: 'LinearVariantDisplay', Path upon death:
 // '/session/views/0/tracks/0/displays/0', Subpath: 'configuration',

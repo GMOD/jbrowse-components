@@ -1,6 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import assemblyConfigSchemasFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from './corePlugins'
 import jbrowseModelFactory from './jbrowseModel'
@@ -16,6 +16,7 @@ describe('JBrowse model', () => {
       .configure()
 
     JBrowseModel = jbrowseModelFactory({
+      adminMode: false,
       pluginManager,
       assemblyConfigSchema: assemblyConfigSchemasFactory(pluginManager),
     })

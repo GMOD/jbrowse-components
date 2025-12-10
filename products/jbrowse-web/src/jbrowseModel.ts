@@ -1,5 +1,5 @@
 import { JBrowseModelF } from '@jbrowse/app-core'
-import { getSnapshot, resolveIdentifier, types } from 'mobx-state-tree'
+import { getSnapshot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
 
 import { removeAttr } from './util'
 
@@ -20,12 +20,18 @@ window.resolveIdentifier = resolveIdentifier
 export default function JBrowseWeb({
   pluginManager,
   assemblyConfigSchema,
+  adminMode,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
+  adminMode: boolean
 }) {
   return types.snapshotProcessor(
-    JBrowseModelF({ pluginManager, assemblyConfigSchema }),
+    JBrowseModelF({
+      pluginManager,
+      assemblyConfigSchema,
+      adminMode,
+    }),
     {
       postProcessor(snapshot: Record<string, any>) {
         return removeAttr(structuredClone(snapshot), 'baseUri')

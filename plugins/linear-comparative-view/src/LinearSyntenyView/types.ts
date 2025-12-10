@@ -1,7 +1,7 @@
 import type React from 'react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SnapshotIn } from 'mobx-state-tree'
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 export type Conf = SnapshotIn<AnyConfigurationModel>
 
@@ -9,6 +9,15 @@ export type ImportFormSyntenyTrack =
   | { type: 'preConfigured'; value: string }
   | { type: 'userOpened'; value: Conf }
   | { type: 'none' }
+
+export interface LinearSyntenyViewInit {
+  views: {
+    loc?: string
+    assembly: string
+    tracks?: string[]
+  }[]
+  tracks?: string[]
+}
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -23,4 +32,5 @@ export interface ExportSvgOptions {
   cytobandHeight?: number
   themeName?: string
   trackLabels?: string
+  showGridlines?: boolean
 }

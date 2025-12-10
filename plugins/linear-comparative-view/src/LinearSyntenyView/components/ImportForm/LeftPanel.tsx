@@ -1,10 +1,10 @@
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession, notEmpty } from '@jbrowse/core/util'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import { Button, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { LinearSyntenyViewModel } from '../../model'
 
@@ -40,7 +40,7 @@ const AssemblyRows = observer(function ({
   setSelectedAssemblyNames: (assemblies: string[]) => void
   model: LinearSyntenyViewModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   return selectedAssemblyNames.map((assemblyName, idx) => (
     <div key={`${assemblyName}-${idx}`} className={classes.rel}>

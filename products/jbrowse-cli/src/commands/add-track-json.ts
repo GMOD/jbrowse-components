@@ -1,4 +1,3 @@
-import { promises as fsPromises } from 'fs'
 import { parseArgs } from 'util'
 
 import {
@@ -6,6 +5,7 @@ import {
   printHelp,
   readInlineOrFileJson,
   readJsonFile,
+  resolveConfigPath,
   writeJsonFile,
 } from '../utils'
 
@@ -59,14 +59,12 @@ export async function run(args?: string[]) {
 
   const track = positionals[0]
   if (!track) {
-    console.error('Error: Missing required argument: track')
-    console.error('Usage: jbrowse add-track-json <track> [options]')
-    process.exit(1)
+    throw new Error(
+      'Missing required argument: track\nUsage: jbrowse add-track-json <track> [options]',
+    )
   }
 
-  const output = flags.target || flags.out || '.'
-  const isDir = (await fsPromises.lstat(output)).isDirectory()
-  const target = isDir ? `${output}/config.json` : output
+  const target = await resolveConfigPath(flags.target, flags.out)
 
   debug(`Sequence location is: ${track}`)
   const { update } = flags

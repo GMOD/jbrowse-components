@@ -10,8 +10,7 @@ import { parseVcfBuffer } from './vcfParser'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
-
-type StatusCallback = (arg: string) => void
+import type { StatusCallback } from '@jbrowse/core/util/parseLineByLine'
 
 export default class VcfAdapter extends BaseFeatureDataAdapter {
   calculatedIntervalTreeMap: Record<string, IntervalTree<Feature>> = {}
@@ -49,7 +48,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     const intervalTreeMap = Object.fromEntries(
       Object.entries(featureMap).map(([refName, lines]) => [
         refName,
-        (sc?: (arg: string) => void) => {
+        (sc?: StatusCallback) => {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing VCF data')
             let idx = 0
@@ -94,19 +93,15 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   public getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      try {
-        const { start, end, refName } = region
-        const { intervalTreeMap } = await this.setup()
-        for (const f of intervalTreeMap[refName]?.(opts.statusCallback).search([
-          start,
-          end,
-        ]) || []) {
-          observer.next(f)
-        }
-        observer.complete()
-      } catch (e) {
-        observer.error(e)
+      const { start, end, refName } = region
+      const { intervalTreeMap } = await this.setup()
+      for (const f of intervalTreeMap[refName]?.(opts.statusCallback).search([
+        start,
+        end,
+      ]) || []) {
+        observer.next(f)
       }
+      observer.complete()
     }, opts.stopToken)
   }
 
@@ -158,12 +153,12 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       const s = new Set(parser.samples)
       return lines
         .slice(1)
+        .filter(Boolean)
         .map(line => {
           const cols = line.split('\t')
           return {
             name: cols[0]!,
             ...Object.fromEntries(
-              // force col 0 to be called name
               cols.slice(1).map((c, idx) => [header[idx + 1]!, c] as const),
             ),
           }

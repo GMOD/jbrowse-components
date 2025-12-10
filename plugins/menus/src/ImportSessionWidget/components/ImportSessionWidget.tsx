@@ -1,23 +1,18 @@
 import { useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import { Button, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
-import { makeStyles } from 'tss-react/mui'
 
 import ImportError from './ImportError'
 
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 
-function styledBy(property: string, mapping: Record<string, string>) {
-  return (props: Record<string, string>) => mapping[props[property]!]
-}
-
-// @ts-expect-error
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
@@ -32,23 +27,23 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(2),
     borderWidth: 2,
     borderRadius: 2,
-    borderColor: styledBy('isDragActive', {
-      true: theme.palette.secondary.light,
-      false: theme.palette.divider,
-    }),
     borderStyle: 'dashed',
-    backgroundColor: styledBy('isDragActive', {
-      true: alpha(
-        theme.palette.text.primary,
-        theme.palette.action.hoverOpacity,
-      ),
-      false: theme.palette.background.default,
-    }),
     outline: 'none',
-    transition: 'border .24s ease-in-out',
+    transition: 'border .24s ease-in-out, background-color .24s ease-in-out',
     '&:focus': {
       borderColor: theme.palette.secondary.light,
     },
+  },
+  dropZoneActive: {
+    borderColor: theme.palette.secondary.light,
+    backgroundColor: alpha(
+      theme.palette.text.primary,
+      theme.palette.action.hoverOpacity,
+    ),
+  },
+  dropZoneInactive: {
+    borderColor: theme.palette.divider,
+    backgroundColor: theme.palette.background.default,
   },
   uploadIcon: {
     color: theme.palette.text.secondary,
@@ -80,14 +75,19 @@ const ImportSessionWidget = observer(function ({
     },
   })
 
-  // @ts-expect-error
-
-  const { classes } = useStyles({ isDragActive }) as any
+  const { classes, cx } = useStyles()
 
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <div {...getRootProps({ className: classes.dropZone })}>
+        <div
+          {...getRootProps({
+            className: cx(
+              classes.dropZone,
+              isDragActive ? classes.dropZoneActive : classes.dropZoneInactive,
+            ),
+          })}
+        >
           <input {...getInputProps()} />
           <CloudUploadIcon className={classes.uploadIcon} fontSize="large" />
           <Typography color="textSecondary" align="center" variant="body1">

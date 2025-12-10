@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Observable } from 'rxjs'
 
@@ -52,7 +52,7 @@ export class FetchableSmallFasta {
   }
 }
 
-export class SequenceAdapter extends BaseFeatureDataAdapter {
+export class SequenceAdapter extends BaseSequenceAdapter {
   fasta: FetchableSmallFasta
 
   refNames: string[] = []
@@ -64,6 +64,10 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
 
   async getRefNames() {
     return this.refNames
+  }
+
+  async getRegions() {
+    return []
   }
 
   getFeatures({

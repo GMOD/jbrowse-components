@@ -1,9 +1,9 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -169,14 +169,17 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const view = getContainingView(self) as LGV
-            if (view.bpPerPx > 3) {
-              self.setHeight(50)
-            } else {
-              self.setHeight(self.sequenceHeight)
-            }
-          }),
+          autorun(
+            function sequenceHeightAutorun() {
+              const view = getContainingView(self) as LGV
+              if (view.bpPerPx > 3) {
+                self.setHeight(50)
+              } else {
+                self.setHeight(self.sequenceHeight)
+              }
+            },
+            { name: 'SequenceHeight' },
+          ),
         )
       },
     }))

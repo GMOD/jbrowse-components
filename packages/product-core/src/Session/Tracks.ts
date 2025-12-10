@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement'
@@ -8,7 +8,7 @@ import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel TracksManagerSessionMixin
@@ -29,6 +29,22 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        */
       get tracks(): AnyConfigurationModel[] {
         return self.jbrowse.tracks
+      },
+
+      /**
+       * #getter
+       */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries([
+          ...this.tracks.map(t => [t.trackId, t]),
+          // Include assembly sequence tracks so they can be resolved by trackId
+          ...self.jbrowse.assemblies.map(
+            (a: { sequence: { trackId: string } }) => [
+              a.sequence.trackId,
+              a.sequence,
+            ],
+          ),
+        ])
       },
     }))
     .actions(self => ({

@@ -1,11 +1,10 @@
-import { getSession } from '@jbrowse/core/util'
-import { isAlive, types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel MultiLinearVariantDisplay
@@ -22,15 +21,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         type: types.literal('MultiLinearVariantDisplay'),
-        /**
-         * #property
-         * used only if autoHeight is false
-         */
-        rowHeightSetting: types.optional(types.number, 11),
-        /**
-         * #property
-         */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0),
       }),
     )
     .views(() => ({
@@ -44,32 +34,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
       return {
-        afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const { getMultiVariantSourcesAutorun } = await import(
-                '../getMultiVariantSourcesAutorun'
-              )
-              const { getMultiVariantFeaturesAutorun } = await import(
-                '../getMultiVariantFeaturesAutorun'
-              )
-              const { setupTreeDrawingAutorun } = await import(
-                '../shared/treeDrawingAutorun'
-              )
-
-              getMultiVariantSourcesAutorun(self)
-              getMultiVariantFeaturesAutorun(self)
-              setupTreeDrawingAutorun(self)
-            } catch (e) {
-              if (isAlive(self)) {
-                console.error(e)
-                getSession(self).notifyError(`${e}`, e)
-              }
-            }
-          })()
-        },
-
         /**
          * #action
          */

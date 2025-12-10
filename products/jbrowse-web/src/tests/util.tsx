@@ -180,9 +180,10 @@ export function mockFile404(
   readBuffer: (request: Request) => Promise<Response>,
 ) {
   // @ts-expect-error
-  fetch.mockResponse(async request =>
-    request.url === str ? { status: 404 } : readBuffer(request),
-  )
+  fetch.mockResponse(async request => {
+    const matches = request.url.includes(str)
+    return matches ? { status: 404 } : readBuffer(request)
+  })
 }
 
 export async function exportAndVerifySvg({

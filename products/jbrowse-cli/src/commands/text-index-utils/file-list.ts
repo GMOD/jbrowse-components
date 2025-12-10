@@ -1,6 +1,6 @@
-import fs from 'fs'
 import path from 'path'
 
+import { ensureTrixDir } from './config-utils'
 import { indexDriver, prepareFileTrackConfigs } from './indexing-utils'
 import { validateFileInput } from './validators'
 
@@ -9,10 +9,7 @@ export async function indexFileList(flags: any) {
     flags
   validateFileInput(file)
   const outFlag = target || out || '.'
-  const trixDir = path.join(outFlag, 'trix')
-  if (!fs.existsSync(trixDir)) {
-    fs.mkdirSync(trixDir)
-  }
+  ensureTrixDir(outFlag)
 
   const trackConfigs = prepareFileTrackConfigs(file, fileId)
 

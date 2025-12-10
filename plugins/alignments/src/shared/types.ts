@@ -18,6 +18,10 @@ export interface BinEntry {
   '0': number
   '1': number
   avgProbability?: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
+  topSequence?: string
 }
 
 type BinType = Record<string, BinEntry>
@@ -44,7 +48,13 @@ export interface PreBinEntry {
   '-1': number
   '0': number
   '1': number
-  probabilities: number[]
+  probabilityTotal: number
+  probabilityCount: number
+  lengthTotal: number
+  lengthCount: number
+  lengthMin: number
+  lengthMax: number
+  sequenceCounts?: Map<string, number>
 }
 
 type PreBinType = Record<string, PreBinEntry>
@@ -115,7 +125,7 @@ export interface Mismatch {
   start: number
   length: number
   insertedBases?: string
-  type: string
+  type: MismatchType
   base: string
   altbase?: string
   seq?: string
@@ -149,3 +159,11 @@ export interface ChainData {
   stats?: ChainStats
   chains: Feature[][]
 }
+
+export type MismatchType =
+  | 'mismatch'
+  | 'insertion'
+  | 'deletion'
+  | 'skip'
+  | 'softclip'
+  | 'hardclip'

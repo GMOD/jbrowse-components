@@ -1,11 +1,16 @@
-import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
 
 import parseJSON from 'json-parse-better-errors'
 
 import fetch from '../fetchWithProxy'
-import { debug, printHelp, readJsonFile, writeJsonFile } from '../utils'
+import {
+  debug,
+  printHelp,
+  readJsonFile,
+  resolveConfigPath,
+  writeJsonFile,
+} from '../utils'
 
 import type { Config } from '../base'
 
@@ -121,16 +126,12 @@ export async function run(args?: string[]) {
 
   const connectionUrlOrPath = positionals[0]
   if (!connectionUrlOrPath) {
-    console.error('Error: Missing required argument: connectionUrlOrPath')
-    console.error(
-      'Usage: jbrowse add-connection <connectionUrlOrPath> [options]',
+    throw new Error(
+      'Missing required argument: connectionUrlOrPath\nUsage: jbrowse add-connection <connectionUrlOrPath> [options]',
     )
-    process.exit(1)
   }
 
-  const output = flags.target || flags.out || '.'
-  const isDir = fs.lstatSync(output).isDirectory()
-  const target = isDir ? `${output}/config.json` : output
+  const target = await resolveConfigPath(flags.target, flags.out)
 
   const { assemblyNames, type, name, config, connectionId, skipCheck, force } =
     flags

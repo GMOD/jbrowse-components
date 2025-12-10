@@ -2,15 +2,12 @@ import { useEffect, useRef } from 'react'
 
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
-import AddIcon from '@mui/icons-material/Add'
-import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
-import MinimizeIcon from '@mui/icons-material/Minimize'
-import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
+import ViewButtons from './ViewButtons'
 import ViewContainerTitle from './ViewContainerTitle'
 import ViewMenu from './ViewMenu'
 
@@ -28,39 +25,12 @@ const useStyles = makeStyles()(theme => ({
     height: VIEW_HEADER_HEIGHT,
     top: 0,
     zIndex: 900,
-    background: theme.palette.secondary.main,
   },
   viewTitle: {
     display: 'flex',
     alignItems: 'center',
   },
 }))
-
-const ViewButtons = observer(function ({
-  view,
-  onClose,
-  onMinimize,
-}: {
-  view: IBaseViewModel
-  onClose: () => void
-  onMinimize: () => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <>
-      <IconButton data-testid="minimize_view" onClick={onMinimize}>
-        {view.minimized ? (
-          <AddIcon className={classes.icon} fontSize="small" />
-        ) : (
-          <MinimizeIcon className={classes.icon} fontSize="small" />
-        )}
-      </IconButton>
-      <IconButton data-testid="close_view" onClick={onClose}>
-        <CloseIcon className={classes.icon} fontSize="small" />
-      </IconButton>
-    </>
-  )
-})
 
 const ViewHeader = observer(function ({
   view,
@@ -73,7 +43,7 @@ const ViewHeader = observer(function ({
   onMinimize: () => void
   className?: string
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
   let stickyViewHeaders = false

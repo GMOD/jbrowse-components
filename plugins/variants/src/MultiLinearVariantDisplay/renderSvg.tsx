@@ -6,7 +6,7 @@ import {
 import { when } from 'mobx'
 
 import LegendBar from '../shared/components/MultiVariantLegendBar'
-import { drawTree } from '../shared/components/drawTree'
+import { drawTree } from '../shared/drawTree'
 
 import type { MultiLinearVariantDisplayModel } from './model'
 import type {

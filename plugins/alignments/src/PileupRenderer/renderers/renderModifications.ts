@@ -1,4 +1,5 @@
 import { bpSpanPx, max, sum } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 
 import { getNextRefPos } from '../../MismatchParser'
 import { getModPositions } from '../../ModificationParser/getModPositions'
@@ -7,11 +8,14 @@ import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModification
 import { getModificationName } from '../../shared/modificationData'
 import { alphaColor } from '../../shared/util'
 import { getTagAlt } from '../../util'
-import { fillRect } from '../util'
+import { fillRectCtx } from '../util'
 
 import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
+
+// Pre-compute colord object for blue color (used in two-color mode)
+const BLUE_COLORD = colord('blue')
 
 // render modifications stored in MM tag in BAM
 export function renderModifications({
@@ -29,7 +33,7 @@ export function renderModifications({
   bpPerPx: number
   renderArgs: ProcessedRenderArgs
   canvasWidth: number
-  cigarOps: string[]
+  cigarOps: Uint32Array | number[]
 }) {
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
@@ -46,6 +50,7 @@ export function renderModifications({
   const twoColor = colorBy?.modifications?.twoColor
   const modificationThreshold = colorBy?.modifications?.threshold ?? 10
   const thresholdFraction = modificationThreshold / 100
+  const bottomPx = topPx + heightPx
 
   // Get all modifications with strand info for tooltip
   const fstrand = feature.get('strand') as -1 | 0 | 1
@@ -95,34 +100,33 @@ export function renderModifications({
         return
       }
 
+      const widthPx = rightPx - leftPx + 0.5
       const col = mod.color || 'black'
       const s = 1 - sum(allProbs)
-      if (twoColor && s > max(allProbs)) {
-        const c = alphaColor('blue', s)
-        const w = rightPx - leftPx + 0.5
-        fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+      const maxProb = max(allProbs)
+      if (twoColor && s > maxProb) {
+        const c = BLUE_COLORD.alpha(s).toHslString()
+        fillRectCtx(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth, c)
       } else {
         const c = alphaColor(col, prob)
-        const w = rightPx - leftPx + 0.5
-        fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+        fillRectCtx(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth, c)
       }
 
-      if (rightPx - leftPx >= 0.05) {
-        const modsAtPos = modsByPosition.get(pos) || []
-        const strandInfo = modsAtPos
-          .map(
-            m =>
-              `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
-          )
-          .join('<br/>')
-
+      // Add to flatbush for mouseover with strand-specific info showing all modifications
+      const modsAtPos = modsByPosition.get(pos)
+      if (rightPx - leftPx >= 0.2 && modsAtPos) {
         items.push({
           type: 'modification',
-          seq: strandInfo || mod.base,
+          seq: modsAtPos
+            .map(
+              m =>
+                `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
+            )
+            .join('<br/>'),
           modType: type,
           probability: prob,
         })
-        coords.push(leftPx, topPx, rightPx, topPx + heightPx)
+        coords.push(leftPx, topPx, rightPx, bottomPx)
       }
 
       pos++

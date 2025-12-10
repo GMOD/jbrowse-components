@@ -1,19 +1,9 @@
 import { parseArgs } from 'util'
 
 import { printHelp } from '../utils'
-import {
-  SORT_GFF_DESCRIPTION,
-  SORT_GFF_EXAMPLES,
-} from './sort-gff-utils/constants'
-import {
-  handleProcessError,
-  waitForProcessClose,
-} from './sort-gff-utils/process-utils'
-import { spawnSortProcess } from './sort-gff-utils/sort-utils'
-import {
-  validateFileArgument,
-  validateRequiredCommands,
-} from './sort-gff-utils/validators'
+import { waitForProcessClose } from './process-utils'
+import { GFF_CONFIG, spawnSortProcess } from './sort-utils'
+import { validateFileArgument, validateRequiredCommands } from './validators'
 
 export async function run(args?: string[]) {
   const options = {
@@ -28,13 +18,10 @@ export async function run(args?: string[]) {
     allowPositionals: true,
   })
 
-  const description = SORT_GFF_DESCRIPTION
-  const examples = SORT_GFF_EXAMPLES
-
   if (flags.help) {
     printHelp({
-      description,
-      examples,
+      description: GFF_CONFIG.description,
+      examples: GFF_CONFIG.examples,
       usage: 'jbrowse sort-gff [file] [options]',
       options,
     })
@@ -42,20 +29,13 @@ export async function run(args?: string[]) {
   }
 
   const file = positionals[0]
-  if (file) {
-    validateFileArgument(file)
-  }
-  validateRequiredCommands()
+  validateFileArgument(file, 'sort-gff', 'gff')
+  validateRequiredCommands(['sh', 'sort', 'grep'])
 
-  try {
-    const child = spawnSortProcess({ file: file || '-' })
-    const exitCode = await waitForProcessClose(child)
+  const child = spawnSortProcess(file, GFF_CONFIG.sortColumn)
+  const exitCode = await waitForProcessClose(child)
 
-    if (exitCode !== 0) {
-      console.error(`Sort process exited with code ${exitCode}`)
-      process.exit(exitCode || 1)
-    }
-  } catch (error) {
-    handleProcessError(error)
+  if (exitCode !== 0) {
+    throw new Error(`Sort process exited with code ${exitCode}`)
   }
 }

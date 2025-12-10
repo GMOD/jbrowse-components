@@ -1,5 +1,5 @@
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
 
 import {
   localStorageGetBoolean,
@@ -9,7 +9,7 @@ import {
 } from '../../util'
 
 import type { SimpleFeatureSerialized } from '../../util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function localStorageSetNumber(key: string, value: number) {
   localStorageSetItem(key, JSON.stringify(value))
@@ -148,23 +148,29 @@ export function SequenceFeatureDetailsF() {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetNumber(`${p}-upDownBp`, self.upDownBp)
-            localStorageSetNumber(`${p}-intronBp`, self.intronBp)
-            localStorageSetBoolean(`${p}-upperCaseCDS`, self.upperCaseCDS)
-            localStorageSetItem(
-              `${p}-showCoordinatesSetting`,
-              self.showCoordinatesSetting,
-            )
-          }),
+          autorun(
+            function sequenceFeatureLocalStorageAutorun() {
+              localStorageSetNumber(`${p}-upDownBp`, self.upDownBp)
+              localStorageSetNumber(`${p}-intronBp`, self.intronBp)
+              localStorageSetBoolean(`${p}-upperCaseCDS`, self.upperCaseCDS)
+              localStorageSetItem(
+                `${p}-showCoordinatesSetting`,
+                self.showCoordinatesSetting,
+              )
+            },
+            { name: 'SequenceFeatureLocalStorage' },
+          ),
         )
         addDisposer(
           self,
-          autorun(() => {
-            self.setMode(
-              self.hasCDS ? 'cds' : self.hasExon ? 'cdna' : 'genomic',
-            )
-          }),
+          autorun(
+            function sequenceFeatureModeAutorun() {
+              self.setMode(
+                self.hasCDS ? 'cds' : self.hasExon ? 'cdna' : 'genomic',
+              )
+            },
+            { name: 'SequenceFeatureMode' },
+          ),
         )
       },
     }))

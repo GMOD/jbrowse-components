@@ -14,6 +14,14 @@ function isBreakend(alt: string) {
   )
 }
 
+function isSymbolic(alt: string) {
+  return alt.startsWith('<') || isBreakend(alt)
+}
+
+function isInversion(ref: string, alt: string) {
+  return ref.split('').reverse().join('') === alt
+}
+
 const altTypeToSO: Record<string, string> = {
   '<DEL>': 'deletion',
   '<INS>': 'insertion',
@@ -36,24 +44,11 @@ export function getSOTermAndDescription(
     return ['remark', 'no alternative alleles']
   }
 
-  // Group alts by SO term
-  const grouped = new Map<string, string[]>()
-  for (const a of alt) {
-    const soTerm = getSOTerm(a, ref, parser)
-    const alts = grouped.get(soTerm) ?? []
-    alts.push(a)
-    grouped.set(soTerm, alts)
-  }
+  const soTerms = alt.map(a => getSOTerm(a, ref, parser))
+  const uniqueSoTerms = [...new Set(soTerms)]
+  const description = formatGroupDescription(ref, alt)
 
-  // Generate combined description for each group
-  const soTerms: string[] = []
-  const descriptions: string[] = []
-  for (const [soTerm, alts] of grouped) {
-    soTerms.push(soTerm)
-    descriptions.push(formatGroupDescription(soTerm, ref, alts))
-  }
-
-  return [soTerms.join(','), descriptions.join(',')]
+  return [uniqueSoTerms.join(','), description]
 }
 
 function getSOTerm(alt: string, ref: string, parser: VCF): string {
@@ -72,67 +67,35 @@ function getSOTerm(alt: string, ref: string, parser: VCF): string {
 
   if (lenRef === 1 && lenAlt === 1) {
     return 'SNV'
+  } else if (lenRef === lenAlt) {
+    return isInversion(ref, alt) ? 'inversion' : 'substitution'
+  } else {
+    return lenRef < lenAlt ? 'insertion' : 'deletion'
   }
-  if (lenRef === lenAlt) {
-    const refReversed = ref.split('').reverse().join('')
-    return refReversed === alt ? 'inv' : 'substitution'
-  }
-  return lenRef < lenAlt ? 'insertion' : 'deletion'
 }
 
-function formatGroupDescription(
-  soTerm: string,
-  ref: string,
-  alts: string[],
-): string {
-  const lenRef = ref.length
-  const isLong = lenRef > 5 || alts.some(a => a.length > 5)
-
-  switch (soTerm) {
-    case 'SNV':
-      return `SNV ${ref} -> ${alts.join(',')}`
-
-    case 'substitution':
-    case 'inv':
-      return isLong
-        ? `${soTerm} ${getBpDisplayStr(lenRef)} -> ${alts.map(a => getBpDisplayStr(a.length)).join(',')}`
-        : `${soTerm} ${ref} -> ${alts.join(',')}`
-
-    case 'insertion':
-      return isLong
-        ? alts.map(a => `${getBpDisplayStr(a.length - lenRef)} INS`).join(',')
-        : `insertion ${ref} -> ${alts.join(',')}`
-
-    case 'deletion':
-      return isLong
-        ? alts.map(a => `${getBpDisplayStr(lenRef - a.length)} DEL`).join(',')
-        : `deletion ${ref} -> ${alts.join(',')}`
-
-    default:
-      return alts.join(',')
+function formatGroupDescription(ref: string, alts: string[]): string {
+  if (alts.every(isSymbolic)) {
+    return alts.join(',')
   }
+
+  const lenRef = ref.length
+
+  return `${ref.length > 10 ? getBpDisplayStr(lenRef) : ref} -> ${alts.map(a => (a.length > 10 ? getBpDisplayStr(a.length) : a)).join(',')}`
 }
 
 function findSOTerm(alt: string, parser: VCF): string | undefined {
-  // Direct lookup
-  const soTerm = altTypeToSO[alt]
-  if (soTerm) {
-    return soTerm
+  if (altTypeToSO[alt]) {
+    return altTypeToSO[alt]
   }
-
-  // Check parser metadata
   if (parser.getMetadata('ALT', alt)) {
     return 'sequence_variant'
   }
-
   // Try parent term by stripping last component, e.g. '<INS:ME>' -> '<INS>'
-  const inner = alt.slice(1, -1)
-  const parts = inner.split(':')
-  if (parts.length > 1) {
-    return findSOTerm(`<${parts.slice(0, -1).join(':')}>`, parser)
-  }
-
-  return undefined
+  const parts = alt.slice(1, -1).split(':')
+  return parts.length > 1
+    ? findSOTerm(`<${parts.slice(0, -1).join(':')}>`, parser)
+    : undefined
 }
 
 export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
@@ -145,12 +108,7 @@ export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
 }
 
 export function getMinimalDesc(ref: string, alt: string) {
-  // Breakends, symbolic alleles, and SNVs - just return alt
-  if (
-    isBreakend(alt) ||
-    alt.includes('<') ||
-    (ref.length === 1 && alt.length === 1)
-  ) {
+  if (isSymbolic(alt) || (ref.length === 1 && alt.length === 1)) {
     return alt
   }
 
@@ -158,37 +116,9 @@ export function getMinimalDesc(ref: string, alt: string) {
   const lenAlt = alt.length
   const isLong = lenRef > 5 || lenAlt > 5
 
-  // Same length - substitution or inversion
-  if (lenRef === lenAlt) {
-    const refReversed = ref.split('').reverse().join('')
-    const isInversion = refReversed === alt
-    const refStr = isLong ? getBpDisplayStr(lenRef) : ref
-    const altStr = isLong ? getBpDisplayStr(lenAlt) : alt
-    return isInversion
-      ? makeDescriptionString('inv', refStr, altStr)
-      : makeDescriptionString('substitution', refStr, altStr)
-  }
-
-  // Insertion
-  if (lenRef < lenAlt) {
-    const len = lenAlt - lenRef
-    return isLong
-      ? `${getBpDisplayStr(len)} INS`
-      : makeDescriptionString(
-          'insertion',
-          len > 5 ? getBpDisplayStr(len) : ref,
-          alt,
-        )
-  }
-
-  // Deletion
   return isLong
-    ? `${getBpDisplayStr(lenRef - lenAlt)} DEL`
-    : makeDescriptionString('deletion', ref, alt)
-}
-
-function makeDescriptionString(soTerm: string, ref: string, alt: string) {
-  return `${soTerm} ${ref} -> ${alt}`
+    ? `${getBpDisplayStr(lenRef)} -> ${getBpDisplayStr(lenAlt)}`
+    : `${ref} -> ${alt}`
 }
 
 export function makeSimpleAltString(

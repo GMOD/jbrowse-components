@@ -37,11 +37,11 @@
   },
   "dependencies": {
     "@jbrowse/core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
     "@mui/material": "^7.0.0",
     "g2p_mapper": "^1.0.9",
     "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0"
+    "mobx-react": "^9.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

@@ -1,5 +1,7 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`multiple insertions of varying lengths 1`] = `"A -> AA,AAA,AAAA,AAAAA,AAAAAA"`;
+
 exports[`null ALT 1`] = `
 {
   "ALT": undefined,
@@ -9,11 +11,7 @@ exports[`null ALT 1`] = `
   "ID": [
     "rs123",
   ],
-  "INFO": {
-    "HELLO": [
-      "world",
-    ],
-  },
+  "INFO": {},
   "POS": 100,
   "QUAL": 29,
   "REF": "G",
@@ -24,6 +22,6 @@ exports[`null ALT 1`] = `
   "samples": {},
   "start": 99,
   "type": "remark",
-  "uniqueId": "myuniqueid",
+  "uniqueId": "testid",
 }
 `;

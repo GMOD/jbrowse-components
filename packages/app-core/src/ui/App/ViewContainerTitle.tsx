@@ -1,8 +1,8 @@
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 

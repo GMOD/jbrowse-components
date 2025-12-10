@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import { bindPopover, bindTrigger, usePopupState } from './hooks'
 
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { MenuItemsGetter } from '@jbrowse/core/ui/CascadingMenu'
 
 const CascadingMenuButton = observer(function CascadingMenuButton({
   children,
@@ -18,7 +18,7 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   ...rest
 }: {
   children?: React.ReactElement
-  menuItems: MenuItem[]
+  menuItems: MenuItemsGetter
   closeAfterItemClick?: boolean
   stopPropagation?: boolean
   onClick?: () => void
@@ -44,7 +44,7 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
         }}
         {...rest2}
         {...rest}
-        disabled={menuItems.length === 0}
+        disabled={Array.isArray(menuItems) && menuItems.length === 0}
       >
         {children}
       </IconButton>

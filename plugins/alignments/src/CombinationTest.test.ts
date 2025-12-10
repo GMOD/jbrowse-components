@@ -22,6 +22,10 @@ const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
   }
 }
 
+// Mock sequenceAdapter config - the actual config doesn't matter since
+// getVolvoxSequenceSubAdapter ignores it and returns the test adapter
+const sequenceAdapterConfig = { type: 'TestSequenceAdapter' }
+
 async function getFeats(f1: string, f2: string) {
   const cramAdapter = new CramAdapter(
     cramConfigSchema.create({
@@ -31,11 +35,12 @@ async function getFeats(f1: string, f2: string) {
       craiLocation: {
         localPath: require.resolve(`${f1}.crai`),
       },
-      sequenceAdapter: {},
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
   )
+  // Set sequenceAdapterConfig directly on adapter (normally done by CoreGetRefNames)
+  cramAdapter.sequenceAdapterConfig = sequenceAdapterConfig
 
   const bamAdapter = new BamAdapter(
     bamConfigSchema.create({
@@ -48,7 +53,12 @@ async function getFeats(f1: string, f2: string) {
         },
       },
     }),
+    getVolvoxSequenceSubAdapter,
+    pluginManager,
   )
+  // Set sequenceAdapterConfig directly on adapter (normally done by CoreGetRefNames)
+  bamAdapter.sequenceAdapterConfig = sequenceAdapterConfig
+
   const query = {
     assemblyName: 'volvox',
     refName: 'ctgA',

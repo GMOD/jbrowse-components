@@ -1,5 +1,5 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 const useStyles = makeStyles()(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),

@@ -2,15 +2,15 @@ import {
   localStorageGetBoolean,
   localStorageSetBoolean,
 } from '@jbrowse/core/util'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, cast, types } from 'mobx-state-tree'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel MultipleViewsSessionMixin
@@ -34,6 +34,13 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        */
       stickyViewHeaders: types.optional(types.boolean, () =>
         localStorageGetBoolean('stickyViewHeaders', true),
+      ),
+      /**
+       * #property
+       * enables the dockview-based tabbed/tiled workspace layout
+       */
+      useWorkspaces: types.optional(types.boolean, () =>
+        localStorageGetBoolean('useWorkspaces', false),
       ),
     })
     .actions(self => ({
@@ -112,12 +119,34 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         self.stickyViewHeaders = sticky
       },
 
+      /**
+       * #action
+       */
+      setUseWorkspaces(useWorkspaces: boolean) {
+        self.useWorkspaces = useWorkspaces
+      },
+
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetBoolean('stickyViewHeaders', self.stickyViewHeaders)
-          }),
+          autorun(
+            function stickyViewHeadersAutorun() {
+              localStorageSetBoolean(
+                'stickyViewHeaders',
+                self.stickyViewHeaders,
+              )
+            },
+            { name: 'StickyViewHeaders' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function useWorkspacesAutorun() {
+              localStorageSetBoolean('useWorkspaces', self.useWorkspaces)
+            },
+            { name: 'UseWorkspaces' },
+          ),
         )
       },
     }))

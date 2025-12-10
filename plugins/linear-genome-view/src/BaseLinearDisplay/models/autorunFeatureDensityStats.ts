@@ -1,5 +1,5 @@
 import { getContainingView, isAbortException } from '@jbrowse/core/util'
-import { isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { BaseLinearDisplayModel } from '../model'

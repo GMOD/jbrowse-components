@@ -20,16 +20,22 @@ reference the markdown files in our repo of the checked out git tag
 
 ### ChordVariantDisplay - Slots
 
+#### slot: onChordClick
+
+```js
+onChordClick: {
+        type: 'boolean',
+        description:
+          'callback that should be run when a chord in the track is clicked',
+        defaultValue: false,
+        contextVariable: ['feature', 'track', 'pluginManager'],
+      }
+```
+
 #### slot: renderer
 
 ```js
 renderer: types.optional(pluginManager.pluggableConfigSchemaType('renderer'), {
   type: 'StructuralVariantChordRenderer',
 })
-```
-
-### ChordVariantDisplay - Derives from
-
-```js
-baseConfiguration: baseChordDisplayConfig
 ```

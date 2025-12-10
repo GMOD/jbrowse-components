@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import {
@@ -19,20 +21,16 @@ import {
   RadioGroup,
   TextField,
 } from '@mui/material'
+import copy from 'copy-to-clipboard'
+import { saveAs } from 'file-saver-es'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import { getRpcSessionId } from '../../../util/tracks'
 
-import type {
-  AbstractSessionModel,
-  AbstractTrackModel,
-  Feature,
-  Region,
-} from '@jbrowse/core/util'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
-
-// icons
+import type { FileTypeExporter } from '../saveTrackFileTypes/types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()({
   root: {
@@ -44,56 +42,31 @@ const useStyles = makeStyles()({
   },
 })
 
-async function fetchFeatures(
-  track: IAnyStateTreeNode,
-  regions: Region[],
-  signal?: AbortSignal,
-) {
+async function fetchFeatures(track: IAnyStateTreeNode, regions: Region[]) {
   const { rpcManager } = getSession(track)
   const adapterConfig = getConf(track, ['adapter'])
-  const sessionId = 'getFeatures'
+  const sessionId = getRpcSessionId(track)
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
     regions,
     sessionId,
-    signal,
   }) as Promise<Feature[]>
 }
 
-async function stringifyExportData(
-  features: Feature[] | undefined,
-  type: string,
-  options: Record<string, FileTypeExporter>,
-  session: AbstractSessionModel,
-  visibleRegions: Region[],
-): Promise<string | null> {
-  if (!features) {
-    return null
-  }
-  const generator = options[type] || {
-    callback: () => 'Unknown',
-  }
-  return generator.callback({
-    features,
-    session,
-    assemblyName: visibleRegions[0]!.assemblyName,
-  })
+function roundRegions(regions: Region[]) {
+  return regions.map(r => ({
+    ...r,
+    start: Math.floor(r.start),
+    end: Math.ceil(r.end),
+  }))
 }
-interface FileTypeExporter {
-  name: string
-  extension: string
-  helpText?: string
-  callback: (arg: {
-    features: Feature[]
-    session: AbstractSessionModel
-    assemblyName: string
-  }) => Promise<string> | string
-}
+
 const SaveTrackDataDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: AbstractTrackModel & {
+  model: IAnyStateTreeNode & {
+    configuration: AnyConfigurationModel
     saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
   }
   handleClose: () => void
@@ -107,9 +80,14 @@ const SaveTrackDataDialog = observer(function ({
   const [loading, setLoading] = useState(false)
   const [helpDialogOpen, setHelpDialogOpen] = useState(false)
   const [helpDialogContent, setHelpDialogContent] = useState('')
+  const [copied, setCopied] = useState(false)
 
-  // @ts-expect-error
-  const regionStr = getContainingView(model).coarseVisibleLocStrings
+  const view = getContainingView(model) as unknown as {
+    coarseVisibleLocStrings: string[]
+    visibleRegions?: Region[]
+  }
+
+  const { visibleRegions, coarseVisibleLocStrings: regionStr } = view
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -117,9 +95,6 @@ const SaveTrackDataDialog = observer(function ({
       try {
         setError(undefined)
         setLoading(true)
-        const { visibleRegions } = getContainingView(model) as {
-          visibleRegions?: Region[]
-        }
         const session = getSession(model)
         if (!visibleRegions?.length || !type) {
           return
@@ -133,8 +108,8 @@ const SaveTrackDataDialog = observer(function ({
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           adapterType?.adapterCapabilities?.includes('exportData')
 
+        const regions = roundRegions(visibleRegions)
         if (supportsExport) {
-          // Try to use adapter's getExportData method via RPC
           const { rpcManager } = session
           const sessionId = getRpcSessionId(model)
           const exportResult = (await rpcManager.call(
@@ -142,30 +117,25 @@ const SaveTrackDataDialog = observer(function ({
             'CoreGetExportData',
             {
               adapterConfig,
-              regions: visibleRegions,
+              regions,
               formatType: type,
               sessionId,
             },
           )) as string | undefined
 
           setUsedAdapterExport(true)
-          setStr(exportResult || 'No export data received')
+          setStr(exportResult ?? '')
         } else {
-          const view = getContainingView(model) as { visibleRegions?: Region[] }
-          setError(undefined)
-          const visibleRegions = view.visibleRegions || []
-          const features = await fetchFeatures(model, visibleRegions)
-          // Use stringify callback
-          const stringifyResult = await stringifyExportData(
+          const features = await fetchFeatures(model, regions)
+          const result = await options[type]!.callback({
             features,
-            type,
-            options,
             session,
-            visibleRegions,
-          )
+            assemblyName: regions[0]!.assemblyName,
+          })
 
           setUsedAdapterExport(false)
-          setStr(stringifyResult || 'No stringify result received')
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          setStr(result ?? '')
         }
       } catch (e) {
         setError(e)
@@ -174,7 +144,7 @@ const SaveTrackDataDialog = observer(function ({
         setLoading(false)
       }
     })()
-  }, [type, options, model])
+  }, [type, visibleRegions, options, model])
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Save track data">
@@ -217,7 +187,7 @@ const SaveTrackDataDialog = observer(function ({
                   <IconButton
                     size="small"
                     onClick={() => {
-                      setHelpDialogContent(val.helpText || '')
+                      setHelpDialogContent(val.helpText!)
                       setHelpDialogOpen(true)
                     }}
                     title="Show help for this format"
@@ -239,7 +209,7 @@ const SaveTrackDataDialog = observer(function ({
             loading
               ? 'Loading...'
               : str.length > 500_000
-                ? 'File greater than 500kb, too large to view here. Click "Download" to results to file'
+                ? 'File greater than 500kb, too large to view here. Click "Download" to save results to file'
                 : str
           }
           slotProps={{
@@ -254,15 +224,24 @@ const SaveTrackDataDialog = observer(function ({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={async () => {
-            if (!type) {
-              return
-            }
-            const ext = options[type]?.extension || 'unknown'
+          disabled={loading || !!error}
+          onClick={() => {
+            copy(str)
+            setCopied(true)
+            setTimeout(() => {
+              setCopied(false)
+            }, 1000)
+          }}
+          startIcon={<ContentCopyIcon />}
+        >
+          {copied ? 'Copied!' : 'Copy to clipboard'}
+        </Button>
+        <Button
+          disabled={loading || !!error}
+          onClick={() => {
+            const ext = options[type!]!.extension
             const blob = new Blob([str], { type: 'text/plain;charset=utf-8' })
 
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            const { saveAs } = await import('file-saver-es')
             saveAs(blob, `jbrowse_track_data.${ext}`, { autoBom: false })
           }}
           startIcon={<GetAppIcon />}
@@ -293,10 +272,10 @@ const SaveTrackDataDialog = observer(function ({
         </DialogContent>
         <DialogActions>
           <Button
+            autoFocus
             onClick={() => {
               setHelpDialogOpen(false)
             }}
-            autoFocus
           >
             Close
           </Button>

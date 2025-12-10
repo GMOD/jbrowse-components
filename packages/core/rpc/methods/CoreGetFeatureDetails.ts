@@ -18,9 +18,6 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
       renamedArgs,
       rpcDriver,
     )) as RenderArgs
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      return superArgs
-    }
     const { rendererType } = args
     const RendererType = this.pluginManager.getRendererType(rendererType)!
     // @ts-expect-error
@@ -31,10 +28,7 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
     args: RenderArgsSerialized & { stopToken?: string },
     rpcDriver: string,
   ) {
-    let deserializedArgs = args
-    if (rpcDriver !== 'MainThreadRpcDriver') {
-      deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    }
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { rendererType, featureId } = deserializedArgs
     const RendererType = this.pluginManager.getRendererType(
       rendererType,

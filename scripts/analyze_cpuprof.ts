@@ -33,7 +33,9 @@ for (const sample of profile.samples) {
 
 // Get function names
 function getFunctionName(node) {
-  if (!node || !node.callFrame) return 'unknown'
+  if (!node?.callFrame) {
+    return 'unknown'
+  }
   const funcName = node.callFrame.functionName || '(anonymous)'
   const url = node.callFrame.url || ''
   const fileName = url.split('/').pop() || url
@@ -47,12 +49,16 @@ function getFunctionName(node) {
 const summary = []
 for (const [nodeId, time] of selfTime.entries()) {
   const node = nodes.get(nodeId)
-  if (!node) continue
+  if (!node) {
+    continue
+  }
 
   const funcName = getFunctionName(node)
 
   // Skip Node.js internals unless significant
-  if (funcName.includes('internal/') && time < 50) continue
+  if (funcName.includes('internal/') && time < 50) {
+    continue
+  }
 
   summary.push({
     name: funcName,
@@ -69,8 +75,7 @@ console.log('Rank | Self Time | % Total | Function')
 console.log('-----|-----------|---------|----------')
 
 const top30 = summary.slice(0, 30)
-for (let i = 0; i < top30.length; i++) {
-  const item = top30[i]
+for (const [i, item] of top30.entries()) {
   console.log(
     `${String(i + 1).padStart(4)} | ${String(item.selfTime).padStart(9)} | ${item.percentage.toFixed(2).padStart(6)}% | ${item.name}`,
   )

@@ -1,4 +1,4 @@
-import RenderLinearReadArcsDisplay from '../RenderLinearReadArcsDisplay'
+import RenderLinearReadArcsDisplay from './RenderLinearReadArcsDisplay'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -14,31 +14,33 @@ import {
   measureText,
   minmax,
 } from '@jbrowse/core/util'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { autorun, observable, transaction } from 'mobx'
 import {
   addDisposer,
   cast,
   getParent,
-  getRoot,
   getSnapshot,
-  resolveIdentifier,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import { autorun, observable } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
 
-import type { ImportFormSyntenyTrack } from './types'
+import type { DotplotViewInit, ImportFormSyntenyTrack } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -139,9 +141,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        tracks: types.array(
-          pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
-        ),
+        tracks: types.array(pm.pluggableMstType('track', 'stateModel')),
 
         /**
          * #property
@@ -150,6 +150,11 @@ export default function stateModelFactory(pm: PluginManager) {
          * elsewhere
          */
         viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track')),
+        /**
+         * #property
+         * used for initializing the view from a session snapshot
+         */
+        init: types.frozen<DotplotViewInit | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -277,9 +282,36 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #getter
        */
-      get loading() {
-        return self.assemblyNames.length > 0 && !this.initialized
+      get hasSomethingToShow() {
+        return self.assemblyNames.length > 0 || !!self.init
       },
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return (
+          this.hasSomethingToShow &&
+          !this.initialized &&
+          !self.volatileError &&
+          !self.assemblyErrors
+        )
+      },
+      /**
+       * #getter
+       * Whether to show the import form
+       */
+      get showImportForm() {
+        return !this.hasSomethingToShow || !!self.volatileError
+      },
+
+      /**
+       * #getter
+       */
+      get loadingMessage() {
+        return this.showLoading ? 'Loading' : undefined
+      },
+
       /**
        * #getter
        */
@@ -383,6 +415,13 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #action
        */
+      setInit(init?: DotplotViewInit) {
+        self.init = init
+      },
+
+      /**
+       * #action
+       */
       zoomOut() {
         self.hview.zoomOut()
         self.vview.zoomOut()
@@ -419,54 +458,20 @@ export default function stateModelFactory(pm: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pm.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const trackType = pm.getTrackType(conf.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${conf.type}`)
-        }
-        const viewType = pm.getViewType(self.type)!
-        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          viewType.displayTypes.find(type => type.name === d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
-          )
-        }
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
-        })
-        self.tracks.push(track)
+        return showTrackGeneric(self, trackId, initialSnapshot)
       },
 
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pm.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const tracks = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => {
-          for (const track of tracks) {
-            self.tracks.remove(track)
-          }
-        })
-        return tracks.length
+        return hideTrackGeneric(self, trackId)
       },
       /**
        * #action
        */
       toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-          return true
-        }
-        return false
+        toggleTrackGeneric(self, trackId)
       },
       /**
        * #action
@@ -555,6 +560,23 @@ export default function stateModelFactory(pm: PluginManager) {
         self.vview.zoomTo(self.vview.maxBpPerPx)
         self.vview.center()
         self.hview.center()
+      },
+      /**
+       * #action
+       */
+      initializeDisplayedRegions() {
+        const { hview, vview, assemblyNames } = self
+        if (hview.displayedRegions.length && vview.displayedRegions.length) {
+          return
+        }
+        const { assemblyManager } = getSession(self)
+        hview.setDisplayedRegions(
+          assemblyManager.get(assemblyNames[0]!)?.regions || [],
+        )
+        vview.setDisplayedRegions(
+          assemblyManager.get(assemblyNames[1]!)?.regions || [],
+        )
+        this.showAllRegions()
       },
       /**
        * #action
@@ -655,66 +677,85 @@ export default function stateModelFactory(pm: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const s = (s: unknown) => JSON.stringify(s)
-            const { showPanButtons, wheelMode, cursorMode } = self
-            if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('dotplot-showPanbuttons', s(showPanButtons))
-              localStorage.setItem('dotplot-cursorMode', cursorMode)
-              localStorage.setItem('dotplot-wheelMode', wheelMode)
-            }
-          }),
-        )
-        addDisposer(
-          self,
           autorun(
-            () => {
+            function dotplotInitAutorun() {
+              const { init, volatileWidth } = self
+              if (!volatileWidth || !init) {
+                return
+              }
+
               const session = getSession(self)
 
-              // don't operate if width not set yet
-              if (
-                self.volatileWidth === undefined ||
-                !self.assembliesInitialized
-              ) {
-                return
+              // Set assembly names from init
+              const assemblyNames = init.views.map(v => v.assembly)
+              self.setAssemblyNames(assemblyNames[0]!, assemblyNames[1]!)
+
+              // Show tracks
+              if (init.tracks) {
+                for (const trackId of init.tracks) {
+                  try {
+                    self.showTrack(trackId)
+                  } catch (e) {
+                    console.error(e)
+                    session.notifyError(`${e}`, e)
+                  }
+                }
               }
 
-              const { hview, assemblyNames, vview } = self
-              // also don't operate if displayedRegions already set, this is a
-              // helper autorun to load regions from assembly
-              if (
-                hview.displayedRegions.length &&
-                vview.displayedRegions.length
-              ) {
-                return
-              }
-
-              transaction(() => {
-                hview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[0]!)?.regions || [],
-                )
-                vview.setDisplayedRegions(
-                  session.assemblyManager.get(assemblyNames[1]!)?.regions || [],
-                )
-                self.showAllRegions()
-              })
+              // Clear init state
+              self.setInit(undefined)
             },
-            { delay: 1000 },
+            { name: 'DotplotInit' },
           ),
         )
         addDisposer(
           self,
-          autorun(function borderSetter() {
-            // make sure we have a width on the view before trying to load
-            if (self.volatileWidth === undefined) {
-              return
-            }
+          autorun(
+            function dotplotLocalStorageAutorun() {
+              const s = (s: unknown) => JSON.stringify(s)
+              const { showPanButtons, wheelMode, cursorMode } = self
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(
+                  'dotplot-showPanbuttons',
+                  s(showPanButtons),
+                )
+                localStorage.setItem('dotplot-cursorMode', cursorMode)
+                localStorage.setItem('dotplot-wheelMode', wheelMode)
+              }
+            },
+            { name: 'DotplotLocalStorage' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function dotplotRegionsAutorun() {
+              if (
+                self.volatileWidth !== undefined &&
+                self.assembliesInitialized
+              ) {
+                self.initializeDisplayedRegions()
+              }
+            },
+            { delay: 1000, name: 'DotplotRegions' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function dotplotBorderAutorun() {
+              // make sure we have a width on the view before trying to load
+              if (self.volatileWidth === undefined) {
+                return
+              }
 
-            // Calculate and apply borders
-            const { borderX, borderY } = self.calculateBorders()
-            self.setBorderX(borderX)
-            self.setBorderY(borderY)
-          }),
+              // Calculate and apply borders
+              const { borderX, borderY } = self.calculateBorders()
+              self.setBorderX(borderX)
+              self.setBorderY(borderY)
+            },
+            { name: 'DotplotBorder' },
+          ),
         )
       },
       /**
@@ -796,6 +837,10 @@ export default function stateModelFactory(pm: PluginManager) {
         return self.volatileError || self.assemblyErrors
       },
     }))
+    .postProcessSnapshot(snap => {
+      const { init, ...rest } = snap as Omit<typeof snap, symbol>
+      return rest
+    })
 }
 
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>

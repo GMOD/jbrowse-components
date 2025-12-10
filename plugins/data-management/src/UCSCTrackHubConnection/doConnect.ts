@@ -68,13 +68,10 @@ export async function doConnect(self: {
             : {}),
         })
       }
-      const asm2 = assemblyManager.get(genomeName)
-      const sequenceAdapter = getConf(asm2!, ['sequence', 'adapter'])
       const tracksNew = generateTracks({
         trackDb: tracks,
         trackDbLoc: hubFileLocation,
         assemblyName: genomeName,
-        sequenceAdapter,
         baseUrl: hubUri,
       })
       self.addTrackConfs(tracksNew)
@@ -131,12 +128,10 @@ export async function doConnect(self: {
               locationType: 'LocalPathLocation' as const,
             }
         const trackDb = await fetchTrackDbFile(loc)
-        const sequenceAdapter = getConf(asm, ['sequence', 'adapter'])
         const tracks = generateTracks({
           trackDb,
           trackDbLoc: loc,
           assemblyName: genomeName,
-          sequenceAdapter,
           baseUrl: hubUri,
         })
         self.addTrackConfs(tracks)

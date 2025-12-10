@@ -11,12 +11,12 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getParent, getSnapshot, types } from 'mobx-state-tree'
+import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import type { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearComparativeDisplay
@@ -76,7 +76,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       renderProps() {
         return {
           rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           highResolutionScaling: 2,
         }
       },

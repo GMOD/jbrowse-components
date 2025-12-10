@@ -26,6 +26,16 @@ reference the markdown files in our repo of the checked out git tag
 renderer: pluginManager.getRendererType('HicRenderer')!.configSchema
 ```
 
+#### slot: height
+
+```js
+height: {
+        type: 'number',
+        defaultValue: 300,
+        description: 'default height for the Hi-C track',
+      }
+```
+
 ### LinearHicDisplay - Derives from
 
 ```js

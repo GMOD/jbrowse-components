@@ -10,6 +10,15 @@ export interface ExportSvgOptions {
   cytobandHeight?: number
   trackLabels?: string
   themeName?: string
+  showGridlines?: boolean
+}
+
+export interface BreakpointSplitViewInit {
+  views: {
+    loc?: string
+    assembly: string
+    tracks?: string[]
+  }[]
 }
 
 export interface Breakend {

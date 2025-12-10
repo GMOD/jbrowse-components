@@ -30,12 +30,7 @@ export default class CircularViewPlugin extends Plugin {
 }
 
 export {
-  BaseChordDisplayComponent,
-  BaseChordDisplayModel,
-  baseChordDisplayConfig,
-} from './BaseChordDisplay'
-
-export {
   type CircularViewModel,
   type CircularViewStateModel,
+  type ExportSvgOptions,
 } from './CircularView/model'

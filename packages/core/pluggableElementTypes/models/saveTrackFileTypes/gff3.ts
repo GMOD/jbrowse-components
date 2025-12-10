@@ -63,15 +63,17 @@ function formatAttributes(f: Feature, parentId?: string) {
 
 function formatFeat(f: Feature, parentId?: string, parentRef?: string) {
   const strand = f.get('strand')
+  const score = f.get('score')
+  const phase = f.get('phase')
   return [
     f.get('refName') || parentRef,
     f.get('source') || '.',
     f.get('type') || '.',
     f.get('start') + 1,
     f.get('end'),
-    f.get('score') || '.',
+    score !== undefined && score !== null ? score : '.',
     strand === 1 ? '+' : strand === -1 ? '-' : '.',
-    f.get('phase') || '.',
+    phase !== undefined && phase !== null ? phase : '.',
     formatAttributes(f, parentId),
   ].join('\t')
 }

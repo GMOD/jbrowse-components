@@ -21,6 +21,7 @@ export interface ExportSvgOptions {
   cytobandHeight?: number
   trackLabels?: string
   themeName?: string
+  showGridlines?: boolean
 }
 
 export interface HighlightType {
@@ -38,7 +39,10 @@ export interface NavLocation {
 }
 
 export interface InitState {
-  loc: string
+  loc?: string
   assembly: string
   tracks?: string[]
+  tracklist?: boolean
+  nav?: boolean
+  highlight?: string[]
 }

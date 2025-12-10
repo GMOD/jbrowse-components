@@ -3,10 +3,10 @@ import { doesIntersect2 } from '@jbrowse/core/util'
 import type { Mismatch, SortedBy } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 
-export const sortFeature = (
+export function sortFeature(
   features: Map<string, Feature>,
   sortedBy: SortedBy,
-) => {
+) {
   const featureArray = Array.from(features.values())
   const featuresInCenterLine: Feature[] = []
   const featuresOutsideCenter: Feature[] = []

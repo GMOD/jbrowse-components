@@ -1,6 +1,15 @@
 import { bpSpanPx } from '@jbrowse/core/util'
 
-import { fillRect } from '../util'
+import { fillRectCtx, fillTextCtx } from '../util'
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_S,
+  CIGAR_X,
+} from './cigarUtil'
 
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
@@ -26,7 +35,7 @@ export function renderPerBaseLettering({
   charWidth: number
   charHeight: number
   canvasWidth: number
-  cigarOps: string[]
+  cigarOps: Uint32Array | number[]
 }) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat
@@ -39,28 +48,30 @@ export function renderPerBaseLettering({
   if (!seq) {
     return
   }
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]!
-    const op = cigarOps[i + 1]!
-    if (op === 'S' || op === 'I') {
+  for (let i = 0, l = cigarOps.length; i < l; i++) {
+    const packed = cigarOps[i]!
+    const len = packed >> 4
+    const op = packed & 0xf
+    if (op === CIGAR_S || op === CIGAR_I) {
       soffset += len
-    } else if (op === 'D' || op === 'N') {
+    } else if (op === CIGAR_D || op === CIGAR_N) {
       roffset += len
-    } else if (op === 'M' || op === 'X' || op === '=') {
+    } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
       for (let m = 0; m < len; m++) {
         const letter = seq[soffset + m]!
         const r = start + roffset + m
         const [leftPx] = bpSpanPx(r, r + 1, region, bpPerPx)
         const c = colorMap[letter]
-        fillRect(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
+        fillRectCtx(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
 
         if (w >= charWidth && heightPx >= heightLim) {
-          // normal SNP coloring
-          ctx.fillStyle = colorContrastMap[letter]!
-          ctx.fillText(
+          fillTextCtx(
+            ctx,
             letter,
             leftPx + (w - charWidth) / 2 + 1,
             topPx + heightPx,
+            canvasWidth,
+            colorContrastMap[letter],
           )
         }
       }

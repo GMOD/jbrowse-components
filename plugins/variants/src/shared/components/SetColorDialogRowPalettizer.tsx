@@ -2,6 +2,8 @@ import { set1 } from '@jbrowse/core/ui/colors'
 import { randomColor } from '@jbrowse/core/util/color'
 import { Button } from '@mui/material'
 
+const excludedFields = new Set(['name', 'color', 'label', 'id', 'HP'])
+
 export default function SetColorDialogRowPalettizer({
   setCurrLayout,
   currLayout,
@@ -9,62 +11,46 @@ export default function SetColorDialogRowPalettizer({
   currLayout: { name: string; [key: string]: unknown }[]
   setCurrLayout: (arg: { name: string; [key: string]: unknown }[]) => void
 }) {
-  if (!currLayout.length || !currLayout[0]) {
+  const firstRow = currLayout[0]
+  if (!firstRow) {
     return null
   }
 
-  const fields = Object.keys(currLayout[0]).filter(
-    f =>
-      f !== 'name' &&
-      f !== 'color' &&
-      f !== 'label' &&
-      f !== 'id' &&
-      f !== 'HP',
-  )
+  const fields = Object.keys(firstRow).filter(f => !excludedFields.has(f))
 
   return (
     <div>
       Create color palette based on...
-      {fields.map(r => (
+      {fields.map(field => (
         <Button
-          key={r}
+          key={field}
           variant="contained"
           color="inherit"
           onClick={() => {
-            const map = new Map<string, number>()
+            const counts = new Map<string, number>()
             for (const row of currLayout) {
-              const val = map.get(row[r] as string)
-              if (!val) {
-                map.set(row[r] as string, 1)
-              } else {
-                map.set(row[r] as string, val + 1)
-              }
+              const key = row[field] as string
+              counts.set(key, (counts.get(key) || 0) + 1)
             }
-            const ret = Object.fromEntries(
-              [...map.entries()]
+            const colorMap = Object.fromEntries(
+              [...counts.entries()]
                 .sort((a, b) => a[1] - b[1])
-                .map((r, idx) => [r[0], set1[idx] || randomColor(r[0])]),
+                .map(([key], idx) => [key, set1[idx] || randomColor(key)]),
             )
-
             setCurrLayout(
               currLayout.map(row => ({
                 ...row,
-                color: ret[row[r] as string],
+                color: colorMap[row[field] as string],
               })),
             )
           }}
         >
-          {r}
+          {field}
         </Button>
       ))}
       <Button
         onClick={() => {
-          setCurrLayout(
-            currLayout.map(row => ({
-              ...row,
-              color: undefined,
-            })),
-          )
+          setCurrLayout(currLayout.map(row => ({ ...row, color: undefined })))
         }}
       >
         Clear colors

@@ -5,6 +5,8 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
@@ -14,16 +16,14 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'
-import { makeStyles } from 'tss-react/mui'
 
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { IAnyType } from 'mobx-state-tree'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   icon: {
@@ -130,14 +130,19 @@ const Schema = observer(function ({
 const ConfigurationEditor = observer(function ({
   model,
 }: {
-  model: { target: AnyConfigurationModel }
+  model: {
+    target?: AnyConfigurationModel
+  }
   session?: AbstractSessionModel
 }) {
   const { classes } = useStyles()
   // key forces a re-render, otherwise the same field can end up being used for
   // different tracks since only the backing model changes for example see pr
   // #804
-  const { target } = model
+  const target = model.target
+  if (!target) {
+    return <Typography>No configuration target</Typography>
+  }
   const key = readConfObject(target, 'trackId')
   const name = readConfObject(target, 'name')
   return (

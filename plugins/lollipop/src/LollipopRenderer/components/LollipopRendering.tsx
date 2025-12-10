@@ -1,10 +1,11 @@
 import type { FocusEvent, MouseEvent } from 'react'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useMemo } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { FloatingLayout } from '../Layout'
 import Lollipop from './Lollipop'
 import Stick from './Stick'
 
@@ -15,7 +16,7 @@ function layoutFeat(args: {
   feature: Feature
   bpPerPx: number
   region: Region
-  layout: { add: (...args: unknown[]) => void }
+  layout: FloatingLayout
   config: AnyConfigurationModel
 }) {
   const { feature, bpPerPx, config, region, layout } = args
@@ -35,7 +36,7 @@ function layoutFeat(args: {
     featureId: feature.id(),
     anchorX: centerPx,
     radiusPx,
-    score: readConfObject(args.config, 'score', { feature }),
+    score: readConfObject(config, 'score', { feature }),
   })
 }
 
@@ -74,34 +75,27 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
     const { onClick: handler } = props
     return handler?.(event)
   }
-  const [client, setClient] = useState(false)
-  useEffect(() => {
-    setClient(true)
-  }, [])
-
   const {
     regions,
     bpPerPx,
-    layout,
     config,
     features = new Map(),
     displayModel = {},
   } = props
   const { selectedFeatureId } = displayModel
   const region = regions[0]!
-  for (const feature of features.values()) {
-    layoutFeat({
-      feature,
-      bpPerPx,
-      region,
-      config,
-      layout,
-    })
-  }
-
   const width = (region.end - region.start) / bpPerPx
-  const records = [...layout.getLayout(config).values()]
-  const height = layout.getTotalHeight()
+
+  const { records, height } = useMemo(() => {
+    const layout = new FloatingLayout({ width })
+    for (const feature of features.values()) {
+      layoutFeat({ feature, bpPerPx, region, config, layout })
+    }
+    return {
+      records: [...layout.getLayout(config).values()],
+      height: layout.getTotalHeight(),
+    }
+  }, [features, bpPerPx, region, config, width])
 
   return (
     <svg
@@ -118,31 +112,32 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
       onBlur={onMouseLeave}
       onClick={onClick}
     >
-      {client ? (
-        <>
-          {records.map(layoutRecord => {
-            const feature = features.get(layoutRecord.data.featureId)
-            return (
-              <Fragment key={feature.id()}>
-                <Stick
-                  key={`stick-${feature.id()}`}
-                  {...props}
-                  config={config}
-                  layoutRecord={layoutRecord}
-                  feature={feature}
-                />
-                <Lollipop
-                  key={`body-${feature.id()}`}
-                  {...props}
-                  layoutRecord={layoutRecord}
-                  feature={feature}
-                  selectedFeatureId={selectedFeatureId}
-                />
-              </Fragment>
-            )
-          })}
-        </>
-      ) : null}
+      {records.map(layoutRecord => {
+        const feature = features.get(layoutRecord.data.featureId)
+        return (
+          <Fragment key={feature.id()}>
+            <Stick
+              config={config}
+              layoutRecord={layoutRecord}
+              feature={feature}
+            />
+            <Lollipop
+              config={config}
+              layoutRecord={layoutRecord}
+              feature={feature}
+              selectedFeatureId={selectedFeatureId}
+              onFeatureMouseDown={props.onFeatureMouseDown}
+              onFeatureMouseEnter={props.onFeatureMouseEnter}
+              onFeatureMouseOut={props.onFeatureMouseOut}
+              onFeatureMouseOver={props.onFeatureMouseOver}
+              onFeatureMouseUp={props.onFeatureMouseUp}
+              onFeatureMouseLeave={props.onFeatureMouseLeave}
+              onFeatureMouseMove={props.onFeatureMouseMove}
+              onFeatureClick={props.onFeatureClick}
+            />
+          </Fragment>
+        )
+      })}
     </svg>
   )
 })

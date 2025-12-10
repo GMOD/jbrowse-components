@@ -1,6 +1,6 @@
 import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import { HorizontalAxis, VerticalAxis } from './Axes'
 import DotplotTooltips from './DotplotTooltips'
@@ -213,17 +213,15 @@ const DotplotViewInternal = observer(function ({
   )
 })
 const DotplotView = observer(function ({ model }: { model: DotplotViewModel }) {
-  const { initialized, loading, error } = model
+  const { initialized, showLoading, error, loadingMessage } = model
 
-  if ((!initialized && !loading) || error) {
+  if (showLoading) {
+    return <LoadingEllipses variant="h6" message={loadingMessage} />
+  } else if (!initialized || error) {
     return <ImportForm model={model} />
+  } else {
+    return <DotplotViewInternal model={model} />
   }
-
-  if (loading) {
-    return <LoadingEllipses variant="h6" />
-  }
-
-  return <DotplotViewInternal model={model} />
 })
 
 export default DotplotView

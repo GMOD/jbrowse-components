@@ -1,6 +1,6 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Search from '@mui/icons-material/Search'
 import { InputAdornment, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   root: {

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
@@ -8,7 +9,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   textAreaFont: {

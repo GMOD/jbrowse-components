@@ -7,8 +7,8 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import { SharedLinearPileupDisplayMixin } from '@jbrowse/plugin-alignments'
-import { types } from 'mobx-state-tree'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -122,11 +122,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
         session.setSelection(feature)
       },
-      /**
-       * #autorun
-       */
       afterCreate() {
-        // use color by stand to help indicate inversions better on first load,
+        // use color by strand to help indicate inversions better on first load,
         // otherwise use selected orientation
         if (!self.colorBySetting && self.colorBy.type === 'normal') {
           self.setColorScheme({ type: 'strand' })

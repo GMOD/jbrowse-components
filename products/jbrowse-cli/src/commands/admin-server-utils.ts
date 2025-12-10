@@ -2,7 +2,8 @@ import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
-import { debug, writeJsonFile } from '../utils'
+import { debug, resolveConfigPath, writeJsonFile } from '../utils'
+import { createDefaultConfig } from './assembly-utils'
 
 import type { Express, Request, Response } from 'express'
 
@@ -50,24 +51,14 @@ export async function setupConfigFile({
 }: {
   root?: string
 } = {}): Promise<{ outFile: string; baseDir: string }> {
-  const output = root
-  const isDir = fs.lstatSync(output).isDirectory()
-  const outFile = isDir ? `${output}/config.json` : output
+  const outFile = await resolveConfigPath(root)
   const baseDir = path.dirname(outFile)
 
   if (fs.existsSync(outFile)) {
     debug(`Found existing config file ${outFile}`)
   } else {
     debug(`Creating config file ${outFile}`)
-    await writeJsonFile(outFile, {
-      assemblies: [],
-      configuration: {},
-      connections: [],
-      defaultSession: {
-        name: 'New Session',
-      },
-      tracks: [],
-    })
+    await writeJsonFile(outFile, createDefaultConfig())
   }
 
   return { outFile, baseDir }

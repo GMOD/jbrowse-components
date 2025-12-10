@@ -1,8 +1,8 @@
 import { FileSelector } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui'
 
 import type { AddTrackModel } from '../model'
 import type { AbstractRootModel } from '@jbrowse/core/util'

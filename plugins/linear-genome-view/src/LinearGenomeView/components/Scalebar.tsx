@@ -1,9 +1,9 @@
 import type React from 'react'
 import { forwardRef, useEffect, useRef } from 'react'
 
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { autorun } from 'mobx'
-import { makeStyles } from 'tss-react/mui'
 
 import Gridlines from './Gridlines'
 import ScalebarCoordinateLabels from './ScalebarCoordinateLabels'
@@ -20,13 +20,11 @@ const useStyles = makeStyles()({
   },
   zoomContainer: {
     position: 'relative',
-    willChange: 'transform',
   },
   scalebar: {
     position: 'absolute',
     display: 'flex',
     pointerEvents: 'none',
-    willChange: 'transform, width',
   },
 })
 
@@ -40,30 +38,37 @@ const Scalebar = forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
   { model, style, className, ...other },
   ref,
 ) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const zoomRef = useRef<HTMLDivElement>(null)
   const scalebarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    return autorun(() => {
-      const { scaleFactor } = model
-      const zoom = zoomRef.current
-      if (zoom) {
-        zoom.style.transform = scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
-      }
-    })
+    return autorun(
+      function scalebarZoomAutorun() {
+        const { scaleFactor } = model
+        const zoom = zoomRef.current
+        if (zoom) {
+          zoom.style.transform =
+            scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
+        }
+      },
+      { name: 'ScalebarZoom' },
+    )
   }, [model])
 
   useEffect(() => {
-    return autorun(() => {
-      const { staticBlocks, offsetPx } = model
-      const scalebar = scalebarRef.current
-      if (scalebar) {
-        const offsetLeft = staticBlocks.offsetPx - offsetPx
-        scalebar.style.transform = `translateX(${offsetLeft - 1}px)`
-        scalebar.style.width = `${staticBlocks.totalWidthPx}px`
-      }
-    })
+    return autorun(
+      function scalebarTransformAutorun() {
+        const { staticBlocks, offsetPx } = model
+        const scalebar = scalebarRef.current
+        if (scalebar) {
+          const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
+          scalebar.style.transform = `translateX(${offsetLeft - 1}px)`
+          scalebar.style.width = `${staticBlocks.totalWidthPx}px`
+        }
+      },
+      { name: 'ScalebarTransform' },
+    )
   }, [model])
 
   return (

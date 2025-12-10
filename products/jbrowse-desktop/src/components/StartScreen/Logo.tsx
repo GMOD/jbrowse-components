@@ -1,6 +1,6 @@
 import { LogoFull } from '@jbrowse/core/ui/Logo'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import packageJSON from '../../../package.json'
 

@@ -3,8 +3,8 @@ id: hierarchicaltrackselectorwidget
 title: HierarchicalTrackSelectorWidget
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -163,7 +163,7 @@ unknown[]
 
 ```js
 // type
-{ name: string; id: string; isOpenByDefault: boolean; type: "category"; children: { name: any; id: any; type: "category"; isOpenByDefault: boolean; menuItems: any[]; children: TreeNode[]; }[]; }
+{ name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; menuItems: any[]; nestingLevel: number; children: TreeNode[]; }[]; }
 ```
 
 #### getter: hasAnySubcategories

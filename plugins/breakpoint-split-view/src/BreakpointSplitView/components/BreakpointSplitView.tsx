@@ -1,6 +1,6 @@
 import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay'
 import Header from './Header'

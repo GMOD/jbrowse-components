@@ -3,10 +3,10 @@ import { useEffect, useMemo, useRef } from 'react'
 // core
 import { getEnv, getSession } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import Cytobands from './Cytobands'
 import OverviewHighlight from './OverviewHighlight'
@@ -37,7 +37,6 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     height: HEADER_OVERVIEW_HEIGHT,
     overflow: 'hidden',
-    willChange: 'transform',
   },
   scalebarContigForward: {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
@@ -54,7 +53,6 @@ const useStyles = makeStyles()(theme => ({
     fontWeight: 'bold',
     pointerEvents: 'none',
     zIndex: 100,
-    willChange: 'transform',
   },
   scalebarVisibleRegion: {
     position: 'absolute',
@@ -63,7 +61,6 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 100,
     border: '1px solid',
     left: 0,
-    willChange: 'transform, width',
   },
   overview: {
     height: HEADER_BAR_HEIGHT,
@@ -89,7 +86,7 @@ const OverviewBox = observer(function ({
   block: ContentBlock
   overview: Base1DViewModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const theme = useTheme()
   const { cytobandOffset, showCytobands } = model
   const { reversed, refName, assemblyName } = block
@@ -161,36 +158,39 @@ function VisibleRegionBox({
   const scalebarColor = theme.palette.tertiary.light
 
   useEffect(() => {
-    return autorun(() => {
-      const { dynamicBlocks, showCytobands, cytobandOffset } = model
-      const visibleRegions = dynamicBlocks.contentBlocks
-      const box = boxRef.current
-      if (!box || !visibleRegions.length) {
-        return
-      }
+    return autorun(
+      function overviewRubberBandAutorun() {
+        const { dynamicBlocks, showCytobands, cytobandOffset } = model
+        const visibleRegions = dynamicBlocks.contentBlocks
+        const box = boxRef.current
+        if (!box || !visibleRegions.length) {
+          return
+        }
 
-      const first = visibleRegions.at(0)!
-      const last = visibleRegions.at(-1)!
-      const firstOverviewPx =
-        overview.bpToPx({
-          refName: first.refName,
-          coord: first.reversed ? first.end : first.start,
-        }) || 0
-      const lastOverviewPx =
-        overview.bpToPx({
-          refName: last.refName,
-          coord: last.reversed ? last.start : last.end,
-        }) || 0
+        const first = visibleRegions.at(0)!
+        const last = visibleRegions.at(-1)!
+        const firstOverviewPx =
+          overview.bpToPx({
+            refName: first.refName,
+            coord: first.reversed ? first.end : first.start,
+          }) || 0
+        const lastOverviewPx =
+          overview.bpToPx({
+            refName: last.refName,
+            coord: last.reversed ? last.start : last.end,
+          }) || 0
 
-      const color = showCytobands ? '#f00' : scalebarColor
-      const transparency = showCytobands ? 0.1 : 0.3
-      const left = firstOverviewPx + cytobandOffset
+        const color = showCytobands ? '#f00' : scalebarColor
+        const transparency = showCytobands ? 0.1 : 0.3
+        const left = firstOverviewPx + cytobandOffset
 
-      box.style.width = `${lastOverviewPx - firstOverviewPx}px`
-      box.style.transform = `translateX(${left}px)`
-      box.style.background = alpha(color, transparency)
-      box.style.borderColor = color
-    })
+        box.style.width = `${lastOverviewPx - firstOverviewPx}px`
+        box.style.transform = `translateX(${left}px)`
+        box.style.background = alpha(color, transparency)
+        box.style.borderColor = color
+      },
+      { name: 'OverviewRubberBand' },
+    )
   }, [model, overview, scalebarColor])
 
   return <div ref={boxRef} className={className} />

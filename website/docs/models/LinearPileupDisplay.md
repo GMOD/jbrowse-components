@@ -3,8 +3,8 @@ id: linearpileupdisplay
 title: LinearPileupDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -73,13 +73,6 @@ sortedBy: types.frozen<SortedBy | undefined>()
 
 ### LinearPileupDisplay - Getters
 
-#### getter: visibleModificationTypes
-
-```js
-// type
-any[]
-```
-
 #### getter: modificationThreshold
 
 ```js
@@ -110,11 +103,11 @@ any
 renderReady: () => boolean
 ```
 
-#### method: renderPropsPre
+#### method: adapterRenderProps
 
 ```js
 // type signature
-renderPropsPre: () => any
+adapterRenderProps: () => any
 ```
 
 #### method: renderProps
@@ -138,27 +131,6 @@ trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; r
 ```js
 // type signature
 setCurrSortBpPerPx: (n: number) => void
-```
-
-#### action: updateVisibleModifications
-
-```js
-// type signature
-updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
-```
-
-#### action: setSimplexModifications
-
-```js
-// type signature
-setSimplexModifications: (simplex: string[]) => void
-```
-
-#### action: setModificationsReady
-
-```js
-// type signature
-setModificationsReady: (flag: boolean) => void
 ```
 
 #### action: setSortReady

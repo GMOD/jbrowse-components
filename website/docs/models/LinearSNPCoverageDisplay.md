@@ -3,8 +3,8 @@ id: linearsnpcoveragedisplay
 title: LinearSNPCoverageDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -105,6 +105,16 @@ any
 any
 ```
 
+#### getter: skipFeatures
+
+Collect all skip features from rendered blocks for cross-region arc drawing Uses
+a Map to deduplicate features that appear in multiple blocks
+
+```js
+// type
+Feature[]
+```
+
 #### getter: modificationThreshold
 
 ```js
@@ -158,7 +168,7 @@ boolean
 
 ```js
 // type
-LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element>
+LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; mouseoverExtraInformation?: string; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element>
 ```
 
 #### getter: adapterConfig
@@ -208,6 +218,13 @@ adapterProps: () => any
 renderProps: () => any
 ```
 
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { onIndicatorClick(_: unknown, item: { type: string; base: string; count: number; total: number; avgLength?: number; minLength?: number; maxLength?: number; }): void; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; }
+```
+
 #### method: contextMenuItems
 
 ```js
@@ -250,27 +267,6 @@ setColorScheme: (colorBy?: ColorBy) => void
 ```js
 // type signature
 setJexlFilters: (filters: string[]) => void
-```
-
-#### action: updateVisibleModifications
-
-```js
-// type signature
-updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
-```
-
-#### action: setSimplexModifications
-
-```js
-// type signature
-setSimplexModifications: (simplex: string[]) => void
-```
-
-#### action: setModificationsReady
-
-```js
-// type signature
-setModificationsReady: (flag: boolean) => void
 ```
 
 #### action: setShowInterbaseIndicators

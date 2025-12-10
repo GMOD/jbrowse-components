@@ -18,13 +18,16 @@ export class MultiVariantGetSources extends RpcMethodTypeWithFiltersAndRenameReg
     },
     rpcDriverClassName: string,
   ) {
-    const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
     const { regions, adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
 
     // @ts-expect-error
     return dataAdapter.getSources(regions, deserializedArgs)

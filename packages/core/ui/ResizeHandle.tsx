@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { makeStyles } from 'tss-react/mui'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
   horizontalHandle: {
@@ -42,7 +42,7 @@ function ResizeHandle({
   const [mouseDragging, setMouseDragging] = useState(false)
   const initialPosition = useRef(0)
   const prevPos = useRef(0)
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
 
   const getPosition = useCallback(
     (event: MouseEvent | React.MouseEvent) =>

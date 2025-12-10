@@ -3,92 +3,112 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
- * Pre-read configuration values for the renderer.
+ * IMPORTANT: Config Reading Performance Optimization
  *
- * IMPORTANT: Reading config values via readConfObject is expensive because it
- * may involve JEXL expression evaluation. We read all needed config values once
- * upfront and pass them through the rendering pipeline to avoid repeated reads
- * in hot paths (e.g., per-feature loops).
+ * Reading config values via readConfObject is expensive because:
+ * 1. It may involve JEXL expression evaluation
+ * 2. It traverses the config tree
+ * 3. It can trigger MobX reactions
+ *
+ * In rendering code, we process thousands of features in tight loops.
+ * Calling readConfObject per-feature creates significant overhead.
+ *
+ * SOLUTION: Read all non-feature-dependent config values ONCE at the start
+ * of the rendering pipeline and pass them through as a context object.
+ *
+ * For feature-dependent configs (callbacks), we check `isCallback` to determine
+ * if we need to call readConfObject per-feature or can use a cached value.
+ *
+ * This pattern should be maintained for any new config values added.
  */
+
 export interface RenderConfigContext {
-  // Display settings
   displayMode: string
   showLabels: boolean
   showDescriptions: boolean
-  showSubfeatureLabels: boolean
-  subfeatureLabelPosition: string
+  subfeatureLabels: string
 
-  // Feature type classification
   transcriptTypes: string[]
   containerTypes: string[]
 
-  // Colors (undefined if callback - will be read per-feature)
   color1?: string
+  color2?: string
   color3?: string
+  outline?: string
   isColor1Callback: boolean
+  isColor2Callback: boolean
   isColor3Callback: boolean
+  isOutlineCallback: boolean
 
-  // Font settings (undefined if callback - will be read per-feature)
-  fontHeight?: number
+  featureHeight: number
+  isHeightCallback: boolean
+
+  fontHeight: number
   isFontHeightCallback: boolean
 
-  // Derived flags
   labelAllowed: boolean
+
+  geneGlyphMode: string
 }
 
-/**
- * Read all renderer config values upfront to avoid repeated expensive reads.
- *
- * Call this once at the start of rendering and pass the context through
- * to all functions that need config values.
- */
 export function createRenderConfigContext(
   config: AnyConfigurationModel,
 ): RenderConfigContext {
   const displayMode = readConfObject(config, 'displayMode') as string
   const showLabels = readConfObject(config, 'showLabels') as boolean
   const showDescriptions = readConfObject(config, 'showDescriptions') as boolean
-  const showSubfeatureLabels = readConfObject(
-    config,
-    'showSubfeatureLabels',
-  ) as boolean
-  const subfeatureLabelPosition = readConfObject(
-    config,
-    'subfeatureLabelPosition',
-  ) as string
+  const subfeatureLabels = readConfObject(config, 'subfeatureLabels') as string
   const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
   const containerTypes = readConfObject(config, 'containerTypes') as string[]
+  const geneGlyphMode = readConfObject(config, 'geneGlyphMode') as string
 
-  // Check if colors are callbacks to avoid unnecessary per-feature reads
   const isColor1Callback = config.color1?.isCallback ?? false
+  const isColor2Callback = config.color2?.isCallback ?? false
   const isColor3Callback = config.color3?.isCallback ?? false
+  const isOutlineCallback = config.outline?.isCallback ?? false
   const color1 = isColor1Callback
     ? undefined
     : (readConfObject(config, 'color1') as string)
+  const color2 = isColor2Callback
+    ? undefined
+    : (readConfObject(config, 'color2') as string)
   const color3 = isColor3Callback
     ? undefined
     : (readConfObject(config, 'color3') as string)
+  const outline = isOutlineCallback
+    ? undefined
+    : (readConfObject(config, 'outline') as string)
 
-  // Check if fontHeight is a callback
+  const isHeightCallback = config.height?.isCallback ?? false
+  const featureHeight = isHeightCallback
+    ? 10
+    : (readConfObject(config, 'height') as number)
+
   const isFontHeightCallback = config.labels?.fontSize?.isCallback ?? false
   const fontHeight = isFontHeightCallback
-    ? undefined
+    ? 12
     : (readConfObject(config, ['labels', 'fontSize']) as number)
 
   return {
     displayMode,
     showLabels,
     showDescriptions,
-    showSubfeatureLabels,
-    subfeatureLabelPosition,
+    subfeatureLabels,
     transcriptTypes,
     containerTypes,
     color1,
+    color2,
     color3,
+    outline,
     isColor1Callback,
+    isColor2Callback,
     isColor3Callback,
+    isOutlineCallback,
+    featureHeight,
+    isHeightCallback,
     fontHeight,
     isFontHeightCallback,
-    labelAllowed: displayMode !== 'collapsed',
+    labelAllowed: displayMode !== 'collapse',
+    geneGlyphMode,
   }
 }

@@ -153,7 +153,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       const { parser } = await this.configure()
       const metadataLines = lines
         .slice(1)
-        .filter(f => !!f)
+        .filter(Boolean)
         .map(line => {
           const [name, ...rest] = line.split('\t')
           return {
@@ -181,7 +181,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       if (vcfSamplesNotInMetadata.length) {
         console.warn(
           `There are ${vcfSamplesNotInMetadata.length} samples in VCF file (${parser.samples.length} samples) not in metadata file (${metadataLines.length} lines):`,
-          shorten2(vcfSamplesNotInMetadata.map(m => m).join(',')),
+          shorten2(vcfSamplesNotInMetadata.join(',')),
         )
       }
       return metadataLines.filter(f => vcfSampleSet.has(f.name))

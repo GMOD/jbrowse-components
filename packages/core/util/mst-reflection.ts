@@ -4,7 +4,7 @@ import {
   isMapType,
   isOptionalType,
   isUnionType,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import type {
   IAnyComplexType,
@@ -12,7 +12,7 @@ import type {
   IModelReflectionPropertiesData,
   ISimpleType,
   UnionStringArray,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 export interface ILiteralType<T> extends ISimpleType<T> {
   value: T
@@ -36,6 +36,7 @@ export function getSubType(type: IAnyType): IAnyType {
   } else {
     throw new TypeError('unsupported mst type')
   }
+
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!t) {
     throw new Error('failed to get subtype')

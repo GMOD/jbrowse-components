@@ -11,46 +11,26 @@ export function getSampleGridRows(
   rows: VariantSampleGridRow[]
   error: unknown
 } {
-  const preFilteredRows = Object.entries(samples).map(([key, val]) => {
-    const gt = val.GT?.[0]
-    return [
-      key,
-      {
-        ...val,
-        ...(gt
-          ? {
-              GT: `${gt}`,
-              genotype: makeSimpleAltString(`${gt}`, REF, ALT),
-            }
-          : {}),
-      },
-    ] as const
-  })
-
   let error: unknown
-  let rows = [] as VariantSampleGridRow[]
-  const filters = Object.keys(filter)
+  let rows: VariantSampleGridRow[] = []
+  const filterKeys = Object.keys(filter)
 
-  // catch some error thrown from regex
-  // note: maps all values into a string, if this is not done rows are not
-  // sortable by the data-grid
   try {
-    rows = preFilteredRows
+    rows = Object.entries(samples)
       .map(([key, val]) => {
+        const gt = val.GT?.[0]
         return {
-          ...Object.fromEntries(
-            Object.entries(val).map(([formatField, formatValue]) => [
-              formatField,
-              formatValue,
-            ]),
-          ),
+          ...val,
+          ...(gt
+            ? { GT: `${gt}`, genotype: makeSimpleAltString(`${gt}`, REF, ALT) }
+            : {}),
           sample: key,
           id: key,
         } as VariantSampleGridRow
       })
       .filter(row =>
-        filters.length
-          ? filters.every(key => {
+        filterKeys.length
+          ? filterKeys.every(key => {
               const currFilter = filter[key]
               return currFilter
                 ? new RegExp(currFilter, 'i').exec(row[key]!)

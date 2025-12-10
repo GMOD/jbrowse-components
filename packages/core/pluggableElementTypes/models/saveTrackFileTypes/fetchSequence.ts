@@ -1,32 +1,27 @@
 import { getConf } from '@jbrowse/core/configuration'
 
-import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
 
 export async function fetchSequence({
   session,
-  regions,
-  signal,
-  assemblyName,
+  region,
 }: {
-  assemblyName: string
   session: AbstractSessionModel
-  regions: Region[]
-  signal?: AbortSignal
+  region: Region
 }) {
   const { rpcManager, assemblyManager } = session
-  const assembly = assemblyManager.get(assemblyName)
+  const assembly = assemblyManager.get(region.assemblyName)
   if (!assembly) {
-    throw new Error(`assembly ${assemblyName} not found`)
+    throw new Error(`assembly ${region.assemblyName} not found`)
   }
 
   const sessionId = 'getSequence'
-  return rpcManager.call(sessionId, 'CoreGetFeatures', {
+  return rpcManager.call(sessionId, 'CoreGetSequence', {
     adapterConfig: getConf(assembly, ['sequence', 'adapter']),
-    regions: regions.map(r => ({
-      ...r,
-      refName: assembly.getCanonicalRefName(r.refName),
-    })),
+    region: {
+      ...region,
+      refName: assembly.getCanonicalRefName(region.refName),
+    },
     sessionId,
-    signal,
-  }) as Promise<Feature[]>
+  }) as Promise<string | undefined>
 }

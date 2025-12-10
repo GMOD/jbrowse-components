@@ -1,5 +1,6 @@
 import FeatureRendererType from './FeatureRendererType'
 import { LayoutSession } from './LayoutSession'
+import { expandRegion } from './util'
 import { readConfObject } from '../../configuration'
 import { getLayoutId } from '../../util'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
@@ -13,17 +14,13 @@ import type {
   ResultsSerialized as FeatureResultsSerialized,
 } from './FeatureRendererType'
 import type { LayoutSessionProps } from './LayoutSession'
+import type { RenderReturn } from './RendererType'
 import type RpcManager from '../../rpc/RpcManager'
 import type { Feature, Region } from '../../util'
 import type {
   BaseLayout,
   SerializedLayout,
 } from '../../util/layouts/BaseLayout'
-import type GranularRectLayout from '../../util/layouts/GranularRectLayout'
-import type MultiLayout from '../../util/layouts/MultiLayout'
-
-export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
-
 export interface RenderArgs extends FeatureRenderArgs {
   bpPerPx: number
   layoutId: string
@@ -40,7 +37,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 }
 
 export interface RenderResults extends FeatureRenderResults {
-  layout: BaseLayout<Feature>
+  layout?: BaseLayout<Feature> | SerializedLayout
 }
 
 export interface ResultsSerialized extends FeatureResultsSerialized {
@@ -79,40 +76,20 @@ export default class BoxRendererType extends FeatureRendererType {
     const maxFeatureGlyphExpansion =
       readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
-    return {
-      ...(region as Omit<typeof region, symbol>),
-      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
-      end: Math.ceil(region.end + bpExpansion),
-    }
+    return expandRegion(region, bpExpansion)
   }
 
-  // renaming function to make clear it runs in worker
-  freeResources(args: Record<string, any>) {
-    this.freeResourcesInWorker(args)
-  }
-
-  freeResourcesInWorker(args: Record<string, any>) {
-    const { regions } = args
-
-    // @ts-expect-error
+  freeResources(args: RenderArgs) {
     const key = getLayoutId(args)
     const session = this.layoutSessions[key]
-
     if (session) {
-      const region = regions[0]!
+      const region = args.regions[0]!
       session.layout.discardRange(region.refName, region.start, region.end)
     }
   }
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const { regions } = args
-    const key = getLayoutId(args)
-    const session = this.layoutSessions[key]
-
-    if (session) {
-      const region = regions[0]!
-      session.layout.discardRange(region.refName, region.start, region.end)
-    }
+    this.freeResources(args)
     return super.freeResourcesInClient(rpcManager, args)
   }
 
@@ -137,6 +114,21 @@ export default class BoxRendererType extends FeatureRendererType {
     return layout.getSublayout(regions[0]!.refName)
   }
 
+  serializeLayout(layout: BaseLayout<unknown>, args: RenderArgsDeserialized) {
+    const region = args.regions[0]!
+    return layout.serializeRegion(this.getExpandedRegion(region, args))
+  }
+
+  /**
+   * Default render method that fetches features and creates layout.
+   * Canvas-based renderers should override this and return rpcResult() directly.
+   */
+  async render(renderArgs: RenderArgsDeserialized): Promise<RenderReturn> {
+    const features = await this.getFeatures(renderArgs)
+    const layout = this.createLayoutInWorker(renderArgs)
+    return { features, layout }
+  }
+
   serializeResultsInWorker(
     results: RenderResults,
     args: RenderArgsDeserialized,
@@ -147,33 +139,20 @@ export default class BoxRendererType extends FeatureRendererType {
     ) as ResultsSerialized
 
     const region = args.regions[0]!
-    const layout = results.layout.serializeRegion(
-      this.getExpandedRegion(region, args),
-    )
+    const resultLayout = results.layout
+
+    // Live layouts (BaseLayout) have serializeRegion method, plain objects (SerializedLayout) don't
+    const layout =
+      resultLayout && 'serializeRegion' in resultLayout
+        ? resultLayout.serializeRegion(this.getExpandedRegion(region, args))
+        : (resultLayout as unknown as SerializedLayout)
+
     return {
       ...rest,
       layout,
       maxHeightReached: layout.maxHeightReached,
-      features:
-        // floating layout has no rectangles
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        layout.rectangles !== undefined
-          ? features.filter(f => !!layout.rectangles[f.uniqueId])
-          : features,
-    }
-  }
-
-  async render(props: RenderArgsDeserialized): Promise<RenderResults> {
-    const layout =
-      (props.layout as undefined | BaseLayout<unknown>) ||
-      this.createLayoutInWorker(props)
-    const result = await super.render({
-      ...props,
-      layout,
-    })
-    return {
-      ...result,
-      layout,
+      // Filter features to only those visible in the layout
+      features: features?.filter(f => !!layout.rectangles[f.uniqueId]),
     }
   }
 }

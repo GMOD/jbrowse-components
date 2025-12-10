@@ -1,4 +1,6 @@
-import { makeStyles } from 'tss-react/mui'
+import { memo } from 'react'
+
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
   heightOverflowed: {
@@ -15,7 +17,11 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function MaxHeightReached({ top }: { top: number }) {
+const MaxHeightReached = memo(function MaxHeightReached({
+  top,
+}: {
+  top: number
+}) {
   const { classes } = useStyles()
   return (
     <div
@@ -29,4 +35,6 @@ export default function MaxHeightReached({ top }: { top: number }) {
       Max height reached
     </div>
   )
-}
+})
+
+export default MaxHeightReached

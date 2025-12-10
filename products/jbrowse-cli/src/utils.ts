@@ -22,6 +22,12 @@ export function debug(message: string) {
   }
 }
 
+export async function resolveConfigPath(target?: string, out?: string) {
+  const output = target || out || '.'
+  const stat = await fsPromises.lstat(output)
+  return stat.isDirectory() ? `${output}/config.json` : output
+}
+
 export async function readFile(location: string) {
   return fsPromises.readFile(location, { encoding: 'utf8' })
 }

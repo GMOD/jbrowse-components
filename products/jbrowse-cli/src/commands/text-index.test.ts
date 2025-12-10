@@ -5,9 +5,15 @@
 import fs from 'fs'
 import path from 'path'
 
-import nock from 'nock'
+import {
+  dataDir,
+  mockFetch,
+  openWebStream,
+  runCommand,
+  runInTmpDir,
+} from '../testUtil'
 
-import { dataDir, runCommand, runInTmpDir } from '../testUtil'
+jest.mock('../fetchWithProxy')
 
 const configPath = dataDir('indexing_config.json')
 const volvoxDir = path.join(
@@ -92,11 +98,9 @@ test('indexes a local gz gff3 file', async () => {
 })
 test('indexes a remote gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://github.com')
-      .get(
-        '/GMOD/jbrowse-components/raw/main/test_data/volvox/volvox.sort.gff3.gz',
-      )
-      .reply(200, fs.createReadStream(dataDir('volvox.sort.gff3.gz')))
+    mockFetch(async () => ({
+      body: await openWebStream(dataDir('volvox.sort.gff3.gz')),
+    }))
     fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     await runCommand([
       'text-index',
@@ -109,11 +113,9 @@ test('indexes a remote gz gff3 file', async () => {
 
 test('indexes a remote non-gz gff3 file', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://raw.githubusercontent.com')
-      .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
-      .reply(200, () =>
-        fs.createReadStream(dataDir('au9_scaffold_subset_sync.gff3')),
-      )
+    mockFetch(async () => ({
+      body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
+    }))
     fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     await runCommand([
       'text-index',
@@ -142,17 +144,14 @@ test('indexes multiple local gff3 files', async () => {
 
 test('indexes multiple remote gff3 file', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://github.com')
-      .get(
-        '/GMOD/jbrowse-components/raw/main/test_data/volvox/volvox.sort.gff3.gz',
-      )
-      .reply(200, fs.createReadStream(dataDir('volvox.sort.gff3.gz')))
-
-    nock('https://raw.githubusercontent.com')
-      .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
-      .reply(200, () =>
-        fs.createReadStream(dataDir('au9_scaffold_subset_sync.gff3')),
-      )
+    mockFetch(async url => {
+      if (url.includes('volvox.sort.gff3.gz')) {
+        return { body: await openWebStream(dataDir('volvox.sort.gff3.gz')) }
+      }
+      return {
+        body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
+      }
+    })
     fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     await runCommand([
       'text-index',
@@ -165,11 +164,9 @@ test('indexes multiple remote gff3 file', async () => {
 
 test('indexes a remote and a local file', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://raw.githubusercontent.com')
-      .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
-      .reply(200, () =>
-        fs.createReadStream(dataDir('au9_scaffold_subset_sync.gff3')),
-      )
+    mockFetch(async () => ({
+      body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
+    }))
     const gff3File = dataDir('volvox.sort.gff3.gz')
     fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
     fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))

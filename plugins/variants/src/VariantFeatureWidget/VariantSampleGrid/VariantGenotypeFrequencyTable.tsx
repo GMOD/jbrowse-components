@@ -59,11 +59,6 @@ export default function VariantGenotypeFrequencyTable({
     frequency: `${toP((val.count / rows.length) * 100)}%`,
   }))
 
-  const keys = gridRows[0] ? Object.keys(gridRows[0]) : []
-  const widths = keys.map(e =>
-    measureGridWidth(gridRows.map(r => `${r[e as keyof typeof r]}`)),
-  )
-
   return (
     <div>
       <FormControlLabel
@@ -84,21 +79,18 @@ export default function VariantGenotypeFrequencyTable({
           rowHeight={25}
           columnHeaderHeight={35}
           columns={[
-            {
-              field: 'GT',
-              width: widths[0],
-            },
+            { field: 'GT', width: measureGridWidth(gridRows.map(r => r.GT)) },
             {
               field: 'count',
-              width: widths[1],
+              width: measureGridWidth(gridRows.map(r => r.count)),
             },
             {
               field: 'frequency',
-              width: widths[2],
+              width: measureGridWidth(gridRows.map(r => r.frequency)),
             },
             {
               field: 'genotype',
-              width: widths[3],
+              width: measureGridWidth(gridRows.map(r => r.genotype)),
             },
           ]}
         />

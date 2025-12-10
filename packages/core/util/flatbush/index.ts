@@ -1,3 +1,7 @@
+// adapted from https://github.com/mourner/flatbush (ISC) by Colin Diesh
+//
+// changes to the code include:
+// non-recursive sort implementation
 import FlatQueue from '../flatqueue'
 
 type TypedArrayConstructor =
@@ -60,6 +64,14 @@ export default class Flatbush {
   static from(data: ArrayBufferLike, byteOffset = 0): Flatbush {
     if (byteOffset % 8 !== 0) {
       throw new Error('byteOffset must be 8-byte aligned.')
+    }
+
+    // Check for detached ArrayBuffer (happens if buffer was transferred)
+    if (data.byteLength === 0) {
+      throw new Error(
+        'Flatbush data buffer is detached (byteLength=0). ' +
+          'This usually means the buffer was transferred and is no longer usable.',
+      )
     }
 
     const [magic, versionAndType] = new Uint8Array(data, byteOffset + 0, 2)

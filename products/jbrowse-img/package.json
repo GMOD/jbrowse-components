@@ -24,13 +24,12 @@
     "preversion": "yarn build"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
+    "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@jbrowse/react-linear-genome-view2": "^3.7.0",
     "canvas": "^3.0.0",
     "jsdom": "27.0.0",
-    "mobx": "^6.6.0",
     "node-fetch": "^2.6.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

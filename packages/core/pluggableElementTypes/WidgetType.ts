@@ -4,7 +4,7 @@ import type React from 'react'
 import PluggableElementBase from './PluggableElementBase'
 
 import type { AnyConfigurationSchemaType } from '../configuration'
-import type { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyModelType, IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 type WidgetComponentType = LazyExoticComponent<React.FC<any>> | React.FC<any>
 
@@ -21,6 +21,8 @@ export default class WidgetType extends PluggableElementBase {
 
   stateModel: IAnyModelType
 
+  helpText?: React.ReactNode
+
   constructor(stuff: {
     name: string
     heading?: string
@@ -28,6 +30,7 @@ export default class WidgetType extends PluggableElementBase {
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
     ReactComponent: WidgetComponentType
+    helpText?: React.ReactNode
   }) {
     super(stuff)
     this.heading = stuff.heading
@@ -35,5 +38,6 @@ export default class WidgetType extends PluggableElementBase {
     this.configSchema = stuff.configSchema
     this.stateModel = stuff.stateModel
     this.ReactComponent = stuff.ReactComponent
+    this.helpText = stuff.helpText
   }
 }

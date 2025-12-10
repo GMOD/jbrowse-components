@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { ConfigurationSchema } from '../configuration'
 import MainThreadRpcDriverConfigSchema from './mainThreadRpcConfig'

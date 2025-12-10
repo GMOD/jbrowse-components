@@ -1,6 +1,6 @@
 import { Dialog, ExternalLink } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DialogContent, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   content: {

@@ -3,18 +3,23 @@ import { lazy } from 'react'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import {
+  addDisposer,
+  cast,
+  getPath,
+  onAction,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getPath, onAction, types } from 'mobx-state-tree'
 
-import type { LinearSyntenyViewHelperStateModel } from '../LinearSyntenyViewHelper/stateModelFactory'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -29,7 +34,7 @@ const ReturnToImportFormDialog = lazy(
 function stateModelFactory(pluginManager: PluginManager) {
   const LinearSyntenyViewHelper = pluginManager.getViewType(
     'LinearSyntenyViewHelper',
-  )?.stateModel as LinearSyntenyViewHelperStateModel
+  )?.stateModel
   return types
     .compose(
       'LinearComparativeView',
@@ -66,7 +71,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        levels: types.array(LinearSyntenyViewHelper),
+        levels: types.array(LinearSyntenyViewHelper!),
         /**
          * #property
          * currently this is limited to an array of two
@@ -92,6 +97,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       width: undefined as number | undefined,
+      /**
+       * #volatile
+       * Set to true when the view is being initialized from a launch spec to
+       * avoid showing the import form during loading
+       */
+      isLoading: false,
     }))
     .views(self => ({
       /**
@@ -120,6 +131,21 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyNames() {
         return [...new Set(self.views.flatMap(v => v.assemblyNames))]
+      },
+
+      /**
+       * #getter
+       */
+      get loadingMessage() {
+        return this.showLoading ? 'Loading' : undefined
+      },
+
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return self.isLoading || (!this.initialized && self.views.length > 0)
       },
     }))
     .actions(self => ({
@@ -168,6 +194,13 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number) {
         self.width = newWidth
+      },
+
+      /**
+       * #action
+       */
+      setIsLoading(arg: boolean) {
+        self.isLoading = arg
       },
 
       /**
@@ -328,13 +361,16 @@ function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            if (self.width) {
-              for (const view of self.views) {
-                view.setWidth(self.width)
+          autorun(
+            function comparativeViewWidthAutorun() {
+              if (self.width) {
+                for (const view of self.views) {
+                  view.setWidth(self.width)
+                }
               }
-            }
-          }),
+            },
+            { name: 'ComparativeViewWidth' },
+          ),
         )
       },
     }))

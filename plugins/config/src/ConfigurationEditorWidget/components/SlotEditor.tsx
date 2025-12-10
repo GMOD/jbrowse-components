@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react'
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
+import { getPropertyMembers } from '@jbrowse/mobx-state-tree'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getPropertyMembers } from 'mobx-state-tree'
 
 import BooleanEditor from './BooleanEditor'
 import CallbackEditor from './CallbackEditor'
@@ -25,7 +25,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
 import type { ILiteralType } from '@jbrowse/core/util/mst-reflection'
-import type { IAnyType } from 'mobx-state-tree'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const StringEditor = observer(function ({
   slot,
@@ -158,8 +158,7 @@ const FileSelectorWrapper = observer(function ({
       }}
       name={slot.name}
       description={slot.description}
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      rootModel={getEnv(slot).pluginManager?.rootModel}
+      rootModel={getEnv(slot).pluginManager.rootModel}
     />
   )
 })

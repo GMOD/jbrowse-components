@@ -1,20 +1,24 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { observable, transaction } from 'mobx'
-import { types } from 'mobx-state-tree'
+import { autorun, observable, when } from 'mobx'
 
 import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 
-import type { ExportSvgOptions, ImportFormSyntenyTrack } from './types'
+import type {
+  ExportSvgOptions,
+  ImportFormSyntenyTrack,
+  LinearSyntenyViewInit,
+} from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -53,6 +57,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         drawLocationMarkers: false,
+        /**
+         * #property
+         * used for initializing the view from a session snapshot
+         * example:
+         * ```json
+         * {
+         *   views: [
+         *     { loc: "chr1:1-100", assembly: "hg38", tracks: ["genes"] },
+         *     { loc: "chr1:1-100", assembly: "mm39" }
+         *   ],
+         *   tracks: ["hg38_vs_mm39_synteny"]
+         * }
+         * ```
+         */
+        init: types.frozen<LinearSyntenyViewInit | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -61,6 +80,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       importFormSyntenyTrackSelections:
         observable.array<ImportFormSyntenyTrack>(),
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get hasSomethingToShow() {
+        return self.views.length > 0 || !!self.init
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return self.isLoading || (!self.initialized && self.hasSomethingToShow)
+      },
+      /**
+       * #getter
+       * Whether to show the import form
+       */
+      get showImportForm() {
+        return !self.hasSomethingToShow
+      },
     }))
     .actions(self => ({
       /**
@@ -109,11 +152,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showAllRegions() {
-        transaction(() => {
-          for (const view of self.views) {
-            view.showAllRegionsInAssembly()
-          }
-        })
+        for (const view of self.views) {
+          view.showAllRegionsInAssembly()
+        }
+      },
+      /**
+       * #action
+       */
+      setInit(init?: LinearSyntenyViewInit) {
+        self.init = init
       },
     }))
     .actions(self => ({
@@ -121,9 +168,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       async exportSvg(opts: ExportSvgOptions) {
-        const { renderToSvg } = await import(
-          './svgcomponents/SVGLinearSyntenyView'
-        )
+        const { renderToSvg } =
+          await import('./svgcomponents/SVGLinearSyntenyView')
         const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
@@ -292,6 +338,94 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           ]
         },
       }
+    })
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            async function initAutorun() {
+              const { init, width } = self
+              if (!width || !init) {
+                return
+              }
+
+              const session = getSession(self)
+              const { assemblyManager } = session
+
+              try {
+                // Wait for all assemblies to be ready and get their regions
+                const assemblies = await Promise.all(
+                  init.views.map(async v => {
+                    const asm = await assemblyManager.waitForAssembly(
+                      v.assembly,
+                    )
+                    if (!asm) {
+                      throw new Error(`Assembly ${v.assembly} failed to load`)
+                    }
+                    return asm
+                  }),
+                )
+
+                // Set up the views with displayed regions (not using init)
+                self.setViews(
+                  assemblies.map(asm => ({
+                    type: 'LinearGenomeView' as const,
+                    bpPerPx: 1,
+                    offsetPx: 0,
+                    hideHeader: true,
+                    displayedRegions: asm.regions,
+                  })),
+                )
+
+                // Wait for child views to initialize
+                await Promise.all(
+                  self.views.map(view => when(() => view.initialized)),
+                )
+
+                // Navigate to locations and show tracks on child views
+                await Promise.all(
+                  init.views.map(async (viewInit, idx) => {
+                    const view = self.views[idx]
+                    if (!view) {
+                      return
+                    }
+                    if (viewInit.loc) {
+                      await view.navToLocString(viewInit.loc, viewInit.assembly)
+                    } else {
+                      view.showAllRegionsInAssembly(viewInit.assembly)
+                    }
+                    if (viewInit.tracks) {
+                      for (const trackId of viewInit.tracks) {
+                        view.showTrack(trackId)
+                      }
+                    }
+                  }),
+                )
+
+                // Show synteny tracks
+                if (init.tracks) {
+                  for (const trackId of init.tracks) {
+                    self.showTrack(trackId)
+                  }
+                }
+
+                // Clear init state
+                self.setInit(undefined)
+              } catch (e) {
+                console.error(e)
+                session.notifyError(`${e}`, e)
+                self.setInit(undefined)
+              }
+            },
+            { name: 'LinearSyntenyViewInit' },
+          ),
+        )
+      },
+    }))
+    .postProcessSnapshot(snap => {
+      const { init, ...rest } = snap as Omit<typeof snap, symbol>
+      return rest
     })
 }
 export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>

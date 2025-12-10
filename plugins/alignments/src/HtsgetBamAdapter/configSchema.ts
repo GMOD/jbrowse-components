@@ -24,15 +24,6 @@ const HtsgetBamAdapter = ConfigurationSchema(
       description: 'the trackId, which is appended to the base URL',
       defaultValue: '',
     },
-    /**
-     * #slot
-     */
-    sequenceAdapter: {
-      type: 'frozen',
-      description:
-        'sequence data adapter, used to calculate SNPs when BAM reads lacking MD tags',
-      defaultValue: null,
-    },
   },
   { explicitlyTyped: true },
 )

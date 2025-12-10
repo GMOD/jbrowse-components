@@ -1,5 +1,5 @@
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import type { SnapshotIn } from 'mobx-state-tree'
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 interface TextSearchAdapterConfig {
   textSearchAdapterId: string
   [key: string]: unknown

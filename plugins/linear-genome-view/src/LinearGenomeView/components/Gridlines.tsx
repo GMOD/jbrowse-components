@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
-import { makeStyles } from 'tss-react/mui'
 
-import { makeTicks } from '../util'
+import { getCachedElements, makeTicks } from '../util'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -18,14 +18,12 @@ const useStyles = makeStyles()({
     height: '100%',
     width: '100%',
     pointerEvents: 'none',
-    willChange: 'transform',
   },
   verticalGuidesContainer: {
     position: 'absolute',
     display: 'flex',
     height: '100%',
     pointerEvents: 'none',
-    willChange: 'transform, width',
   },
 })
 
@@ -96,28 +94,35 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
   const theme = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
+  const lastBpPerPxRef = useRef<number | null>(null)
 
   useEffect(() => {
-    return autorun(() => {
-      const { scaleFactor } = model
-      const container = containerRef.current
-      if (container) {
-        container.style.transform =
-          scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
-      }
-    })
+    return autorun(
+      function gridlinesZoomAutorun() {
+        const { scaleFactor } = model
+        const container = containerRef.current
+        if (container) {
+          container.style.transform =
+            scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
+        }
+      },
+      { name: 'GridlinesZoom' },
+    )
   }, [model])
 
   useEffect(() => {
-    return autorun(() => {
-      const { staticBlocks, offsetPx } = model
-      const inner = innerRef.current
-      if (inner) {
-        const offsetLeft = staticBlocks.offsetPx - offsetPx
-        inner.style.transform = `translateX(${offsetLeft - offset}px)`
-        inner.style.width = `${staticBlocks.totalWidthPx}px`
-      }
-    })
+    return autorun(
+      function gridlinesTransformAutorun() {
+        const { staticBlocks, offsetPx } = model
+        const inner = innerRef.current
+        if (inner) {
+          const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
+          inner.style.transform = `translateX(${offsetLeft - offset}px)`
+          inner.style.width = `${staticBlocks.totalWidthPx}px`
+        }
+      },
+      { name: 'GridlinesTransform' },
+    )
   }, [model, offset])
 
   useEffect(() => {
@@ -128,35 +133,37 @@ function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
       boundaryPadding: theme.palette.action.disabledBackground,
     }
 
-    return autorun(() => {
-      const { staticBlocks, bpPerPx } = model
-      const inner = innerRef.current
-      if (!inner) {
-        return
-      }
-
-      const existingKeys = new Map<string, HTMLDivElement>()
-      for (const child of inner.children) {
-        const key = (child as HTMLElement).dataset.blockKey
-        if (key) {
-          existingKeys.set(key, child as HTMLDivElement)
+    return autorun(
+      function gridlinesLayoutAutorun() {
+        const { staticBlocks, bpPerPx } = model
+        const inner = innerRef.current
+        if (!inner) {
+          return
         }
-      }
 
-      const fragment = document.createDocumentFragment()
+        const existingKeys = getCachedElements<HTMLDivElement>(
+          inner,
+          bpPerPx,
+          lastBpPerPxRef,
+          'blockKey',
+        )
 
-      for (const block of staticBlocks) {
-        const key = block.key
-        let div = existingKeys.get(key)
-        if (!div) {
-          div = createBlockElement(block, bpPerPx, colors)
-          div.dataset.blockKey = key
+        const fragment = document.createDocumentFragment()
+
+        for (const block of staticBlocks) {
+          const key = block.key
+          let div = existingKeys.get(key)
+          if (!div) {
+            div = createBlockElement(block, bpPerPx, colors)
+            div.dataset.blockKey = key
+          }
+          fragment.append(div)
         }
-        fragment.append(div)
-      }
 
-      inner.replaceChildren(fragment)
-    })
+        inner.replaceChildren(fragment)
+      },
+      { name: 'GridlinesLayout' },
+    )
   }, [model, theme])
 
   return (

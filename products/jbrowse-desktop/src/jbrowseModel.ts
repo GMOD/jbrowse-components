@@ -1,5 +1,5 @@
 import { JBrowseModelF } from '@jbrowse/app-core'
-import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
+import { getSnapshot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
@@ -18,6 +18,7 @@ window.resolveIdentifier = resolveIdentifier
 export default function JBrowseDesktop(
   pluginManager: PluginManager,
   assemblyConfigSchema: BaseAssemblyConfigSchema,
+  adminMode = true,
 ) {
-  return JBrowseModelF({ pluginManager, assemblyConfigSchema })
+  return JBrowseModelF({ pluginManager, assemblyConfigSchema, adminMode })
 }

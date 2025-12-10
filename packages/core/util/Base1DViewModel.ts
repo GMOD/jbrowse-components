@@ -1,4 +1,4 @@
-import { cast, types } from 'mobx-state-tree'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { bpToPx, moveTo, pxToBp } from './Base1DUtils'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
@@ -9,7 +9,7 @@ import { ElementId } from './types/mst'
 import type { BpOffset } from './Base1DUtils'
 import type { Feature } from './simpleFeature'
 import type { Region as IRegion } from './types'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel Base1DView

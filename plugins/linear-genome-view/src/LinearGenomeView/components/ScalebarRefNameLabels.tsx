@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
+import { getCachedElements, getPinnedContentBlock } from '../util'
+
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
@@ -10,111 +12,143 @@ type LGV = LinearGenomeViewModel
 function ScalebarRefNameLabels({ model }: { model: LGV }) {
   const theme = useTheme()
   const innerRef = useRef<HTMLDivElement>(null)
-  const pinnedRef = useRef<HTMLSpanElement | null>(null)
+  const pinnedRef = useRef<HTMLSpanElement>(null)
+  const lastBpPerPxRef = useRef<number | null>(null)
+  const firstLabelRef = useRef<HTMLSpanElement | null>(null)
 
-  // Handle offsetPx changes - update container position and pinned label
+  // Fast path: update transform and labels on scroll
   useEffect(() => {
-    return autorun(() => {
-      const { staticBlocks, offsetPx, scaleBarDisplayPrefix } = model
-
-      const inner = innerRef.current
-      if (!inner) {
-        return
-      }
-
-      // Translate container to account for scroll position
-      inner.style.transform = `translateX(${-offsetPx}px)`
-
-      // Find which block should be pinned
-      let lastLeftBlock = 0
-      let i = 0
-      for (const block of staticBlocks) {
-        if (block.offsetPx - offsetPx < 0) {
-          lastLeftBlock = i
-        } else {
-          break
+    return autorun(
+      function refNameLabelsOffsetAutorun() {
+        const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
+        const inner = innerRef.current
+        const pinned = pinnedRef.current
+        const firstLabel = firstLabelRef.current
+        if (inner) {
+          inner.style.transform = `translateX(${Math.round(-offsetPx)}px)`
         }
-        i++
-      }
 
-      const pinned = pinnedRef.current
-      const pinnedBlock = staticBlocks.blocks[lastLeftBlock]
-      if (pinned && pinnedBlock?.type === 'ContentBlock') {
-        const val = scaleBarDisplayPrefix()
-        pinned.style.transform = `translateX(${Math.max(0, offsetPx)}px)`
-        pinned.textContent = (val ? `${val}:` : '') + pinnedBlock.refName
-      }
-    })
+        const pinnedBlock = getPinnedContentBlock(staticBlocks, offsetPx)
+        const prefix = scalebarDisplayPrefix()
+
+        // Update pinned label
+        if (pinned) {
+          if (pinnedBlock) {
+            pinned.style.display = ''
+            pinned.textContent =
+              (prefix ? `${prefix}:` : '') + pinnedBlock.refName
+          } else {
+            pinned.style.display = 'none'
+          }
+        }
+
+        // Update first label prefix (only show if no pinned block)
+        if (firstLabel) {
+          const refName = firstLabel.dataset.refname || ''
+          const showPrefix = prefix && !pinnedBlock
+          firstLabel.textContent = (showPrefix ? `${prefix}:` : '') + refName
+        }
+      },
+      { name: 'RefNameLabelsOffset' },
+    )
   }, [model])
 
-  // Handle staticBlocks changes - create/update label elements
+  // Slow path: rebuild labels when blocks change
   useEffect(() => {
     const bgColor = theme.palette.background.paper
 
-    return autorun(() => {
-      const { staticBlocks } = model
-      const inner = innerRef.current
-      if (!inner) {
-        return
-      }
-
-      const existingKeys = new Map<string, HTMLSpanElement>()
-      for (const child of inner.children) {
-        const key = (child as HTMLElement).dataset.labelKey
-        if (key) {
-          existingKeys.set(key, child as HTMLSpanElement)
+    return autorun(
+      function refNameLabelsLayoutAutorun() {
+        const { staticBlocks, bpPerPx, offsetPx, scalebarDisplayPrefix } = model
+        const inner = innerRef.current
+        const pinned = pinnedRef.current
+        if (!inner) {
+          return
         }
-      }
 
-      const fragment = document.createDocumentFragment()
+        const existingKeys = getCachedElements<HTMLSpanElement>(
+          inner,
+          bpPerPx,
+          lastBpPerPxRef,
+          'labelKey',
+        )
 
-      let index = 0
-      for (const block of staticBlocks) {
-        const {
-          offsetPx: blockOffsetPx,
-          isLeftEndOfDisplayedRegion,
-          type,
-          refName,
-        } = block
+        const fragment = document.createDocumentFragment()
+        firstLabelRef.current = null
 
-        if (type === 'ContentBlock' && isLeftEndOfDisplayedRegion) {
-          const key = `refLabel-${block.key}-${index}`
-          let span = existingKeys.get(key)
-          if (!span) {
-            span = createLabelElement(bgColor)
-            span.dataset.labelKey = key
-            span.dataset.testid = `refLabel-${refName}`
+        let index = 0
+        for (const block of staticBlocks) {
+          const {
+            offsetPx: blockOffsetPx,
+            isLeftEndOfDisplayedRegion,
+            type,
+            refName,
+          } = block
+
+          if (type === 'ContentBlock' && isLeftEndOfDisplayedRegion) {
+            const key = `refLabel-${block.key}-${index}`
+            let span = existingKeys.get(key)
+            if (!span) {
+              span = createLabelElement(bgColor)
+              span.dataset.labelKey = key
+              span.dataset.testid = `refLabel-${refName}`
+            }
+            span.dataset.refname = refName
+            span.style.left = `${blockOffsetPx - 1}px`
+            span.style.paddingLeft = '1px'
+            span.textContent = refName
+            fragment.append(span)
+            if (!firstLabelRef.current) {
+              firstLabelRef.current = span
+            }
           }
-          span.style.left = `${blockOffsetPx - 1}px`
-          span.style.paddingLeft = '1px'
-          span.textContent = refName
-          fragment.append(span)
+          index++
         }
-        index++
-      }
 
-      // Create pinned label
-      const key = 'pinned-label'
-      let pinned = existingKeys.get(key)
-      if (!pinned) {
-        pinned = createLabelElement(bgColor)
-        pinned.dataset.labelKey = key
-        pinned.style.zIndex = '2'
-      }
-      pinned.style.left = '0px'
-      pinned.style.paddingLeft = '0px'
-      pinnedRef.current = pinned
-      fragment.append(pinned)
+        inner.replaceChildren(fragment)
 
-      inner.replaceChildren(fragment)
-    })
+        // Update labels with prefix info
+        const pinnedBlock = getPinnedContentBlock(staticBlocks, offsetPx)
+        const prefix = scalebarDisplayPrefix()
+        if (pinned) {
+          if (pinnedBlock) {
+            pinned.style.display = ''
+            pinned.textContent =
+              (prefix ? `${prefix}:` : '') + pinnedBlock.refName
+          } else {
+            pinned.style.display = 'none'
+          }
+        }
+        if (firstLabelRef.current) {
+          const refName = firstLabelRef.current.dataset.refname || ''
+          const showPrefix = prefix && !pinnedBlock
+          firstLabelRef.current.textContent =
+            (showPrefix ? `${prefix}:` : '') + refName
+        }
+      },
+      { name: 'RefNameLabelsLayout' },
+    )
   }, [model, theme])
 
+  const bgColor = theme.palette.background.paper
+
   return (
-    <div
-      ref={innerRef}
-      style={{ position: 'absolute', willChange: 'transform' }}
-    />
+    <>
+      <div ref={innerRef} style={{ position: 'absolute' }} />
+      <span
+        ref={pinnedRef}
+        style={{
+          fontSize: '11px',
+          position: 'absolute',
+          left: 0,
+          top: '-1px',
+          fontWeight: 'bold',
+          lineHeight: 'normal',
+          zIndex: 2,
+          background: bgColor,
+        }}
+      />
+    </>
   )
 }
 

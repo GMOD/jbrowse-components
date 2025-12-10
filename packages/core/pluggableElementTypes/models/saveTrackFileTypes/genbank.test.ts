@@ -1,29 +1,16 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { fetchSequence } from './fetchSequence'
-import { stringifyGBK } from './genbank' // Only import stringifyGBK
+import { stringifyGBK } from './genbank'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // Mock the fetchSequence function from its new module
 jest.mock('./fetchSequence', () => {
-  const SimpleFeature = jest.requireActual(
-    '@jbrowse/core/util/simpleFeature',
-  ).default
   return {
-    fetchSequence: jest.fn(async ({ regions }) => {
-      const { start, end, refName } = regions[0]
-      return [
-        new SimpleFeature({
-          id: 'sequence-mock',
-          data: {
-            refName,
-            start,
-            end,
-            seq: 'A'.repeat(end - start), // Return a sequence of 'A's
-          },
-        }),
-      ]
+    fetchSequence: jest.fn(async ({ region }) => {
+      const { start, end } = region
+      return 'A'.repeat(end - start)
     }),
   }
 })

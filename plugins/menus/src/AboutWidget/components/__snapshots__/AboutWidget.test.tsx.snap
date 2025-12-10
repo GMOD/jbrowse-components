@@ -3,7 +3,7 @@
 exports[`<AboutWidget /> renders 1`] = `
 <div>
   <div
-    class="css-1a8qml5-root"
+    class="css-1cuw7jc"
   >
     <h4
       class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1ya2hdm-MuiTypography-root"
@@ -12,7 +12,7 @@ exports[`<AboutWidget /> renders 1`] = `
       JBrowse 2
     </h4>
     <h6
-      class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-6je6nr-MuiTypography-root-subtitle"
+      class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-1neszgn-MuiTypography-root"
       style="--Typography-textAlign: center;"
     />
     <p
@@ -51,7 +51,7 @@ exports[`<AboutWidget /> renders 1`] = `
       © 2019-2022 The Evolutionary Software Foundation
     </p>
     <div
-      class="css-la8yjp-pluginList"
+      class="css-1syf0v2"
     >
       <p
         class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"

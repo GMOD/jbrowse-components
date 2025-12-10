@@ -1,9 +1,4 @@
 import {
-  isCJSPluginDefinition,
-  isESMPluginDefinition,
-  isUMDPluginDefinition,
-} from '@jbrowse/core/PluginLoader'
-import {
   getChildType,
   getPropertyMembers,
   isArrayType,
@@ -11,15 +6,14 @@ import {
   isModelType,
   isReferenceType,
   isValidReference,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
@@ -86,6 +80,7 @@ type MSTMap = Instance<ReturnType<typeof types.map>>
 // it encounters undefined refs in model properties
 export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
   // makes it work with session sharing
+
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (node === undefined) {
     return
@@ -142,7 +137,7 @@ export function addRelativeUris(
       if (typeof config[key] === 'object' && config[key] !== null) {
         addRelativeUris(config[key] as Record<string, unknown>, base)
       } else if (key === 'uri') {
-        config.baseUri = base.href
+        config.baseUri = config.baseUri ?? base.href
       }
     }
   }
@@ -157,46 +152,7 @@ export function readConf({ configuration }: Root, attr: string, def: string) {
   return configuration?.[attr] || def
 }
 
-export async function fetchPlugins() {
-  const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} ${response.statusText} fetching plugins`,
-    )
-  }
-  return response.json() as Promise<{ plugins: PluginDefinition[] }>
-}
-
-export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
-  if (pluginsToCheck.length === 0) {
-    return true
-  }
-  const storePlugins = await fetchPlugins()
-  return pluginsToCheck.every(p => {
-    if (isUMDPluginDefinition(p)) {
-      return storePlugins.plugins.some(
-        pp =>
-          isUMDPluginDefinition(p) &&
-          (('url' in pp && 'url' in p && p.url === pp.url) ||
-            ('umdUrl' in pp && 'umdUrl' in p && p.umdUrl === pp.umdUrl)),
-      )
-    }
-    if (isESMPluginDefinition(p)) {
-      return storePlugins.plugins.some(
-        pp =>
-          // @ts-expect-error
-          isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
-      )
-    }
-    if (isCJSPluginDefinition(p)) {
-      return storePlugins.plugins.some(
-        // @ts-expect-error
-        pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
-      )
-    }
-    return false
-  })
-}
+export { checkPlugins, fetchPlugins } from './checkPlugins'
 
 export function removeAttr(obj: Record<string, unknown>, attr: string) {
   for (const prop in obj) {

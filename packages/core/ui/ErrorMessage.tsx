@@ -1,9 +1,9 @@
 import { Suspense, lazy, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import RedErrorMessageBox from './RedErrorMessageBox'
 
@@ -31,7 +31,7 @@ function parseError(str: string) {
   if (idx !== -1) {
     const trim = str.slice(0, idx + findStr.length)
     // best effort to make a better error message than the default
-    // mobx-state-tree
+    // @jbrowse/mobx-state-tree
 
     // case 1. element has a path
     const match = /.*at path "(.*)" snapshot `(.*)` is not assignable/m.exec(

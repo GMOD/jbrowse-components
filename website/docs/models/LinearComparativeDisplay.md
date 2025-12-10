@@ -3,8 +3,8 @@ id: linearcomparativedisplay
 title: LinearComparativeDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -64,7 +64,10 @@ number
 
 ```js
 // type
-() => { rpcDriverName: string; displayModel: { id: string; type: "LinearComparativeDisplay"; rpcDriverName: string; configuration: { [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; } & ... 5 more ... & IStateTreeNode<...>; highResolutionScaling: number; }
+;() => {
+  rpcDriverName: string
+  highResolutionScaling: number
+}
 ```
 
 ### LinearComparativeDisplay - Actions

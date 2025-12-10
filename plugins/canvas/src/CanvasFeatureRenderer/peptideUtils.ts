@@ -9,20 +9,11 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { shouldRenderPeptideBackground } from './zoomThresholds'
 
+import type { PeptideData, SequenceData } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature, Region } from '@jbrowse/core/util'
-
-export interface SequenceData {
-  seq: string
-  cds: { start: number; end: number }[]
-}
-
-export interface PeptideData {
-  sequenceData: SequenceData
-  protein?: string
-}
 
 /**
  * Fetch sequence from a reference genome using the sequence adapter
@@ -61,16 +52,18 @@ export async function fetchSequence(
   }
 }
 
-/**
- * Check if a feature type is a transcript type
- */
-export function isTranscriptType(type: string): boolean {
-  return (
-    type === 'mRNA' ||
-    type === 'transcript' ||
-    type === 'primary_transcript' ||
-    type === 'protein_coding_primary_transcript'
-  )
+const DEFAULT_TRANSCRIPT_TYPES = [
+  'mRNA',
+  'transcript',
+  'primary_transcript',
+  'protein_coding_primary_transcript',
+]
+
+function isTranscriptType(
+  type: string,
+  transcriptTypes = DEFAULT_TRANSCRIPT_TYPES,
+) {
+  return transcriptTypes.includes(type)
 }
 
 /**

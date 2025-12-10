@@ -3,8 +3,8 @@ id: dotplotdisplay
 title: DotplotDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -38,6 +38,17 @@ type: types.literal('DotplotDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+#### property: colorBy
+
+color by setting that overrides the config setting
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+colorBy: types.optional(types.string, 'default')
 ```
 
 ### DotplotDisplay - Getters
@@ -93,4 +104,25 @@ setRendered: (args?: { data: any; reactElement: ReactElement<unknown, string | J
 ```js
 // type signature
 setError: (error: unknown) => void
+```
+
+#### action: setAlpha
+
+```js
+// type signature
+setAlpha: (value: number) => void
+```
+
+#### action: setMinAlignmentLength
+
+```js
+// type signature
+setMinAlignmentLength: (value: number) => void
+```
+
+#### action: setColorBy
+
+```js
+// type signature
+setColorBy: (value: string) => void
 ```

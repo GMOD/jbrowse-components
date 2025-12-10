@@ -1,22 +1,16 @@
-import fs from 'fs'
+import { promises as fsPromises } from 'fs'
 import { parseArgs } from 'util'
 
 import parseJSON from 'json-parse-better-errors'
 
-import { printHelp, readJsonFile, writeJsonFile } from '../utils'
+import {
+  printHelp,
+  readJsonFile,
+  resolveConfigPath,
+  writeJsonFile,
+} from '../utils'
 
-const fsPromises = fs.promises
-
-type DefaultSession = Record<string, unknown>
-type Track = Record<string, unknown>
-
-interface Config {
-  assemblies?: { name: string; sequence: Record<string, unknown> }[]
-  configuration?: Record<string, unknown>
-  connections?: unknown[]
-  defaultSession?: DefaultSession
-  tracks?: Track[]
-}
+import type { Config } from '../base'
 
 const description = 'Set a default session with views and tracks'
 
@@ -73,9 +67,7 @@ export async function run(args: string[]) {
     return
   }
   const { session, currentSession, delete: deleteDefaultSession } = runFlags
-  const output = runFlags.target || runFlags.out || '.'
-  const isDir = (await fsPromises.lstat(output)).isDirectory()
-  const target = isDir ? `${output}/config.json` : output
+  const target = await resolveConfigPath(runFlags.target, runFlags.out)
   const configContents: Config = await readJsonFile(target)
 
   if (deleteDefaultSession) {
@@ -87,7 +79,6 @@ export async function run(args: string[]) {
         configContents.defaultSession,
       )}`,
     )
-    process.exit()
   } else if (!session) {
     throw new Error('Please provide a --session file')
   } else if (session) {

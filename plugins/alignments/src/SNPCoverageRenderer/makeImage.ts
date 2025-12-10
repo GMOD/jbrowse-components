@@ -1,20 +1,24 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
-  bpSpanPx,
   featureSpanPx,
   forEachWithStopTokenCheck,
+  renderToAbstractCanvas,
 } from '@jbrowse/core/util'
-import {
-  YSCALEBAR_LABEL_OFFSET,
-  getOrigin,
-  getScale,
-} from '@jbrowse/plugin-wiggle'
+import Flatbush from '@jbrowse/core/util/flatbush'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { getOrigin, getScale } from '@jbrowse/plugin-wiggle'
+import { rpcResult } from 'librpc-web-mod'
 
+import { calculateModificationCounts } from './calculateModificationCounts'
 import { alphaColor } from '../shared/util'
 
-import type { RenderArgsDeserializedWithFeatures } from './types'
+import type {
+  InterbaseIndicatorItem,
+  RenderArgsDeserializedWithFeatures,
+} from './types'
 import type { BaseCoverageBin } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
@@ -24,88 +28,9 @@ const INTERBASE_INDICATOR_HEIGHT = 4.5
 // 'statistical significance' is low
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
-const complementBase = {
-  C: 'G',
-  G: 'C',
-  A: 'T',
-  T: 'A',
-} as const
-
 const fudgeFactor = 0.6
 
-interface StrandCounts {
-  readonly entryDepth: number
-  readonly '1': number
-  readonly '-1': number
-  readonly '0': number
-}
-
-interface ModificationCountsParams {
-  readonly base: string
-  readonly isSimplex: boolean
-  readonly refbase: string | undefined
-  readonly snps: Readonly<Record<string, Partial<StrandCounts>>>
-  readonly ref: StrandCounts
-  readonly score0: number
-}
-
-interface ModificationCountsResult {
-  readonly modifiable: number
-  readonly detectable: number
-}
-
-/**
- * Calculate modifiable and detectable counts for a modification following IGV's algorithm.
- *
- * @param params.base - The canonical base (e.g., 'A' for A+a modification)
- * @param params.isSimplex - Whether this modification is simplex (only on one strand)
- * @param params.refbase - The reference base at this position
- * @param params.snps - SNP counts at this position
- * @param params.ref - Reference match counts at this position
- * @param params.score0 - Total coverage at this position
- * @returns Object with modifiable and detectable counts
- */
-function calculateModificationCounts({
-  base,
-  isSimplex,
-  refbase,
-  snps,
-  ref,
-  score0,
-}: ModificationCountsParams): ModificationCountsResult {
-  // Handle N base (all bases are modifiable/detectable)
-  if (base === 'N') {
-    return { modifiable: score0, detectable: score0 }
-  }
-
-  const cmp = complementBase[base as keyof typeof complementBase]
-
-  // Calculate total reads for base and complement
-  // IGV: getCount(pos, base) = reads matching that base (from SNPs or ref)
-  const baseCount =
-    (snps[base]?.entryDepth || 0) + (refbase === base ? ref.entryDepth : 0)
-  const complCount =
-    (snps[cmp]?.entryDepth || 0) + (refbase === cmp ? ref.entryDepth : 0)
-
-  // Modifiable: reads that COULD have this modification (base or complement)
-  // IGV: modifiable = getCount(pos, base) + getCount(pos, compl)
-  const modifiable = baseCount + complCount
-
-  // Detectable: reads where we can DETECT this modification
-  // For simplex: only specific strands (+ for base, - for complement)
-  // For duplex: all reads (same as modifiable)
-  // IGV: detectable = simplex ? getPosCount(base) + getNegCount(compl) : modifiable
-  const detectable = isSimplex
-    ? (snps[base]?.['1'] || 0) +
-      (snps[cmp]?.['-1'] || 0) +
-      (refbase === base ? ref['1'] : 0) +
-      (refbase === cmp ? ref['-1'] : 0)
-    : modifiable
-
-  return { modifiable, detectable }
-}
-
-export async function makeImage(
+export function makeImage(
   ctx: CanvasRenderingContext2D,
   props: RenderArgsDeserializedWithFeatures,
 ) {
@@ -123,40 +48,48 @@ export async function makeImage(
     config: cfg,
     ticks,
     stopToken,
+    offset = 0,
   } = props
   const theme = createJBrowseTheme(configTheme)
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
-  // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
-  // wiggle display, and makes the height of the actual drawn area add
-  // "padding" to the top and bottom of the display
-  const offset = YSCALEBAR_LABEL_OFFSET
+  // the adjusted height takes into account offset from the wiggle display,
+  // and makes the height of the actual drawn area add "padding" to the top
+  // and bottom of the display
   const height = unadjustedHeight - offset * 2
 
-  const opts = { ...scaleOpts, range: [0, height] }
-  const viewScale = getScale(opts)
-
-  // clipping and insertion indicators, uses a smaller height/2 scale
-  const indicatorViewScale = getScale({
-    ...opts,
-    range: [0, height / 2],
-    scaleType: 'linear',
-  })
+  // Use d3-scale only to get the "niced" domain, then use simple arithmetic
+  const viewScale = getScale({ ...scaleOpts, range: [0, height] })
+  const [domainMin, domainMax] = viewScale.domain() as [number, number]
+  const domainSpan = domainMax - domainMin
   const originY = getOrigin(scaleOpts.scaleType)
-  const originLinear = getOrigin('linear')
+  const isLog = scaleOpts.scaleType === 'log'
+
+  // Precompute values for linear scale
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+
+  // Precompute values for log scale (base 2)
+  const log2 = Math.log(2)
+  const logMin = Math.log(domainMin) / log2
+  const logMax = Math.log(domainMax) / log2
+  const logSpan = logMax - logMin
+  const logRatio = logSpan !== 0 ? height / logSpan : 0
+
+  // For indicator scale, always linear with half height
+  const indicatorRatio = domainSpan !== 0 ? height / 2 / domainSpan : 0
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
-  const showArcs = readConfObject(cfg, 'showArcs')
   const showInterbaseIndicators = readConfObject(cfg, 'showInterbaseIndicators')
 
-  // get the y coordinate that we are plotting at, this can be log scale
-  const toY = (n: number) => height - (viewScale(n) || 0) + offset
+  // Simple arithmetic scale functions - avoid d3-scale overhead in hot path
+  const toY = isLog
+    ? (n: number) => height - (Math.log(n) / log2 - logMin) * logRatio + offset
+    : (n: number) => height - (n - domainMin) * linearRatio + offset
   const toHeight = (n: number) => toY(originY) - toY(n)
-  // used specifically for indicator
-  const toY2 = (n: number) => height - (indicatorViewScale(n) || 0) + offset
-  const toHeight2 = (n: number) => toY2(originLinear) - toY2(n)
+  // Indicator scale is always linear, origin always 0
+  const toHeight2 = (n: number) => n * indicatorRatio
 
   const { bases, softclip, hardclip, insertion } = theme.palette
   const colorMap: Record<string, string> = {
@@ -199,6 +132,10 @@ export async function makeImage(
   // are located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
 
+  // Flatbush clickmap data for interbase indicators
+  const coords = [] as number[]
+  const items = [] as InterbaseIndicatorItem[]
+
   const drawingModifications = colorBy.type === 'modifications'
   const drawingMethylation = colorBy.type === 'methylation'
   const isolatedModification = colorBy.modifications?.isolatedModification
@@ -216,6 +153,8 @@ export async function makeImage(
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin
     const w = Math.max(rightPx - leftPx, 1)
     const score0 = feature.get('score')
+    const h = toHeight(score0)
+    const bottom = toY(score0) + h
     if (drawingModifications) {
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
@@ -244,19 +183,16 @@ export async function makeImage(
 
         const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const nonModColor = 'blue'
-        const c = alphaColor(nonModColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const c = alphaColor('blue', avgProbability)
 
         ctx.fillStyle = c
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - (curr + modFraction * height),
+          bottom - (curr + modFraction * h),
           w,
-          modFraction * height,
+          modFraction * h,
         )
-        curr += modFraction * height
+        curr += modFraction * h
       }
       // Sort keys once outside the loop
       const modKeys = Object.keys(mods).sort().reverse()
@@ -281,19 +217,16 @@ export async function makeImage(
 
         const { entryDepth, avgProbability = 0 } = mods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const baseColor = mod.color || 'black'
-        const c = alphaColor(baseColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const c = alphaColor(mod.color || 'black', avgProbability)
 
         ctx.fillStyle = c
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - (curr + modFraction * height),
+          bottom - (curr + modFraction * h),
           w,
-          modFraction * height,
+          modFraction * h,
         )
-        curr += modFraction * height
+        curr += modFraction * h
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = snpinfo
@@ -301,27 +234,23 @@ export async function makeImage(
 
       for (const base of Object.keys(mods).sort().reverse()) {
         const { entryDepth } = mods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
       for (const base of Object.keys(nonmods).sort().reverse()) {
         const { entryDepth } = nonmods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
@@ -330,14 +259,12 @@ export async function makeImage(
       let curr = 0
       for (const base of Object.keys(snps).sort().reverse()) {
         const { entryDepth } = snps[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
@@ -346,17 +273,56 @@ export async function makeImage(
     const interbaseEvents = Object.keys(snpinfo.noncov)
     if (showInterbaseCounts) {
       let curr = 0
+      const r = 0.6
+      const x = leftPx - r + extraHorizontallyFlippedOffset
+      let totalHeight = 0
       for (const base of interbaseEvents) {
         const { entryDepth } = snpinfo.noncov[base]!
-        const r = 0.6
         ctx.fillStyle = colorMap[base]!
         ctx.fillRect(
-          leftPx - r + extraHorizontallyFlippedOffset,
+          x,
           INTERBASE_INDICATOR_HEIGHT + toHeight2(curr),
           r * 2,
           toHeight2(entryDepth),
         )
+        totalHeight += toHeight2(entryDepth)
         curr += entryDepth
+      }
+
+      // Add to clickmap when zoomed in enough for meaningful interaction,
+      // or when interbase events represent a significant fraction of reads
+      const totalInterbaseCount = interbaseEvents.reduce(
+        (sum, base) => sum + (snpinfo.noncov[base]?.entryDepth ?? 0),
+        0,
+      )
+      const isMajorityInterbase =
+        score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
+      if (interbaseEvents.length > 0 && (bpPerPx < 50 || isMajorityInterbase)) {
+        const maxBase = interbaseEvents.reduce((a, b) =>
+          (snpinfo.noncov[a]?.entryDepth ?? 0) >
+          (snpinfo.noncov[b]?.entryDepth ?? 0)
+            ? a
+            : b,
+        )
+        const maxEntry = snpinfo.noncov[maxBase]
+        // Extend hitbox horizontally for easier mouse targeting
+        const clickWidth = Math.max(r * 2, 1.5)
+        coords.push(
+          x,
+          INTERBASE_INDICATOR_HEIGHT,
+          x + clickWidth,
+          INTERBASE_INDICATOR_HEIGHT + totalHeight,
+        )
+        items.push({
+          type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+          base: maxBase,
+          count: curr,
+          total: score0,
+          avgLength: maxEntry?.avgLength,
+          minLength: maxEntry?.minLength,
+          maxLength: maxEntry?.maxLength,
+          topSequence: maxEntry?.topSequence,
+        })
       }
     }
 
@@ -387,40 +353,34 @@ export async function makeImage(
         ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
         ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
         ctx.fill()
+
+        const maxEntry = snpinfo.noncov[maxBase]
+        // Add to Flatbush clickmap with extended hitbox for easier mouse targeting
+        const hitboxPadding = 3
+        coords.push(
+          l - INTERBASE_INDICATOR_WIDTH / 2 - hitboxPadding,
+          0,
+          l + INTERBASE_INDICATOR_WIDTH / 2 + hitboxPadding,
+          INTERBASE_INDICATOR_HEIGHT + hitboxPadding,
+        )
+        items.push({
+          type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+          base: maxBase,
+          count: accum,
+          total: indicatorComparatorScore,
+          avgLength: maxEntry?.avgLength,
+          minLength: maxEntry?.minLength,
+          maxLength: maxEntry?.maxLength,
+          topSequence: maxEntry?.topSequence,
+        })
       }
     }
     prevTotal = score0
   })
 
-  if (showArcs) {
-    forEachWithStopTokenCheck(features.values(), stopToken, feature => {
-      if (feature.get('type') !== 'skip') {
-        return
-      }
-      const s = feature.get('start')
-      const e = feature.get('end')
-      const [left, right] = bpSpanPx(s, e, region, bpPerPx)
-
-      ctx.beginPath()
-      const effectiveStrand = feature.get('effectiveStrand')
-      const pos = 'rgba(255,200,200,0.7)'
-      const neg = 'rgba(200,200,255,0.7)'
-      const neutral = 'rgba(200,200,200,0.7)'
-
-      if (effectiveStrand === 1) {
-        ctx.strokeStyle = pos
-      } else if (effectiveStrand === -1) {
-        ctx.strokeStyle = neg
-      } else {
-        ctx.strokeStyle = neutral
-      }
-
-      ctx.lineWidth = Math.log(feature.get('score') + 1)
-      ctx.moveTo(left, height - offset * 2)
-      ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
-      ctx.stroke()
-    })
-  }
+  // Note: Arc rendering has been moved to LinearSNPCoverageDisplay component
+  // to support cross-region arc connections. Skip features are still collected
+  // and returned for the display to render.
 
   if (displayCrossHatches) {
     ctx.lineWidth = 1
@@ -432,4 +392,70 @@ export async function makeImage(
       ctx.stroke()
     }
   }
+
+  // Return reducedFeatures for tooltip functionality
+  // Create reduced features, keeping only one feature per pixel to avoid
+  // serializing thousands of per-base features
+  let prevLeftPx = Number.NEGATIVE_INFINITY
+  const reducedFeatures: Feature[] = []
+  const skipFeatures: Feature[] = []
+  for (const feature of features.values()) {
+    if (feature.get('type') === 'skip') {
+      skipFeatures.push(feature)
+      continue
+    }
+    const start = feature.get('start')
+    const leftPx = (start - region.start) / bpPerPx
+    // Only keep one feature per pixel
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      reducedFeatures.push(feature)
+      prevLeftPx = leftPx
+    }
+  }
+  return {
+    reducedFeatures,
+    skipFeatures,
+    coords,
+    items,
+  }
+}
+
+function buildClickMap(coords: number[], items: InterbaseIndicatorItem[]) {
+  const flatbush = new Flatbush(Math.max(items.length, 1))
+  if (coords.length) {
+    for (let i = 0; i < coords.length; i += 4) {
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+    }
+  } else {
+    flatbush.add(0, 0)
+  }
+  flatbush.finish()
+  return {
+    flatbush: flatbush.data,
+    items,
+  }
+}
+
+export async function renderSNPCoverageToCanvas(
+  props: RenderArgsDeserializedWithFeatures,
+) {
+  const { height, regions, bpPerPx } = props
+  const region = regions[0]!
+  const width = (region.end - region.start) / bpPerPx
+
+  const { reducedFeatures, skipFeatures, coords, items, ...rest } =
+    await renderToAbstractCanvas(width, height, props, ctx =>
+      makeImage(ctx, props),
+    )
+
+  const serialized = {
+    ...rest,
+    features: reducedFeatures.map(f => f.toJSON()),
+    skipFeatures: skipFeatures.map(f => f.toJSON()),
+    clickMap: buildClickMap(coords, items),
+    height,
+    width,
+  }
+
+  return rpcResult(serialized, collectTransferables(rest))
 }

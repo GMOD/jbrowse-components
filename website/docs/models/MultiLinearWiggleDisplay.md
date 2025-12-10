@@ -3,8 +3,8 @@ id: multilinearwiggledisplay
 title: MultiLinearWiggleDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -138,14 +138,14 @@ any
 
 ```js
 // type
-{ color: string; baseUri?: string; name: string; group?: string; }[]
+{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
 ```
 
 #### getter: sources
 
 ```js
 // type
-{ color: string; baseUri?: string; name: string; group?: string; }[]
+{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
 ```
 
 #### getter: quantitativeStatsReady
@@ -234,6 +234,13 @@ adapterProps: () => any
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { displayModel: { id: string; type: "MultiLinearWiggleDisplay"; rpcDriverName: string; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<...>> & IStateTreeNode<...>; ... 16 more ...; showSidebar: boolean; } & ... 35 more ... & IStateTreeNode<...>; onMo...
 ```
 
 #### method: trackMenuItems

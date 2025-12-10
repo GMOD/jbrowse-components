@@ -1,5 +1,5 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MenuItem, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   root: {

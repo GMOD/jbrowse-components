@@ -1,6 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export function getTag(
   tag: string,

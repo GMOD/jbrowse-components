@@ -1,7 +1,4 @@
-import { clusterData } from '@gmod/hclust'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-
-import { getScoreMatrix } from './getScoreMatrix'
 
 import type { GetScoreMatrixArgs } from './types'
 
@@ -13,16 +10,11 @@ export class MultiWiggleClusterScoreMatrix extends RpcMethodTypeWithFiltersAndRe
       args,
       rpcDriverClassName,
     )
-    const matrix = await getScoreMatrix({
+    const { executeClusterScoreMatrix } =
+      await import('./executeClusterScoreMatrix')
+    return executeClusterScoreMatrix({
       pluginManager: this.pluginManager,
       args: deserializedArgs,
-    })
-    return clusterData({
-      data: Object.values(matrix),
-      stopToken: deserializedArgs.stopToken,
-      onProgress: a => {
-        deserializedArgs.statusCallback?.(a)
-      },
     })
   }
 }

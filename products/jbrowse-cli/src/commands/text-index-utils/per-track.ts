@@ -1,10 +1,15 @@
-import fs from 'fs'
 import path from 'path'
 
-import { createPerTrackTrixAdapter } from './adapter-utils'
-import { getTrackConfigs, readConf, writeConf } from './config-utils'
+import { createTrixAdapter } from './adapter-utils'
+import {
+  ensureTrixDir,
+  getTrackConfigs,
+  readConf,
+  writeConf,
+} from './config-utils'
 import { indexDriver } from './indexing-utils'
 import { validateAssembliesForPerTrack } from './validators'
+import { resolveConfigPath } from '../../utils'
 
 export async function perTrackIndex(flags: any) {
   const {
@@ -18,17 +23,11 @@ export async function perTrackIndex(flags: any) {
     exclude,
     prefixSize,
   } = flags
-  const outFlag = target || out || '.'
-
-  const isDir = fs.lstatSync(outFlag).isDirectory()
-  const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
+  const confFilePath = await resolveConfigPath(target, out)
   const outLocation = path.dirname(confFilePath)
   const config = readConf(confFilePath)
   const configTracks = config.tracks || []
-  const trixDir = path.join(outLocation, 'trix')
-  if (!fs.existsSync(trixDir)) {
-    fs.mkdirSync(trixDir)
-  }
+  ensureTrixDir(outLocation)
   validateAssembliesForPerTrack(assemblies)
   const confs = getTrackConfigs(confFilePath, tracks?.split(','))
   if (!confs.length) {
@@ -64,14 +63,11 @@ export async function perTrackIndex(flags: any) {
           ...trackConfig,
           textSearching: {
             ...textSearching,
-            textSearchAdapter: createPerTrackTrixAdapter(
-              trackId,
-              assemblyNames,
-            ),
+            textSearchAdapter: createTrixAdapter(trackId, assemblyNames),
           },
         }
       } else {
-        console.log("Error: can't find trackId")
+        console.warn(`Warning: can't find trackId ${trackId}`)
       }
     }
     writeConf({ ...config, tracks: configTracks }, confFilePath)

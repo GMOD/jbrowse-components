@@ -1,5 +1,6 @@
 import PluggableElementBase from './PluggableElementBase'
 import mapObject from '../util/map-obj'
+import { isRpcResult } from '../util/rpc'
 import { getBlobMap, setBlobMap } from '../util/tracks'
 import {
   RetryError,
@@ -34,7 +35,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeNewAuthArguments(
     loc: UriLocation,
-    rpcDriverClassName: string,
+    _rpcDriverClassName: string,
   ) {
     const rootModel = this.pluginManager.rootModel
 
@@ -45,9 +46,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
     const account = rootModel.findAppropriateInternetAccount(loc)
 
-    // mutating loc object is not allowed in MainThreadRpcDriver, and is only
-    // needed for web worker RPC
-    if (account && rpcDriverClassName !== 'MainThreadRpcDriver') {
+    if (account) {
       loc.internetAccountPreAuthorization =
         await account.getPreAuthorizationInformation(loc)
     }
@@ -69,6 +68,19 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     serializedArgs: unknown,
     rpcDriverClassName: string,
   ): Promise<unknown>
+
+  /**
+   * Execute directly without serialization. Override in subclasses that support
+   * direct execution (e.g., CoreRender). Returns undefined by default, signaling
+   * that the driver should fall back to serialized execution.
+   */
+  async executeDirect(_args: Record<string, unknown>): Promise<unknown> {
+    return undefined
+  }
+
+  supportsDirectExecution(): boolean {
+    return this.executeDirect !== RpcMethodType.prototype.executeDirect
+  }
 
   async serializeReturn(
     originalReturn: unknown,
@@ -101,6 +113,11 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       }
       throw error
     }
+    // Unwrap rpcResult if present (needed for MainThreadRpcDriver where the
+    // rpcResult wrapper isn't stripped by the worker message handler)
+    if (isRpcResult(r)) {
+      return r.value
+    }
     return r
   }
 
@@ -110,9 +127,14 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   ) {
     const uris = [] as UriLocation[]
 
+    // exclude renderingProps from deep traversal - it is only needed
+    // client-side for React components and can contain circular references
+    // (e.g. d3 hierarchy nodes) or non-serializable objects like callbacks
+    const { renderingProps, ...rest } = thing
+
     // using map-obj avoids cycles, seen in circular view svg export
     mapObject(
-      thing,
+      rest,
       (key, val: unknown) => {
         if (isUriLocation(val)) {
           uris.push(val)

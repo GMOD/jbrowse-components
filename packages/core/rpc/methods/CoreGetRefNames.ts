@@ -10,15 +10,24 @@ export default class CoreGetRefNames extends RpcMethodType {
       sessionId: string
       stopToken?: string
       adapterConfig: Record<string, unknown>
+      sequenceAdapter?: Record<string, unknown>
     },
     rpcDriver: string,
   ) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { sessionId, adapterConfig } = deserializedArgs
+    const { sessionId, adapterConfig, sequenceAdapter } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    return isFeatureAdapter(dataAdapter)
-      ? dataAdapter.getRefNames(deserializedArgs)
-      : []
+    if (!isFeatureAdapter(dataAdapter)) {
+      return []
+    }
+    // cache sequenceAdapter config on the adapter if provided (for BAM/CRAM)
+    if (sequenceAdapter) {
+      const adapter = dataAdapter as { sequenceAdapterConfig?: unknown }
+      if (adapter.sequenceAdapterConfig === undefined) {
+        adapter.sequenceAdapterConfig = sequenceAdapter
+      }
+    }
+    return dataAdapter.getRefNames(deserializedArgs)
   }
 }

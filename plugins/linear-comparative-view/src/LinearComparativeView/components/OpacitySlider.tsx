@@ -1,6 +1,6 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Box, Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import SliderTooltip from './SliderTooltip'
 

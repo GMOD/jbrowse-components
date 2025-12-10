@@ -7,7 +7,7 @@ import { when } from 'mobx'
 
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition'
 import LegendBar from '../shared/components/MultiVariantLegendBar'
-import { drawTree } from '../shared/components/drawTree'
+import { drawTree } from '../shared/drawTree'
 
 import type { MultiLinearVariantMatrixDisplayModel } from './model'
 import type {

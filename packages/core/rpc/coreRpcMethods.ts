@@ -3,6 +3,7 @@ export { default as CoreGetFeatureDetails } from './methods/CoreGetFeatureDetail
 export { default as CoreGetMetadata } from './methods/CoreGetMetadata'
 export { default as CoreGetFileInfo } from './methods/CoreGetFileInfo'
 export { default as CoreGetFeatures } from './methods/CoreGetFeatures'
+export { default as CoreGetSequence } from './methods/CoreGetSequence'
 export { default as CoreRender } from './methods/CoreRender'
 export { default as CoreFreeResources } from './methods/CoreFreeResources'
 export { default as CoreGetFeatureDensityStats } from './methods/CoreGetFeatureDensityStats'

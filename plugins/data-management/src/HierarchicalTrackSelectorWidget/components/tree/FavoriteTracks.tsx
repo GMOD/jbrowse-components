@@ -1,7 +1,7 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import GradeIcon from '@mui/icons-material/Grade'
 import { Badge, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import DropdownTrackSelector from './DropdownTrackSelector'
 

@@ -14,6 +14,7 @@ interface DrawCDSBackgroundArgs {
   bpPerPx: number
   strand: number
   reversed: boolean
+  canvasWidth: number
 }
 
 /**
@@ -31,31 +32,35 @@ export function drawCDSBackground(args: DrawCDSBackgroundArgs) {
     bpPerPx,
     strand,
     reversed,
+    canvasWidth,
   } = args
 
   const flipper = reversed ? -1 : 1
   const rightPos = left + width
+  const baseHex = colord(baseColor).toHex()
+  const color1 = lighten(baseHex, 0.2)
+  const color2 = darken(baseHex, 0.1)
+
   for (let i = 0, l = aggregatedAminoAcids.length; i < l; i++) {
     const aa = aggregatedAminoAcids[i]!
-    const isAlternate = i % 2 === 1
-    const bgColor = isAlternate
-      ? darken(colord(baseColor).toHex(), 0.1)
-      : lighten(colord(baseColor).toHex(), 0.2)
+    const bgColor = i % 2 === 1 ? color2 : color1
 
     if (strand * flipper === -1) {
       const startX = rightPos - (1 / bpPerPx) * aa.startIndex
       const endX = rightPos - (1 / bpPerPx) * (aa.endIndex + 1)
-      const rectWidth = startX - endX
-
+      if (startX < 0 || endX > canvasWidth) {
+        continue
+      }
       ctx.fillStyle = bgColor
-      ctx.fillRect(endX, top, rectWidth, height)
+      ctx.fillRect(endX, top, startX - endX, height)
     } else {
       const startX = left + (1 / bpPerPx) * aa.startIndex
       const endX = left + (1 / bpPerPx) * (aa.endIndex + 1)
-      const rectWidth = endX - startX
-
+      if (endX < 0 || startX > canvasWidth) {
+        continue
+      }
       ctx.fillStyle = bgColor
-      ctx.fillRect(startX, top, rectWidth, height)
+      ctx.fillRect(startX, top, endX - startX, height)
     }
   }
 }

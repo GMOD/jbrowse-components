@@ -1,10 +1,10 @@
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import type { Fav, LaunchCallback } from '../types'
 

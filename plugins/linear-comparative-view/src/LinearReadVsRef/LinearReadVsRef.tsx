@@ -8,6 +8,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   Button,
@@ -17,7 +18,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -237,7 +237,7 @@ export default function ReadVsRefDialog({
                     showReverse: true,
                     showTranslation: false,
                     height: 35,
-                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                    configuration: `${sequenceTrackConf.trackId}-LinearReferenceSequenceDisplay`,
                   },
                 ],
               },

@@ -4,7 +4,7 @@ import Menu from '@jbrowse/core/ui/Menu'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { MenuItemsGetter } from '@jbrowse/core/ui/Menu'
 
 const MenuButton = observer(function MenuButton({
   children,
@@ -16,7 +16,7 @@ const MenuButton = observer(function MenuButton({
 }: {
   closeAfterItemClick?: boolean
   children?: React.ReactElement
-  menuItems: MenuItem[]
+  menuItems: MenuItemsGetter
   stopPropagation?: boolean
   setOpen?: (arg: boolean) => void
   [key: string]: unknown
@@ -31,8 +31,12 @@ const MenuButton = observer(function MenuButton({
       <IconButton
         {...rest}
         onClick={event => {
+          if (stopPropagation) {
+            event.stopPropagation()
+          }
           setAnchorEl(event.currentTarget)
         }}
+        disabled={Array.isArray(menuItems) && menuItems.length === 0}
       >
         {children}
       </IconButton>

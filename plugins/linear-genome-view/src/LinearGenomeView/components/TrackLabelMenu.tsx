@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'
@@ -20,83 +22,86 @@ const TrackLabelMenu = observer(function ({
 }) {
   const view = getContainingView(track) as LinearGenomeViewModel
   const session = getSession(track)
-  const trackConf = track.configuration
-  const minimized = track.minimized
-  const pinned = track.pinned
-  const { isTopLevelView } = view
 
-  const items = [
-    ...(!isTopLevelView
-      ? []
-      : [
+  const getMenuItems = useCallback(() => {
+    const trackConf = track.configuration
+    const minimized = track.minimized
+    const pinned = track.pinned
+    const { isTopLevelView } = view
+
+    return [
+      ...(!isTopLevelView
+        ? []
+        : [
+            {
+              label: pinned ? 'Unpin track' : 'Pin track',
+              icon: PushPinIcon,
+              onClick: () => {
+                track.setPinned(!pinned)
+              },
+            },
+          ]),
+      {
+        label: 'Track order',
+        type: 'subMenu' as const,
+        priority: 2000,
+        subMenu: [
           {
-            label: pinned ? 'Unpin track' : 'Pin track',
-            icon: PushPinIcon,
+            label: minimized ? 'Restore track' : 'Minimize track',
+            icon: minimized ? AddIcon : MinimizeIcon,
             onClick: () => {
-              track.setPinned(!pinned)
+              track.setMinimized(!minimized)
             },
           },
-        ]),
-    {
-      label: 'Track order',
-      type: 'subMenu',
-      priority: 2000,
-      subMenu: [
-        {
-          label: minimized ? 'Restore track' : 'Minimize track',
-          icon: minimized ? AddIcon : MinimizeIcon,
-          onClick: () => {
-            track.setMinimized(!minimized)
-          },
-        },
-        ...(view.tracks.length > 2
-          ? [
-              {
-                label: 'Move track to top',
-                icon: KeyboardDoubleArrowUpIcon,
-                onClick: () => {
-                  view.moveTrackToTop(track.id)
+          ...(view.tracks.length > 2
+            ? [
+                {
+                  label: 'Move track to top',
+                  icon: KeyboardDoubleArrowUpIcon,
+                  onClick: () => {
+                    view.moveTrackToTop(track.id)
+                  },
                 },
-              },
-            ]
-          : []),
+              ]
+            : []),
+          ...(view.tracks.length > 1
+            ? [
+                {
+                  label: 'Move track up',
+                  icon: KeyboardArrowUpIcon,
+                  onClick: () => {
+                    view.moveTrackUp(track.id)
+                  },
+                },
+                {
+                  label: 'Move track down',
+                  icon: KeyboardArrowDownIcon,
+                  onClick: () => {
+                    view.moveTrackDown(track.id)
+                  },
+                },
+              ]
+            : []),
+          ...(view.tracks.length > 2
+            ? [
+                {
+                  label: 'Move track to bottom',
+                  icon: KeyboardDoubleArrowDownIcon,
+                  onClick: () => {
+                    view.moveTrackToBottom(track.id)
+                  },
+                },
+              ]
+            : []),
+        ],
+      },
+      ...(session.getTrackActionMenuItems?.(trackConf) || []),
+      ...track.trackMenuItems(),
+    ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
+  }, [track, view, session])
 
-        ...(view.tracks.length > 1
-          ? [
-              {
-                label: 'Move track up',
-                icon: KeyboardArrowUpIcon,
-                onClick: () => {
-                  view.moveTrackUp(track.id)
-                },
-              },
-              {
-                label: 'Move track down',
-                icon: KeyboardArrowDownIcon,
-                onClick: () => {
-                  view.moveTrackDown(track.id)
-                },
-              },
-            ]
-          : []),
-        ...(view.tracks.length > 2
-          ? [
-              {
-                label: 'Move track to bottom',
-                icon: KeyboardDoubleArrowDownIcon,
-                onClick: () => {
-                  view.moveTrackToBottom(track.id)
-                },
-              },
-            ]
-          : []),
-      ],
-    },
-    ...(session.getTrackActionMenuItems?.(trackConf) || []),
-    ...track.trackMenuItems(),
-  ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
   return (
-    <CascadingMenuButton menuItems={items} data-testid="track_menu_icon">
+    <CascadingMenuButton menuItems={getMenuItems} data-testid="track_menu_icon">
       <MoreVertIcon fontSize="small" />
     </CascadingMenuButton>
   )

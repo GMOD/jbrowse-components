@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Dialog,
@@ -8,8 +9,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   root: {
@@ -17,7 +16,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const MAFFilterDialog = observer(function ({
+export default function MAFFilterDialog({
   model,
   handleClose,
 }: {
@@ -61,19 +60,11 @@ const MAFFilterDialog = observer(function ({
           >
             Submit
           </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              handleClose()
-            }}
-          >
+          <Button variant="contained" color="secondary" onClick={handleClose}>
             Cancel
           </Button>
         </DialogActions>
       </DialogContent>
     </Dialog>
   )
-})
-
-export default MAFFilterDialog
+}

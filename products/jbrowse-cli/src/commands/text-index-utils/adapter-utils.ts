@@ -9,49 +9,26 @@ export function getLoc(elt: UriLocation | LocalPathLocation): string {
 }
 
 export function createTrixAdapter(
-  id: string,
-  asm: string,
-  assemblyNames?: string[],
+  name: string,
+  assemblyNames: string[],
+  idSuffix = 'index',
 ): TrixTextSearchAdapter {
   return {
     type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: id,
+    textSearchAdapterId: `${name}-${idSuffix}`,
     ixFilePath: {
-      uri: `trix/${asm}.ix`,
+      uri: `trix/${name}.ix`,
       locationType: 'UriLocation',
     },
     ixxFilePath: {
-      uri: `trix/${asm}.ixx`,
+      uri: `trix/${name}.ixx`,
       locationType: 'UriLocation',
     },
     metaFilePath: {
-      uri: `trix/${asm}_meta.json`,
+      uri: `trix/${name}_meta.json`,
       locationType: 'UriLocation',
     },
-    assemblyNames: assemblyNames || [asm],
-  }
-}
-
-export function createPerTrackTrixAdapter(
-  trackId: string,
-  assemblyNames: string[],
-) {
-  return {
-    type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: `${trackId}-index`,
-    ixFilePath: {
-      uri: `trix/${trackId}.ix`,
-      locationType: 'UriLocation' as const,
-    },
-    ixxFilePath: {
-      uri: `trix/${trackId}.ixx`,
-      locationType: 'UriLocation' as const,
-    },
-    metaFilePath: {
-      uri: `trix/${trackId}_meta.json`,
-      locationType: 'UriLocation' as const,
-    },
-    assemblyNames: assemblyNames,
+    assemblyNames,
   }
 }
 

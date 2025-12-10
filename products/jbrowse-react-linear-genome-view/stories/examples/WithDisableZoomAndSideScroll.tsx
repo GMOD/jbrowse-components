@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import Plugin from '@jbrowse/core/Plugin'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { getVolvoxConfig } from './util'
 import { JBrowseLinearGenomeView, createViewState } from '../../src'

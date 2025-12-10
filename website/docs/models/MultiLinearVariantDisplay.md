@@ -3,8 +3,8 @@ id: multilinearvariantdisplay
 title: MultiLinearVariantDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -33,26 +33,6 @@ extends
 ISimpleType<"MultiLinearVariantDisplay">
 // code
 type: types.literal('MultiLinearVariantDisplay')
-```
-
-#### property: rowHeightSetting
-
-used only if autoHeight is false
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-rowHeightSetting: types.optional(types.number, 11)
-```
-
-#### property: minorAlleleFrequencyFilter
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-minorAlleleFrequencyFilter: types.optional(types.number, 0)
 ```
 
 ### MultiLinearVariantDisplay - Getters

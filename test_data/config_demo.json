@@ -5013,6 +5013,19 @@
           "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
         }
       }
+    },
+    {
+      "type": "HicTrack",
+      "trackId": "combined",
+      "name": "combined",
+      "adapter": {
+        "type": "HicAdapter",
+        "hicLocation": {
+          "uri": "https://hicfiles.s3.amazonaws.com/hiseq/gm12878/in-situ/combined.hic",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
     }
   ],
   "connections": [],

@@ -1,7 +1,7 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { ConfigurationEditor } from '@jbrowse/plugin-config'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

@@ -4,7 +4,6 @@ import {
   ReactRendering,
   getContainingView,
   getSession,
-  getViewParams,
 } from '@jbrowse/core/util'
 
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
@@ -56,15 +55,20 @@ export async function renderBaseLinearDisplaySvg(
         ] as const
       }
 
-      const { rpcManager, renderArgs, renderProps, rendererType } =
-        renderBlockData(blockState, self)
+      const {
+        rpcManager,
+        renderArgs,
+        renderProps,
+        renderingProps,
+        rendererType,
+      } = renderBlockData(blockState, self)
 
       return [
         block,
         await rendererType.renderInClient(rpcManager, {
           ...renderArgs,
           ...renderProps,
-          viewParams: getViewParams(self, true),
+          renderingProps,
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,
         }),

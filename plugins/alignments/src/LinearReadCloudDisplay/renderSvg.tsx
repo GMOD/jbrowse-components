@@ -5,7 +5,7 @@ import {
   ReactRendering,
   getSerializedSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type {
@@ -59,7 +59,7 @@ export async function renderSvg(
       sessionId: session.id,
       view: viewSnapshot,
       adapterConfig: self.adapterConfig,
-      config: self.configuration,
+      config: getSnapshot(self.configuration),
       theme: opts.theme,
       filterBy,
       featureHeight,
@@ -72,6 +72,7 @@ export async function renderSvg(
       trackMaxHeight,
       height,
       exportSVG: opts,
+      rpcDriverName: self.effectiveRpcDriverName,
     },
   )) as RenderingResult
 

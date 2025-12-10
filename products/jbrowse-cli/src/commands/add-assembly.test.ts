@@ -5,16 +5,17 @@
 import fs from 'fs'
 import path from 'path'
 
-import nock from 'nock'
-
 import {
   ctxDir,
   dataDir,
+  mockFetch,
   readConf,
   readConfAlt,
   runCommand,
   runInTmpDir,
 } from '../testUtil'
+
+jest.mock('../fetchWithProxy')
 
 const { copyFile, writeFile, mkdir } = fs.promises
 
@@ -390,7 +391,7 @@ test('relative path', async () => {
 
 test('adds an assembly from a URL', async () => {
   await runInTmpDir(async ctx => {
-    nock('https://mysite.com').head('/data/simple.2bit').reply(200)
+    mockFetch({})
     await runCommand(['add-assembly', 'https://mysite.com/data/simple.2bit'])
     expect(readConf(ctx)).toMatchSnapshot()
   })

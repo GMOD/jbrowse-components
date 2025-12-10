@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { complement, reverse } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
@@ -16,12 +17,11 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import { fetchSequence } from './fetchSequence'
 
-import type { LinearGenomeViewModel } from '..'
-import type { Feature } from '@jbrowse/core/util'
+import type { BpOffset } from '../types'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -36,7 +36,12 @@ const GetSequenceDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: LinearGenomeViewModel
+  model: {
+    leftOffset?: BpOffset
+    rightOffset?: BpOffset
+    getSelectedRegions: (left?: BpOffset, right?: BpOffset) => Region[]
+    setOffsets: (left?: BpOffset, right?: BpOffset) => void
+  }
   handleClose: () => void
 }) {
   const { classes } = useStyles()

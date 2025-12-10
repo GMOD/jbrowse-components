@@ -1,4 +1,4 @@
-import fs from 'fs'
+import { open } from 'fs/promises'
 import path from 'path'
 
 import { createRemoteStream, isURL } from './types/common'
@@ -12,9 +12,11 @@ export async function getLocalOrRemoteStream(uri: string, out: string) {
     }
   } else {
     const filename = path.isAbsolute(uri) ? uri : path.join(out, uri)
+    const handle = await open(filename, 'r')
+    const stat = await handle.stat()
     return {
-      totalBytes: fs.statSync(filename).size,
-      stream: fs.createReadStream(filename),
+      totalBytes: stat.size,
+      stream: handle.readableWebStream() as ReadableStream<Uint8Array>,
     }
   }
 }

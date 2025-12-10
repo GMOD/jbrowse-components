@@ -3,15 +3,13 @@ import { useState } from 'react'
 import { Dialog } from '@jbrowse/core/ui'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 
-import type { Source } from '../types'
-
 export default function SetRowHeight({
   model,
   handleClose,
 }: {
   model: {
-    rowHeight?: Source[]
-    setRowHeight: (arg: number) => void
+    rowHeight: number
+    setRowHeight: (arg: number | 'auto') => void
   }
   handleClose: () => void
 }) {

@@ -3,7 +3,7 @@ import { adapterConfigCacheKey } from './util'
 import type PluginManager from '../PluginManager'
 import type { AnyConfigurationSchemaType } from '../configuration'
 import type { AnyDataAdapter } from './BaseAdapter'
-import type { SnapshotIn } from 'mobx-state-tree'
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
 
