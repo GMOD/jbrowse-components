@@ -64,6 +64,9 @@ export function sharedDoAfterAttach(self: {
     self,
     autorun(
       async () => {
+        if (!isAlive(self)) {
+          return
+        }
         const session = getSession(self)
         try {
           const featureId = self.featureIdUnderMouse
