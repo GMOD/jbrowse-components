@@ -1,14 +1,14 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Box, Button, FormControl, Typography } from '@mui/material'
 
-import { isElectron } from '../../util'
-import { getBlob, storeBlobLocation } from '../../util/tracks'
+import { isElectron } from '../../util/index.ts'
+import { getBlob, storeBlobLocation } from '../../util/blob.ts'
 
 import type {
   BlobLocation,
   FileLocation,
   LocalPathLocation,
-} from '../../util/types'
+} from '../../util/types/index.ts'
 
 function isLocalPathLocation(loc: FileLocation): loc is LocalPathLocation {
   return 'localPath' in loc

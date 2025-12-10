@@ -1,18 +1,16 @@
 import { getParent, isRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import { getEnv, getSession, objectHash } from './index'
-import { readConfObject } from '../configuration'
+import { getEnv, getSession, objectHash } from './index.ts'
+import { readConfObject } from '../configuration/index.ts'
 
-import type { FileLocation, PreFileLocation } from './types'
-import type { AnyConfigurationModel } from '../configuration'
+import type { FileLocation } from './types/index.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
   types,
 } from '@jbrowse/mobx-state-tree'
-
-/* utility functions for use by track models and so forth */
 
 export function getTrackAssemblyNames(
   track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
@@ -38,8 +36,8 @@ export function getConfAssemblyNames(conf: AnyConfigurationModel) {
 
 /**
  * return the rpcSessionId of the highest parent node in the tree that has an
- * rpcSessionId */
-
+ * rpcSessionId
+ */
 export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
   interface NodeWithRpcSessionId extends IAnyStateTreeNode {
     rpcSessionId: string
@@ -62,8 +60,6 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
 /**
  * given an MST node, get the renderprops of the first parent container that
  * has renderProps
- * @param node -
- * @returns renderprops, or empty object if none found
  */
 export function getParentRenderProps(node: IAnyStateTreeNode) {
   for (
@@ -81,38 +77,6 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
 
 export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
-
-let blobMap: Record<string, File> = {}
-
-// get a specific blob
-export function getBlob(id: string) {
-  return blobMap[id]
-}
-
-// used to export entire context to webworker
-export function getBlobMap() {
-  return blobMap
-}
-
-// TODO:IS THIS BAD?
-// used in new contexts like webworkers
-export function setBlobMap(map: Record<string, File>) {
-  blobMap = map
-}
-
-let counter = 0
-
-// blob files are stored in a global map. the blobId is based on a combination
-// of timestamp plus counter to be unique across sessions and fast repeated
-// calls
-export function storeBlobLocation(location: PreFileLocation) {
-  if ('blob' in location) {
-    const blobId = `b${Date.now()}-${counter++}`
-    blobMap[blobId] = location.blob
-    return { name: location.blob.name, blobId, locationType: 'BlobLocation' }
-  }
-  return location
-}
 
 /**
  * creates a new location from the provided location including the appropriate

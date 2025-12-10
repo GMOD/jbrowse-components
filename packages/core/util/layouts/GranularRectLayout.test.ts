@@ -1,4 +1,4 @@
-import Layout from './GranularRectLayout'
+import Layout from './GranularRectLayout.ts'
 
 test('lays out non-overlapping features end to end', () => {
   const l = new Layout({ pitchX: 10, pitchY: 4 })

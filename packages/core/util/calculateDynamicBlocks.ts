@@ -6,10 +6,10 @@ import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-} from './blockTypes'
-import { intersection2 } from './range'
+} from './blockTypes.ts'
+import { intersection2 } from './range.ts'
 
-import type { Base1DViewModel } from './calculateStaticBlocks'
+import type { Base1DViewModel } from './calculateStaticBlocks.ts'
 
 /**
  * returns a BlockSet of which the `blocks` attribute is an array of 'dynamic

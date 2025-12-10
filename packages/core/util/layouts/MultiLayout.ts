@@ -1,4 +1,4 @@
-import type { BaseLayout, SerializedLayout } from './BaseLayout'
+import type { BaseLayout, SerializedLayout } from './BaseLayout.ts'
 
 export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
   subLayouts = new Map<string, SUB_LAYOUT_CLASS>()

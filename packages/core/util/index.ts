@@ -1379,10 +1379,11 @@ export {
   type SimpleFeatureSerializedNoId,
   default as SimpleFeature,
   isFeature,
-} from './simpleFeature'
+} from './simpleFeature.ts'
 
 export { blobToDataURL } from './blobToDataURL'
-export { makeAbortableReaction } from './makeAbortableReaction'
-export * from './aborting'
-export * from './linkify'
-export * from './locString'
+export { makeAbortableReaction } from './makeAbortableReaction.ts'
+export * from './aborting.ts'
+export * from './linkify.ts'
+export * from './locString.ts'
+export * from './blob.ts'

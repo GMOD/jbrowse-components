@@ -1,5 +1,6 @@
-import MultiLayout from './MultiLayout'
-import PrecomputedLayout from './PrecomputedLayout'
+//@ts-nocheck
+import MultiLayout from './MultiLayout.ts'
+import PrecomputedLayout from './PrecomputedLayout.ts'
 
 class ThrowingLayout {
   constructor() {

@@ -1,5 +1,5 @@
-import { readConfObject } from '../configuration'
-import { isElectron } from '../util'
+import { readConfObject } from '../configuration/index.ts'
+import { isElectron } from '../util/index.ts'
 
 type AnalyticsObj = Record<string, any>
 
