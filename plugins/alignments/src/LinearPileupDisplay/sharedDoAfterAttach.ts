@@ -22,7 +22,7 @@ export function sharedDoAfterAttach(self: {
   autorunReady: boolean
   adapterConfig: AnyConfigurationModel
   effectiveRpcDriverName?: string
-  colorBy: ColorBy
+  colorBy?: ColorBy
   tagsReady: boolean
   updateColorTagMap: (arg: string[]) => void
   setTagsReady: (arg: boolean) => void
