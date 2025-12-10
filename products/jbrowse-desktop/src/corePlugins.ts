@@ -24,7 +24,6 @@ import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
-import SVG from '@jbrowse/plugin-svg'
 import TextIndex from '@jbrowse/plugin-text-indexing'
 import TrixPlugin from '@jbrowse/plugin-trix'
 import Variants from '@jbrowse/plugin-variants'
@@ -32,7 +31,6 @@ import Wiggle from '@jbrowse/plugin-wiggle'
 
 const corePlugins = [
   Canvas,
-  SVG,
   LinearGenomeView,
   Alignments,
   Authentication,
