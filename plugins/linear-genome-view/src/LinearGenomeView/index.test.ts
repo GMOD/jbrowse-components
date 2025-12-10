@@ -62,6 +62,7 @@ function initialize() {
     .model({})
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
+      initialized: true,
     }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
@@ -1024,5 +1025,56 @@ test('space separated locstring', async () => {
   })
   await waitFor(() => {
     expect(model.bpPerPx).toBe(0.125)
+  })
+})
+
+test('showLoading is true when displayedRegions are set but not yet initialized', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+      ],
+      bpPerPx: 1,
+      offsetPx: 0,
+    }),
+  )
+  // width not set yet, so not initialized
+  expect(model.showLoading).toBe(true)
+  expect(model.initialized).toBe(false)
+
+  // after setting width, should be initialized
+  model.setWidth(800)
+  expect(model.showLoading).toBe(false)
+  expect(model.initialized).toBe(true)
+})
+
+test('showLoading is true when init is set and becomes false after initialization', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+        loc: 'ctgA:1000-2000',
+      },
+    }),
+  )
+  // not initialized yet, so showLoading should be true
+  expect(model.showLoading).toBe(true)
+  expect(model.initialized).toBe(false)
+
+  model.setWidth(800)
+  // after init autorun processes and view initializes, showLoading should become false
+  await waitFor(() => {
+    expect(model.showLoading).toBe(false)
+  })
+  await waitFor(() => {
+    expect(model.initialized).toBe(true)
   })
 })

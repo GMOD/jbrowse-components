@@ -17,20 +17,14 @@ export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
       uri: string
       fileType?: string
     }) => {
-      const view = session.addView('SvInspectorView') as SvInspectorViewModel
-      const exts = uri.split('.')
-      let ext = exts.pop()?.toUpperCase()
-      if (ext === 'GZ') {
-        ext = exts.pop()?.toUpperCase()
-      }
-
-      view.spreadsheetView.importWizard.setFileType(fileType || ext || '')
-      view.spreadsheetView.importWizard.setSelectedAssemblyName(assembly)
-      view.spreadsheetView.importWizard.setFileSource({
-        uri,
-        locationType: 'UriLocation',
-      })
-      await view.spreadsheetView.importWizard.import(assembly)
+      // Use the init property to let the model handle initialization
+      session.addView('SvInspectorView', {
+        init: {
+          assembly,
+          uri,
+          fileType,
+        },
+      }) as SvInspectorViewModel
     },
   )
 }

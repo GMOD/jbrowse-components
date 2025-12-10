@@ -1,4 +1,4 @@
-import { ResizeHandle } from '@jbrowse/core/ui'
+import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -49,20 +49,17 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
 })
 
 const CircularView = observer(({ model }: { model: CircularViewModel }) => {
-  const initialized =
-    !!model.displayedRegions.length &&
-    !!model.figureWidth &&
-    !!model.figureHeight &&
-    model.initialized
+  const { showLoading, showView, showImportForm, loadingMessage } = model
 
-  const showImportForm = !initialized && !model.disableImportForm
-  const showFigure = initialized && !showImportForm
-
-  return showImportForm || model.error ? (
-    <ImportForm model={model} />
-  ) : showFigure ? (
-    <CircularViewLoaded model={model} />
-  ) : null
+  if (showLoading) {
+    return <LoadingEllipses variant="h6" message={loadingMessage} />
+  } else if (showImportForm) {
+    return <ImportForm model={model} />
+  } else if (showView) {
+    return <CircularViewLoaded model={model} />
+  } else {
+    return null
+  }
 })
 
 const CircularViewLoaded = observer(function ({

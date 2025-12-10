@@ -325,6 +325,44 @@ Expanded
 }
 ```
 
+### Breakpoint split view
+
+Here is an example of a JSON session spec for a breakpoint split view
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"BreakpointSplitView","views":[{"loc":"ctgA:1-5000","assembly":"volvox","tracks":["volvox_cram"]},{"loc":"ctgB:1-5000","assembly":"volvox","tracks":["volvox_cram"]}]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"BreakpointSplitView","views":[{"loc":"ctgA:1-5000","assembly":"volvox","tracks":["volvox_cram"]},{"loc":"ctgB:1-5000","assembly":"volvox","tracks":["volvox_cram"]}]}]})
+
+Expanded
+
+```json
+{
+  "views": [
+    {
+      "type": "BreakpointSplitView",
+      "views": [
+        {
+          "loc": "ctgA:1-5000",
+          "assembly": "volvox",
+          "tracks": ["volvox_cram"]
+        },
+        {
+          "loc": "ctgB:1-5000",
+          "assembly": "volvox",
+          "tracks": ["volvox_cram"]
+        }
+      ]
+    }
+  ]
+}
+```
+
+The `views` array specifies the two (or more) linear genome views that make up
+the breakpoint split view. Each view can have its own location, assembly, and
+tracks.
+
 ### Linear synteny view (multi-way)
 
 Here is an example of a JSON session spec for a linear synteny view, but with
