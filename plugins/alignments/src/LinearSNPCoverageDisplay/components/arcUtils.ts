@@ -51,7 +51,7 @@ export function featureToArcData(
 
   return {
     id: feature.id(),
-    path: `M ${left} ${effectiveHeight} C ${left} 0, ${right} 0, ${right} ${effectiveHeight}`,
+    path: `M ${left} ${effectiveHeight * 0.9} C ${left} ${effectiveHeight * 0.1}, ${right} ${effectiveHeight * 0.1}, ${right} ${effectiveHeight * 0.9}`,
     stroke: getArcColor(strand),
     strokeWidth: Math.log(score + 1),
     start,

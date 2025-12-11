@@ -12,8 +12,8 @@ const SNPCoverageDisplayComponent = observer(function (props: {
 
   return (
     <div style={{ position: 'relative' }}>
-      <LinearWiggleDisplayReactComponent {...props} />
       <SashimiArcs model={model} />
+      <LinearWiggleDisplayReactComponent {...props} />
     </div>
   )
 })
