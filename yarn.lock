@@ -1579,10 +1579,10 @@
     generic-filehandle2 "^2.0.5"
     pako-esm2 "^2.0.2"
 
-"@gmod/cram@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-7.0.0.tgz#67591600197a01fdb68653e2f74ddf2285775e0d"
-  integrity sha512-n2B72gk3IyDa+j0jUYL6SpmtD1hAMy9WpJ1do8BiWuqnIsYlfrodL6wxodt0hbOZlQ2slBk6AvYRgRZq0k74YA==
+"@gmod/cram@^7.0.2":
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-7.0.2.tgz#ae134076bd7c8e75b28aa34b71298195a8d10783"
+  integrity sha512-NB/D037DuVxU9FWaGW3Kcpbd1UL5u0UVUCJWWmczFjMbeu+Ry4HW6ldhbx1lhAo8WI3X7EjenVVag10DX3IFIQ==
   dependencies:
     crc "^4.3.2"
     generic-filehandle2 "^2.0.15"
