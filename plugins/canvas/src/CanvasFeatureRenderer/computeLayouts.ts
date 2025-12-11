@@ -62,7 +62,9 @@ export function computeLayouts({
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
     const leftPaddingBp = featureLayout.leftPadding * bpPerPx
-    const rightPaddingBp = (totalLayoutWidth - featureLayout.width - featureLayout.leftPadding) * bpPerPx
+    const rightPaddingBp =
+      (totalLayoutWidth - featureLayout.width - featureLayout.leftPadding) *
+      bpPerPx
     const layoutStart = featureStart - leftPaddingBp
     const layoutEnd = featureEnd + rightPaddingBp
 
