@@ -82,6 +82,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        trackDisplayDirectionalChevrons: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
@@ -185,6 +189,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           getConf(self, ['renderer', 'geneGlyphMode'])
         )
       },
+
+      /**
+       * #getter
+       */
+      get displayDirectionalChevrons() {
+        return (
+          self.trackDisplayDirectionalChevrons ??
+          getConf(self, ['renderer', 'displayDirectionalChevrons'])
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -203,6 +217,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
             geneGlyphMode: self.geneGlyphMode,
+            displayDirectionalChevrons: self.displayDirectionalChevrons,
           },
           getEnv(self),
         )
@@ -257,6 +272,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setGeneGlyphMode(val: string) {
         self.trackGeneGlyphMode = val
+      },
+      /**
+       * #action
+       */
+      toggleDisplayDirectionalChevrons() {
+        self.trackDisplayDirectionalChevrons = !self.displayDirectionalChevrons
       },
     }))
     .views(self => ({
@@ -382,6 +403,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   checked: self.showDescriptions,
                   onClick: () => {
                     self.toggleShowDescriptions()
+                  },
+                },
+                {
+                  label: 'Show chevrons',
+                  type: 'checkbox',
+                  checked: self.displayDirectionalChevrons,
+                  onClick: () => {
+                    self.toggleDisplayDirectionalChevrons()
                   },
                 },
                 {

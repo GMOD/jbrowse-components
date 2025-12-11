@@ -9,7 +9,19 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
 const TRANSCRIPT_PADDING = 2
+const STRAND_ARROW_PADDING = 8
 const CODING_TYPES = new Set(['CDS', 'cds'])
+
+function getStrandArrowPadding(strand: number, reversed: boolean) {
+  const reverseFlip = reversed ? -1 : 1
+  const effectiveStrand = strand * reverseFlip
+  // effectiveStrand 1 = arrow points right (pad on right)
+  // effectiveStrand -1 = arrow points left (pad on left)
+  return {
+    leftPadding: effectiveStrand === -1 ? STRAND_ARROW_PADDING : 0,
+    rightPadding: effectiveStrand === 1 ? STRAND_ARROW_PADDING : 0,
+  }
+}
 
 function hasCodingSubfeature(feature: Feature): boolean {
   const subfeatures = feature.get('subfeatures') || []
@@ -73,6 +85,9 @@ export function layoutFeature(args: {
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const y = parentY
 
+  const strand = feature.get('strand') as number
+  const { leftPadding, rightPadding } = getStrandArrowPadding(strand, reversed)
+
   const layout: FeatureLayout = {
     feature,
     x,
@@ -81,7 +96,8 @@ export function layoutFeature(args: {
     height: actualHeight,
     totalFeatureHeight: actualHeight,
     totalLayoutHeight: actualHeight,
-    totalLayoutWidth: width,
+    totalLayoutWidth: width + leftPadding + rightPadding,
+    leftPadding,
     children: [],
   }
 
@@ -220,7 +236,10 @@ export function layoutFeature(args: {
       layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeight
     }
 
-    layout.totalLayoutWidth = Math.max(layout.width, maxLabelWidth)
+    layout.totalLayoutWidth = Math.max(
+      layout.width + leftPadding + rightPadding,
+      maxLabelWidth,
+    )
   }
 
   return layout

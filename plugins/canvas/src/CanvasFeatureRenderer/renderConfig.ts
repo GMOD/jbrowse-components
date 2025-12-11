@@ -49,6 +49,8 @@ export interface RenderConfigContext {
   labelAllowed: boolean
 
   geneGlyphMode: string
+
+  displayDirectionalChevrons: boolean
 }
 
 export function createRenderConfigContext(
@@ -61,6 +63,10 @@ export function createRenderConfigContext(
   const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
   const containerTypes = readConfObject(config, 'containerTypes') as string[]
   const geneGlyphMode = readConfObject(config, 'geneGlyphMode') as string
+  const displayDirectionalChevrons = readConfObject(
+    config,
+    'displayDirectionalChevrons',
+  ) as boolean
 
   const isColor1Callback = config.color1?.isCallback ?? false
   const isColor2Callback = config.color2?.isCallback ?? false
@@ -110,5 +116,6 @@ export function createRenderConfigContext(
     isFontHeightCallback,
     labelAllowed: displayMode !== 'collapse',
     geneGlyphMode,
+    displayDirectionalChevrons,
   }
 }
