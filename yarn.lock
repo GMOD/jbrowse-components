@@ -1579,15 +1579,14 @@
     generic-filehandle2 "^2.0.5"
     pako-esm2 "^2.0.2"
 
-"@gmod/cram@^6.0.1":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-6.0.1.tgz#dcbb379078e6db08e3b58e87bc3bc9cbca0bb168"
-  integrity sha512-51WNyELt2Wqd6Z5tEkwvxAUM+iIklTZzUGzA8f+aEeLmepzaHJj0QEmRhTHapsENY81Tmh4B9AtWoHTLmzeY1w==
+"@gmod/cram@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-7.0.0.tgz#67591600197a01fdb68653e2f74ddf2285775e0d"
+  integrity sha512-n2B72gk3IyDa+j0jUYL6SpmtD1hAMy9WpJ1do8BiWuqnIsYlfrodL6wxodt0hbOZlQ2slBk6AvYRgRZq0k74YA==
   dependencies:
     crc "^4.3.2"
-    generic-filehandle2 "^2.0.12"
+    generic-filehandle2 "^2.0.15"
     md5 "^2.2.1"
-    pako-esm2 "^2.0.2"
     quick-lru "^4.0.1"
 
 "@gmod/faidx@^2.0.0":
@@ -8240,7 +8239,7 @@ generator-function@^2.0.0:
   resolved "https://registry.yarnpkg.com/generator-function/-/generator-function-2.0.1.tgz#0e75dd410d1243687a0ba2e951b94eedb8f737a2"
   integrity sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==
 
-generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.10, generic-filehandle2@^2.0.12, generic-filehandle2@^2.0.5:
+generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.10, generic-filehandle2@^2.0.15, generic-filehandle2@^2.0.5:
   version "2.0.15"
   resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.15.tgz#0602193ddc48d2596ff019a67baaf0b113a6125c"
   integrity sha512-G5DiLxckyFAEH9Prsidiao+1CGUk7gDjVO8BUBXuaYXlNfsl4en9yGhG8mk+BcKXAwo/asS/9935lk3evg1HjA==
