@@ -43,6 +43,9 @@ import type { ThemeOptions } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
+const SelectTranscriptDialog = lazy(
+  () => import('./components/SelectTranscriptDialog'),
+)
 
 type LGV = LinearGenomeViewModel
 
@@ -400,25 +403,59 @@ function stateModelFactory() {
       contextMenuItems(): MenuItem[] {
         const feat = self.contextMenuFeature
         const { contextMenuFeature } = self
-        const singleTranscript =
+        const transcripts: Feature[] =
           contextMenuFeature?.get('type') === 'mRNA'
-            ? contextMenuFeature
-            : contextMenuFeature?.get('subfeatures')?.[0]
-        const exons =
-          singleTranscript
-            ?.get('subfeatures')
-            ?.filter(
-              f => f.get('type') === 'exon' || f.get('type') === 'CDS',
-            ) || []
-        const cds =
-          singleTranscript
-            ?.get('subfeatures')
-            ?.filter(
-              f => f.get('type') === 'exon' || f.get('type') === 'CDS',
-            ) || []
+            ? [contextMenuFeature]
+            : (contextMenuFeature?.get('subfeatures') ?? [])
 
-        // some GFF3 features have CDS and no exon subfeatures
-        const subs = exons.length ? exons : cds.length ? cds : []
+        const hasTranscriptsWithExons = transcripts.some(t => {
+          const subs = t.get('subfeatures') ?? []
+          return subs.some(
+            f => f.get('type') === 'exon' || f.get('type') === 'CDS',
+          )
+        })
+
+        const collapseIntrons = async (transcript: Feature) => {
+          const view = getContainingView(self) as LGV
+          const { assemblyManager } = getSession(self)
+          const assemblyName = view.assemblyNames[0]
+          const assembly = assemblyName
+            ? assemblyManager.get(assemblyName)
+            : undefined
+          const r0 = transcript.get('refName')
+          const refName = assembly?.getCanonicalRefName(r0) || r0
+          const w = 100
+
+          const subs =
+            transcript
+              .get('subfeatures')
+              ?.filter(
+                f => f.get('type') === 'exon' || f.get('type') === 'CDS',
+              ) ?? []
+
+          // need to strip ID before copying view snap
+          const { id, ...rest } = getSnapshot(view)
+          const newView = getSession(self).addView('LinearGenomeView', {
+            ...rest,
+            tracks: rest.tracks.map(track => {
+              const { id, ...rest } = track
+              return { ...rest }
+            }),
+            displayedRegions: mergeIntervals(
+              subs.map(f => ({
+                refName,
+                start: f.get('start') - w,
+                end: f.get('end') + w,
+                assemblyName: view.assemblyNames[0],
+              })),
+              w,
+            ),
+          }) as LGV
+          await when(() => newView.initialized)
+
+          newView.showAllRegions()
+        }
+
         return feat
           ? [
               {
@@ -443,45 +480,27 @@ function stateModelFactory() {
                   self.copyInfoToClipboard(feat)
                 },
               },
-              ...(exons.length > 0 && contextMenuFeature
+              ...(hasTranscriptsWithExons
                 ? [
                     {
                       label: 'Collapse introns',
-                      onClick: async () => {
-                        const view = getContainingView(self) as LGV
-                        const { assemblyManager } = getSession(self)
-                        const assemblyName = view.assemblyNames[0]
-                        const assembly = assemblyName
-                          ? assemblyManager.get(assemblyName)
-                          : undefined
-                        const r0 = contextMenuFeature.get('refName')
-                        const refName = assembly?.getCanonicalRefName(r0) || r0
-                        const w = 100
-
-                        // need to strip ID before copying view snap
-                        const { id, ...rest } = getSnapshot(view)
-                        const newView = getSession(self).addView(
-                          'LinearGenomeView',
-                          {
-                            ...rest,
-                            tracks: rest.tracks.map(track => {
-                              const { id, ...rest } = track
-                              return { ...rest }
-                            }),
-                            displayedRegions: mergeIntervals(
-                              subs.map(f => ({
-                                refName,
-                                start: f.get('start') - w,
-                                end: f.get('end') + w,
-                                assemblyName: view.assemblyNames[0],
-                              })),
-                              w,
-                            ),
-                          },
-                        ) as LGV
-                        await when(() => newView.initialized)
-
-                        newView.showAllRegions()
+                      onClick: () => {
+                        if (transcripts.length > 1) {
+                          getSession(self).queueDialog(handleClose => [
+                            SelectTranscriptDialog,
+                            {
+                              transcripts,
+                              handleClose,
+                              onSelect: (transcript: Feature) => {
+                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                                collapseIntrons(transcript)
+                              },
+                            },
+                          ])
+                        } else {
+                          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                          collapseIntrons(transcripts[0]!)
+                        }
                       },
                     },
                   ]
