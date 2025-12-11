@@ -51,13 +51,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import { autorun, when } from 'mobx'
 
-import Header from './components/Header'
-import {
-  calculateVisibleLocStrings,
-  generateLocations,
-  parseLocStrings,
-} from './util'
 import { handleSelectedRegion } from '../searchUtils'
+import Header from './components/Header'
 import MiniControls from './components/MiniControls'
 import {
   HEADER_BAR_HEIGHT,
@@ -66,6 +61,11 @@ import {
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts'
+import {
+  calculateVisibleLocStrings,
+  generateLocations,
+  parseLocStrings,
+} from './util'
 
 import type {
   BpOffset,

@@ -5020,10 +5020,7 @@
       "name": "combined",
       "adapter": {
         "type": "HicAdapter",
-        "hicLocation": {
-          "uri": "https://hicfiles.s3.amazonaws.com/hiseq/gm12878/in-situ/combined.hic",
-          "locationType": "UriLocation"
-        }
+        "uri": "https://hgdownload.gi.ucsc.edu/gbdb/hg19/bbi/hic/GSE63525_HMEC_combined.hic"
       },
       "assemblyNames": ["hg19"]
     }

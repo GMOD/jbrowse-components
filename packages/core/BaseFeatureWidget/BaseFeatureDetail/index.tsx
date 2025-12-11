@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react'
 
-import { isEmpty } from './util'
-import { replaceUndefinedWithNull } from '../util'
 import FeatureDetails from './FeatureDetails'
+import { isEmpty } from './util'
 import { ErrorMessage } from '../../ui'
+import { replaceUndefinedWithNull } from '../util'
 
 import type { BaseInputProps } from './types'
 
