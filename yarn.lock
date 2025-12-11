@@ -1555,14 +1555,14 @@
     generic-filehandle2 "^2.0.1"
     quick-lru "^4.0.0"
 
-"@gmod/bbi@^7.0.0":
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-7.1.0.tgz#85e38188033823141dcfb825ca2c42a6923c97f5"
-  integrity sha512-iSfL8i5sBLKBkXLTOTPy8663yr2h3LOi/5eO7i1J9oUT+5XvWkmD9P07ZT7Mf7b/vDcXFiY7+gAj6AzXHuAHXg==
+"@gmod/bbi@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-8.0.0.tgz#498697c90a7506e200e8549036a8e1b7a5011d8a"
+  integrity sha512-6zYQQOxWy9gm6o30fAiVfBHd488ECRs9PzhpKXxWe1SfJixtWqhPpKp92g/87WlYbVjTSlqJlORCYTY0OiK/FA==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     generic-filehandle2 "^2.0.10"
-    pako-esm2 "^1.0.13"
+    pako-esm2 "^2.0.2"
     quick-lru "^4.0.0"
     rxjs "^7.8.0"
 
@@ -1571,14 +1571,6 @@
   resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.1.7.tgz#e533ae0ac72e6fa957ea3a5a946654735f875b7c"
   integrity sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==
 
-"@gmod/bgzf-filehandle@^5.0.1":
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-5.0.2.tgz#58c6cd335a7374e2af312f72041c1b0f04fd8645"
-  integrity sha512-MUlq381hj9eah251JKGuCpUSLoeq+2Mbf/AAIk77LD2cHJhfAYAbELnnWb3Jq2DA6+ISF2NXZ8zWzdHSHx4xbw==
-  dependencies:
-    generic-filehandle2 "^2.0.5"
-    pako-esm2 "^1.0.1"
-
 "@gmod/bgzf-filehandle@^6.0.3":
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-6.0.3.tgz#7c5ef5a61fb6b9f05560a3109217db4a5e15720c"
@@ -1586,15 +1578,15 @@
   dependencies:
     generic-filehandle2 "^2.0.5"
 
-"@gmod/cram@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-6.0.0.tgz#3f0a296a8e7b6b57d1330e98ad312aa9e70dd5e3"
-  integrity sha512-iquwxV2nnHQ8dCJ0xzcmcCalw8vBgrQBB/4keOyNi6DNIExG1jA9zt3I46mAwqy6S+5Ave0X7Cm8IBP+g76Dzw==
+"@gmod/cram@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-6.0.1.tgz#dcbb379078e6db08e3b58e87bc3bc9cbca0bb168"
+  integrity sha512-51WNyELt2Wqd6Z5tEkwvxAUM+iIklTZzUGzA8f+aEeLmepzaHJj0QEmRhTHapsENY81Tmh4B9AtWoHTLmzeY1w==
   dependencies:
     crc "^4.3.2"
     generic-filehandle2 "^2.0.12"
     md5 "^2.2.1"
-    pako-esm2 "^1.0.15"
+    pako-esm2 "^2.0.2"
     quick-lru "^4.0.1"
 
 "@gmod/faidx@^2.0.0":
@@ -1614,12 +1606,12 @@
   dependencies:
     quick-lru "^4.0.0"
 
-"@gmod/indexedfasta@^4.0.7":
-  version "4.0.9"
-  resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-4.0.9.tgz#76067254adfff2231f7855c69b59dea4fa9e29f9"
-  integrity sha512-gI2c9yN2sTq1IM7oRFfy60rFPNIQvikMeyU8M+tnGazZ3z97jD8hz/LaCcjpu5l5qU+7+g3nmL9tciLJsc21Cg==
+"@gmod/indexedfasta@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-5.0.0.tgz#04aa5f2953bbc8f0fb48c4d1eea085b7c968da1f"
+  integrity sha512-Gm4YxGgJGVLaZ1VjGTvHzxb5C6eKO7+ibfO1KIQfcgMrNdA3W0uTTd27L3ZNFAeVWYlq8hBgpVsw/EEgfDNDaQ==
   dependencies:
-    "@gmod/bgzf-filehandle" "^5.0.1"
+    "@gmod/bgzf-filehandle" "^6.0.3"
     generic-filehandle2 "^2.0.1"
 
 "@gmod/nclist@^3.0.0":
@@ -7079,9 +7071,9 @@ endent@^2.0.1:
     objectorarray "^1.0.5"
 
 enhanced-resolve@^5.17.3:
-  version "5.18.3"
-  resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.18.3.tgz#9b5f4c5c076b8787c78fe540392ce76a88855b44"
-  integrity sha512-d4lC8xfavMeBjzGr2vECC3fsGXziXZQyJxD868h2M/mBI3PwAuODxAkLkq5HYuvrPYcUtiLzsTo8U3PgX3Ocww==
+  version "5.18.4"
+  resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-5.18.4.tgz#c22d33055f3952035ce6a144ce092447c525f828"
+  integrity sha512-LgQMM4WXU3QI+SYgEc2liRgznaD5ojbmY3sb8LxyguVkIg5FxdpTkvk72te2R38/TGKxH634oLxXRGY6d7AP+Q==
   dependencies:
     graceful-fs "^4.2.4"
     tapable "^2.2.0"
@@ -11985,11 +11977,6 @@ pacote@^21.0.0, pacote@^21.0.2:
     ssri "^13.0.0"
     tar "^7.4.3"
 
-pako-esm2@^1.0.1, pako-esm2@^1.0.13, pako-esm2@^1.0.15:
-  version "1.0.15"
-  resolved "https://registry.yarnpkg.com/pako-esm2/-/pako-esm2-1.0.15.tgz#f4b2fc422d04a2ea9df1b8b49ff448fb631c041b"
-  integrity sha512-u2PDjLIoasD+MJvYTTiotIcHq60620IbLH1ZpFDAX/k5fU02MWC/6UhG7sCglQCwaZLPe3NY4r0WN0LuxU2xQg==
-
 pako-esm2@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/pako-esm2/-/pako-esm2-2.0.2.tgz#495108895ed70fc7caaf5faa99ec375d1cc307eb"
@@ -12526,10 +12513,10 @@ pupa@^3.1.0:
   dependencies:
     escape-goat "^4.0.0"
 
-puppeteer-core@24.32.1:
-  version "24.32.1"
-  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-24.32.1.tgz#def7d96620d3460cb36a6e0dcd79cb897c19af30"
-  integrity sha512-GdWTOgy3RqaW6Etgx93ydlVJ4FBJ6TmhMksG5W7v4uawKAzLHNj33k4kBQ1SFZ9NvoXNjhdQuIQ+uik2kWnarA==
+puppeteer-core@24.33.0:
+  version "24.33.0"
+  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-24.33.0.tgz#c3e6adee5fd5dd77895d4cc14e0d17461048917a"
+  integrity sha512-tPTxVg+Qdj/8av4cy6szv3GlhxeOoNhiiMZ955fjxQyvPQE/6DjCa6ZyF/x0WJrlgBZtaLSP8TQgJb7FdLDXXA==
   dependencies:
     "@puppeteer/browsers" "2.11.0"
     chromium-bidi "11.0.0"
@@ -12540,15 +12527,15 @@ puppeteer-core@24.32.1:
     ws "^8.18.3"
 
 puppeteer@^24.32.1:
-  version "24.32.1"
-  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-24.32.1.tgz#d11e204138750eeada834fdd6746ffba30733655"
-  integrity sha512-wa8vGswFjH1iCyG6bGGydIYssEBluXixbMibK4x2x6/lIAuR87gF+c+Jjzom2Wiw/dDOtuki89VBurRWrgYaUA==
+  version "24.33.0"
+  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-24.33.0.tgz#5d0aba25f0038db2a3a996deb8c157d1842e8a21"
+  integrity sha512-nl3wsAztq5F8zybn4Tk41OCnYIzFIzGC6AN0WcF2KCUnWenajvRRPgBmS6LvNUV2HEeIzT2zRZHH0TgVxLDKew==
   dependencies:
     "@puppeteer/browsers" "2.11.0"
     chromium-bidi "11.0.0"
     cosmiconfig "^9.0.0"
     devtools-protocol "0.0.1534754"
-    puppeteer-core "24.32.1"
+    puppeteer-core "24.33.0"
     typed-query-selector "^2.12.0"
 
 pure-rand@^7.0.0:
@@ -12692,10 +12679,10 @@ react-docgen@^8.0.2:
     resolve "^1.22.1"
     strip-indent "^4.0.0"
 
-"react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react-dom@^19.0.0:
-  version "19.2.1"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.2.1.tgz#ce3527560bda4f997e47d10dab754825b3061f59"
-  integrity sha512-ibrK8llX2a4eOskq1mXKu/TGZj9qzomO+sNfO98M6d9zIPOEhlBkMkBUBLd1vgS0gQsLDBzA+8jJBVXDnfHmJg==
+"react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react-dom@^19.0.0, react-dom@^19.2.2:
+  version "19.2.2"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.2.2.tgz#c62579e8949964e2f9d76d9f7b097be1462e15eb"
+  integrity sha512-fhyD2BLrew6qYf4NNtHff1rLXvzR25rq49p+FeqByOazc6TcSi2n8EYulo5C1PbH+1uBW++5S1SG7FcUU6mlDg==
   dependencies:
     scheduler "^0.27.0"
 
@@ -12737,9 +12724,9 @@ react-is@^18.3.1:
   integrity sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==
 
 react-is@^19.2.0:
-  version "19.2.1"
-  resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.2.1.tgz#712fa6ee30c8398dc34260017325dad92b9224c5"
-  integrity sha512-L7BnWgRbMwzMAubQcS7sXdPdNLmKlucPlopgAzx7FtYbksWZgEWiuYM5x9T6UqS2Ne0rsgQTq5kY2SGqpzUkYA==
+  version "19.2.2"
+  resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.2.2.tgz#ba46d5d670663a0f78dc6af3d33398fe26d71d56"
+  integrity sha512-ADrk8mxPwhyj+IB8EnMMRzxnon5hJrOdEZl+mCrrHXfPGGPYHdRm1962fvXUiWAu/ZC1G+OTgBN3Puq57iS4Yg==
 
 react-refresh@^0.18.0:
   version "0.18.0"
@@ -12756,10 +12743,10 @@ react-transition-group@^4.4.5:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
-"react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react@^19.0.0:
-  version "19.2.1"
-  resolved "https://registry.yarnpkg.com/react/-/react-19.2.1.tgz#8600fa205e58e2e807f6ef431c9f6492591a2700"
-  integrity sha512-DGrYcCWK7tvYMnWh79yrPHt+vdx9tY+1gPZa7nJQtO/p8bLTDaHp4dzwEhQB7pZ4Xe3ok4XKuEPrVuc+wlpkmw==
+"react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react@^19.0.0, react@^19.2.2:
+  version "19.2.2"
+  resolved "https://registry.yarnpkg.com/react/-/react-19.2.2.tgz#d596d8be169aba32d99c7558cdc4f5aa9cff73f3"
+  integrity sha512-BdOGOY8OKRBcgoDkwqA8Q5XvOIhoNx/Sh6BnGJlet2Abt0X5BK0BDrqGyQgLhAVjD2nAg5f6o01u/OPUhG022Q==
 
 read-binary-file-arch@^1.0.6:
   version "1.0.6"
@@ -14269,9 +14256,9 @@ temp-file@^3.4.0:
     fs-extra "^10.0.0"
 
 terser-webpack-plugin@^5.2.5, terser-webpack-plugin@^5.3.11, terser-webpack-plugin@^5.3.14:
-  version "5.3.15"
-  resolved "https://registry.yarnpkg.com/terser-webpack-plugin/-/terser-webpack-plugin-5.3.15.tgz#0a26860b765eaffa8e840170aabc5b3a3f6f6bb9"
-  integrity sha512-PGkOdpRFK+rb1TzVz+msVhw4YMRT9txLF4kRqvJhGhCM324xuR3REBSHALN+l+sAhKUmz0aotnjp5D+P83mLhQ==
+  version "5.3.16"
+  resolved "https://registry.yarnpkg.com/terser-webpack-plugin/-/terser-webpack-plugin-5.3.16.tgz#741e448cc3f93d8026ebe4f7ef9e4afacfd56330"
+  integrity sha512-h9oBFCWrq78NyWWVcSwZarJkZ01c2AyGrzs1crmHZO3QUg9D61Wu4NPjBy69n7JqylFF5y+CsUZYmYEIZ3mR+Q==
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.25"
     jest-worker "^27.4.5"
