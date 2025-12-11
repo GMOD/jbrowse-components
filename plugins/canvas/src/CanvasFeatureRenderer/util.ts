@@ -96,7 +96,7 @@ export function chooseGlyphType({
     if (transcriptTypes.includes(type) && hasCDS) {
       return 'ProcessedTranscript'
     } else if (
-      (!feature.parent() && hasSubSub) ||
+      (!feature.parent?.() && hasSubSub) ||
       containerTypes.includes(type)
     ) {
       return 'Subfeatures'

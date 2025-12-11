@@ -33,7 +33,7 @@
     "@emotion/react": "^11.9.0",
     "@floating-ui/react": "^0.27.0",
     "@gmod/abortable-promise-cache": "^3.0.1",
-    "@gmod/bgzf-filehandle": "^6.0.3",
+    "@gmod/bgzf-filehandle": "^6.0.5",
     "@gmod/http-range-fetcher": "^5.0.0",
     "@jbrowse/mobx-state-tree": "^5.4.7",
     "@leeoniya/ufuzzy": "^1.0.18",

@@ -14,7 +14,7 @@ export default function JexlF(/* config?: any*/): JexlNonBuildable {
 
   // below are core functions
   j.addFunction('get', (feature: Feature, data: string) => feature.get(data))
-  j.addFunction('parent', (feature: Feature) => feature.parent())
+  j.addFunction('parent', (feature: Feature) => feature.parent?.())
 
   j.addFunction('id', (feature: Feature) => feature.id())
 

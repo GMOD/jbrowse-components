@@ -95,8 +95,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       const maxScores = 'maxScores' in arrays ? arrays.maxScores : undefined
       const isSummary = minScores !== undefined
 
-      for (let i = 0; i < starts.length; i++) {
-        const featureStart = starts[i]!
+      for (const [i, start_] of starts.entries()) {
+        const featureStart = start_
         const featureEnd = ends[i]!
         const score = scores[i]!
         const uniqueId = `${source}:${refName}:${featureStart}-${featureEnd}`
@@ -134,7 +134,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
             uniqueId,
             ...(isSummary && {
               summary: true,
-              minScore: minScores?.[i],
+              minScore: minScores[i],
               maxScore: maxScores?.[i],
             }),
           }),

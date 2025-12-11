@@ -69,7 +69,7 @@ export function layoutFeature(args: {
 
   const glyphType = chooseGlyphType({ feature, configContext })
 
-  const parentFeature = feature.parent()
+  const parentFeature = feature.parent?.()
   let x = parentX
   if (parentFeature) {
     const relativeX = reversed

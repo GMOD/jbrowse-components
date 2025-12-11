@@ -46,8 +46,8 @@ test('get bucket contents', async () => {
   const hashMap = new HttpMap({ url: rootTemplate })
 
   await hashMap.getBucket('apple')
-  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/0.json`)
+  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/0.json`, undefined)
 
   await hashMap.getBucket('apple3')
-  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/f.json`)
+  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/f.json`, undefined)
 })

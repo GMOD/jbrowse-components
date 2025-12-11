@@ -36,7 +36,7 @@ export function drawBox(args: DrawFeatureArgs) {
 
   if (
     isOffScreen(left, width, canvasWidth) ||
-    (feature.parent() && feature.get('type') === 'intron')
+    (feature.parent?.() && feature.get('type') === 'intron')
   ) {
     return
   }

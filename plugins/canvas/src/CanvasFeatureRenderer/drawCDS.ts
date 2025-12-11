@@ -37,7 +37,7 @@ export function drawCDS(args: DrawFeatureArgs) {
     return
   }
 
-  const parent = feature.parent() ?? feature
+  const parent = feature.parent?.() ?? feature
   const peptideData = peptideDataMap?.get(parent.id())
   const protein = peptideData?.protein
   const doRenderBackground =

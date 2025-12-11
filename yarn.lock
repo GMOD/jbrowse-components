@@ -1571,12 +1571,13 @@
   resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.1.7.tgz#e533ae0ac72e6fa957ea3a5a946654735f875b7c"
   integrity sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==
 
-"@gmod/bgzf-filehandle@^6.0.3":
-  version "6.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-6.0.3.tgz#7c5ef5a61fb6b9f05560a3109217db4a5e15720c"
-  integrity sha512-O9qh93gOt18fU4Fac4SJTo9xC3wH7VSQl2NNcglCAu3UKaKwmkGb+wxESEKHPlR7OirrO8gI2V2M9mH3m7LfmQ==
+"@gmod/bgzf-filehandle@^6.0.3", "@gmod/bgzf-filehandle@^6.0.5":
+  version "6.0.5"
+  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-6.0.5.tgz#50e74e04f2c09bebbb9732feb9d5a1c6c912c16e"
+  integrity sha512-rAO1CiWQbjR9Q8wMK1AleUmWMY/KRon5y1cCkR8fTrEEClLwAI9S/R3tuQ2iaxCYQEgUeXchGENu8y3rwuU2eA==
   dependencies:
     generic-filehandle2 "^2.0.5"
+    pako-esm2 "^2.0.2"
 
 "@gmod/cram@^6.0.1":
   version "6.0.1"
@@ -12679,10 +12680,10 @@ react-docgen@^8.0.2:
     resolve "^1.22.1"
     strip-indent "^4.0.0"
 
-"react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react-dom@^19.0.0, react-dom@^19.2.2:
-  version "19.2.2"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.2.2.tgz#c62579e8949964e2f9d76d9f7b097be1462e15eb"
-  integrity sha512-fhyD2BLrew6qYf4NNtHff1rLXvzR25rq49p+FeqByOazc6TcSi2n8EYulo5C1PbH+1uBW++5S1SG7FcUU6mlDg==
+"react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react-dom@^19.0.0, react-dom@^19.2.3:
+  version "19.2.3"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.2.3.tgz#f0b61d7e5c4a86773889fcc1853af3ed5f215b17"
+  integrity sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg==
   dependencies:
     scheduler "^0.27.0"
 
@@ -12724,9 +12725,9 @@ react-is@^18.3.1:
   integrity sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==
 
 react-is@^19.2.0:
-  version "19.2.2"
-  resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.2.2.tgz#ba46d5d670663a0f78dc6af3d33398fe26d71d56"
-  integrity sha512-ADrk8mxPwhyj+IB8EnMMRzxnon5hJrOdEZl+mCrrHXfPGGPYHdRm1962fvXUiWAu/ZC1G+OTgBN3Puq57iS4Yg==
+  version "19.2.3"
+  resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.2.3.tgz#eec2feb69c7fb31f77d0b5c08c10ae1c88886b29"
+  integrity sha512-qJNJfu81ByyabuG7hPFEbXqNcWSU3+eVus+KJs+0ncpGfMyYdvSmxiJxbWR65lYi1I+/0HBcliO029gc4F+PnA==
 
 react-refresh@^0.18.0:
   version "0.18.0"
@@ -12743,10 +12744,10 @@ react-transition-group@^4.4.5:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
-"react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react@^19.0.0, react@^19.2.2:
-  version "19.2.2"
-  resolved "https://registry.yarnpkg.com/react/-/react-19.2.2.tgz#d596d8be169aba32d99c7558cdc4f5aa9cff73f3"
-  integrity sha512-BdOGOY8OKRBcgoDkwqA8Q5XvOIhoNx/Sh6BnGJlet2Abt0X5BK0BDrqGyQgLhAVjD2nAg5f6o01u/OPUhG022Q==
+"react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", react@^19.0.0, react@^19.2.3:
+  version "19.2.3"
+  resolved "https://registry.yarnpkg.com/react/-/react-19.2.3.tgz#d83e5e8e7a258cf6b4fe28640515f99b87cd19b8"
+  integrity sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA==
 
 read-binary-file-arch@^1.0.6:
   version "1.0.6"
