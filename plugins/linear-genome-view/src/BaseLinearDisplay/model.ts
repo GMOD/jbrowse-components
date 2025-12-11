@@ -10,7 +10,6 @@ import {
   isFeature,
   isSelectionContainer,
   isSessionModelWithWidgets,
-  mergeIntervals,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
@@ -26,7 +25,7 @@ import {
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { autorun, when } from 'mobx'
+import { autorun } from 'mobx'
 
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
@@ -43,8 +42,8 @@ import type { ThemeOptions } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
-const SelectTranscriptDialog = lazy(
-  () => import('./components/SelectTranscriptDialog'),
+const CollapseIntronsDialog = lazy(
+  () => import('./components/CollapseIntronsDialog'),
 )
 
 type LGV = LinearGenomeViewModel
@@ -415,47 +414,6 @@ function stateModelFactory() {
           )
         })
 
-        const collapseIntrons = async (transcript: Feature) => {
-          const view = getContainingView(self) as LGV
-          const { assemblyManager } = getSession(self)
-          const assemblyName = view.assemblyNames[0]
-          const assembly = assemblyName
-            ? assemblyManager.get(assemblyName)
-            : undefined
-          const r0 = transcript.get('refName')
-          const refName = assembly?.getCanonicalRefName(r0) || r0
-          const w = 100
-
-          const subs =
-            transcript
-              .get('subfeatures')
-              ?.filter(
-                f => f.get('type') === 'exon' || f.get('type') === 'CDS',
-              ) ?? []
-
-          // need to strip ID before copying view snap
-          const { id, ...rest } = getSnapshot(view)
-          const newView = getSession(self).addView('LinearGenomeView', {
-            ...rest,
-            tracks: rest.tracks.map(track => {
-              const { id, ...rest } = track
-              return { ...rest }
-            }),
-            displayedRegions: mergeIntervals(
-              subs.map(f => ({
-                refName,
-                start: f.get('start') - w,
-                end: f.get('end') + w,
-                assemblyName: view.assemblyNames[0],
-              })),
-              w,
-            ),
-          }) as LGV
-          await when(() => newView.initialized)
-
-          newView.showAllRegions()
-        }
-
         return feat
           ? [
               {
@@ -485,22 +443,15 @@ function stateModelFactory() {
                     {
                       label: 'Collapse introns',
                       onClick: () => {
-                        if (transcripts.length > 1) {
-                          getSession(self).queueDialog(handleClose => [
-                            SelectTranscriptDialog,
-                            {
-                              transcripts,
-                              handleClose,
-                              onSelect: (transcript: Feature) => {
-                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                                collapseIntrons(transcript)
-                              },
-                            },
-                          ])
-                        } else {
-                          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                          collapseIntrons(transcripts[0]!)
-                        }
+                        const view = getContainingView(self) as LGV
+                        const { assemblyManager } = getSession(self)
+                        const assembly = assemblyManager.get(
+                          view.assemblyNames[0]!,
+                        )
+                        getSession(self).queueDialog(handleClose => [
+                          CollapseIntronsDialog,
+                          { view, transcripts, assembly, handleClose },
+                        ])
                       },
                     },
                   ]
