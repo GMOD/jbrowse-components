@@ -1,5 +1,6 @@
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession, mergeIntervals, toLocale } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   DialogActions,
@@ -10,7 +11,6 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -144,7 +144,7 @@ export default function CollapseIntronsDialog({
         </Table>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="secondary">
+        <Button onClick={handleClose} variant="contained" color="secondary">
           Cancel
         </Button>
       </DialogActions>

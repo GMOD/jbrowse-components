@@ -1,6 +1,6 @@
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 export interface ArcData {
   id: string

@@ -16,13 +16,9 @@ import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
-import {
-  addDisposer,
-  getSnapshot,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
@@ -47,6 +43,22 @@ const CollapseIntronsDialog = lazy(
 )
 
 type LGV = LinearGenomeViewModel
+
+function hasExonsOrCDS(transcripts: Feature[]) {
+  return transcripts.some(t => {
+    const subs = t.get('subfeatures') ?? []
+    return subs.some(f => f.get('type') === 'exon' || f.get('type') === 'CDS')
+  })
+}
+
+function getTranscripts(feature?: Feature): Feature[] {
+  if (!feature) {
+    return []
+  }
+  return feature.get('type') === 'mRNA'
+    ? [feature]
+    : (feature.get('subfeatures') ?? [])
+}
 
 export interface Layout {
   minX: number
@@ -186,16 +198,6 @@ function stateModelFactory() {
         }
         return undefined
       },
-      /**
-       * #method
-       */
-      async copyInfoToClipboard(feature: Feature) {
-        const { uniqueId, ...rest } = feature.toJSON()
-        const session = getSession(self)
-        const { default: copy } = await import('copy-to-clipboard')
-        copy(JSON.stringify(rest, null, 4))
-        session.notify('Copied to clipboard', 'success')
-      },
     }))
     .views(self => ({
       /**
@@ -258,14 +260,13 @@ function stateModelFactory() {
        * #getter
        */
       searchFeatureByID(id: string): LayoutRecord | undefined {
-        let ret: LayoutRecord | undefined
         for (const block of self.blockState.values()) {
           const val = block.layout?.getByID(id)
           if (val) {
-            ret = val
+            return val
           }
         }
-        return ret
+        return undefined
       },
     }))
 
@@ -321,7 +322,7 @@ function stateModelFactory() {
               )
             } catch (e) {
               console.error(e)
-              getSession(e).notifyError(`${e}`, e)
+              getSession(self).notifyError(`${e}`, e)
             }
           })()
         }
@@ -401,18 +402,7 @@ function stateModelFactory() {
        */
       contextMenuItems(): MenuItem[] {
         const feat = self.contextMenuFeature
-        const { contextMenuFeature } = self
-        const transcripts: Feature[] =
-          contextMenuFeature?.get('type') === 'mRNA'
-            ? [contextMenuFeature]
-            : (contextMenuFeature?.get('subfeatures') ?? [])
-
-        const hasTranscriptsWithExons = transcripts.some(t => {
-          const subs = t.get('subfeatures') ?? []
-          return subs.some(
-            f => f.get('type') === 'exon' || f.get('type') === 'CDS',
-          )
-        })
+        const transcripts = getTranscripts(feat)
 
         return feat
           ? [
@@ -433,24 +423,32 @@ function stateModelFactory() {
               {
                 label: 'Copy info to clipboard',
                 icon: ContentCopyIcon,
-                onClick: () => {
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                  self.copyInfoToClipboard(feat)
+                onClick: async () => {
+                  const { uniqueId, ...rest } = feat.toJSON()
+                  const session = getSession(self)
+                  const { default: copy } = await import('copy-to-clipboard')
+                  copy(JSON.stringify(rest, null, 4))
+                  session.notify('Copied to clipboard', 'success')
                 },
               },
-              ...(hasTranscriptsWithExons
+              ...(hasExonsOrCDS(transcripts)
                 ? [
                     {
                       label: 'Collapse introns',
+                      icon: CloseFullscreenIcon,
                       onClick: () => {
                         const view = getContainingView(self) as LGV
                         const { assemblyManager } = getSession(self)
-                        const assembly = assemblyManager.get(
-                          view.assemblyNames[0]!,
-                        )
                         getSession(self).queueDialog(handleClose => [
                           CollapseIntronsDialog,
-                          { view, transcripts, assembly, handleClose },
+                          {
+                            view,
+                            transcripts,
+                            handleClose,
+                            assembly: assemblyManager.get(
+                              view.assemblyNames[0]!,
+                            ),
+                          },
                         ])
                       },
                     },
@@ -465,44 +463,41 @@ function stateModelFactory() {
        * only, never sent to the worker. includes displayModel and callbacks
        */
       renderingProps() {
+        const getFeatureId = (featureId?: string) =>
+          featureId || self.featureIdUnderMouse
+
         return {
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
-            const f = featureId || self.featureIdUnderMouse
-            if (!f) {
-              self.clearFeatureSelection()
-            } else {
+            const f = getFeatureId(featureId)
+            if (f) {
               const feature = self.features.get(f)
               if (feature) {
                 self.selectFeature(feature)
               }
+            } else {
+              self.clearFeatureSelection()
             }
           },
           onClick() {
             self.clearFeatureSelection()
           },
-          // similar to click but opens a menu with further
-          // options
           onFeatureContextMenu(_: unknown, featureId?: string) {
-            const f = featureId || self.featureIdUnderMouse
-            if (!f) {
-              self.clearFeatureSelection()
-            } else {
-              // feature id under mouse passed to context menu
+            const f = getFeatureId(featureId)
+            if (f) {
               self.setContextMenuFeature(self.features.get(f))
+            } else {
+              self.clearFeatureSelection()
             }
           },
-
           onMouseMove(_: unknown, featureId?: string, extra?: string) {
             self.setFeatureIdUnderMouse(featureId)
             self.setMouseoverExtraInformation(extra)
           },
-
           onMouseLeave(_: unknown) {
             self.setFeatureIdUnderMouse(undefined)
             self.setMouseoverExtraInformation(undefined)
           },
-
           onContextMenu(_: unknown) {
             self.setContextMenuFeature(undefined)
             self.clearFeatureSelection()
