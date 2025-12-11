@@ -13,7 +13,7 @@ import { serializeWiggleFeature } from '../util'
 import type { MultiRenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 
-export async function renderMultiXYPlot(
+export async function renderMultiXYPoint(
   renderProps: MultiRenderArgsDeserialized,
   features: Map<string, Feature>,
 ) {
@@ -42,6 +42,7 @@ export async function renderMultiXYPlot(
             features: groups[source.name] || [],
             staticColor: source.color || 'blue',
             colorCallback: () => '', // unused when staticColor is set
+            filled: false, // point renderer is unfilled
           })
           feats = feats.concat(reducedFeatures)
         })

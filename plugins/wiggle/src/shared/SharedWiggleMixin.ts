@@ -216,6 +216,13 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
+      setPointSize(size: number) {
+        self.minSize = size
+      },
+
+      /**
+       * #action
+       */
       toggleLogScale() {
         self.scale = self.scale === 'log' ? 'linear' : 'log'
       },

@@ -192,15 +192,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * can be used to give it a "color scale" like a R heatmap, not
-       * implemented like this yet but flag can be used for this
-       */
-      get needsCustomLegend() {
-        return self.rendererTypeName === 'MultiDensityRenderer'
-      },
-
-      /**
-       * #getter
        */
       get canHaveFill() {
         return (
@@ -208,6 +199,15 @@ export function stateModelFactory(
           self.rendererTypeName === 'MultiRowXYPlotRenderer'
         )
       },
+      /**
+       * #getter
+       * can be used to give it a "color scale" like a R heatmap, not
+       * implemented like this yet but flag can be used for this
+       */
+      get needsCustomLegend() {
+        return self.rendererTypeName === 'MultiDensityRenderer'
+      },
+
       /**
        * #getter
        * the multirowxy and multiline don't need to use colors on the legend
@@ -394,6 +394,18 @@ export function stateModelFactory(
         )
       },
       /**
+       * #getter
+       */
+      get fillSetting() {
+        if (self.filled) {
+          return 0
+        } else if (self.minSize === 1) {
+          return 1
+        } else {
+          return 2
+        }
+      },
+      /**
        * #method
        */
       renderProps() {
@@ -437,19 +449,6 @@ export function stateModelFactory(
       get hasGlobalStats() {
         return self.adapterCapabilities.includes('hasGlobalStats')
       },
-
-      /**
-       * #getter
-       */
-      get fillSetting() {
-        if (self.filled) {
-          return 0
-        } else if (self.minSize === 1) {
-          return 1
-        } else {
-          return 2
-        }
-      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
@@ -465,24 +464,6 @@ export function stateModelFactory(
               label: 'Score',
               subMenu: self.scoreTrackMenuItems(),
             },
-
-            ...(self.canHaveFill
-              ? [
-                  {
-                    label: 'Fill mode',
-                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
-                      (elt, idx) => ({
-                        label: elt,
-                        type: 'radio',
-                        checked: self.fillSetting === idx,
-                        onClick: () => {
-                          self.setFill(idx)
-                        },
-                      }),
-                    ),
-                  },
-                ]
-              : []),
 
             ...(hasRenderings
               ? [
@@ -517,18 +498,42 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-            {
-              label: 'Cluster by score',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  WiggleClusterDialog,
+            ...(self.canHaveFill
+              ? [
                   {
-                    model: self,
-                    handleClose,
+                    label: 'Display mode',
+                    subMenu: [
+                      { label: 'Filled', value: { fill: true } },
+                      {
+                        label: 'Point (small)',
+                        value: { fill: false, minSize: 0.7 },
+                      },
+                      {
+                        label: 'Point (medium)',
+                        value: { fill: false, minSize: 2 },
+                      },
+                      {
+                        label: 'Point (large)',
+                        value: { fill: false, minSize: 4 },
+                      },
+                    ].map(({ label, value }) => ({
+                      label,
+                      type: 'radio',
+                      checked: value.fill
+                        ? self.filled
+                        : !self.filled && self.minSize === value.minSize,
+                      onClick: () => {
+                        if (value.fill) {
+                          self.setFill(0)
+                        } else {
+                          self.setFill(1)
+                          self.setPointSize(value.minSize!)
+                        }
+                      },
+                    })),
                   },
-                ])
-              },
-            },
+                ]
+              : []),
             {
               label: 'Show sidebar',
               type: 'checkbox',
@@ -537,6 +542,22 @@ export function stateModelFactory(
                 self.setShowSidebar(!self.showSidebar)
               },
             },
+            ...(self.isMultiRow
+              ? [
+                  {
+                    label: 'Cluster rows by score',
+                    onClick: () => {
+                      getSession(self).queueDialog(handleClose => [
+                        WiggleClusterDialog,
+                        {
+                          model: self,
+                          handleClose,
+                        },
+                      ])
+                    },
+                  },
+                ]
+              : []),
             {
               label: 'Edit colors/arrangement...',
               onClick: () => {

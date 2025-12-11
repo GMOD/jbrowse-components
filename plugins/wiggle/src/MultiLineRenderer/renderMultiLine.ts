@@ -8,6 +8,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawLine } from '../drawLine'
+import { serializeWiggleFeature } from '../util'
 
 import type { MultiRenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -39,7 +40,8 @@ export async function renderMultiLine(
           const { reducedFeatures } = drawLine(ctx, {
             ...renderProps,
             features: groups[source.name] || [],
-            colorCallback: () => source.color || 'blue',
+            staticColor: source.color || 'blue',
+            colorCallback: () => '', // unused when staticColor is set
           })
           feats = feats.concat(reducedFeatures)
         })
@@ -49,7 +51,7 @@ export async function renderMultiLine(
 
   const serialized = {
     ...rest,
-    features: reducedFeatures.map(f => f.toJSON()),
+    features: reducedFeatures.map(serializeWiggleFeature),
     height,
     width,
   }

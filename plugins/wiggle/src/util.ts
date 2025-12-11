@@ -167,6 +167,28 @@ export function toP(s = 0) {
   return +s.toPrecision(6)
 }
 
+/**
+ * Lightweight feature serialization for wiggle features.
+ * Only serializes properties needed for mouse interaction,
+ * avoiding the overhead of full toJSON() serialization.
+ */
+export function serializeWiggleFeature(f: {
+  get: (key: string) => unknown
+  id: () => string
+}) {
+  return {
+    uniqueId: f.id(),
+    start: f.get('start'),
+    end: f.get('end'),
+    score: f.get('score'),
+    source: f.get('source'),
+    refName: f.get('refName'),
+    maxScore: f.get('maxScore'),
+    minScore: f.get('minScore'),
+    summary: f.get('summary'),
+  }
+}
+
 export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }

@@ -1348,17 +1348,22 @@ export function forEachWithStopTokenCheck<T>(
   iter: Iterable<T>,
   stopToken: string | undefined,
   arg: (arg: T, idx: number) => void,
-  durationMs = 400,
+  durationMs = 200,
   iters = 100,
+  backoff = true,
 ) {
   let start = performance.now()
   let i = 0
+  let durationMsInc = durationMs
   for (const t of iter) {
     arg(t, i++)
     if (iters % i === 0) {
-      if (performance.now() - start > durationMs) {
+      if (performance.now() - start > durationMsInc) {
         checkStopToken(stopToken)
         start = performance.now()
+        if (backoff) {
+          durationMsInc += durationMs
+        }
       }
     }
   }
