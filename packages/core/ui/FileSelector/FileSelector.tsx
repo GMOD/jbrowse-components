@@ -41,7 +41,6 @@ const FileSelector = observer(function ({
   const [toggleButtonValue, setToggleButtonValue] = useState(() =>
     getInitialToggleValue(location),
   )
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
   const {
     accountMap,
@@ -75,30 +74,19 @@ const FileSelector = observer(function ({
     }
   }, [location, selectedAccount, setLocationWithAccount])
 
-  const handleToggleChange = useCallback(
-    (_event: React.MouseEvent, newState: string | null) => {
+  const selectSourceType = useCallback(
+    (newValue: string | null) => {
       setRecentlyUsed([
-        ...new Set([newState, ...recentlyUsed].filter(notEmpty)),
+        ...new Set([newValue, ...recentlyUsed].filter(notEmpty)),
       ])
-      if (newState) {
-        setToggleButtonValue(newState)
+      if (newValue) {
+        setToggleButtonValue(newValue)
       }
       if (isUriLocation(location)) {
         setLocationWithAccount(location)
       }
     },
     [location, recentlyUsed, setRecentlyUsed, setLocationWithAccount],
-  )
-
-  const handleMenuItemClick = useCallback(
-    (internetAccountId: string) => {
-      setRecentlyUsed([
-        ...new Set([internetAccountId, ...recentlyUsed].filter(notEmpty)),
-      ])
-      setToggleButtonValue(internetAccountId)
-      setAnchorEl(null)
-    },
-    [recentlyUsed, setRecentlyUsed],
   )
 
   return (
@@ -113,19 +101,15 @@ const FileSelector = observer(function ({
             shownAccountIds={shownAccountIds}
             hiddenAccountIds={hiddenAccountIds}
             accountMap={accountMap}
-            anchorEl={anchorEl}
-            onChange={handleToggleChange}
-            onMoreClick={event => {
-              setAnchorEl(event.target as HTMLElement)
+            onChange={(_event, newValue) => {
+              selectSourceType(newValue)
             }}
-            onMenuClose={() => {
-              setAnchorEl(null)
-            }}
-            onMenuSelect={handleMenuItemClick}
+            onHiddenAccountSelect={selectSourceType}
           />
           <LocationInput
             toggleButtonValue={toggleButtonValue}
             selectedAccount={selectedAccount}
+            location={location}
             inline={inline}
             setLocation={setLocationWithAccount}
           />

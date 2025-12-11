@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import {
   Menu,
@@ -70,22 +72,18 @@ export default function SourceTypeSelector({
   shownAccountIds,
   hiddenAccountIds,
   accountMap,
-  anchorEl,
   onChange,
-  onMoreClick,
-  onMenuClose,
-  onMenuSelect,
+  onHiddenAccountSelect,
 }: {
   value: string
   shownAccountIds: string[]
   hiddenAccountIds: string[]
   accountMap: Record<string, BaseInternetAccountModel>
-  anchorEl: HTMLElement | null
   onChange: (event: React.MouseEvent, newValue: string | null) => void
-  onMoreClick: (event: React.MouseEvent<HTMLElement>) => void
-  onMenuClose: () => void
-  onMenuSelect: (id: string) => void
+  onHiddenAccountSelect: (id: string) => void
 }) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+
   return (
     <>
       <ToggleButtonGroup
@@ -117,8 +115,13 @@ export default function SourceTypeSelector({
           )
         })}
         {hiddenAccountIds.length > 0 ? (
-          // @ts-expect-error
-          <ToggleButton onClick={onMoreClick} selected={false}>
+          <ToggleButton
+            value="more"
+            onClick={event => {
+              setAnchorEl(event.target as HTMLElement)
+            }}
+            selected={false}
+          >
             More
             <ArrowDropDownIcon />
           </ToggleButton>
@@ -128,8 +131,13 @@ export default function SourceTypeSelector({
         anchorEl={anchorEl}
         hiddenAccountIds={hiddenAccountIds}
         accountMap={accountMap}
-        onClose={onMenuClose}
-        onSelect={onMenuSelect}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
+        onSelect={id => {
+          onHiddenAccountSelect(id)
+          setAnchorEl(null)
+        }}
       />
     </>
   )

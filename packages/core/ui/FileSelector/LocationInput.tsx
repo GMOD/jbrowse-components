@@ -7,11 +7,13 @@ import type { FileLocation } from '../../util/types'
 export default function LocationInput({
   toggleButtonValue,
   selectedAccount,
+  location,
   inline,
   setLocation,
 }: {
   toggleButtonValue: string
   selectedAccount?: BaseInternetAccountModel
+  location?: FileLocation
   inline?: boolean
   setLocation: (arg: FileLocation) => void
 }) {
@@ -26,6 +28,7 @@ export default function LocationInput({
   if (toggleButtonValue === 'url') {
     return (
       <UrlChooser
+        location={location}
         setLocation={setLocation}
         label={selectedAccount?.selectorLabel}
         style={inline ? { margin: 0 } : undefined}
@@ -33,7 +36,7 @@ export default function LocationInput({
     )
   }
   if (toggleButtonValue === 'file') {
-    return <LocalFileChooser setLocation={setLocation} />
+    return <LocalFileChooser location={location} setLocation={setLocation} />
   }
   return null
 }
