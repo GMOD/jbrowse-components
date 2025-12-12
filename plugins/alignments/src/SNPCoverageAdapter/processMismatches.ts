@@ -18,34 +18,46 @@ export function processMismatches({
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
+  const regionStart = region.start
+  const regionEnd = region.end
+  const binsLength = bins.length
 
   // normal SNP based coloring
   for (const mismatch of mismatches) {
     const mstart = fstart + mismatch.start
     const mlen = mismatchLen(mismatch)
     const mend = mstart + mlen
-    for (let j = mstart; j < mstart + mlen; j++) {
-      const epos = j - region.start
-      if (epos >= 0 && epos < bins.length) {
-        const bin = bins[epos]!
-        const { base, altbase, type } = mismatch
-        const interbase = isInterbase(type)
 
-        if (type === 'deletion' || type === 'skip') {
-          inc(bin, fstrand, 'delskips', type)
-          bin.depth--
-        } else if (!interbase) {
-          inc(bin, fstrand, 'snps', base)
-          bin.ref.entryDepth--
-          bin.ref[fstrand]--
-          bin.refbase = altbase
-        } else {
-          const len =
-            type === 'insertion'
-              ? mismatch.insertedBases?.length
-              : mismatch.cliplen
-          const seq = type === 'insertion' ? mismatch.insertedBases : undefined
-          inc(bin, fstrand, 'noncov', type, len, seq)
+    // Calculate visible range for this mismatch
+    const visStart = Math.max(mstart, regionStart)
+    const visEnd = Math.min(mend, regionEnd)
+
+    // Skip if mismatch is entirely outside visible region
+    if (visStart < visEnd) {
+      for (let j = visStart; j < visEnd; j++) {
+        const epos = j - regionStart
+        if (epos < binsLength) {
+          const bin = bins[epos]!
+          const { base, altbase, type } = mismatch
+          const interbase = isInterbase(type)
+
+          if (type === 'deletion' || type === 'skip') {
+            inc(bin, fstrand, 'delskips', type)
+            bin.depth--
+          } else if (!interbase) {
+            inc(bin, fstrand, 'snps', base)
+            bin.ref.entryDepth--
+            bin.ref[fstrand]--
+            bin.refbase = altbase
+          } else {
+            const len =
+              type === 'insertion'
+                ? mismatch.insertedBases?.length
+                : mismatch.cliplen
+            const seq =
+              type === 'insertion' ? mismatch.insertedBases : undefined
+            inc(bin, fstrand, 'noncov', type, len, seq)
+          }
         }
       }
     }

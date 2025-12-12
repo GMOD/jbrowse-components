@@ -1,7 +1,6 @@
 import { BamFile } from '@gmod/bam'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
+import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
@@ -23,11 +22,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private setupP?: Promise<ParsedSamHeader>
 
-  private ultraLongFeatureCache = new QuickLRU<number, Feature>({
-    maxSize: 500,
-  })
-
-  private configureResult?: { bam: BamFile }
+  protected configureResult?: { bam: BamFile }
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
@@ -126,7 +121,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         } = filterBy || {}
 
         for (const record of records) {
-          // Filter first before expensive sequence fetch
           if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
             continue
           }
@@ -140,35 +134,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             continue
           }
 
-          if (record.end - record.start > 5_000) {
-            const ret = this.ultraLongFeatureCache.get(record.id)
-            if (ret) {
-              observer.next(ret)
-            } else {
-              const ref =
-                !record.tags.MD && sequenceAdapter
-                  ? await sequenceAdapter.getSequence({
-                      refName: originalRefName || refName,
-                      start: record.start,
-                      end: record.end,
-                    })
-                  : undefined
-              const elt = new BamSlightlyLazyFeature(record, this, ref)
-              this.ultraLongFeatureCache.set(record.id, elt)
-              observer.next(elt)
-            }
-          } else {
-            const ref =
-              !record.tags.MD && sequenceAdapter
-                ? await sequenceAdapter.getSequence({
-                    refName: originalRefName || refName,
-                    start: record.start,
-                    end: record.end,
-                  })
-                : undefined
+          const ref =
+            !record.tags.MD && sequenceAdapter
+              ? await sequenceAdapter.getSequence({
+                  refName: originalRefName || refName,
+                  start: record.start,
+                  end: record.end,
+                })
+              : undefined
 
-            observer.next(new BamSlightlyLazyFeature(record, this, ref))
-          }
+          observer.next(new BamSlightlyLazyFeature(record, this, ref))
         }
         observer.complete()
       })
@@ -182,7 +157,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { bam } = this.configure()
     // this is a method to avoid calling on htsget adapters
     if (bam.index) {
-      const bytes = await bytesForRegions(regions, bam)
+      const bytes = await bam.estimatedBytesForRegions(regions)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
       return {
         bytes,

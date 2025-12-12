@@ -47,23 +47,24 @@ export async function getSAFeatures({
 
   const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
 
-  const feat = feature.toJSON()
-  feat.clipPos = clipPos
-  feat.strand = 1
-
-  feat.mate = {
-    refName: readName,
-    start: clipPos,
-    end: clipPos + getLengthSansClipping(cigar),
+  const feat = {
+    ...feature.toJSON(),
+    clipPos,
+    strand: 1,
+    mate: {
+      refName: readName,
+      start: clipPos,
+      end: clipPos + getLengthSansClipping(cigar),
+    },
   }
   const features = [feat, ...suppAlns] as ReducedFeature[]
 
-  for (const [idx, f] of features.entries()) {
-    f.refName = assembly.getCanonicalRefName(f.refName) || f.refName
-    f.syntenyId = idx
-    f.mate.syntenyId = idx
+  for (const [i, feature_] of features.entries()) {
+    const f = feature_
+    f.refName = assembly.getCanonicalRefName2(f.refName)
+    f.syntenyId = i
+    f.mate.syntenyId = i
     f.mate.uniqueId = `${f.uniqueId}_mate`
   }
-  features.sort((a, b) => a.clipPos - b.clipPos)
-  return features
+  return features.toSorted((a, b) => a.clipPos - b.clipPos)
 }

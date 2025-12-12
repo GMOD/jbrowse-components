@@ -59,7 +59,7 @@ export function chooseGlyphComponent({
     if (transcriptTypes.includes(type) && hasCDS) {
       return ProcessedTranscript
     } else if (
-      (!feature.parent() && hasSubSub) ||
+      (!feature.parent?.() && hasSubSub) ||
       containerTypes.includes(type)
     ) {
       return Subfeatures
@@ -139,7 +139,7 @@ export function layOutFeature(args: FeatureLayOutArgs) {
           extraGlyphs,
           config,
         })
-  const parentFeature = feature.parent()
+  const parentFeature = feature.parent?.()
   let x = 0
   if (parentFeature) {
     // Calculate x position relative to parent feature

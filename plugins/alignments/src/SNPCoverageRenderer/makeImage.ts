@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
-  featureSpanPx,
   forEachWithStopTokenCheck,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
@@ -113,7 +112,14 @@ export function makeImage(
     if (feature.get('type') === 'skip') {
       return
     }
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
+    const leftPx = region.reversed
+      ? (region.end - fend) / bpPerPx
+      : (fstart - region.start) / bpPerPx
+    const rightPx = region.reversed
+      ? (region.end - fstart) / bpPerPx
+      : (fend - region.start) / bpPerPx
     const w = rightPx - leftPx + fudgeFactor
     const score = feature.get('score') as number
     ctx.fillRect(leftPx, toY(score), w, toHeight(score))
@@ -149,7 +155,14 @@ export function makeImage(
     if (feature.get('type') === 'skip') {
       return
     }
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
+    const leftPx = region.reversed
+      ? (region.end - fend) / bpPerPx
+      : (fstart - region.start) / bpPerPx
+    const rightPx = region.reversed
+      ? (region.end - fstart) / bpPerPx
+      : (fend - region.start) / bpPerPx
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin
     const w = Math.max(rightPx - leftPx, 1)
     const score0 = feature.get('score')

@@ -52,7 +52,7 @@ const CDS = observer(function CDS(props: {
   const leftWithinBlock = Math.max(left, 0)
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
-  const parent = feature.parent() ?? feature
+  const parent = feature.parent?.() ?? feature
   const protein = usePeptides({
     feature: parent,
     region,

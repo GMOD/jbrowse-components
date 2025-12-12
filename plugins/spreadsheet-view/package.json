@@ -44,7 +44,7 @@
     "@jbrowse/sv-core": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
-    "@mui/x-data-grid": "^8.0.0",
+    "@mui/x-data-grid": "^8.22.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0"
   },

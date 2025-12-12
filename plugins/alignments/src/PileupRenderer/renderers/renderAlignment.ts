@@ -45,35 +45,33 @@ export function renderAlignment({
     colorType,
     colorTagMap,
   })
-
+  const cigarOps = getCigarOps(
+    feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
+  )
   renderAlignmentShape({
     ctx,
     feat,
     renderArgs,
     canvasWidth,
     color: alignmentColor,
+    cigarOps,
   })
 
   // second pass for color types that render per-base things that go over the
   // existing drawing
   switch (colorType) {
     case 'perBaseQuality': {
-      const cigarOps = feature.get('NUMERIC_CIGAR') || feature.get('CIGAR')
       renderPerBaseQuality({
         ctx,
         feat,
         region,
         bpPerPx,
-        canvasWidth,
         cigarOps,
       })
       break
     }
 
     case 'perBaseLettering': {
-      const cigarOps = getCigarOps(
-        feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
-      )
       renderPerBaseLettering({
         ctx,
         feat,
@@ -90,16 +88,12 @@ export function renderAlignment({
     }
 
     case 'modifications': {
-      const cigarOps = getCigarOps(
-        feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
-      )
       const ret = renderModifications({
         ctx,
         feat,
         region,
         bpPerPx,
         renderArgs,
-        canvasWidth,
         cigarOps,
       })
       for (let i = 0, l = ret.coords.length; i < l; i++) {
@@ -112,16 +106,12 @@ export function renderAlignment({
     }
 
     case 'methylation': {
-      const cigarOps = getCigarOps(
-        feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
-      )
       renderMethylation({
         ctx,
         feat,
         region,
         bpPerPx,
         renderArgs,
-        canvasWidth,
         cigarOps,
       })
       break

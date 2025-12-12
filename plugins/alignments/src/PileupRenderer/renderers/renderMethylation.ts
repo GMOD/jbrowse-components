@@ -1,12 +1,16 @@
-import { bpSpanPx } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { getMethBins } from '../../ModificationParser/getMethBins'
-import { fillRectCtx } from '../util'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
+
+// Pre-compute colord objects for methylation colors
+const RED_COLORD = colord('red')
+const BLUE_COLORD = colord('blue')
+const PINK_COLORD = colord('pink')
+const PURPLE_COLORD = colord('purple')
 
 // Color by methylation is slightly modified version of color by modifications
 // at reference CpG sites, with non-methylated CpG colored (looking only at the
@@ -17,7 +21,6 @@ export function renderMethylation({
   region,
   bpPerPx,
   renderArgs,
-  canvasWidth,
   cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
@@ -25,8 +28,7 @@ export function renderMethylation({
   region: Region
   bpPerPx: number
   renderArgs: ProcessedRenderArgs
-  canvasWidth: number
-  cigarOps: Uint32Array | number[]
+  cigarOps: ArrayLike<number>
 }) {
   const { regionSequence } = renderArgs
   const { feature, topPx, heightPx } = feat
@@ -47,43 +49,66 @@ export function renderMethylation({
     if (methBins[k]) {
       const p = methProbs[k] || 0
       return (
-        p > 0.5
-          ? colord('red').alpha((p - 0.5) * 2)
-          : colord('blue').alpha(1 - p * 2)
+        p > 0.5 ? RED_COLORD.alpha((p - 0.5) * 2) : BLUE_COLORD.alpha(1 - p * 2)
       ).toHslString()
     }
     if (hydroxyMethBins[k]) {
       const p = hydroxyMethProbs[k] || 0
       return (
         p > 0.5
-          ? colord('pink').alpha((p - 0.5) * 2)
-          : colord('purple').alpha(1 - p * 2)
+          ? PINK_COLORD.alpha((p - 0.5) * 2)
+          : PURPLE_COLORD.alpha(1 - p * 2)
       ).toHslString()
     }
     return undefined
   }
+
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
   const r = regionSequence.toLowerCase()
-  for (let i = 0; i < fend - fstart; i++) {
+
+  // Calculate visible range within feature
+  const visStart = Math.max(0, regionStart - fstart)
+  const visEnd = Math.min(fend - fstart, regionEnd - fstart)
+
+  for (let i = visStart; i < visEnd; i++) {
     const j = i + fstart
 
-    const l1 = r[j - region.start + 1]
-    const l2 = r[j - region.start + 2]
+    const l1 = r[j - regionStart + 1]
+    const l2 = r[j - regionStart + 2]
 
     if (l1 === 'c' && l2 === 'g') {
       if (bpPerPx > 2) {
-        const [leftPx, rightPx] = bpSpanPx(j, j + 2, region, bpPerPx)
+        const leftPx = reversed
+          ? (regionEnd - j - 2) * invBpPerPx
+          : (j - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - j) * invBpPerPx
+          : (j + 2 - regionStart) * invBpPerPx
         const w = rightPx - leftPx + 0.5
-        const c = getCol(i) || getCol(i + 1) || 'blue'
-        fillRectCtx(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+        ctx.fillStyle = getCol(i) || getCol(i + 1) || 'blue'
+        ctx.fillRect(leftPx, topPx, w, heightPx)
       } else {
-        const [leftPx, rightPx] = bpSpanPx(j, j + 1, region, bpPerPx)
+        const leftPx = reversed
+          ? (regionEnd - j - 1) * invBpPerPx
+          : (j - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - j) * invBpPerPx
+          : (j + 1 - regionStart) * invBpPerPx
         const w = rightPx - leftPx + 0.5
-        const c = getCol(i) || 'blue'
-        fillRectCtx(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
-        const [leftPx2, rightPx2] = bpSpanPx(j + 1, j + 2, region, bpPerPx)
+        ctx.fillStyle = getCol(i) || 'blue'
+        ctx.fillRect(leftPx, topPx, w, heightPx)
+        const leftPx2 = reversed
+          ? (regionEnd - j - 2) * invBpPerPx
+          : (j + 1 - regionStart) * invBpPerPx
+        const rightPx2 = reversed
+          ? (regionEnd - j - 1) * invBpPerPx
+          : (j + 2 - regionStart) * invBpPerPx
         const w2 = rightPx2 - leftPx2 + 0.5
-        const c2 = getCol(i + 1) || 'blue'
-        fillRectCtx(ctx, leftPx2, topPx, w2, heightPx, canvasWidth, c2)
+        ctx.fillStyle = getCol(i + 1) || 'blue'
+        ctx.fillRect(leftPx2, topPx, w2, heightPx)
       }
     }
   }

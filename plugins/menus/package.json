@@ -40,7 +40,7 @@
     "@jbrowse/mobx-state-tree": "^5.4.7",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
-    "@mui/x-data-grid": "^8.20.0",
+    "@mui/x-data-grid": "^8.22.0",
     "date-fns": "^4.1.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
