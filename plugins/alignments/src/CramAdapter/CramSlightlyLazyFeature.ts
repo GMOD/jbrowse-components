@@ -3,6 +3,7 @@ import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
 import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
+import type { MismatchesSOA } from '../BamAdapter/MismatchesSOA'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -142,24 +143,12 @@ export default class CramSlightlyLazyFeature implements Feature {
     return undefined
   }
 
-  get mismatches() {
+  get mismatches(): MismatchesSOA {
     return readFeaturesToMismatches(
       this.record.readFeatures,
       this.start,
       this.qualRaw,
     )
-    // this commented code can try to resolve MD tags, xref https://github.com/galaxyproject/tools-iuc/issues/6523#issuecomment-2462927211 but put on hold
-    // return this.tags.MD && this.seq
-    //   ? mismatches.concat(
-    //       mdToMismatches(
-    //         this.tags.MD,
-    //         parseCigar(this.CIGAR),
-    //         mismatches,
-    //         this.seq,
-    //         this.qualRaw,
-    //       ),
-    //     )
-    //   : mismatches
   }
 
   get fields(): SimpleFeatureSerialized {

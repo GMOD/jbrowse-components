@@ -49,9 +49,7 @@ export function renderMethylation({
     if (methBins[k]) {
       const p = methProbs[k] || 0
       return (
-        p > 0.5
-          ? RED_COLORD.alpha((p - 0.5) * 2)
-          : BLUE_COLORD.alpha(1 - p * 2)
+        p > 0.5 ? RED_COLORD.alpha((p - 0.5) * 2) : BLUE_COLORD.alpha(1 - p * 2)
       ).toHslString()
     }
     if (hydroxyMethBins[k]) {

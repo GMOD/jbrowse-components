@@ -1,7 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { fillRectCtx, fillTextCtx } from '../util'
 import {
   TYPE_DELETION,
   TYPE_HARDCLIP,
@@ -10,6 +9,7 @@ import {
   TYPE_SKIP,
   TYPE_SOFTCLIP,
 } from '../../shared/types'
+import { fillRectCtx, fillTextCtx } from '../util'
 
 import type { MismatchesSOA } from '../../shared/types'
 import type { FlatbushItem } from '../types'
@@ -89,7 +89,6 @@ export function renderMismatches({
     types,
     bases,
     quals,
-    altbases,
     clipLens,
     insertedBases,
   } = mismatches

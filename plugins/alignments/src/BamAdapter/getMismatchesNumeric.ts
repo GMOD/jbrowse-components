@@ -1,13 +1,13 @@
 import {
-  createMismatchesSOA,
-  pushMismatch,
-  trimMismatchesSOA,
   TYPE_DELETION,
   TYPE_HARDCLIP,
   TYPE_INSERTION,
   TYPE_MISMATCH,
   TYPE_SKIP,
   TYPE_SOFTCLIP,
+  createMismatchesSOA,
+  pushMismatch,
+  trimMismatchesSOA,
 } from './MismatchesSOA'
 
 import type { MismatchesSOA } from './MismatchesSOA'
@@ -253,10 +253,7 @@ function mdToMismatchesSOA(
       // Handle skips
       if (hasSkips && cigarCount > 0) {
         for (let k = lastSkipPos; k < cigarCount; k++) {
-          if (
-            soa.types[k] === TYPE_SKIP &&
-            currStart >= soa.starts[k]!
-          ) {
+          if (soa.types[k] === TYPE_SKIP && currStart >= soa.starts[k]!) {
             currStart += soa.lengths[k]!
             lastSkipPos = k
           }

@@ -1,11 +1,11 @@
 import { inc, isInterbaseType, mismatchLenSOA } from './util'
-import {
-  TYPE_DELETION,
-  TYPE_INSERTION,
-  TYPE_SKIP,
-} from '../shared/types'
+import { TYPE_DELETION, TYPE_INSERTION, TYPE_SKIP } from '../shared/types'
 
-import type { MismatchesSOA, PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type {
+  MismatchesSOA,
+  PreBaseCoverageBin,
+  SkipMap,
+} from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
 
@@ -31,8 +31,16 @@ export function processMismatches({
     return
   }
 
-  const { count, starts, lengths, types, bases, altbases, clipLens, insertedBases } =
-    mismatches
+  const {
+    count,
+    starts,
+    lengths,
+    types,
+    bases,
+    altbases,
+    clipLens,
+    insertedBases,
+  } = mismatches
 
   // normal SNP based coloring
   for (let i = 0; i < count; i++) {
@@ -67,9 +75,7 @@ export function processMismatches({
             bin.refbase = altbaseChar
           } else {
             const len =
-              type === TYPE_INSERTION
-                ? insertedBases[i]?.length
-                : clipLens[i]
+              type === TYPE_INSERTION ? insertedBases[i]?.length : clipLens[i]
             const seq = type === TYPE_INSERTION ? insertedBases[i] : undefined
             const typeName =
               type === TYPE_INSERTION

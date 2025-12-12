@@ -1,6 +1,17 @@
 import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
+import {
+  TYPE_DELETION,
+  TYPE_HARDCLIP,
+  TYPE_INSERTION,
+  TYPE_MISMATCH,
+  TYPE_SKIP,
+  TYPE_SOFTCLIP,
+  createMismatchesSOA,
+  pushMismatch,
+  trimMismatchesSOA,
+} from '../BamAdapter/MismatchesSOA'
 
-import type { Mismatch } from '../shared/types'
+import type { MismatchesSOA } from '../BamAdapter/MismatchesSOA'
 import type { CramRecord } from '@gmod/cram'
 
 type ReadFeatures = CramRecord['readFeatures']
@@ -9,15 +20,15 @@ export function readFeaturesToMismatches(
   readFeatures: ReadFeatures = [],
   start: number,
   qual?: number[] | null,
-) {
+): MismatchesSOA {
   const len = readFeatures.length
-  const mismatches: Mismatch[] = new Array(len)
-  let j = 0
+  let soa = createMismatchesSOA(Math.max(len, 4))
   let refPos = 0
   let sublen = 0
   let lastPos = start
   let insertedBases = ''
   let insertedBasesLen = 0
+  let insertedBasesRefPos = 0
 
   for (let i = 0; i < len; i++) {
     const { refPos: p, code, pos, data, sub, ref } = readFeatures[i]!
@@ -25,13 +36,17 @@ export function readFeaturesToMismatches(
     lastPos = refPos
 
     if (sublen && insertedBasesLen > 0) {
-      mismatches[j++] = {
-        start: refPos,
-        type: 'insertion',
-        base: String(insertedBasesLen),
+      soa = pushMismatch(
+        soa,
+        insertedBasesRefPos,
+        0,
+        TYPE_INSERTION,
+        insertedBasesLen,
+        0,
+        0,
+        insertedBasesLen,
         insertedBases,
-        length: 0,
-      }
+      )
       insertedBases = ''
       insertedBasesLen = 0
     }
@@ -41,61 +56,56 @@ export function readFeaturesToMismatches(
 
     if (codeChar === CODE_X) {
       // substitution
-      mismatches[j++] = {
-        start: refPos,
-        length: 1,
-        base: sub!,
-        qual: qual?.[pos - 1],
-        altbase: ref?.toUpperCase(),
-        type: 'mismatch',
-      }
+      const baseCharCode = sub ? sub.charCodeAt(0) : 88 // 'X'
+      const altbaseCharCode = ref ? ref.toUpperCase().charCodeAt(0) : 0
+      const qualVal = qual?.[pos - 1] ?? 0
+      soa = pushMismatch(
+        soa,
+        refPos,
+        1,
+        TYPE_MISMATCH,
+        baseCharCode,
+        qualVal,
+        altbaseCharCode,
+        0,
+      )
     } else if (codeChar === CODE_I) {
       // insertion
-      mismatches[j++] = {
-        start: refPos,
-        type: 'insertion',
-        base: String(data.length),
-        insertedBases: data,
-        length: 0,
-      }
+      const dataLen = data.length
+      soa = pushMismatch(
+        soa,
+        refPos,
+        0,
+        TYPE_INSERTION,
+        dataLen,
+        0,
+        0,
+        dataLen,
+        data,
+      )
     } else if (codeChar === CODE_N) {
       // reference skip
-      mismatches[j++] = {
-        type: 'skip',
-        length: data,
-        start: refPos,
-        base: 'N',
-      }
+      // 'N' = 78
+      soa = pushMismatch(soa, refPos, data, TYPE_SKIP, 78, 0, 0, 0)
     } else if (codeChar === CODE_S) {
       // soft clip
       const dataLen = data.length
-      mismatches[j++] = {
-        start: refPos,
-        type: 'softclip',
-        base: `S${dataLen}`,
-        cliplen: dataLen,
-        length: 1,
-      }
+      // 'S' = 83
+      soa = pushMismatch(soa, refPos, 1, TYPE_SOFTCLIP, 83, 0, 0, dataLen)
     } else if (codeChar === CODE_H) {
       // hard clip
-      mismatches[j++] = {
-        start: refPos,
-        type: 'hardclip',
-        base: `H${data}`,
-        cliplen: data,
-        length: 1,
-      }
+      // 'H' = 72
+      soa = pushMismatch(soa, refPos, 1, TYPE_HARDCLIP, 72, 0, 0, data)
     } else if (codeChar === CODE_D) {
       // deletion
-      mismatches[j++] = {
-        type: 'deletion',
-        length: data,
-        start: refPos,
-        base: '*',
-      }
+      // '*' = 42
+      soa = pushMismatch(soa, refPos, data, TYPE_DELETION, 42, 0, 0, 0)
     } else if (codeChar === CODE_i) {
       // single-base insertion, we collect these if there are multiple in a row
       // into a single insertion entry
+      if (insertedBasesLen === 0) {
+        insertedBasesRefPos = refPos
+      }
       insertedBases += data
       insertedBasesLen++
     }
@@ -103,14 +113,18 @@ export function readFeaturesToMismatches(
   }
 
   if (sublen && insertedBasesLen > 0) {
-    mismatches[j++] = {
-      start: refPos,
-      type: 'insertion',
-      base: String(insertedBasesLen),
+    soa = pushMismatch(
+      soa,
+      insertedBasesRefPos,
+      0,
+      TYPE_INSERTION,
+      insertedBasesLen,
+      0,
+      0,
+      insertedBasesLen,
       insertedBases,
-      length: 0,
-    }
+    )
   }
 
-  return j !== len ? mismatches.slice(0, j) : mismatches
+  return trimMismatchesSOA(soa)
 }

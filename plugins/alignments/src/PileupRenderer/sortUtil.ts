@@ -64,7 +64,9 @@ export function sortFeature(
     case 'Base pair': {
       const baseMap = new Map<string, MismatchInfo>()
       for (const feature of featuresInCenterLine) {
-        const mismatches = feature.get('mismatches') as MismatchesSOA | undefined
+        const mismatches = feature.get('mismatches') as
+          | MismatchesSOA
+          | undefined
         if (!mismatches || mismatches.count === 0) {
           continue
         }
