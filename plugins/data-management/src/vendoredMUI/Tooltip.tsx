@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { createPortal } from 'react-dom'
 
@@ -50,32 +50,48 @@ export default function Tooltip({ title, children }: TooltipProps) {
     setShow(false)
   }, [])
 
+  const childProps = children.props as Record<string, unknown>
+  const existingOnMouseEnter = childProps.onMouseEnter as
+    | ((e: React.MouseEvent) => void)
+    | undefined
+  const existingOnMouseLeave = childProps.onMouseLeave as
+    | ((e: React.MouseEvent) => void)
+    | undefined
+
+  const onMouseEnter = useCallback(
+    (e: React.MouseEvent) => {
+      existingOnMouseEnter?.(e)
+      handleMouseEnter(e)
+    },
+    [existingOnMouseEnter, handleMouseEnter],
+  )
+
+  const onMouseLeave = useCallback(
+    (e: React.MouseEvent) => {
+      existingOnMouseLeave?.(e)
+      handleMouseLeave()
+    },
+    [existingOnMouseLeave, handleMouseLeave],
+  )
+
+  const clonedChild = useMemo(
+    () =>
+      title
+        ? React.cloneElement(children, { onMouseEnter, onMouseLeave } as Record<
+            string,
+            unknown
+          >)
+        : children,
+    [children, title, onMouseEnter, onMouseLeave],
+  )
+
   if (!title) {
     return children
   }
 
-  const childProps = children.props as Record<string, unknown>
-
   return (
     <>
-      {React.cloneElement(children, {
-        onMouseEnter: (e: React.MouseEvent) => {
-          ;(
-            childProps.onMouseEnter as
-              | ((e: React.MouseEvent) => void)
-              | undefined
-          )?.(e)
-          handleMouseEnter(e)
-        },
-        onMouseLeave: (e: React.MouseEvent) => {
-          ;(
-            childProps.onMouseLeave as
-              | ((e: React.MouseEvent) => void)
-              | undefined
-          )?.(e)
-          handleMouseLeave()
-        },
-      } as Record<string, unknown>)}
+      {clonedChild}
       {show &&
         createPortal(
           <div style={{ ...tooltipStyle, left: coords.x, top: coords.y }}>

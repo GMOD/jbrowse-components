@@ -43,18 +43,17 @@ const useStyles = makeStyles()(theme => ({
     padding: 0,
     zIndex: 1,
   },
+  // Use theme's pxToRem for consistent sizing
+  icon: {
+    width: '1em',
+    height: '1em',
+    fontSize: theme.typography.pxToRem(20),
+    display: 'inline-block',
+    flexShrink: 0,
+    userSelect: 'none',
+    fill: 'currentColor',
+  },
 }))
-
-// Inline SVG
-const svgStyle: React.CSSProperties = {
-  width: '1em',
-  height: '1em',
-  fontSize: '1.375rem', // 22px
-  display: 'inline-block',
-  flexShrink: 0,
-  userSelect: 'none',
-  fill: 'currentColor',
-}
 
 const CheckedIcon = memo(function CheckedIcon({
   className,
@@ -62,7 +61,7 @@ const CheckedIcon = memo(function CheckedIcon({
   className: string
 }) {
   return (
-    <svg className={className} style={svgStyle} viewBox="0 0 24 24">
+    <svg className={className} viewBox="0 0 24 24">
       <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
     </svg>
   )
@@ -74,7 +73,7 @@ const UncheckedIcon = memo(function UncheckedIcon({
   className: string
 }) {
   return (
-    <svg className={className} style={svgStyle} viewBox="0 0 24 24">
+    <svg className={className} viewBox="0 0 24 24">
       <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
     </svg>
   )
@@ -99,11 +98,10 @@ function Checkbox({
 }: CheckboxProps) {
   const { classes, cx } = useStyles()
 
-  const iconClass = disabled
-    ? classes.disabledIcon
-    : checked
-      ? classes.checked
-      : classes.unchecked
+  const iconClass = cx(
+    classes.icon,
+    disabled ? classes.disabledIcon : checked ? classes.checked : classes.unchecked,
+  )
 
   return (
     <span className={cx(classes.root, disabled && classes.disabled, className)}>
