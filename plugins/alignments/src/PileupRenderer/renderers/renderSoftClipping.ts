@@ -25,6 +25,7 @@ export function renderSoftClipping({
   config,
   theme,
   colorMap,
+  canvasWidth,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
@@ -32,6 +33,7 @@ export function renderSoftClipping({
   config: AnyConfigurationModel
   colorMap: Record<string, string>
   theme: Theme
+  canvasWidth: number
 }) {
   const { feature, topPx, heightPx } = feat
   const { regions, bpPerPx } = renderArgs

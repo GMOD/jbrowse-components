@@ -22,7 +22,7 @@ export function renderMethylation({
   region: Region
   bpPerPx: number
   renderArgs: ProcessedRenderArgs
-  cigarOps: Uint32Array | number[]
+  cigarOps: ArrayLike<number>
 }) {
   const { regionSequence } = renderArgs
   const { feature, topPx, heightPx } = feat
@@ -84,7 +84,7 @@ export function renderMethylation({
           ? (regionEnd - j) * invBpPerPx
           : (j + 2 - regionStart) * invBpPerPx
         const w = rightPx - leftPx + 0.5
-        ctx.fillStyle = getCol(i) || getCol(i + 1) || 'black'
+        ctx.fillStyle = getCol(i) || getCol(i + 1) || 'blue'
         ctx.fillRect(leftPx, topPx, w, heightPx)
       } else {
         const leftPx = reversed
@@ -94,7 +94,7 @@ export function renderMethylation({
           ? (regionEnd - j) * invBpPerPx
           : (j + 1 - regionStart) * invBpPerPx
         const w = rightPx - leftPx + 0.5
-        ctx.fillStyle = getCol(i) || 'black'
+        ctx.fillStyle = getCol(i) || 'blue'
         ctx.fillRect(leftPx, topPx, w, heightPx)
         const leftPx2 = reversed
           ? (regionEnd - j - 2) * invBpPerPx
@@ -103,7 +103,7 @@ export function renderMethylation({
           ? (regionEnd - j - 1) * invBpPerPx
           : (j + 2 - regionStart) * invBpPerPx
         const w2 = rightPx2 - leftPx2 + 0.5
-        ctx.fillStyle = getCol(i + 1) || 'black'
+        ctx.fillStyle = getCol(i + 1) || 'blue'
         ctx.fillRect(leftPx2, topPx, w2, heightPx)
       }
     }

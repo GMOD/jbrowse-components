@@ -13,12 +13,11 @@ interface MaximumProbabilityMod {
 
 export function getMaxProbModAtEachPosition(
   feature: Feature,
-  cigarOps?: Uint32Array | number[],
+  ops: ArrayLike<number>,
 ) {
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined
   const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
-  const ops = cigarOps || parseCigar2(feature.get('CIGAR'))
   if (seq) {
     const modifications = getModPositions(mm, seq, fstrand)
     const probabilities = getModProbabilities(feature)

@@ -13,7 +13,7 @@ import {
 
 // Handles both packed Uint32Array and unpacked number[] formats
 export function getNextRefPos(
-  cigarOps: Uint32Array | number[],
+  cigarOps: ArrayLike<number>,
   positions: number[],
 ) {
   let readPos = 0

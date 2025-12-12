@@ -33,7 +33,7 @@ export function renderPerBaseLettering({
   charWidth: number
   charHeight: number
   canvasWidth: number
-  cigarOps: Uint32Array | number[]
+  cigarOps: ArrayLike<number>
 }) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat

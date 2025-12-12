@@ -6,7 +6,6 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-  getCigarOps,
 } from './cigarUtil'
 
 import type { LayoutFeature } from '../util'
@@ -29,7 +28,7 @@ export function renderPerBaseQuality({
   feat: LayoutFeature
   region: Region
   bpPerPx: number
-  cigarOps: Uint32Array | string
+  cigarOps: ArrayLike<number>
 }) {
   const { feature, topPx, heightPx } = feat
   const qual: string = feature.get('qual') || ''
@@ -44,9 +43,8 @@ export function renderPerBaseQuality({
   const regionEnd = region.end
   const reversed = region.reversed
 
-  const ops = getCigarOps(cigarOps)
-  for (let i = 0, l = ops.length; i < l; i++) {
-    const packed = ops[i]!
+  for (let i = 0, l = cigarOps.length; i < l; i++) {
+    const packed = cigarOps[i]!
     const len = packed >> 4
     const opIdx = packed & 0xf
     if (opIdx === CIGAR_S || opIdx === CIGAR_I) {

@@ -30,7 +30,7 @@ export function renderModifications({
   region: Region
   bpPerPx: number
   renderArgs: ProcessedRenderArgs
-  cigarOps: Uint32Array | number[]
+  cigarOps: ArrayLike<number>
 }) {
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
