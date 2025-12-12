@@ -1,4 +1,4 @@
-import { bpSpanPx, max, sum } from '@jbrowse/core/util'
+import { max, sum } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { getNextRefPos } from '../../MismatchParser'
@@ -85,7 +85,12 @@ export function renderModifications({
   getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
     ({ allProbs, prob, type }, pos) => {
       const r = start + pos
-      const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
+      const leftPx = region.reversed
+        ? (region.end - r - 1) / bpPerPx
+        : (r - region.start) / bpPerPx
+      const rightPx = region.reversed
+        ? (region.end - r) / bpPerPx
+        : (r + 1 - region.start) / bpPerPx
       const mod = visibleModifications[type]
       if (!mod) {
         console.warn(`${type} not known yet`)

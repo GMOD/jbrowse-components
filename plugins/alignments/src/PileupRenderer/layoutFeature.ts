@@ -1,5 +1,3 @@
-import { bpSpanPx } from '@jbrowse/core/util'
-
 import type { Mismatch } from '../shared/types'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -49,12 +47,14 @@ export function layoutFeature({
     }
   }
 
-  const [leftPx, rightPx] = bpSpanPx(
-    feature.get('start') - expansionBefore,
-    feature.get('end') + expansionAfter,
-    region,
-    bpPerPx,
-  )
+  const s = feature.get('start') - expansionBefore
+  const e = feature.get('end') + expansionAfter
+  const leftPx = region.reversed
+    ? (region.end - e) / bpPerPx
+    : (s - region.start) / bpPerPx
+  const rightPx = region.reversed
+    ? (region.end - s) / bpPerPx
+    : (e - region.start) / bpPerPx
 
   if (displayMode === 'compact') {
     heightPx /= 3

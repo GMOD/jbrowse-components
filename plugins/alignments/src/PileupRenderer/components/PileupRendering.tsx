@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import { bpSpanPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -107,7 +106,12 @@ const PileupRendering = observer(function (props: {
     offset = 2,
   ) {
     const [leftBp, topPx, rightBp, bottomPx] = r
-    const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
+    const leftPx = region.reversed
+      ? (region.end - rightBp) / bpPerPx
+      : (leftBp - region.start) / bpPerPx
+    const rightPx = region.reversed
+      ? (region.end - leftBp) / bpPerPx
+      : (rightBp - region.start) / bpPerPx
     const rectTop = Math.round(topPx)
     const rectHeight = Math.round(bottomPx - topPx)
     return {

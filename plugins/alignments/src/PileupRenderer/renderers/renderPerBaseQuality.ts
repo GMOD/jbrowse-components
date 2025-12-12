@@ -1,5 +1,3 @@
-import { bpSpanPx } from '@jbrowse/core/util'
-
 import { fillRectCtx } from '../util'
 import {
   CIGAR_D,
@@ -51,7 +49,9 @@ export function renderPerBaseQuality({
       for (let m = 0; m < len; m++) {
         const score = scores[soffset + m]!
         const start0 = start + roffset + m
-        const leftPx = bpSpanPx(start0, start0 + 1, region, bpPerPx)[0]
+        const leftPx = region.reversed
+          ? (region.end - start0 - 1) / bpPerPx
+          : (start0 - region.start) / bpPerPx
         const c = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
         fillRectCtx(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
       }

@@ -1,4 +1,3 @@
-import { bpSpanPx } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { getMethBins } from '../../ModificationParser/getMethBins'
@@ -71,16 +70,31 @@ export function renderMethylation({
 
     if (l1 === 'c' && l2 === 'g') {
       if (bpPerPx > 2) {
-        const [leftPx, rightPx] = bpSpanPx(j, j + 2, region, bpPerPx)
+        const leftPx = region.reversed
+          ? (region.end - j - 2) / bpPerPx
+          : (j - region.start) / bpPerPx
+        const rightPx = region.reversed
+          ? (region.end - j) / bpPerPx
+          : (j + 2 - region.start) / bpPerPx
         const w = rightPx - leftPx + 0.5
         const c = getCol(i) || getCol(i + 1) || 'blue'
         fillRectCtx(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
       } else {
-        const [leftPx, rightPx] = bpSpanPx(j, j + 1, region, bpPerPx)
+        const leftPx = region.reversed
+          ? (region.end - j - 1) / bpPerPx
+          : (j - region.start) / bpPerPx
+        const rightPx = region.reversed
+          ? (region.end - j) / bpPerPx
+          : (j + 1 - region.start) / bpPerPx
         const w = rightPx - leftPx + 0.5
         const c = getCol(i) || 'blue'
         fillRectCtx(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
-        const [leftPx2, rightPx2] = bpSpanPx(j + 1, j + 2, region, bpPerPx)
+        const leftPx2 = region.reversed
+          ? (region.end - j - 2) / bpPerPx
+          : (j + 1 - region.start) / bpPerPx
+        const rightPx2 = region.reversed
+          ? (region.end - j - 1) / bpPerPx
+          : (j + 2 - region.start) / bpPerPx
         const w2 = rightPx2 - leftPx2 + 0.5
         const c2 = getCol(i + 1) || 'blue'
         fillRectCtx(ctx, leftPx2, topPx, w2, heightPx, canvasWidth, c2)

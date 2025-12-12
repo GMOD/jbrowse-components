@@ -1,5 +1,4 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { bpSpanPx } from '@jbrowse/core/util'
 
 import { fillRectCtx, fillTextCtx, getCharWidthHeight } from '../util'
 import {
@@ -64,7 +63,12 @@ export function renderSoftClipping({
       for (let k = 0; k < len; k++) {
         const base = seq[seqOffset + k]!
         const s0 = feature.get('start') - (i === 0 ? len : 0) + refOffset + k
-        const [leftPx, rightPx] = bpSpanPx(s0, s0 + 1, region, bpPerPx)
+        const leftPx = region.reversed
+          ? (region.end - s0 - 1) / bpPerPx
+          : (s0 - region.start) / bpPerPx
+        const rightPx = region.reversed
+          ? (region.end - s0) / bpPerPx
+          : (s0 + 1 - region.start) / bpPerPx
         const widthPx = Math.max(minFeatWidth, rightPx - leftPx)
 
         // Black accounts for IUPAC ambiguity code bases such as N that

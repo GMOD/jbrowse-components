@@ -1,4 +1,4 @@
-import { bpSpanPx, measureText } from '@jbrowse/core/util'
+import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { fillRectCtx, fillTextCtx } from '../util'
@@ -80,12 +80,13 @@ export function renderMismatches({
     }
 
     const mstart = featStart + mismatch.start
-    const [leftPx, rightPx] = bpSpanPx(
-      mstart,
-      mstart + mismatch.length,
-      region,
-      bpPerPx,
-    )
+    const mend = mstart + mismatch.length
+    const leftPx = region.reversed
+      ? (region.end - mend) / bpPerPx
+      : (mstart - region.start) / bpPerPx
+    const rightPx = region.reversed
+      ? (region.end - mstart) / bpPerPx
+      : (mend - region.start) / bpPerPx
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
 
     if (type === 'mismatch') {
@@ -177,7 +178,9 @@ export function renderMismatches({
     }
 
     const mstart = featStart + mismatch.start
-    const [leftPx] = bpSpanPx(mstart, mstart + 1, region, bpPerPx)
+    const leftPx = region.reversed
+      ? (region.end - mstart - 1) / bpPerPx
+      : (mstart - region.start) / bpPerPx
     const pos = leftPx + extraHorizontallyFlippedOffset
 
     if (type === 'insertion' && drawIndels) {

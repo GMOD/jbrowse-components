@@ -1,5 +1,3 @@
-import { bpSpanPx } from '@jbrowse/core/util'
-
 import { fillRectCtx, fillTextCtx } from '../util'
 import {
   CIGAR_D,
@@ -60,7 +58,9 @@ export function renderPerBaseLettering({
       for (let m = 0; m < len; m++) {
         const letter = seq[soffset + m]!
         const r = start + roffset + m
-        const [leftPx] = bpSpanPx(r, r + 1, region, bpPerPx)
+        const leftPx = region.reversed
+          ? (region.end - r - 1) / bpPerPx
+          : (r - region.start) / bpPerPx
         const c = colorMap[letter]
         fillRectCtx(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
 

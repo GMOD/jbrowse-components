@@ -1,5 +1,3 @@
-import { bpSpanPx } from '@jbrowse/core/util'
-
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -111,12 +109,13 @@ export function renderAlignmentShape({
           drawLen += opLen
         } else if (op === CIGAR_N) {
           if (drawLen) {
-            const [leftPx, rightPx] = bpSpanPx(
-              drawStart,
-              drawStart + drawLen,
-              region,
-              bpPerPx,
-            )
+            const drawEnd = drawStart + drawLen
+            const leftPx = region.reversed
+              ? (region.end - drawEnd) / bpPerPx
+              : (drawStart - region.start) / bpPerPx
+            const rightPx = region.reversed
+              ? (region.end - drawStart) / bpPerPx
+              : (drawEnd - region.start) / bpPerPx
             fillRectCtx(
               ctx,
               leftPx,
@@ -132,12 +131,13 @@ export function renderAlignmentShape({
       }
 
       if (drawLen) {
-        const [leftPx, rightPx] = bpSpanPx(
-          drawStart,
-          drawStart + drawLen,
-          region,
-          bpPerPx,
-        )
+        const drawEnd = drawStart + drawLen
+        const leftPx = region.reversed
+          ? (region.end - drawEnd) / bpPerPx
+          : (drawStart - region.start) / bpPerPx
+        const rightPx = region.reversed
+          ? (region.end - drawStart) / bpPerPx
+          : (drawEnd - region.start) / bpPerPx
 
         if (renderChevrons) {
           drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
@@ -170,12 +170,13 @@ export function renderAlignmentShape({
           drawLen += opLen
         } else if (op === CIGAR_N) {
           if (drawLen) {
-            const [leftPx, rightPx] = bpSpanPx(
-              drawStart - drawLen,
-              drawStart,
-              region,
-              bpPerPx,
-            )
+            const drawBegin = drawStart - drawLen
+            const leftPx = region.reversed
+              ? (region.end - drawStart) / bpPerPx
+              : (drawBegin - region.start) / bpPerPx
+            const rightPx = region.reversed
+              ? (region.end - drawBegin) / bpPerPx
+              : (drawStart - region.start) / bpPerPx
             fillRectCtx(
               ctx,
               leftPx,
@@ -191,12 +192,13 @@ export function renderAlignmentShape({
       }
 
       if (drawLen) {
-        const [leftPx, rightPx] = bpSpanPx(
-          drawStart - drawLen,
-          drawStart,
-          region,
-          bpPerPx,
-        )
+        const drawBegin = drawStart - drawLen
+        const leftPx = region.reversed
+          ? (region.end - drawStart) / bpPerPx
+          : (drawBegin - region.start) / bpPerPx
+        const rightPx = region.reversed
+          ? (region.end - drawBegin) / bpPerPx
+          : (drawStart - region.start) / bpPerPx
 
         if (renderChevrons) {
           drawReverseChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
@@ -213,7 +215,12 @@ export function renderAlignmentShape({
       }
     }
   } else {
-    const [leftPx, rightPx] = bpSpanPx(s, e, region, bpPerPx)
+    const leftPx = region.reversed
+      ? (region.end - e) / bpPerPx
+      : (s - region.start) / bpPerPx
+    const rightPx = region.reversed
+      ? (region.end - s) / bpPerPx
+      : (e - region.start) / bpPerPx
     const midY = topPx + heightPx / 2
 
     if (renderChevrons) {
