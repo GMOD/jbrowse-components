@@ -7,6 +7,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { autorun, untracked } from 'mobx'
+import { observer } from 'mobx-react'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -139,15 +140,14 @@ interface LabelPositionData {
   lastX?: number
 }
 
-function FloatingLabels({
+const FloatingLabels = observer(function ({
   model,
 }: {
   model: FeatureTrackModel
-}): React.ReactElement {
+}) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)
   const assemblyName = view.assemblyNames[0]
-  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
   const containerRef = useRef<HTMLDivElement>(null)
   const domElementsRef = useRef<Map<string, HTMLDivElement>>(new Map())
@@ -155,14 +155,12 @@ function FloatingLabels({
 
   // Autorun 1: Rebuild DOM elements when layoutFeatures changes
   useEffect(() => {
-    if (!assembly) {
-      return
-    }
-
     return autorun(
       function floatingLabelsLayoutAutorun() {
         const container = containerRef.current
-        if (!container) {
+        // Access assembly inside autorun so it re-runs when assembly loads
+        const asm = assemblyName ? assemblyManager.get(assemblyName) : undefined
+        if (!container || !asm) {
           return
         }
 
@@ -177,7 +175,7 @@ function FloatingLabels({
         const featureLabels = deduplicateFeatureLabels(
           layoutFeatures,
           view,
-          assembly,
+          asm,
         )
 
         for (const [
@@ -252,7 +250,7 @@ function FloatingLabels({
       },
       { name: 'FloatingLabelsLayout' },
     )
-  }, [assembly, model, view])
+  }, [assemblyManager, assemblyName, model, view])
 
   // Autorun 2: Update transforms when offsetPx changes (fast path)
   useEffect(() => {
@@ -297,6 +295,6 @@ function FloatingLabels({
       }}
     />
   )
-}
+})
 
 export default FloatingLabels
