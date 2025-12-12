@@ -1,4 +1,3 @@
-import { max, sum } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { getNextRefPos } from '../../MismatchParser'
@@ -94,11 +93,7 @@ export function renderModifications({
       }
 
       const mod = visibleModifications[type]
-      if (!mod) {
-        console.warn(`${type} not known yet`)
-        return
-      }
-      if (isolatedModification && mod.type !== isolatedModification) {
+      if (!mod || (isolatedModification && mod.type !== isolatedModification)) {
         return
       }
 
@@ -115,8 +110,19 @@ export function renderModifications({
         : (r + 1 - regionStart) * invBpPerPx
       const widthPx = rightPx - leftPx + 0.5
       const col = mod.color || 'black'
-      const s = 1 - sum(allProbs)
-      const maxProb = max(allProbs)
+
+      // Compute sum and max in a single pass instead of two utility calls
+      let sumProbs = 0
+      let maxProb = 0
+      for (let i = 0, l = allProbs.length; i < l; i++) {
+        const p = allProbs[i]!
+        sumProbs += p
+        if (p > maxProb) {
+          maxProb = p
+        }
+      }
+      const s = 1 - sumProbs
+
       ctx.fillStyle =
         twoColor && s > maxProb
           ? BLUE_COLORD.alpha(s).toHslString()

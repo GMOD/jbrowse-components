@@ -6,6 +6,12 @@ import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
+// Pre-compute colord objects for methylation colors
+const RED_COLORD = colord('red')
+const BLUE_COLORD = colord('blue')
+const PINK_COLORD = colord('pink')
+const PURPLE_COLORD = colord('purple')
+
 // Color by methylation is slightly modified version of color by modifications
 // at reference CpG sites, with non-methylated CpG colored (looking only at the
 // MM tag can not tell you where reference CpG sites are)
@@ -44,16 +50,16 @@ export function renderMethylation({
       const p = methProbs[k] || 0
       return (
         p > 0.5
-          ? colord('red').alpha((p - 0.5) * 2)
-          : colord('blue').alpha(1 - p * 2)
+          ? RED_COLORD.alpha((p - 0.5) * 2)
+          : BLUE_COLORD.alpha(1 - p * 2)
       ).toHslString()
     }
     if (hydroxyMethBins[k]) {
       const p = hydroxyMethProbs[k] || 0
       return (
         p > 0.5
-          ? colord('pink').alpha((p - 0.5) * 2)
-          : colord('purple').alpha(1 - p * 2)
+          ? PINK_COLORD.alpha((p - 0.5) * 2)
+          : PURPLE_COLORD.alpha(1 - p * 2)
       ).toHslString()
     }
     return undefined

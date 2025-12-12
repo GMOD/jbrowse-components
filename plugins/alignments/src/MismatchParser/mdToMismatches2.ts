@@ -1,4 +1,3 @@
-import type { Mismatch } from '../shared/types'
 import {
   CIGAR_D,
   CIGAR_H,
@@ -7,6 +6,8 @@ import {
   CIGAR_P,
   CIGAR_S,
 } from '../PileupRenderer/renderers/cigarUtil'
+
+import type { Mismatch } from '../shared/types'
 
 // Handles packed NUMERIC_CIGAR format from @gmod/bam
 // Format: Uint32Array where each value is (length << 4) | opIndex
