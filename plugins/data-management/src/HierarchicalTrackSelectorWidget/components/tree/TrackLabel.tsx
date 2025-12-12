@@ -1,12 +1,10 @@
-import { memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Tooltip } from '@mui/material'
 
-import { Checkbox, FormControlLabel } from '../../../vendoredMUI'
+import { Checkbox, FormControlLabel, Tooltip } from '../../../vendoredMUI'
 import { observer } from 'mobx-react'
 
 import { isUnsupported } from '../util'
@@ -16,11 +14,23 @@ import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { TreeTrackNode } from '../../types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
+// Check if string might contain HTML (quick check for < character)
+function mightContainHTML(str: string) {
+  return str.includes('<')
+}
+
+// Optimized text renderer - only uses SanitizedHTML if HTML might be present
+const OptimizedText = memo(function OptimizedText({ text }: { text: string }) {
+  if (mightContainHTML(text)) {
+    return <SanitizedHTML html={text} />
+  }
+  return <>{text}</>
+})
+
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
     padding: 0,
   },
-
   checkboxLabel: {
     marginRight: 0,
     '&:hover': {
@@ -87,7 +97,7 @@ const TrackLabelText = observer(function TrackLabelText({
       data-testid={`htsTrackLabel-${id}`}
       className={selected ? selectedClass : undefined}
     >
-      <SanitizedHTML html={name} />
+      <OptimizedText text={name} />
     </div>
   )
 })
@@ -103,7 +113,6 @@ const TrackLabel = memo(function TrackLabel({
   checked: boolean
 }) {
   const { classes } = useStyles()
-  const { drawerPosition } = getSession(model)
   const { id, name, conf, trackId } = item
   const description = useMemo(() => readConfObject(conf, 'description'), [conf])
   const onChange = useCallback(() => {
@@ -112,10 +121,7 @@ const TrackLabel = memo(function TrackLabel({
 
   return (
     <>
-      <Tooltip
-        title={description}
-        placement={drawerPosition === 'left' ? 'right' : 'left'}
-      >
+      <Tooltip title={description}>
         <FormControlLabel
           className={classes.checkboxLabel}
           onClick={(event: React.MouseEvent) => {

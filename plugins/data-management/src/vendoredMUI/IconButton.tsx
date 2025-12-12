@@ -1,5 +1,4 @@
-import React, { forwardRef } from 'react'
-
+import React, { memo } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()(theme => ({
@@ -37,22 +36,24 @@ interface IconButtonProps
   children?: React.ReactNode
 }
 
-const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  function IconButton({ children, className, disabled, ...other }, ref) {
-    const { classes, cx } = useStyles()
+function IconButton({
+  children,
+  className,
+  disabled,
+  ...other
+}: IconButtonProps) {
+  const { classes, cx } = useStyles()
 
-    return (
-      <button
-        ref={ref}
-        type="button"
-        className={cx(classes.root, disabled && classes.disabled, className)}
-        disabled={disabled}
-        {...other}
-      >
-        {children}
-      </button>
-    )
-  },
-)
+  return (
+    <button
+      type="button"
+      className={cx(classes.root, disabled && classes.disabled, className)}
+      disabled={disabled}
+      {...other}
+    >
+      {children}
+    </button>
+  )
+}
 
-export default IconButton
+export default memo(IconButton)

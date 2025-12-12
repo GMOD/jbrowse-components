@@ -1,7 +1,4 @@
-import React, { forwardRef } from 'react'
-
-import CheckBoxIcon from '@mui/icons-material/CheckBox'
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
+import React, { memo } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()(theme => ({
@@ -19,6 +16,19 @@ const useStyles = makeStyles()(theme => ({
     userSelect: 'none',
     verticalAlign: 'middle',
     borderRadius: '50%',
+    cursor: 'pointer',
+  },
+  disabled: {
+    cursor: 'default',
+  },
+  checked: {
+    color: theme.palette.primary.main,
+  },
+  unchecked: {
+    color: theme.palette.text.secondary,
+  },
+  disabledIcon: {
+    color: theme.palette.action.disabled,
   },
   input: {
     cursor: 'inherit',
@@ -32,17 +42,36 @@ const useStyles = makeStyles()(theme => ({
     padding: 0,
     zIndex: 1,
   },
-  checked: {
-    color: theme.palette.primary.main,
-  },
-  unchecked: {
-    color: theme.palette.text.secondary,
-  },
-  disabled: {
-    color: theme.palette.action.disabled,
-    cursor: 'default',
-  },
 }))
+
+// Inline SVG paths from MUI icons - avoids MuiSvgIconRoot overhead
+const CheckedIcon = memo(function CheckedIcon({ className }: { className: string }) {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+    </svg>
+  )
+})
+
+const UncheckedIcon = memo(function UncheckedIcon({ className }: { className: string }) {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
+    </svg>
+  )
+})
 
 interface CheckboxProps {
   checked?: boolean
@@ -54,18 +83,23 @@ interface CheckboxProps {
   }
 }
 
-const Checkbox = forwardRef<HTMLSpanElement, CheckboxProps>(function Checkbox(
-  { checked, className, disabled, onChange, slotProps },
-  ref,
-) {
+function Checkbox({
+  checked,
+  className,
+  disabled,
+  onChange,
+  slotProps,
+}: CheckboxProps) {
   const { classes, cx } = useStyles()
 
+  const iconClass = disabled
+    ? classes.disabledIcon
+    : checked
+      ? classes.checked
+      : classes.unchecked
+
   return (
-    <span
-      ref={ref}
-      className={cx(classes.root, className)}
-      style={{ cursor: disabled ? 'default' : 'pointer' }}
-    >
+    <span className={cx(classes.root, disabled && classes.disabled, className)}>
       <input
         type="checkbox"
         checked={checked}
@@ -75,14 +109,12 @@ const Checkbox = forwardRef<HTMLSpanElement, CheckboxProps>(function Checkbox(
         {...slotProps?.input}
       />
       {checked ? (
-        <CheckBoxIcon className={disabled ? classes.disabled : classes.checked} />
+        <CheckedIcon className={iconClass} />
       ) : (
-        <CheckBoxOutlineBlankIcon
-          className={disabled ? classes.disabled : classes.unchecked}
-        />
+        <UncheckedIcon className={iconClass} />
       )}
     </span>
   )
-})
+}
 
-export default Checkbox
+export default memo(Checkbox)

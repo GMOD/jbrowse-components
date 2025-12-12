@@ -1,20 +1,29 @@
 import { memo, useCallback } from 'react'
 
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { CascadingMenuButton } from '../../../vendoredMUI'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import FilledStarIcon from '@mui/icons-material/Star'
 import StarIcon from '@mui/icons-material/StarBorderOutlined'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-const useStyles = makeStyles()({
-  cascadingStyle: {
-    padding: 0,
-  },
+// Inline SVG to avoid MuiSvgIconRoot overhead
+const MoreHorizIcon = memo(function MoreHorizIcon() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      style={{ display: 'block' }}
+    >
+      <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+    </svg>
+  )
 })
+
+const cascadingStyle = { padding: 0 }
 
 const TrackSelectorTrackMenu = memo(function TrackSelectorTrackMenu({
   id,
@@ -31,8 +40,6 @@ const TrackSelectorTrackMenu = memo(function TrackSelectorTrackMenu({
   setOpen?: (arg: boolean) => void
   model: HierarchicalTrackSelectorModel
 }) {
-  const { classes } = useStyles()
-
   const getMenuItems = useCallback(
     () => [
       ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
@@ -73,7 +80,7 @@ const TrackSelectorTrackMenu = memo(function TrackSelectorTrackMenu({
 
   return (
     <CascadingMenuButton
-      className={classes.cascadingStyle}
+      style={cascadingStyle}
       stopPropagation={stopPropagation}
       setOpen={setOpen}
       data-testid={`htsTrackEntryMenu-${id}`}

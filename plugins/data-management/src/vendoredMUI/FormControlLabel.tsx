@@ -1,5 +1,4 @@
-import React, { cloneElement, forwardRef, isValidElement } from 'react'
-
+import React, { cloneElement, memo, isValidElement } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()(theme => ({
@@ -32,40 +31,47 @@ interface FormControlLabelProps {
   disabled?: boolean
   onChange?: (event: React.SyntheticEvent) => void
   onClick?: (event: React.MouseEvent<HTMLLabelElement>) => void
+  onMouseEnter?: (event: React.MouseEvent<HTMLLabelElement>) => void
+  onMouseLeave?: (event: React.MouseEvent<HTMLLabelElement>) => void
 }
 
-const FormControlLabel = forwardRef<HTMLLabelElement, FormControlLabelProps>(
-  function FormControlLabel(
-    { control, label, className, disabled: disabledProp, onChange, onClick },
-    ref,
-  ) {
-    const { classes, cx } = useStyles()
-    const disabled =
-      disabledProp ??
-      (isValidElement(control)
-        ? (control.props as { disabled?: boolean }).disabled
-        : false)
+function FormControlLabel({
+  control,
+  label,
+  className,
+  disabled: disabledProp,
+  onChange,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+}: FormControlLabelProps) {
+  const { classes, cx } = useStyles()
+  const disabled =
+    disabledProp ??
+    (isValidElement(control)
+      ? (control.props as { disabled?: boolean }).disabled
+      : false)
 
-    const controlProps: Record<string, unknown> = { disabled }
-    if (onChange !== undefined) {
-      controlProps.onChange = onChange
-    }
+  const controlProps: Record<string, unknown> = { disabled }
+  if (onChange !== undefined) {
+    controlProps.onChange = onChange
+  }
 
-    return (
-      <label
-        ref={ref}
-        className={cx(classes.root, disabled && classes.disabled, className)}
-        onClick={onClick}
-      >
-        {isValidElement(control) ? cloneElement(control, controlProps) : control}
-        {label != null && (
-          <span className={cx(classes.label, disabled && classes.labelDisabled)}>
-            {label}
-          </span>
-        )}
-      </label>
-    )
-  },
-)
+  return (
+    <label
+      className={cx(classes.root, disabled && classes.disabled, className)}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {isValidElement(control) ? cloneElement(control, controlProps) : control}
+      {label != null && (
+        <span className={cx(classes.label, disabled && classes.labelDisabled)}>
+          {label}
+        </span>
+      )}
+    </label>
+  )
+}
 
-export default FormControlLabel
+export default memo(FormControlLabel)
