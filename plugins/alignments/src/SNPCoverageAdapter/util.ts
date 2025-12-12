@@ -1,3 +1,9 @@
+import {
+  TYPE_HARDCLIP,
+  TYPE_INSERTION,
+  TYPE_SOFTCLIP,
+} from '../shared/types'
+
 import type {
   ColorBy,
   Mismatch,
@@ -18,6 +24,14 @@ export function mismatchLen(mismatch: Mismatch) {
 
 export function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
+}
+
+export function mismatchLenSOA(type: number, length: number) {
+  return !isInterbaseType(type) ? length : 1
+}
+
+export function isInterbaseType(type: number) {
+  return type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP || type === TYPE_INSERTION
 }
 
 export function createPreBinEntry(): PreBinEntry {

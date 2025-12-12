@@ -1,7 +1,14 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
-import type { Mismatch, SortedBy } from '../shared/types'
+import { TYPE_INSERTION, TYPE_SOFTCLIP } from '../shared/types'
+
+import type { MismatchesSOA, SortedBy } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
+
+interface MismatchInfo {
+  base: string
+  length: number
+}
 
 export function sortFeature(
   features: Map<string, Feature>,
@@ -55,16 +62,27 @@ export function sortFeature(
 
     // first sort all mismatches, then all reference bases at the end
     case 'Base pair': {
-      const baseMap = new Map<string, Mismatch>()
+      const baseMap = new Map<string, MismatchInfo>()
       for (const feature of featuresInCenterLine) {
-        const mismatches: Mismatch[] = feature.get('mismatches')
+        const mismatches = feature.get('mismatches') as MismatchesSOA | undefined
+        if (!mismatches || mismatches.count === 0) {
+          continue
+        }
         const start = feature.get('start')
-        for (const m of mismatches) {
-          const offset = start + m.start + 1
-          const consuming = m.type === 'insertion' || m.type === 'softclip'
-          const len = consuming ? 0 : m.length
+        const { count, starts, lengths, types, bases } = mismatches
+
+        for (let i = 0; i < count; i++) {
+          const mType = types[i]!
+          const mStart = starts[i]!
+          const mLen = lengths[i]!
+          const offset = start + mStart + 1
+          const consuming = mType === TYPE_INSERTION || mType === TYPE_SOFTCLIP
+          const len = consuming ? 0 : mLen
           if (pos >= offset && pos < offset + len) {
-            baseMap.set(feature.id(), m)
+            baseMap.set(feature.id(), {
+              base: String.fromCharCode(bases[i]!),
+              length: mLen,
+            })
           }
         }
       }
@@ -75,8 +93,7 @@ export function sortFeature(
         const acode = bMismatch?.base.toUpperCase()
         const bcode = aMismatch?.base.toUpperCase()
         return acode === bcode && acode === '*'
-          ? // @ts-expect-error
-            aMismatch.length - bMismatch.length
+          ? (aMismatch?.length ?? 0) - (bMismatch?.length ?? 0)
           : (acode ? acode.charCodeAt(0) : 0) -
               (bcode ? bcode.charCodeAt(0) : 0)
       })

@@ -2,14 +2,22 @@ import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { fillRectCtx, fillTextCtx } from '../util'
+import {
+  TYPE_DELETION,
+  TYPE_HARDCLIP,
+  TYPE_INSERTION,
+  TYPE_MISMATCH,
+  TYPE_SKIP,
+  TYPE_SOFTCLIP,
+} from '../../shared/types'
 
-import type { Mismatch } from '../../shared/types'
+import type { MismatchesSOA } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
 function applyQualAlpha(baseColor: string, qual: number | undefined) {
-  return qual !== undefined
+  return qual !== undefined && qual > 0
     ? colord(baseColor)
         .alpha(Math.min(1, qual / 50))
         .toHslString()
@@ -63,27 +71,47 @@ export function renderMismatches({
 
   const invBpPerPx = 1 / bpPerPx
   const pxPerBp = Math.min(invBpPerPx, 2)
-  const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
+  const mismatches = feature.get('mismatches') as MismatchesSOA | undefined
   const canRenderText = heightPx >= charHeight - 2
   const useAlpha = mismatchAlpha === true
   const regionStart = region.start
   const regionEnd = region.end
   const reversed = region.reversed
 
+  if (!mismatches || mismatches.count === 0) {
+    return { coords, items }
+  }
+
+  const {
+    count,
+    starts,
+    lengths,
+    types,
+    bases,
+    quals,
+    altbases,
+    clipLens,
+    insertedBases,
+  } = mismatches
+
   // extraHorizontallyFlippedOffset is used to draw interbase items, which are
   // located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = reversed ? invBpPerPx + 1 : -1
 
   // first pass: draw mismatches, deletions, skips
-  for (let i = 0, l = mismatches.length; i < l; i++) {
-    const mismatch = mismatches[i]!
-    const type = mismatch.type
-    if (type === 'insertion' || type === 'softclip' || type === 'hardclip') {
+  for (let i = 0; i < count; i++) {
+    const type = types[i]!
+    if (
+      type === TYPE_INSERTION ||
+      type === TYPE_SOFTCLIP ||
+      type === TYPE_HARDCLIP
+    ) {
       continue
     }
 
-    const mstart = featStart + mismatch.start
-    const mend = mstart + mismatch.length
+    const mstart = featStart + starts[i]!
+    const mlen = lengths[i]!
+    const mend = mstart + mlen
 
     // Skip mismatches entirely outside visible region
     if (mend <= regionStart || mstart >= regionEnd) {
@@ -98,17 +126,18 @@ export function renderMismatches({
       : (mend - regionStart) * invBpPerPx
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
 
-    if (type === 'mismatch') {
+    if (type === TYPE_MISMATCH) {
+      const baseChar = String.fromCharCode(bases[i]!)
+      const qual = quals[i]
+
       if (rightPx - leftPx >= 0.2) {
-        items.push({ type: 'mismatch', seq: mismatch.base })
+        items.push({ type: 'mismatch', seq: baseChar })
         coords.push(leftPx, topPx, rightPx, bottomPx)
       }
 
       if (!drawSNPsMuted) {
-        const baseColor = colorMap[mismatch.base] || '#888'
-        const c = useAlpha
-          ? applyQualAlpha(baseColor, mismatch.qual)
-          : baseColor
+        const baseColor = colorMap[baseChar] || '#888'
+        const c = useAlpha ? applyQualAlpha(baseColor, qual) : baseColor
         fillRectCtx(
           ctx,
           Math.round(leftPx),
@@ -123,21 +152,21 @@ export function renderMismatches({
       if (widthPx >= charWidth && canRenderText) {
         const contrastColor = drawSNPsMuted
           ? 'black'
-          : colorContrastMap[mismatch.base] || 'black'
+          : colorContrastMap[baseChar] || 'black'
         const textColor = useAlpha
-          ? applyQualAlpha(contrastColor, mismatch.qual)
+          ? applyQualAlpha(contrastColor, qual)
           : contrastColor
         fillTextCtx(
           ctx,
-          mismatch.base,
+          baseChar,
           leftPx + (widthPx - charWidth) / 2 + 1,
           bottomPx,
           canvasWidth,
           textColor,
         )
       }
-    } else if (type === 'deletion' && drawIndels) {
-      const len = mismatch.length
+    } else if (type === TYPE_DELETION && drawIndels) {
+      const len = mlen
       if (!hideSmallIndels || len >= 10) {
         fillRectCtx(
           ctx,
@@ -165,7 +194,7 @@ export function renderMismatches({
           )
         }
       }
-    } else if (type === 'skip') {
+    } else if (type === TYPE_SKIP) {
       fillRectCtx(
         ctx,
         leftPx,
@@ -179,14 +208,17 @@ export function renderMismatches({
   }
 
   // second pass: draw insertions and clips on top
-  for (let i = 0, l = mismatches.length; i < l; i++) {
-    const mismatch = mismatches[i]!
-    const type = mismatch.type
-    if (type !== 'insertion' && type !== 'softclip' && type !== 'hardclip') {
+  for (let i = 0; i < count; i++) {
+    const type = types[i]!
+    if (
+      type !== TYPE_INSERTION &&
+      type !== TYPE_SOFTCLIP &&
+      type !== TYPE_HARDCLIP
+    ) {
       continue
     }
 
-    const mstart = featStart + mismatch.start
+    const mstart = featStart + starts[i]!
 
     // Skip if outside visible region
     if (mstart < regionStart || mstart >= regionEnd) {
@@ -198,9 +230,11 @@ export function renderMismatches({
       : (mstart - regionStart) * invBpPerPx
     const pos = leftPx + extraHorizontallyFlippedOffset
 
-    if (type === 'insertion' && drawIndels) {
-      const len = +mismatch.base || mismatch.length
+    if (type === TYPE_INSERTION && drawIndels) {
+      const clipLen = clipLens[i]!
+      const len = clipLen
       const insW = Math.max(0, Math.min(1.2, invBpPerPx))
+      const insBasesStr = insertedBases[i] || 'unknown'
 
       if (len < 10) {
         if (!hideSmallIndels) {
@@ -211,18 +245,12 @@ export function renderMismatches({
             const insW3 = insW * 3
             fillRectCtx(ctx, l, topPx, insW3, 1, canvasWidth)
             fillRectCtx(ctx, l, bottomPx - 1, insW3, 1, canvasWidth)
-            fillTextCtx(
-              ctx,
-              `(${mismatch.base})`,
-              pos + 3,
-              bottomPx,
-              canvasWidth,
-            )
+            fillTextCtx(ctx, `(${len})`, pos + 3, bottomPx, canvasWidth)
           }
           if (bpPerPx < 3) {
             items.push({
               type: 'insertion',
-              seq: mismatch.insertedBases || 'unknown',
+              seq: insBasesStr,
             })
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, bottomPx)
           }
@@ -230,7 +258,7 @@ export function renderMismatches({
       } else {
         items.push({
           type: 'insertion',
-          seq: mismatch.insertedBases || 'unknown',
+          seq: insBasesStr,
         })
         const txt = `${len}`
         if (bpPerPx > largeInsertionIndicatorScale) {
@@ -284,25 +312,21 @@ export function renderMismatches({
           )
         }
       }
-    } else if (type === 'softclip' || type === 'hardclip') {
-      const c = colorMap[type]
+    } else if (type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
+      const typeName = type === TYPE_SOFTCLIP ? 'softclip' : 'hardclip'
+      const clipLen = clipLens[i]!
+      const baseStr = `${type === TYPE_SOFTCLIP ? 'S' : 'H'}${clipLen}`
+      const c = colorMap[typeName]
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       fillRectCtx(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
-      items.push({ type, seq: mismatch.base })
+      items.push({ type: typeName, seq: baseStr })
       coords.push(pos - clipW, topPx, pos + clipW * 2, bottomPx)
       if (invBpPerPx >= charWidth && canRenderText) {
         const l = pos - clipW
         const clipW3 = clipW * 3
         fillRectCtx(ctx, l, topPx, clipW3, 1, canvasWidth, c)
         fillRectCtx(ctx, l, bottomPx - 1, clipW3, 1, canvasWidth, c)
-        fillTextCtx(
-          ctx,
-          `(${mismatch.base})`,
-          pos + 3,
-          bottomPx,
-          canvasWidth,
-          c,
-        )
+        fillTextCtx(ctx, `(${baseStr})`, pos + 3, bottomPx, canvasWidth, c)
       }
     }
   }

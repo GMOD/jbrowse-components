@@ -3,10 +3,29 @@ import { doesIntersect2 } from '@jbrowse/core/util'
 import { parseCigar2 } from '../MismatchParser'
 import { incWithProbabilities } from './util'
 import { getMethBins } from '../ModificationParser/getMethBins'
+import { TYPE_DELETION } from '../shared/types'
 
-import type { Mismatch, PreBaseCoverageBin } from '../shared/types'
+import type { MismatchesSOA, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+
+function getDeletions(
+  mismatches: MismatchesSOA | undefined,
+  fstart: number,
+): { start: number; end: number }[] {
+  if (!mismatches || mismatches.count === 0) {
+    return []
+  }
+  const result: { start: number; end: number }[] = []
+  const { count, types, starts, lengths } = mismatches
+  for (let i = 0; i < count; i++) {
+    if (types[i] === TYPE_DELETION) {
+      const start = starts[i]! + fstart
+      result.push({ start, end: start + lengths[i]! })
+    }
+  }
+  return result
+}
 
 export function processReferenceCpGs({
   feature,
@@ -23,13 +42,13 @@ export function processReferenceCpGs({
   const fend = feature.get('end')
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined
-  const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
+  const mismatches = feature.get('mismatches') as MismatchesSOA | undefined
   const r = regionSequence.toLowerCase()
   if (seq) {
     const cigarOps =
       feature.get('NUMERIC_CIGAR') ?? parseCigar2(feature.get('CIGAR'))
     const { methBins, methProbs } = getMethBins(feature, cigarOps)
-    const dels = mismatches.filter(f => f.type === 'deletion')
+    const dels = getDeletions(mismatches, fstart)
     const regionStart = region.start
     const regionEnd = region.end
 
@@ -68,16 +87,7 @@ export function processReferenceCpGs({
           }
         } else {
           if (bin0) {
-            if (
-              !dels.some(d =>
-                doesIntersect2(
-                  j,
-                  j + 1,
-                  d.start + fstart,
-                  d.start + fstart + d.length,
-                ),
-              )
-            ) {
+            if (!dels.some(d => doesIntersect2(j, j + 1, d.start, d.end))) {
               incWithProbabilities(
                 bin0,
                 fstrand,
@@ -90,16 +100,7 @@ export function processReferenceCpGs({
             }
           }
           if (bin1) {
-            if (
-              !dels.some(d =>
-                doesIntersect2(
-                  j + 1,
-                  j + 2,
-                  d.start + fstart,
-                  d.start + fstart + d.length,
-                ),
-              )
-            ) {
+            if (!dels.some(d => doesIntersect2(j + 1, j + 2, d.start, d.end))) {
               incWithProbabilities(
                 bin1,
                 fstrand,

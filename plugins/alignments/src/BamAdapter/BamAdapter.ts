@@ -134,7 +134,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           }
 
           const ref =
-            !record.tags.MD && sequenceAdapter
+            !record.NUMERIC_MD && sequenceAdapter
               ? await sequenceAdapter.getSequence({
                   refName: originalRefName || refName,
                   start: record.start,

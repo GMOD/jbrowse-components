@@ -2,6 +2,7 @@ import { getMismatchesNumeric } from './getMismatchesNumeric'
 import { decodeSeq } from '../shared/decodeSeq'
 import { cacheGetter } from '../shared/util'
 
+import type { MismatchesSOA } from './MismatchesSOA'
 import type BamAdapter from './BamAdapter'
 import type { BamRecord } from '@gmod/bam'
 import type {
@@ -27,12 +28,12 @@ export default class BamSlightlyLazyFeature implements Feature {
     return decodeSeq(this.record.NUMERIC_SEQ, this.record.seq_length)
   }
 
-  get mismatches() {
+  get mismatches(): MismatchesSOA {
     return getMismatchesNumeric(
       this.record.NUMERIC_CIGAR,
       this.record.NUMERIC_SEQ,
       this.record.seq_length,
-      this.record.tags.MD as string | undefined,
+      this.record.NUMERIC_MD,
       this.ref,
       this.record.qual,
     )

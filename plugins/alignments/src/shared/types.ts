@@ -132,6 +132,17 @@ export interface Mismatch {
   cliplen?: number
 }
 
+export type { MismatchesSOA } from '../BamAdapter/MismatchesSOA'
+export {
+  TYPE_MISMATCH,
+  TYPE_INSERTION,
+  TYPE_DELETION,
+  TYPE_SKIP,
+  TYPE_SOFTCLIP,
+  TYPE_HARDCLIP,
+  TYPE_NAMES,
+} from '../BamAdapter/MismatchesSOA'
+
 export interface ReducedFeature {
   name: string
   strand: number
