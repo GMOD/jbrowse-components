@@ -7,6 +7,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { autorun, untracked } from 'mobx'
+import { observer } from 'mobx-react'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -139,11 +140,11 @@ interface LabelPositionData {
   lastX?: number
 }
 
-function FloatingLabels({
+const FloatingLabels = observer(function ({
   model,
 }: {
   model: FeatureTrackModel
-}): React.ReactElement {
+}) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)
   const assemblyName = view.assemblyNames[0]
@@ -297,6 +298,6 @@ function FloatingLabels({
       }}
     />
   )
-}
+})
 
 export default FloatingLabels
