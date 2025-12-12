@@ -1,4 +1,5 @@
-import React, { cloneElement, memo, isValidElement } from 'react'
+import React, { cloneElement, isValidElement, memo } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()(theme => ({

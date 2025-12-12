@@ -1,4 +1,5 @@
 import React, { memo } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()(theme => ({
@@ -31,8 +32,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface IconButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode
 }
 

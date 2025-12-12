@@ -1,4 +1,5 @@
 import React, { memo } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()(theme => ({
@@ -44,30 +45,36 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Inline SVG paths from MUI icons - avoids MuiSvgIconRoot overhead
-const CheckedIcon = memo(function CheckedIcon({ className }: { className: string }) {
+// Inline SVG
+const svgStyle: React.CSSProperties = {
+  width: '1em',
+  height: '1em',
+  fontSize: '1.375rem', // 22px
+  display: 'inline-block',
+  flexShrink: 0,
+  userSelect: 'none',
+  fill: 'currentColor',
+}
+
+const CheckedIcon = memo(function CheckedIcon({
+  className,
+}: {
+  className: string
+}) {
   return (
-    <svg
-      className={className}
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
+    <svg className={className} style={svgStyle} viewBox="0 0 24 24">
       <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
     </svg>
   )
 })
 
-const UncheckedIcon = memo(function UncheckedIcon({ className }: { className: string }) {
+const UncheckedIcon = memo(function UncheckedIcon({
+  className,
+}: {
+  className: string
+}) {
   return (
-    <svg
-      className={className}
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
+    <svg className={className} style={svgStyle} viewBox="0 0 24 24">
       <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
     </svg>
   )

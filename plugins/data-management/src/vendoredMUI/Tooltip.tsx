@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+
 import { createPortal } from 'react-dom'
 
 interface TooltipProps {
@@ -37,7 +38,9 @@ export default function Tooltip({ title, children }: TooltipProps) {
   const handleMouseEnter = useCallback((e: React.MouseEvent) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     setCoords({ x: rect.left, y: rect.bottom + 8 })
-    timeoutRef.current = setTimeout(() => setShow(true), 500)
+    timeoutRef.current = setTimeout(() => {
+      setShow(true)
+    }, 500)
   }, [])
 
   const handleMouseLeave = useCallback(() => {

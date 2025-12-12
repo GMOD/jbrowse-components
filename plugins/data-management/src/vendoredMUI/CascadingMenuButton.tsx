@@ -1,11 +1,7 @@
 import { useEffect } from 'react'
 
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
-import {
-  bindPopover,
-  bindTrigger,
-  usePopupState,
-} from '@jbrowse/core/ui/hooks'
+import { bindPopover, bindTrigger, usePopupState } from '@jbrowse/core/ui/hooks'
 import { observer } from 'mobx-react'
 
 import IconButton from './IconButton'

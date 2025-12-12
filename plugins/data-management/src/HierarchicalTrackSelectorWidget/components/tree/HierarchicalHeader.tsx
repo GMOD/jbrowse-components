@@ -1,57 +1,12 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import ClearIcon from '@mui/icons-material/Clear'
-import { InputAdornment, TextField } from '@mui/material'
-
-import { IconButton } from '../../../vendoredMUI'
 import { observer } from 'mobx-react'
 
 import HamburgerMenu from './HamburgerMenu'
+import HierarchicalSearchBox from './HierarchicalSearchBox'
 import ShoppingCart from '../ShoppingCart'
 import FavoriteTracks from './FavoriteTracks'
 import RecentlyUsedTracks from './RecentlyUsedTracks'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
-
-const useStyles = makeStyles()(theme => ({
-  searchBox: {
-    margin: theme.spacing(2),
-  },
-}))
-
-const SearchTracksTextField = observer(function ({
-  model,
-}: {
-  model: HierarchicalTrackSelectorModel
-}) {
-  const { filterText } = model
-  const { classes } = useStyles()
-  return (
-    <TextField
-      className={classes.searchBox}
-      label="Filter tracks"
-      value={filterText}
-      onChange={event => {
-        model.setFilterText(event.target.value)
-      }}
-      fullWidth
-      slotProps={{
-        input: {
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => {
-                  model.clearFilterText()
-                }}
-              >
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
-        },
-      }}
-    />
-  )
-})
 
 const HierarchicalTrackSelectorHeader = observer(function ({
   model,
@@ -70,7 +25,7 @@ const HierarchicalTrackSelectorHeader = observer(function ({
       <div style={{ display: 'flex' }}>
         <HamburgerMenu model={model} />
         <ShoppingCart model={model} />
-        <SearchTracksTextField model={model} />
+        <HierarchicalSearchBox model={model} />
         <RecentlyUsedTracks model={model} />
         <FavoriteTracks model={model} />
       </div>

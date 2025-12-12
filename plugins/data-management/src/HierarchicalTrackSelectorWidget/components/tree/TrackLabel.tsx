@@ -3,10 +3,9 @@ import React, { memo, useCallback, useMemo } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-
-import { Checkbox, FormControlLabel, Tooltip } from '../../../vendoredMUI'
 import { observer } from 'mobx-react'
 
+import { Checkbox, FormControlLabel, Tooltip } from '../../../vendoredMUI'
 import { isUnsupported } from '../util'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu'
 

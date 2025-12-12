@@ -6,7 +6,6 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import { Grid, InputAdornment, TextField } from '@mui/material'
 
 import { IconButton } from '../../../vendoredMUI'
-
 import ShoppingCart from '../ShoppingCart'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
