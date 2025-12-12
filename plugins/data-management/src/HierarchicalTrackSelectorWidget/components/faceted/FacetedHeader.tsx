@@ -46,7 +46,7 @@ export default function FacetedHeader({
           }}
         />
         <IconButton
-          onClick={event => {
+          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
             setAnchorEl(event.currentTarget)
           }}
         >

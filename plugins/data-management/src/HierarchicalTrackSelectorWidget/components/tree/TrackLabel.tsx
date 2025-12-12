@@ -60,7 +60,6 @@ const TrackCheckbox = memo(function TrackCheckbox({
       disabled={disabled}
       slotProps={{
         input: {
-          // @ts-expect-error
           'data-testid': `htsTrackEntry-${id}`,
         },
       }}
@@ -119,7 +118,7 @@ const TrackLabel = memo(function TrackLabel({
       >
         <FormControlLabel
           className={classes.checkboxLabel}
-          onClick={event => {
+          onClick={(event: React.MouseEvent) => {
             if (event.ctrlKey || event.metaKey) {
               model.addToSelection([conf])
               event.preventDefault()
