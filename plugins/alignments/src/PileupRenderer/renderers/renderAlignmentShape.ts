@@ -1,11 +1,4 @@
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_X,
-  getCigarOps,
-} from './cigarUtil'
+import { CIGAR_D, CIGAR_EQ, CIGAR_M, CIGAR_N, CIGAR_X } from './cigarUtil'
 import { CHEVRON_WIDTH } from '../../shared/util'
 import { fillRectCtx } from '../util'
 

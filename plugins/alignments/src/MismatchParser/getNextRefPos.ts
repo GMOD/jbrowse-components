@@ -30,8 +30,8 @@ export function getNextRefPos(
     const len = packed >> 4
     const op = packed & 0xf
     if (op === CIGAR_S || op === CIGAR_I) {
-      for (let i = 0; i < len && currPos < l2; i++) {
-        if (positions[currPos] === readPos + i) {
+      for (let j = 0; j < len && currPos < l2; j++) {
+        if (positions[currPos] === readPos + j) {
           currPos++
         }
       }
@@ -39,10 +39,10 @@ export function getNextRefPos(
     } else if (op === CIGAR_D || op === CIGAR_N) {
       refPos += len
     } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
-      for (let i = 0; i < len && currPos < l2; i++) {
-        if (positions[currPos] === readPos + i) {
+      for (let j = 0; j < len && currPos < l2; j++) {
+        if (positions[currPos] === readPos + j) {
           ret.push({
-            ref: refPos + i,
+            ref: refPos + j,
             idx: currPos,
           })
           currPos++

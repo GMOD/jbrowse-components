@@ -1,4 +1,4 @@
-import { getNextRefPos, parseCigar2 } from '../MismatchParser'
+import { getNextRefPos } from '../MismatchParser'
 import { getModPositions } from '../ModificationParser/getModPositions'
 import { getModProbabilities } from '../ModificationParser/getModProbabilities'
 import { getTagAlt } from '../util'

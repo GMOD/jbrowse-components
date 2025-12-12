@@ -1,12 +1,12 @@
 import type { Mismatch } from '../shared/types'
-
-// CIGAR operation indices (from BAM spec)
-const CIGAR_I = 1
-const CIGAR_D = 2
-const CIGAR_N = 3
-const CIGAR_S = 4
-const CIGAR_H = 5
-const CIGAR_P = 6
+import {
+  CIGAR_D,
+  CIGAR_H,
+  CIGAR_I,
+  CIGAR_N,
+  CIGAR_P,
+  CIGAR_S,
+} from '../PileupRenderer/renderers/cigarUtil'
 
 // Handles packed NUMERIC_CIGAR format from @gmod/bam
 // Format: Uint32Array where each value is (length << 4) | opIndex
