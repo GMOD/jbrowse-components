@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { Menu } from '@jbrowse/core/ui'
 import ClearIcon from '@mui/icons-material/Clear'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Grid, IconButton, InputAdornment, TextField } from '@mui/material'
+import { Grid, InputAdornment, TextField } from '@mui/material'
+
+import { IconButton } from '../../../vendoredMUI'
 
 import ShoppingCart from '../ShoppingCart'
 

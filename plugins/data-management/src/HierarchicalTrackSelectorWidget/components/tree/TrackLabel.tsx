@@ -4,7 +4,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
+import { Tooltip } from '@mui/material'
+
+import { Checkbox, FormControlLabel } from '../../../vendoredMUI'
 import { observer } from 'mobx-react'
 
 import { isUnsupported } from '../util'

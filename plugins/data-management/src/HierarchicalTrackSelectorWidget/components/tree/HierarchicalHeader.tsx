@@ -1,6 +1,8 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ClearIcon from '@mui/icons-material/Clear'
-import { IconButton, InputAdornment, TextField } from '@mui/material'
+import { InputAdornment, TextField } from '@mui/material'
+
+import { IconButton } from '../../../vendoredMUI'
 import { observer } from 'mobx-react'
 
 import HamburgerMenu from './HamburgerMenu'
