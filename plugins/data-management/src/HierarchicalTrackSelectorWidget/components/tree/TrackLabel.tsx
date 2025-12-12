@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
@@ -104,7 +104,7 @@ const TrackLabel = memo(function TrackLabel({
   const { classes } = useStyles()
   const { drawerPosition } = getSession(model)
   const { id, name, conf, trackId } = item
-  const description = readConfObject(conf, 'description')
+  const description = useMemo(() => readConfObject(conf, 'description'), [conf])
   const onChange = useCallback(() => {
     model.view.toggleTrack(trackId)
   }, [model.view, trackId])

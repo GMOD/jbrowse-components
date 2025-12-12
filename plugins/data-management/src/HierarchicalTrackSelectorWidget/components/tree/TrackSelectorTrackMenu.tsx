@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { memo, useCallback } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
@@ -16,7 +16,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const TrackSelectorTrackMenu = function ({
+const TrackSelectorTrackMenu = memo(function TrackSelectorTrackMenu({
   id,
   trackId,
   stopPropagation,
@@ -82,6 +82,6 @@ const TrackSelectorTrackMenu = function ({
       <MoreHorizIcon />
     </CascadingMenuButton>
   )
-}
+})
 
 export default TrackSelectorTrackMenu
