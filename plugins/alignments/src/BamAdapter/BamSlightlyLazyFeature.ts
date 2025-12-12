@@ -64,6 +64,8 @@ export default class BamSlightlyLazyFeature implements Feature {
         return this.record.NUMERIC_CIGAR
       case 'CIGAR':
         return this.record.CIGAR
+      case 'NUMERIC_QUAL':
+        return this.record.qual
 
       default:
         return this.fields[field]
