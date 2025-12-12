@@ -1,195 +1,87 @@
-'use client'
-
-import * as React from 'react'
-
-import composeClasses from '@mui/utils/composeClasses'
-import clsx from 'clsx'
+import React, { forwardRef } from 'react'
 
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
-import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-import SwitchBase from './SwitchBase'
-import { useDefaultProps } from '@mui/material/DefaultPropsProvider'
-import { styled } from '@mui/material/styles'
-import { mergeSlotProps } from '@mui/material/utils'
-
-import {
-  capitalize,
-  checkboxClasses,
-  createSimplePaletteValueFilter,
-  getCheckboxUtilityClass,
-  memoTheme,
-  rootShouldForwardProp,
-} from './utils'
-
-type OwnerState = {
-  classes?: Record<string, string>
-  indeterminate?: boolean
-  color: string
-  size: string
-  disableRipple: boolean
-}
-
-const useUtilityClasses = (ownerState: OwnerState) => {
-  const { classes, indeterminate, color, size } = ownerState
-  const slots = {
-    root: [
-      'root',
-      indeterminate && 'indeterminate',
-      `color${capitalize(color)}`,
-      `size${capitalize(size)}`,
-    ],
-  }
-  const composedClasses = composeClasses(slots, getCheckboxUtilityClass, classes)
-  return {
-    ...classes,
-    ...composedClasses,
-  }
-}
-
-const CheckboxRoot = styled(SwitchBase, {
-  shouldForwardProp: (prop: string) =>
-    rootShouldForwardProp(prop) || prop === 'classes',
-  name: 'MuiCheckbox',
-  slot: 'Root',
-  overridesResolver: (props, styles) => {
-    const { ownerState } = props
-    return [
-      styles.root,
-      ownerState.indeterminate && styles.indeterminate,
-      styles[`size${capitalize(ownerState.size)}`],
-      ownerState.color !== 'default' &&
-        styles[`color${capitalize(ownerState.color)}`],
-    ]
+const useStyles = makeStyles()(theme => ({
+  root: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    boxSizing: 'border-box',
+    backgroundColor: 'transparent',
+    outline: 0,
+    border: 0,
+    margin: 0,
+    padding: 9,
+    userSelect: 'none',
+    verticalAlign: 'middle',
+    borderRadius: '50%',
   },
-})(
-  memoTheme(({ theme }: { theme: any }) => ({
-    color: (theme.vars || theme).palette.text.secondary,
-    variants: [
-      {
-        props: {
-          color: 'default',
-          disableRipple: false,
-        },
-        style: {
-          '&:hover': {
-            backgroundColor: theme.alpha(
-              (theme.vars || theme).palette.action.active,
-              (theme.vars || theme).palette.action.hoverOpacity,
-            ),
-          },
-        },
-      },
-      ...Object.entries(theme.palette)
-        .filter(createSimplePaletteValueFilter())
-        .map(([color]) => ({
-          props: {
-            color,
-            disableRipple: false,
-          },
-          style: {
-            '&:hover': {
-              backgroundColor: theme.alpha(
-                (theme.vars || theme).palette[color].main,
-                (theme.vars || theme).palette.action.hoverOpacity,
-              ),
-            },
-          },
-        })),
-      ...Object.entries(theme.palette)
-        .filter(createSimplePaletteValueFilter())
-        .map(([color]) => ({
-          props: {
-            color,
-          },
-          style: {
-            [`&.${checkboxClasses.checked}, &.${checkboxClasses.indeterminate}`]:
-              {
-                color: (theme.vars || theme).palette[color].main,
-              },
-            [`&.${checkboxClasses.disabled}`]: {
-              color: (theme.vars || theme).palette.action.disabled,
-            },
-          },
-        })),
-      {
-        props: {
-          disableRipple: false,
-        },
-        style: {
-          '&:hover': {
-            '@media (hover: none)': {
-              backgroundColor: 'transparent',
-            },
-          },
-        },
-      },
-    ],
-  })),
-)
+  input: {
+    cursor: 'inherit',
+    position: 'absolute',
+    opacity: 0,
+    width: '100%',
+    height: '100%',
+    top: 0,
+    left: 0,
+    margin: 0,
+    padding: 0,
+    zIndex: 1,
+  },
+  checked: {
+    color: theme.palette.primary.main,
+  },
+  unchecked: {
+    color: theme.palette.text.secondary,
+  },
+  disabled: {
+    color: theme.palette.action.disabled,
+    cursor: 'default',
+  },
+}))
 
-const defaultCheckedIcon = <CheckBoxIcon />
-const defaultIcon = <CheckBoxOutlineBlankIcon />
-const defaultIndeterminateIcon = <IndeterminateCheckBoxIcon />
-
-const Checkbox = React.forwardRef(function Checkbox(inProps: any, ref) {
-  const props = useDefaultProps({
-    props: inProps,
-    name: 'MuiCheckbox',
-  })
-  const {
-    checkedIcon = defaultCheckedIcon,
-    color = 'primary',
-    icon: iconProp = defaultIcon,
-    indeterminate = false,
-    indeterminateIcon: indeterminateIconProp = defaultIndeterminateIcon,
-    inputProps,
-    size = 'medium',
-    disableRipple = false,
-    className,
-    slots = {},
-    slotProps = {},
-    ...other
-  } = props
-  const icon = indeterminate ? indeterminateIconProp : iconProp
-  const indeterminateIcon = indeterminate ? indeterminateIconProp : checkedIcon
-  const ownerState = {
-    ...props,
-    disableRipple,
-    color,
-    indeterminate,
-    size,
+interface CheckboxProps {
+  checked?: boolean
+  className?: string
+  disabled?: boolean
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+  slotProps?: {
+    input?: Record<string, unknown>
   }
-  const classes = useUtilityClasses(ownerState)
-  const externalInputProps = slotProps.input ?? inputProps
+}
+
+const Checkbox = forwardRef<HTMLSpanElement, CheckboxProps>(function Checkbox(
+  { checked, className, disabled, onChange, slotProps },
+  ref,
+) {
+  const { classes, cx } = useStyles()
 
   return (
-    <CheckboxRoot
+    <span
       ref={ref}
-      className={clsx(classes.root, className)}
-      ownerState={ownerState}
-      type="checkbox"
-      icon={React.cloneElement(icon, {
-        fontSize: icon.props.fontSize ?? size,
-      })}
-      checkedIcon={React.cloneElement(indeterminateIcon, {
-        fontSize: indeterminateIcon.props.fontSize ?? size,
-      })}
-      disableRipple={disableRipple}
-      slotProps={{
-        input: mergeSlotProps(
-          typeof externalInputProps === 'function'
-            ? externalInputProps(ownerState)
-            : externalInputProps,
-          {
-            'data-indeterminate': indeterminate,
-          },
-        ),
-      }}
-      classes={classes}
-      {...other}
-    />
+      className={cx(classes.root, className)}
+      style={{ cursor: disabled ? 'default' : 'pointer' }}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={onChange}
+        className={classes.input}
+        {...slotProps?.input}
+      />
+      {checked ? (
+        <CheckBoxIcon className={disabled ? classes.disabled : classes.checked} />
+      ) : (
+        <CheckBoxOutlineBlankIcon
+          className={disabled ? classes.disabled : classes.unchecked}
+        />
+      )}
+    </span>
   )
 })
 
