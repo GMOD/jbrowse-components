@@ -61,15 +61,18 @@ export function renderMismatches({
       return r.refName === rn && r.start <= featStart && end <= r.end
     }) || regions[0]!
 
-  const pxPerBp = Math.min(1 / bpPerPx, 2)
   const invBpPerPx = 1 / bpPerPx
+  const pxPerBp = Math.min(invBpPerPx, 2)
   const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
   const canRenderText = heightPx >= charHeight - 2
   const useAlpha = mismatchAlpha === true
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
 
   // extraHorizontallyFlippedOffset is used to draw interbase items, which are
   // located to the left when forward and right when reversed
-  const extraHorizontallyFlippedOffset = region.reversed ? invBpPerPx + 1 : -1
+  const extraHorizontallyFlippedOffset = reversed ? invBpPerPx + 1 : -1
 
   // first pass: draw mismatches, deletions, skips
   for (let i = 0, l = mismatches.length; i < l; i++) {
@@ -81,12 +84,18 @@ export function renderMismatches({
 
     const mstart = featStart + mismatch.start
     const mend = mstart + mismatch.length
-    const leftPx = region.reversed
-      ? (region.end - mend) / bpPerPx
-      : (mstart - region.start) / bpPerPx
-    const rightPx = region.reversed
-      ? (region.end - mstart) / bpPerPx
-      : (mend - region.start) / bpPerPx
+
+    // Skip mismatches entirely outside visible region
+    if (mend <= regionStart || mstart >= regionEnd) {
+      continue
+    }
+
+    const leftPx = reversed
+      ? (regionEnd - mend) * invBpPerPx
+      : (mstart - regionStart) * invBpPerPx
+    const rightPx = reversed
+      ? (regionEnd - mstart) * invBpPerPx
+      : (mend - regionStart) * invBpPerPx
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
 
     if (type === 'mismatch') {
@@ -178,9 +187,15 @@ export function renderMismatches({
     }
 
     const mstart = featStart + mismatch.start
-    const leftPx = region.reversed
-      ? (region.end - mstart - 1) / bpPerPx
-      : (mstart - region.start) / bpPerPx
+
+    // Skip if outside visible region
+    if (mstart < regionStart || mstart >= regionEnd) {
+      continue
+    }
+
+    const leftPx = reversed
+      ? (regionEnd - mstart - 1) * invBpPerPx
+      : (mstart - regionStart) * invBpPerPx
     const pos = leftPx + extraHorizontallyFlippedOffset
 
     if (type === 'insertion' && drawIndels) {

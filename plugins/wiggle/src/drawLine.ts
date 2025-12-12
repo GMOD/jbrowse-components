@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { clamp, featureSpanPx } from '@jbrowse/core/util'
+import { clamp } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { getScale } from './util'
@@ -41,7 +41,11 @@ export function drawLine(
     stopToken,
   } = props
   const region = regions[0]!
-  const width = (region.end - region.start) / bpPerPx
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
+  const width = (regionEnd - regionStart) * invBpPerPx
 
   const height = unadjustedHeight - offset * 2
   const clipColor = readConfObject(config, 'clipColor')
@@ -81,7 +85,14 @@ export function drawLine(
       checkStopToken(stopToken)
       start = performance.now()
     }
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
+    const leftPx = reversed
+      ? (regionEnd - fend) * invBpPerPx
+      : (fstart - regionStart) * invBpPerPx
+    const rightPx = reversed
+      ? (regionEnd - fstart) * invBpPerPx
+      : (fend - regionStart) * invBpPerPx
 
     // create reduced features, avoiding multiple features per px
     if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
@@ -98,7 +109,7 @@ export function drawLine(
     ctx.beginPath()
     ctx.strokeStyle = c
     const startPos = lastVal !== undefined ? lastVal : score
-    if (!region.reversed) {
+    if (!reversed) {
       ctx.moveTo(leftPx, toY(startPos))
       ctx.lineTo(leftPx, toY(score))
       ctx.lineTo(rightPx, toY(score))

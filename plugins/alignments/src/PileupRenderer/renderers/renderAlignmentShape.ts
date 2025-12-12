@@ -66,6 +66,10 @@ export function renderAlignmentShape({
   const { regions, bpPerPx } = renderArgs
   const { heightPx, topPx, feature } = feat
   const region = regions[0]!
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
   const s = feature.get('start')
   const e = feature.get('end')
   const CIGAR =
@@ -110,12 +114,12 @@ export function renderAlignmentShape({
         } else if (op === CIGAR_N) {
           if (drawLen) {
             const drawEnd = drawStart + drawLen
-            const leftPx = region.reversed
-              ? (region.end - drawEnd) / bpPerPx
-              : (drawStart - region.start) / bpPerPx
-            const rightPx = region.reversed
-              ? (region.end - drawStart) / bpPerPx
-              : (drawEnd - region.start) / bpPerPx
+            const leftPx = reversed
+              ? (regionEnd - drawEnd) * invBpPerPx
+              : (drawStart - regionStart) * invBpPerPx
+            const rightPx = reversed
+              ? (regionEnd - drawStart) * invBpPerPx
+              : (drawEnd - regionStart) * invBpPerPx
             fillRectCtx(
               ctx,
               leftPx,
@@ -132,12 +136,12 @@ export function renderAlignmentShape({
 
       if (drawLen) {
         const drawEnd = drawStart + drawLen
-        const leftPx = region.reversed
-          ? (region.end - drawEnd) / bpPerPx
-          : (drawStart - region.start) / bpPerPx
-        const rightPx = region.reversed
-          ? (region.end - drawStart) / bpPerPx
-          : (drawEnd - region.start) / bpPerPx
+        const leftPx = reversed
+          ? (regionEnd - drawEnd) * invBpPerPx
+          : (drawStart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - drawStart) * invBpPerPx
+          : (drawEnd - regionStart) * invBpPerPx
 
         if (renderChevrons) {
           drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
@@ -171,12 +175,12 @@ export function renderAlignmentShape({
         } else if (op === CIGAR_N) {
           if (drawLen) {
             const drawBegin = drawStart - drawLen
-            const leftPx = region.reversed
-              ? (region.end - drawStart) / bpPerPx
-              : (drawBegin - region.start) / bpPerPx
-            const rightPx = region.reversed
-              ? (region.end - drawBegin) / bpPerPx
-              : (drawStart - region.start) / bpPerPx
+            const leftPx = reversed
+              ? (regionEnd - drawStart) * invBpPerPx
+              : (drawBegin - regionStart) * invBpPerPx
+            const rightPx = reversed
+              ? (regionEnd - drawBegin) * invBpPerPx
+              : (drawStart - regionStart) * invBpPerPx
             fillRectCtx(
               ctx,
               leftPx,
@@ -193,12 +197,12 @@ export function renderAlignmentShape({
 
       if (drawLen) {
         const drawBegin = drawStart - drawLen
-        const leftPx = region.reversed
-          ? (region.end - drawStart) / bpPerPx
-          : (drawBegin - region.start) / bpPerPx
-        const rightPx = region.reversed
-          ? (region.end - drawBegin) / bpPerPx
-          : (drawStart - region.start) / bpPerPx
+        const leftPx = reversed
+          ? (regionEnd - drawStart) * invBpPerPx
+          : (drawBegin - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - drawBegin) * invBpPerPx
+          : (drawStart - regionStart) * invBpPerPx
 
         if (renderChevrons) {
           drawReverseChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
@@ -215,12 +219,12 @@ export function renderAlignmentShape({
       }
     }
   } else {
-    const leftPx = region.reversed
-      ? (region.end - e) / bpPerPx
-      : (s - region.start) / bpPerPx
-    const rightPx = region.reversed
-      ? (region.end - s) / bpPerPx
-      : (e - region.start) / bpPerPx
+    const leftPx = reversed
+      ? (regionEnd - e) * invBpPerPx
+      : (s - regionStart) * invBpPerPx
+    const rightPx = reversed
+      ? (regionEnd - s) * invBpPerPx
+      : (e - regionStart) * invBpPerPx
     const midY = topPx + heightPx / 2
 
     if (renderChevrons) {

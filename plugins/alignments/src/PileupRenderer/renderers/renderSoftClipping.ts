@@ -1,10 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { fillRectCtx, fillTextCtx, getCharWidthHeight } from '../util'
+import { fillTextCtx, getCharWidthHeight } from '../util'
 import {
   CIGAR_D,
   CIGAR_EQ,
-  CIGAR_H,
   CIGAR_I,
   CIGAR_M,
   CIGAR_N,
@@ -26,7 +25,6 @@ export function renderSoftClipping({
   config,
   theme,
   colorMap,
-  canvasWidth,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
@@ -34,7 +32,6 @@ export function renderSoftClipping({
   config: AnyConfigurationModel
   colorMap: Record<string, string>
   theme: Theme
-  canvasWidth: number
 }) {
   const { feature, topPx, heightPx } = feat
   const { regions, bpPerPx } = renderArgs
@@ -55,62 +52,64 @@ export function renderSoftClipping({
   const CIGAR =
     feature.get('NUMERIC_CIGAR') || (feature.get('CIGAR') as string | undefined)
   const ops = getCigarOps(CIGAR)
+  const featStart = feature.get('start')
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
+
   for (let i = 0, l = ops.length; i < l; i++) {
     const packed = ops[i]!
     const len = packed >> 4
     const op = packed & 0xf
     if (op === CIGAR_S) {
-      for (let k = 0; k < len; k++) {
-        const base = seq[seqOffset + k]!
-        const s0 = feature.get('start') - (i === 0 ? len : 0) + refOffset + k
-        const leftPx = region.reversed
-          ? (region.end - s0 - 1) / bpPerPx
-          : (s0 - region.start) / bpPerPx
-        const rightPx = region.reversed
-          ? (region.end - s0) / bpPerPx
-          : (s0 + 1 - region.start) / bpPerPx
-        const widthPx = Math.max(minFeatWidth, rightPx - leftPx)
+      // Calculate soft clip region bounds
+      const clipStart = featStart - (i === 0 ? len : 0) + refOffset
+      const clipEnd = clipStart + len
 
-        // Black accounts for IUPAC ambiguity code bases such as N that
-        // show in soft clipping
-        const baseColor = colorMap[base] || '#000000'
-        fillRectCtx(
-          ctx,
-          leftPx,
-          topPx,
-          widthPx,
-          heightPx,
-          canvasWidth,
-          baseColor,
-        )
+      // Skip if entirely outside visible region
+      if (clipEnd > regionStart && clipStart < regionEnd) {
+        const visStart = Math.max(0, regionStart - clipStart)
+        const visEnd = Math.min(len, regionEnd - clipStart)
 
-        if (widthPx >= charWidth && heightPx >= heightLim) {
-          fillTextCtx(
-            ctx,
-            base,
-            leftPx + (widthPx - charWidth) / 2 + 1,
-            topPx + heightPx,
-            canvasWidth,
-            theme.palette.getContrastText(baseColor),
-          )
+        for (let k = visStart; k < visEnd; k++) {
+          const base = seq[seqOffset + k]!
+          const s0 = clipStart + k
+          const leftPx = reversed
+            ? (regionEnd - s0 - 1) * invBpPerPx
+            : (s0 - regionStart) * invBpPerPx
+          const rightPx = reversed
+            ? (regionEnd - s0) * invBpPerPx
+            : (s0 + 1 - regionStart) * invBpPerPx
+          const widthPx = Math.max(minFeatWidth, rightPx - leftPx)
+
+          // Black accounts for IUPAC ambiguity code bases such as N that
+          // show in soft clipping
+          const baseColor = colorMap[base] || '#000000'
+          ctx.fillStyle = baseColor
+          ctx.fillRect(leftPx, topPx, widthPx, heightPx)
+
+          if (widthPx >= charWidth && heightPx >= heightLim) {
+            fillTextCtx(
+              ctx,
+              base,
+              leftPx + (widthPx - charWidth) / 2 + 1,
+              topPx + heightPx,
+              canvasWidth,
+              theme.palette.getContrastText(baseColor),
+            )
+          }
         }
       }
       seqOffset += len
-    }
-    if (op === CIGAR_N) {
+    } else if (op === CIGAR_N) {
       refOffset += len
-    }
-    if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
+    } else if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
       refOffset += len
       seqOffset += len
-    }
-    if (op === CIGAR_H) {
-      // do nothing
-    }
-    if (op === CIGAR_D) {
+    } else if (op === CIGAR_D) {
       refOffset += len
-    }
-    if (op === CIGAR_I) {
+    } else if (op === CIGAR_I) {
       seqOffset += len
     }
   }

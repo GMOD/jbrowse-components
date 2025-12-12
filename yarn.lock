@@ -1545,14 +1545,14 @@
   resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.4.tgz#5ecb44e40cf128e9f44f7c25e1406facdcaede9b"
   integrity sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==
 
-"@gmod/bam@^7.1.0":
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-7.1.0.tgz#f1d59b625bf00544ce8c95ae5914447dd866f36f"
-  integrity sha512-ebDl1ZWIFraHXTapbttbVpdHaIq8+roDWXPScxrffHPWAfosViKuJhd0d8zpH7ps/B5a3XQq3wiqkGOQF1DTew==
+"@gmod/bam@^7.1.1":
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-7.1.1.tgz#10c3791f6a1bc507296fc40645112929c21083d3"
+  integrity sha512-rg5kpOjXUkc9aIt2bAvg971IdwCLkaD8fbQS/XWZEdECyR9OEoc4s4uLQQxXhfUpOM1Oi7V9BB/RSw3reY2gVw==
   dependencies:
-    "@gmod/bgzf-filehandle" "^6.0.3"
+    "@gmod/bgzf-filehandle" "^6.0.5"
     crc "^4.3.2"
-    generic-filehandle2 "^2.0.1"
+    generic-filehandle2 "^2.0.16"
     quick-lru "^4.0.0"
 
 "@gmod/bbi@^8.0.0":
@@ -3764,9 +3764,9 @@
     "@types/node" "*"
 
 "@types/node@*":
-  version "25.0.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-25.0.0.tgz#c0e0022c3c7b41635c49322e6b3a0279fffa7d62"
-  integrity sha512-rl78HwuZlaDIUSeUKkmogkhebA+8K1Hy7tddZuJ3D0xV8pZSfsYGTsliGUol1JPzu9EKnTxPC4L1fiWouStRew==
+  version "25.0.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-25.0.1.tgz#9c41c277a1b16491174497cd075f8de7c27a1ac4"
+  integrity sha512-czWPzKIAXucn9PtsttxmumiQ9N0ok9FrBwgRWrwmVLlp86BrMExzvXRLFYRJ+Ex3g6yqj+KuaxfX1JTgV2lpfg==
   dependencies:
     undici-types "~7.16.0"
 
@@ -8239,12 +8239,7 @@ generator-function@^2.0.0:
   resolved "https://registry.yarnpkg.com/generator-function/-/generator-function-2.0.1.tgz#0e75dd410d1243687a0ba2e951b94eedb8f737a2"
   integrity sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==
 
-generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.10, generic-filehandle2@^2.0.15, generic-filehandle2@^2.0.5:
-  version "2.0.15"
-  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.15.tgz#0602193ddc48d2596ff019a67baaf0b113a6125c"
-  integrity sha512-G5DiLxckyFAEH9Prsidiao+1CGUk7gDjVO8BUBXuaYXlNfsl4en9yGhG8mk+BcKXAwo/asS/9935lk3evg1HjA==
-
-generic-filehandle2@^2.0.16:
+generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.10, generic-filehandle2@^2.0.15, generic-filehandle2@^2.0.16, generic-filehandle2@^2.0.5:
   version "2.0.16"
   resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.16.tgz#17ac244e278b5ffcb98a165538045024eff52c90"
   integrity sha512-MwmxPCTvcgS72nL7JEYQpV7QE4vbbUaFX4TqO7zUq5RusOqwUGB8ag2Bnd9+Qm8jnX7kzwteLsSpJ4f1mr+0zw==

@@ -30,16 +30,22 @@ export function processReferenceCpGs({
       feature.get('NUMERIC_CIGAR') ?? parseCigar2(feature.get('CIGAR'))
     const { methBins, methProbs } = getMethBins(feature, cigarOps)
     const dels = mismatches.filter(f => f.type === 'deletion')
+    const regionStart = region.start
+    const regionEnd = region.end
+
+    // Calculate visible range within feature
+    const visStart = Math.max(0, regionStart - fstart)
+    const visEnd = Math.min(fend - fstart, regionEnd - fstart)
 
     // methylation based coloring takes into account both reference sequence
     // CpG detection and reads
-    for (let i = 0; i < fend - fstart; i++) {
+    for (let i = visStart; i < visEnd; i++) {
       const j = i + fstart
-      const l1 = r[j - region.start + 1]
-      const l2 = r[j - region.start + 2]
+      const l1 = r[j - regionStart + 1]
+      const l2 = r[j - regionStart + 2]
       if (l1 === 'c' && l2 === 'g') {
-        const bin0 = bins[j - region.start]
-        const bin1 = bins[j - region.start + 1]
+        const bin0 = bins[j - regionStart]
+        const bin1 = bins[j - regionStart + 1]
         const b0 = methBins[i]
         const b1 = methBins[i + 1]
         const p0 = methProbs[i]
