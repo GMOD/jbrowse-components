@@ -1,6 +1,7 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
 import {
+  CHAR_CODE_TO_STRING,
   TYPE_INSERTION,
   TYPE_SOFTCLIP,
   getMismatchesFromFeature,
@@ -84,7 +85,7 @@ export function sortFeature(
           const len = consuming ? 0 : mLen
           if (pos >= offset && pos < offset + len) {
             baseMap.set(feature.id(), {
-              base: String.fromCharCode(bases[i]!),
+              base: CHAR_CODE_TO_STRING[bases[i]!]!,
               length: mLen,
             })
           }

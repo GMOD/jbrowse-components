@@ -14,6 +14,14 @@ export const CHAR_N = 78 // 'N' - skip/unknown base
 export const CHAR_S = 83 // 'S' - softclip
 export const CHAR_X = 88 // 'X' - unknown/fallback
 
+// Pre-computed lookup table for char code -> string conversion
+// Use direct array access in hot loops: CHAR_CODE_TO_STRING[code]
+// Covers ASCII range 0-127 which includes all base characters
+export const CHAR_CODE_TO_STRING: string[] = []
+for (let i = 0; i < 128; i++) {
+  CHAR_CODE_TO_STRING[i] = String.fromCharCode(i)
+}
+
 export const TYPE_NAMES = [
   'mismatch',
   'insertion',
@@ -276,7 +284,7 @@ export function toMismatchesArray(soa: MismatchesSOA): Mismatch[] {
     } else if (type === TYPE_HARDCLIP) {
       base = `H${length}`
     } else {
-      base = String.fromCharCode(baseCode)
+      base = CHAR_CODE_TO_STRING[baseCode]!
     }
 
     const mismatch: Mismatch = {
@@ -295,7 +303,7 @@ export function toMismatchesArray(soa: MismatchesSOA): Mismatch[] {
       mismatch.qual = soa.quals[i]
     }
     if (altbaseCode !== 0) {
-      mismatch.altbase = String.fromCharCode(altbaseCode)
+      mismatch.altbase = CHAR_CODE_TO_STRING[altbaseCode]
     }
     if (type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
       mismatch.cliplen = length

@@ -1,5 +1,6 @@
 import { inc, isInterbaseType, mismatchLenSOA } from './util'
 import {
+  CHAR_CODE_TO_STRING,
   TYPE_DELETION,
   TYPE_INSERTION,
   TYPE_SKIP,
@@ -49,34 +50,46 @@ export function processMismatches({
 
     // Skip if mismatch is entirely outside visible region
     if (visStart < visEnd) {
-      for (let j = visStart; j < visEnd; j++) {
-        const epos = j - regionStart
-        if (epos < binsLength) {
-          const bin = bins[epos]!
-          const baseChar = String.fromCharCode(bases[i]!)
-          const altbaseChar =
-            altbases[i] !== 0 ? String.fromCharCode(altbases[i]!) : undefined
-          const interbase = isInterbaseType(type)
+      // Hoist invariants out of inner loop
+      const interbase = isInterbaseType(type)
+      const baseChar = CHAR_CODE_TO_STRING[bases[i]!]!
+      const altbaseChar =
+        altbases[i] !== 0 ? CHAR_CODE_TO_STRING[altbases[i]!] : undefined
 
-          if (type === TYPE_DELETION || type === TYPE_SKIP) {
-            const typeName = type === TYPE_DELETION ? 'deletion' : 'skip'
+      if (type === TYPE_DELETION || type === TYPE_SKIP) {
+        const typeName = type === TYPE_DELETION ? 'deletion' : 'skip'
+        for (let j = visStart; j < visEnd; j++) {
+          const epos = j - regionStart
+          if (epos < binsLength) {
+            const bin = bins[epos]!
             inc(bin, fstrand, 'delskips', typeName)
             bin.depth--
-          } else if (!interbase) {
+          }
+        }
+      } else if (!interbase) {
+        for (let j = visStart; j < visEnd; j++) {
+          const epos = j - regionStart
+          if (epos < binsLength) {
+            const bin = bins[epos]!
             inc(bin, fstrand, 'snps', baseChar)
             bin.ref.entryDepth--
             bin.ref[fstrand]--
             bin.refbase = altbaseChar
-          } else {
-            const len = lengths[i]
-            const seq =
-              type === TYPE_INSERTION ? insertedBases.get(i) : undefined
-            const typeName =
-              type === TYPE_INSERTION
-                ? 'insertion'
-                : type === TYPE_SOFTCLIP
-                  ? 'softclip'
-                  : 'hardclip'
+          }
+        }
+      } else {
+        const len = lengths[i]
+        const seq = type === TYPE_INSERTION ? insertedBases.get(i) : undefined
+        const typeName =
+          type === TYPE_INSERTION
+            ? 'insertion'
+            : type === TYPE_SOFTCLIP
+              ? 'softclip'
+              : 'hardclip'
+        for (let j = visStart; j < visEnd; j++) {
+          const epos = j - regionStart
+          if (epos < binsLength) {
+            const bin = bins[epos]!
             inc(bin, fstrand, 'noncov', typeName, len, seq)
           }
         }

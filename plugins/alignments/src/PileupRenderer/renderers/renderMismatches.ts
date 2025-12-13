@@ -2,6 +2,7 @@ import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import {
+  CHAR_CODE_TO_STRING,
   TYPE_DELETION,
   TYPE_HARDCLIP,
   TYPE_INSERTION,
@@ -118,7 +119,7 @@ export function renderMismatches({
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
 
     if (type === TYPE_MISMATCH) {
-      const baseChar = String.fromCharCode(bases[i]!)
+      const baseChar = CHAR_CODE_TO_STRING[bases[i]!]!
       const qual = quals[i]
 
       if (rightPx - leftPx >= 0.2) {

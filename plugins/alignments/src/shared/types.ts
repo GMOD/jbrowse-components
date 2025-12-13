@@ -134,6 +134,7 @@ export interface Mismatch {
 
 export type { MismatchesSOA } from './MismatchesSOA'
 export {
+  CHAR_CODE_TO_STRING,
   CHAR_H,
   CHAR_N,
   CHAR_PLUS,
