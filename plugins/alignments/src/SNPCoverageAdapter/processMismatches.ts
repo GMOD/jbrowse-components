@@ -3,6 +3,7 @@ import {
   TYPE_DELETION,
   TYPE_INSERTION,
   TYPE_SKIP,
+  TYPE_SOFTCLIP,
   getMismatchesFromFeature,
 } from '../shared/types'
 
@@ -68,11 +69,12 @@ export function processMismatches({
             bin.refbase = altbaseChar
           } else {
             const len = lengths[i]
-            const seq = type === TYPE_INSERTION ? insertedBases[i] : undefined
+            const seq =
+              type === TYPE_INSERTION ? insertedBases.get(i) : undefined
             const typeName =
               type === TYPE_INSERTION
                 ? 'insertion'
-                : type === 4
+                : type === TYPE_SOFTCLIP
                   ? 'softclip'
                   : 'hardclip'
             inc(bin, fstrand, 'noncov', typeName, len, seq)

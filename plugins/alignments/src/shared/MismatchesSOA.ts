@@ -274,8 +274,9 @@ export function toMismatchesArray(soa: MismatchesSOA): Mismatch[] {
     if (type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
       mismatch.cliplen = length
     }
-    if (soa.insertedBases[i] !== undefined) {
-      mismatch.insertedBases = soa.insertedBases[i]
+    const insertedBases = soa.insertedBases.get(i)
+    if (insertedBases !== undefined) {
+      mismatch.insertedBases = insertedBases
     }
 
     result[i] = mismatch

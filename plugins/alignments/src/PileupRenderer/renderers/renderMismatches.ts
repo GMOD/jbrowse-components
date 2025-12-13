@@ -224,7 +224,7 @@ export function renderMismatches({
     if (type === TYPE_INSERTION && drawIndels) {
       const len = lengths[i]!
       const insW = Math.max(0, Math.min(1.2, invBpPerPx))
-      const insBasesStr = insertedBases[i] || 'unknown'
+      const insBasesStr = insertedBases.get(i) || 'unknown'
 
       if (len < 10) {
         if (!hideSmallIndels) {
