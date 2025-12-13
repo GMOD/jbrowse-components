@@ -52,7 +52,7 @@ export async function generateCoverageBins({
   opts: Opts
   fetchSequence?: (arg: Region) => Promise<string | undefined>
 }) {
-  const { stopToken, colorBy } = opts
+  const { stopToken, colorBy, statsEstimationMode } = opts
   const skipmap = {} as SkipMap
   const bins = [] as PreBaseCoverageBin[]
   const start2 = Math.max(0, region.start - 1)
@@ -72,38 +72,40 @@ export async function generateCoverageBins({
       region,
     })
 
-    if (colorBy?.type === 'modifications' && fetchSequence) {
-      if (regionSequence === undefined) {
-        regionSequence =
+    if (!statsEstimationMode) {
+      if (colorBy?.type === 'modifications' && fetchSequence) {
+        if (regionSequence === undefined) {
+          regionSequence =
+            (await fetchSequence({
+              ...region,
+              start: start2,
+              end: region.end + 1,
+            })) || ''
+          slicedSequence = regionSequence.slice(diff)
+        }
+
+        processModifications({
+          feature,
+          colorBy,
+          bins,
+          region,
+          regionSequence: slicedSequence!,
+        })
+      } else if (colorBy?.type === 'methylation' && fetchSequence) {
+        regionSequence ??=
           (await fetchSequence({
             ...region,
             start: start2,
             end: region.end + 1,
           })) || ''
-        slicedSequence = regionSequence.slice(diff)
+
+        processReferenceCpGs({
+          feature,
+          bins,
+          region,
+          regionSequence,
+        })
       }
-
-      processModifications({
-        feature,
-        colorBy,
-        bins,
-        region,
-        regionSequence: slicedSequence!,
-      })
-    } else if (colorBy?.type === 'methylation' && fetchSequence) {
-      regionSequence ??=
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: region.end + 1,
-        })) || ''
-
-      processReferenceCpGs({
-        feature,
-        bins,
-        region,
-        regionSequence,
-      })
     }
     processMismatches({ feature, skipmap, bins, region })
   }
