@@ -1,7 +1,10 @@
+import { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession, mergeIntervals, toLocale } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
+  Box,
   Button,
   DialogActions,
   DialogContent,
@@ -70,9 +73,13 @@ export default function CollapseIntronsDialog({
   assembly?: Assembly
   handleClose: () => void
 }) {
+  const [showAll, setShowAll] = useState(false)
+  const initialCount = 10
   const sorted = [...transcripts].sort(
     (a, b) => b.get('end') - b.get('start') - (a.get('end') - a.get('start')),
   )
+  const displayedTranscripts = showAll ? sorted : sorted.slice(0, initialCount)
+  const hasMore = sorted.length > initialCount
 
   if (transcripts.length === 1) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -89,61 +96,72 @@ export default function CollapseIntronsDialog({
       title="Select transcript to collapse"
     >
       <DialogContent>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Name/ID</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell align="right">Length</TableCell>
-              <TableCell align="right">Exons</TableCell>
-              <TableCell align="right">CDS</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sorted.map((transcript, idx) => {
-              const start = transcript.get('start')
-              const end = transcript.get('end')
-              const length = end - start
-              const name =
-                transcript.get('name') ||
-                transcript.get('id') ||
-                `Transcript ${idx + 1}`
-              const type = transcript.get('type') || 'transcript'
-              const subfeatures = transcript.get('subfeatures') ?? []
-              const exonCount = subfeatures.filter(
-                f => f.get('type') === 'exon',
-              ).length
-              const cdsCount = subfeatures.filter(
-                f => f.get('type') === 'CDS',
-              ).length
+        <Box sx={{ maxHeight: 600, overflow: 'auto' }}>
+          <Table size="small" stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name/ID</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell align="right">Length</TableCell>
+                <TableCell align="right">Exons</TableCell>
+                <TableCell align="right">CDS</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {displayedTranscripts.map((transcript, idx) => {
+                const start = transcript.get('start')
+                const end = transcript.get('end')
+                const length = end - start
+                const name =
+                  transcript.get('name') ||
+                  transcript.get('id') ||
+                  `Transcript ${idx + 1}`
+                const type = transcript.get('type') || 'transcript'
+                const subfeatures = transcript.get('subfeatures') ?? []
+                const exonCount = subfeatures.filter(
+                  f => f.get('type') === 'exon',
+                ).length
+                const cdsCount = subfeatures.filter(
+                  f => f.get('type') === 'CDS',
+                ).length
 
-              return (
-                <TableRow key={transcript.id()}>
-                  <TableCell>{name}</TableCell>
-                  <TableCell>{type}</TableCell>
-                  <TableCell align="right">{toLocale(length)} bp</TableCell>
-                  <TableCell align="right">{exonCount}</TableCell>
-                  <TableCell align="right">{cdsCount}</TableCell>
-                  <TableCell align="right">
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                        collapseIntrons({ view, transcripts: [transcript], assembly })
-                        handleClose()
-                      }}
-                    >
-                      Select
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
+                return (
+                  <TableRow key={transcript.id()}>
+                    <TableCell>{name}</TableCell>
+                    <TableCell>{type}</TableCell>
+                    <TableCell align="right">{toLocale(length)} bp</TableCell>
+                    <TableCell align="right">{exonCount}</TableCell>
+                    <TableCell align="right">{cdsCount}</TableCell>
+                    <TableCell align="right">
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                          collapseIntrons({
+                            view,
+                            transcripts: [transcript],
+                            assembly,
+                          })
+                          handleClose()
+                        }}
+                      >
+                        Select
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </Box>
+        {hasMore && !showAll ? (
+          <Button onClick={() => setShowAll(true)}>
+            Show all ({sorted.length} transcripts)
+          </Button>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button
