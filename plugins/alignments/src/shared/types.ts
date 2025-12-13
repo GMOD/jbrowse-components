@@ -134,6 +134,12 @@ export interface Mismatch {
 
 export type { MismatchesSOA } from './MismatchesSOA'
 export {
+  CHAR_H,
+  CHAR_N,
+  CHAR_PLUS,
+  CHAR_S,
+  CHAR_STAR,
+  CHAR_X,
   TYPE_DELETION,
   TYPE_HARDCLIP,
   TYPE_INSERTION,

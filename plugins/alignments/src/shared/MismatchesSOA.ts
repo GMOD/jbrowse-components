@@ -6,6 +6,14 @@ export const TYPE_SKIP = 3
 export const TYPE_SOFTCLIP = 4
 export const TYPE_HARDCLIP = 5
 
+// Character code constants for bases
+export const CHAR_STAR = 42 // '*' - deletion marker
+export const CHAR_PLUS = 43 // '+' - insertion placeholder
+export const CHAR_H = 72 // 'H' - hardclip
+export const CHAR_N = 78 // 'N' - skip/unknown base
+export const CHAR_S = 83 // 'S' - softclip
+export const CHAR_X = 88 // 'X' - unknown/fallback
+
 export const TYPE_NAMES = [
   'mismatch',
   'insertion',
@@ -33,6 +41,7 @@ export type MismatchType = (typeof TYPE_NAMES)[number]
  * - quals: quality score (0 if not available)
  * - altbases: reference base char code for mismatches (0 if not applicable)
  * - insertedBases: Map from index to inserted sequence string (only for insertions)
+ * - hasSkips: true if any TYPE_SKIP entries exist (used for MD tag parsing)
  */
 export interface MismatchesSOA {
   count: number
@@ -44,6 +53,8 @@ export interface MismatchesSOA {
   altbases: Uint8Array
   /** Map from index to inserted bases string (only populated for insertions) */
   insertedBases: Map<number, string>
+  /** True if any skip (N) operations exist */
+  hasSkips: boolean
 }
 
 export function createMismatchesSOA(capacity: number): MismatchesSOA {
@@ -56,6 +67,7 @@ export function createMismatchesSOA(capacity: number): MismatchesSOA {
     quals: new Uint8Array(capacity),
     altbases: new Uint8Array(capacity),
     insertedBases: new Map(),
+    hasSkips: false,
   }
 }
 
@@ -84,6 +96,7 @@ export function growMismatchesSOA(soa: MismatchesSOA): MismatchesSOA {
     quals: newQuals,
     altbases: newAltbases,
     insertedBases: soa.insertedBases,
+    hasSkips: soa.hasSkips,
   }
 }
 
@@ -128,6 +141,7 @@ export function trimMismatchesSOA(soa: MismatchesSOA): MismatchesSOA {
     quals: soa.quals.subarray(0, soa.count),
     altbases: soa.altbases.subarray(0, soa.count),
     insertedBases: soa.insertedBases,
+    hasSkips: soa.hasSkips,
   }
 }
 
@@ -169,6 +183,7 @@ function isMismatchesSOA(
 
 function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
   const len = mismatches.length
+  let hasSkips = false
   const soa: MismatchesSOA = {
     count: len,
     starts: new Uint32Array(len),
@@ -178,6 +193,7 @@ function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
     quals: new Uint8Array(len),
     altbases: new Uint8Array(len),
     insertedBases: new Map(),
+    hasSkips: false,
   }
 
   for (let i = 0; i < len; i++) {
@@ -185,6 +201,10 @@ function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
     const type = TYPE_NAME_TO_CODE[m.type] ?? TYPE_MISMATCH
     soa.starts[i] = m.start
     soa.types[i] = type
+
+    if (type === TYPE_SKIP) {
+      hasSkips = true
+    }
 
     // Determine length based on type
     if (type === TYPE_INSERTION || type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
@@ -194,15 +214,11 @@ function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
     }
 
     // bases always stores a char code
-    if (m.base.length === 1) {
-      soa.bases[i] = m.base.charCodeAt(0)
-    } else if (type === TYPE_INSERTION) {
-      soa.bases[i] = 43 // '+' char code as placeholder for insertions
-    } else if (type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
-      soa.bases[i] = m.base.charCodeAt(0)
-    } else {
-      soa.bases[i] = m.base.charCodeAt(0)
-    }
+    // For insertions with multi-char base (e.g. "123"), use '+' as placeholder
+    soa.bases[i] =
+      type === TYPE_INSERTION && m.base.length > 1
+        ? CHAR_PLUS
+        : m.base.charCodeAt(0)
 
     soa.quals[i] = m.qual ?? 0
     soa.altbases[i] = m.altbase ? m.altbase.charCodeAt(0) : 0
@@ -212,6 +228,7 @@ function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
     }
   }
 
+  soa.hasSkips = hasSkips
   return soa
 }
 

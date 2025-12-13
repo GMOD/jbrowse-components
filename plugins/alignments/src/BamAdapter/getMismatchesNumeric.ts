@@ -1,4 +1,10 @@
 import {
+  CHAR_H,
+  CHAR_N,
+  CHAR_PLUS,
+  CHAR_S,
+  CHAR_STAR,
+  CHAR_X,
   TYPE_DELETION,
   TYPE_HARDCLIP,
   TYPE_INSERTION,
@@ -44,29 +50,12 @@ export function getMismatchesNumeric(
   qual?: Uint8Array,
 ): MismatchesSOA {
   let soa = createMismatchesSOA(16)
-  let hasSkips = false
 
   soa = cigarToMismatchesSOA(cigar, numericSeq, seqLength, soa, ref, qual)
 
-  // Check if we have any skips
-  for (let i = 0; i < soa.count; i++) {
-    if (soa.types[i] === TYPE_SKIP) {
-      hasSkips = true
-      break
-    }
-  }
-
   // Parse MD tag if available
   if (md) {
-    soa = mdToMismatchesSOA(
-      md,
-      cigar,
-      soa,
-      numericSeq,
-      seqLength,
-      hasSkips,
-      qual,
-    )
+    soa = mdToMismatchesSOA(md, cigar, soa, numericSeq, seqLength, qual)
   }
 
   return trimMismatchesSOA(soa)
@@ -84,13 +73,14 @@ function getSeqSlice(
   if (len <= 0) {
     return ''
   }
-  let result = ''
-  for (let i = start; i < actualEnd; i++) {
-    const sb = numericSeq[i >> 1]!
-    const nibble = (sb >> ((1 - (i & 1)) << 2)) & 0xf
-    result += String.fromCharCode(SEQRET_CHARCODE_DECODER[nibble]!)
+  const codes = new Uint8Array(len)
+  for (let i = 0; i < len; i++) {
+    const pos = start + i
+    const sb = numericSeq[pos >> 1]!
+    const nibble = (sb >> ((1 - (pos & 1)) << 2)) & 0xf
+    codes[i] = SEQRET_CHARCODE_DECODER[nibble]!
   }
-  return result
+  return String.fromCharCode(...codes)
 }
 
 function cigarToMismatchesSOA(
@@ -146,25 +136,26 @@ function cigarToMismatchesSOA(
         soffset + len,
         seqLength,
       )
-      // insertion: length=insertion length, '+' = 43 as placeholder char
+      // insertion: length=insertion length
       soa = pushMismatch(
         soa,
         roffset,
         len,
         TYPE_INSERTION,
-        43,
+        CHAR_PLUS,
         0,
         0,
         insertedBases,
       )
       soffset += len
     } else if (op === CIGAR_D) {
-      // deletion: length=deletion length, '*' = 42
-      soa = pushMismatch(soa, roffset, len, TYPE_DELETION, 42, 0, 0)
+      // deletion: length=deletion length
+      soa = pushMismatch(soa, roffset, len, TYPE_DELETION, CHAR_STAR, 0, 0)
       roffset += len
     } else if (op === CIGAR_N) {
-      // skip: length=skip length, 'N' = 78
-      soa = pushMismatch(soa, roffset, len, TYPE_SKIP, 78, 0, 0)
+      // skip: length=skip length
+      soa = pushMismatch(soa, roffset, len, TYPE_SKIP, CHAR_N, 0, 0)
+      soa.hasSkips = true
       roffset += len
     } else if (op === CIGAR_X) {
       for (let j = 0; j < len; j++) {
@@ -187,11 +178,11 @@ function cigarToMismatchesSOA(
       soffset += len
       roffset += len
     } else if (op === CIGAR_H) {
-      // hardclip: length=clip length, 'H' = 72
-      soa = pushMismatch(soa, roffset, len, TYPE_HARDCLIP, 72, 0, 0)
+      // hardclip: length=clip length
+      soa = pushMismatch(soa, roffset, len, TYPE_HARDCLIP, CHAR_H, 0, 0)
     } else if (op === CIGAR_S) {
-      // softclip: length=clip length, 'S' = 83
-      soa = pushMismatch(soa, roffset, len, TYPE_SOFTCLIP, 83, 0, 0)
+      // softclip: length=clip length
+      soa = pushMismatch(soa, roffset, len, TYPE_SOFTCLIP, CHAR_S, 0, 0)
       soffset += len
     }
   }
@@ -205,12 +196,12 @@ function mdToMismatchesSOA(
   soa: MismatchesSOA,
   numericSeq: Uint8Array,
   seqLength: number,
-  hasSkips: boolean,
   qual?: Uint8Array,
 ): MismatchesSOA {
   const opsLength = ops.length
   const hasQual = qual !== undefined
   const cigarCount = soa.count
+  const hasSkips = soa.hasSkips
 
   let currStart = 0
   let lastCigar = 0
@@ -291,7 +282,7 @@ function mdToMismatchesSOA(
         const nibble = (sb >> ((1 - (s & 1)) << 2)) & 0xf
         baseCharCode = SEQRET_CHARCODE_DECODER[nibble]!
       } else {
-        baseCharCode = 88 // 'X'
+        baseCharCode = CHAR_X
       }
 
       const qualVal = hasQual ? qual[s]! : 0
