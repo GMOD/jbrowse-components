@@ -263,6 +263,7 @@ export function drawPairChains({
           colorMap,
           colorContrastMap,
           canvasWidth: effectiveCanvasWidth,
+          checkRef: true,
         })
 
         ctx.restore()

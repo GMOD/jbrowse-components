@@ -1,5 +1,4 @@
 import { measureText } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
 
 import {
   CHAR_CODE_TO_STRING,
@@ -11,18 +10,64 @@ import {
   TYPE_SOFTCLIP,
   getMismatchesFromFeature,
 } from '../../shared/types'
-import { fillRectCtx, fillTextCtx } from '../util'
 
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
+// Pre-computed alpha lookup table for quality scores 0-50
+// Maps quality score to alpha value (qual/50, clamped to 1)
+const QUAL_ALPHA_TABLE = new Float32Array(51)
+for (let i = 0; i <= 50; i++) {
+  QUAL_ALPHA_TABLE[i] = i / 50
+}
+
+// Cache for alpha-modified colors: "color:qual" -> rgba string
+const alphaColorCache = new Map<string, string>()
+const MAX_ALPHA_CACHE_SIZE = 500
+
 function applyQualAlpha(baseColor: string, qual: number | undefined) {
-  return qual !== undefined && qual > 0
-    ? colord(baseColor)
-        .alpha(Math.min(1, qual / 50))
-        .toHslString()
-    : baseColor
+  if (qual === undefined || qual <= 0) {
+    return baseColor
+  }
+  const alpha = qual >= 50 ? 1 : QUAL_ALPHA_TABLE[qual]!
+  if (alpha === 1) {
+    return baseColor
+  }
+
+  const cacheKey = `${baseColor}:${qual}`
+  let cached = alphaColorCache.get(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  // Parse hex color and apply alpha directly
+  if (baseColor.startsWith('#') && baseColor.length === 7) {
+    const r = parseInt(baseColor.slice(1, 3), 16)
+    const g = parseInt(baseColor.slice(3, 5), 16)
+    const b = parseInt(baseColor.slice(5, 7), 16)
+    cached = `rgba(${r},${g},${b},${alpha.toFixed(2)})`
+  } else {
+    // Fallback for non-hex colors
+    cached = baseColor
+  }
+
+  if (alphaColorCache.size >= MAX_ALPHA_CACHE_SIZE) {
+    alphaColorCache.clear()
+  }
+  alphaColorCache.set(cacheKey, cached)
+  return cached
+}
+
+// Pre-computed deletion text widths for lengths 1-20 (common cases)
+// Index 0 is unused, indices 1-20 contain widths
+const DELETION_TEXT_WIDTHS: number[] = new Array(21)
+for (let i = 1; i <= 20; i++) {
+  DELETION_TEXT_WIDTHS[i] = measureText(String(i), 10)
+}
+
+function getDeletionTextWidth(len: number) {
+  return len <= 20 ? DELETION_TEXT_WIDTHS[len]! : measureText(String(len), 10)
 }
 
 export function renderMismatches({
@@ -41,6 +86,7 @@ export function renderMismatches({
   canvasWidth,
   drawSNPsMuted,
   drawIndels = true,
+  checkRef,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
@@ -57,18 +103,23 @@ export function renderMismatches({
   charWidth: number
   charHeight: number
   canvasWidth: number
+  checkRef?: boolean
 }) {
-  const items = [] as FlatbushItem[]
-  const coords = [] as number[]
+  const items: FlatbushItem[] = []
+  const coords: number[] = []
   const { heightPx, topPx, feature } = feat
   const bottomPx = topPx + heightPx
   const featStart = feature.get('start')
-  const region =
-    regions.find(r => {
-      const rn = feature.get('refName')
-      const end = feature.get('end')
-      return r.refName === rn && r.start <= featStart && end <= r.end
-    }) || regions[0]!
+  const featEnd = feature.get('end')
+  const featRefName = feature.get('refName')
+
+  // Optimize region lookup - check first region (common case) before searching
+  const region = checkRef
+    ? regions.find(
+        r =>
+          r.refName === featRefName && r.start <= featStart && featEnd <= r.end,
+      )!
+    : regions[0]!
 
   const invBpPerPx = 1 / bpPerPx
   const pxPerBp = Math.min(invBpPerPx, 2)
@@ -85,6 +136,13 @@ export function renderMismatches({
 
   const { count, starts, lengths, types, bases, quals, insertedBases } =
     mismatches
+
+  // Extract frequently used colorMap values to locals
+  const deletionColor = colorMap.deletion!
+  const skipColor = colorMap.skip!
+  const insertionColor = colorMap.insertion!
+  const deletionContrastColor = colorContrastMap.deletion!
+  const insertionContrastColor = colorContrastMap.insertion!
 
   // extraHorizontallyFlippedOffset is used to draw interbase items, which are
   // located to the left when forward and right when reversed
@@ -130,15 +188,12 @@ export function renderMismatches({
       if (!drawSNPsMuted) {
         const baseColor = colorMap[baseChar] || '#888'
         const c = useAlpha ? applyQualAlpha(baseColor, qual) : baseColor
-        fillRectCtx(
-          ctx,
-          Math.round(leftPx),
-          topPx,
-          widthPx,
-          heightPx,
-          canvasWidth,
-          c,
-        )
+        // Inline fillRectCtx for hot path
+        const l = Math.round(leftPx)
+        if (l + widthPx >= 0 && l <= canvasWidth) {
+          ctx.fillStyle = c
+          ctx.fillRect(l, topPx, widthPx, heightPx)
+        }
       }
 
       if (widthPx >= charWidth && canRenderText) {
@@ -148,56 +203,46 @@ export function renderMismatches({
         const textColor = useAlpha
           ? applyQualAlpha(contrastColor, qual)
           : contrastColor
-        fillTextCtx(
-          ctx,
-          baseChar,
-          leftPx + (widthPx - charWidth) / 2 + 1,
-          bottomPx,
-          canvasWidth,
-          textColor,
-        )
+        const textX = leftPx + (widthPx - charWidth) / 2 + 1
+        if (textX >= 0 && textX <= canvasWidth) {
+          ctx.fillStyle = textColor
+          ctx.fillText(baseChar, textX, bottomPx)
+        }
       }
     } else if (type === TYPE_DELETION && drawIndels) {
       const len = mlen
       if (!hideSmallIndels || len >= 10) {
-        fillRectCtx(
-          ctx,
-          leftPx,
-          topPx,
-          Math.abs(leftPx - rightPx),
-          heightPx,
-          canvasWidth,
-          colorMap.deletion,
-        )
+        const delWidth = Math.abs(leftPx - rightPx)
+        if (leftPx + delWidth >= 0 && leftPx <= canvasWidth) {
+          ctx.fillStyle = deletionColor
+          ctx.fillRect(leftPx, topPx, delWidth, heightPx)
+        }
         if (bpPerPx < 3) {
           items.push({ type: 'deletion', seq: `${len}` })
           coords.push(leftPx, topPx, rightPx, bottomPx)
         }
-        const txt = String(len)
-        const rwidth = measureText(txt, 10)
+        const rwidth = getDeletionTextWidth(len)
         if (widthPx >= rwidth && canRenderText) {
-          fillTextCtx(
-            ctx,
-            txt,
-            (leftPx + rightPx) / 2 - rwidth / 2,
-            bottomPx,
-            canvasWidth,
-            colorContrastMap.deletion,
-          )
+          const txt = String(len)
+          const textX = (leftPx + rightPx) / 2 - rwidth / 2
+          if (textX >= 0 && textX <= canvasWidth) {
+            ctx.fillStyle = deletionContrastColor
+            ctx.fillText(txt, textX, bottomPx)
+          }
         }
       }
     } else if (type === TYPE_SKIP) {
-      fillRectCtx(
-        ctx,
-        leftPx,
-        topPx + heightPx / 2 - 1,
-        Math.max(widthPx, 1.5),
-        1,
-        canvasWidth,
-        colorMap.skip,
-      )
+      const skipWidth = Math.max(widthPx, 1.5)
+      if (leftPx + skipWidth >= 0 && leftPx <= canvasWidth) {
+        ctx.fillStyle = skipColor
+        ctx.fillRect(leftPx, topPx + heightPx / 2 - 1, skipWidth, 1)
+      }
     }
   }
+
+  // Pre-extract clip colors
+  const softclipColor = colorMap.softclip!
+  const hardclipColor = colorMap.hardclip!
 
   // second pass: draw insertions and clips on top
   for (let i = 0; i < count; i++) {
@@ -229,95 +274,80 @@ export function renderMismatches({
 
       if (len < 10) {
         if (!hideSmallIndels) {
-          ctx.fillStyle = colorMap.insertion!
-          fillRectCtx(ctx, pos, topPx, insW, heightPx, canvasWidth)
+          ctx.fillStyle = insertionColor
+          if (pos + insW >= 0 && pos <= canvasWidth) {
+            ctx.fillRect(pos, topPx, insW, heightPx)
+          }
           if (invBpPerPx >= charWidth && canRenderText) {
             const l = Math.round(pos - insW)
             const insW3 = insW * 3
-            fillRectCtx(ctx, l, topPx, insW3, 1, canvasWidth)
-            fillRectCtx(ctx, l, bottomPx - 1, insW3, 1, canvasWidth)
-            fillTextCtx(ctx, `(${len})`, pos + 3, bottomPx, canvasWidth)
+            if (l + insW3 >= 0 && l <= canvasWidth) {
+              ctx.fillRect(l, topPx, insW3, 1)
+              ctx.fillRect(l, bottomPx - 1, insW3, 1)
+            }
+            const textX = pos + 3
+            if (textX >= 0 && textX <= canvasWidth) {
+              ctx.fillText(`(${len})`, textX, bottomPx)
+            }
           }
           if (bpPerPx < 3) {
-            items.push({
-              type: 'insertion',
-              seq: insBasesStr,
-            })
+            items.push({ type: 'insertion', seq: insBasesStr })
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, bottomPx)
           }
         }
       } else {
-        items.push({
-          type: 'insertion',
-          seq: insBasesStr,
-        })
-        const txt = `${len}`
+        items.push({ type: 'insertion', seq: insBasesStr })
+        const txt = String(len)
         if (bpPerPx > largeInsertionIndicatorScale) {
           coords.push(leftPx - 1, topPx, leftPx + 1, bottomPx)
-          fillRectCtx(
-            ctx,
-            leftPx - 1,
-            topPx,
-            2,
-            heightPx,
-            canvasWidth,
-            colorMap.insertion,
-          )
+          if (leftPx + 1 >= 0 && leftPx - 1 <= canvasWidth) {
+            ctx.fillStyle = insertionColor
+            ctx.fillRect(leftPx - 1, topPx, 2, heightPx)
+          }
         } else if (heightPx > charHeight) {
-          const rwidth = measureText(txt)
+          const rwidth = getDeletionTextWidth(len)
           const padding = 5
-          coords.push(
-            leftPx - rwidth / 2 - padding,
-            topPx,
-            leftPx + rwidth / 2 + padding,
-            bottomPx,
-          )
-          fillRectCtx(
-            ctx,
-            leftPx - rwidth / 2 - padding,
-            topPx,
-            rwidth + 2 * padding,
-            heightPx,
-            canvasWidth,
-            'purple',
-          )
-          fillTextCtx(
-            ctx,
-            txt,
-            leftPx - rwidth / 2,
-            bottomPx,
-            canvasWidth,
-            colorContrastMap.insertion,
-          )
+          const rectX = leftPx - rwidth / 2 - padding
+          const rectW = rwidth + 2 * padding
+          coords.push(rectX, topPx, leftPx + rwidth / 2 + padding, bottomPx)
+          if (rectX + rectW >= 0 && rectX <= canvasWidth) {
+            ctx.fillStyle = 'purple'
+            ctx.fillRect(rectX, topPx, rectW, heightPx)
+            ctx.fillStyle = insertionContrastColor
+            ctx.fillText(txt, leftPx - rwidth / 2, bottomPx)
+          }
         } else {
           const padding = 2
           coords.push(leftPx - padding, topPx, leftPx + padding, bottomPx)
-          fillRectCtx(
-            ctx,
-            leftPx - padding,
-            topPx,
-            2 * padding,
-            heightPx,
-            canvasWidth,
-            colorMap.insertion,
-          )
+          if (leftPx + padding >= 0 && leftPx - padding <= canvasWidth) {
+            ctx.fillStyle = insertionColor
+            ctx.fillRect(leftPx - padding, topPx, 2 * padding, heightPx)
+          }
         }
       }
     } else if (type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
-      const typeName = type === TYPE_SOFTCLIP ? 'softclip' : 'hardclip'
+      const isSoftclip = type === TYPE_SOFTCLIP
       const len = lengths[i]!
-      const baseStr = `${type === TYPE_SOFTCLIP ? 'S' : 'H'}${len}`
-      const c = colorMap[typeName]
+      const baseStr = isSoftclip ? `S${len}` : `H${len}`
+      const c = isSoftclip ? softclipColor : hardclipColor
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
-      fillRectCtx(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
-      items.push({ type: typeName, seq: baseStr })
+      if (pos + clipW >= 0 && pos <= canvasWidth) {
+        ctx.fillStyle = c
+        ctx.fillRect(pos, topPx, clipW, heightPx)
+      }
+      items.push({ type: isSoftclip ? 'softclip' : 'hardclip', seq: baseStr })
       coords.push(pos - clipW, topPx, pos + clipW * 2, bottomPx)
       if (invBpPerPx >= charWidth && canRenderText) {
         const l = pos - clipW
         const clipW3 = clipW * 3
-        fillRectCtx(ctx, l, topPx, clipW3, 1, canvasWidth, c)
-        fillRectCtx(ctx, l, bottomPx - 1, clipW3, 1, canvasWidth, c)
-        fillTextCtx(ctx, `(${baseStr})`, pos + 3, bottomPx, canvasWidth, c)
+        if (l + clipW3 >= 0 && l <= canvasWidth) {
+          ctx.fillRect(l, topPx, clipW3, 1)
+          ctx.fillRect(l, bottomPx - 1, clipW3, 1)
+        }
+        const textX = pos + 3
+        if (textX >= 0 && textX <= canvasWidth) {
+          ctx.fillText(`(${baseStr})`, textX, bottomPx)
+        }
       }
     }
   }

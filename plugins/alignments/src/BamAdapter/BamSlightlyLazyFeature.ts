@@ -56,6 +56,8 @@ export default class BamSlightlyLazyFeature
         return this.name
       case 'start':
         return this.start
+      case 'refName':
+        return this.adapter.refIdToName(this.ref_id)!
       case 'end':
         return this.end
       case 'strand':
