@@ -1,5 +1,6 @@
 import { readFeaturesToMismatches } from './readFeaturesToMismatches'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
+import { toMismatchesArray } from '../shared/MismatchesSOA'
 import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
@@ -128,7 +129,7 @@ export default class CramSlightlyLazyFeature implements Feature {
       case 'NUMERIC_MISMATCHES':
         return this.NUMERIC_MISMATCHES
       case 'mismatches':
-        return undefined
+        return this.mismatches
       case 'qual':
         return this.qual
       case 'CIGAR':
@@ -154,6 +155,10 @@ export default class CramSlightlyLazyFeature implements Feature {
       this.start,
       this.qualRaw,
     )
+  }
+
+  get mismatches() {
+    return toMismatchesArray(this.NUMERIC_MISMATCHES)
   }
 
   get fields(): SimpleFeatureSerialized {

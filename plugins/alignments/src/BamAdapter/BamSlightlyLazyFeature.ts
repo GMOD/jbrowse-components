@@ -1,4 +1,5 @@
 import { getMismatchesNumeric } from './getMismatchesNumeric'
+import { toMismatchesArray } from '../shared/MismatchesSOA'
 import { decodeSeq } from '../shared/decodeSeq'
 import { cacheGetter } from '../shared/util'
 
@@ -39,6 +40,10 @@ export default class BamSlightlyLazyFeature implements Feature {
     )
   }
 
+  get mismatches() {
+    return toMismatchesArray(this.NUMERIC_MISMATCHES)
+  }
+
   get qual() {
     return this.record.qual?.join(' ')
   }
@@ -48,7 +53,7 @@ export default class BamSlightlyLazyFeature implements Feature {
       case 'NUMERIC_MISMATCHES':
         return this.NUMERIC_MISMATCHES
       case 'mismatches':
-        return undefined
+        return this.mismatches
       case 'name':
         return this.record.name
       case 'start':

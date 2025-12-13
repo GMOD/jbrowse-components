@@ -150,7 +150,7 @@ export function trimMismatchesSOA(soa: MismatchesSOA): MismatchesSOA {
  * Mirrors the Mismatch interface from shared/types.ts but with string type
  * for flexibility when converting from third-party adapters.
  */
-interface Mismatch {
+export interface Mismatch {
   qual?: number
   start: number
   length: number
@@ -207,7 +207,11 @@ function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
     }
 
     // Determine length based on type
-    if (type === TYPE_INSERTION || type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
+    if (
+      type === TYPE_INSERTION ||
+      type === TYPE_SOFTCLIP ||
+      type === TYPE_HARDCLIP
+    ) {
       soa.lengths[i] = m.cliplen ?? m.insertedBases?.length ?? 0
     } else {
       soa.lengths[i] = m.length
@@ -277,7 +281,12 @@ export function toMismatchesArray(soa: MismatchesSOA): Mismatch[] {
 
     const mismatch: Mismatch = {
       start: soa.starts[i]!,
-      length: type === TYPE_DELETION || type === TYPE_SKIP ? length : (type === TYPE_MISMATCH ? 1 : 0),
+      length:
+        type === TYPE_DELETION || type === TYPE_SKIP
+          ? length
+          : type === TYPE_MISMATCH
+            ? 1
+            : 0,
       type: typeName,
       base,
     }
@@ -310,9 +319,7 @@ export function toMismatchesArray(soa: MismatchesSOA): Mismatch[] {
 export function getMismatchesFromFeature(feature: {
   get: (field: string) => unknown
 }): MismatchesSOA | undefined {
-  const numeric = feature.get('NUMERIC_MISMATCHES') as
-    | MismatchesSOA
-    | undefined
+  const numeric = feature.get('NUMERIC_MISMATCHES') as MismatchesSOA | undefined
   if (numeric) {
     return numeric
   }
