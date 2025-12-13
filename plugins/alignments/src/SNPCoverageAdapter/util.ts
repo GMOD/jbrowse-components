@@ -10,6 +10,8 @@ export interface Opts {
   bpPerPx?: number
   colorBy?: ColorBy
   stopToken?: string
+  /** When true, only compute depth (skip mismatch/modification processing) */
+  statsEstimationMode?: boolean
 }
 
 export function mismatchLen(mismatch: Mismatch) {
