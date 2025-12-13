@@ -320,6 +320,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...superProps,
             async onFeatureClick(_: unknown, featureId?: string) {
               const { rpcManager } = session
+              const { parentTrack } = self
               try {
                 const f = featureId || self.featureIdUnderMouse
                 if (!f) {
@@ -332,7 +333,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
+                      layoutId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -348,6 +349,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             async onFeatureContextMenu(_: unknown, featureId?: string) {
               const { rpcManager } = session
+              const { parentTrack } = self
               try {
                 const f = featureId || self.featureIdUnderMouse
                 if (!f) {
@@ -360,7 +362,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
+                      layoutId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
