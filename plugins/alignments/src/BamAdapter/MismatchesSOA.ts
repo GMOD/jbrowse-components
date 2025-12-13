@@ -17,6 +17,23 @@ export const TYPE_NAMES = [
 
 export type MismatchType = (typeof TYPE_NAMES)[number]
 
+/**
+ * Struct-of-Arrays representation of mismatches for better memory efficiency.
+ *
+ * Field semantics:
+ * - starts: reference position offset from feature start
+ * - lengths: the relevant length for each type:
+ *   - mismatches: 1
+ *   - insertions: insertion length (number of inserted bases)
+ *   - deletions: deletion length (bases consumed on reference)
+ *   - skips: skip length (bases consumed on reference)
+ *   - softclip/hardclip: clip length
+ * - types: TYPE_* constants (0-5)
+ * - bases: always a char code (e.g., 65 for 'A', 42 for '*', 78 for 'N', 43 for '+')
+ * - quals: quality score (0 if not available)
+ * - altbases: reference base char code for mismatches (0 if not applicable)
+ * - insertedBases: sparse array - only populated at indices where type is insertion
+ */
 export interface MismatchesSOA {
   count: number
   starts: Uint32Array
@@ -25,7 +42,7 @@ export interface MismatchesSOA {
   bases: Uint8Array
   quals: Uint8Array
   altbases: Uint8Array
-  clipLens: Uint32Array
+  /** Sparse array: only indices with insertions have values */
   insertedBases: string[]
 }
 
@@ -38,7 +55,6 @@ export function createMismatchesSOA(capacity: number): MismatchesSOA {
     bases: new Uint8Array(capacity),
     quals: new Uint8Array(capacity),
     altbases: new Uint8Array(capacity),
-    clipLens: new Uint32Array(capacity),
     insertedBases: [],
   }
 }
@@ -51,7 +67,6 @@ export function growMismatchesSOA(soa: MismatchesSOA): MismatchesSOA {
   const newBases = new Uint8Array(newCapacity)
   const newQuals = new Uint8Array(newCapacity)
   const newAltbases = new Uint8Array(newCapacity)
-  const newClipLens = new Uint32Array(newCapacity)
 
   newStarts.set(soa.starts)
   newLengths.set(soa.lengths)
@@ -59,7 +74,6 @@ export function growMismatchesSOA(soa: MismatchesSOA): MismatchesSOA {
   newBases.set(soa.bases)
   newQuals.set(soa.quals)
   newAltbases.set(soa.altbases)
-  newClipLens.set(soa.clipLens)
 
   return {
     count: soa.count,
@@ -69,7 +83,6 @@ export function growMismatchesSOA(soa: MismatchesSOA): MismatchesSOA {
     bases: newBases,
     quals: newQuals,
     altbases: newAltbases,
-    clipLens: newClipLens,
     insertedBases: soa.insertedBases,
   }
 }
@@ -82,7 +95,6 @@ export function pushMismatch(
   base: number,
   qual: number,
   altbase: number,
-  clipLen: number,
   insertedBases?: string,
 ): MismatchesSOA {
   let result = soa
@@ -96,7 +108,6 @@ export function pushMismatch(
   result.bases[idx] = base
   result.quals[idx] = qual
   result.altbases[idx] = altbase
-  result.clipLens[idx] = clipLen
   if (insertedBases !== undefined) {
     result.insertedBases[idx] = insertedBases
   }
@@ -116,13 +127,16 @@ export function trimMismatchesSOA(soa: MismatchesSOA): MismatchesSOA {
     bases: soa.bases.subarray(0, soa.count),
     quals: soa.quals.subarray(0, soa.count),
     altbases: soa.altbases.subarray(0, soa.count),
-    clipLens: soa.clipLens.subarray(0, soa.count),
     insertedBases: soa.insertedBases,
   }
 }
 
-// Old Mismatch interface for backward compatibility
-interface LegacyMismatch {
+/**
+ * Legacy Mismatch interface for backward compatibility.
+ * Mirrors the Mismatch interface from shared/types.ts but with string type
+ * for flexibility when converting from third-party adapters.
+ */
+interface Mismatch {
   qual?: number
   start: number
   length: number
@@ -133,7 +147,6 @@ interface LegacyMismatch {
   cliplen?: number
 }
 
-// Type name to type code mapping
 const TYPE_NAME_TO_CODE: Record<string, number> = {
   mismatch: TYPE_MISMATCH,
   insertion: TYPE_INSERTION,
@@ -143,9 +156,8 @@ const TYPE_NAME_TO_CODE: Record<string, number> = {
   hardclip: TYPE_HARDCLIP,
 }
 
-// Type guard to check if data is already in SOA format
-export function isMismatchesSOA(
-  data: MismatchesSOA | LegacyMismatch[] | undefined,
+function isMismatchesSOA(
+  data: MismatchesSOA | Mismatch[] | undefined,
 ): data is MismatchesSOA {
   return (
     data !== undefined &&
@@ -155,10 +167,7 @@ export function isMismatchesSOA(
   )
 }
 
-// Convert legacy Mismatch[] to MismatchesSOA
-export function convertToMismatchesSOA(
-  mismatches: LegacyMismatch[],
-): MismatchesSOA {
+function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
   const len = mismatches.length
   const soa: MismatchesSOA = {
     count: len,
@@ -168,28 +177,35 @@ export function convertToMismatchesSOA(
     bases: new Uint8Array(len),
     quals: new Uint8Array(len),
     altbases: new Uint8Array(len),
-    clipLens: new Uint32Array(len),
     insertedBases: [],
   }
 
   for (let i = 0; i < len; i++) {
     const m = mismatches[i]!
+    const type = TYPE_NAME_TO_CODE[m.type] ?? TYPE_MISMATCH
     soa.starts[i] = m.start
-    soa.lengths[i] = m.length
-    soa.types[i] = TYPE_NAME_TO_CODE[m.type] ?? TYPE_MISMATCH
+    soa.types[i] = type
 
-    // Handle base - could be a single char or a number string for insertions
+    // Determine length based on type
+    if (type === TYPE_INSERTION || type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
+      soa.lengths[i] = m.cliplen ?? m.insertedBases?.length ?? 0
+    } else {
+      soa.lengths[i] = m.length
+    }
+
+    // bases always stores a char code
     if (m.base.length === 1) {
       soa.bases[i] = m.base.charCodeAt(0)
+    } else if (type === TYPE_INSERTION) {
+      soa.bases[i] = 43 // '+' char code as placeholder for insertions
+    } else if (type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
+      soa.bases[i] = m.base.charCodeAt(0)
     } else {
-      // For insertions, base is the length as string (e.g., "5")
-      const parsed = Number.parseInt(m.base, 10)
-      soa.bases[i] = Number.isNaN(parsed) ? m.base.charCodeAt(0) : parsed
+      soa.bases[i] = m.base.charCodeAt(0)
     }
 
     soa.quals[i] = m.qual ?? 0
     soa.altbases[i] = m.altbase ? m.altbase.charCodeAt(0) : 0
-    soa.clipLens[i] = m.cliplen ?? 0
 
     if (m.insertedBases !== undefined) {
       soa.insertedBases[i] = m.insertedBases
@@ -199,9 +215,8 @@ export function convertToMismatchesSOA(
   return soa
 }
 
-// Normalize mismatches data to SOA format, handling both old and new formats
-export function toMismatchesSOA(
-  data: MismatchesSOA | LegacyMismatch[] | undefined,
+function toMismatchesSOA(
+  data: MismatchesSOA | Mismatch[] | undefined,
 ): MismatchesSOA | undefined {
   if (data === undefined) {
     return undefined
@@ -212,40 +227,40 @@ export function toMismatchesSOA(
   if (Array.isArray(data) && data.length > 0) {
     return convertToMismatchesSOA(data)
   }
-  // Empty array case
   if (Array.isArray(data) && data.length === 0) {
     return createMismatchesSOA(0)
   }
   return undefined
 }
 
-// Convert MismatchesSOA back to legacy Mismatch[] format (for testing/compatibility)
-export function toMismatchesArray(soa: MismatchesSOA): LegacyMismatch[] {
-  const result: LegacyMismatch[] = new Array(soa.count)
+/**
+ * Convert MismatchesSOA back to legacy Mismatch[] format.
+ * Useful for testing and compatibility with code expecting the old format.
+ */
+export function toMismatchesArray(soa: MismatchesSOA): Mismatch[] {
+  const result: Mismatch[] = new Array(soa.count)
   for (let i = 0; i < soa.count; i++) {
     const type = soa.types[i]!
     const typeName = TYPE_NAMES[type] || 'mismatch'
     const baseCode = soa.bases[i]!
     const altbaseCode = soa.altbases[i]!
-    const clipLen = soa.clipLens[i]!
+    const length = soa.lengths[i]!
 
-    // Handle base conversion
+    // Reconstruct base string based on type
     let base: string
     if (type === TYPE_INSERTION) {
-      base = String(clipLen)
+      base = String(length)
     } else if (type === TYPE_SOFTCLIP) {
-      base = `S${clipLen}`
+      base = `S${length}`
     } else if (type === TYPE_HARDCLIP) {
-      base = `H${clipLen}`
-    } else if (baseCode >= 32 && baseCode <= 126) {
-      base = String.fromCharCode(baseCode)
+      base = `H${length}`
     } else {
-      base = String(baseCode)
+      base = String.fromCharCode(baseCode)
     }
 
-    const mismatch: LegacyMismatch = {
+    const mismatch: Mismatch = {
       start: soa.starts[i]!,
-      length: soa.lengths[i]!,
+      length: type === TYPE_DELETION || type === TYPE_SKIP ? length : (type === TYPE_MISMATCH ? 1 : 0),
       type: typeName,
       base,
     }
@@ -256,8 +271,8 @@ export function toMismatchesArray(soa: MismatchesSOA): LegacyMismatch[] {
     if (altbaseCode !== 0) {
       mismatch.altbase = String.fromCharCode(altbaseCode)
     }
-    if (clipLen !== 0 && type !== TYPE_INSERTION) {
-      mismatch.cliplen = clipLen
+    if (type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
+      mismatch.cliplen = length
     }
     if (soa.insertedBases[i] !== undefined) {
       mismatch.insertedBases = soa.insertedBases[i]
@@ -268,8 +283,12 @@ export function toMismatchesArray(soa: MismatchesSOA): LegacyMismatch[] {
   return result
 }
 
-// Helper to get mismatches from a feature, preferring NUMERIC_MISMATCHES (SOA)
-// and falling back to converting legacy mismatches array
+/**
+ * Get mismatches from a feature, preferring NUMERIC_MISMATCHES (SOA format)
+ * and falling back to converting legacy mismatches array.
+ *
+ * Usage: const mismatches = getMismatchesFromFeature(feature)
+ */
 export function getMismatchesFromFeature(feature: {
   get: (field: string) => unknown
 }): MismatchesSOA | undefined {
@@ -279,5 +298,5 @@ export function getMismatchesFromFeature(feature: {
   if (numeric) {
     return numeric
   }
-  return toMismatchesSOA(feature.get('mismatches') as LegacyMismatch[] | undefined)
+  return toMismatchesSOA(feature.get('mismatches') as Mismatch[] | undefined)
 }

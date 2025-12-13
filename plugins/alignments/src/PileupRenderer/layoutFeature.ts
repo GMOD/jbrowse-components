@@ -36,15 +36,15 @@ export function layoutFeature({
     const mismatches = getMismatchesFromFeature(feature)
     const seq = feature.get('seq') as string
     if (seq && mismatches && mismatches.count > 0) {
-      const { count, types, starts, clipLens } = mismatches
+      const { count, types, starts, lengths } = mismatches
       for (let i = 0; i < count; i++) {
         if (types[i] === TYPE_SOFTCLIP) {
           const start = starts[i]!
-          const cliplen = clipLens[i] || 0
+          const len = lengths[i] || 0
           if (start === 0) {
-            expansionBefore = cliplen
+            expansionBefore = len
           } else {
-            expansionAfter = cliplen
+            expansionAfter = len
           }
         }
       }

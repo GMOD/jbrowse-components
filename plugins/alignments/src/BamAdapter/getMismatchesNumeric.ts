@@ -124,6 +124,7 @@ function cigarToMismatchesSOA(
           if (seqBaseCode !== refBaseCode) {
             const baseCharCode = SEQRET_CHARCODE_DECODER[nibble]!
             const altbaseCharCode = ref.charCodeAt(roffset + j)
+            // mismatch: length=1
             soa = pushMismatch(
               soa,
               roffset + j,
@@ -132,7 +133,6 @@ function cigarToMismatchesSOA(
               baseCharCode,
               0,
               altbaseCharCode,
-              0,
             )
           }
         }
@@ -146,26 +146,25 @@ function cigarToMismatchesSOA(
         soffset + len,
         seqLength,
       )
-      // Store length as base (will be converted to string like "5" when needed)
+      // insertion: length=insertion length, '+' = 43 as placeholder char
       soa = pushMismatch(
         soa,
         roffset,
-        0,
+        len,
         TYPE_INSERTION,
-        len,
+        43,
         0,
         0,
-        len,
         insertedBases,
       )
       soffset += len
     } else if (op === CIGAR_D) {
-      // '*' = 42
-      soa = pushMismatch(soa, roffset, len, TYPE_DELETION, 42, 0, 0, 0)
+      // deletion: length=deletion length, '*' = 42
+      soa = pushMismatch(soa, roffset, len, TYPE_DELETION, 42, 0, 0)
       roffset += len
     } else if (op === CIGAR_N) {
-      // 'N' = 78
-      soa = pushMismatch(soa, roffset, len, TYPE_SKIP, 78, 0, 0, 0)
+      // skip: length=skip length, 'N' = 78
+      soa = pushMismatch(soa, roffset, len, TYPE_SKIP, 78, 0, 0)
       roffset += len
     } else if (op === CIGAR_X) {
       for (let j = 0; j < len; j++) {
@@ -174,6 +173,7 @@ function cigarToMismatchesSOA(
         const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
         const baseCharCode = SEQRET_CHARCODE_DECODER[nibble]!
         const qualVal = hasQual ? qual[seqIdx]! : 0
+        // mismatch: length=1
         soa = pushMismatch(
           soa,
           roffset + j,
@@ -182,17 +182,16 @@ function cigarToMismatchesSOA(
           baseCharCode,
           qualVal,
           0,
-          0,
         )
       }
       soffset += len
       roffset += len
     } else if (op === CIGAR_H) {
-      // 'H' = 72
-      soa = pushMismatch(soa, roffset, 1, TYPE_HARDCLIP, 72, 0, 0, len)
+      // hardclip: length=clip length, 'H' = 72
+      soa = pushMismatch(soa, roffset, len, TYPE_HARDCLIP, 72, 0, 0)
     } else if (op === CIGAR_S) {
-      // 'S' = 83
-      soa = pushMismatch(soa, roffset, 1, TYPE_SOFTCLIP, 83, 0, 0, len)
+      // softclip: length=clip length, 'S' = 83
+      soa = pushMismatch(soa, roffset, len, TYPE_SOFTCLIP, 83, 0, 0)
       soffset += len
     }
   }
@@ -296,6 +295,7 @@ function mdToMismatchesSOA(
       }
 
       const qualVal = hasQual ? qual[s]! : 0
+      // mismatch: length=1
       soa = pushMismatch(
         soa,
         currStart,
@@ -304,7 +304,6 @@ function mdToMismatchesSOA(
         baseCharCode,
         qualVal,
         altbaseCharCode,
-        0,
       )
 
       currStart++

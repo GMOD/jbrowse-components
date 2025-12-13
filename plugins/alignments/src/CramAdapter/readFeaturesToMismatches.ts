@@ -36,15 +36,15 @@ export function readFeaturesToMismatches(
     lastPos = refPos
 
     if (sublen && insertedBasesLen > 0) {
+      // insertion: length=insertion length, '+' = 43 as placeholder char
       soa = pushMismatch(
         soa,
         insertedBasesRefPos,
-        0,
+        insertedBasesLen,
         TYPE_INSERTION,
-        insertedBasesLen,
+        43,
         0,
         0,
-        insertedBasesLen,
         insertedBases,
       )
       insertedBases = ''
@@ -55,7 +55,7 @@ export function readFeaturesToMismatches(
     const codeChar = code.charCodeAt(0)
 
     if (codeChar === CODE_X) {
-      // substitution
+      // substitution: length=1
       const baseCharCode = sub ? sub.charCodeAt(0) : 88 // 'X'
       const altbaseCharCode = ref ? ref.toUpperCase().charCodeAt(0) : 0
       const qualVal = qual?.[pos - 1] ?? 0
@@ -67,39 +67,33 @@ export function readFeaturesToMismatches(
         baseCharCode,
         qualVal,
         altbaseCharCode,
-        0,
       )
     } else if (codeChar === CODE_I) {
-      // insertion
+      // insertion: length=insertion length, '+' = 43 as placeholder char
       const dataLen = data.length
       soa = pushMismatch(
         soa,
         refPos,
-        0,
+        dataLen,
         TYPE_INSERTION,
-        dataLen,
+        43,
         0,
         0,
-        dataLen,
         data,
       )
     } else if (codeChar === CODE_N) {
-      // reference skip
-      // 'N' = 78
-      soa = pushMismatch(soa, refPos, data, TYPE_SKIP, 78, 0, 0, 0)
+      // reference skip: length=skip length, 'N' = 78
+      soa = pushMismatch(soa, refPos, data, TYPE_SKIP, 78, 0, 0)
     } else if (codeChar === CODE_S) {
-      // soft clip
+      // soft clip: length=clip length, 'S' = 83
       const dataLen = data.length
-      // 'S' = 83
-      soa = pushMismatch(soa, refPos, 1, TYPE_SOFTCLIP, 83, 0, 0, dataLen)
+      soa = pushMismatch(soa, refPos, dataLen, TYPE_SOFTCLIP, 83, 0, 0)
     } else if (codeChar === CODE_H) {
-      // hard clip
-      // 'H' = 72
-      soa = pushMismatch(soa, refPos, 1, TYPE_HARDCLIP, 72, 0, 0, data)
+      // hard clip: length=clip length, 'H' = 72
+      soa = pushMismatch(soa, refPos, data, TYPE_HARDCLIP, 72, 0, 0)
     } else if (codeChar === CODE_D) {
-      // deletion
-      // '*' = 42
-      soa = pushMismatch(soa, refPos, data, TYPE_DELETION, 42, 0, 0, 0)
+      // deletion: length=deletion length, '*' = 42
+      soa = pushMismatch(soa, refPos, data, TYPE_DELETION, 42, 0, 0)
     } else if (codeChar === CODE_i) {
       // single-base insertion, we collect these if there are multiple in a row
       // into a single insertion entry
@@ -113,15 +107,15 @@ export function readFeaturesToMismatches(
   }
 
   if (sublen && insertedBasesLen > 0) {
+    // insertion: length=insertion length, '+' = 43 as placeholder char
     soa = pushMismatch(
       soa,
       insertedBasesRefPos,
-      0,
+      insertedBasesLen,
       TYPE_INSERTION,
-      insertedBasesLen,
+      43,
       0,
       0,
-      insertedBasesLen,
       insertedBases,
     )
   }

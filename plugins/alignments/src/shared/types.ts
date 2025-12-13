@@ -142,9 +142,7 @@ export {
   TYPE_SKIP,
   TYPE_SOFTCLIP,
   getMismatchesFromFeature,
-  isMismatchesSOA,
   toMismatchesArray,
-  toMismatchesSOA,
 } from '../BamAdapter/MismatchesSOA'
 
 export interface ReducedFeature {

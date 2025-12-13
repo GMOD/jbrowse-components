@@ -32,16 +32,8 @@ export function processMismatches({
     return
   }
 
-  const {
-    count,
-    starts,
-    lengths,
-    types,
-    bases,
-    altbases,
-    clipLens,
-    insertedBases,
-  } = mismatches
+  const { count, starts, lengths, types, bases, altbases, insertedBases } =
+    mismatches
 
   // normal SNP based coloring
   for (let i = 0; i < count; i++) {
@@ -75,8 +67,7 @@ export function processMismatches({
             bin.ref[fstrand]--
             bin.refbase = altbaseChar
           } else {
-            const len =
-              type === TYPE_INSERTION ? insertedBases[i]?.length : clipLens[i]
+            const len = lengths[i]
             const seq = type === TYPE_INSERTION ? insertedBases[i] : undefined
             const typeName =
               type === TYPE_INSERTION

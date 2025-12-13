@@ -82,16 +82,8 @@ export function renderMismatches({
     return { coords, items }
   }
 
-  const {
-    count,
-    starts,
-    lengths,
-    types,
-    bases,
-    quals,
-    clipLens,
-    insertedBases,
-  } = mismatches
+  const { count, starts, lengths, types, bases, quals, insertedBases } =
+    mismatches
 
   // extraHorizontallyFlippedOffset is used to draw interbase items, which are
   // located to the left when forward and right when reversed
@@ -230,8 +222,7 @@ export function renderMismatches({
     const pos = leftPx + extraHorizontallyFlippedOffset
 
     if (type === TYPE_INSERTION && drawIndels) {
-      const clipLen = clipLens[i]!
-      const len = clipLen
+      const len = lengths[i]!
       const insW = Math.max(0, Math.min(1.2, invBpPerPx))
       const insBasesStr = insertedBases[i] || 'unknown'
 
@@ -313,8 +304,8 @@ export function renderMismatches({
       }
     } else if (type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP) {
       const typeName = type === TYPE_SOFTCLIP ? 'softclip' : 'hardclip'
-      const clipLen = clipLens[i]!
-      const baseStr = `${type === TYPE_SOFTCLIP ? 'S' : 'H'}${clipLen}`
+      const len = lengths[i]!
+      const baseStr = `${type === TYPE_SOFTCLIP ? 'S' : 'H'}${len}`
       const c = colorMap[typeName]
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       fillRectCtx(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
