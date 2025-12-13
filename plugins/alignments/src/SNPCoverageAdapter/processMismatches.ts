@@ -1,6 +1,14 @@
-import { inc, isInterbase, mismatchLen } from './util'
+import { inc, isInterbaseType, mismatchLenSOA } from './util'
+import {
+  CHAR_CODE_TO_STRING,
+  TYPE_DELETION,
+  TYPE_INSERTION,
+  TYPE_SKIP,
+  TYPE_SOFTCLIP,
+  getMismatchesFromFeature,
+} from '../shared/types'
 
-import type { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type { PreBaseCoverageBin, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
 
@@ -17,15 +25,23 @@ export function processMismatches({
 }) {
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
-  const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
+  const mismatches = getMismatchesFromFeature(feature)
   const regionStart = region.start
   const regionEnd = region.end
   const binsLength = bins.length
 
+  if (!mismatches || mismatches.count === 0) {
+    return
+  }
+
+  const { count, starts, lengths, types, bases, altbases, insertedBases } =
+    mismatches
+
   // normal SNP based coloring
-  for (const mismatch of mismatches) {
-    const mstart = fstart + mismatch.start
-    const mlen = mismatchLen(mismatch)
+  for (let i = 0; i < count; i++) {
+    const type = types[i]!
+    const mstart = fstart + starts[i]!
+    const mlen = mismatchLenSOA(type, lengths[i]!)
     const mend = mstart + mlen
 
     // Calculate visible range for this mismatch
@@ -34,35 +50,53 @@ export function processMismatches({
 
     // Skip if mismatch is entirely outside visible region
     if (visStart < visEnd) {
-      for (let j = visStart; j < visEnd; j++) {
-        const epos = j - regionStart
-        if (epos < binsLength) {
-          const bin = bins[epos]!
-          const { base, altbase, type } = mismatch
-          const interbase = isInterbase(type)
+      // Hoist invariants out of inner loop
+      const interbase = isInterbaseType(type)
+      const baseChar = CHAR_CODE_TO_STRING[bases[i]!]!
+      const altbaseChar =
+        altbases[i] !== 0 ? CHAR_CODE_TO_STRING[altbases[i]!] : undefined
 
-          if (type === 'deletion' || type === 'skip') {
-            inc(bin, fstrand, 'delskips', type)
+      if (type === TYPE_DELETION || type === TYPE_SKIP) {
+        const typeName = type === TYPE_DELETION ? 'deletion' : 'skip'
+        for (let j = visStart; j < visEnd; j++) {
+          const epos = j - regionStart
+          if (epos < binsLength) {
+            const bin = bins[epos]!
+            inc(bin, fstrand, 'delskips', typeName)
             bin.depth--
-          } else if (!interbase) {
-            inc(bin, fstrand, 'snps', base)
+          }
+        }
+      } else if (!interbase) {
+        for (let j = visStart; j < visEnd; j++) {
+          const epos = j - regionStart
+          if (epos < binsLength) {
+            const bin = bins[epos]!
+            inc(bin, fstrand, 'snps', baseChar)
             bin.ref.entryDepth--
             bin.ref[fstrand]--
-            bin.refbase = altbase
-          } else {
-            const len =
-              type === 'insertion'
-                ? mismatch.insertedBases?.length
-                : mismatch.cliplen
-            const seq =
-              type === 'insertion' ? mismatch.insertedBases : undefined
-            inc(bin, fstrand, 'noncov', type, len, seq)
+            bin.refbase = altbaseChar
+          }
+        }
+      } else {
+        const len = lengths[i]
+        const seq = type === TYPE_INSERTION ? insertedBases.get(i) : undefined
+        const typeName =
+          type === TYPE_INSERTION
+            ? 'insertion'
+            : type === TYPE_SOFTCLIP
+              ? 'softclip'
+              : 'hardclip'
+        for (let j = visStart; j < visEnd; j++) {
+          const epos = j - regionStart
+          if (epos < binsLength) {
+            const bin = bins[epos]!
+            inc(bin, fstrand, 'noncov', typeName, len, seq)
           }
         }
       }
     }
 
-    if (mismatch.type === 'skip') {
+    if (type === TYPE_SKIP) {
       // for upper case XS and TS: reports the literal strand of the genomic
       // transcript
       const tags = feature.get('tags')

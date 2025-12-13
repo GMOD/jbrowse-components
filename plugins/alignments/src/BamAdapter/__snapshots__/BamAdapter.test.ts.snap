@@ -300,7 +300,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   {
     "base": "S2666",
     "cliplen": 2666,
-    "length": 1,
+    "length": 0,
     "start": 0,
     "type": "softclip",
   },
@@ -1138,7 +1138,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
   {
     "base": "S1",
     "cliplen": 1,
-    "length": 1,
+    "length": 0,
     "start": 7531,
     "type": "softclip",
   },

@@ -12,7 +12,6 @@ import {
   getCigarOps,
 } from './cigarUtil'
 
-import type { Mismatch } from '../../shared/types'
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -39,12 +38,11 @@ export function renderSoftClipping({
   const { regions, bpPerPx } = renderArgs
   const region = regions[0]!
   const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
-  const mismatches = feature.get('mismatches') as Mismatch[] | undefined
   const seq = feature.get('seq') as string | undefined
   const { charWidth, charHeight } = getCharWidthHeight()
 
   // Display all bases softclipped off in lightened colors
-  if (!(seq && mismatches)) {
+  if (!seq) {
     return
   }
 

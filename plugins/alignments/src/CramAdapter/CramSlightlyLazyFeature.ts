@@ -1,8 +1,10 @@
 import { readFeaturesToMismatches } from './readFeaturesToMismatches'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
+import { toMismatchesArray } from '../shared/MismatchesSOA'
 import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
+import type { MismatchesSOA } from '../shared/MismatchesSOA'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -123,15 +125,20 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get(field: string): any {
-    return field === 'mismatches'
-      ? this.mismatches
-      : field === 'qual'
-        ? this.qual
-        : field === 'CIGAR'
-          ? this.CIGAR
-          : field === 'NUMERIC_CIGAR'
-            ? this.NUMERIC_CIGAR
-            : this.fields[field]
+    switch (field) {
+      case 'NUMERIC_MISMATCHES':
+        return this.NUMERIC_MISMATCHES
+      case 'mismatches':
+        return this.mismatches
+      case 'qual':
+        return this.qual
+      case 'CIGAR':
+        return this.CIGAR
+      case 'NUMERIC_CIGAR':
+        return this.NUMERIC_CIGAR
+      default:
+        return this.fields[field]
+    }
   }
 
   parent() {
@@ -142,24 +149,16 @@ export default class CramSlightlyLazyFeature implements Feature {
     return undefined
   }
 
-  get mismatches() {
+  get NUMERIC_MISMATCHES(): MismatchesSOA {
     return readFeaturesToMismatches(
       this.record.readFeatures,
       this.start,
       this.qualRaw,
     )
-    // this commented code can try to resolve MD tags, xref https://github.com/galaxyproject/tools-iuc/issues/6523#issuecomment-2462927211 but put on hold
-    // return this.tags.MD && this.seq
-    //   ? mismatches.concat(
-    //       mdToMismatches(
-    //         this.tags.MD,
-    //         parseCigar(this.CIGAR),
-    //         mismatches,
-    //         this.seq,
-    //         this.qualRaw,
-    //       ),
-    //     )
-    //   : mismatches
+  }
+
+  get mismatches() {
+    return toMismatchesArray(this.NUMERIC_MISMATCHES)
   }
 
   get fields(): SimpleFeatureSerialized {
@@ -197,4 +196,4 @@ export default class CramSlightlyLazyFeature implements Feature {
 cacheGetter(CramSlightlyLazyFeature, 'fields')
 cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
 cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_CIGAR')
-cacheGetter(CramSlightlyLazyFeature, 'mismatches')
+cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_MISMATCHES')

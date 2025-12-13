@@ -1,4 +1,5 @@
-import type { Mismatch } from '../shared/types'
+import { TYPE_SOFTCLIP, getMismatchesFromFeature } from '../shared/types'
+
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
@@ -32,15 +33,18 @@ export function layoutFeature({
 
   // Expand the start and end of feature when softclipping enabled
   if (showSoftClip) {
-    const mismatches = feature.get('mismatches') as Mismatch[]
+    const mismatches = getMismatchesFromFeature(feature)
     const seq = feature.get('seq') as string
-    if (seq) {
-      for (const { type, start, cliplen = 0 } of mismatches) {
-        if (type === 'softclip') {
+    if (seq && mismatches && mismatches.count > 0) {
+      const { count, types, starts, lengths } = mismatches
+      for (let i = 0; i < count; i++) {
+        if (types[i] === TYPE_SOFTCLIP) {
+          const start = starts[i]!
+          const len = lengths[i] || 0
           if (start === 0) {
-            expansionBefore = cliplen
+            expansionBefore = len
           } else {
-            expansionAfter = cliplen
+            expansionAfter = len
           }
         }
       }

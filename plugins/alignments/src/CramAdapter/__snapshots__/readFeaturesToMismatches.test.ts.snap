@@ -1,13 +1,29 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`cram read features mismatches 1`] = `
-[
-  {
-    "base": "1",
-    "insertedBases": "C",
-    "length": 0,
-    "start": 24,
-    "type": "insertion",
+{
+  "altbases": Uint8Array [
+    0,
+  ],
+  "bases": Uint8Array [
+    43,
+  ],
+  "count": 1,
+  "hasSkips": false,
+  "insertedBases": Map {
+    0 => "C",
   },
-]
+  "lengths": Uint32Array [
+    1,
+  ],
+  "quals": Uint8Array [
+    0,
+  ],
+  "starts": Uint32Array [
+    24,
+  ],
+  "types": Uint8Array [
+    4,
+  ],
+}
 `;

@@ -1,3 +1,5 @@
+import { INTERBASE_BIT } from '../shared/types'
+
 import type {
   ColorBy,
   Mismatch,
@@ -10,6 +12,7 @@ export interface Opts {
   bpPerPx?: number
   colorBy?: ColorBy
   stopToken?: string
+  statsEstimationMode?: boolean
 }
 
 export function mismatchLen(mismatch: Mismatch) {
@@ -18,6 +21,14 @@ export function mismatchLen(mismatch: Mismatch) {
 
 export function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
+}
+
+export function mismatchLenSOA(type: number, length: number) {
+  return !isInterbaseType(type) ? length : 1
+}
+
+export function isInterbaseType(type: number) {
+  return (type & INTERBASE_BIT) !== 0
 }
 
 export function createPreBinEntry(): PreBinEntry {

@@ -132,6 +132,27 @@ export interface Mismatch {
   cliplen?: number
 }
 
+export type { MismatchesSOA } from './MismatchesSOA'
+export {
+  CHAR_CODE_TO_STRING,
+  CHAR_H,
+  CHAR_N,
+  CHAR_PLUS,
+  CHAR_S,
+  CHAR_STAR,
+  CHAR_X,
+  INTERBASE_BIT,
+  TYPE_DELETION,
+  TYPE_HARDCLIP,
+  TYPE_INSERTION,
+  TYPE_MISMATCH,
+  TYPE_NAMES,
+  TYPE_SKIP,
+  TYPE_SOFTCLIP,
+  getMismatchesFromFeature,
+  toMismatchesArray,
+} from './MismatchesSOA'
+
 export interface ReducedFeature {
   name: string
   strand: number
