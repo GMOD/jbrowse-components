@@ -25,7 +25,8 @@ function getExonsAndCDS(transcripts: Feature[]) {
     transcript =>
       transcript
         .get('subfeatures')
-        ?.filter(f => f.get('type') === 'exon' || f.get('type') === 'CDS') ?? [],
+        ?.filter(f => f.get('type') === 'exon' || f.get('type') === 'CDS') ??
+      [],
   )
 }
 
