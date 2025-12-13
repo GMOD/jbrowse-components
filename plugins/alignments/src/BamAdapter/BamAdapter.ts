@@ -22,7 +22,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private setupP?: Promise<ParsedSamHeader>
 
-  protected configureResult?: { bam: BamFile }
+  protected configureResult?: { bam: BamFile<BamSlightlyLazyFeature> }
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
@@ -43,6 +43,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           baiFilehandle: !csi
             ? openLocation(location, this.pluginManager)
             : undefined,
+          recordClass: BamSlightlyLazyFeature,
         }),
       }
     }
@@ -134,16 +135,19 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             continue
           }
 
-          const ref =
-            !record.tags.MD && sequenceAdapter
-              ? await sequenceAdapter.getSequence({
-                  refName: originalRefName || refName,
-                  start: record.start,
-                  end: record.end,
-                })
-              : undefined
+          // Set adapter reference for id() and refIdToName()
+          record.adapter = this
 
-          observer.next(new BamSlightlyLazyFeature(record, this, ref))
+          // Only fetch reference sequence if MD tag is missing
+          if (!record.NUMERIC_MD && sequenceAdapter) {
+            record.ref = await sequenceAdapter.getSequence({
+              refName: originalRefName || refName,
+              start: record.start,
+              end: record.end,
+            })
+          }
+
+          observer.next(record)
         }
         observer.complete()
       })
