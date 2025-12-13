@@ -19,21 +19,23 @@ import type { Feature } from '@jbrowse/core/util'
 
 async function collapseIntrons({
   view,
-  transcript,
+  transcripts,
   assembly,
 }: {
   view: LinearGenomeViewModel
-  transcript: Feature
+  transcripts: Feature[]
   assembly?: Assembly
 }) {
-  const r0 = transcript.get('refName')
+  const r0 = transcripts[0]?.get('refName')
   const refName = assembly?.getCanonicalRefName(r0) || r0
   const w = 100
 
-  const subs =
-    transcript
-      .get('subfeatures')
-      ?.filter(f => f.get('type') === 'exon' || f.get('type') === 'CDS') ?? []
+  const subs = transcripts.flatMap(
+    transcript =>
+      transcript
+        .get('subfeatures')
+        ?.filter(f => f.get('type') === 'exon' || f.get('type') === 'CDS') ?? [],
+  )
 
   const { id, ...rest } = getSnapshot(view)
   const newView = getSession(view).addView('LinearGenomeView', {
@@ -74,7 +76,7 @@ export default function CollapseIntronsDialog({
 
   if (transcripts.length === 1) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    collapseIntrons({ view, transcript: transcripts[0]!, assembly })
+    collapseIntrons({ view, transcripts, assembly })
     handleClose()
     return null
   }
@@ -130,7 +132,7 @@ export default function CollapseIntronsDialog({
                       color="primary"
                       onClick={() => {
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                        collapseIntrons({ view, transcript, assembly })
+                        collapseIntrons({ view, transcripts: [transcript], assembly })
                         handleClose()
                       }}
                     >
@@ -144,6 +146,17 @@ export default function CollapseIntronsDialog({
         </Table>
       </DialogContent>
       <DialogActions>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            collapseIntrons({ view, transcripts, assembly })
+            handleClose()
+          }}
+        >
+          Union of all transcripts
+        </Button>
         <Button onClick={handleClose} variant="contained" color="secondary">
           Cancel
         </Button>
