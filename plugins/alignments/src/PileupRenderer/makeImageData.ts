@@ -178,7 +178,7 @@ export async function makeImageData({
   renderArgs: PreProcessedRenderArgs
   pluginManager: PluginManager
 }) {
-  const { statusCallback = () => {} } = renderArgs
+  const { statusCallback = () => {}, features } = renderArgs
 
   statusCallback('Creating layout')
   const { layoutRecords, height } = layoutFeats(renderArgs)
@@ -199,5 +199,13 @@ export async function makeImageData({
     }),
   )
 
-  return { result, height }
+  const featureNames: Record<string, string> = {}
+  for (const [id, feature] of features) {
+    const name = feature.get('name')
+    if (name) {
+      featureNames[id] = name
+    }
+  }
+
+  return { result, height, featureNames }
 }
