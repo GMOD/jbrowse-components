@@ -14,6 +14,7 @@ import {
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
+import { isInterbaseType } from '../../SNPCoverageAdapter/util'
 
 // Pre-computed alpha lookup table for quality scores 0-50
 // Maps quality score to alpha value (qual/50, clamped to 1)
@@ -151,11 +152,7 @@ export function renderMismatches({
   // first pass: draw mismatches, deletions, skips
   for (let i = 0; i < count; i++) {
     const type = types[i]!
-    if (
-      type === TYPE_INSERTION ||
-      type === TYPE_SOFTCLIP ||
-      type === TYPE_HARDCLIP
-    ) {
+    if (isInterbaseType(type)) {
       continue
     }
 
