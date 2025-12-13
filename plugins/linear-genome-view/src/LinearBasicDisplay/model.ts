@@ -12,7 +12,13 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { cast, getEnv, getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getEnv,
+  getParent,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'

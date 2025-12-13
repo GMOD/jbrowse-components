@@ -180,7 +180,8 @@ const PileupRendering = observer(function (props: {
           offsetY,
         )
         const label =
-          getItemLabel(item) ?? (featureId ? featureNames[featureId] : undefined)
+          getItemLabel(item) ??
+          (featureId ? featureNames[featureId] : undefined)
         onMouseMove?.(event, featureId, label)
       }}
       onClick={event => {

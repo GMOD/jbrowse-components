@@ -1,3 +1,5 @@
+import { BamRecord } from '@gmod/bam'
+
 import { getMismatchesNumeric } from './getMismatchesNumeric'
 import { toMismatchesArray } from '../shared/MismatchesSOA'
 import { decodeSeq } from '../shared/decodeSeq'
@@ -5,38 +7,34 @@ import { cacheGetter } from '../shared/util'
 
 import type BamAdapter from './BamAdapter'
 import type { MismatchesSOA } from '../shared/MismatchesSOA'
-import type { BamRecord } from '@gmod/bam'
 import type {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 
-export default class BamSlightlyLazyFeature implements Feature {
-  private record: BamRecord
-  private adapter: BamAdapter
-  private ref?: string
-  constructor(record: BamRecord, adapter: BamAdapter, ref?: string) {
-    this.record = record
-    this.adapter = adapter
-    this.ref = ref
-  }
+export default class BamSlightlyLazyFeature
+  extends BamRecord
+  implements Feature
+{
+  public adapter!: BamAdapter
+  public ref?: string
 
   id() {
-    return `${this.adapter.id}-${this.record.id}`
+    return `${this.adapter.id}-${this.fileOffset}`
   }
 
   get seq() {
-    return decodeSeq(this.record.NUMERIC_SEQ, this.record.seq_length)
+    return decodeSeq(this.NUMERIC_SEQ, this.seq_length)
   }
 
   get NUMERIC_MISMATCHES(): MismatchesSOA {
     return getMismatchesNumeric(
-      this.record.NUMERIC_CIGAR,
-      this.record.NUMERIC_SEQ,
-      this.record.seq_length,
-      this.record.NUMERIC_MD,
+      this.NUMERIC_CIGAR,
+      this.NUMERIC_SEQ,
+      this.seq_length,
+      this.NUMERIC_MD,
       this.ref,
-      this.record.qual,
+      this.qual,
     )
   }
 
@@ -44,8 +42,8 @@ export default class BamSlightlyLazyFeature implements Feature {
     return toMismatchesArray(this.NUMERIC_MISMATCHES)
   }
 
-  get qual() {
-    return this.record.qual?.join(' ')
+  get qualString() {
+    return this.qual?.join(' ')
   }
 
   get(field: string): any {
@@ -55,25 +53,25 @@ export default class BamSlightlyLazyFeature implements Feature {
       case 'mismatches':
         return this.mismatches
       case 'name':
-        return this.record.name
+        return this.name
       case 'start':
-        return this.record.start
+        return this.start
       case 'end':
-        return this.record.end
+        return this.end
       case 'strand':
-        return this.record.strand
+        return this.strand
       case 'qual':
-        return this.qual
+        return this.qualString
       case 'seq':
         return this.seq
       case 'NUMERIC_SEQ':
-        return this.record.NUMERIC_SEQ
+        return this.NUMERIC_SEQ
       case 'NUMERIC_CIGAR':
-        return this.record.NUMERIC_CIGAR
+        return this.NUMERIC_CIGAR
       case 'CIGAR':
-        return this.record.CIGAR
+        return this.CIGAR
       case 'NUMERIC_QUAL':
-        return this.record.qual
+        return this.qual
 
       default:
         return this.fields[field]
@@ -89,25 +87,23 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   get fields(): SimpleFeatureSerialized {
-    const r = this.record
-    const a = this.adapter
-    const p = r.isPaired()
+    const p = this.isPaired()
     return {
-      start: r.start,
-      name: r.name,
-      end: r.end,
-      score: r.score,
-      strand: r.strand,
-      template_length: r.template_length,
-      flags: r.flags,
-      tags: r.tags,
-      refName: a.refIdToName(r.ref_id)!,
+      start: this.start,
+      name: this.name,
+      end: this.end,
+      score: this.score,
+      strand: this.strand,
+      template_length: this.template_length,
+      flags: this.flags,
+      tags: this.tags,
+      refName: this.adapter.refIdToName(this.ref_id)!,
       type: 'match',
-      pair_orientation: r.pair_orientation,
-      next_ref: p ? a.refIdToName(r.next_refid) : undefined,
-      next_pos: p ? r.next_pos : undefined,
+      pair_orientation: this.pair_orientation,
+      next_ref: p ? this.adapter.refIdToName(this.next_refid) : undefined,
+      next_pos: p ? this.next_pos : undefined,
       next_segment_position: p
-        ? `${a.refIdToName(r.next_refid)}:${r.next_pos + 1}`
+        ? `${this.adapter.refIdToName(this.next_refid)}:${this.next_pos + 1}`
         : undefined,
       uniqueId: this.id(),
     }
@@ -116,9 +112,9 @@ export default class BamSlightlyLazyFeature implements Feature {
   toJSON(): SimpleFeatureSerialized {
     return {
       ...this.fields,
-      CIGAR: this.record.CIGAR,
+      CIGAR: this.CIGAR,
       seq: this.seq,
-      qual: this.qual,
+      qual: this.qualString,
     }
   }
 }

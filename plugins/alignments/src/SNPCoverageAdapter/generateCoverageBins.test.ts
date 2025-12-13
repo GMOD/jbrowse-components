@@ -69,9 +69,7 @@ describe('generateCoverageBins', () => {
 
   test('does not call fetchSequence for methylation when statsEstimationMode is true', async () => {
     const fetchSequence = jest.fn().mockResolvedValue('ACGTACGT'.repeat(20))
-    const features = [
-      createMockFeature({ start: 10, end: 20 }),
-    ]
+    const features = [createMockFeature({ start: 10, end: 20 })]
 
     await generateCoverageBins({
       features,

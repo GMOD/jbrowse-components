@@ -39,11 +39,8 @@ const Tooltip = observer(function ({
   }
   clientMouseCoord: Coord
 }) {
-  const {
-    featureUnderMouse,
-    featureIdUnderMouse,
-    mouseoverExtraInformation,
-  } = model
+  const { featureUnderMouse, featureIdUnderMouse, mouseoverExtraInformation } =
+    model
   const x = clientMouseCoord[0] + 15
   const y = clientMouseCoord[1]
 

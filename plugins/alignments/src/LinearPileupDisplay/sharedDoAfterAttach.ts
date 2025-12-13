@@ -44,5 +44,4 @@ export function sharedDoAfterAttach(self: {
     },
     { name: 'ColorReady', delay: 1000 },
   )
-
 }

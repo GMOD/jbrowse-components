@@ -328,9 +328,8 @@ export function toMismatchesArray(soa: MismatchesSOA): Mismatch[] {
 export function getMismatchesFromFeature(feature: {
   get: (field: string) => unknown
 }): MismatchesSOA | undefined {
-  const numeric = feature.get('NUMERIC_MISMATCHES') as MismatchesSOA | undefined
-  if (numeric) {
-    return numeric
-  }
-  return toMismatchesSOA(feature.get('mismatches') as Mismatch[] | undefined)
+  return (
+    (feature.get('NUMERIC_MISMATCHES') as MismatchesSOA | undefined) ??
+    toMismatchesSOA(feature.get('mismatches') as Mismatch[] | undefined)
+  )
 }
