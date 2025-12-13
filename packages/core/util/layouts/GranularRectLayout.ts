@@ -324,7 +324,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       top: null,
       h: pHeight,
       originalHeight: height,
-      data,
+      dataRef: data ? new WeakRef(data) : undefined,
       serializableData,
     }
 
@@ -515,7 +515,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   getDataByID(id: string) {
-    return this.rectangles.get(id)?.data
+    return this.rectangles.get(id)?.dataRef?.deref()
   }
 
   cleanup() {}

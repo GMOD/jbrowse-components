@@ -11,7 +11,7 @@ export interface Rectangle<T> {
   top: number | null
   h: number
   originalHeight: number
-  data?: T
+  dataRef?: WeakRef<T>
   serializableData?: T
 }
 
@@ -21,11 +21,11 @@ export interface BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data?: unknown,
+    data?: T,
     serializableData?: unknown,
   ): number | null
   collides(rect: Rectangle<T>, top: number): boolean
-  addRectToBitmap(rect: Rectangle<T>, data: unknown): void
+  addRectToBitmap(rect: Rectangle<T>): void
   getRectangles(): Map<string, RectTuple>
   discardRange(left: number, right: number): void
   serializeRegion(region: { start: number; end: number }): SerializedLayout
