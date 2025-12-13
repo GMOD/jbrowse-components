@@ -20,6 +20,15 @@ import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 
+function getExonsAndCDS(transcripts: Feature[]) {
+  return transcripts.flatMap(
+    transcript =>
+      transcript
+        .get('subfeatures')
+        ?.filter(f => f.get('type') === 'exon' || f.get('type') === 'CDS') ?? [],
+  )
+}
+
 async function collapseIntrons({
   view,
   transcripts,
@@ -31,30 +40,20 @@ async function collapseIntrons({
 }) {
   const r0 = transcripts[0]?.get('refName')
   const refName = assembly?.getCanonicalRefName(r0) || r0
-  const w = 100
-
-  const subs = transcripts.flatMap(
-    transcript =>
-      transcript
-        .get('subfeatures')
-        ?.filter(f => f.get('type') === 'exon' || f.get('type') === 'CDS') ?? [],
-  )
-
+  const padding = 100
+  const subs = getExonsAndCDS(transcripts)
   const { id, ...rest } = getSnapshot(view)
   const newView = getSession(view).addView('LinearGenomeView', {
     ...rest,
-    tracks: rest.tracks.map(track => {
-      const { id, ...rest } = track
-      return { ...rest }
-    }),
+    tracks: rest.tracks.map(({ id, ...r }) => r),
     displayedRegions: mergeIntervals(
       subs.map(f => ({
         refName,
-        start: f.get('start') - w,
-        end: f.get('end') + w,
+        start: f.get('start') - padding,
+        end: f.get('end') + padding,
         assemblyName: view.assemblyNames[0],
       })),
-      w,
+      padding,
     ),
   }) as LinearGenomeViewModel
   await when(() => newView.initialized)
@@ -112,25 +111,24 @@ export default function CollapseIntronsDialog({
               {displayedTranscripts.map((transcript, idx) => {
                 const start = transcript.get('start')
                 const end = transcript.get('end')
-                const length = end - start
                 const name =
                   transcript.get('name') ||
                   transcript.get('id') ||
                   `Transcript ${idx + 1}`
                 const type = transcript.get('type') || 'transcript'
-                const subfeatures = transcript.get('subfeatures') ?? []
-                const exonCount = subfeatures.filter(
+                const exonsAndCDS = getExonsAndCDS([transcript])
+                const exonCount = exonsAndCDS.filter(
                   f => f.get('type') === 'exon',
                 ).length
-                const cdsCount = subfeatures.filter(
-                  f => f.get('type') === 'CDS',
-                ).length
+                const cdsCount = exonsAndCDS.length - exonCount
 
                 return (
                   <TableRow key={transcript.id()}>
                     <TableCell>{name}</TableCell>
                     <TableCell>{type}</TableCell>
-                    <TableCell align="right">{toLocale(length)} bp</TableCell>
+                    <TableCell align="right">
+                      {toLocale(end - start)} bp
+                    </TableCell>
                     <TableCell align="right">{exonCount}</TableCell>
                     <TableCell align="right">{cdsCount}</TableCell>
                     <TableCell align="right">
