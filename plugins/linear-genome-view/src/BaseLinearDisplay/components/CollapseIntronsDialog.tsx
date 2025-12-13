@@ -37,10 +37,13 @@ async function collapseIntrons({
 }: {
   view: LinearGenomeViewModel
   transcripts: Feature[]
-  assembly?: Assembly
+  assembly: Assembly
 }) {
-  const r0 = transcripts[0]?.get('refName')!
-  const refName = assembly?.getCanonicalRefName(r0) || r0
+  const r0 = transcripts[0]?.get('refName')
+  if (!r0) {
+    return
+  }
+  const refName = assembly.getCanonicalRefName2(r0)
   const padding = 100
   const subs = getExonsAndCDS(transcripts)
   const { id, ...rest } = getSnapshot(view)
@@ -70,7 +73,7 @@ export default function CollapseIntronsDialog({
 }: {
   view: LinearGenomeViewModel
   transcripts: Feature[]
-  assembly?: Assembly
+  assembly: Assembly
   handleClose: () => void
 }) {
   const [showAll, setShowAll] = useState(false)
@@ -83,7 +86,11 @@ export default function CollapseIntronsDialog({
 
   if (transcripts.length === 1) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    collapseIntrons({ view, transcripts, assembly })
+    collapseIntrons({
+      view,
+      transcripts,
+      assembly,
+    })
     handleClose()
     return null
   }
@@ -157,7 +164,11 @@ export default function CollapseIntronsDialog({
           </Table>
         </Box>
         {hasMore && !showAll ? (
-          <Button onClick={() => setShowAll(true)}>
+          <Button
+            onClick={() => {
+              setShowAll(true)
+            }}
+          >
             Show all ({sorted.length} transcripts)
           </Button>
         ) : null}
@@ -168,7 +179,11 @@ export default function CollapseIntronsDialog({
           color="primary"
           onClick={() => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            collapseIntrons({ view, transcripts, assembly })
+            collapseIntrons({
+              view,
+              transcripts,
+              assembly,
+            })
             handleClose()
           }}
         >

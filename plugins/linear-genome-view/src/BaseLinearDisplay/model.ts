@@ -439,17 +439,20 @@ function stateModelFactory() {
                       onClick: () => {
                         const view = getContainingView(self) as LGV
                         const { assemblyManager } = getSession(self)
-                        getSession(self).queueDialog(handleClose => [
-                          CollapseIntronsDialog,
-                          {
-                            view,
-                            transcripts,
-                            handleClose,
-                            assembly: assemblyManager.get(
-                              view.assemblyNames[0]!,
-                            ),
-                          },
-                        ])
+                        const assembly = assemblyManager.get(
+                          view.assemblyNames[0]!,
+                        )
+                        if (assembly) {
+                          getSession(self).queueDialog(handleClose => [
+                            CollapseIntronsDialog,
+                            {
+                              view,
+                              transcripts,
+                              handleClose,
+                              assembly,
+                            },
+                          ])
+                        }
                       },
                     },
                   ]
