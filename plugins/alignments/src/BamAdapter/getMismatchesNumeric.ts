@@ -25,6 +25,7 @@ const CIGAR_D = 2
 const CIGAR_N = 3
 const CIGAR_S = 4
 const CIGAR_H = 5
+const CIGAR_P = 6
 const CIGAR_EQ = 7
 const CIGAR_X = 8
 
@@ -47,7 +48,7 @@ export function getMismatchesNumeric(
   seqLength: number,
   md?: Uint8Array,
   ref?: string,
-  qual?: Uint8Array,
+  qual?: Uint8Array | null,
 ): MismatchesSOA {
   let soa = createMismatchesSOA(16)
 
@@ -156,12 +157,12 @@ function cigarToMismatchesSOA(
   seqLength: number,
   soa: MismatchesSOA,
   ref?: string,
-  qual?: Uint8Array,
+  qual?: Uint8Array | null,
 ): MismatchesSOA {
   let roffset = 0
   let soffset = 0
   const hasRef = !!ref
-  const hasQual = qual !== undefined
+  const hasQual = !!qual
 
   for (let i = 0, l = ops.length; i < l; i++) {
     const packed = ops[i]!
@@ -263,10 +264,10 @@ function mdToMismatchesSOA(
   soa: MismatchesSOA,
   numericSeq: Uint8Array,
   seqLength: number,
-  qual?: Uint8Array,
+  qual?: Uint8Array | null,
 ): MismatchesSOA {
   const opsLength = ops.length
-  const hasQual = qual !== undefined
+  const hasQual = !!qual
   const cigarCount = soa.count
   const hasSkips = soa.hasSkips
 
@@ -331,8 +332,7 @@ function mdToMismatchesSOA(
 
         if (op === CIGAR_S || op === CIGAR_I) {
           templateOffset += opLen
-        } else if (op === CIGAR_D || op === 6 || op === CIGAR_N) {
-          // D, P, N
+        } else if (op === CIGAR_D || op === CIGAR_P || op === CIGAR_N) {
           refOffset += opLen
         } else if (op !== CIGAR_H) {
           templateOffset += opLen
