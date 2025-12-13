@@ -1,4 +1,4 @@
-import Grid from './Grid'
+import DotplotGrid from './DotplotGrid'
 
 import type { DotplotViewModel } from '../model'
 
@@ -43,7 +43,7 @@ export default function MouseInteractionLayer({
         }
       }}
     >
-      <Grid model={model}>
+      <DotplotGrid model={model}>
         {validSelect && mousedown && mouserect ? (
           <rect
             fill="rgba(255,0,0,0.3)"
@@ -53,7 +53,7 @@ export default function MouseInteractionLayer({
             height={Math.abs(ydistance)}
           />
         ) : null}
-      </Grid>
+      </DotplotGrid>
     </div>
   )
 }
