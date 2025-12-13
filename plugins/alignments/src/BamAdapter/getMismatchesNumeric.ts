@@ -54,6 +54,42 @@ export function getMismatchesNumeric(
   return mismatches
 }
 
+/**
+ * Optimized getMismatches that accepts NUMERIC_MD (Uint8Array) directly.
+ * Avoids parsing all BAM tags and string conversion overhead.
+ */
+export function getMismatchesFromNumericMD(
+  cigar: Uint32Array,
+  numericSeq: Uint8Array,
+  seqLength: number,
+  numericMD: Uint8Array | undefined,
+  ref?: string,
+  qual?: Uint8Array | null,
+): Mismatch[] {
+  const { mismatches, hasSkips } = cigarToMismatchesNumeric(
+    cigar,
+    numericSeq,
+    seqLength,
+    ref,
+    qual,
+  )
+
+  // Parse MD tag directly from bytes if available
+  if (numericMD && numericMD.length > 0) {
+    mdToMismatchesFromBytes(
+      numericMD,
+      cigar,
+      mismatches,
+      numericSeq,
+      seqLength,
+      hasSkips,
+      qual,
+    )
+  }
+
+  return mismatches
+}
+
 // Helper to get sequence slice from NUMERIC_SEQ
 function getSeqSlice(
   numericSeq: Uint8Array,
@@ -226,6 +262,120 @@ function mdToMismatchesNumeric(
       // '^' - deletion
       i++
       while (i < len && mdstring.charCodeAt(i) >= 65) {
+        i++
+        currStart++
+      }
+    } else if (char >= 65) {
+      // letter (mismatch)
+      const letter = String.fromCharCode(char)
+      i++
+
+      // Handle skips
+      if (hasSkips && cigarLength > 0) {
+        for (let k = lastSkipPos; k < cigarLength; k++) {
+          const m = mismatches[k]!
+          if (m.type === 'skip' && currStart >= m.start) {
+            currStart += m.length
+            lastSkipPos = k
+          }
+        }
+      }
+
+      // Find position in read
+      let templateOffset = lastTemplateOffset
+      let refOffset = lastRefOffset
+      for (
+        let j = lastCigar;
+        j < opsLength && refOffset <= currStart;
+        j++, lastCigar = j
+      ) {
+        const packed = ops[j]!
+        const len = packed >> 4
+        const op = packed & 0xf
+
+        if (op === CIGAR_S || op === CIGAR_I) {
+          templateOffset += len
+        } else if (op === CIGAR_D || op === 6 || op === CIGAR_N) {
+          // D, P, N
+          refOffset += len
+        } else if (op !== CIGAR_H) {
+          templateOffset += len
+          refOffset += len
+        }
+      }
+      lastTemplateOffset = templateOffset
+      lastRefOffset = refOffset
+      const s = templateOffset - (refOffset - currStart)
+
+      let base: string
+      if (s < seqLength) {
+        const sb = numericSeq[s >> 1]!
+        const nibble = (sb >> ((1 - (s & 1)) << 2)) & 0xf
+        base = SEQRET_STRING_DECODER[nibble]!
+      } else {
+        base = 'X'
+      }
+      mismatches.push({
+        start: currStart,
+        base,
+        qual: hasQual ? qual[s] : undefined,
+        altbase: letter,
+        length: 1,
+        type: 'mismatch',
+      })
+
+      currStart++
+    } else {
+      i++
+    }
+  }
+}
+
+/**
+ * Parse MD tag directly from bytes (Uint8Array).
+ * Same logic as mdToMismatchesNumeric but avoids string conversion.
+ */
+function mdToMismatchesFromBytes(
+  md: Uint8Array,
+  ops: Uint32Array,
+  mismatches: Mismatch[],
+  numericSeq: Uint8Array,
+  seqLength: number,
+  hasSkips: boolean,
+  qual?: Uint8Array | null,
+) {
+  const mdLength = md.length
+  const opsLength = ops.length
+  const hasQual = !!qual
+  const cigarLength = mismatches.length
+
+  let currStart = 0
+  let lastCigar = 0
+  let lastTemplateOffset = 0
+  let lastRefOffset = 0
+  let lastSkipPos = 0
+
+  let i = 0
+  while (i < mdLength) {
+    const char = md[i]!
+
+    if (char >= 48 && char <= 57) {
+      // digit (0-9)
+      let num = 0
+      while (i < mdLength) {
+        const c = md[i]!
+        if (c >= 48 && c <= 57) {
+          num = num * 10 + (c - 48)
+          i++
+        } else {
+          break
+        }
+      }
+      currStart += num
+    } else if (char === 94) {
+      // '^' - deletion
+      i++
+      while (i < mdLength && md[i]! >= 65) {
         i++
         currStart++
       }

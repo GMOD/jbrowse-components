@@ -82,8 +82,8 @@ function processMismatchesPrefixSum(
 
         if (visStart < visEnd) {
           // Use prefix sums for deletions - O(1) per deletion
-          deletionChanges[visStart]++
-          deletionChanges[visEnd]--
+          deletionChanges[visStart]!++
+          deletionChanges[visEnd]!--
         }
 
         // Track skips for junction rendering

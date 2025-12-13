@@ -1,4 +1,4 @@
-import { getMismatchesNumeric } from './getMismatchesNumeric'
+import { getMismatchesFromNumericMD } from './getMismatchesNumeric'
 import { decodeSeq } from '../shared/decodeSeq'
 import { cacheGetter } from '../shared/util'
 
@@ -28,11 +28,11 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   get mismatches() {
-    return getMismatchesNumeric(
+    return getMismatchesFromNumericMD(
       this.record.NUMERIC_CIGAR,
       this.record.NUMERIC_SEQ,
       this.record.seq_length,
-      this.record.tags.MD as string,
+      this.record.NUMERIC_MD,
       this.ref,
       this.record.qual,
     )

@@ -67,15 +67,15 @@ export function processDepthPrefixSum(
 
     if (visStart < visEnd) {
       // Increment at start, decrement at end
-      depthChanges[visStart]++
-      depthChanges[visEnd]--
+      depthChanges[visStart]!++
+      depthChanges[visEnd]!--
 
       if (fstrand === 1) {
-        strandPlusChanges[visStart]++
-        strandPlusChanges[visEnd]--
+        strandPlusChanges[visStart]!++
+        strandPlusChanges[visEnd]!--
       } else if (fstrand === -1) {
-        strandMinusChanges[visStart]++
-        strandMinusChanges[visEnd]--
+        strandMinusChanges[visStart]!++
+        strandMinusChanges[visEnd]!--
       }
     }
   }
@@ -142,15 +142,15 @@ export function processDepthPrefixSumInto(
     const visEnd = Math.min(fend, regionEnd) - regionStart
 
     if (visStart < visEnd) {
-      depthChanges[visStart]++
-      depthChanges[visEnd]--
+      depthChanges[visStart]!++
+      depthChanges[visEnd]!--
 
       if (fstrand === 1) {
-        strandPlusChanges[visStart]++
-        strandPlusChanges[visEnd]--
+        strandPlusChanges[visStart]!++
+        strandPlusChanges[visEnd]!--
       } else if (fstrand === -1) {
-        strandMinusChanges[visStart]++
-        strandMinusChanges[visEnd]--
+        strandMinusChanges[visStart]!++
+        strandMinusChanges[visEnd]!--
       }
     }
   }
