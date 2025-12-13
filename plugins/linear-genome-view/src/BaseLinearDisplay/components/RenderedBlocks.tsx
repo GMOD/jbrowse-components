@@ -10,8 +10,6 @@ import MaxHeightReached from './MaxHeightReachedIndicator'
 import type { BlockModel } from '../models/serverSideRenderedBlock'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 
-const interRegionPaddingStyle = { background: 'none' } as const
-
 const RenderedBlocks = observer(function ({
   model,
 }: {
@@ -43,7 +41,7 @@ const RenderedBlocks = observer(function ({
         <InterRegionPaddingBlockComponent
           key={key}
           width={block.widthPx}
-          style={interRegionPaddingStyle}
+          style={{ background: 'none' }}
           boundary={block.variant === 'boundary'}
         />
       )
