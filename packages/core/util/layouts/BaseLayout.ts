@@ -21,11 +21,11 @@ export interface BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data?: T,
+    data?: unknown,
     serializableData?: unknown,
   ): number | null
   collides(rect: Rectangle<T>, top: number): boolean
-  addRectToBitmap(rect: Rectangle<T>): void
+  addRectToBitmap(rect: Rectangle<T>, data: unknown): void
   getRectangles(): Map<string, RectTuple>
   discardRange(left: number, right: number): void
   serializeRegion(region: { start: number; end: number }): SerializedLayout
