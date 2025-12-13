@@ -4,7 +4,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
   getContainingDisplay,
-  getContainingView,
+  // TODO: Uncomment when ready to enable layout cache invalidation on navigation
+  // getContainingView,
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
@@ -301,7 +302,8 @@ export function renderBlockData(
     const sessionId = getRpcSessionId(display)
     const layoutId = parentTrack.id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
-    const view = getContainingView(display) as { navigationEpoch?: number }
+    // TODO: Uncomment when ready to enable layout cache invalidation on navigation
+    // const view = getContainingView(display) as { navigationEpoch?: number }
 
     return {
       rendererType,
@@ -325,7 +327,8 @@ export function renderBlockData(
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
         timeout: 1_000_000,
-        navigationEpoch: view.navigationEpoch ?? 0,
+        // TODO: Uncomment when ready to enable layout cache invalidation on navigation
+        // navigationEpoch: view.navigationEpoch ?? 0,
       },
     }
   } catch (e) {

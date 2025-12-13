@@ -63,6 +63,8 @@ export default class BamSlightlyLazyFeature
         return this.qualString
       case 'seq':
         return this.seq
+      case 'tags':
+        return this.tags
       case 'NUMERIC_SEQ':
         return this.NUMERIC_SEQ
       case 'NUMERIC_CIGAR':

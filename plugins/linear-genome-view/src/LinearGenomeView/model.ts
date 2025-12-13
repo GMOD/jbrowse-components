@@ -282,12 +282,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       coarseDynamicBlocks: [] as BaseBlock[],
-      /**
-       * #volatile
-       * Incremented when navigation moves to a completely different region
-       * (no overlap with previous dynamic blocks). Used to invalidate layout caches.
-       */
-      navigationEpoch: 0,
+      // TODO: Uncomment when ready to enable layout cache invalidation on navigation
+      // /**
+      //  * #volatile
+      //  * Incremented when navigation moves to a completely different region
+      //  * (no overlap with previous dynamic blocks). Used to invalidate layout caches.
+      //  */
+      // navigationEpoch: 0,
       /**
        * #volatile
        */
@@ -1480,29 +1481,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setCoarseDynamicBlocks(blocks: BlockSet) {
         const newBlocks = blocks.contentBlocks
-        const oldBlocks = self.coarseDynamicBlocks
-
-        // Check if any new block overlaps with any old block
-        // If no overlap, this is a "significant navigation" - increment epoch
-        if (oldBlocks.length > 0 && newBlocks.length > 0) {
-          let hasOverlap = false
-          outer: for (const oldBlock of oldBlocks) {
-            for (const newBlock of newBlocks) {
-              if (
-                oldBlock.assemblyName === newBlock.assemblyName &&
-                oldBlock.refName === newBlock.refName &&
-                oldBlock.start < newBlock.end &&
-                newBlock.start < oldBlock.end
-              ) {
-                hasOverlap = true
-                break outer
-              }
-            }
-          }
-          if (!hasOverlap) {
-            self.navigationEpoch += 1
-          }
-        }
+        // TODO: Uncomment when ready to enable layout cache invalidation on navigation
+        // const oldBlocks = self.coarseDynamicBlocks
+        //
+        // // Check if any new block overlaps with any old block
+        // // If no overlap, this is a "significant navigation" - increment epoch
+        // if (oldBlocks.length > 0 && newBlocks.length > 0) {
+        //   let hasOverlap = false
+        //   outer: for (const oldBlock of oldBlocks) {
+        //     for (const newBlock of newBlocks) {
+        //       if (
+        //         oldBlock.assemblyName === newBlock.assemblyName &&
+        //         oldBlock.refName === newBlock.refName &&
+        //         oldBlock.start < newBlock.end &&
+        //         newBlock.start < oldBlock.end
+        //       ) {
+        //         hasOverlap = true
+        //         break outer
+        //       }
+        //     }
+        //   }
+        //   if (!hasOverlap) {
+        //     self.navigationEpoch += 1
+        //   }
+        // }
 
         self.coarseDynamicBlocks = newBlocks
         self.coarseTotalBp = blocks.totalBp
