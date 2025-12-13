@@ -11,7 +11,7 @@ export interface Rectangle<T> {
   top: number | null
   h: number
   originalHeight: number
-  dataRef?: WeakRef<T>
+  data?: T
   serializableData?: T
 }
 
