@@ -27,17 +27,21 @@ export function layoutFeature({
   heightPx: number
   displayMode: string
 }): LayoutRecord | null {
+  // Cache start/end to avoid multiple get() calls
+  const featureStart = feature.get('start') as number
+  const featureEnd = feature.get('end') as number
+
   let expansionBefore = 0
   let expansionAfter = 0
 
   // Expand the start and end of feature when softclipping enabled
   if (showSoftClip) {
-    const mismatches = feature.get('mismatches') as Mismatch[]
-    const seq = feature.get('seq') as string
-    if (seq) {
-      for (const { type, start, cliplen = 0 } of mismatches) {
-        if (type === 'softclip') {
-          if (start === 0) {
+    const mismatches = feature.get('mismatches') as Mismatch[] | undefined
+    if (mismatches) {
+      for (const mismatch of mismatches) {
+        if (mismatch.type === 'softclip') {
+          const cliplen = mismatch.cliplen ?? 0
+          if (mismatch.start === 0) {
             expansionBefore = cliplen
           } else {
             expansionAfter = cliplen
@@ -47,35 +51,24 @@ export function layoutFeature({
     }
   }
 
-  const s = feature.get('start') - expansionBefore
-  const e = feature.get('end') + expansionAfter
+  const s = featureStart - expansionBefore
+  const e = featureEnd + expansionAfter
+
+  if (displayMode === 'compact') {
+    heightPx /= 3
+  }
+
+  const topPx = layout.addRect(feature.id(), s, e, heightPx, feature)
+  if (topPx === null) {
+    return null
+  }
+
   const leftPx = region.reversed
     ? (region.end - e) / bpPerPx
     : (s - region.start) / bpPerPx
   const rightPx = region.reversed
     ? (region.end - s) / bpPerPx
     : (e - region.start) / bpPerPx
-
-  if (displayMode === 'compact') {
-    heightPx /= 3
-  }
-  if (feature.get('refName') !== region.refName) {
-    throw new Error(
-      `feature ${feature.id()} is not on the current region's reference sequence ${
-        region.refName
-      }`,
-    )
-  }
-  const topPx = layout.addRect(
-    feature.id(),
-    feature.get('start') - expansionBefore,
-    feature.get('end') + expansionAfter,
-    heightPx,
-    feature,
-  )
-  if (topPx === null) {
-    return null
-  }
 
   return {
     feature,
