@@ -257,41 +257,40 @@ export async function generateCoverageBinsPrefixSum({
   const diff = regionStart - start2
 
   if (colorBy?.type === 'modifications' && fetchSequence) {
-      checkStopToken(stopToken)
-      regionSequence =
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: regionEnd + 1,
-        })) || ''
-      const slicedSequence = regionSequence.slice(diff)
+    checkStopToken(stopToken)
+    regionSequence =
+      (await fetchSequence({
+        ...region,
+        start: start2,
+        end: regionEnd + 1,
+      })) || ''
+    const slicedSequence = regionSequence.slice(diff)
 
-      for (const feature of features) {
-        processModifications({
-          feature,
-          colorBy,
-          bins: modBins,
-          region,
-          regionSequence: slicedSequence,
-        })
-      }
-    } else if (colorBy?.type === 'methylation' && fetchSequence) {
-      checkStopToken(stopToken)
-      regionSequence ??=
-        (await fetchSequence({
-          ...region,
-          start: start2,
-          end: regionEnd + 1,
-        })) || ''
+    for (const feature of features) {
+      processModifications({
+        feature,
+        colorBy,
+        bins: modBins,
+        region,
+        regionSequence: slicedSequence,
+      })
+    }
+  } else if (colorBy?.type === 'methylation' && fetchSequence) {
+    checkStopToken(stopToken)
+    regionSequence ??=
+      (await fetchSequence({
+        ...region,
+        start: start2,
+        end: regionEnd + 1,
+      })) || ''
 
-      for (const feature of features) {
-        processReferenceCpGs({
-          feature,
-          bins: modBins,
-          region,
-          regionSequence,
-        })
-      }
+    for (const feature of features) {
+      processReferenceCpGs({
+        feature,
+        bins: modBins,
+        region,
+        regionSequence,
+      })
     }
   }
 
