@@ -9,6 +9,7 @@ import CramAdapter from './CramAdapter/CramAdapter'
 import { SequenceAdapter } from './CramAdapter/CramTestAdapters'
 import cramConfigSchema from './CramAdapter/configSchema'
 import { getMismatchesFromFeature, toMismatchesArray } from './shared/types'
+
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 const pluginManager = new PluginManager()

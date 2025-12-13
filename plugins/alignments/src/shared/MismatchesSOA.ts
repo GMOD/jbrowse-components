@@ -1,10 +1,14 @@
 // Mismatch type encoding
+// Non-interbase types (0-2), interbase types have bit 0x4 set (4-6)
 export const TYPE_MISMATCH = 0
-export const TYPE_INSERTION = 1
-export const TYPE_DELETION = 2
-export const TYPE_SKIP = 3
-export const TYPE_SOFTCLIP = 4
-export const TYPE_HARDCLIP = 5
+export const TYPE_DELETION = 1
+export const TYPE_SKIP = 2
+export const TYPE_INSERTION = 4 // interbase (bit 0x4)
+export const TYPE_SOFTCLIP = 5 // interbase (bit 0x4)
+export const TYPE_HARDCLIP = 6 // interbase (bit 0x4)
+
+// Bitmask for interbase type check: (type & INTERBASE_BIT) !== 0
+export const INTERBASE_BIT = 4
 
 // Character code constants for bases
 export const CHAR_STAR = 42 // '*' - deletion marker
@@ -23,12 +27,13 @@ for (let i = 0; i < 128; i++) {
 }
 
 export const TYPE_NAMES = [
-  'mismatch',
-  'insertion',
-  'deletion',
-  'skip',
-  'softclip',
-  'hardclip',
+  'mismatch', // 0
+  'deletion', // 1
+  'skip', // 2
+  undefined, // 3 (unused)
+  'insertion', // 4
+  'softclip', // 5
+  'hardclip', // 6
 ] as const
 
 export type MismatchType = (typeof TYPE_NAMES)[number]
@@ -184,12 +189,12 @@ function isMismatchesSOA(
   return (
     data !== undefined &&
     !Array.isArray(data) &&
-    typeof (data as MismatchesSOA).count === 'number' &&
-    (data as MismatchesSOA).starts instanceof Uint32Array
+    typeof data.count === 'number' &&
+    data.starts instanceof Uint32Array
   )
 }
 
-function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
+function convertLegacyMismatchesToSOA(mismatches: Mismatch[]): MismatchesSOA {
   const len = mismatches.length
   let hasSkips = false
   const soa: MismatchesSOA = {
@@ -214,16 +219,12 @@ function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
       hasSkips = true
     }
 
-    // Determine length based on type
-    if (
-      type === TYPE_INSERTION ||
-      type === TYPE_SOFTCLIP ||
-      type === TYPE_HARDCLIP
-    ) {
-      soa.lengths[i] = m.cliplen ?? m.insertedBases?.length ?? 0
-    } else {
-      soa.lengths[i] = m.length
-    }
+    // For interbase types (insertion/softclip/hardclip), length is in cliplen or insertedBases
+    // For others (mismatch/deletion/skip), length is in the length field
+    soa.lengths[i] =
+      (type & INTERBASE_BIT) !== 0
+        ? (m.cliplen ?? m.insertedBases?.length ?? 0)
+        : m.length
 
     // bases always stores a char code
     // For insertions with multi-char base (e.g. "123"), use '+' as placeholder
@@ -254,7 +255,7 @@ function toMismatchesSOA(
     return data
   }
   if (Array.isArray(data) && data.length > 0) {
-    return convertToMismatchesSOA(data)
+    return convertLegacyMismatchesToSOA(data)
   }
   if (Array.isArray(data) && data.length === 0) {
     return createMismatchesSOA(0)

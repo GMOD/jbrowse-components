@@ -6,17 +6,15 @@ exports[`cram read features mismatches 1`] = `
     0,
   ],
   "bases": Uint8Array [
-    1,
-  ],
-  "clipLens": Uint32Array [
-    1,
+    43,
   ],
   "count": 1,
-  "insertedBases": [
-    "C",
-  ],
+  "hasSkips": false,
+  "insertedBases": Map {
+    0 => "C",
+  },
   "lengths": Uint32Array [
-    0,
+    1,
   ],
   "quals": Uint8Array [
     0,
@@ -25,7 +23,7 @@ exports[`cram read features mismatches 1`] = `
     24,
   ],
   "types": Uint8Array [
-    1,
+    4,
   ],
 }
 `;

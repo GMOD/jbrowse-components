@@ -87,7 +87,8 @@ const TWO_BASE_STRINGS_SAME_BYTE: string[] = new Array(256)
 for (let b = 0; b < 256; b++) {
   const highNibble = (b >> 4) & 0xf
   const lowNibble = b & 0xf
-  TWO_BASE_STRINGS_SAME_BYTE[b] = SEQ_BASE_STRINGS[highNibble]! + SEQ_BASE_STRINGS[lowNibble]!
+  TWO_BASE_STRINGS_SAME_BYTE[b] =
+    SEQ_BASE_STRINGS[highNibble]! + SEQ_BASE_STRINGS[lowNibble]!
 }
 
 // Helper to decode a single base at position

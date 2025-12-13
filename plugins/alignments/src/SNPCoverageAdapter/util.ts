@@ -1,4 +1,4 @@
-import { TYPE_HARDCLIP, TYPE_INSERTION, TYPE_SOFTCLIP } from '../shared/types'
+import { INTERBASE_BIT } from '../shared/types'
 
 import type {
   ColorBy,
@@ -27,9 +27,7 @@ export function mismatchLenSOA(type: number, length: number) {
 }
 
 export function isInterbaseType(type: number) {
-  return (
-    type === TYPE_SOFTCLIP || type === TYPE_HARDCLIP || type === TYPE_INSERTION
-  )
+  return (type & INTERBASE_BIT) !== 0
 }
 
 export function createPreBinEntry(): PreBinEntry {
