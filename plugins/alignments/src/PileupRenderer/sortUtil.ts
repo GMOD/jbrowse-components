@@ -1,8 +1,12 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
-import { TYPE_INSERTION, TYPE_SOFTCLIP } from '../shared/types'
+import {
+  TYPE_INSERTION,
+  TYPE_SOFTCLIP,
+  getMismatchesFromFeature,
+} from '../shared/types'
 
-import type { MismatchesSOA, SortedBy } from '../shared/types'
+import type { SortedBy } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 
 interface MismatchInfo {
@@ -64,9 +68,7 @@ export function sortFeature(
     case 'Base pair': {
       const baseMap = new Map<string, MismatchInfo>()
       for (const feature of featuresInCenterLine) {
-        const mismatches = feature.get('mismatches') as
-          | MismatchesSOA
-          | undefined
+        const mismatches = getMismatchesFromFeature(feature)
         if (!mismatches || mismatches.count === 0) {
           continue
         }

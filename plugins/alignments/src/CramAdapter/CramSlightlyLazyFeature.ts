@@ -124,15 +124,20 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get(field: string): any {
-    return field === 'mismatches'
-      ? this.mismatches
-      : field === 'qual'
-        ? this.qual
-        : field === 'CIGAR'
-          ? this.CIGAR
-          : field === 'NUMERIC_CIGAR'
-            ? this.NUMERIC_CIGAR
-            : this.fields[field]
+    switch (field) {
+      case 'NUMERIC_MISMATCHES':
+        return this.NUMERIC_MISMATCHES
+      case 'mismatches':
+        return undefined
+      case 'qual':
+        return this.qual
+      case 'CIGAR':
+        return this.CIGAR
+      case 'NUMERIC_CIGAR':
+        return this.NUMERIC_CIGAR
+      default:
+        return this.fields[field]
+    }
   }
 
   parent() {
@@ -143,7 +148,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     return undefined
   }
 
-  get mismatches(): MismatchesSOA {
+  get NUMERIC_MISMATCHES(): MismatchesSOA {
     return readFeaturesToMismatches(
       this.record.readFeatures,
       this.start,
@@ -186,4 +191,4 @@ export default class CramSlightlyLazyFeature implements Feature {
 cacheGetter(CramSlightlyLazyFeature, 'fields')
 cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
 cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_CIGAR')
-cacheGetter(CramSlightlyLazyFeature, 'mismatches')
+cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_MISMATCHES')

@@ -28,7 +28,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     return decodeSeq(this.record.NUMERIC_SEQ, this.record.seq_length)
   }
 
-  get mismatches(): MismatchesSOA {
+  get NUMERIC_MISMATCHES(): MismatchesSOA {
     return getMismatchesNumeric(
       this.record.NUMERIC_CIGAR,
       this.record.NUMERIC_SEQ,
@@ -45,8 +45,10 @@ export default class BamSlightlyLazyFeature implements Feature {
 
   get(field: string): any {
     switch (field) {
+      case 'NUMERIC_MISMATCHES':
+        return this.NUMERIC_MISMATCHES
       case 'mismatches':
-        return this.mismatches
+        return undefined
       case 'name':
         return this.record.name
       case 'start':
@@ -117,4 +119,4 @@ export default class BamSlightlyLazyFeature implements Feature {
 }
 
 cacheGetter(BamSlightlyLazyFeature, 'fields')
-cacheGetter(BamSlightlyLazyFeature, 'mismatches')
+cacheGetter(BamSlightlyLazyFeature, 'NUMERIC_MISMATCHES')

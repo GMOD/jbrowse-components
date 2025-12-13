@@ -1,11 +1,12 @@
 import { inc, isInterbaseType, mismatchLenSOA } from './util'
-import { TYPE_DELETION, TYPE_INSERTION, TYPE_SKIP } from '../shared/types'
-
-import type {
-  MismatchesSOA,
-  PreBaseCoverageBin,
-  SkipMap,
+import {
+  TYPE_DELETION,
+  TYPE_INSERTION,
+  TYPE_SKIP,
+  getMismatchesFromFeature,
 } from '../shared/types'
+
+import type { PreBaseCoverageBin, SkipMap } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
 
@@ -22,7 +23,7 @@ export function processMismatches({
 }) {
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
-  const mismatches = feature.get('mismatches') as MismatchesSOA | undefined
+  const mismatches = getMismatchesFromFeature(feature)
   const regionStart = region.start
   const regionEnd = region.end
   const binsLength = bins.length

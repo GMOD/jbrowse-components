@@ -8,10 +8,10 @@ import {
   TYPE_MISMATCH,
   TYPE_SKIP,
   TYPE_SOFTCLIP,
+  getMismatchesFromFeature,
 } from '../../shared/types'
 import { fillRectCtx, fillTextCtx } from '../util'
 
-import type { MismatchesSOA } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
@@ -71,7 +71,7 @@ export function renderMismatches({
 
   const invBpPerPx = 1 / bpPerPx
   const pxPerBp = Math.min(invBpPerPx, 2)
-  const mismatches = feature.get('mismatches') as MismatchesSOA | undefined
+  const mismatches = getMismatchesFromFeature(feature)
   const canRenderText = heightPx >= charHeight - 2
   const useAlpha = mismatchAlpha === true
   const regionStart = region.start

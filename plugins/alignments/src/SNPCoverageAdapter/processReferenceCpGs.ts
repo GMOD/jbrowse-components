@@ -3,7 +3,7 @@ import { doesIntersect2 } from '@jbrowse/core/util'
 import { parseCigar2 } from '../MismatchParser'
 import { incWithProbabilities } from './util'
 import { getMethBins } from '../ModificationParser/getMethBins'
-import { TYPE_DELETION } from '../shared/types'
+import { TYPE_DELETION, getMismatchesFromFeature } from '../shared/types'
 
 import type { MismatchesSOA, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
@@ -42,7 +42,7 @@ export function processReferenceCpGs({
   const fend = feature.get('end')
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined
-  const mismatches = feature.get('mismatches') as MismatchesSOA | undefined
+  const mismatches = getMismatchesFromFeature(feature)
   const r = regionSequence.toLowerCase()
   if (seq) {
     const cigarOps =

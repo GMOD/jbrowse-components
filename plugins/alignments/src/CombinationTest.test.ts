@@ -8,7 +8,7 @@ import bamConfigSchema from './BamAdapter/configSchema'
 import CramAdapter from './CramAdapter/CramAdapter'
 import { SequenceAdapter } from './CramAdapter/CramTestAdapters'
 import cramConfigSchema from './CramAdapter/configSchema'
-
+import { getMismatchesFromFeature, toMismatchesArray } from './shared/types'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 const pluginManager = new PluginManager()
@@ -98,13 +98,17 @@ async function mismatchesCheck(f: string) {
   const cramMap = Object.fromEntries(
     cramFeaturesArray.map(f => [
       f.get('name'),
-      f.get('mismatches').sort((a: M, b: M) => b.start - a.start),
+      toMismatchesArray(getMismatchesFromFeature(f)!).sort(
+        (a: M, b: M) => b.start - a.start,
+      ),
     ]),
   )
   const bamMap = Object.fromEntries(
     bamFeaturesArray.map(f => [
       f.get('name'),
-      f.get('mismatches').sort((a: M, b: M) => b.start - a.start),
+      toMismatchesArray(getMismatchesFromFeature(f)!).sort(
+        (a: M, b: M) => b.start - a.start,
+      ),
     ]),
   )
   expect(bamMap).toEqual(cramMap)
