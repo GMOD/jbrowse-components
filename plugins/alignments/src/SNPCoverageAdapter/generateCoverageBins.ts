@@ -53,6 +53,7 @@ export async function generateCoverageBins({
   fetchSequence?: (arg: Region) => Promise<string | undefined>
 }) {
   const { stopToken, colorBy, statsEstimationMode } = opts
+  console.log('generateCoverageBins statsEstimationMode:', statsEstimationMode)
   const skipmap = {} as SkipMap
   const bins = [] as PreBaseCoverageBin[]
   const start2 = Math.max(0, region.start - 1)
