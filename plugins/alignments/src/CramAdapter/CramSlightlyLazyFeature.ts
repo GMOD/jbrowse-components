@@ -3,7 +3,7 @@ import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
 import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
-import type { MismatchesSOA } from '../BamAdapter/MismatchesSOA'
+import type { MismatchesSOA } from '../shared/MismatchesSOA'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 

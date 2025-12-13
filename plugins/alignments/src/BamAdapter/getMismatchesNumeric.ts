@@ -8,9 +8,9 @@ import {
   createMismatchesSOA,
   pushMismatch,
   trimMismatchesSOA,
-} from './MismatchesSOA'
+} from '../shared/MismatchesSOA'
 
-import type { MismatchesSOA } from './MismatchesSOA'
+import type { MismatchesSOA } from '../shared/MismatchesSOA'
 
 // CIGAR operation indices (from BAM spec)
 const CIGAR_M = 0

@@ -9,9 +9,9 @@ import {
   createMismatchesSOA,
   pushMismatch,
   trimMismatchesSOA,
-} from '../BamAdapter/MismatchesSOA'
+} from '../shared/MismatchesSOA'
 
-import type { MismatchesSOA } from '../BamAdapter/MismatchesSOA'
+import type { MismatchesSOA } from '../shared/MismatchesSOA'
 import type { CramRecord } from '@gmod/cram'
 
 type ReadFeatures = CramRecord['readFeatures']

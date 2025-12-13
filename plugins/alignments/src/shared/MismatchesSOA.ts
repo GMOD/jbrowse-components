@@ -32,7 +32,7 @@ export type MismatchType = (typeof TYPE_NAMES)[number]
  * - bases: always a char code (e.g., 65 for 'A', 42 for '*', 78 for 'N', 43 for '+')
  * - quals: quality score (0 if not available)
  * - altbases: reference base char code for mismatches (0 if not applicable)
- * - insertedBases: sparse array - only populated at indices where type is insertion
+ * - insertedBases: Map from index to inserted sequence string (only for insertions)
  */
 export interface MismatchesSOA {
   count: number
@@ -42,8 +42,8 @@ export interface MismatchesSOA {
   bases: Uint8Array
   quals: Uint8Array
   altbases: Uint8Array
-  /** Sparse array: only indices with insertions have values */
-  insertedBases: string[]
+  /** Map from index to inserted bases string (only populated for insertions) */
+  insertedBases: Map<number, string>
 }
 
 export function createMismatchesSOA(capacity: number): MismatchesSOA {
@@ -55,7 +55,7 @@ export function createMismatchesSOA(capacity: number): MismatchesSOA {
     bases: new Uint8Array(capacity),
     quals: new Uint8Array(capacity),
     altbases: new Uint8Array(capacity),
-    insertedBases: [],
+    insertedBases: new Map(),
   }
 }
 
@@ -109,7 +109,7 @@ export function pushMismatch(
   result.quals[idx] = qual
   result.altbases[idx] = altbase
   if (insertedBases !== undefined) {
-    result.insertedBases[idx] = insertedBases
+    result.insertedBases.set(idx, insertedBases)
   }
   result.count++
   return result
@@ -177,7 +177,7 @@ function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
     bases: new Uint8Array(len),
     quals: new Uint8Array(len),
     altbases: new Uint8Array(len),
-    insertedBases: [],
+    insertedBases: new Map(),
   }
 
   for (let i = 0; i < len; i++) {
@@ -208,7 +208,7 @@ function convertToMismatchesSOA(mismatches: Mismatch[]): MismatchesSOA {
     soa.altbases[i] = m.altbase ? m.altbase.charCodeAt(0) : 0
 
     if (m.insertedBases !== undefined) {
-      soa.insertedBases[i] = m.insertedBases
+      soa.insertedBases.set(i, m.insertedBases)
     }
   }
 

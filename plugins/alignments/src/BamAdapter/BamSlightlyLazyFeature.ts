@@ -3,7 +3,7 @@ import { decodeSeq } from '../shared/decodeSeq'
 import { cacheGetter } from '../shared/util'
 
 import type BamAdapter from './BamAdapter'
-import type { MismatchesSOA } from './MismatchesSOA'
+import type { MismatchesSOA } from '../shared/MismatchesSOA'
 import type { BamRecord } from '@gmod/bam'
 import type {
   Feature,

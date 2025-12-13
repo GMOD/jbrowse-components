@@ -132,7 +132,7 @@ export interface Mismatch {
   cliplen?: number
 }
 
-export type { MismatchesSOA } from '../BamAdapter/MismatchesSOA'
+export type { MismatchesSOA } from './MismatchesSOA'
 export {
   TYPE_DELETION,
   TYPE_HARDCLIP,
@@ -143,7 +143,7 @@ export {
   TYPE_SOFTCLIP,
   getMismatchesFromFeature,
   toMismatchesArray,
-} from '../BamAdapter/MismatchesSOA'
+} from './MismatchesSOA'
 
 export interface ReducedFeature {
   name: string
