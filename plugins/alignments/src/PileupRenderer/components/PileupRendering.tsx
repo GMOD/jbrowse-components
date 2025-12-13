@@ -47,7 +47,8 @@ const PileupRendering = observer(function (props: {
   colorBy?: ColorBy
   filterBy?: FilterBy
   items: FlatbushItem[]
-  flatbush: any
+  flatbush: ArrayBufferLike
+  featureNames?: Record<string, string>
   onMouseMove?: (
     event: React.MouseEvent,
     featureId?: string,
@@ -77,6 +78,7 @@ const PileupRendering = observer(function (props: {
     filterBy,
     flatbush,
     items,
+    featureNames = {},
     onFeatureClick,
     onFeatureContextMenu,
     onContextMenu,
@@ -172,12 +174,15 @@ const PileupRendering = observer(function (props: {
         )
         const item = search.length ? items[search[0]!] : undefined
         setItemUnderMouse(item)
-        const label = getItemLabel(item)
-        onMouseMove?.(
-          event,
-          displayModel.getFeatureOverlapping(blockKey, clientBp, offsetY),
-          label,
+        const featureId = displayModel.getFeatureOverlapping(
+          blockKey,
+          clientBp,
+          offsetY,
         )
+        const label =
+          getItemLabel(item) ??
+          (featureId ? featureNames[featureId] : undefined)
+        onMouseMove?.(event, featureId, label)
       }}
       onClick={event => {
         if (!movedDuringLastMouseDown) {

@@ -300,6 +300,7 @@ export function drawLongReadChains({
         renderMismatches({
           ctx,
           feat: layoutFeat,
+          checkRef: true,
           bpPerPx,
           regions,
           hideSmallIndels,

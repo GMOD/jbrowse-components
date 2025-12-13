@@ -50,7 +50,7 @@ export function getQuantitativeStatsAutorun(self: {
           }
         }
       },
-      { delay: 1000 },
+      { delay: 500 },
     ),
   )
 }

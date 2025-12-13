@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { fetchSequence } from '../util'
-import { generateCoverageBins } from './generateCoverageBins'
+import { generateCoverageBinsPrefixSum } from './generateCoverageBinsPrefixSum'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
@@ -71,7 +71,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         subadapter.getFeatures(region, opts).pipe(toArray()),
       )
 
-      const { bins, skipmap } = await generateCoverageBins({
+      const { bins, skipmap } = await generateCoverageBinsPrefixSum({
         features,
         region,
         opts,
