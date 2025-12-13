@@ -39,7 +39,7 @@ async function collapseIntrons({
   transcripts: Feature[]
   assembly?: Assembly
 }) {
-  const r0 = transcripts[0]?.get('refName')
+  const r0 = transcripts[0]?.get('refName')!
   const refName = assembly?.getCanonicalRefName(r0) || r0
   const padding = 100
   const subs = getExonsAndCDS(transcripts)

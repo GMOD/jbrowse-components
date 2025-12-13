@@ -20,7 +20,7 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   id() {
-    return `${this.adapter.id}-${this.record.id}`
+    return `${this.adapter.id}-${this.record.fileOffset}`
   }
 
   get seq() {
@@ -32,7 +32,7 @@ export default class BamSlightlyLazyFeature implements Feature {
       this.record.NUMERIC_CIGAR,
       this.record.NUMERIC_SEQ,
       this.record.seq_length,
-      this.record.tags.MD as string | undefined,
+      this.record.tags.MD as string,
       this.ref,
       this.record.qual,
     )

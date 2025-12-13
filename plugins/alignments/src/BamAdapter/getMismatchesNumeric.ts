@@ -28,7 +28,7 @@ export function getMismatchesNumeric(
   seqLength: number,
   md?: string,
   ref?: string,
-  qual?: Uint8Array,
+  qual?: Uint8Array | null,
 ): Mismatch[] {
   const { mismatches, hasSkips } = cigarToMismatchesNumeric(
     cigar,
@@ -80,7 +80,7 @@ function cigarToMismatchesNumeric(
   numericSeq: Uint8Array,
   seqLength: number,
   ref?: string,
-  qual?: Uint8Array,
+  qual?: Uint8Array | null,
 ): { mismatches: Mismatch[]; hasSkips: boolean } {
   let roffset = 0
   let soffset = 0
@@ -191,10 +191,10 @@ function mdToMismatchesNumeric(
   numericSeq: Uint8Array,
   seqLength: number,
   hasSkips: boolean,
-  qual?: Uint8Array,
+  qual?: Uint8Array | null,
 ) {
   const opsLength = ops.length
-  const hasQual = qual !== undefined
+  const hasQual = !!qual
   const cigarLength = mismatches.length
 
   let currStart = 0
