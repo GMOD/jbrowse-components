@@ -61,7 +61,44 @@ export function getMismatchesNumeric(
   return trimMismatchesSOA(soa)
 }
 
+// Pre-computed string lookup for single bases (avoids String.fromCharCode)
+const SEQ_BASE_STRINGS = [
+  '=',
+  'A',
+  'C',
+  'M',
+  'G',
+  'R',
+  'S',
+  'V',
+  'T',
+  'W',
+  'Y',
+  'H',
+  'K',
+  'D',
+  'B',
+  'N',
+]
+
+// Pre-computed 2-base strings for when start is even (both nibbles from same byte)
+// Avoids string concatenation for ~50% of len=2 cases
+const TWO_BASE_STRINGS_SAME_BYTE: string[] = new Array(256)
+for (let b = 0; b < 256; b++) {
+  const highNibble = (b >> 4) & 0xf
+  const lowNibble = b & 0xf
+  TWO_BASE_STRINGS_SAME_BYTE[b] = SEQ_BASE_STRINGS[highNibble]! + SEQ_BASE_STRINGS[lowNibble]!
+}
+
+// Helper to decode a single base at position
+function decodeBase(numericSeq: Uint8Array, pos: number) {
+  const sb = numericSeq[pos >> 1]!
+  const nibble = (sb >> ((1 - (pos & 1)) << 2)) & 0xf
+  return SEQ_BASE_STRINGS[nibble]!
+}
+
 // Helper to get sequence slice from NUMERIC_SEQ
+// Optimized for small insertions (len 1-4) which are most common
 function getSeqSlice(
   numericSeq: Uint8Array,
   start: number,
@@ -73,6 +110,35 @@ function getSeqSlice(
   if (len <= 0) {
     return ''
   }
+
+  // Fast paths for len 1-4 cover ~99% of insertions
+  if (len === 1) {
+    return decodeBase(numericSeq, start)
+  }
+  if (len === 2) {
+    // If start is even, both nibbles are in the same byte - single lookup!
+    if ((start & 1) === 0) {
+      return TWO_BASE_STRINGS_SAME_BYTE[numericSeq[start >> 1]!]!
+    }
+    return decodeBase(numericSeq, start) + decodeBase(numericSeq, start + 1)
+  }
+  if (len === 3) {
+    return (
+      decodeBase(numericSeq, start) +
+      decodeBase(numericSeq, start + 1) +
+      decodeBase(numericSeq, start + 2)
+    )
+  }
+  if (len === 4) {
+    return (
+      decodeBase(numericSeq, start) +
+      decodeBase(numericSeq, start + 1) +
+      decodeBase(numericSeq, start + 2) +
+      decodeBase(numericSeq, start + 3)
+    )
+  }
+
+  // General case for longer insertions
   const codes = new Uint8Array(len)
   for (let i = 0; i < len; i++) {
     const pos = start + i
