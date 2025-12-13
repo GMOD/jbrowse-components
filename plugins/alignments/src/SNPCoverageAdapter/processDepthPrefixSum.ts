@@ -57,8 +57,8 @@ export function processDepthPrefixSum(
 
   // Pass 1: Record depth changes at boundaries - O(features)
   for (const feature of features) {
-    const fstart = feature.get('start') as number
-    const fend = feature.get('end') as number
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
     const fstrand = feature.get('strand') as -1 | 0 | 1
 
     // Clamp to visible region
@@ -134,8 +134,8 @@ export function processDepthPrefixSumInto(
 
   // Pass 1: Record changes
   for (const feature of features) {
-    const fstart = feature.get('start') as number
-    const fend = feature.get('end') as number
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
     const fstrand = feature.get('strand') as -1 | 0 | 1
 
     const visStart = Math.max(fstart, regionStart) - regionStart

@@ -1,12 +1,12 @@
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import {
-  processDepthPrefixSum,
   type CoverageDepthSoA,
+  processDepthPrefixSum,
 } from './processDepthPrefixSum'
 import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
-import { createPreBinEntry, mismatchLen, isInterbase } from './util'
+import { createPreBinEntry, isInterbase, mismatchLen } from './util'
 
 import type { Opts } from './util'
 import type {
@@ -62,7 +62,7 @@ function processMismatchesPrefixSum(
   const skipmap: SkipMap = {}
 
   for (const feature of features) {
-    const fstart = feature.get('start') as number
+    const fstart = feature.get('start')
     const fstrand = feature.get('strand') as -1 | 0 | 1
     const mismatches = feature.get('mismatches') as Mismatch[] | undefined
 
@@ -88,9 +88,7 @@ function processMismatchesPrefixSum(
 
         // Track skips for junction rendering
         if (type === 'skip') {
-          const tags = feature.get('tags') as
-            | Record<string, string>
-            | undefined
+          const tags = feature.get('tags') as Record<string, string> | undefined
           const xs = tags?.XS || tags?.TS
           const ts = tags?.ts
           const effectiveStrand =
@@ -120,7 +118,7 @@ function processMismatchesPrefixSum(
             pos: epos,
             entry: {
               strand: fstrand,
-              type: type as 'insertion' | 'softclip' | 'hardclip',
+              type: type,
               length: cliplen ?? mismatch.insertedBases?.length ?? 0,
               sequence: mismatch.insertedBases,
             },
@@ -372,8 +370,7 @@ export async function generateCoverageBinsPrefixSum({
   }
 
   // Merge modification bins
-  for (let i = 0; i < modBins.length; i++) {
-    const modBin = modBins[i]
+  for (const [i, modBin] of modBins.entries()) {
     if (modBin) {
       let bin = bins[i]
       if (!bin) {
