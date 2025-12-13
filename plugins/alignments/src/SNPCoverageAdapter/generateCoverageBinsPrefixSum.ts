@@ -330,7 +330,9 @@ export async function generateCoverageBinsPrefixSum({
   }
 
   // Apply SNP events
-  for (const { pos, entry } of snpEvents) {
+  for (let i = 0, l = snpEvents.length; i < l; i++) {
+    const { pos, entry } = snpEvents[i]!
+
     let bin = bins[pos]
     if (!bin) {
       bin = bins[pos] = createEmptyBin()
@@ -346,7 +348,8 @@ export async function generateCoverageBinsPrefixSum({
   }
 
   // Apply noncov events (insertions, clips)
-  for (const { pos, entry } of noncovEvents) {
+  for (let i = 0, l = noncovEvents.length; i < l; i++) {
+    const { pos, entry } = noncovEvents[i]!
     let bin = bins[pos]
     if (!bin) {
       bin = bins[pos] = createEmptyBin()
@@ -354,12 +357,10 @@ export async function generateCoverageBinsPrefixSum({
     const noncovEntry = (bin.noncov[entry.type] ??= createPreBinEntry())
     noncovEntry.entryDepth++
     noncovEntry[entry.strand]++
-    if (entry.length !== undefined) {
-      noncovEntry.lengthTotal += entry.length
-      noncovEntry.lengthCount++
-      noncovEntry.lengthMin = Math.min(noncovEntry.lengthMin, entry.length)
-      noncovEntry.lengthMax = Math.max(noncovEntry.lengthMax, entry.length)
-    }
+    noncovEntry.lengthTotal += entry.length
+    noncovEntry.lengthCount++
+    noncovEntry.lengthMin = Math.min(noncovEntry.lengthMin, entry.length)
+    noncovEntry.lengthMax = Math.max(noncovEntry.lengthMax, entry.length)
     if (entry.sequence !== undefined) {
       noncovEntry.sequenceCounts ??= new Map()
       noncovEntry.sequenceCounts.set(
@@ -370,7 +371,8 @@ export async function generateCoverageBinsPrefixSum({
   }
 
   // Merge modification bins
-  for (const [i, modBin] of modBins.entries()) {
+  for (let i = 0, l = modBins.length; i < l; i++) {
+    const modBin = modBins[i]
     if (modBin) {
       let bin = bins[i]
       if (!bin) {
@@ -382,7 +384,8 @@ export async function generateCoverageBinsPrefixSum({
   }
 
   // Finalize entries
-  for (const bin of bins) {
+  for (let i = 0, l = bins.length; i < l; i++) {
+    const bin = bins[i]
     if (bin) {
       for (const key in bin.mods) {
         finalizeBinEntry(bin.mods[key]!)

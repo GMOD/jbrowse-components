@@ -6,11 +6,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import {
-  SimpleFeature,
-  getContainingTrack,
-  getSession,
-} from '@jbrowse/core/util'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   cast,

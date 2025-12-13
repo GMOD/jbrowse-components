@@ -31,6 +31,7 @@ export function renderMismatches({
   hideSmallIndels,
   canvasWidth,
   drawSNPsMuted,
+  checkRef,
   drawIndels = true,
 }: {
   ctx: CanvasRenderingContext2D
@@ -45,6 +46,7 @@ export function renderMismatches({
   minSubfeatureWidth: number
   largeInsertionIndicatorScale: number
   hideSmallIndels: boolean
+  checkRef?: boolean
   charWidth: number
   charHeight: number
   canvasWidth: number
@@ -54,12 +56,13 @@ export function renderMismatches({
   const { heightPx, topPx, feature } = feat
   const bottomPx = topPx + heightPx
   const featStart = feature.get('start')
-  const region =
-    regions.find(r => {
-      const rn = feature.get('refName')
-      const end = feature.get('end')
-      return r.refName === rn && r.start <= featStart && end <= r.end
-    }) || regions[0]!
+  const region = checkRef
+    ? (regions.find(r => {
+        const rn = feature.get('refName')
+        const end = feature.get('end')
+        return r.refName === rn && r.start <= featStart && end <= r.end
+      }) ?? regions[0]!)
+    : regions[0]!
 
   const invBpPerPx = 1 / bpPerPx
   const pxPerBp = Math.min(invBpPerPx, 2)
