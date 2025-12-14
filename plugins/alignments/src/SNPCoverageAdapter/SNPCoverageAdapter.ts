@@ -7,6 +7,7 @@ import { toArray } from 'rxjs/operators'
 import { fetchSequence } from '../util'
 import { generateCoverageBinsPrefixSum } from './generateCoverageBinsPrefixSum'
 
+import type { FeatureWithMismatchIterator } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseOptions,
@@ -14,7 +15,6 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import { FeatureWithMismatchIterator } from '../shared/types'
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>

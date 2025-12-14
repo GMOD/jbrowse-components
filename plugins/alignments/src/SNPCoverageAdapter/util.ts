@@ -3,6 +3,7 @@ import {
   INSERTION_TYPE,
   SOFTCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
+
 import type {
   ColorBy,
   PreBaseCoverageBin,

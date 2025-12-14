@@ -52,7 +52,7 @@ export async function* indexVcf({
 
     for (const variantId of id!.split(',')) {
       const encodedId = encodeURIComponent(variantId)
-      const record = `["${encodedLocStr}"|"${encodedTrackId}"|"${encodedId}"${encodedInfoAttrs.length > 0 ? '|' + encodedInfoAttrs.join('|') : ''}]`
+      const record = `["${encodedLocStr}"|"${encodedTrackId}"|"${encodedId}"${encodedInfoAttrs.length > 0 ? `|${encodedInfoAttrs.join('|')}` : ''}]`
       yield `${record} ${variantId}\n`
     }
   }

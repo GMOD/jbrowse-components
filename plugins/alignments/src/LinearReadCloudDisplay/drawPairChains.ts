@@ -8,10 +8,10 @@ import { drawChevron } from '../shared/chevron'
 import { getPairedColor } from '../shared/color'
 import {
   CHEVRON_WIDTH,
+  getCharWidthHeight,
   getColorBaseMap,
   getContrastBaseMap,
   setAlignmentFont,
-  getCharWidthHeight,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../shared/util'

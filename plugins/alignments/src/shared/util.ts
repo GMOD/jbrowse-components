@@ -1,5 +1,5 @@
-import { colord } from '@jbrowse/core/util/colord'
 import { measureText } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 
 import type { ChainData } from './types'
 import type { Feature } from '@jbrowse/core/util'

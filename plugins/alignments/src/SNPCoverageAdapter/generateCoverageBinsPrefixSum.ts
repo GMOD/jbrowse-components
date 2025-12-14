@@ -12,6 +12,11 @@ import {
   isInterbase,
   mismatchLen,
 } from './util'
+import {
+  DELETION_TYPE,
+  MISMATCH_MAP,
+  SKIP_TYPE,
+} from '../shared/forEachMismatchTypes'
 
 import type { Opts } from './util'
 import type {
@@ -22,11 +27,6 @@ import type {
   SkipMap,
 } from '../shared/types'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-import {
-  DELETION_TYPE,
-  SKIP_TYPE,
-  MISMATCH_MAP,
-} from '../shared/forEachMismatchTypes'
 
 // Reusable change arrays for deletion prefix sums
 const MAX_REGION_SIZE = 1_000_000
@@ -201,7 +201,7 @@ export async function generateCoverageBinsPrefixSum({
               pos: epos,
               entry: {
                 strand: fstrand,
-                type: MISMATCH_MAP[type]!,
+                type: MISMATCH_MAP[type],
                 length: cliplen ?? base?.length ?? 0,
                 sequence: base,
               },

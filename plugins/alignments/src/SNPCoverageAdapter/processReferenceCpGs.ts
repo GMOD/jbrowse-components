@@ -74,8 +74,22 @@ export function processReferenceCpGs({
         const p0 = methProbs[i] || 0
         const p1 = methProbs[i + 1] || 0
         const isMeth = !!((b0 && p0 > 0.5) || (b1 && p1 > 0.5))
-        const isDel0 = dels.some(d => doesIntersect2(j, j + 1, d.start + fstart, d.start + fstart + d.length))
-        const isDel1 = dels.some(d => doesIntersect2(j + 1, j + 2, d.start + fstart, d.start + fstart + d.length))
+        const isDel0 = dels.some(d =>
+          doesIntersect2(
+            j,
+            j + 1,
+            d.start + fstart,
+            d.start + fstart + d.length,
+          ),
+        )
+        const isDel1 = dels.some(d =>
+          doesIntersect2(
+            j + 1,
+            j + 2,
+            d.start + fstart,
+            d.start + fstart + d.length,
+          ),
+        )
 
         processCpG(bins, idx0, fstrand, isMeth, p0, isDel0)
         processCpG(bins, idx1, fstrand, isMeth, p1, isDel1)

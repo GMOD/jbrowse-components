@@ -1,4 +1,3 @@
-
 export function strokeRectCtx(
   x: number,
   y: number,

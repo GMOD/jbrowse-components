@@ -9,10 +9,10 @@ import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
 import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
 import {
   CHEVRON_WIDTH,
+  getCharWidthHeight,
   getColorBaseMap,
   getContrastBaseMap,
   setAlignmentFont,
-  getCharWidthHeight,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
 } from '../shared/util'
