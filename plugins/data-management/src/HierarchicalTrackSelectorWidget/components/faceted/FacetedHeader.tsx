@@ -1,4 +1,4 @@
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -15,10 +15,18 @@ export default function FacetedHeader({
   model: HierarchicalTrackSelectorModel
 }) {
   const { faceted } = model
+  const { filterText, showOptions, showFilters, showSparse, useShoppingCart } =
+    faceted
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const [localFilterText, setLocalFilterText] = useState(faceted.filterText)
+  const [localFilterText, setLocalFilterText] = useState(filterText)
   const [, startTransition] = useTransition()
-  const { showOptions, showFilters, showSparse, useShoppingCart } = faceted
+
+  // Sync local state when model is cleared externally
+  useEffect(() => {
+    if (filterText === '') {
+      setLocalFilterText('')
+    }
+  }, [filterText])
 
   return (
     <>

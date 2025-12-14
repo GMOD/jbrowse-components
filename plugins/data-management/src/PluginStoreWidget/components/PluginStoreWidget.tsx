@@ -1,4 +1,4 @@
-import { lazy, useState, useTransition } from 'react'
+import { lazy, useEffect, useState, useTransition } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
@@ -63,6 +63,13 @@ const PluginStoreWidget = observer(function ({
   const session = getSession(model)
   const { adminMode } = session
   const { pluginManager } = getEnv(model)
+
+  // Sync local state when model is cleared externally
+  useEffect(() => {
+    if (filterText === '') {
+      setLocalFilterText('')
+    }
+  }, [filterText])
 
   return (
     <div>

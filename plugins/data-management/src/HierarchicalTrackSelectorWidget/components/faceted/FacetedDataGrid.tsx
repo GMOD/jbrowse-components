@@ -1,4 +1,4 @@
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 
 import { getEnv, measureGridWidth } from '@jbrowse/core/util'
 import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
@@ -8,6 +8,43 @@ import { observer } from 'mobx-react'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
+
+function computeInitialWidths(
+  rows: { name: string; metadata: Record<string, string> }[],
+  filteredNonMetadataKeys: string[],
+  filteredMetadataKeys: string[],
+  visible: Record<string, boolean>,
+) {
+  return {
+    name:
+      measureGridWidth(
+        rows.map(r => r.name),
+        { maxWidth: 500, stripHTML: true },
+      ) + 15,
+    ...Object.fromEntries(
+      filteredNonMetadataKeys
+        .filter(f => visible[f])
+        .map(e => [
+          e,
+          measureGridWidth(
+            rows.map(r => r[e as keyof typeof r] as string),
+            { maxWidth: 400, stripHTML: true },
+          ),
+        ]),
+    ),
+    ...Object.fromEntries(
+      filteredMetadataKeys
+        .filter(f => visible[`metadata.${f}`])
+        .map(e => [
+          `metadata.${e}`,
+          measureGridWidth(
+            rows.map(r => r.metadata[e]),
+            { maxWidth: 400, stripHTML: true },
+          ),
+        ]),
+    ),
+  }
+}
 
 const FacetedDataGrid = observer(function ({
   model,
@@ -33,46 +70,36 @@ const FacetedDataGrid = observer(function ({
   } = faceted
 
   const [, startTransition] = useTransition()
-  const [widths, setWidths] = useState<Record<string, number>>({
-    name:
-      measureGridWidth(
-        rows.map(r => r.name),
-        {
-          maxWidth: 500,
-          stripHTML: true,
-        },
-      ) + 15,
-    ...Object.fromEntries(
-      filteredNonMetadataKeys
-        .filter(f => visible[f])
-        .map(e => [
-          e,
-          measureGridWidth(
-            rows.map(r => r[e as keyof typeof r] as string),
-            {
-              maxWidth: 400,
-              stripHTML: true,
-            },
-          ),
-        ]),
+  const [widths, setWidths] = useState(() =>
+    computeInitialWidths(
+      rows,
+      filteredNonMetadataKeys,
+      filteredMetadataKeys,
+      visible,
     ),
-    ...Object.fromEntries(
-      filteredMetadataKeys
-        .filter(f => visible[`metadata.${f}`])
-        .map(e => {
-          return [
-            `metadata.${e}`,
-            measureGridWidth(
-              rows.map(r => r.metadata[e]),
-              {
-                maxWidth: 400,
-                stripHTML: true,
-              },
-            ),
-          ]
-        }),
-    ),
-  })
+  )
+
+  const rowSelectionModel = useMemo(
+    () => ({
+      type: 'include' as const,
+      ids: new Set(
+        useShoppingCart ? selection.map(s => s.trackId) : [...shownTrackIds],
+      ),
+    }),
+    [useShoppingCart, selection, shownTrackIds],
+  )
+
+  const columnsWithWidths = useMemo(
+    () =>
+      columns.map(
+        r =>
+          ({
+            ...r,
+            width: widths[r.field],
+          }) satisfies GridColDef<(typeof rows)[0]>,
+      ),
+    [columns, widths, rows],
+  )
 
   return (
     <DataGrid
@@ -85,10 +112,10 @@ const FacetedDataGrid = observer(function ({
       columnVisibilityModel={visible}
       showToolbar={showOptions}
       onColumnWidthChange={arg => {
-        setWidths({
-          ...widths,
+        setWidths(prev => ({
+          ...prev,
           [arg.colDef.field]: arg.width,
-        })
+        }))
       }}
       onColumnVisibilityModelChange={n => {
         model.faceted.setVisible(n)
@@ -118,19 +145,8 @@ const FacetedDataGrid = observer(function ({
           }
         })
       }}
-      rowSelectionModel={{
-        type: 'include',
-        ids: new Set(
-          useShoppingCart ? selection.map(s => s.trackId) : [...shownTrackIds],
-        ),
-      }}
-      columns={columns.map(
-        r =>
-          ({
-            ...r,
-            width: widths[r.field],
-          }) satisfies GridColDef<(typeof rows)[0]>,
-      )}
+      rowSelectionModel={rowSelectionModel}
+      columns={columnsWithWidths}
     />
   )
 })

@@ -1,4 +1,4 @@
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -23,9 +23,18 @@ const SearchTracksTextField = observer(function ({
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
-  const [localValue, setLocalValue] = useState(model.filterText)
+  const { filterText } = model
+  const [localValue, setLocalValue] = useState(filterText)
   const [, startTransition] = useTransition()
   const { classes } = useStyles()
+
+  // Sync local state when model is cleared externally
+  useEffect(() => {
+    if (filterText === '') {
+      setLocalValue('')
+    }
+  }, [filterText])
+
   return (
     <TextField
       className={classes.searchBox}
