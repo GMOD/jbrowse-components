@@ -1,66 +1,14 @@
 import { useMemo } from 'react'
 
-import { getContainingView, measureText } from '@jbrowse/core/util'
+import { measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './MultiVariantColorLegend'
+import MultiVariantLegendBarWrapper from './MultiVariantLegendBarWrapper'
 
-import type { Source } from '../types'
+import type { LegendBarModel } from './types'
 
-interface LegendBarModel {
-  id: string
-  scrollTop: number
-  height: number
-  hierarchy?: any
-  treeAreaWidth: number
-  totalHeight: number
-  canDisplayLabels: boolean
-  rowHeight: number
-  sources?: Source[]
-  showTree: boolean
-}
-
-const Wrapper = observer(function ({
-  children,
-  model,
-  exportSVG,
-}: {
-  model: LegendBarModel
-  children: React.ReactNode
-  exportSVG?: boolean
-}) {
-  const { id, scrollTop, height, hierarchy, treeAreaWidth, showTree } = model
-  const clipid = `legend-${id}`
-  const leftOffset = hierarchy && showTree ? treeAreaWidth : 0
-  return exportSVG ? (
-    <>
-      <defs>
-        <clipPath id={clipid}>
-          <rect x={0} y={0} width={1000} height={height} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${clipid})`}>
-        <g transform={`translate(0,${-scrollTop})`}>{children}</g>
-      </g>
-    </>
-  ) : (
-    <svg
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: leftOffset,
-        zIndex: 100,
-        pointerEvents: 'none',
-        height: model.totalHeight,
-        width: getContainingView(model).width,
-      }}
-    >
-      {children}
-    </svg>
-  )
-})
-
-export const LegendBar = observer(function (props: {
+const MultiVariantLegendBar = observer(function (props: {
   model: LegendBarModel
   orientation?: string
   exportSVG?: boolean
@@ -86,10 +34,10 @@ export const LegendBar = observer(function (props: {
   }, [sources, svgFontSize, canDisplayLabels])
 
   return sources ? (
-    <Wrapper {...props}>
+    <MultiVariantLegendBarWrapper {...props}>
       <ColorLegend model={model} labelWidth={labelWidth} />
-    </Wrapper>
+    </MultiVariantLegendBarWrapper>
   ) : null
 })
 
-export default LegendBar
+export default MultiVariantLegendBar

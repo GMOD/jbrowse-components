@@ -1,3 +1,4 @@
+import type { Source } from '../types'
 import type { HierarchyNode } from 'd3-hierarchy'
 
 export interface ClusterNodeData {
@@ -22,6 +23,19 @@ export interface TreeSidebarModel {
     descendantNames: string[]
   }) => void
   setTreeAreaWidth: (width: number) => void
+}
+
+export interface LegendBarModel {
+  id: string
+  scrollTop: number
+  height: number
+  hierarchy?: any
+  treeAreaWidth: number
+  totalHeight: number
+  canDisplayLabels: boolean
+  rowHeight: number
+  sources?: Source[]
+  showTree: boolean
 }
 
 export interface MouseState {

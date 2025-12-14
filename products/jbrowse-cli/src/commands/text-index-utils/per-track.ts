@@ -29,12 +29,13 @@ export async function perTrackIndex(flags: any) {
   const configTracks = config.tracks || []
   ensureTrixDir(outLocation)
   validateAssembliesForPerTrack(assemblies)
-  const confs = getTrackConfigs(confFilePath, tracks?.split(','))
+  const confs = getTrackConfigs(config, tracks?.split(','))
   if (!confs.length) {
     throw new Error(
       'Tracks not found in config.json, please add track configurations before indexing.',
     )
   }
+  let hasChanges = false
   for (const trackConfig of confs) {
     const { textSearching, trackId, assemblyNames } = trackConfig
     if (textSearching?.textSearchAdapter && !force) {
@@ -66,10 +67,14 @@ export async function perTrackIndex(flags: any) {
             textSearchAdapter: createTrixAdapter(trackId, assemblyNames),
           },
         }
+        hasChanges = true
       } else {
         console.warn(`Warning: can't find trackId ${trackId}`)
       }
     }
+  }
+
+  if (hasChanges) {
     writeConf({ ...config, tracks: configTracks }, confFilePath)
   }
 }
