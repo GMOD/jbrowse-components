@@ -37,7 +37,7 @@ export function processModifications({
   const cigarOps =
     feature.get('NUMERIC_CIGAR') ?? parseCigar2(feature.get('CIGAR'))
   const regionStart = region.start
-  const binsLength = bins.length
+  const regionEnd = region.end
 
   // Get only the maximum probability modification at each position
   // this is a hole-y array, does not work with normal for loop
@@ -51,7 +51,7 @@ export function processModifications({
         return
       }
       const epos = refPos - regionStart
-      if (epos < 0 || epos >= binsLength) {
+      if (epos < 0 || epos >= regionEnd - regionStart) {
         return
       }
 

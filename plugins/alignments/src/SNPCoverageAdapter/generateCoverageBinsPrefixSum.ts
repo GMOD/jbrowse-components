@@ -370,16 +370,20 @@ export async function generateCoverageBinsPrefixSum({
     }
   }
 
-  // Merge modification bins
+  // Merge modification bins - only into bins that already have depth data
+  // (matching original behavior where processModifications/processReferenceCpGs
+  // only added to existing bins)
   for (let i = 0, l = modBins.length; i < l; i++) {
     const modBin = modBins[i]
     if (modBin) {
-      let bin = bins[i]
-      if (!bin) {
-        bin = bins[i] = createEmptyBin()
+      const bin = bins[i]
+      if (bin) {
+        Object.assign(bin.mods, modBin.mods)
+        Object.assign(bin.nonmods, modBin.nonmods)
+        if (modBin.refbase !== undefined) {
+          bin.refbase = modBin.refbase
+        }
       }
-      Object.assign(bin.mods, modBin.mods)
-      Object.assign(bin.nonmods, modBin.nonmods)
     }
   }
 
