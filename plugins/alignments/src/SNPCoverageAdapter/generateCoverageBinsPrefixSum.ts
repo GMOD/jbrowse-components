@@ -45,25 +45,101 @@ interface SparseNoncovEntry {
   sequence?: string
 }
 
+function finalizeBinEntry(entry: PreBinEntry) {
+  const { probabilityTotal, probabilityCount, lengthTotal, lengthCount } = entry
+  const ret = entry as PreBinEntry & {
+    avgProbability?: number
+    avgLength?: number
+    minLength?: number
+    maxLength?: number
+    topSequence?: string
+  }
+  if (probabilityCount) {
+    ret.avgProbability = probabilityTotal / probabilityCount
+  }
+  if (lengthCount) {
+    ret.avgLength = lengthTotal / lengthCount
+    ret.minLength = entry.lengthMin
+    ret.maxLength = entry.lengthMax
+  }
+  if (entry.sequenceCounts?.size) {
+    let maxCount = 0
+    let topSeq: string | undefined
+    for (const [seq, count] of entry.sequenceCounts) {
+      if (count > maxCount) {
+        maxCount = count
+        topSeq = seq
+      }
+    }
+    ret.topSequence = topSeq
+    entry.sequenceCounts = undefined
+  }
+}
+
 /**
- * Process mismatches using prefix sums for deletions/skips.
- * Works with legacy mismatch format (array of objects).
- * SNPs are point events so we collect them directly.
+ * Generate coverage bins using prefix sums algorithm.
+ *
+ * This is ~100-1000x faster than the original per-base iteration approach,
+ * especially for high-coverage or long-read data.
  */
-function processMismatchesPrefixSum(
-  features: FeatureWithMismatchIterator[],
-  region: Region,
-  _depthSoA: CoverageDepthSoA,
-): {
-  snpEvents: { pos: number; entry: SparseSnpEntry }[]
-  deletionDepth: Int32Array
-  skipmap: SkipMap
-  noncovEvents: { pos: number; entry: SparseNoncovEntry }[]
-} {
+export async function generateCoverageBinsPrefixSum({
+  fetchSequence,
+  features,
+  region,
+  opts,
+}: {
+  features: FeatureWithMismatchIterator[]
+  region: Region
+  opts: Opts
+  fetchSequence?: (arg: Region) => Promise<string | undefined>
+}): Promise<{ bins: PreBaseCoverageBin[]; skipmap: SkipMap }> {
+  const { stopToken, colorBy, statsEstimationMode } = opts
   const regionStart = region.start
   const regionEnd = region.end
   const regionSize = regionEnd - regionStart
 
+  // Step 1: Compute depth using prefix sums - O(features + regionSize)
+  checkStopToken(stopToken)
+  const depthSoA = processDepthPrefixSum(features, region)
+
+  // In statsEstimationMode, skip all mismatch/modification processing. This is a
+  // performance optimization for when only the depth of coverage is needed, for
+  // example, for an overview of the data or when calculating statistics. Just
+  // return depth-only bins for fast coverage estimation
+  if (statsEstimationMode) {
+    const bins: PreBaseCoverageBin[] = new Array(regionSize)
+    for (let i = 0; i < regionSize; i++) {
+      const depth = depthSoA.depth[i]!
+      if (depth === 0) {
+        continue
+      }
+      bins[i] = {
+        depth,
+        readsCounted: depth,
+        ref: {
+          entryDepth: depth,
+          '-1': depthSoA.strandMinus[i]!,
+          '0': 0,
+          '1': depthSoA.strandPlus[i]!,
+          probabilityTotal: 0,
+          probabilityCount: 0,
+          lengthTotal: 0,
+          lengthCount: 0,
+          lengthMin: Infinity,
+          lengthMax: -Infinity,
+        },
+        snps: {},
+        mods: {},
+        nonmods: {},
+        delskips: {},
+        noncov: {},
+      }
+    }
+    return { bins, skipmap: {} }
+  }
+
+  // Step 2: Process mismatches with prefix sums for deletions
+  checkStopToken(stopToken)
   // Clear deletion changes buffer
   deletionChanges.fill(0, 0, regionSize + 1)
 
@@ -74,11 +150,6 @@ function processMismatchesPrefixSum(
   for (const feature of features) {
     const fstart = feature.get('start')
     const fstrand = feature.get('strand') as -1 | 0 | 1
-    const mismatches = feature.get('mismatches') as Mismatch[] | undefined
-
-    if (!mismatches || mismatches.length === 0) {
-      continue
-    }
 
     feature.forEachMismatch(
       (type, start, length, base, _qual, altbase, cliplen) => {
@@ -161,105 +232,6 @@ function processMismatchesPrefixSum(
     dd += deletionChanges[i]!
     deletionDepth[i] = dd
   }
-
-  return { snpEvents, deletionDepth, skipmap, noncovEvents }
-}
-
-function finalizeBinEntry(entry: PreBinEntry) {
-  const { probabilityTotal, probabilityCount, lengthTotal, lengthCount } = entry
-  const ret = entry as PreBinEntry & {
-    avgProbability?: number
-    avgLength?: number
-    minLength?: number
-    maxLength?: number
-    topSequence?: string
-  }
-  if (probabilityCount) {
-    ret.avgProbability = probabilityTotal / probabilityCount
-  }
-  if (lengthCount) {
-    ret.avgLength = lengthTotal / lengthCount
-    ret.minLength = entry.lengthMin
-    ret.maxLength = entry.lengthMax
-  }
-  if (entry.sequenceCounts?.size) {
-    let maxCount = 0
-    let topSeq: string | undefined
-    for (const [seq, count] of entry.sequenceCounts) {
-      if (count > maxCount) {
-        maxCount = count
-        topSeq = seq
-      }
-    }
-    ret.topSequence = topSeq
-    entry.sequenceCounts = undefined
-  }
-}
-
-/**
- * Generate coverage bins using prefix sums algorithm.
- *
- * This is ~100-1000x faster than the original per-base iteration approach,
- * especially for high-coverage or long-read data.
- */
-export async function generateCoverageBinsPrefixSum({
-  fetchSequence,
-  features,
-  region,
-  opts,
-}: {
-  features: FeatureWithMismatchIterator[]
-  region: Region
-  opts: Opts
-  fetchSequence?: (arg: Region) => Promise<string | undefined>
-}): Promise<{ bins: PreBaseCoverageBin[]; skipmap: SkipMap }> {
-  const { stopToken, colorBy, statsEstimationMode } = opts
-  const regionStart = region.start
-  const regionEnd = region.end
-  const regionSize = regionEnd - regionStart
-
-  // Step 1: Compute depth using prefix sums - O(features + regionSize)
-  checkStopToken(stopToken)
-  const depthSoA = processDepthPrefixSum(features, region)
-
-  // In statsEstimationMode, skip all mismatch/modification processing
-  // Just return depth-only bins for fast coverage estimation
-  if (statsEstimationMode) {
-    const bins: PreBaseCoverageBin[] = new Array(regionSize)
-    for (let i = 0; i < regionSize; i++) {
-      const depth = depthSoA.depth[i]!
-      if (depth === 0) {
-        continue
-      }
-      bins[i] = {
-        depth,
-        readsCounted: depth,
-        ref: {
-          entryDepth: depth,
-          '-1': depthSoA.strandMinus[i]!,
-          '0': 0,
-          '1': depthSoA.strandPlus[i]!,
-          probabilityTotal: 0,
-          probabilityCount: 0,
-          lengthTotal: 0,
-          lengthCount: 0,
-          lengthMin: Infinity,
-          lengthMax: -Infinity,
-        },
-        snps: {},
-        mods: {},
-        nonmods: {},
-        delskips: {},
-        noncov: {},
-      }
-    }
-    return { bins, skipmap: {} }
-  }
-
-  // Step 2: Process mismatches with prefix sums for deletions
-  checkStopToken(stopToken)
-  const { snpEvents, deletionDepth, skipmap, noncovEvents } =
-    processMismatchesPrefixSum(features, region, depthSoA)
 
   // Step 3: Handle modifications if needed (still per-feature, but modifications are rare)
   let regionSequence: string | undefined

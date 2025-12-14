@@ -1348,7 +1348,7 @@ export function forEachWithStopTokenCheck<T>(
   iter: Iterable<T>,
   stopToken: string | undefined,
   arg: (arg: T, idx: number) => void,
-  durationMs = 200,
+  durationMs = 400,
   iters = 100,
   backoff = true,
 ) {

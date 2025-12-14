@@ -55,7 +55,7 @@ export default class BamSlightlyLazyFeature
         this.seq_length,
         this.NUMERIC_MD,
         this.ref,
-        this.qual,
+        // this.qual,
       )
     }
     return this._mismatches
