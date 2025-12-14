@@ -13,6 +13,15 @@ const CIGAR_X = 8
 // Sequence decoder matching @gmod/bam format - returns strings
 const SEQRET_STRING_DECODER = '=ACMGRSVTWYHKDBN'.split('')
 
+// Pre-computed lookup table for 2-base combinations in a single byte
+// This is faster for small insertions (1-2 bases) which are very common
+const TWO_BASE_LOOKUP: string[] = new Array(256)
+for (let i = 0; i < 256; i++) {
+  const high = (i >> 4) & 0xf
+  const low = i & 0xf
+  TWO_BASE_LOOKUP[i] = SEQRET_STRING_DECODER[high]! + SEQRET_STRING_DECODER[low]!
+}
+
 // Numeric decoder - returns char codes directly (lowercase for case-insensitive comparison)
 // '=' = 61, 'a' = 97, 'c' = 99, 'm' = 109, 'g' = 103, 'r' = 114, 's' = 115, 'v' = 118,
 // 't' = 116, 'w' = 119, 'y' = 121, 'h' = 104, 'k' = 107, 'd' = 100, 'b' = 98, 'n' = 110
@@ -91,6 +100,7 @@ export function getMismatchesFromNumericMD(
 }
 
 // Helper to get sequence slice from NUMERIC_SEQ
+// Optimized fast paths for 1-2 base insertions which are the common case
 function getSeqSlice(
   numericSeq: ArrayLike<number>,
   start: number,
@@ -102,6 +112,21 @@ function getSeqSlice(
   if (len <= 0) {
     return ''
   }
+
+  // Fast path for single base (very common for 1bp insertions)
+  if (len === 1) {
+    const sb = numericSeq[start >> 1]!
+    const nibble = (sb >> ((1 - (start & 1)) << 2)) & 0xf
+    return SEQRET_STRING_DECODER[nibble]!
+  }
+
+  // Fast path for 2 bases in same byte (common for 2bp insertions at even positions)
+  if (len === 2 && (start & 1) === 0) {
+    const sb = numericSeq[start >> 1]!
+    return TWO_BASE_LOOKUP[sb]!
+  }
+
+  // General case for longer sequences
   let result = ''
   for (let i = start; i < actualEnd; i++) {
     const sb = numericSeq[i >> 1]!

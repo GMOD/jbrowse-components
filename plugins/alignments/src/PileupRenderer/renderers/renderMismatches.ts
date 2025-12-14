@@ -1,7 +1,7 @@
 import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { fillRectCtx, fillTextCtx } from '../util'
+import { fillRectCtx, fillTextCtx, measureTextSmallNumber } from '../util'
 
 import type { Mismatch } from '../../shared/types'
 import type { FlatbushItem } from '../types'
@@ -156,7 +156,7 @@ export function renderMismatches({
           coords.push(leftPx, topPx, rightPx, bottomPx)
         }
         const txt = String(len)
-        const rwidth = measureText(txt, 10)
+        const rwidth = measureTextSmallNumber(len, 10)
         if (widthPx >= rwidth && canRenderText) {
           fillTextCtx(
             ctx,
@@ -248,7 +248,7 @@ export function renderMismatches({
             colorMap.insertion,
           )
         } else if (heightPx > charHeight) {
-          const rwidth = measureText(txt)
+          const rwidth = measureTextSmallNumber(len)
           const padding = 5
           coords.push(
             leftPx - rwidth / 2 - padding,

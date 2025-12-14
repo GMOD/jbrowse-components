@@ -3,6 +3,11 @@ import { measureText } from '@jbrowse/core/util'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
+// Track last fillStyle per context to avoid redundant style changes
+// This helps significantly for long reads with many small deletions
+// where all deletions use the same color
+const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
+
 export function fillRectCtx(
   ctx: CanvasRenderingContext2D,
   l: number,
@@ -15,8 +20,9 @@ export function fillRectCtx(
   if (l + w < 0 || l > cw) {
     return
   }
-  if (color) {
+  if (color && lastFillStyleMap.get(ctx) !== color) {
     ctx.fillStyle = color
+    lastFillStyleMap.set(ctx, color)
   }
   ctx.fillRect(l, t, w, h)
 }
@@ -32,8 +38,9 @@ export function fillTextCtx(
   if (x < 0 || x > cw) {
     return
   }
-  if (color) {
+  if (color && lastFillStyleMap.get(ctx) !== color) {
     ctx.fillStyle = color
+    lastFillStyleMap.set(ctx, color)
   }
   ctx.fillText(text, x, y)
 }
@@ -90,4 +97,22 @@ export function getCharWidthHeight() {
   const charWidth = measureText('A')
   const charHeight = measureText('M') - 2
   return { charWidth, charHeight }
+}
+
+// Cache measureText results for small numbers (0-99)
+// Most deletions are small, so this avoids calling measureText in hot loops
+const smallNumberWidthCache10 = new Map<number, number>()
+const smallNumberWidthCache = new Map<number, number>()
+
+export function measureTextSmallNumber(n: number, fontSize?: number) {
+  const cache = fontSize === 10 ? smallNumberWidthCache10 : smallNumberWidthCache
+  if (n >= 0 && n < 100) {
+    let width = cache.get(n)
+    if (width === undefined) {
+      width = measureText(String(n), fontSize)
+      cache.set(n, width)
+    }
+    return width
+  }
+  return measureText(String(n), fontSize)
 }

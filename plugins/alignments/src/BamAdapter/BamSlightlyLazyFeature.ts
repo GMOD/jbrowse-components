@@ -75,6 +75,7 @@ export default class BamSlightlyLazyFeature
         return this.qual
 
       default:
+        console.log('wtf', field)
         return this.fields[field]
     }
   }
