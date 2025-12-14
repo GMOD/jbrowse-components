@@ -134,6 +134,7 @@ export function forEachMismatch(
       callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
 
       // Skip deletion in MD
+      // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
       if (hasMD && mdIdx < mdLength && md[mdIdx]! === 94) {
         mdIdx++
         while (mdIdx < mdLength && md[mdIdx]! >= 65) {

@@ -302,7 +302,7 @@ export function renderMismatchesCallback({
           const w = rwidth + 2 * padding
           if (l + w > 0 && l < canvasWidth) {
             const c = 'purple'
-            if (c && lastFillStyleMap.get(ctx) !== c) {
+            if (lastFillStyleMap.get(ctx) !== c) {
               ctx.fillStyle = c
               lastFillStyleMap.set(ctx, c)
             }

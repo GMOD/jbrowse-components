@@ -217,6 +217,7 @@ function getMismatchesCombinedFromBytes(
         base: '*',
         length: len,
       })
+      // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
       if (mdIdx < mdLength && md[mdIdx]! === 94) {
         mdIdx++
         while (mdIdx < mdLength && md[mdIdx]! >= 65) {

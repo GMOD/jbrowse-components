@@ -68,10 +68,6 @@ export default class BamSlightlyLazyFeature
     const md = this.NUMERIC_MD
     const qual = this.qual
 
-    if (!cigar || !numericSeq) {
-      return
-    }
-
     const mdLength = md?.length ?? 0
     const hasQual = !!qual
     const hasMD = md && mdLength > 0
@@ -162,6 +158,7 @@ export default class BamSlightlyLazyFeature
       } else if (op === CIGAR_D) {
         callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
 
+        // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
         if (hasMD && mdIdx < mdLength && md[mdIdx]! === 94) {
           mdIdx++
           while (mdIdx < mdLength && md[mdIdx]! >= 65) {
@@ -271,7 +268,6 @@ export default class BamSlightlyLazyFeature
         return this.seq_length
 
       default:
-        console.log('wtf', field)
         return this.fields[field]
     }
   }

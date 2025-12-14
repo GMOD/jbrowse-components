@@ -9,7 +9,6 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { layoutFeats } from './layoutFeatures'
 import { renderAlignment } from './renderers/renderAlignment'
-import { renderMismatches } from './renderers/renderMismatches'
 import { renderMismatchesCallback } from './renderers/renderMismatchesCallback'
 import { renderSoftClipping } from './renderers/renderSoftClipping'
 import {

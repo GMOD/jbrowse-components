@@ -1,4 +1,3 @@
-import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { measureTextSmallNumber } from '../util'
@@ -270,7 +269,7 @@ export function renderMismatches({
           const w = rwidth + 2 * padding
           if (l + w > 0 && l < canvasWidth) {
             const c = 'purple'
-            if (c && lastFillStyleMap.get(ctx) !== c) {
+            if (lastFillStyleMap.get(ctx) !== c) {
               ctx.fillStyle = c
               lastFillStyleMap.set(ctx, c)
             }

@@ -1,9 +1,6 @@
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import {
-  type CoverageDepthSoA,
-  processDepthPrefixSum,
-} from './processDepthPrefixSum'
+import { processDepthPrefixSum } from './processDepthPrefixSum'
 import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
 import {
@@ -21,7 +18,6 @@ import {
 import type { Opts } from './util'
 import type {
   FeatureWithMismatchIterator,
-  Mismatch,
   PreBaseCoverageBin,
   PreBinEntry,
   SkipMap,
@@ -152,9 +148,9 @@ export async function generateCoverageBinsPrefixSum({
     const fstrand = feature.get('strand') as -1 | 0 | 1
 
     feature.forEachMismatch(
-      (type, start, length, base, _qual, altbase, cliplen) => {
+      (type, start, refLen, base, _qual, altbase, interbaseLen) => {
         const mstart = fstart + start
-        const mlen = mismatchLen(type, length)
+        const mlen = mismatchLen(type, refLen)
         const mend = mstart + mlen
 
         if (type === DELETION_TYPE || type === SKIP_TYPE) {
@@ -202,7 +198,7 @@ export async function generateCoverageBinsPrefixSum({
               entry: {
                 strand: fstrand,
                 type: MISMATCH_MAP[type],
-                length: cliplen ?? base?.length ?? 0,
+                length: interbaseLen,
                 sequence: base,
               },
             })
