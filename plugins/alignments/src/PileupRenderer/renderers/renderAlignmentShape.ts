@@ -1,9 +1,10 @@
 import { CIGAR_D, CIGAR_EQ, CIGAR_M, CIGAR_N, CIGAR_X } from './cigarUtil'
 import { CHEVRON_WIDTH } from '../../shared/util'
-import { fillRectCtx } from '../util'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
+
+const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
 
 // Helper to draw forward strand chevron
 function drawForwardChevron(
@@ -112,14 +113,14 @@ export function renderAlignmentShape({
             const rightPx = reversed
               ? (regionEnd - drawStart) * invBpPerPx
               : (drawEnd - regionStart) * invBpPerPx
-            fillRectCtx(
-              ctx,
-              leftPx,
-              topPx,
-              rightPx - leftPx,
-              heightPx,
-              canvasWidth,
-            )
+            const w = rightPx - leftPx
+            if (leftPx + w > 0 && leftPx < canvasWidth) {
+              if (lastFillStyleMap.get(ctx) !== color) {
+                ctx.fillStyle = color
+                lastFillStyleMap.set(ctx, color)
+              }
+              ctx.fillRect(leftPx, topPx, w, heightPx)
+            }
           }
           drawStart += drawLen + opLen
           drawLen = 0
@@ -138,14 +139,14 @@ export function renderAlignmentShape({
         if (renderChevrons) {
           drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
         } else {
-          fillRectCtx(
-            ctx,
-            leftPx,
-            topPx,
-            rightPx - leftPx,
-            heightPx,
-            canvasWidth,
-          )
+          const w = rightPx - leftPx
+          if (leftPx + w > 0 && leftPx < canvasWidth) {
+            if (lastFillStyleMap.get(ctx) !== color) {
+              ctx.fillStyle = color
+              lastFillStyleMap.set(ctx, color)
+            }
+            ctx.fillRect(leftPx, topPx, w, heightPx)
+          }
         }
       }
     } else if (strand === -1) {
@@ -173,14 +174,14 @@ export function renderAlignmentShape({
             const rightPx = reversed
               ? (regionEnd - drawBegin) * invBpPerPx
               : (drawStart - regionStart) * invBpPerPx
-            fillRectCtx(
-              ctx,
-              leftPx,
-              topPx,
-              rightPx - leftPx,
-              heightPx,
-              canvasWidth,
-            )
+            const w = rightPx - leftPx
+            if (leftPx + w > 0 && leftPx < canvasWidth) {
+              if (lastFillStyleMap.get(ctx) !== color) {
+                ctx.fillStyle = color
+                lastFillStyleMap.set(ctx, color)
+              }
+              ctx.fillRect(leftPx, topPx, w, heightPx)
+            }
           }
           drawStart -= drawLen + opLen
           drawLen = 0
@@ -199,14 +200,14 @@ export function renderAlignmentShape({
         if (renderChevrons) {
           drawReverseChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
         } else {
-          fillRectCtx(
-            ctx,
-            leftPx,
-            topPx,
-            rightPx - leftPx,
-            heightPx,
-            canvasWidth,
-          )
+          const w = rightPx - leftPx
+          if (leftPx + w > 0 && leftPx < canvasWidth) {
+            if (lastFillStyleMap.get(ctx) !== color) {
+              ctx.fillStyle = color
+              lastFillStyleMap.set(ctx, color)
+            }
+            ctx.fillRect(leftPx, topPx, w, heightPx)
+          }
         }
       }
     }
@@ -226,7 +227,14 @@ export function renderAlignmentShape({
         drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
       }
     } else {
-      fillRectCtx(ctx, leftPx, topPx, rightPx - leftPx, heightPx, canvasWidth)
+      const w = rightPx - leftPx
+      if (leftPx + w > 0 && leftPx < canvasWidth) {
+        if (lastFillStyleMap.get(ctx) !== color) {
+          ctx.fillStyle = color
+          lastFillStyleMap.set(ctx, color)
+        }
+        ctx.fillRect(leftPx, topPx, w, heightPx)
+      }
     }
   }
 }

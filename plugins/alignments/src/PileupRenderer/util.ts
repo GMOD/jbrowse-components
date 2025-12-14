@@ -3,48 +3,6 @@ import { measureText } from '@jbrowse/core/util'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
-// Track last fillStyle per context to avoid redundant style changes
-// This helps significantly for long reads with many small deletions
-// where all deletions use the same color
-const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
-
-export function fillRectCtx(
-  ctx: CanvasRenderingContext2D,
-  l: number,
-  t: number,
-  w: number,
-  h: number,
-  cw: number,
-  color?: string,
-) {
-  if (l + w < 0 || l > cw) {
-    return
-  }
-  if (color && lastFillStyleMap.get(ctx) !== color) {
-    ctx.fillStyle = color
-    lastFillStyleMap.set(ctx, color)
-  }
-  ctx.fillRect(l, t, w, h)
-}
-
-export function fillTextCtx(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  cw: number,
-  color?: string,
-) {
-  if (x < 0 || x > cw) {
-    return
-  }
-  if (color && lastFillStyleMap.get(ctx) !== color) {
-    ctx.fillStyle = color
-    lastFillStyleMap.set(ctx, color)
-  }
-  ctx.fillText(text, x, y)
-}
-
 export function getColorBaseMap(theme: Theme) {
   const { skip, deletion, insertion, hardclip, softclip, bases } = theme.palette
   return {

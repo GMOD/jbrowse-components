@@ -3,15 +3,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
-import {
-  getCharWidthHeight,
-  getColorBaseMap,
-  getContrastBaseMap,
-  setAlignmentFont,
-  shouldDrawIndels,
-  shouldDrawSNPsMuted,
-} from '../PileupRenderer/util'
-import { fillRectCtx, lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import { getPairedColor } from '../shared/color'
 import { CHEVRON_WIDTH } from '../shared/util'
@@ -30,6 +22,8 @@ interface MinimalView {
     coord: number
   }) => { offsetPx: number; index: number } | undefined
 }
+
+const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
 
 export function drawPairChains({
   ctx,
@@ -230,7 +224,24 @@ export function drawPairChains({
           pairedStroke,
         )
       } else {
-        fillRectCtx(xPos, chainY, width, featureHeight, ctx, pairedFill)
+        // avoid drawing negative width features for SVG exports
+        if (width < 0) {
+          xPos += width
+          width = -width
+        }
+        if (featureHeight < 0) {
+          chainY += featureHeight
+          // no need to negate featureHeight, it's not used again
+        }
+
+        if (pairedFill) {
+          if (lastFillStyleMap.get(ctx) !== pairedFill) {
+            ctx.fillStyle = pairedFill
+            lastFillStyleMap.set(ctx, pairedFill)
+          }
+        }
+
+        ctx.fillRect(xPos, chainY, width, featureHeight)
         strokeRectCtx(xPos, chainY, width, featureHeight, ctx, pairedStroke)
       }
 
