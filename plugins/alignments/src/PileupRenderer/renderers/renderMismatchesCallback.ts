@@ -19,12 +19,21 @@ interface FeatureWithMismatchIterator {
   forEachMismatch(callback: MismatchCallback): void
 }
 
+const alphaColorCache = new Map<string, string>()
 function applyQualAlpha(baseColor: string, qual: number) {
-  return qual >= 0
-    ? colord(baseColor)
-        .alpha(Math.min(1, qual / 50))
-        .toHslString()
-    : baseColor
+  const key = `${baseColor},${qual}`
+  const hit = alphaColorCache.get(key)
+  if (hit) {
+    return hit
+  }
+  const result =
+    qual >= 0
+      ? colord(baseColor)
+          .alpha(Math.min(1, qual / 50))
+          .toHslString()
+      : baseColor
+  alphaColorCache.set(key, result)
+  return result
 }
 
 export function renderMismatchesCallback({
@@ -130,6 +139,12 @@ export function renderMismatchesCallback({
       const rightPx = reversed
         ? (regionEnd - mstart) * invBpPerPx
         : (mend - regionStart) * invBpPerPx
+
+      // if the mismatch is off-screen, don't render it
+      if (rightPx < 0 || leftPx > canvasWidth) {
+        return
+      }
+
       const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
 
       if (type === MISMATCH_TYPE) {
@@ -219,6 +234,11 @@ export function renderMismatchesCallback({
       ? (regionEnd - mstart - 1) * invBpPerPx
       : (mstart - regionStart) * invBpPerPx
     const pos = leftPx + extraHorizontallyFlippedOffset
+
+    // if the mismatch is off-screen, don't render it. give 20px buffer
+    if (pos < -20 || pos > canvasWidth + 20) {
+      continue
+    }
 
     if (type === INSERTION_TYPE && drawIndels) {
       const len = cliplen

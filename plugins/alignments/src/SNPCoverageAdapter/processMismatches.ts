@@ -38,34 +38,34 @@ export function processMismatches({
   feature.forEachMismatch(
     (type, start, length, base, _qual, altbase, cliplen) => {
       const mstart = fstart + start
-      const mlen = length
-      const mend = mstart + mlen
+      const mend = mstart + length
 
-      // Calculate visible range for this mismatch
+      // early return if mismatch is not on screen
+      if (mend <= regionStart || mstart >= regionEnd) {
+        return
+      }
+
       const visStart = Math.max(mstart, regionStart)
       const visEnd = Math.min(mend, regionEnd)
 
-      // Skip if mismatch is entirely outside visible region
-      if (visStart < visEnd) {
-        for (let j = visStart; j < visEnd; j++) {
-          const epos = j - regionStart
-          if (epos < binsLength) {
-            const bin = bins[epos]!
-            const interbase = isInterbase(type)
+      for (let j = visStart; j < visEnd; j++) {
+        const epos = j - regionStart
+        if (epos < binsLength) {
+          const bin = bins[epos]!
+          const interbase = isInterbase(type)
 
-            if (type === DELETION_TYPE || type === SKIP_TYPE) {
-              inc(bin, fstrand, 'delskips', type)
-              bin.depth--
-            } else if (!interbase) {
-              inc(bin, fstrand, 'snps', base)
-              bin.ref.entryDepth--
-              bin.ref[fstrand]--
-              bin.refbase = altbase
-            } else {
-              const len = type === INSERTION_TYPE ? length : cliplen
-              const seq = type === INSERTION_TYPE ? base : undefined
-              inc(bin, fstrand, 'noncov', type, len, seq)
-            }
+          if (type === DELETION_TYPE || type === SKIP_TYPE) {
+            inc(bin, fstrand, 'delskips', type)
+            bin.depth--
+          } else if (!interbase) {
+            inc(bin, fstrand, 'snps', base)
+            bin.ref.entryDepth--
+            bin.ref[fstrand]--
+            bin.refbase = altbase ? String.fromCharCode(altbase) : ''
+          } else {
+            const len = type === INSERTION_TYPE ? length : cliplen
+            const seq = type === INSERTION_TYPE ? base : undefined
+            inc(bin, fstrand, 'noncov', type, len, seq)
           }
         }
       }
