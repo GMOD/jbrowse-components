@@ -23,12 +23,12 @@ const SEQRET_NUMERIC_DECODER = new Uint8Array([
 // Optimized getMismatches that works directly with NUMERIC_SEQ and NUMERIC_CIGAR
 // Avoids decoding the entire sequence string
 export function getMismatchesNumeric(
-  cigar: Uint32Array,
-  numericSeq: Uint8Array,
+  cigar: ArrayLike<number>,
+  numericSeq: ArrayLike<number>,
   seqLength: number,
   md?: string,
   ref?: string,
-  qual?: Uint8Array | null,
+  qual?: ArrayLike<number> | null,
 ): Mismatch[] {
   const { mismatches, hasSkips } = cigarToMismatchesNumeric(
     cigar,
@@ -55,16 +55,16 @@ export function getMismatchesNumeric(
 }
 
 /**
- * Optimized getMismatches that accepts NUMERIC_MD (Uint8Array) directly.
+ * Optimized getMismatches that accepts NUMERIC_MD (ArrayLike<number>) directly.
  * Avoids parsing all BAM tags and string conversion overhead.
  */
 export function getMismatchesFromNumericMD(
-  cigar: Uint32Array,
-  numericSeq: Uint8Array,
+  cigar: ArrayLike<number>,
+  numericSeq: ArrayLike<number>,
   seqLength: number,
-  numericMD: Uint8Array | undefined,
+  numericMD: ArrayLike<number> | undefined,
   ref?: string,
-  qual?: Uint8Array | null,
+  qual?: ArrayLike<number> | null,
 ): Mismatch[] {
   const { mismatches, hasSkips } = cigarToMismatchesNumeric(
     cigar,
@@ -92,7 +92,7 @@ export function getMismatchesFromNumericMD(
 
 // Helper to get sequence slice from NUMERIC_SEQ
 function getSeqSlice(
-  numericSeq: Uint8Array,
+  numericSeq: ArrayLike<number>,
   start: number,
   end: number,
   seqLength: number,
@@ -112,11 +112,11 @@ function getSeqSlice(
 }
 
 function cigarToMismatchesNumeric(
-  ops: Uint32Array,
-  numericSeq: Uint8Array,
+  ops: ArrayLike<number>,
+  numericSeq: ArrayLike<number>,
   seqLength: number,
   ref?: string,
-  qual?: Uint8Array | null,
+  qual?: ArrayLike<number> | null,
 ): { mismatches: Mismatch[]; hasSkips: boolean } {
   let roffset = 0
   let soffset = 0
@@ -222,12 +222,12 @@ function cigarToMismatchesNumeric(
 
 function mdToMismatchesNumeric(
   mdstring: string,
-  ops: Uint32Array,
+  ops: ArrayLike<number>,
   mismatches: Mismatch[],
-  numericSeq: Uint8Array,
+  numericSeq: ArrayLike<number>,
   seqLength: number,
   hasSkips: boolean,
-  qual?: Uint8Array | null,
+  qual?: ArrayLike<number> | null,
 ) {
   const opsLength = ops.length
   const hasQual = !!qual
@@ -332,17 +332,17 @@ function mdToMismatchesNumeric(
 }
 
 /**
- * Parse MD tag directly from bytes (Uint8Array).
+ * Parse MD tag directly from bytes (ArrayLike<number>).
  * Same logic as mdToMismatchesNumeric but avoids string conversion.
  */
 function mdToMismatchesFromBytes(
-  md: Uint8Array,
-  ops: Uint32Array,
+  md: ArrayLike<number>,
+  ops: ArrayLike<number>,
   mismatches: Mismatch[],
-  numericSeq: Uint8Array,
+  numericSeq: ArrayLike<number>,
   seqLength: number,
   hasSkips: boolean,
-  qual?: Uint8Array | null,
+  qual?: ArrayLike<number> | null,
 ) {
   const mdLength = md.length
   const opsLength = ops.length
