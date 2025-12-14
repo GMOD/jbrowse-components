@@ -14,6 +14,7 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import { FeatureWithMismatchIterator } from '../shared/types'
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
@@ -72,7 +73,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       )
 
       const { bins, skipmap } = await generateCoverageBinsPrefixSum({
-        features,
+        features: features as FeatureWithMismatchIterator[],
         region,
         opts,
         fetchSequence: sequenceAdapter

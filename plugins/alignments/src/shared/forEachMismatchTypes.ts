@@ -8,6 +8,15 @@ export const SKIP_TYPE = 3
 export const SOFTCLIP_TYPE = 4
 export const HARDCLIP_TYPE = 5
 
+export const MISMATCH_MAP = [
+  'mismatch',
+  'insertion',
+  'deletion',
+  'skip',
+  'softclip',
+  'hardclip',
+] as const
+
 export type MismatchCallback = (
   type: number,
   start: number,

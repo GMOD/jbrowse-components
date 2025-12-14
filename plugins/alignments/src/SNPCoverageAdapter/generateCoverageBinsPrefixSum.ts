@@ -15,13 +15,18 @@ import {
 
 import type { Opts } from './util'
 import type {
+  FeatureWithMismatchIterator,
   Mismatch,
   PreBaseCoverageBin,
   PreBinEntry,
   SkipMap,
 } from '../shared/types'
-import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import {
+  DELETION_TYPE,
+  SKIP_TYPE,
+  MISMATCH_MAP,
+} from '../shared/forEachMismatchTypes'
 
 // Reusable change arrays for deletion prefix sums
 const MAX_REGION_SIZE = 1_000_000
@@ -46,7 +51,7 @@ interface SparseNoncovEntry {
  * SNPs are point events so we collect them directly.
  */
 function processMismatchesPrefixSum(
-  features: Feature[],
+  features: FeatureWithMismatchIterator[],
   region: Region,
   _depthSoA: CoverageDepthSoA,
 ): {
@@ -75,75 +80,78 @@ function processMismatchesPrefixSum(
       continue
     }
 
-    for (const mismatch of mismatches) {
-      const { type, start: mismatchStart, base, altbase, cliplen } = mismatch
-      const mstart = fstart + mismatchStart
-      const mlen = mismatchLen(mismatch)
-      const mend = mstart + mlen
+    feature.forEachMismatch(
+      (type, start, length, base, _qual, altbase, cliplen) => {
+        const mstart = fstart + start
+        const mlen = mismatchLen(type, length)
+        const mend = mstart + mlen
 
-      if (type === 'deletion' || type === 'skip') {
-        const visStart = Math.max(mstart, regionStart) - regionStart
-        const visEnd = Math.min(mend, regionEnd) - regionStart
+        if (type === DELETION_TYPE || type === SKIP_TYPE) {
+          const visStart = Math.max(mstart, regionStart) - regionStart
+          const visEnd = Math.min(mend, regionEnd) - regionStart
 
-        if (visStart < visEnd) {
-          // Use prefix sums for deletions - O(1) per deletion
-          deletionChanges[visStart]!++
-          deletionChanges[visEnd]!--
-        }
-
-        // Track skips for junction rendering
-        if (type === 'skip') {
-          const tags = feature.get('tags') as Record<string, string> | undefined
-          const xs = tags?.XS || tags?.TS
-          const ts = tags?.ts
-          const effectiveStrand =
-            xs === '+'
-              ? 1
-              : xs === '-'
-                ? -1
-                : (ts === '+' ? 1 : ts === '-' ? -1 : 0) * fstrand
-          const hash = `${mstart}_${mend}_${effectiveStrand}`
-          if (skipmap[hash] === undefined) {
-            skipmap[hash] = {
-              feature,
-              start: mstart,
-              end: mend,
-              strand: fstrand,
-              effectiveStrand,
-              score: 0,
-            }
+          if (visStart < visEnd) {
+            // Use prefix sums for deletions - O(1) per deletion
+            deletionChanges[visStart]!++
+            deletionChanges[visEnd]!--
           }
-          skipmap[hash].score++
+
+          // Track skips for junction rendering
+          if (type === SKIP_TYPE) {
+            const tags = feature.get('tags') as
+              | Record<string, string>
+              | undefined
+            const xs = tags?.XS || tags?.TS
+            const ts = tags?.ts
+            const effectiveStrand =
+              xs === '+'
+                ? 1
+                : xs === '-'
+                  ? -1
+                  : (ts === '+' ? 1 : ts === '-' ? -1 : 0) * fstrand
+            const hash = `${mstart}_${mend}_${effectiveStrand}`
+            if (skipmap[hash] === undefined) {
+              skipmap[hash] = {
+                feature,
+                start: mstart,
+                end: mend,
+                strand: fstrand,
+                effectiveStrand,
+                score: 0,
+              }
+            }
+            skipmap[hash].score++
+          }
+        } else if (isInterbase(type)) {
+          // insertion, softclip, hardclip
+          const epos = mstart - regionStart
+          if (epos >= 0 && epos < regionSize) {
+            noncovEvents.push({
+              pos: epos,
+              entry: {
+                strand: fstrand,
+                type: MISMATCH_MAP[type]!,
+                length: cliplen ?? base?.length ?? 0,
+                sequence: base,
+              },
+            })
+          }
+        } else {
+          // SNP/mismatch - point event
+          const epos = mstart - regionStart
+          if (epos >= 0 && epos < regionSize) {
+            snpEvents.push({
+              pos: epos,
+              entry: {
+                base,
+                strand: fstrand,
+                altbase: String.fromCharCode(altbase),
+              },
+            })
+          }
         }
-      } else if (isInterbase(type)) {
-        // insertion, softclip, hardclip
-        const epos = mstart - regionStart
-        if (epos >= 0 && epos < regionSize) {
-          noncovEvents.push({
-            pos: epos,
-            entry: {
-              strand: fstrand,
-              type: type,
-              length: cliplen ?? mismatch.insertedBases?.length ?? 0,
-              sequence: mismatch.insertedBases,
-            },
-          })
-        }
-      } else {
-        // SNP/mismatch - point event
-        const epos = mstart - regionStart
-        if (epos >= 0 && epos < regionSize) {
-          snpEvents.push({
-            pos: epos,
-            entry: {
-              base,
-              strand: fstrand,
-              altbase,
-            },
-          })
-        }
-      }
-    }
+      },
+    )
   }
 
   // Compute deletion depth prefix sums
@@ -200,7 +208,7 @@ export async function generateCoverageBinsPrefixSum({
   region,
   opts,
 }: {
-  features: Feature[]
+  features: FeatureWithMismatchIterator[]
   region: Region
   opts: Opts
   fetchSequence?: (arg: Region) => Promise<string | undefined>

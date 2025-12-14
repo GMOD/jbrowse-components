@@ -1,6 +1,10 @@
+import {
+  HARDCLIP_TYPE,
+  INSERTION_TYPE,
+  SOFTCLIP_TYPE,
+} from '../shared/forEachMismatchTypes'
 import type {
   ColorBy,
-  Mismatch,
   PreBaseCoverageBin,
   PreBaseCoverageBinSubtypes,
   PreBinEntry,
@@ -14,12 +18,14 @@ export interface Opts {
   statsEstimationMode?: boolean
 }
 
-export function mismatchLen(mismatch: Mismatch) {
-  return !isInterbase(mismatch.type) ? mismatch.length : 1
+export function mismatchLen(type: number, length: number) {
+  return !isInterbase(type) ? length : 1
 }
 
-export function isInterbase(type: string) {
-  return type === 'softclip' || type === 'hardclip' || type === 'insertion'
+export function isInterbase(type: number) {
+  return (
+    type === INSERTION_TYPE || type === HARDCLIP_TYPE || type === SOFTCLIP_TYPE
+  )
 }
 
 export function createPreBinEntry(): PreBinEntry {
