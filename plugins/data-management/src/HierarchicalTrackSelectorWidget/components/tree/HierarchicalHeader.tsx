@@ -1,3 +1,5 @@
+import { useState, useTransition } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ClearIcon from '@mui/icons-material/Clear'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
@@ -21,15 +23,20 @@ const SearchTracksTextField = observer(function ({
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
-  const { filterText } = model
+  const [localValue, setLocalValue] = useState(model.filterText)
+  const [, startTransition] = useTransition()
   const { classes } = useStyles()
   return (
     <TextField
       className={classes.searchBox}
       label="Filter tracks"
-      value={filterText}
+      value={localValue}
       onChange={event => {
-        model.setFilterText(event.target.value)
+        const value = event.target.value
+        setLocalValue(value)
+        startTransition(() => {
+          model.setFilterText(value)
+        })
       }}
       fullWidth
       slotProps={{
@@ -38,6 +45,7 @@ const SearchTracksTextField = observer(function ({
             <InputAdornment position="end">
               <IconButton
                 onClick={() => {
+                  setLocalValue('')
                   model.clearFilterText()
                 }}
               >

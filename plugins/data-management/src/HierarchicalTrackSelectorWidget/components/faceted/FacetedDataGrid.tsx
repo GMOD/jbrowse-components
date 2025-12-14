@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 
 import { getEnv, measureGridWidth } from '@jbrowse/core/util'
 import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
@@ -32,6 +32,7 @@ const FacetedDataGrid = observer(function ({
     visible,
   } = faceted
 
+  const [, startTransition] = useTransition()
   const [widths, setWidths] = useState<Record<string, number>>({
     name:
       measureGridWidth(
@@ -93,29 +94,29 @@ const FacetedDataGrid = observer(function ({
         model.faceted.setVisible(n)
       }}
       onRowSelectionModelChange={userSelectedIds => {
-        if (!useShoppingCart) {
-          const a1 = shownTrackIds
-          const a2 = userSelectedIds.ids
-          // synchronize the user selection with the view
-          // see share https://stackoverflow.com/a/33034768/2129219
-          transaction(() => {
-            ;[...a1].filter(x => !a2.has(x)).map(t => view.hideTrack(t))
-            ;[...a2]
-              .filter(x => !a1.has(x))
-              .map(t => {
-                view.showTrack(t)
-                model.addToRecentlyUsed(t)
-              })
-          })
-        } else {
-          const root = getRoot(model)
-          const schema = pluginManager.pluggableConfigSchemaType('track')
-          model.setSelection(
-            [...userSelectedIds.ids].map(id =>
-              resolveIdentifier(schema, root, id),
-            ),
-          )
-        }
+        startTransition(() => {
+          if (!useShoppingCart) {
+            const a1 = shownTrackIds
+            const a2 = userSelectedIds.ids
+            transaction(() => {
+              ;[...a1].filter(x => !a2.has(x)).map(t => view.hideTrack(t))
+              ;[...a2]
+                .filter(x => !a1.has(x))
+                .map(t => {
+                  view.showTrack(t)
+                  model.addToRecentlyUsed(t)
+                })
+            })
+          } else {
+            const root = getRoot(model)
+            const schema = pluginManager.pluggableConfigSchemaType('track')
+            model.setSelection(
+              [...userSelectedIds.ids].map(id =>
+                resolveIdentifier(schema, root, id),
+              ),
+            )
+          }
+        })
       }}
       rowSelectionModel={{
         type: 'include',

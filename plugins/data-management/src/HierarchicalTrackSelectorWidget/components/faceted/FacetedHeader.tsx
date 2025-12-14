@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -16,6 +16,8 @@ export default function FacetedHeader({
 }) {
   const { faceted } = model
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const [localFilterText, setLocalFilterText] = useState(faceted.filterText)
+  const [, startTransition] = useTransition()
   const { showOptions, showFilters, showSparse, useShoppingCart } = faceted
 
   return (
@@ -23,9 +25,13 @@ export default function FacetedHeader({
       <Grid container spacing={4} alignItems="center">
         <TextField
           label="Search..."
-          value={faceted.filterText}
+          value={localFilterText}
           onChange={event => {
-            faceted.setFilterText(event.target.value)
+            const value = event.target.value
+            setLocalFilterText(value)
+            startTransition(() => {
+              faceted.setFilterText(value)
+            })
           }}
           slotProps={{
             input: {
@@ -33,6 +39,7 @@ export default function FacetedHeader({
                 <InputAdornment position="end">
                   <IconButton
                     onClick={() => {
+                      setLocalFilterText('')
                       faceted.setFilterText('')
                     }}
                   >
