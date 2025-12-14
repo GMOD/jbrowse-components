@@ -28,6 +28,7 @@ import type {
 } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { renderMismatchesCallback } from './renderers/renderMismatchesCallback'
 
 async function fetchRegionSequence(
   renderArgs: PreProcessedRenderArgs,
@@ -117,7 +118,7 @@ function renderFeatures({
     for (let i = 0, l = alignmentRet.items.length; i < l; i++) {
       items.push(alignmentRet.items[i]!)
     }
-    const ret = renderMismatches({
+    const ret = renderMismatchesCallback({
       ctx,
       feat,
       bpPerPx: renderArgs.bpPerPx,

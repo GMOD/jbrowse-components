@@ -1,7 +1,17 @@
 import { readFeaturesToMismatches } from './readFeaturesToMismatches'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
+import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
 import { cacheGetter } from '../shared/util'
+import {
+  MISMATCH_TYPE,
+  INSERTION_TYPE,
+  DELETION_TYPE,
+  SKIP_TYPE,
+  SOFTCLIP_TYPE,
+  HARDCLIP_TYPE,
+} from '../shared/forEachMismatchTypes'
 
+import type { MismatchCallback } from '../shared/forEachMismatchTypes'
 import type CramAdapter from './CramAdapter'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -163,6 +173,77 @@ export default class CramSlightlyLazyFeature implements Feature {
     //       ),
     //     )
     //   : mismatches
+  }
+
+  forEachMismatch(callback: MismatchCallback) {
+    const readFeatures = this.record.readFeatures
+    if (!readFeatures) {
+      return
+    }
+
+    const featStart = this.start
+    const qual = this.qualRaw
+    const len = readFeatures.length
+
+    let refPos = 0
+    let lastPos = featStart
+    let insertedBases = ''
+    let insertedBasesLen = 0
+
+    for (let i = 0; i < len; i++) {
+      const rf = readFeatures[i]!
+      const { refPos: p, code, pos, data, sub, ref } = rf
+      const sublen = refPos - lastPos
+      lastPos = refPos
+
+      // Flush accumulated single-base insertions
+      if (sublen && insertedBasesLen > 0) {
+        callback(INSERTION_TYPE, refPos, 0, insertedBases, -1, 0, insertedBasesLen)
+        insertedBases = ''
+        insertedBasesLen = 0
+      }
+      refPos = p - 1 - featStart
+
+      const codeChar = code.charCodeAt(0)
+
+      if (codeChar === CODE_X) {
+        // substitution/mismatch
+        callback(
+          MISMATCH_TYPE,
+          refPos,
+          1,
+          sub!,
+          qual?.[pos - 1] ?? -1,
+          ref?.toUpperCase().charCodeAt(0) ?? 0,
+          0,
+        )
+      } else if (codeChar === CODE_I) {
+        // insertion
+        callback(INSERTION_TYPE, refPos, 0, data, -1, 0, data.length)
+      } else if (codeChar === CODE_N) {
+        // reference skip
+        callback(SKIP_TYPE, refPos, data, 'N', -1, 0, 0)
+      } else if (codeChar === CODE_S) {
+        // soft clip
+        const dataLen = data.length
+        callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
+      } else if (codeChar === CODE_H) {
+        // hard clip
+        callback(HARDCLIP_TYPE, refPos, 1, `H${data}`, -1, 0, data)
+      } else if (codeChar === CODE_D) {
+        // deletion
+        callback(DELETION_TYPE, refPos, data, '*', -1, 0, 0)
+      } else if (codeChar === CODE_i) {
+        // single-base insertion - accumulate
+        insertedBases += data
+        insertedBasesLen++
+      }
+    }
+
+    // Flush any remaining accumulated insertions
+    if (insertedBasesLen > 0) {
+      callback(INSERTION_TYPE, refPos, 0, insertedBases, -1, 0, insertedBasesLen)
+    }
   }
 
   get fields(): SimpleFeatureSerialized {
