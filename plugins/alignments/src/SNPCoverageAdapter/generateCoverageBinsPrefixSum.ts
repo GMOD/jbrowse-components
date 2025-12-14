@@ -6,7 +6,12 @@ import {
 } from './processDepthPrefixSum'
 import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
-import { createPreBinEntry, isInterbase, mismatchLen } from './util'
+import {
+  createEmptyBin,
+  createPreBinEntry,
+  isInterbase,
+  mismatchLen,
+} from './util'
 
 import type { Opts } from './util'
 import type {
@@ -404,19 +409,6 @@ export async function generateCoverageBinsPrefixSum({
   }
 
   return { bins, skipmap }
-}
-
-function createEmptyBin(): PreBaseCoverageBin {
-  return {
-    depth: 0,
-    readsCounted: 0,
-    ref: createPreBinEntry(),
-    snps: {},
-    mods: {},
-    nonmods: {},
-    delskips: {},
-    noncov: {},
-  }
 }
 
 function createDeletionEntry(depth: number): PreBinEntry {

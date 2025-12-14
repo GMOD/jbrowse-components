@@ -37,6 +37,19 @@ export function createPreBinEntry(): PreBinEntry {
   }
 }
 
+export function createEmptyBin(): PreBaseCoverageBin {
+  return {
+    depth: 0,
+    readsCounted: 0,
+    snps: {},
+    ref: createPreBinEntry(),
+    mods: {},
+    nonmods: {},
+    delskips: {},
+    noncov: {},
+  }
+}
+
 export function inc(
   bin: PreBaseCoverageBin,
   strand: -1 | 0 | 1,

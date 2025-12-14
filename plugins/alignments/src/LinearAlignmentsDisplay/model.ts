@@ -271,6 +271,17 @@ function stateModelFactory(
             { name: 'SyncColorBy' },
           ),
         )
+
+        addDisposer(
+          self,
+          autorun(
+            function syncFilterByAutorun() {
+              const filterBy = self.PileupDisplay.filterBy
+              self.SNPCoverageDisplay.setFilterBy(filterBy)
+            },
+            { name: 'SyncFilterBy' },
+          ),
+        )
       },
       /**
        * #action

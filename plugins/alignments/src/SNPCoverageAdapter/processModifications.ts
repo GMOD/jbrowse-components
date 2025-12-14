@@ -1,6 +1,6 @@
 import { max, sum } from '@jbrowse/core/util'
 
-import { createPreBinEntry, incWithProbabilities } from './util'
+import { createEmptyBin, incWithProbabilities } from './util'
 import { parseCigar2 } from '../MismatchParser'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 
@@ -64,16 +64,7 @@ export function processModifications({
         return
       }
 
-      const bin = (bins[epos] ??= {
-        depth: 0,
-        readsCounted: 0,
-        snps: {},
-        ref: createPreBinEntry(),
-        mods: {},
-        nonmods: {},
-        delskips: {},
-        noncov: {},
-      })
+      const bin = (bins[epos] ??= createEmptyBin())
       bin.refbase = regionSequence[epos]
 
       const s = 1 - sum(allProbs)

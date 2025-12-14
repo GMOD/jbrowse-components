@@ -1,25 +1,12 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
 import { parseCigar2 } from '../MismatchParser'
-import { createPreBinEntry, incWithProbabilities } from './util'
+import { createEmptyBin, incWithProbabilities } from './util'
 import { getMethBins } from '../ModificationParser/getMethBins'
 
 import type { Mismatch, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-
-function createEmptyBin(): PreBaseCoverageBin {
-  return {
-    depth: 0,
-    readsCounted: 0,
-    snps: {},
-    ref: createPreBinEntry(),
-    mods: {},
-    nonmods: {},
-    delskips: {},
-    noncov: {},
-  }
-}
 
 export function processReferenceCpGs({
   feature,
