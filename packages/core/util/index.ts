@@ -1352,15 +1352,15 @@ export function forEachWithStopTokenCheck<T>(
   iters = 100,
   backoff = true,
 ) {
-  let start = performance.now()
+  let start = Date.now()
   let i = 0
   let durationMsInc = durationMs
   for (const t of iter) {
     arg(t, i++)
     if (i % iters === 0) {
-      if (performance.now() - start > durationMsInc) {
+      if (Date.now() - start > durationMsInc) {
         checkStopToken(stopToken)
-        start = performance.now()
+        start = Date.now()
         if (backoff) {
           durationMsInc += durationMs
         }
