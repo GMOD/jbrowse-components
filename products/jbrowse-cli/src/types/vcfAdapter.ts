@@ -25,6 +25,8 @@ export async function* indexVcf({
     quiet,
   })
 
+  const encodedTrackId = encodeURIComponent(trackId)
+
   for await (const line of rl) {
     if (line.startsWith('#')) {
       continue
@@ -32,28 +34,26 @@ export async function* indexVcf({
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
-    const fields = parseAttributes(info!, decodeURIComponentNoThrow)
-    const end = fields.END
 
-    const locStr = `${ref}:${pos!}..${end || +pos! + 1}`
     if (id === '.') {
       continue
     }
+
+    const fields = parseAttributes(info!, decodeURIComponentNoThrow)
+    const end = fields.END
+    const locStr = `${ref}:${pos!}..${end || +pos! + 1}`
+    const encodedLocStr = encodeURIComponent(locStr)
 
     const infoAttrs = attributesToIndex
       .map(attr => fields[attr])
       .filter((f): f is string => !!f)
 
-    const ids = id!.split(',')
-    for (const id of ids) {
-      const attrs = [id]
-      const record = JSON.stringify([
-        encodeURIComponent(locStr),
-        encodeURIComponent(trackId),
-        encodeURIComponent(id || ''),
-        ...infoAttrs.map(a => encodeURIComponent(a || '')),
-      ]).replaceAll(',', '|')
-      yield `${record} ${[...new Set(attrs)].join(' ')}\n`
+    const encodedInfoAttrs = infoAttrs.map(a => `"${encodeURIComponent(a)}"`)
+
+    for (const variantId of id!.split(',')) {
+      const encodedId = encodeURIComponent(variantId)
+      const record = `["${encodedLocStr}"|"${encodedTrackId}"|"${encodedId}"${encodedInfoAttrs.length > 0 ? '|' + encodedInfoAttrs.join('|') : ''}]`
+      yield `${record} ${variantId}\n`
     }
   }
 

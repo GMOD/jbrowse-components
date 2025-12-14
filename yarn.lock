@@ -9578,10 +9578,10 @@ iterator.prototype@^1.1.5:
     has-symbols "^1.1.0"
     set-function-name "^2.0.2"
 
-ixixx@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-3.0.0.tgz#59958418fdbe7f0ff650a9bccc35d43d9439e64d"
-  integrity sha512-SfFGmYuDT1GnElenBaji0ifROSmWBQ29ynKp98iGroTO7e54KL+x/IhPdAVc5bQnB0g9dOvciIMtYJRNDiKT3A==
+ixixx@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-3.0.2.tgz#0efb26e0fcd3b7974637b4336359491149a4a96f"
+  integrity sha512-NmzkqETsLh2rsP0ROar8LA9AIfiTUCaqBwG1BVyh+M4AEmCsrovUqMf3FW1J3eLYsIxDTtrL5bykW/rpsATAuA==
   dependencies:
     command-exists "^1.2.9"
     external-sorting "^1.3.1"
