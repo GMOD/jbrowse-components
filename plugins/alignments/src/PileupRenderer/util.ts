@@ -105,7 +105,8 @@ const smallNumberWidthCache10 = new Map<number, number>()
 const smallNumberWidthCache = new Map<number, number>()
 
 export function measureTextSmallNumber(n: number, fontSize?: number) {
-  const cache = fontSize === 10 ? smallNumberWidthCache10 : smallNumberWidthCache
+  const cache =
+    fontSize === 10 ? smallNumberWidthCache10 : smallNumberWidthCache
   if (n >= 0 && n < 100) {
     let width = cache.get(n)
     if (width === undefined) {

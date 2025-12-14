@@ -3,16 +3,16 @@ import { BamRecord } from '@gmod/bam'
 import { getMismatchesFromNumericMD } from './getMismatchesNumeric'
 import { decodeSeq } from '../shared/decodeSeq'
 import {
-  MISMATCH_TYPE,
-  INSERTION_TYPE,
   DELETION_TYPE,
+  HARDCLIP_TYPE,
+  INSERTION_TYPE,
+  MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-  HARDCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
 
-import type { MismatchCallback } from '../shared/forEachMismatchTypes'
 import type BamAdapter from './BamAdapter'
+import type { MismatchCallback } from '../shared/forEachMismatchTypes'
 import type { Mismatch } from '../shared/types'
 import type {
   Feature,
@@ -93,7 +93,7 @@ export default class BamSlightlyLazyFeature
       }
     }
 
-    for (let i = 0; i < cigar.length; i++) {
+    for (let i = 0, l = cigar.length; i < l; i++) {
       const packed = cigar[i]!
       const len = packed >> 4
       const op = packed & 0xf
@@ -190,7 +190,11 @@ export default class BamSlightlyLazyFeature
 
           let altbaseCode = 0
           if (hasMD) {
-            if (mdMatchRemaining === 0 && mdIdx < mdLength && md[mdIdx]! >= 65) {
+            if (
+              mdMatchRemaining === 0 &&
+              mdIdx < mdLength &&
+              md[mdIdx]! >= 65
+            ) {
               altbaseCode = md[mdIdx]!
               mdIdx++
               mdMatchRemaining = 0

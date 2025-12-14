@@ -10,6 +10,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { layoutFeats } from './layoutFeatures'
 import { renderAlignment } from './renderers/renderAlignment'
 import { renderMismatches } from './renderers/renderMismatches'
+import { renderMismatchesCallback } from './renderers/renderMismatchesCallback'
 import { renderSoftClipping } from './renderers/renderSoftClipping'
 import {
   getCharWidthHeight,
@@ -28,7 +29,6 @@ import type {
 } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { renderMismatchesCallback } from './renderers/renderMismatchesCallback'
 
 async function fetchRegionSequence(
   renderArgs: PreProcessedRenderArgs,

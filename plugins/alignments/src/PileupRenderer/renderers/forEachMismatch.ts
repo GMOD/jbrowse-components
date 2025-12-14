@@ -19,17 +19,15 @@ export const SKIP_TYPE = 3
 export const SOFTCLIP_TYPE = 4
 export const HARDCLIP_TYPE = 5
 
-export interface MismatchCallback {
-  (
-    type: number,
-    start: number,
-    length: number,
-    base: string,
-    qual: number,
-    altbase: number,
-    cliplen: number,
-  ): void
-}
+export type MismatchCallback = (
+  type: number,
+  start: number,
+  length: number,
+  base: string,
+  qual: number,
+  altbase: number,
+  cliplen: number,
+) => void
 
 export function forEachMismatch(
   cigar: ArrayLike<number> | undefined,
@@ -65,7 +63,7 @@ export function forEachMismatch(
     }
   }
 
-  for (let i = 0; i < cigar.length; i++) {
+  for (let i = 0, l = cigar.length; i < l; i++) {
     const packed = cigar[i]!
     const len = packed >> 4
     const op = packed & 0xf

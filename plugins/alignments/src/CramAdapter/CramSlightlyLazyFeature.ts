@@ -1,18 +1,18 @@
+import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
 import { readFeaturesToMismatches } from './readFeaturesToMismatches'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
-import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
-import { cacheGetter } from '../shared/util'
 import {
-  MISMATCH_TYPE,
-  INSERTION_TYPE,
   DELETION_TYPE,
+  HARDCLIP_TYPE,
+  INSERTION_TYPE,
+  MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-  HARDCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
+import { cacheGetter } from '../shared/util'
 
-import type { MismatchCallback } from '../shared/forEachMismatchTypes'
 import type CramAdapter from './CramAdapter'
+import type { MismatchCallback } from '../shared/forEachMismatchTypes'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -198,7 +198,15 @@ export default class CramSlightlyLazyFeature implements Feature {
 
       // Flush accumulated single-base insertions
       if (sublen && insertedBasesLen > 0) {
-        callback(INSERTION_TYPE, refPos, 0, insertedBases, -1, 0, insertedBasesLen)
+        callback(
+          INSERTION_TYPE,
+          refPos,
+          0,
+          insertedBases,
+          -1,
+          0,
+          insertedBasesLen,
+        )
         insertedBases = ''
         insertedBasesLen = 0
       }
@@ -242,7 +250,15 @@ export default class CramSlightlyLazyFeature implements Feature {
 
     // Flush any remaining accumulated insertions
     if (insertedBasesLen > 0) {
-      callback(INSERTION_TYPE, refPos, 0, insertedBases, -1, 0, insertedBasesLen)
+      callback(
+        INSERTION_TYPE,
+        refPos,
+        0,
+        insertedBases,
+        -1,
+        0,
+        insertedBasesLen,
+      )
     }
   }
 

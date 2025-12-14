@@ -19,7 +19,8 @@ const TWO_BASE_LOOKUP: string[] = new Array(256)
 for (let i = 0; i < 256; i++) {
   const high = (i >> 4) & 0xf
   const low = i & 0xf
-  TWO_BASE_LOOKUP[i] = SEQRET_STRING_DECODER[high]! + SEQRET_STRING_DECODER[low]!
+  TWO_BASE_LOOKUP[i] =
+    SEQRET_STRING_DECODER[high]! + SEQRET_STRING_DECODER[low]!
 }
 
 // Numeric decoder - returns char codes directly (lowercase for case-insensitive comparison)
@@ -143,7 +144,7 @@ function getMismatchesCombinedFromBytes(
     }
   }
 
-  for (let i = 0; i < cigar.length; i++) {
+  for (let i = 0, l = cigar.length; i < l; i++) {
     const packed = cigar[i]!
     const len = packed >> 4
     const op = packed & 0xf
@@ -200,7 +201,12 @@ function getMismatchesCombinedFromBytes(
         start: roffset,
         type: 'insertion',
         base: `${len}`,
-        insertedBases: getSeqSlice(numericSeq, soffset, soffset + len, seqLength),
+        insertedBases: getSeqSlice(
+          numericSeq,
+          soffset,
+          soffset + len,
+          seqLength,
+        ),
         length: 0,
       })
       soffset += len
