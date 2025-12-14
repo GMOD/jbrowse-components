@@ -1,4 +1,3 @@
-import { fillTextCtx } from '../util'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -11,6 +10,8 @@ import {
 
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
+
+const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
 
 export function renderPerBaseLettering({
   ctx,
@@ -85,14 +86,16 @@ export function renderPerBaseLettering({
           ctx.fillRect(leftPx, topPx, w + 0.5, heightPx)
 
           if (w >= charWidth && heightPx >= heightLim) {
-            fillTextCtx(
-              ctx,
-              letter,
-              leftPx + (w - charWidth) / 2 + 1,
-              topPx + heightPx,
-              canvasWidth,
-              colorContrastMap[letter],
-            )
+            const x = leftPx + (w - charWidth) / 2 + 1
+            const y = topPx + heightPx
+            const color = colorContrastMap[letter]
+            if (x >= 0 && x <= canvasWidth) {
+              if (color && lastFillStyleMap.get(ctx) !== color) {
+                ctx.fillStyle = color
+                lastFillStyleMap.set(ctx, color)
+              }
+              ctx.fillText(letter, x, y)
+            }
           }
         }
       }

@@ -6,7 +6,7 @@ import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
 
 import type { Opts } from './util'
-import type { PreBaseCoverageBin, PreBinEntry, SkipMap } from '../shared/types'
+import type { PreBaseCoverageBin, PreBinEntry, SkipMap, FeatureWithMismatchIterator } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
@@ -110,7 +110,10 @@ export async function generateCoverageBins({
         regionSequence,
       })
     }
-    processMismatches({ feature, skipmap, bins, region })
+    const featureWithIterator = feature as unknown as FeatureWithMismatchIterator
+    if (typeof featureWithIterator.forEachMismatch === 'function') {
+      processMismatches({ feature: featureWithIterator, skipmap, bins, region })
+    }
   }
 
   for (const bin of bins) {

@@ -8,13 +8,19 @@ import {
   HARDCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
 
-import type { Mismatch, PreBaseCoverageBin, SkipMap } from '../shared/types'
+import type { Mismatch, PreBaseCoverageBin, SkipMap, FeatureWithMismatchIterator } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion } from '@jbrowse/core/util/types'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
 
-interface FeatureWithMismatchIterator extends Feature {
-  forEachMismatch(callback: MismatchCallback): void
+// Helper to convert numeric type to string representation for inc function
+const mismatchTypeToString: { [key: number]: string } = {
+  [MISMATCH_TYPE]: 'mismatch',
+  [INSERTION_TYPE]: 'insertion',
+  [DELETION_TYPE]: 'deletion',
+  [SKIP_TYPE]: 'skip',
+  [SOFTCLIP_TYPE]: 'softclip',
+  [HARDCLIP_TYPE]: 'hardclip',
 }
 
 export function processMismatches({
@@ -52,10 +58,10 @@ export function processMismatches({
         const epos = j - regionStart
         if (epos < binsLength) {
           const bin = bins[epos]!
-          const interbase = isInterbase(type)
+          const interbase = isInterbase(mismatchTypeToString[type]!)
 
           if (type === DELETION_TYPE || type === SKIP_TYPE) {
-            inc(bin, fstrand, 'delskips', type)
+            inc(bin, fstrand, 'delskips', mismatchTypeToString[type]!)
             bin.depth--
           } else if (!interbase) {
             inc(bin, fstrand, 'snps', base)
@@ -65,7 +71,7 @@ export function processMismatches({
           } else {
             const len = type === INSERTION_TYPE ? length : cliplen
             const seq = type === INSERTION_TYPE ? base : undefined
-            inc(bin, fstrand, 'noncov', type, len, seq)
+            inc(bin, fstrand, 'noncov', mismatchTypeToString[type]!, len, seq)
           }
         }
       }
@@ -100,4 +106,3 @@ export function processMismatches({
     },
   )
 }
-

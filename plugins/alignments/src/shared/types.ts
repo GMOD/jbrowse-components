@@ -1,4 +1,5 @@
 import type { Feature } from '@jbrowse/core/util'
+import type { MismatchCallback } from './forEachMismatchTypes'
 
 export type SkipMap = Record<
   string,
@@ -167,3 +168,7 @@ export type MismatchType =
   | 'skip'
   | 'softclip'
   | 'hardclip'
+
+export interface FeatureWithMismatchIterator extends Feature {
+  forEachMismatch(callback: MismatchCallback): void
+}

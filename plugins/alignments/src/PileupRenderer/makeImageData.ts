@@ -19,7 +19,7 @@ import {
   setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
-} from './util'
+} from '../shared/util'
 
 import type {
   FlatbushItem,

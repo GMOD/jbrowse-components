@@ -7,7 +7,15 @@ import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
 import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
-import { CHEVRON_WIDTH } from '../shared/util'
+import {
+  CHEVRON_WIDTH,
+  getColorBaseMap,
+  getContrastBaseMap,
+  setAlignmentFont,
+  getCharWidthHeight,
+  shouldDrawIndels,
+  shouldDrawSNPsMuted,
+} from '../shared/util'
 
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { ChainData, ColorBy } from '../shared/types'
@@ -101,7 +109,7 @@ export function drawLongReadChains({
       return
     }
 
-    const chainY = chainYOffsets.get(id)
+    let chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       return
     }
@@ -251,8 +259,8 @@ export function drawLongReadChains({
             strokeColor[getStrandColorKey(effectiveStrand)],
           ]
 
-      const xPos = startPx - viewOffsetPx
-      const width = Math.max(endPx - startPx, 3)
+      let xPos = startPx - viewOffsetPx
+      let width = Math.max(endPx - startPx, 3)
 
       // Render the alignment base shape
       const layoutFeat = {
