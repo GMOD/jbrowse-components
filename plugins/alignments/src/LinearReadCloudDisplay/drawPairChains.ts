@@ -2,7 +2,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
-import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
 import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import { getPairedColor } from '../shared/color'
@@ -22,6 +21,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
+import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
 
 interface MinimalView {
   offsetPx: number
@@ -266,7 +266,7 @@ export function drawPairChains({
         // The actual canvas clipping will handle bounds correctly
         const effectiveCanvasWidth = canvasWidth + Math.abs(offsetAdjustment)
 
-        renderMismatches({
+        renderMismatchesCallback({
           ctx,
           feat: layoutFeat,
           bpPerPx,
