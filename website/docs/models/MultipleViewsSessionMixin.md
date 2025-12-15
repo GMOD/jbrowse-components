@@ -47,6 +47,19 @@ stickyViewHeaders: types.optional(types.boolean, () =>
       )
 ```
 
+#### property: useWorkspaces
+
+enables the dockview-based tabbed/tiled workspace layout
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+useWorkspaces: types.optional(types.boolean, () =>
+        localStorageGetBoolean('useWorkspaces', false),
+      )
+```
+
 ### MultipleViewsSessionMixin - Actions
 
 #### action: moveViewDown
@@ -96,4 +109,11 @@ removeView: (view: IBaseViewModel) => void
 ```js
 // type signature
 setStickyViewHeaders: (sticky: boolean) => void
+```
+
+#### action: setUseWorkspaces
+
+```js
+// type signature
+setUseWorkspaces: (useWorkspaces: boolean) => void
 ```

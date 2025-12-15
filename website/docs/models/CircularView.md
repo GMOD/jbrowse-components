@@ -192,6 +192,17 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<CircularViewInit, CircularViewInit, CircularViewInit>
+// code
+init: types.frozen<CircularViewInit | undefined>()
+```
+
 ### CircularView - Getters
 
 #### getter: width
@@ -340,6 +351,48 @@ string[]
 any
 ```
 
+#### getter: loadingMessage
+
+```js
+// type
+string
+```
+
+#### getter: hasSomethingToShow
+
+```js
+// type
+boolean
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+any
+```
+
+#### getter: showView
+
+Whether the view is fully initialized and ready to display
+
+```js
+// type
+any
+```
+
+#### getter: showImportForm
+
+Whether to show the import form (when not ready to display and import form is
+enabled, or when there's an error)
+
+```js
+// type
+boolean
+```
+
 #### getter: staticSlices
 
 ```js
@@ -455,7 +508,7 @@ setModelViewWhenAdjust: (secondCondition: boolean) => void
 
 ```js
 // type signature
-setDisplayedRegions: (regions: SnapshotOrInstance<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>[]) => void
+setDisplayedRegions: (regions: Region[]) => void
 ```
 
 #### action: activateTrackSelector
@@ -469,7 +522,7 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string) => void
 ```
 
 #### action: setError
@@ -477,6 +530,13 @@ toggleTrack: (trackId: string) => boolean
 ```js
 // type signature
 setError: (error: unknown) => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (init?: CircularViewInit) => void
 ```
 
 #### action: showTrack
@@ -497,7 +557,7 @@ addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubs
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => void
 ```
 
 #### action: toggleFitToWindowLock

@@ -97,14 +97,14 @@ waitForAssembly: (assemblyName: string) => Promise<{ configuration: any; } & Non
 
 ```js
 // type signature
-getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { stopToken?: string; sessionId: string; }) => Promise<any>
+getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: AssemblyBaseOpts) => Promise<any>
 ```
 
 #### method: getReverseRefNameMapForAdapter
 
 ```js
 // type signature
-getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { stopToken?: string; sessionId: string; }) => Promise<any>
+getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: AssemblyBaseOpts) => Promise<any>
 ```
 
 #### method: isValidRefName

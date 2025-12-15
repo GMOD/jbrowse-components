@@ -65,7 +65,7 @@ removeAssemblyConf: (assemblyName: string) => void
 
 ```js
 // type signature
-addTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+addTrackConf: (trackConf: { trackId: string; type: string; }) => { [key: string]: unknown; trackId: string; }
 ```
 
 #### action: addConnectionConf
@@ -86,7 +86,17 @@ deleteConnectionConf: (configuration: { [x: string]: any; } & NonEmptyObject & {
 
 ```js
 // type signature
-deleteTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
+deleteTrackConf: (trackConf: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) | { ...; }) => void
+```
+
+#### action: updateTrackConf
+
+Updates an existing track configuration. Used to sync editable configs back to
+the frozen tracks array.
+
+```js
+// type signature
+updateTrackConf: (trackConf: { [key: string]: unknown; trackId: string; }) => void
 ```
 
 #### action: addPlugin
