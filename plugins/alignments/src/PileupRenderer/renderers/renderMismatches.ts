@@ -248,8 +248,8 @@ export function renderMismatches({
           const l = leftPx - 1
           const w = 2
           if (l + w > 0 && l < canvasWidth) {
-            const c = colorMap.insertion
-            if (c && lastColor !== c) {
+            const c = colorMap.insertion!
+            if (lastColor !== c) {
               ctx.fillStyle = c
               lastColor = c
             }
@@ -267,7 +267,7 @@ export function renderMismatches({
           const l = leftPx - rwidth / 2 - padding
           const w = rwidth + 2 * padding
           if (l + w > 0 && l < canvasWidth) {
-            const c = 'purple'
+            const c = colorMap.insertion!
             if (lastColor !== c) {
               ctx.fillStyle = c
               lastColor = c

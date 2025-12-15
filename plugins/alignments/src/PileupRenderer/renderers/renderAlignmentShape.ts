@@ -4,8 +4,6 @@ import { CHEVRON_WIDTH } from '../../shared/util'
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 
-const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
-
 // Helper to draw forward strand chevron
 function drawForwardChevron(
   ctx: CanvasRenderingContext2D,
@@ -59,6 +57,7 @@ export function renderAlignmentShape({
   color: string
   cigarOps: ArrayLike<number>
 }) {
+  let lastColor = 'NONCOLOR'
   const { regions, bpPerPx } = renderArgs
   const { heightPx, topPx, feature } = feat
   const region = regions[0]!
@@ -83,7 +82,6 @@ export function renderAlignmentShape({
   }
 
   // Check for skips (N operations)
-
   if (hasSkips) {
     const midY = topPx + heightPx / 2
 
@@ -115,9 +113,9 @@ export function renderAlignmentShape({
               : (drawEnd - regionStart) * invBpPerPx
             const w = rightPx - leftPx
             if (leftPx + w > 0 && leftPx < canvasWidth) {
-              if (lastFillStyleMap.get(ctx) !== color) {
+              if (lastColor !== color) {
                 ctx.fillStyle = color
-                lastFillStyleMap.set(ctx, color)
+                lastColor = color
               }
               ctx.fillRect(leftPx, topPx, w, heightPx)
             }
@@ -141,9 +139,9 @@ export function renderAlignmentShape({
         } else {
           const w = rightPx - leftPx
           if (leftPx + w > 0 && leftPx < canvasWidth) {
-            if (lastFillStyleMap.get(ctx) !== color) {
+            if (lastColor !== color) {
               ctx.fillStyle = color
-              lastFillStyleMap.set(ctx, color)
+              lastColor = color
             }
             ctx.fillRect(leftPx, topPx, w, heightPx)
           }
@@ -176,9 +174,9 @@ export function renderAlignmentShape({
               : (drawStart - regionStart) * invBpPerPx
             const w = rightPx - leftPx
             if (leftPx + w > 0 && leftPx < canvasWidth) {
-              if (lastFillStyleMap.get(ctx) !== color) {
+              if (lastColor !== color) {
                 ctx.fillStyle = color
-                lastFillStyleMap.set(ctx, color)
+                lastColor = color
               }
               ctx.fillRect(leftPx, topPx, w, heightPx)
             }
@@ -202,9 +200,9 @@ export function renderAlignmentShape({
         } else {
           const w = rightPx - leftPx
           if (leftPx + w > 0 && leftPx < canvasWidth) {
-            if (lastFillStyleMap.get(ctx) !== color) {
+            if (lastColor !== color) {
               ctx.fillStyle = color
-              lastFillStyleMap.set(ctx, color)
+              lastColor = color
             }
             ctx.fillRect(leftPx, topPx, w, heightPx)
           }
@@ -229,9 +227,9 @@ export function renderAlignmentShape({
     } else {
       const w = rightPx - leftPx
       if (leftPx + w > 0 && leftPx < canvasWidth) {
-        if (lastFillStyleMap.get(ctx) !== color) {
+        if (lastColor !== color) {
           ctx.fillStyle = color
-          lastFillStyleMap.set(ctx, color)
+          lastColor = color
         }
         ctx.fillRect(leftPx, topPx, w, heightPx)
       }
