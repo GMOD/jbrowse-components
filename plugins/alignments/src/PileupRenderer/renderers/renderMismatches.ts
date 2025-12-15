@@ -160,9 +160,9 @@ export function renderMismatches({
         const rwidth = measureTextSmallNumber(len, 10)
         if (widthPx >= rwidth && canRenderText) {
           const x = (leftPx + rightPx) / 2 - rwidth / 2
-          const c = colorContrastMap.deletion
+          const c = colorContrastMap.deletion!
           if (x > 0 && x < canvasWidth) {
-            if (c && lastFillStyleMap.get(ctx) !== c) {
+            if (lastFillStyleMap.get(ctx) !== c) {
               ctx.fillStyle = c
               lastFillStyleMap.set(ctx, c)
             }
@@ -173,8 +173,8 @@ export function renderMismatches({
     } else if (type === 'skip') {
       const w = Math.max(widthPx, 1.5)
       if (leftPx + w > 0 && leftPx < canvasWidth) {
-        const c = colorMap.skip
-        if (c && lastFillStyleMap.get(ctx) !== c) {
+        const c = colorMap.skip!
+        if (lastFillStyleMap.get(ctx) !== c) {
           ctx.fillStyle = c
           lastFillStyleMap.set(ctx, c)
         }
@@ -276,9 +276,9 @@ export function renderMismatches({
             ctx.fillRect(l, topPx, w, heightPx)
           }
           const x = leftPx - rwidth / 2
-          const c = colorContrastMap.insertion
+          const c = colorContrastMap.insertion!
           if (x > 0 && x < canvasWidth) {
-            if (c && lastFillStyleMap.get(ctx) !== c) {
+            if (lastFillStyleMap.get(ctx) !== c) {
               ctx.fillStyle = c
               lastFillStyleMap.set(ctx, c)
             }
@@ -290,8 +290,8 @@ export function renderMismatches({
           const l = leftPx - padding
           const w = 2 * padding
           if (l + w > 0 && l < canvasWidth) {
-            const c = colorMap.insertion
-            if (c && lastFillStyleMap.get(ctx) !== c) {
+            const c = colorMap.insertion!
+            if (lastFillStyleMap.get(ctx) !== c) {
               ctx.fillStyle = c
               lastFillStyleMap.set(ctx, c)
             }
@@ -300,10 +300,10 @@ export function renderMismatches({
         }
       }
     } else if (type === 'softclip' || type === 'hardclip') {
-      const c = colorMap[type]
+      const c = colorMap[type]!
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       if (pos + clipW > 0 && pos < canvasWidth) {
-        if (c && lastFillStyleMap.get(ctx) !== c) {
+        if (lastFillStyleMap.get(ctx) !== c) {
           ctx.fillStyle = c
           lastFillStyleMap.set(ctx, c)
         }
@@ -315,7 +315,7 @@ export function renderMismatches({
         const l = pos - clipW
         const clipW3 = clipW * 3
         if (l + clipW3 > 0 && l < canvasWidth) {
-          if (c && lastFillStyleMap.get(ctx) !== c) {
+          if (lastFillStyleMap.get(ctx) !== c) {
             ctx.fillStyle = c
             lastFillStyleMap.set(ctx, c)
           }
@@ -324,7 +324,7 @@ export function renderMismatches({
         }
         const x = pos + 3
         if (x > 0 && x < canvasWidth) {
-          if (c && lastFillStyleMap.get(ctx) !== c) {
+          if (lastFillStyleMap.get(ctx) !== c) {
             ctx.fillStyle = c
             lastFillStyleMap.set(ctx, c)
           }
