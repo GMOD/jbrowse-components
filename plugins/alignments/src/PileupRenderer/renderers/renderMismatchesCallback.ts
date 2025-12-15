@@ -4,6 +4,7 @@ import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
+  MISMATCH_REV_MAP,
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
@@ -11,6 +12,7 @@ import {
 import { measureTextSmallNumber } from '../util'
 
 import type { MismatchCallback } from '../../shared/forEachMismatchTypes'
+import type { Mismatch } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
@@ -106,126 +108,160 @@ export function renderMismatchesCallback({
 
   // Check if feature has forEachMismatch method (BAM/CRAM adapters)
   const featureWithIterator = feature as unknown as FeatureWithMismatchIterator
-  if (typeof featureWithIterator.forEachMismatch !== 'function') {
-    // Fallback: feature doesn't support callback iteration
-    return { coords, items }
-  }
+  const mismatchHandler = (
+    type: number,
+    start: number,
+    length: number,
+    base: string,
+    qualVal: number | undefined,
+    _altbase: number | undefined,
+    cliplen: number | undefined,
+  ) => {
+    const mstart = featStart + start
+    const mend = mstart + length
 
-  // First pass: draw mismatches, deletions, skips - accumulate insertions/clips
-  featureWithIterator.forEachMismatch(
-    (type, start, length, base, qualVal, altbase, cliplen) => {
-      const mstart = featStart + start
-      const mend = mstart + length
+    // Handle insertions/clips in second pass
+    if (
+      type === INSERTION_TYPE ||
+      type === SOFTCLIP_TYPE ||
+      type === HARDCLIP_TYPE
+    ) {
+      if (mstart >= regionStart && mstart < regionEnd) {
+        secondPassItems.push({
+          type,
+          start,
+          base,
+          cliplen: cliplen!,
+        })
+      }
+      return
+    }
 
-      // Handle insertions/clips in second pass
-      if (
-        type === INSERTION_TYPE ||
-        type === SOFTCLIP_TYPE ||
-        type === HARDCLIP_TYPE
-      ) {
-        if (mstart >= regionStart && mstart < regionEnd) {
-          secondPassItems.push({ type, start, base, cliplen })
-        }
-        return
+    // Skip items entirely outside visible region
+    if (mend <= regionStart || mstart >= regionEnd) {
+      return
+    }
+
+    const leftPx = reversed
+      ? (regionEnd - mend) * invBpPerPx
+      : (mstart - regionStart) * invBpPerPx
+    const rightPx = reversed
+      ? (regionEnd - mstart) * invBpPerPx
+      : (mend - regionStart) * invBpPerPx
+
+    // if the mismatch is off-screen, don't render it
+    if (rightPx < 0 || leftPx > canvasWidth) {
+      return
+    }
+
+    const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
+
+    if (type === MISMATCH_TYPE) {
+      if (rightPx - leftPx >= 0.2) {
+        items.push({
+          type: 'mismatch',
+          seq: base,
+        })
+        coords.push(leftPx, topPx, rightPx, bottomPx)
       }
 
-      // Skip items entirely outside visible region
-      if (mend <= regionStart || mstart >= regionEnd) {
-        return
-      }
-
-      const leftPx = reversed
-        ? (regionEnd - mend) * invBpPerPx
-        : (mstart - regionStart) * invBpPerPx
-      const rightPx = reversed
-        ? (regionEnd - mstart) * invBpPerPx
-        : (mend - regionStart) * invBpPerPx
-
-      // if the mismatch is off-screen, don't render it
-      if (rightPx < 0 || leftPx > canvasWidth) {
-        return
-      }
-
-      const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
-
-      if (type === MISMATCH_TYPE) {
-        if (rightPx - leftPx >= 0.2) {
-          items.push({ type: 'mismatch', seq: base })
-          coords.push(leftPx, topPx, rightPx, bottomPx)
-        }
-
-        if (!drawSNPsMuted) {
-          const baseColor = colorMap[base] || '#888'
-          const c = useAlpha ? applyQualAlpha(baseColor, qualVal) : baseColor
-          const l = Math.round(leftPx)
-          const w = widthPx
-          if (l + w > 0 && l < canvasWidth) {
-            if (c && lastColor !== c) {
-              ctx.fillStyle = c
-              lastColor = c
-            }
-            ctx.fillRect(l, topPx, w, heightPx)
-          }
-        }
-
-        if (widthPx >= charWidth && canRenderText) {
-          const contrastColor = drawSNPsMuted
-            ? 'black'
-            : colorContrastMap[base] || 'black'
-          const textColor = useAlpha
-            ? applyQualAlpha(contrastColor, qualVal)
-            : contrastColor
-          const x = leftPx + (widthPx - charWidth) / 2 + 1
-          if (x > 0 && x < canvasWidth) {
-            if (textColor && lastColor !== textColor) {
-              ctx.fillStyle = textColor
-              lastFillStyleMap.set(ctx, textColor)
-            }
-            ctx.fillText(base, x, bottomPx)
-          }
-        }
-      } else if (type === DELETION_TYPE && drawIndels) {
-        if (!hideSmallIndels || length >= 10) {
-          const w = Math.abs(leftPx - rightPx)
-          if (leftPx + w > 0 && leftPx < canvasWidth) {
-            const c = colorMap.deletion
-            if (c && lastColor !== c) {
-              ctx.fillStyle = c
-              lastColor = c
-            }
-            ctx.fillRect(leftPx, topPx, w, heightPx)
-          }
-          if (bpPerPx < 3) {
-            items.push({ type: 'deletion', seq: `${length}` })
-            coords.push(leftPx, topPx, rightPx, bottomPx)
-          }
-          const txt = String(length)
-          const rwidth = measureTextSmallNumber(length, 10)
-          if (widthPx >= rwidth && canRenderText) {
-            const x = (leftPx + rightPx) / 2 - rwidth / 2
-            const c = colorContrastMap.deletion
-            if (x > 0 && x < canvasWidth) {
-              if (c && lastColor !== c) {
-                ctx.fillStyle = c
-                lastColor = c
-              }
-              ctx.fillText(txt, x, bottomPx)
-            }
-          }
-        }
-      } else if (type === SKIP_TYPE) {
-        const w = Math.max(widthPx, 1.5)
-        if (leftPx + w > 0 && leftPx < canvasWidth) {
-          const c = colorMap.skip
+      if (!drawSNPsMuted) {
+        const baseColor = colorMap[base] || '#888'
+        const c =
+          useAlpha && qualVal ? applyQualAlpha(baseColor, qualVal) : baseColor
+        const l = Math.round(leftPx)
+        const w = widthPx
+        if (l + w > 0 && l < canvasWidth) {
           if (c && lastColor !== c) {
             ctx.fillStyle = c
             lastColor = c
           }
-          ctx.fillRect(leftPx, topPx + heightPx / 2 - 1, w, 1)
+          ctx.fillRect(l, topPx, w, heightPx)
         }
       }
-    },
-  )
+
+      if (widthPx >= charWidth && canRenderText) {
+        const contrastColor = drawSNPsMuted
+          ? 'black'
+          : colorContrastMap[base] || 'black'
+        const textColor =
+          useAlpha && qualVal
+            ? applyQualAlpha(contrastColor, qualVal)
+            : contrastColor
+        const x = leftPx + (widthPx - charWidth) / 2 + 1
+        if (x > 0 && x < canvasWidth) {
+          if (textColor && lastColor !== textColor) {
+            ctx.fillStyle = textColor
+            lastColor = textColor
+          }
+          ctx.fillText(base, x, bottomPx)
+        }
+      }
+    } else if (type === DELETION_TYPE && drawIndels) {
+      if (!hideSmallIndels || length >= 10) {
+        const w = Math.abs(leftPx - rightPx)
+        if (leftPx + w > 0 && leftPx < canvasWidth) {
+          const c = colorMap.deletion
+          if (c && lastColor !== c) {
+            ctx.fillStyle = c
+            lastColor = c
+          }
+          ctx.fillRect(leftPx, topPx, w, heightPx)
+        }
+        if (bpPerPx < 3) {
+          items.push({
+            type: 'deletion',
+            seq: `${length}`,
+          })
+          coords.push(leftPx, topPx, rightPx, bottomPx)
+        }
+        const txt = String(length)
+        const rwidth = measureTextSmallNumber(length, 10)
+        if (widthPx >= rwidth && canRenderText) {
+          const x = (leftPx + rightPx) / 2 - rwidth / 2
+          const c = colorContrastMap.deletion
+          if (x > 0 && x < canvasWidth) {
+            if (c && lastColor !== c) {
+              ctx.fillStyle = c
+              lastColor = c
+            }
+            ctx.fillText(txt, x, bottomPx)
+          }
+        }
+      }
+    } else if (type === SKIP_TYPE) {
+      const w = Math.max(widthPx, 1.5)
+      if (leftPx + w > 0 && leftPx < canvasWidth) {
+        const c = colorMap.skip
+        if (c && lastColor !== c) {
+          ctx.fillStyle = c
+          lastColor = c
+        }
+        ctx.fillRect(leftPx, topPx + heightPx / 2 - 1, w, 1)
+      }
+    }
+  }
+
+  // First pass: draw mismatches, deletions, skips - accumulate insertions/clips
+  if ('forEachMismatch' in feature) {
+    featureWithIterator.forEachMismatch(mismatchHandler)
+  } else {
+    const mismatches = feature.get('mismatches') as Mismatch[] | undefined
+    if (mismatches) {
+      for (let i = 0, l = mismatches.length; i < l; i++) {
+        const m = mismatches[i]!
+        mismatchHandler(
+          MISMATCH_REV_MAP[m.type],
+          m.start,
+          m.length,
+          m.base,
+          m.qual,
+          m.altbase?.charCodeAt(0),
+          m.cliplen,
+        )
+      }
+    }
+  }
 
   // Second pass: draw insertions and clips on top
   for (const item of secondPassItems) {

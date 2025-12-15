@@ -17,12 +17,21 @@ export const MISMATCH_MAP = [
   'hardclip',
 ] as const
 
+export const MISMATCH_REV_MAP = {
+  mismatch: 1,
+  insertion: 2,
+  deletion: 3,
+  skip: 4,
+  softclip: 5,
+  hardclip: 6,
+} as const
+
 export type MismatchCallback = (
   type: number,
   start: number,
   length: number,
   base: string,
-  qual: number,
-  altbase: number,
-  cliplen: number,
+  qual: number | undefined,
+  altbase: number | undefined,
+  cliplen: number | undefined,
 ) => void

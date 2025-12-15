@@ -120,7 +120,7 @@ export default class BamSlightlyLazyFeature
                   1,
                   SEQRET[nibble]!,
                   hasQual ? qual[seqIdx]! : -1,
-                  md[mdIdx]!,
+                  md[mdIdx],
                   0,
                 )
 
