@@ -1,6 +1,17 @@
 import { BamRecord } from '@gmod/bam'
 
 import { getMismatchesFromNumericMD } from './getMismatchesNumeric'
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_H,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_S,
+  CIGAR_X,
+  SEQRET,
+} from '../PileupRenderer/renderers/cigarUtil'
 import { decodeSeq } from '../shared/decodeSeq'
 import {
   DELETION_TYPE,
@@ -18,17 +29,6 @@ import type {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-
-const CIGAR_M = 0
-const CIGAR_I = 1
-const CIGAR_D = 2
-const CIGAR_N = 3
-const CIGAR_S = 4
-const CIGAR_H = 5
-const CIGAR_EQ = 7
-const CIGAR_X = 8
-
-const SEQRET = '=ACMGRSVTWYHKDBN'
 
 export default class BamSlightlyLazyFeature
   extends BamRecord

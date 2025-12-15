@@ -9,6 +9,7 @@ import {
   isInterbase,
   mismatchLen,
 } from './util'
+import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
 import {
   DELETION_TYPE,
   MISMATCH_MAP,
@@ -46,20 +47,13 @@ interface SparseNoncovEntry {
 
 function finalizeBinEntry(entry: PreBinEntry) {
   const { probabilityTotal, probabilityCount, lengthTotal, lengthCount } = entry
-  const ret = entry as PreBinEntry & {
-    avgProbability?: number
-    avgLength?: number
-    minLength?: number
-    maxLength?: number
-    topSequence?: string
-  }
   if (probabilityCount) {
-    ret.avgProbability = probabilityTotal / probabilityCount
+    entry.avgProbability = probabilityTotal / probabilityCount
   }
   if (lengthCount) {
-    ret.avgLength = lengthTotal / lengthCount
-    ret.minLength = entry.lengthMin
-    ret.maxLength = entry.lengthMax
+    entry.avgLength = lengthTotal / lengthCount
+    entry.minLength = entry.lengthMin
+    entry.maxLength = entry.lengthMax
   }
   if (entry.sequenceCounts?.size) {
     let maxCount = 0
@@ -70,7 +64,7 @@ function finalizeBinEntry(entry: PreBinEntry) {
         topSeq = seq
       }
     }
-    ret.topSequence = topSeq
+    entry.topSequence = topSeq
     entry.sequenceCounts = undefined
   }
 }
@@ -334,9 +328,9 @@ function createDeletionEntry(depth: number): PreBinEntry {
 function processFeature(
   region: Region,
   feature: FeatureWithMismatchIterator | Feature,
-  skipmap: any,
-  noncovEvents: any,
-  snpEvents: any,
+  skipmap: SkipMap,
+  noncovEvents: { pos: number; entry: SparseNoncovEntry }[],
+  snpEvents: { pos: number; entry: SparseSnpEntry }[],
 ) {
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1
@@ -414,7 +408,7 @@ function processFeature(
           entry: {
             base,
             strand: fstrand,
-            altbase: String.fromCharCode(altbase!),
+            altbase: CHAR_FROM_CODE[altbase!],
           },
         })
       }

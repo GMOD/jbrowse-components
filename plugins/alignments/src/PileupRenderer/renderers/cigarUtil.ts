@@ -11,6 +11,14 @@ export const CIGAR_P = 6
 export const CIGAR_EQ = 7
 export const CIGAR_X = 8
 
+// BAM 4-bit encoded sequence lookup table
+export const SEQRET = '=ACMGRSVTWYHKDBN'
+
+// Pre-computed char lookup for ASCII codes (avoids String.fromCharCode in hot loops)
+export const CHAR_FROM_CODE: string[] = Array.from({ length: 128 }, (_, i) =>
+  String.fromCharCode(i),
+)
+
 // Helper to ensure we have Uint32Array (packed format)
 export function getCigarOps(cigar: Uint32Array | string): Uint32Array {
   return typeof cigar === 'string' ? parseCigar2(cigar) : cigar

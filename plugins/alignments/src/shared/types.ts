@@ -56,6 +56,12 @@ export interface PreBinEntry {
   lengthMin: number
   lengthMax: number
   sequenceCounts?: Map<string, number>
+  // Computed fields added during finalization
+  avgProbability?: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
+  topSequence?: string
 }
 
 type PreBinType = Record<string, PreBinEntry>
