@@ -1012,7 +1012,7 @@ export function getProgressDisplayStr(current: number, total: number) {
   } else if (Math.floor(total / 1_000) > 0) {
     return `${reducePrecision(current / 1_000)}/${reducePrecision(total / 1_000)}Kb`
   } else {
-    return `${reducePrecision(current)}/${reducePrecision(total)}}bytes`
+    return `${reducePrecision(current)}/${reducePrecision(total)} bytes`
   }
 }
 

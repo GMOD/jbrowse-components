@@ -1,7 +1,8 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, isValidElement, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
+import BlockMsg from './BlockMsg'
 import LoadingOverlay from './LoadingOverlay'
 
 const BlockErrorMessage = lazy(() => import('./BlockErrorMessage'))
@@ -12,6 +13,7 @@ const ServerSideRenderedBlockContent = observer(function ({
   model: {
     error?: unknown
     reload: () => void
+    message?: React.ReactNode
     statusMessage?: string
     reactElement?: React.ReactElement
     isRenderingPending?: boolean
@@ -22,6 +24,12 @@ const ServerSideRenderedBlockContent = observer(function ({
       <Suspense fallback={null}>
         <BlockErrorMessage model={model} />
       </Suspense>
+    )
+  } else if (model.message) {
+    return isValidElement(model.message) ? (
+      model.message
+    ) : (
+      <BlockMsg message={`${model.message}`} severity="info" />
     )
   } else if (model.statusMessage) {
     return (
