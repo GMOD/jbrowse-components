@@ -3,15 +3,11 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { processDepthPrefixSum } from './processDepthPrefixSum'
 import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
-import {
-  createEmptyBin,
-  createPreBinEntry,
-  isInterbase,
-  mismatchLen,
-} from './util'
+import { createEmptyBin, createPreBinEntry, mismatchLen } from './util'
 import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
 import {
   DELSKIP_MASK,
+  INTERBASE_MASK,
   MISMATCH_MAP,
   MISMATCH_REV_MAP,
   SKIP_TYPE,
@@ -400,7 +396,7 @@ function processFeature(
         }
         skipmap[hash].score++
       }
-    } else if (isInterbase(type)) {
+    } else if ((1 << type) & INTERBASE_MASK) {
       // insertion, softclip, hardclip
       const epos = mstart - regionStart
       if (epos >= 0 && epos < regionSize) {
@@ -408,7 +404,7 @@ function processFeature(
           pos: epos,
           entry: {
             strand: fstrand,
-            type: MISMATCH_MAP[type],
+            type: MISMATCH_MAP[type]! as 'insertion' | 'softclip' | 'hardclip',
             length: interbaseLen!,
             sequence: base,
           },
@@ -431,7 +427,7 @@ function processFeature(
   }
 
   if ('forEachMismatch' in feature) {
-    feature.forEachMismatch(mismatchHandler)
+    feature.forEachMismatch(mismatchHandler, { regionStart, regionEnd })
   } else {
     const mismatches = feature.get('mismatches') as Mismatch[] | undefined
     if (mismatches) {

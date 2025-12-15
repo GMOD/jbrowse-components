@@ -13,7 +13,10 @@ import {
 import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
-import type { MismatchCallback } from '../shared/forEachMismatchTypes'
+import type {
+  ForEachMismatchRegion,
+  MismatchCallback,
+} from '../shared/forEachMismatchTypes'
 import type { Mismatch } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -128,7 +131,7 @@ export default class CramSlightlyLazyFeature implements Feature {
       const packed = numeric[i]!
       const length = packed >> 4
       const opCode = NUMERIC_CIGAR_CODES[packed & 0xf]!
-      result += length + CHAR_FROM_CODE[opCode]
+      result += length + CHAR_FROM_CODE[opCode]!
     }
     return result
   }
@@ -188,7 +191,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     return mismatches
   }
 
-  forEachMismatch(callback: MismatchCallback) {
+  forEachMismatch(callback: MismatchCallback, region?: ForEachMismatchRegion) {
     const readFeatures = this.record.readFeatures
     if (!readFeatures) {
       return
@@ -197,11 +200,31 @@ export default class CramSlightlyLazyFeature implements Feature {
     const featStart = this.start
     const qual = this.qualRaw
     const len = readFeatures.length
+    const hasRegionFilter = region !== undefined
+    const regionStart = region?.regionStart ?? 0
+    const regionEnd = region?.regionEnd ?? 0
+
+    const inRegion = (
+      relStart: number,
+      length: number,
+      isInterbase: boolean,
+    ) => {
+      if (!hasRegionFilter) {
+        return true
+      }
+      const absStart = featStart + relStart
+      if (isInterbase) {
+        return absStart >= regionStart && absStart < regionEnd
+      }
+      const absEnd = absStart + length
+      return absEnd > regionStart && absStart < regionEnd
+    }
 
     let refPos = 0
     let lastPos = featStart
     let insertedBases = ''
     let insertedBasesLen = 0
+    let insertedBasesRefPos = 0
 
     for (let i = 0; i < len; i++) {
       const rf = readFeatures[i]!
@@ -211,15 +234,17 @@ export default class CramSlightlyLazyFeature implements Feature {
 
       // Flush accumulated single-base insertions
       if (sublen && insertedBasesLen > 0) {
-        callback(
-          INSERTION_TYPE,
-          refPos,
-          0,
-          insertedBases,
-          -1,
-          0,
-          insertedBasesLen,
-        )
+        if (inRegion(insertedBasesRefPos, 0, true)) {
+          callback(
+            INSERTION_TYPE,
+            insertedBasesRefPos,
+            0,
+            insertedBases,
+            -1,
+            0,
+            insertedBasesLen,
+          )
+        }
         insertedBases = ''
         insertedBasesLen = 0
       }
@@ -231,44 +256,59 @@ export default class CramSlightlyLazyFeature implements Feature {
         // substitution/mismatch
         // Convert ref base to uppercase char code using bitwise AND
         // (clears bit 5, converting lowercase a-z to uppercase A-Z)
-        const refCharCode = ref ? ref.charCodeAt(0) & ~0x20 : 0
-        callback(
-          MISMATCH_TYPE,
-          refPos,
-          1,
-          sub!,
-          qual?.[pos - 1] ?? -1,
-          refCharCode,
-          0,
-        )
+        if (inRegion(refPos, 1, false)) {
+          const refCharCode = ref ? ref.charCodeAt(0) & ~0x20 : 0
+          callback(
+            MISMATCH_TYPE,
+            refPos,
+            1,
+            sub!,
+            qual?.[pos - 1] ?? -1,
+            refCharCode,
+            0,
+          )
+        }
       } else if (codeChar === CODE_I) {
         // insertion
-        callback(INSERTION_TYPE, refPos, 0, data, -1, 0, data.length)
+        if (inRegion(refPos, 0, true)) {
+          callback(INSERTION_TYPE, refPos, 0, data, -1, 0, data.length)
+        }
       } else if (codeChar === CODE_N) {
         // reference skip
-        callback(SKIP_TYPE, refPos, data, 'N', -1, 0, 0)
+        if (inRegion(refPos, data, false)) {
+          callback(SKIP_TYPE, refPos, data, 'N', -1, 0, 0)
+        }
       } else if (codeChar === CODE_S) {
         // soft clip
-        const dataLen = data.length
-        callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
+        if (inRegion(refPos, 0, true)) {
+          const dataLen = data.length
+          callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
+        }
       } else if (codeChar === CODE_H) {
         // hard clip
-        callback(HARDCLIP_TYPE, refPos, 1, `H${data}`, -1, 0, data)
+        if (inRegion(refPos, 0, true)) {
+          callback(HARDCLIP_TYPE, refPos, 1, `H${data}`, -1, 0, data)
+        }
       } else if (codeChar === CODE_D) {
         // deletion
-        callback(DELETION_TYPE, refPos, data, '*', -1, 0, 0)
+        if (inRegion(refPos, data, false)) {
+          callback(DELETION_TYPE, refPos, data, '*', -1, 0, 0)
+        }
       } else if (codeChar === CODE_i) {
         // single-base insertion - accumulate
+        if (insertedBasesLen === 0) {
+          insertedBasesRefPos = refPos
+        }
         insertedBases += data
         insertedBasesLen++
       }
     }
 
     // Flush any remaining accumulated insertions
-    if (insertedBasesLen > 0) {
+    if (insertedBasesLen > 0 && inRegion(insertedBasesRefPos, 0, true)) {
       callback(
         INSERTION_TYPE,
-        refPos,
+        insertedBasesRefPos,
         0,
         insertedBases,
         -1,

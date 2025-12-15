@@ -46,3 +46,8 @@ export type MismatchCallback = (
   altbase: number | undefined,
   cliplen: number | undefined,
 ) => void
+
+export interface ForEachMismatchRegion {
+  regionStart: number
+  regionEnd: number
+}

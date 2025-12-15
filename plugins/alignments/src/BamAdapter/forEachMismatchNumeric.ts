@@ -31,6 +31,9 @@ import type { MismatchCallback } from '../shared/forEachMismatchTypes'
  * @param qual - Quality scores (or undefined)
  * @param ref - Reference sequence for comparison when no MD tag
  * @param callback - Called for each mismatch/indel/clip
+ * @param featStart - Feature's absolute start position (for region filtering)
+ * @param regionStart - Region start for filtering (optional)
+ * @param regionEnd - Region end for filtering (optional)
  */
 export function forEachMismatchNumeric(
   cigar: ArrayLike<number>,
@@ -40,7 +43,27 @@ export function forEachMismatchNumeric(
   qual: ArrayLike<number> | null | undefined,
   ref: string | undefined,
   callback: MismatchCallback,
+  featStart?: number,
+  regionStart?: number,
+  regionEnd?: number,
 ) {
+  const hasRegionFilter =
+    regionStart !== undefined &&
+    regionEnd !== undefined &&
+    featStart !== undefined
+
+  const inRegion = (relStart: number, length: number, isInterbase: boolean) => {
+    if (!hasRegionFilter) {
+      return true
+    }
+    const absStart = featStart + relStart
+    if (isInterbase) {
+      return absStart >= regionStart && absStart < regionEnd
+    }
+    const absEnd = absStart + length
+    return absEnd > regionStart && absStart < regionEnd
+  }
+
   const mdLength = md?.length ?? 0
   const hasQual = !!qual
   const hasMD = md && mdLength > 0
@@ -87,15 +110,17 @@ export function forEachMismatchNumeric(
               const sb = numericSeq[seqIdx >> 1]!
               const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
 
-              callback(
-                MISMATCH_TYPE,
-                roffset + localOffset,
-                1,
-                SEQRET[nibble]!,
-                hasQual ? qual[seqIdx]! : -1,
-                md[mdIdx],
-                0,
-              )
+              if (inRegion(roffset + localOffset, 1, false)) {
+                callback(
+                  MISMATCH_TYPE,
+                  roffset + localOffset,
+                  1,
+                  SEQRET[nibble]!,
+                  hasQual ? qual[seqIdx]! : -1,
+                  md[mdIdx],
+                  0,
+                )
+              }
 
               mdIdx++
               localOffset++
@@ -125,7 +150,10 @@ export function forEachMismatchNumeric(
           const seqBaseCode = SEQRET_NUMERIC_DECODER[nibble]!
           const refCharCode = ref.charCodeAt(roffset + j)
           // Compare case-insensitively (| 0x20 converts uppercase to lowercase)
-          if (seqBaseCode !== (refCharCode | 0x20)) {
+          if (
+            seqBaseCode !== (refCharCode | 0x20) &&
+            inRegion(roffset + j, 1, false)
+          ) {
             callback(
               MISMATCH_TYPE,
               roffset + j,
@@ -141,17 +169,21 @@ export function forEachMismatchNumeric(
       soffset += len
       roffset += len
     } else if (op === CIGAR_I) {
-      let insertedBases = ''
-      for (let j = 0; j < len && soffset + j < seqLength; j++) {
-        const seqIdx = soffset + j
-        const sb = numericSeq[seqIdx >> 1]!
-        const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
-        insertedBases += SEQRET[nibble]!
+      if (inRegion(roffset, 0, true)) {
+        let insertedBases = ''
+        for (let j = 0; j < len && soffset + j < seqLength; j++) {
+          const seqIdx = soffset + j
+          const sb = numericSeq[seqIdx >> 1]!
+          const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
+          insertedBases += SEQRET[nibble]!
+        }
+        callback(INSERTION_TYPE, roffset, 0, insertedBases, -1, 0, len)
       }
-      callback(INSERTION_TYPE, roffset, 0, insertedBases, -1, 0, len)
       soffset += len
     } else if (op === CIGAR_D) {
-      callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
+      if (inRegion(roffset, len, false)) {
+        callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
       if (hasMD && mdIdx < mdLength && md[mdIdx]! === 94) {
@@ -172,7 +204,9 @@ export function forEachMismatchNumeric(
       }
       roffset += len
     } else if (op === CIGAR_N) {
-      callback(SKIP_TYPE, roffset, len, 'N', -1, 0, 0)
+      if (inRegion(roffset, len, false)) {
+        callback(SKIP_TYPE, roffset, len, 'N', -1, 0, 0)
+      }
       roffset += len
     } else if (op === CIGAR_X) {
       for (let j = 0; j < len; j++) {
@@ -200,23 +234,29 @@ export function forEachMismatchNumeric(
           }
         }
 
-        callback(
-          MISMATCH_TYPE,
-          roffset + j,
-          1,
-          SEQRET[nibble]!,
-          hasQual ? qual[seqIdx]! : -1,
-          altbaseCode,
-          0,
-        )
+        if (inRegion(roffset + j, 1, false)) {
+          callback(
+            MISMATCH_TYPE,
+            roffset + j,
+            1,
+            SEQRET[nibble]!,
+            hasQual ? qual[seqIdx]! : -1,
+            altbaseCode,
+            0,
+          )
+        }
       }
       soffset += len
       roffset += len
     } else if (op === CIGAR_S) {
-      callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
+      if (inRegion(roffset, 0, true)) {
+        callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
+      }
       soffset += len
     } else if (op === CIGAR_H) {
-      callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
+      if (inRegion(roffset, 0, true)) {
+        callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
+      }
     }
   }
 }

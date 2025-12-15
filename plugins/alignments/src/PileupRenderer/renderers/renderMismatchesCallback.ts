@@ -12,14 +12,20 @@ import {
 } from '../../shared/forEachMismatchTypes'
 import { measureTextSmallNumber } from '../util'
 
-import type { MismatchCallback } from '../../shared/forEachMismatchTypes'
+import type {
+  ForEachMismatchRegion,
+  MismatchCallback,
+} from '../../shared/forEachMismatchTypes'
 import type { Mismatch } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
 interface FeatureWithMismatchIterator {
-  forEachMismatch(callback: MismatchCallback): void
+  forEachMismatch(
+    callback: MismatchCallback,
+    region?: ForEachMismatchRegion,
+  ): void
 }
 
 const alphaColorCache = new Map<string, string>()
@@ -241,7 +247,10 @@ export function renderMismatchesCallback({
 
   // First pass: draw mismatches, deletions, skips - accumulate insertions/clips
   if ('forEachMismatch' in feature) {
-    featureWithIterator.forEachMismatch(mismatchHandler)
+    featureWithIterator.forEachMismatch(mismatchHandler, {
+      regionStart,
+      regionEnd,
+    })
   } else {
     const mismatches = feature.get('mismatches') as Mismatch[] | undefined
     if (mismatches) {

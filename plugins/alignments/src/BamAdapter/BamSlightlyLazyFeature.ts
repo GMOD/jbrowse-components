@@ -11,7 +11,10 @@ import {
 } from '../shared/forEachMismatchTypes'
 
 import type BamAdapter from './BamAdapter'
-import type { MismatchCallback } from '../shared/forEachMismatchTypes'
+import type {
+  ForEachMismatchRegion,
+  MismatchCallback,
+} from '../shared/forEachMismatchTypes'
 import type { Mismatch } from '../shared/types'
 import type {
   Feature,
@@ -71,7 +74,7 @@ export default class BamSlightlyLazyFeature
     return this._mismatches
   }
 
-  forEachMismatch(callback: MismatchCallback) {
+  forEachMismatch(callback: MismatchCallback, region?: ForEachMismatchRegion) {
     forEachMismatchNumeric(
       this.NUMERIC_CIGAR,
       this.NUMERIC_SEQ,
@@ -80,6 +83,9 @@ export default class BamSlightlyLazyFeature
       this.qual,
       this.ref,
       callback,
+      region ? this.start : undefined,
+      region?.regionStart,
+      region?.regionEnd,
     )
   }
 

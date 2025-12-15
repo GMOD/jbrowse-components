@@ -77,6 +77,9 @@ function collectMismatches(opts: {
   md?: string
   ref?: string
   qual?: number[]
+  featStart?: number
+  regionStart?: number
+  regionEnd?: number
 }) {
   const results: {
     type: number
@@ -108,6 +111,9 @@ function collectMismatches(opts: {
     opts.qual ? new Uint8Array(opts.qual) : undefined,
     opts.ref,
     callback,
+    opts.featStart,
+    opts.regionStart,
+    opts.regionEnd,
   )
 
   return results
@@ -352,6 +358,125 @@ describe('forEachMismatchNumeric', () => {
         start: 5,
         base: 'T',
       })
+    })
+  })
+
+  describe('region filtering', () => {
+    test('filters mismatches outside region', () => {
+      // Feature at position 100, with mismatches at 102 and 108 (absolute)
+      const mismatches = collectMismatches({
+        cigar: '10M',
+        seq: 'AAAAAAAAAA',
+        ref: 'AATAAAAATA', // mismatches at relative 2 and 8
+        featStart: 100,
+        regionStart: 105,
+        regionEnd: 110,
+      })
+
+      // Only mismatch at 108 should be included
+      expect(mismatches).toHaveLength(1)
+      expect(mismatches[0]).toMatchObject({
+        type: MISMATCH_TYPE,
+        start: 8, // relative position
+        base: 'A',
+      })
+    })
+
+    test('filters insertions outside region', () => {
+      // Feature at 100, insertion at 105 (absolute)
+      const mismatches = collectMismatches({
+        cigar: '5M2I5M',
+        seq: 'AAAAATTAAAAA',
+        featStart: 100,
+        regionStart: 100,
+        regionEnd: 105, // region ends before insertion
+      })
+
+      expect(mismatches).toHaveLength(0)
+    })
+
+    test('includes insertions inside region', () => {
+      const mismatches = collectMismatches({
+        cigar: '5M2I5M',
+        seq: 'AAAAATTAAAAA',
+        featStart: 100,
+        regionStart: 100,
+        regionEnd: 110,
+      })
+
+      expect(mismatches).toHaveLength(1)
+      expect(mismatches[0]).toMatchObject({
+        type: INSERTION_TYPE,
+        start: 5,
+      })
+    })
+
+    test('filters deletions that do not overlap region', () => {
+      // Deletion spans 105-107 (absolute)
+      const mismatches = collectMismatches({
+        cigar: '5M2D5M',
+        seq: 'AAAAAAAAAA',
+        featStart: 100,
+        regionStart: 108,
+        regionEnd: 115,
+      })
+
+      expect(mismatches).toHaveLength(0)
+    })
+
+    test('includes deletions that overlap region', () => {
+      // Deletion spans 105-107
+      const mismatches = collectMismatches({
+        cigar: '5M2D5M',
+        seq: 'AAAAAAAAAA',
+        featStart: 100,
+        regionStart: 106, // overlaps with deletion
+        regionEnd: 115,
+      })
+
+      expect(mismatches).toHaveLength(1)
+      expect(mismatches[0]).toMatchObject({
+        type: DELETION_TYPE,
+        start: 5,
+        length: 2,
+      })
+    })
+
+    test('filters soft clips outside region', () => {
+      const mismatches = collectMismatches({
+        cigar: '3S7M',
+        seq: 'TTTAAAAAAA',
+        featStart: 100,
+        regionStart: 101, // after soft clip
+        regionEnd: 110,
+      })
+
+      expect(mismatches).toHaveLength(0)
+    })
+
+    test('includes soft clips inside region', () => {
+      const mismatches = collectMismatches({
+        cigar: '3S7M',
+        seq: 'TTTAAAAAAA',
+        featStart: 100,
+        regionStart: 100,
+        regionEnd: 110,
+      })
+
+      expect(mismatches).toHaveLength(1)
+      expect(mismatches[0]).toMatchObject({
+        type: SOFTCLIP_TYPE,
+      })
+    })
+
+    test('returns all mismatches when no region specified', () => {
+      const mismatches = collectMismatches({
+        cigar: '10M',
+        seq: 'AAAAAAAAAA',
+        ref: 'AATAAAAATA', // mismatches at 2 and 8
+      })
+
+      expect(mismatches).toHaveLength(2)
     })
   })
 })
