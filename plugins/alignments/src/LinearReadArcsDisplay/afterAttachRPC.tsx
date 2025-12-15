@@ -90,7 +90,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
           highResolutionScaling: 2,
           rpcDriverName: self.effectiveRpcDriverName,
           statusCallback: (msg: string) => {
-            self.setMessage(msg)
+            self.setStatusMessage(msg)
           },
           stopToken,
         },
@@ -125,7 +125,10 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(height)
     },
-    { delay: 1000, name: 'PerformRender' },
+    {
+      delay: 1000,
+      name: 'PerformRender',
+    },
   )
 
   // Autorun to draw the imageData to canvas when available
@@ -148,6 +151,8 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(renderingImageData, 0, 0)
     },
-    { name: 'RenderCanvas' },
+    {
+      name: 'RenderCanvas',
+    },
   )
 }

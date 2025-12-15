@@ -100,7 +100,9 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           highResolutionScaling: 2,
           rpcDriverName: self.effectiveRpcDriverName,
           statusCallback: (msg: string) => {
-            self.setMessage(msg)
+            if (isAlive(self)) {
+              self.setStatusMessage(msg)
+            }
           },
           stopToken,
         },
@@ -144,7 +146,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(true)
     },
-    { delay: 1000, name: 'StackRender' },
+    {
+      delay: 1000,
+      name: 'StackRender',
+    },
   )
 
   // Autorun for stack mode
@@ -159,7 +164,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(false)
     },
-    { delay: 1000, name: 'CloudRender' },
+    {
+      delay: 1000,
+      name: 'CloudRender',
+    },
   )
 
   // Autorun to draw the imageData to canvas when available
@@ -182,6 +190,8 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(renderingImageData, 0, 0)
     },
-    { name: 'RenderCanvas' },
+    {
+      name: 'LinearReadCloudRenderCanvas',
+    },
   )
 }

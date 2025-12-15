@@ -18,6 +18,7 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
   ) {
     const { rootModel } = this.pluginManager
     const assemblyManager = rootModel!.session!.assemblyManager
+
     const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
       ...args,
       filters: args.filters?.toJSON().filters,
@@ -36,10 +37,13 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
     },
     rpcDriver: string,
   ) {
-    const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { adapterConfig, sessionId, regions } = deserializedArgs
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
 
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
