@@ -55,6 +55,14 @@ export function processReferenceCpGs({
     const dels = mismatches.filter(f => f.type === 'deletion')
     const regionStart = region.start
     const regionEnd = region.end
+    const isDeleted = new Array(methBins.length).fill(false)
+    for (const del of dels) {
+      const start = del.start
+      const end = del.start + del.length
+      for (let i = start; i < end; i++) {
+        isDeleted[i] = true
+      }
+    }
 
     // Calculate visible range within feature
     const visStart = Math.max(0, regionStart - fstart)
@@ -74,25 +82,11 @@ export function processReferenceCpGs({
         const p0 = methProbs[i] || 0
         const p1 = methProbs[i + 1] || 0
         const isMeth = !!((b0 && p0 > 0.5) || (b1 && p1 > 0.5))
-        const isDel0 = dels.some(d =>
-          doesIntersect2(
-            j,
-            j + 1,
-            d.start + fstart,
-            d.start + fstart + d.length,
-          ),
-        )
-        const isDel1 = dels.some(d =>
-          doesIntersect2(
-            j + 1,
-            j + 2,
-            d.start + fstart,
-            d.start + fstart + d.length,
-          ),
-        )
+        const isDel0 = isDeleted[i]
+        const isDel1 = isDeleted[i + 1]
 
-        processCpG(bins, idx0, fstrand, isMeth, p0, isDel0)
-        processCpG(bins, idx1, fstrand, isMeth, p1, isDel1)
+        processCpG(bins, idx0, fstrand, isMeth, p0, !!isDel0)
+        processCpG(bins, idx1, fstrand, isMeth, p1, !!isDel1)
       }
     }
   }
