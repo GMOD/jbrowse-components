@@ -1,8 +1,4 @@
-import {
-  HARDCLIP_TYPE,
-  INSERTION_TYPE,
-  SOFTCLIP_TYPE,
-} from '../shared/forEachMismatchTypes'
+import { INTERBASE_MASK } from '../shared/forEachMismatchTypes'
 
 import type {
   ColorBy,
@@ -19,14 +15,16 @@ export interface Opts {
   statsEstimationMode?: boolean
 }
 
+// Uses bitwise check: converts type to bit position, then ANDs with INTERBASE_MASK
+// INTERBASE_MASK = 0b110010 = (1<<1)|(1<<4)|(1<<5) for insertion, softclip, hardclip
 export function mismatchLen(type: number, length: number) {
-  return !isInterbase(type) ? length : 1
+  return ((1 << type) & INTERBASE_MASK) === 0 ? length : 1
 }
 
+// Uses bitwise check: converts type to bit position, then ANDs with INTERBASE_MASK
+// INTERBASE_MASK = 0b110010 = (1<<1)|(1<<4)|(1<<5) for insertion, softclip, hardclip
 export function isInterbase(type: number) {
-  return (
-    type === INSERTION_TYPE || type === HARDCLIP_TYPE || type === SOFTCLIP_TYPE
-  )
+  return ((1 << type) & INTERBASE_MASK) !== 0
 }
 
 export function createPreBinEntry(): PreBinEntry {

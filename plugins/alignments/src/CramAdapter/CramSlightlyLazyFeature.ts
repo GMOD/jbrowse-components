@@ -1,10 +1,11 @@
 import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
-import { readFeaturesToMismatches } from './readFeaturesToMismatches'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
+import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
+  MISMATCH_MAP,
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
@@ -13,8 +14,15 @@ import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
+import type { Mismatch, MismatchType } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+
+// Module-level constant for CIGAR code conversion (avoids recreation on each call)
+// Maps packed CIGAR op codes to ASCII: M=77, I=73, D=68, N=78, S=83, H=72, P=80, ==61, X=88
+const NUMERIC_CIGAR_CODES = new Uint8Array([
+  77, 73, 68, 78, 83, 72, 80, 61, 88, 63, 63, 63, 63, 63, 63, 63,
+])
 
 export default class CramSlightlyLazyFeature implements Feature {
   private record: CramRecord
@@ -114,16 +122,13 @@ export default class CramSlightlyLazyFeature implements Feature {
 
   // generate a CIGAR string from NUMERIC_CIGAR
   get CIGAR() {
-    const NUMERIC_CIGAR_CODES = [
-      77, 73, 68, 78, 83, 72, 80, 61, 88, 63, 63, 63, 63, 63, 63, 63,
-    ]
     const numeric = this.NUMERIC_CIGAR
     let result = ''
     for (let i = 0, l = numeric.length; i < l; i++) {
       const packed = numeric[i]!
       const length = packed >> 4
       const opCode = NUMERIC_CIGAR_CODES[packed & 0xf]!
-      result += length + String.fromCharCode(opCode)
+      result += length + CHAR_FROM_CODE[opCode]
     }
     return result
   }
@@ -156,23 +161,29 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get mismatches() {
-    return readFeaturesToMismatches(
-      this.record.readFeatures,
-      this.start,
-      this.qualRaw,
-    )
-    // this commented code can try to resolve MD tags, xref https://github.com/galaxyproject/tools-iuc/issues/6523#issuecomment-2462927211 but put on hold
-    // return this.tags.MD && this.seq
-    //   ? mismatches.concat(
-    //       mdToMismatches(
-    //         this.tags.MD,
-    //         parseCigar(this.CIGAR),
-    //         mismatches,
-    //         this.seq,
-    //         this.qualRaw,
-    //       ),
-    //     )
-    //   : mismatches
+    const mismatches: Mismatch[] = []
+    this.forEachMismatch((type, start, length, base, qual, altbase, cliplen) => {
+      const typeStr = MISMATCH_MAP[type] as MismatchType
+      const mismatch: Mismatch = {
+        start,
+        length,
+        type: typeStr,
+        base,
+        qual: qual !== undefined && qual >= 0 ? qual : undefined,
+      }
+      if (altbase !== undefined && altbase > 0) {
+        mismatch.altbase = CHAR_FROM_CODE[altbase]
+      }
+      if (type === INSERTION_TYPE) {
+        mismatch.insertedBases = base
+        mismatch.base = `${cliplen}`
+      }
+      if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
+        mismatch.cliplen = cliplen
+      }
+      mismatches.push(mismatch)
+    })
+    return mismatches
   }
 
   forEachMismatch(callback: MismatchCallback) {
@@ -216,13 +227,16 @@ export default class CramSlightlyLazyFeature implements Feature {
 
       if (codeChar === CODE_X) {
         // substitution/mismatch
+        // Convert ref base to uppercase char code using bitwise AND
+        // (clears bit 5, converting lowercase a-z to uppercase A-Z)
+        const refCharCode = ref ? ref.charCodeAt(0) & ~0x20 : 0
         callback(
           MISMATCH_TYPE,
           refPos,
           1,
           sub!,
           qual?.[pos - 1] ?? -1,
-          ref?.toUpperCase().charCodeAt(0) ?? 0,
+          refCharCode,
           0,
         )
       } else if (codeChar === CODE_I) {

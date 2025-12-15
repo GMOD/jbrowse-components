@@ -1,4 +1,4 @@
-import { CIGAR_D, CIGAR_EQ, CIGAR_M, CIGAR_N, CIGAR_X } from './cigarUtil'
+import { CIGAR_N, CIGAR_REF_CONSUMING_MASK } from './cigarUtil'
 import { CHEVRON_WIDTH } from '../../shared/util'
 
 import type { ProcessedRenderArgs } from '../types'
@@ -96,12 +96,7 @@ export function renderAlignmentShape({
         const opLen = packed >> 4
         const op = packed & 0xf
 
-        if (
-          op === CIGAR_M ||
-          op === CIGAR_X ||
-          op === CIGAR_EQ ||
-          op === CIGAR_D
-        ) {
+        if ((1 << op) & CIGAR_REF_CONSUMING_MASK) {
           drawLen += opLen
         } else if (op === CIGAR_N) {
           if (drawLen) {
@@ -157,12 +152,7 @@ export function renderAlignmentShape({
         const opLen = packed >> 4
         const op = packed & 0xf
 
-        if (
-          op === CIGAR_M ||
-          op === CIGAR_X ||
-          op === CIGAR_EQ ||
-          op === CIGAR_D
-        ) {
+        if ((1 << op) & CIGAR_REF_CONSUMING_MASK) {
           drawLen += opLen
         } else if (op === CIGAR_N) {
           if (drawLen) {

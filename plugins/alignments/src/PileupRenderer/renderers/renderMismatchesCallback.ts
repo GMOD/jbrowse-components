@@ -4,6 +4,7 @@ import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
+  INTERBASE_MASK,
   MISMATCH_REV_MAP,
   MISMATCH_TYPE,
   SKIP_TYPE,
@@ -120,12 +121,8 @@ export function renderMismatchesCallback({
     const mismatchStart = featStart + start
     const mismatchEnd = mismatchStart + length
 
-    // Handle insertions/clips in second pass
-    if (
-      type === INSERTION_TYPE ||
-      type === SOFTCLIP_TYPE ||
-      type === HARDCLIP_TYPE
-    ) {
+    // Handle insertions/clips in second pass (interbase events)
+    if ((1 << type) & INTERBASE_MASK) {
       if (mismatchStart >= regionStart && mismatchStart < regionEnd) {
         secondPassItems.push({
           type,

@@ -1,37 +1,18 @@
 import { BamRecord } from '@gmod/bam'
 
-import { getMismatchesFromNumericMD } from './getMismatchesNumeric'
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_H,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_S,
-  CIGAR_X,
-  SEQRET,
-} from '../PileupRenderer/renderers/cigarUtil'
-
-// Numeric decoder - returns char codes directly (lowercase for case-insensitive comparison)
-// '=' = 61, 'a' = 97, 'c' = 99, 'm' = 109, 'g' = 103, 'r' = 114, 's' = 115, 'v' = 118,
-// 't' = 116, 'w' = 119, 'y' = 121, 'h' = 104, 'k' = 107, 'd' = 100, 'b' = 98, 'n' = 110
-const SEQRET_NUMERIC_DECODER = new Uint8Array([
-  61, 97, 99, 109, 103, 114, 115, 118, 116, 119, 121, 104, 107, 100, 98, 110,
-])
+import { forEachMismatchNumeric } from './forEachMismatchNumeric'
+import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
 import { decodeSeq } from '../shared/decodeSeq'
 import {
-  DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
-  MISMATCH_TYPE,
-  SKIP_TYPE,
+  MISMATCH_MAP,
   SOFTCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
 
 import type BamAdapter from './BamAdapter'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
-import type { Mismatch } from '../shared/types'
+import type { Mismatch, MismatchType } from '../shared/types'
 import type {
   Feature,
   SimpleFeatureSerialized,
@@ -54,210 +35,52 @@ export default class BamSlightlyLazyFeature
     return decodeSeq(this.NUMERIC_SEQ, this.seq_length)
   }
 
+  // performance profiling showed that using forEachMismatch rather than
+  // computing mismatches array up front was faster, so this is no longer the
+  // primary way mismatches are used
   get mismatches() {
     if (this._mismatches === undefined) {
-      this._mismatches = getMismatchesFromNumericMD(
-        this.NUMERIC_CIGAR,
-        this.NUMERIC_SEQ,
-        this.seq_length,
-        this.NUMERIC_MD,
-        this.ref,
-        this.qual,
+      const mismatches: Mismatch[] = []
+      this.forEachMismatch(
+        (type, start, length, base, qual, altbase, cliplen) => {
+          const typeStr = MISMATCH_MAP[type] as MismatchType
+          const mismatch: Mismatch = {
+            start,
+            length,
+            type: typeStr,
+            base,
+          }
+          if (qual !== undefined && qual >= 0) {
+            mismatch.qual = qual
+          }
+          if (altbase !== undefined && altbase > 0) {
+            mismatch.altbase = CHAR_FROM_CODE[altbase]
+          }
+          if (type === INSERTION_TYPE) {
+            mismatch.insertedBases = base
+            mismatch.base = `${cliplen}`
+          }
+          if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
+            mismatch.cliplen = cliplen
+          }
+          mismatches.push(mismatch)
+        },
       )
+      this._mismatches = mismatches
     }
     return this._mismatches
   }
 
   forEachMismatch(callback: MismatchCallback) {
-    const cigar = this.NUMERIC_CIGAR
-    const numericSeq = this.NUMERIC_SEQ
-    const seqLength = this.seq_length
-    const md = this.NUMERIC_MD
-    const qual = this.qual
-    const ref = this.ref
-
-    const mdLength = md?.length ?? 0
-    const hasQual = !!qual
-    const hasMD = md && mdLength > 0
-
-    let roffset = 0
-    let soffset = 0
-    let mdIdx = 0
-    let mdMatchRemaining = 0
-
-    if (hasMD) {
-      while (mdIdx < mdLength) {
-        const c = md[mdIdx]!
-        if (c >= 48 && c <= 57) {
-          mdMatchRemaining = mdMatchRemaining * 10 + (c - 48)
-          mdIdx++
-        } else {
-          break
-        }
-      }
-    }
-
-    for (let i = 0, l = cigar.length; i < l; i++) {
-      const packed = cigar[i]!
-      const len = packed >> 4
-      const op = packed & 0xf
-
-      if (op === CIGAR_M || op === CIGAR_EQ) {
-        if (hasMD) {
-          let remaining = Math.min(len, seqLength - soffset)
-          let localOffset = 0
-
-          while (remaining > 0) {
-            if (mdMatchRemaining >= remaining) {
-              mdMatchRemaining -= remaining
-              localOffset += remaining
-              remaining = 0
-            } else {
-              localOffset += mdMatchRemaining
-              remaining -= mdMatchRemaining
-              mdMatchRemaining = 0
-
-              if (mdIdx < mdLength && md[mdIdx]! >= 65 && md[mdIdx]! <= 90) {
-                const seqIdx = soffset + localOffset
-                const sb = numericSeq[seqIdx >> 1]!
-                const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
-
-                callback(
-                  MISMATCH_TYPE,
-                  roffset + localOffset,
-                  1,
-                  SEQRET[nibble]!,
-                  hasQual ? qual[seqIdx]! : -1,
-                  md[mdIdx],
-                  0,
-                )
-
-                mdIdx++
-                localOffset++
-                remaining--
-                mdMatchRemaining = 0
-                while (mdIdx < mdLength) {
-                  const c = md[mdIdx]!
-                  if (c >= 48 && c <= 57) {
-                    mdMatchRemaining = mdMatchRemaining * 10 + (c - 48)
-                    mdIdx++
-                  } else {
-                    break
-                  }
-                }
-              } else {
-                break
-              }
-            }
-          }
-        } else if (ref) {
-          // No MD tag - compare against reference sequence
-          const safeEnd = soffset + len <= seqLength ? len : seqLength - soffset
-          for (let j = 0; j < safeEnd; j++) {
-            const seqIdx = soffset + j
-            const sb = numericSeq[seqIdx >> 1]!
-            const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
-            const seqBaseCode = SEQRET_NUMERIC_DECODER[nibble]!
-            // Compare case-insensitively (| 0x20 converts uppercase to lowercase)
-            const refBaseCode = ref.charCodeAt(roffset + j) | 0x20
-            if (seqBaseCode !== refBaseCode) {
-              callback(
-                MISMATCH_TYPE,
-                roffset + j,
-                1,
-                SEQRET[nibble]!,
-                hasQual ? qual[seqIdx]! : -1,
-                ref.charCodeAt(roffset + j),
-                0,
-              )
-            }
-          }
-        }
-        soffset += len
-        roffset += len
-      } else if (op === CIGAR_I) {
-        let insertedBases = ''
-        for (let j = 0; j < len && soffset + j < seqLength; j++) {
-          const seqIdx = soffset + j
-          const sb = numericSeq[seqIdx >> 1]!
-          const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
-          insertedBases += SEQRET[nibble]!
-        }
-        callback(INSERTION_TYPE, roffset, 0, insertedBases, -1, 0, len)
-        soffset += len
-      } else if (op === CIGAR_D) {
-        callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
-
-        // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
-        if (hasMD && mdIdx < mdLength && md[mdIdx]! === 94) {
-          mdIdx++
-          while (mdIdx < mdLength && md[mdIdx]! >= 65) {
-            mdIdx++
-          }
-          mdMatchRemaining = 0
-          while (mdIdx < mdLength) {
-            const c = md[mdIdx]!
-            if (c >= 48 && c <= 57) {
-              mdMatchRemaining = mdMatchRemaining * 10 + (c - 48)
-              mdIdx++
-            } else {
-              break
-            }
-          }
-        }
-        roffset += len
-      } else if (op === CIGAR_N) {
-        callback(SKIP_TYPE, roffset, len, 'N', -1, 0, 0)
-        roffset += len
-      } else if (op === CIGAR_X) {
-        for (let j = 0; j < len; j++) {
-          const seqIdx = soffset + j
-          const sb = numericSeq[seqIdx >> 1]!
-          const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
-
-          let altbaseCode = 0
-          if (hasMD) {
-            if (
-              mdMatchRemaining === 0 &&
-              mdIdx < mdLength &&
-              md[mdIdx]! >= 65
-            ) {
-              altbaseCode = md[mdIdx]!
-              mdIdx++
-              mdMatchRemaining = 0
-              while (mdIdx < mdLength) {
-                const c = md[mdIdx]!
-                if (c >= 48 && c <= 57) {
-                  mdMatchRemaining = mdMatchRemaining * 10 + (c - 48)
-                  mdIdx++
-                } else {
-                  break
-                }
-              }
-            } else if (mdMatchRemaining > 0) {
-              mdMatchRemaining--
-            }
-          }
-
-          callback(
-            MISMATCH_TYPE,
-            roffset + j,
-            1,
-            SEQRET[nibble]!,
-            hasQual ? qual[seqIdx]! : -1,
-            altbaseCode,
-            0,
-          )
-        }
-        soffset += len
-        roffset += len
-      } else if (op === CIGAR_S) {
-        callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
-        soffset += len
-      } else if (op === CIGAR_H) {
-        callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
-      }
-    }
+    forEachMismatchNumeric(
+      this.NUMERIC_CIGAR,
+      this.NUMERIC_SEQ,
+      this.seq_length,
+      this.NUMERIC_MD,
+      this.qual,
+      this.ref,
+      callback,
+    )
   }
 
   get qualString() {
