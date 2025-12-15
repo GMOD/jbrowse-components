@@ -102,6 +102,10 @@ export function renderMismatchesCallback({
   const regionEnd = region.end
   const reversed = region.reversed
 
+  // Track last drawn SNP X position to skip subpixel-redundant draws
+  // When zoomed out, multiple SNPs may map to nearly the same pixel
+  let lastSnpDrawnX = -Infinity
+
   // extraHorizontallyFlippedOffset is used to draw interbase items
   const extraHorizontallyFlippedOffset = reversed ? invBpPerPx + 1 : -1
 
@@ -168,7 +172,11 @@ export function renderMismatchesCallback({
         coords.push(leftPx, topPx, rightPx, bottomPx)
       }
 
-      if (!drawSNPsMuted) {
+      // Skip drawing if this SNP is within 0.1px of the last drawn SNP
+      // This avoids redundant subpixel draws when zoomed out
+      const skipDraw = leftPx - lastSnpDrawnX < 0.1
+
+      if (!drawSNPsMuted && !skipDraw) {
         const baseColor = colorMap[base] || '#888'
         const c =
           useAlpha && qualVal ? applyQualAlpha(baseColor, qualVal) : baseColor
@@ -180,6 +188,7 @@ export function renderMismatchesCallback({
             lastColor = c
           }
           ctx.fillRect(l, topPx, w, heightPx)
+          lastSnpDrawnX = leftPx
         }
       }
 

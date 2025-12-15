@@ -240,6 +240,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private pTotalHeight: number
 
+  // Track next available row per X bucket for faster collision search
+  // Key: X bucket (pLeft >> 4), Value: first potentially free row
+  private nextFreeRow: Map<number, number>
+
   /**
    * pitchX - layout grid pitch in the X direction
    * pitchY - layout grid pitch in the Y direction
@@ -274,6 +278,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.rectangles = new Map()
     this.maxHeight = Math.ceil(maxHeight / this.pitchY)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
+    this.nextFreeRow = new Map()
   }
 
   /**
@@ -332,6 +337,21 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     let top = 0
 
     if (this.displayMode !== 'collapse') {
+      // OPTIMIZATION: Use next-free-row hints to skip scanning from row 0
+      // For deep coverage (80k+ features), this dramatically reduces search time
+      // Buckets group 16 pitch units (>> 4) to balance hint granularity vs memory
+      const startBucket = pLeft >> 4
+      const endBucket = pRight >> 4
+      const nextFreeRow = this.nextFreeRow
+
+      // Find the maximum hint across all buckets this rectangle spans
+      for (let bucket = startBucket; bucket <= endBucket; bucket++) {
+        const hint = nextFreeRow.get(bucket)
+        if (hint !== undefined && hint > top) {
+          top = hint
+        }
+      }
+
       // OPTIMIZATION: Inline collision checking for hot path
       // Eliminates function call overhead which is critical at 100k+ features
       const bitmap = this.bitmap
@@ -408,6 +428,21 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.addRectToBitmap(rectangle)
     this.rectangles.set(id, rectangle)
     this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
+
+    // Update next-free-row hints for affected buckets
+    // The next feature in these buckets should start searching from at least this row
+    if (this.displayMode !== 'collapse') {
+      const nextRow = top + pHeight
+      const startBucket = pLeft >> 4
+      const endBucket = pRight >> 4
+      for (let bucket = startBucket; bucket <= endBucket; bucket++) {
+        const current = this.nextFreeRow.get(bucket) ?? 0
+        if (nextRow > current) {
+          this.nextFreeRow.set(bucket, nextRow)
+        }
+      }
+    }
+
     return top * pitchY
   }
 
@@ -482,6 +517,13 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const { bitmap } = this
     for (const row of bitmap) {
       row.discardRange(pLeft, pRight)
+    }
+
+    // Reset next-free-row hints for affected buckets since those rows may now be available
+    const startBucket = pLeft >> 4
+    const endBucket = pRight >> 4
+    for (let bucket = startBucket; bucket <= endBucket; bucket++) {
+      this.nextFreeRow.delete(bucket)
     }
   }
 
