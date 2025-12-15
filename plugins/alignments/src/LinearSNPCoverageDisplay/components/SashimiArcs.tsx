@@ -85,9 +85,16 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
             stroke={arc.stroke}
             strokeWidth={arc.strokeWidth}
             fill="none"
-            style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+            style={{
+              pointerEvents: 'stroke',
+              cursor: 'pointer',
+            }}
             onMouseEnter={event => {
-              setHoverInfo({ arc, x: event.clientX, y: event.clientY })
+              setHoverInfo({
+                arc,
+                x: event.clientX,
+                y: event.clientY,
+              })
             }}
             onMouseLeave={() => {
               setHoverInfo(null)
