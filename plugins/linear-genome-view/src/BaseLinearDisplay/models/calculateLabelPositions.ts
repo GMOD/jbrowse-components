@@ -47,7 +47,7 @@ export function calculateLabelPositions(
     }
 
     const [left, , right, bottom, feature] = val
-    const { refName = '', description, label, totalLayoutWidth } = feature
+    const { refName, description, label, totalLayoutWidth } = feature
 
     if (!label) {
       continue
