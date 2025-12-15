@@ -2,6 +2,7 @@ import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import ErrorActions from './ErrorActions'
+
 import type { LinearArcDisplayModel } from '../model'
 
 const ErrorMessage = observer(function ({

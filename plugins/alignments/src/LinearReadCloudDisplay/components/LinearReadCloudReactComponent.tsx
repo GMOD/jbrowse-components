@@ -326,7 +326,6 @@ const LinearReadCloudReactComponent = observer(function ({
 }: {
   model: LinearReadCloudDisplayModel
 }) {
-  console.log('LinearReadCloudReactComponent')
   return (
     <BaseDisplayComponent model={model}>
       <Cloud model={model} />

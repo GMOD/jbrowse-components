@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { Suspense, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -35,7 +35,6 @@ const DataDisplay = observer(function ({
   children?: React.ReactNode
 }) {
   const { loading } = model
-  console.log('LinearPairedArcDisplay DataDisplay', { loading, children })
   return (
     <div>
       {children}

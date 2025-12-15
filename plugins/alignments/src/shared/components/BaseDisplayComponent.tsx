@@ -50,7 +50,6 @@ const BaseDisplayComponent = observer(function ({
   children?: React.ReactNode
 }) {
   const { error, regionTooLarge } = model
-  console.log('Alignments shared BaseDisplayComponent')
   return error ? (
     <Suspense fallback={null}>
       <BlockErrorMessage model={model} />
@@ -94,7 +93,6 @@ const DataDisplay = observer(function ({
 const LoadingBar = observer(function ({ model }: { model: BaseDisplayModel }) {
   const { classes } = useStyles()
   const { statusMessage } = model
-  console.log('Alignments shared LoadingBar')
   return (
     <div className={classes.loading}>
       <div className={classes.loadingMessage}>
