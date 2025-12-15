@@ -40,11 +40,24 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
   }
 
   async render(renderProps: RenderArgsDeserialized) {
-    const features = await this.getFeatures(renderProps)
-    const { statusCallback = () => {} } = renderProps
+    const { adapter, statusCallback = () => {}, regions } = renderProps
     const { renderSNPCoverageToCanvas } = await import('./makeImage')
-    return updateStatus('Rendering coverage', statusCallback, () =>
-      renderSNPCoverageToCanvas({ ...renderProps, features }),
-    )
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const covAdapter = adapter as any
+    if (covAdapter.getFeaturesAsStructureOfArrays) {
+      const soa = await covAdapter.getFeaturesAsStructureOfArrays(
+        regions[0],
+        renderProps,
+      )
+      return updateStatus('Rendering coverage', statusCallback, () =>
+        renderSNPCoverageToCanvas({ ...renderProps, soa }),
+      )
+    } else {
+      const features = await this.getFeatures(renderProps)
+      return updateStatus('Rendering coverage', statusCallback, () =>
+        renderSNPCoverageToCanvas({ ...renderProps, features }),
+      )
+    }
   }
 }

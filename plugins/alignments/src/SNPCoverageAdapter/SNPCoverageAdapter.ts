@@ -65,21 +65,10 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { subadapter } = await this.configure()
-      const sequenceAdapter = await this.getSequenceAdapter()
-
-      const features = await firstValueFrom(
-        subadapter.getFeatures(region, opts).pipe(toArray()),
-      )
-
-      const { bins, skipmap } = await generateCoverageBinsPrefixSum({
-        features: features as FeatureWithMismatchIterator[],
+      const { bins, skipmap } = await this.getFeaturesAsStructureOfArrays(
         region,
         opts,
-        fetchSequence: sequenceAdapter
-          ? (region: Region) => fetchSequence(region, sequenceAdapter)
-          : undefined,
-      })
+      )
 
       let index = 0
       for (const bin of bins) {
@@ -123,6 +112,24 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
       observer.complete()
     }, opts.stopToken)
+  }
+
+  async getFeaturesAsStructureOfArrays(region: Region, opts: BaseOptions = {}) {
+    const { subadapter } = await this.configure()
+    const sequenceAdapter = await this.getSequenceAdapter()
+
+    const features = await firstValueFrom(
+      subadapter.getFeatures(region, opts).pipe(toArray()),
+    )
+
+    return generateCoverageBinsPrefixSum({
+      features: features as FeatureWithMismatchIterator[],
+      region,
+      opts,
+      fetchSequence: sequenceAdapter
+        ? (region: Region) => fetchSequence(region, sequenceAdapter)
+        : undefined,
+    })
   }
 
   async getMultiRegionFeatureDensityStats(

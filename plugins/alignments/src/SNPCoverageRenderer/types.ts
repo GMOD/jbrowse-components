@@ -1,6 +1,11 @@
 import { type Feature, reducePrecision, toLocale } from '@jbrowse/core/util'
 
-import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
+import type {
+  ColorBy,
+  ModificationTypeWithColor,
+  PreBaseCoverageBin,
+  SkipMap,
+} from '../shared/types'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
 
@@ -91,5 +96,9 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 }
 
 export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
-  features: Map<string, Feature>
+  features?: Map<string, Feature>
+  soa?: {
+    bins: PreBaseCoverageBin[]
+    skipmap: SkipMap
+  }
 }

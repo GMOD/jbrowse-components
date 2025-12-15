@@ -1,12 +1,14 @@
-import { doesIntersect2 } from '@jbrowse/core/util'
-
 import { parseCigar2 } from '../MismatchParser'
 import { createEmptyBin, incWithProbabilities } from './util'
 import { getMethBins } from '../ModificationParser/getMethBins'
 
-import type { Mismatch, PreBaseCoverageBin } from '../shared/types'
-import type { Feature } from '@jbrowse/core/util'
+import type {
+  FeatureWithMismatchIterator,
+  Mismatch,
+  PreBaseCoverageBin,
+} from '../shared/types'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import { DELETION_TYPE } from '../shared/forEachMismatchTypes'
 
 function processCpG(
   bins: PreBaseCoverageBin[],
@@ -38,7 +40,7 @@ export function processReferenceCpGs({
   regionSequence,
 }: {
   bins: PreBaseCoverageBin[]
-  feature: Feature
+  feature: FeatureWithMismatchIterator
   region: Region
   regionSequence: string
 }) {
@@ -46,23 +48,22 @@ export function processReferenceCpGs({
   const fend = feature.get('end')
   const fstrand = feature.get('strand') as -1 | 0 | 1
   const seq = feature.get('seq') as string | undefined
-  const mismatches = (feature.get('mismatches') as Mismatch[] | undefined) ?? []
   const r = regionSequence.toLowerCase()
   if (seq) {
     const cigarOps =
       feature.get('NUMERIC_CIGAR') ?? parseCigar2(feature.get('CIGAR'))
     const { methBins, methProbs } = getMethBins(feature, cigarOps)
-    const dels = mismatches.filter(f => f.type === 'deletion')
+    const isDeleted = new Array(methBins.length).fill(false)
+    feature.forEachMismatch((type, start, length) => {
+      if (type === DELETION_TYPE) {
+        const end = start + length
+        for (let i = start; i < end; i++) {
+          isDeleted[i] = true
+        }
+      }
+    })
     const regionStart = region.start
     const regionEnd = region.end
-    const isDeleted = new Array(methBins.length).fill(false)
-    for (const del of dels) {
-      const start = del.start
-      const end = del.start + del.length
-      for (let i = start; i < end; i++) {
-        isDeleted[i] = true
-      }
-    }
 
     // Calculate visible range within feature
     const visStart = Math.max(0, regionStart - fstart)
