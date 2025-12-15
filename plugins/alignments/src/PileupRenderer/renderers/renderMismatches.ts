@@ -7,8 +7,6 @@ import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
-const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
-
 function applyQualAlpha(baseColor: string, qual: number | undefined) {
   return qual !== undefined
     ? colord(baseColor)
@@ -52,6 +50,7 @@ export function renderMismatches({
   charHeight: number
   canvasWidth: number
 }) {
+  let lastColor = 'NONCOLOR'
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
   const { heightPx, topPx, feature } = feat
@@ -116,9 +115,9 @@ export function renderMismatches({
         const w = widthPx
         const l = Math.round(leftPx)
         if (l + w > 0 && l < canvasWidth) {
-          if (c && lastFillStyleMap.get(ctx) !== c) {
+          if (lastColor !== c) {
             ctx.fillStyle = c
-            lastFillStyleMap.set(ctx, c)
+            lastColor = c
           }
           ctx.fillRect(l, topPx, w, heightPx)
         }
@@ -133,9 +132,9 @@ export function renderMismatches({
           : contrastColor
         const x = leftPx + (widthPx - charWidth) / 2 + 1
         if (x > 0 && x < canvasWidth) {
-          if (textColor && lastFillStyleMap.get(ctx) !== textColor) {
+          if (textColor && lastColor !== textColor) {
             ctx.fillStyle = textColor
-            lastFillStyleMap.set(ctx, textColor)
+            lastColor = textColor
           }
           ctx.fillText(mismatch.base, x, bottomPx)
         }
@@ -146,9 +145,9 @@ export function renderMismatches({
         const w = Math.abs(leftPx - rightPx)
         if (leftPx + w > 0 && leftPx < canvasWidth) {
           const c = colorMap.deletion
-          if (c && lastFillStyleMap.get(ctx) !== c) {
+          if (c && lastColor !== c) {
             ctx.fillStyle = c
-            lastFillStyleMap.set(ctx, c)
+            lastColor = c
           }
           ctx.fillRect(leftPx, topPx, w, heightPx)
         }
@@ -162,9 +161,9 @@ export function renderMismatches({
           const x = (leftPx + rightPx) / 2 - rwidth / 2
           const c = colorContrastMap.deletion!
           if (x > 0 && x < canvasWidth) {
-            if (lastFillStyleMap.get(ctx) !== c) {
+            if (lastColor !== c) {
               ctx.fillStyle = c
-              lastFillStyleMap.set(ctx, c)
+              lastColor = c
             }
             ctx.fillText(txt, x, bottomPx)
           }
@@ -174,9 +173,9 @@ export function renderMismatches({
       const w = Math.max(widthPx, 1.5)
       if (leftPx + w > 0 && leftPx < canvasWidth) {
         const c = colorMap.skip!
-        if (lastFillStyleMap.get(ctx) !== c) {
+        if (lastColor !== c) {
           ctx.fillStyle = c
-          lastFillStyleMap.set(ctx, c)
+          lastColor = c
         }
         ctx.fillRect(leftPx, topPx + heightPx / 2 - 1, w, 1)
       }
@@ -211,9 +210,9 @@ export function renderMismatches({
         if (!hideSmallIndels) {
           if (pos + insW > 0 && pos < canvasWidth) {
             const c = colorMap.insertion!
-            if (c && lastFillStyleMap.get(ctx) !== c) {
+            if (c && lastColor !== c) {
               ctx.fillStyle = c
-              lastFillStyleMap.set(ctx, c)
+              lastColor = c
             }
             ctx.fillRect(pos, topPx, insW, heightPx)
           }
@@ -250,9 +249,9 @@ export function renderMismatches({
           const w = 2
           if (l + w > 0 && l < canvasWidth) {
             const c = colorMap.insertion
-            if (c && lastFillStyleMap.get(ctx) !== c) {
+            if (c && lastColor !== c) {
               ctx.fillStyle = c
-              lastFillStyleMap.set(ctx, c)
+              lastColor = c
             }
             ctx.fillRect(l, topPx, w, heightPx)
           }
@@ -269,18 +268,18 @@ export function renderMismatches({
           const w = rwidth + 2 * padding
           if (l + w > 0 && l < canvasWidth) {
             const c = 'purple'
-            if (lastFillStyleMap.get(ctx) !== c) {
+            if (lastColor !== c) {
               ctx.fillStyle = c
-              lastFillStyleMap.set(ctx, c)
+              lastColor = c
             }
             ctx.fillRect(l, topPx, w, heightPx)
           }
           const x = leftPx - rwidth / 2
           const c = colorContrastMap.insertion!
           if (x > 0 && x < canvasWidth) {
-            if (lastFillStyleMap.get(ctx) !== c) {
+            if (lastColor !== c) {
               ctx.fillStyle = c
-              lastFillStyleMap.set(ctx, c)
+              lastColor = c
             }
             ctx.fillText(txt, x, bottomPx)
           }
@@ -291,9 +290,9 @@ export function renderMismatches({
           const w = 2 * padding
           if (l + w > 0 && l < canvasWidth) {
             const c = colorMap.insertion!
-            if (lastFillStyleMap.get(ctx) !== c) {
+            if (lastColor !== c) {
               ctx.fillStyle = c
-              lastFillStyleMap.set(ctx, c)
+              lastColor = c
             }
             ctx.fillRect(l, topPx, w, heightPx)
           }
@@ -303,9 +302,9 @@ export function renderMismatches({
       const c = colorMap[type]!
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       if (pos + clipW > 0 && pos < canvasWidth) {
-        if (lastFillStyleMap.get(ctx) !== c) {
+        if (lastColor !== c) {
           ctx.fillStyle = c
-          lastFillStyleMap.set(ctx, c)
+          lastColor = c
         }
         ctx.fillRect(pos, topPx, clipW, heightPx)
       }
@@ -315,18 +314,18 @@ export function renderMismatches({
         const l = pos - clipW
         const clipW3 = clipW * 3
         if (l + clipW3 > 0 && l < canvasWidth) {
-          if (lastFillStyleMap.get(ctx) !== c) {
+          if (lastColor !== c) {
             ctx.fillStyle = c
-            lastFillStyleMap.set(ctx, c)
+            lastColor = c
           }
           ctx.fillRect(l, topPx, clipW3, 1)
           ctx.fillRect(l, bottomPx - 1, clipW3, 1)
         }
         const x = pos + 3
         if (x > 0 && x < canvasWidth) {
-          if (lastFillStyleMap.get(ctx) !== c) {
+          if (lastColor !== c) {
             ctx.fillStyle = c
-            lastFillStyleMap.set(ctx, c)
+            lastColor = c
           }
           ctx.fillText(`(${mismatch.base})`, x, bottomPx)
         }
