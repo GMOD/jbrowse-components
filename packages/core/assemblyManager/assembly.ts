@@ -526,6 +526,7 @@ export default function assemblyFactory(
         if (!opts.sessionId) {
           throw new Error('sessionId is required')
         }
+
         const map = await this.getAdapterMapEntry(adapterConf, opts)
         return map.forwardMap
       },
@@ -554,7 +555,9 @@ export default function assemblyFactory(
               // eslint-disable-next-line  @typescript-eslint/no-unused-expressions
               self.allRefNamesWithLowerCase
             },
-            { name: 'AssemblyRefNames' },
+            {
+              name: 'AssemblyRefNames',
+            },
           ),
         )
       },

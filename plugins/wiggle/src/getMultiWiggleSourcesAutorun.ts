@@ -23,7 +23,7 @@ export function getMultiWiggleSourcesAutorun(self: {
   adapterProps: () => Record<string, unknown>
   setSourcesLoading: (aborter: string) => void
   setError: (error: unknown) => void
-  setMessage: (str: string) => void
+  setStatusMessage: (str: string) => void
   setSources: (sources: Source[]) => void
 }) {
   addDisposer(
@@ -46,6 +46,11 @@ export function getMultiWiggleSourcesAutorun(self: {
             regions: view.staticBlocks.contentBlocks,
             sessionId,
             adapterConfig,
+            statusCallback: (arg: string) => {
+              if (isAlive(self)) {
+                self.setStatusMessage(arg)
+              }
+            },
           },
         )) as Source[]
         if (isAlive(self)) {

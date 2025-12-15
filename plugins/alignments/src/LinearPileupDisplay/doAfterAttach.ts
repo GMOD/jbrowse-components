@@ -31,7 +31,7 @@ export function doAfterAttach(model: {
   setSimplexModifications: (arg: string[]) => void
   setModificationsReady: (arg: boolean) => void
   setSortReady: (arg: boolean) => void
-  setMessage: (arg: string) => void
+  setStatusMessage: (arg: string) => void
 }) {
   createAutorun(
     model,
@@ -43,7 +43,10 @@ export function doAfterAttach(model: {
 
       model.setCurrSortBpPerPx(view.bpPerPx)
     },
-    { delay: 1000, name: 'CurrBpPerPx' },
+    {
+      delay: 1000,
+      name: 'CurrBpPerPx',
+    },
   )
   createAutorun(
     model,
@@ -78,7 +81,7 @@ export function doAfterAttach(model: {
           timeout: 1_000_000,
           statusCallback: (arg: string) => {
             if (isAlive(model)) {
-              model.setMessage(arg)
+              model.setStatusMessage(arg)
             }
           },
           ...model.adapterRenderProps(),
@@ -90,7 +93,10 @@ export function doAfterAttach(model: {
         model.setSortReady(true)
       }
     },
-    { delay: 1000, name: 'SortReads' },
+    {
+      delay: 1000,
+      name: 'SortReads',
+    },
   )
 
   createAutorun(
@@ -113,6 +119,9 @@ export function doAfterAttach(model: {
         model.setModificationsReady(true)
       }
     },
-    { delay: 1000, name: 'GetModInfo' },
+    {
+      delay: 1000,
+      name: 'GetModInfo',
+    },
   )
 }

@@ -73,17 +73,24 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return bam.getHeaderText()
   }
 
-  private async setup(_opts?: BaseOptions) {
-    this.setupP ??= (async () => {
-      const { bam } = this.configure()
-      const rawHeader = await bam.getHeader()
-      this.samHeader = parseSamHeader(rawHeader ?? [])
-      return this.samHeader
-    })().catch((e: unknown) => {
-      this.setupP = undefined
-      this.configureResult = undefined
-      throw e
-    })
+  private async setup(opts?: BaseOptions) {
+    const { statusCallback } = opts || {}
+    this.setupP ??= updateStatus(
+      'Downloading index',
+      statusCallback,
+      async () => {
+        try {
+          const { bam } = this.configure()
+          const rawHeader = await bam.getHeader()
+          this.samHeader = parseSamHeader(rawHeader ?? [])
+          return this.samHeader
+        } catch (e) {
+          this.setupP = undefined
+          this.configureResult = undefined
+          throw e
+        }
+      },
+    )
     return this.setupP
   }
 

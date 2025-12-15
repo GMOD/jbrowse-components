@@ -77,7 +77,7 @@ const blockState = types
     /**
      * #volatile
      */
-    status: '',
+    blockStatusMessage: '',
     /**
      * #volatile
      */
@@ -137,8 +137,8 @@ const blockState = types
       /**
        * #action
        */
-      setStatus(message: string) {
-        self.status = message
+      setStatusMessage(message: string) {
+        self.blockStatusMessage = message
       },
       /**
        * #action
@@ -239,6 +239,16 @@ const blockState = types
       },
     }
   })
+  .views(self => ({
+    get statusMessage() {
+      return self.isRenderingPending
+        ? self.blockStatusMessage ||
+            // @ts-expect-error
+            getContainingDisplay(self).statusMessage ||
+            'Loading'
+        : undefined
+    },
+  }))
   .actions(self => ({
     afterAttach() {
       const display = getContainingDisplay(self)
@@ -311,7 +321,7 @@ export function renderBlockData(
       renderArgs: {
         statusCallback: (message: string) => {
           if (isAlive(self)) {
-            self.setStatus(message)
+            self.setStatusMessage(message)
           }
         },
         assemblyName: self.region.assemblyName,
@@ -326,7 +336,9 @@ export function renderBlockData(
       },
     }
   } catch (e) {
-    return { displayError: e }
+    return {
+      displayError: e,
+    }
   }
 }
 
