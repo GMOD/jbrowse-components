@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react'
+import type { TransitionStartFunction } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ClearIcon from '@mui/icons-material/Clear'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
@@ -18,18 +21,33 @@ const useStyles = makeStyles()(theme => ({
 
 const SearchTracksTextField = observer(function ({
   model,
+  startTransition,
 }: {
   model: HierarchicalTrackSelectorModel
+  startTransition: TransitionStartFunction
 }) {
   const { filterText } = model
+  const [localValue, setLocalValue] = useState(filterText)
   const { classes } = useStyles()
+
+  // Sync local state when model is cleared externally
+  useEffect(() => {
+    if (filterText === '') {
+      setLocalValue('')
+    }
+  }, [filterText])
+
   return (
     <TextField
       className={classes.searchBox}
       label="Filter tracks"
-      value={filterText}
+      value={localValue}
       onChange={event => {
-        model.setFilterText(event.target.value)
+        const value = event.target.value
+        setLocalValue(value)
+        startTransition(() => {
+          model.setFilterText(value)
+        })
       }}
       fullWidth
       slotProps={{
@@ -38,6 +56,7 @@ const SearchTracksTextField = observer(function ({
             <InputAdornment position="end">
               <IconButton
                 onClick={() => {
+                  setLocalValue('')
                   model.clearFilterText()
                 }}
               >
@@ -54,9 +73,11 @@ const SearchTracksTextField = observer(function ({
 const HierarchicalTrackSelectorHeader = observer(function ({
   model,
   setHeaderHeight,
+  startTransition,
 }: {
   model: HierarchicalTrackSelectorModel
   setHeaderHeight: (n: number) => void
+  startTransition: TransitionStartFunction
 }) {
   return (
     <div
@@ -68,7 +89,10 @@ const HierarchicalTrackSelectorHeader = observer(function ({
       <div style={{ display: 'flex' }}>
         <HamburgerMenu model={model} />
         <ShoppingCart model={model} />
-        <SearchTracksTextField model={model} />
+        <SearchTracksTextField
+          model={model}
+          startTransition={startTransition}
+        />
         <RecentlyUsedTracks model={model} />
         <FavoriteTracks model={model} />
       </div>

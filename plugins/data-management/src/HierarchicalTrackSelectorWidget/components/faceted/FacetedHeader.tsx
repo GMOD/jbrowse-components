@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -15,17 +15,32 @@ export default function FacetedHeader({
   model: HierarchicalTrackSelectorModel
 }) {
   const { faceted } = model
+  const { filterText, showOptions, showFilters, showSparse, useShoppingCart } =
+    faceted
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const { showOptions, showFilters, showSparse, useShoppingCart } = faceted
+  const [localFilterText, setLocalFilterText] = useState(filterText)
+  const [, startTransition] = useTransition()
+
+  // Sync local state when model is cleared externally
+  useEffect(() => {
+    if (filterText === '') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLocalFilterText('')
+    }
+  }, [filterText])
 
   return (
     <>
       <Grid container spacing={4} alignItems="center">
         <TextField
           label="Search..."
-          value={faceted.filterText}
+          value={localFilterText}
           onChange={event => {
-            faceted.setFilterText(event.target.value)
+            const value = event.target.value
+            setLocalFilterText(value)
+            startTransition(() => {
+              faceted.setFilterText(value)
+            })
           }}
           slotProps={{
             input: {
@@ -33,6 +48,7 @@ export default function FacetedHeader({
                 <InputAdornment position="end">
                   <IconButton
                     onClick={() => {
+                      setLocalFilterText('')
                       faceted.setFilterText('')
                     }}
                   >
