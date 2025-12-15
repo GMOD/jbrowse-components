@@ -1,35 +1,12 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
 import { parseCigar2 } from '../MismatchParser'
-import { createEmptyBin, incWithProbabilities } from './util'
+import { incWithProbabilities } from './util'
 import { getMethBins } from '../ModificationParser/getMethBins'
 
 import type { Mismatch, PreBaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-
-function processCpG(
-  bins: PreBaseCoverageBin[],
-  binIdx: number,
-  fstrand: -1 | 0 | 1,
-  isMeth: boolean,
-  prob: number,
-  isDel: boolean,
-) {
-  if (isMeth) {
-    const bin = (bins[binIdx] ??= createEmptyBin())
-    incWithProbabilities(bin, fstrand, 'mods', 'cpg_meth', prob)
-    bin.ref.entryDepth--
-    bin.ref[fstrand]--
-  } else {
-    if (!isDel) {
-      const bin = (bins[binIdx] ??= createEmptyBin())
-      incWithProbabilities(bin, fstrand, 'nonmods', 'cpg_unmeth', 1 - prob)
-      bin.ref.entryDepth--
-      bin.ref[fstrand]--
-    }
-  }
-}
 
 export function processReferenceCpGs({
   feature,
@@ -67,32 +44,74 @@ export function processReferenceCpGs({
       const l1 = r[j - regionStart + 1]
       const l2 = r[j - regionStart + 2]
       if (l1 === 'c' && l2 === 'g') {
-        const idx0 = j - regionStart
-        const idx1 = j - regionStart + 1
+        const bin0 = bins[j - regionStart]
+        const bin1 = bins[j - regionStart + 1]
         const b0 = methBins[i]
         const b1 = methBins[i + 1]
-        const p0 = methProbs[i] || 0
-        const p1 = methProbs[i + 1] || 0
-        const isMeth = !!((b0 && p0 > 0.5) || (b1 && p1 > 0.5))
-        const isDel0 = dels.some(d =>
-          doesIntersect2(
-            j,
-            j + 1,
-            d.start + fstart,
-            d.start + fstart + d.length,
-          ),
-        )
-        const isDel1 = dels.some(d =>
-          doesIntersect2(
-            j + 1,
-            j + 2,
-            d.start + fstart,
-            d.start + fstart + d.length,
-          ),
-        )
+        const p0 = methProbs[i]
+        const p1 = methProbs[i + 1]
 
-        processCpG(bins, idx0, fstrand, isMeth, p0, isDel0)
-        processCpG(bins, idx1, fstrand, isMeth, p1, isDel1)
+        // color
+        if (
+          (b0 && (p0 !== undefined ? p0 > 0.5 : true)) ||
+          (b1 && (p1 !== undefined ? p1 > 0.5 : true))
+        ) {
+          if (bin0) {
+            incWithProbabilities(bin0, fstrand, 'mods', 'cpg_meth', p0 || 0)
+            bin0.ref.entryDepth--
+            bin0.ref[fstrand]--
+          }
+          if (bin1) {
+            incWithProbabilities(bin1, fstrand, 'mods', 'cpg_meth', p1 || 0)
+            bin1.ref.entryDepth--
+            bin1.ref[fstrand]--
+          }
+        } else {
+          if (bin0) {
+            if (
+              !dels.some(d =>
+                doesIntersect2(
+                  j,
+                  j + 1,
+                  d.start + fstart,
+                  d.start + fstart + d.length,
+                ),
+              )
+            ) {
+              incWithProbabilities(
+                bin0,
+                fstrand,
+                'nonmods',
+                'cpg_unmeth',
+                1 - (p0 || 0),
+              )
+              bin0.ref.entryDepth--
+              bin0.ref[fstrand]--
+            }
+          }
+          if (bin1) {
+            if (
+              !dels.some(d =>
+                doesIntersect2(
+                  j + 1,
+                  j + 2,
+                  d.start + fstart,
+                  d.start + fstart + d.length,
+                ),
+              )
+            ) {
+              incWithProbabilities(
+                bin1,
+                fstrand,
+                'nonmods',
+                'cpg_unmeth',
+                1 - (p1 || 0),
+              )
+              bin1.ref.entryDepth--
+              bin1.ref[fstrand]--
+            }
+          }
+        }
       }
     }
   }
