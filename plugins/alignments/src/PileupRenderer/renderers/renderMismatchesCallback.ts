@@ -117,8 +117,8 @@ export function renderMismatchesCallback({
     _altbase: number | undefined,
     cliplen: number | undefined,
   ) => {
-    const mstart = featStart + start
-    const mend = mstart + length
+    const mismatchStart = featStart + start
+    const mismatchEnd = mismatchStart + length
 
     // Handle insertions/clips in second pass
     if (
@@ -126,7 +126,7 @@ export function renderMismatchesCallback({
       type === SOFTCLIP_TYPE ||
       type === HARDCLIP_TYPE
     ) {
-      if (mstart >= regionStart && mstart < regionEnd) {
+      if (mismatchStart >= regionStart && mismatchStart < regionEnd) {
         secondPassItems.push({
           type,
           start,
@@ -138,16 +138,16 @@ export function renderMismatchesCallback({
     }
 
     // Skip items entirely outside visible region
-    if (mend <= regionStart || mstart >= regionEnd) {
+    if (mismatchEnd <= regionStart || mismatchStart >= regionEnd) {
       return
     }
 
     const leftPx = reversed
-      ? (regionEnd - mend) * invBpPerPx
-      : (mstart - regionStart) * invBpPerPx
+      ? (regionEnd - mismatchEnd) * invBpPerPx
+      : (mismatchStart - regionStart) * invBpPerPx
     const rightPx = reversed
-      ? (regionEnd - mstart) * invBpPerPx
-      : (mend - regionStart) * invBpPerPx
+      ? (regionEnd - mismatchStart) * invBpPerPx
+      : (mismatchEnd - regionStart) * invBpPerPx
 
     // if the mismatch is off-screen, don't render it
     if (rightPx < 0 || leftPx > canvasWidth) {
@@ -172,7 +172,7 @@ export function renderMismatchesCallback({
         const l = Math.round(leftPx)
         const w = widthPx
         if (l + w > 0 && l < canvasWidth) {
-          if (c && lastColor !== c) {
+          if (lastColor !== c) {
             ctx.fillStyle = c
             lastColor = c
           }
@@ -201,8 +201,8 @@ export function renderMismatchesCallback({
       if (!hideSmallIndels || length >= 10) {
         const w = Math.abs(leftPx - rightPx)
         if (leftPx + w > 0 && leftPx < canvasWidth) {
-          const c = colorMap.deletion
-          if (c && lastColor !== c) {
+          const c = colorMap.deletion!
+          if (lastColor !== c) {
             ctx.fillStyle = c
             lastColor = c
           }
@@ -219,9 +219,9 @@ export function renderMismatchesCallback({
         const rwidth = measureTextSmallNumber(length, 10)
         if (widthPx >= rwidth && canRenderText) {
           const x = (leftPx + rightPx) / 2 - rwidth / 2
-          const c = colorContrastMap.deletion
+          const c = colorContrastMap.deletion!
           if (x > 0 && x < canvasWidth) {
-            if (c && lastColor !== c) {
+            if (lastColor !== c) {
               ctx.fillStyle = c
               lastColor = c
             }
@@ -232,8 +232,8 @@ export function renderMismatchesCallback({
     } else if (type === SKIP_TYPE) {
       const w = Math.max(widthPx, 1.5)
       if (leftPx + w > 0 && leftPx < canvasWidth) {
-        const c = colorMap.skip
-        if (c && lastColor !== c) {
+        const c = colorMap.skip!
+        if (lastColor !== c) {
           ctx.fillStyle = c
           lastColor = c
         }
@@ -257,7 +257,7 @@ export function renderMismatchesCallback({
           m.base,
           m.qual,
           m.altbase?.charCodeAt(0),
-          m.cliplen,
+          m.cliplen || +m.base,
         )
       }
     }
@@ -286,7 +286,7 @@ export function renderMismatchesCallback({
         if (!hideSmallIndels) {
           const c = colorMap.insertion!
           if (pos + insW > 0 && pos < canvasWidth) {
-            if (c && lastColor !== c) {
+            if (lastColor !== c) {
               ctx.fillStyle = c
               lastColor = c
             }
@@ -305,7 +305,10 @@ export function renderMismatchesCallback({
             }
           }
           if (bpPerPx < 3) {
-            items.push({ type: 'insertion', seq: base || 'unknown' })
+            items.push({
+              type: 'insertion',
+              seq: base || 'unknown',
+            })
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, bottomPx)
           }
         }
@@ -317,8 +320,8 @@ export function renderMismatchesCallback({
           const l = leftPx - 1
           const w = 2
           if (l + w > 0 && l < canvasWidth) {
-            const c = colorMap.insertion
-            if (c && lastColor !== c) {
+            const c = colorMap.insertion!
+            if (lastColor !== c) {
               ctx.fillStyle = c
               lastColor = c
             }
@@ -336,7 +339,7 @@ export function renderMismatchesCallback({
           const l = leftPx - rwidth / 2 - padding
           const w = rwidth + 2 * padding
           if (l + w > 0 && l < canvasWidth) {
-            const c = 'purple'
+            const c = colorMap.insertion!
             if (lastColor !== c) {
               ctx.fillStyle = c
               lastColor = c
@@ -344,9 +347,9 @@ export function renderMismatchesCallback({
             ctx.fillRect(l, topPx, w, heightPx)
           }
           const x = leftPx - rwidth / 2
-          const c = colorContrastMap.insertion
+          const c = colorContrastMap.insertion!
           if (x > 0 && x < canvasWidth) {
-            if (c && lastColor !== c) {
+            if (lastColor !== c) {
               ctx.fillStyle = c
               lastColor = c
             }
@@ -358,8 +361,8 @@ export function renderMismatchesCallback({
           const l = leftPx - padding
           const w = 2 * padding
           if (l + w > 0 && l < canvasWidth) {
-            const c = colorMap.insertion
-            if (c && lastColor !== c) {
+            const c = colorMap.insertion!
+            if (lastColor !== c) {
               ctx.fillStyle = c
               lastColor = c
             }
@@ -369,10 +372,10 @@ export function renderMismatchesCallback({
       }
     } else if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
       const typeName = type === SOFTCLIP_TYPE ? 'softclip' : 'hardclip'
-      const c = colorMap[typeName]
+      const c = colorMap[typeName]!
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       if (pos + clipW > 0 && pos < canvasWidth) {
-        if (c && lastColor !== c) {
+        if (lastColor !== c) {
           ctx.fillStyle = c
           lastColor = c
         }
@@ -384,7 +387,7 @@ export function renderMismatchesCallback({
         const l = pos - clipW
         const clipW3 = clipW * 3
         if (l + clipW3 > 0 && l < canvasWidth) {
-          if (c && lastColor !== c) {
+          if (lastColor !== c) {
             ctx.fillStyle = c
             lastColor = c
           }
@@ -393,7 +396,7 @@ export function renderMismatchesCallback({
         }
         const x = pos + 3
         if (x > 0 && x < canvasWidth) {
-          if (c && lastColor !== c) {
+          if (lastColor !== c) {
             ctx.fillStyle = c
             lastColor = c
           }
@@ -403,5 +406,8 @@ export function renderMismatchesCallback({
     }
   }
 
-  return { coords, items }
+  return {
+    coords,
+    items,
+  }
 }
