@@ -57,7 +57,6 @@ export function renderAlignmentShape({
   color: string
   cigarOps: ArrayLike<number>
 }) {
-  let lastColor = 'NONCOLOR'
   const { regions, bpPerPx } = renderArgs
   const { heightPx, topPx, feature } = feat
   const region = regions[0]!
@@ -72,7 +71,9 @@ export function renderAlignmentShape({
   const strand = feature.get('strand') * flip
   const renderChevrons = bpPerPx < 10 && heightPx > 5
 
+  let lastColor = color
   ctx.fillStyle = color
+
   let hasSkips = false
   for (let i = 0, l = cigarOps.length; i < l; i++) {
     if ((cigarOps[i]! & 0xf) === CIGAR_N) {
