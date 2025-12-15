@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { TransitionStartFunction } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -11,7 +12,6 @@ import FavoriteTracks from './FavoriteTracks'
 import RecentlyUsedTracks from './RecentlyUsedTracks'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
-import type { TransitionStartFunction } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   searchBox: {

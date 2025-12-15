@@ -24,6 +24,7 @@ export default function FacetedHeader({
   // Sync local state when model is cleared externally
   useEffect(() => {
     if (filterText === '') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalFilterText('')
     }
   }, [filterText])

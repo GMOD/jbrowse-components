@@ -1,50 +1,15 @@
 import { useMemo, useState, useTransition } from 'react'
 
-import { getEnv, measureGridWidth } from '@jbrowse/core/util'
+import { getEnv } from '@jbrowse/core/util'
 import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import { DataGrid } from '@mui/x-data-grid'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { computeInitialWidths } from './computeInitialWidths'
+
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
-
-function computeInitialWidths(
-  rows: { name: string; metadata: Record<string, string> }[],
-  filteredNonMetadataKeys: string[],
-  filteredMetadataKeys: string[],
-  visible: Record<string, boolean>,
-) {
-  return {
-    name:
-      measureGridWidth(
-        rows.map(r => r.name),
-        { maxWidth: 500, stripHTML: true },
-      ) + 15,
-    ...Object.fromEntries(
-      filteredNonMetadataKeys
-        .filter(f => visible[f])
-        .map(e => [
-          e,
-          measureGridWidth(
-            rows.map(r => r[e as keyof typeof r] as string),
-            { maxWidth: 400, stripHTML: true },
-          ),
-        ]),
-    ),
-    ...Object.fromEntries(
-      filteredMetadataKeys
-        .filter(f => visible[`metadata.${f}`])
-        .map(e => [
-          `metadata.${e}`,
-          measureGridWidth(
-            rows.map(r => r.metadata[e]),
-            { maxWidth: 400, stripHTML: true },
-          ),
-        ]),
-    ),
-  }
-}
 
 const FacetedDataGrid = observer(function ({
   model,
@@ -95,10 +60,10 @@ const FacetedDataGrid = observer(function ({
         r =>
           ({
             ...r,
-            width: widths[r.field],
+            width: widths[r.field as keyof typeof widths],
           }) satisfies GridColDef<(typeof rows)[0]>,
       ),
-    [columns, widths, rows],
+    [columns, widths],
   )
 
   return (
