@@ -25,6 +25,7 @@ const LoadingBar = observer(function ({
 }) {
   const { classes } = useStyles()
   const { statusMessage } = model
+  console.log('LinearPairedArcDisplay::LoadingBar WTF1')
   return (
     <div className={classes.loading}>
       <LoadingEllipses message={statusMessage} />

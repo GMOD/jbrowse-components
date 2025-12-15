@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView } from '@jbrowse/core/util'
+import { assembleLocString, getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -190,7 +190,7 @@ const Cloud = observer(function ({
       onClick={onClick}
     >
       <canvas
-        data-testid={model.drawCloud ? 'cloud-canvas' : 'stack-canvas'}
+        data-testid={model.dataTestId}
         ref={cb}
         style={{
           width: canvasWidth,
@@ -244,34 +244,51 @@ const Cloud = observer(function ({
         />
       ) : null}
       {hoveredFeatureData && mousePosition ? (
-        <BaseTooltip
-          clientPoint={{ x: mousePosition.x, y: mousePosition.y + 20 }}
-          placement="bottom-start"
-        >
-          <div>
-            <div>
-              <strong>{hoveredFeatureData.name}</strong>
-            </div>
-            <div>
-              {hoveredFeatureData.refName}:
-              {hoveredFeatureData.start.toLocaleString()}-
-              {hoveredFeatureData.end.toLocaleString()}
-            </div>
-            {hoveredFeatureData.tlen !== 0 ? (
-              <div>Template length: {hoveredFeatureData.tlen}</div>
-            ) : null}
-          </div>
-        </BaseTooltip>
+        <Tooltip
+          hoveredFeatureData={hoveredFeatureData}
+          mousePosition={mousePosition}
+        />
       ) : null}
     </div>
   )
 })
+function Tooltip({
+  hoveredFeatureData,
+  mousePosition,
+}: {
+  hoveredFeatureData: ReducedFeature
+  mousePosition: {
+    x: number
+    y: number
+  }
+}) {
+  return (
+    <BaseTooltip
+      clientPoint={{
+        x: mousePosition.x,
+        y: mousePosition.y + 20,
+      }}
+      placement="bottom-start"
+    >
+      <div>
+        <div>
+          <strong>{hoveredFeatureData.name}</strong>
+        </div>
+        <div>{assembleLocString(hoveredFeatureData)}</div>
+        {hoveredFeatureData.tlen !== 0 ? (
+          <div>Template length: {hoveredFeatureData.tlen}</div>
+        ) : null}
+      </div>
+    </BaseTooltip>
+  )
+}
 
 const LinearReadCloudReactComponent = observer(function ({
   model,
 }: {
   model: LinearReadCloudDisplayModel
 }) {
+  console.log('LinearReadCloudReactComponent')
   return (
     <BaseDisplayComponent model={model}>
       <Cloud model={model} />

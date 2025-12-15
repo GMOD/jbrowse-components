@@ -18,7 +18,7 @@ interface BaseDisplayModel {
   drawn: boolean
   loading: boolean
   lastDrawnOffsetPx?: number
-  message?: string
+  statusMessage?: string
 }
 
 const useStyles = makeStyles()({
@@ -50,6 +50,7 @@ const BaseDisplayComponent = observer(function ({
   children?: React.ReactNode
 }) {
   const { error, regionTooLarge } = model
+  console.log('Alignments shared BaseDisplayComponent')
   return error ? (
     <Suspense fallback={null}>
       <BlockErrorMessage model={model} />
@@ -71,6 +72,7 @@ const DataDisplay = observer(function ({
   const { drawn, loading } = model
   const view = getContainingView(model) as LinearGenomeViewModel
   const left = (model.lastDrawnOffsetPx || 0) - view.offsetPx
+  console.log('Alignments shared DataDisplay', { left })
   return (
     // this data-testid is located here because changing props on the canvas
     // itself is very sensitive to triggering ref invalidation
@@ -83,11 +85,12 @@ const DataDisplay = observer(function ({
 
 const LoadingBar = observer(function ({ model }: { model: BaseDisplayModel }) {
   const { classes } = useStyles()
-  const { message } = model
+  const { statusMessage } = model
+  console.log('Alignments shared LoadingBar')
   return (
     <div className={classes.loading}>
       <div className={classes.loadingMessage}>
-        <LoadingEllipses message={message} />
+        <LoadingEllipses message={statusMessage} />
       </div>
     </div>
   )
