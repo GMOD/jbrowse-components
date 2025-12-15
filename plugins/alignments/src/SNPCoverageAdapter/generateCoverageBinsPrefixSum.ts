@@ -28,9 +28,9 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
-// Reusable change arrays for deletion prefix sums
-const MAX_REGION_SIZE = 1_000_000
-const deletionChanges = new Int32Array(MAX_REGION_SIZE + 1)
+// Reusable static buffer for deletion prefix sums (regions <= 1MB)
+const STATIC_BUFFER_SIZE = 1_000_001
+const staticDeletionChanges = new Int32Array(STATIC_BUFFER_SIZE)
 
 interface SparseSnpEntry {
   base: string
@@ -133,15 +133,29 @@ export async function generateCoverageBinsPrefixSum({
 
   // Step 2: Process mismatches with prefix sums for deletions
   checkStopToken(stopToken)
-  // Clear deletion changes buffer
-  deletionChanges.fill(0, 0, regionSize + 1)
+
+  // Use static buffer for small regions, dynamic allocation for large ones
+  let deletionChanges: Int32Array
+  if (regionSize < STATIC_BUFFER_SIZE) {
+    deletionChanges = staticDeletionChanges
+    deletionChanges.fill(0, 0, regionSize + 1)
+  } else {
+    deletionChanges = new Int32Array(regionSize + 1)
+  }
 
   const snpEvents: { pos: number; entry: SparseSnpEntry }[] = []
   const noncovEvents: { pos: number; entry: SparseNoncovEntry }[] = []
   const skipmap: SkipMap = {}
 
   for (let i = 0, l = features.length; i < l; i++) {
-    processFeature(region, features[i]!, skipmap, noncovEvents, snpEvents)
+    processFeature(
+      region,
+      features[i]!,
+      skipmap,
+      noncovEvents,
+      snpEvents,
+      deletionChanges,
+    )
   }
 
   // Compute deletion depth prefix sums
@@ -331,6 +345,7 @@ function processFeature(
   skipmap: SkipMap,
   noncovEvents: { pos: number; entry: SparseNoncovEntry }[],
   snpEvents: { pos: number; entry: SparseSnpEntry }[],
+  deletionChanges: Int32Array,
 ) {
   const fstart = feature.get('start')
   const fstrand = feature.get('strand') as -1 | 0 | 1

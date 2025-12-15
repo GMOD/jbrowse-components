@@ -19,13 +19,12 @@ export interface CoverageDepthSoA {
   strandMinus: Int32Array
 }
 
-// Reusable buffers - avoids allocation on every call
-// Size for up to 1MB regions (should cover most use cases)
-const MAX_REGION_SIZE = 1_000_000
+// Reusable static buffers for regions <= 1MB (avoids allocation on every call)
+const STATIC_BUFFER_SIZE = 1_000_001
 
-const depthChanges = new Int32Array(MAX_REGION_SIZE + 1)
-const strandPlusChanges = new Int32Array(MAX_REGION_SIZE + 1)
-const strandMinusChanges = new Int32Array(MAX_REGION_SIZE + 1)
+const staticDepthChanges = new Int32Array(STATIC_BUFFER_SIZE)
+const staticStrandPlusChanges = new Int32Array(STATIC_BUFFER_SIZE)
+const staticStrandMinusChanges = new Int32Array(STATIC_BUFFER_SIZE)
 
 /**
  * Process feature depth using prefix sums algorithm.
@@ -35,6 +34,8 @@ const strandMinusChanges = new Int32Array(MAX_REGION_SIZE + 1)
  * For 300x coverage with 50kb long reads over 100kb region:
  * - Original: O(600 × 50000) = 30M iterations
  * - This: O(600 + 100000) = 100k iterations
+ *
+ * Uses static buffers for regions <= 1MB, dynamic allocation for larger regions.
  */
 export function processDepthPrefixSum(
   features: Feature[],
@@ -44,16 +45,23 @@ export function processDepthPrefixSum(
   const regionEnd = region.end
   const regionSize = regionEnd - regionStart
 
-  if (regionSize > MAX_REGION_SIZE) {
-    throw new Error(
-      `Region size ${regionSize} exceeds maximum ${MAX_REGION_SIZE}`,
-    )
-  }
+  // Use static buffers for small regions, dynamic allocation for large ones
+  let depthChanges: Int32Array
+  let strandPlusChanges: Int32Array
+  let strandMinusChanges: Int32Array
 
-  // Clear only the portion we need (faster than creating new arrays)
-  depthChanges.fill(0, 0, regionSize + 1)
-  strandPlusChanges.fill(0, 0, regionSize + 1)
-  strandMinusChanges.fill(0, 0, regionSize + 1)
+  if (regionSize < STATIC_BUFFER_SIZE) {
+    depthChanges = staticDepthChanges
+    strandPlusChanges = staticStrandPlusChanges
+    strandMinusChanges = staticStrandMinusChanges
+    depthChanges.fill(0, 0, regionSize + 1)
+    strandPlusChanges.fill(0, 0, regionSize + 1)
+    strandMinusChanges.fill(0, 0, regionSize + 1)
+  } else {
+    depthChanges = new Int32Array(regionSize + 1)
+    strandPlusChanges = new Int32Array(regionSize + 1)
+    strandMinusChanges = new Int32Array(regionSize + 1)
+  }
 
   // Pass 1: Record depth changes at boundaries - O(features)
   for (const feature of features) {
