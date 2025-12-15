@@ -11,7 +11,7 @@ import {
 } from './util'
 import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
 import {
-  DELETION_TYPE,
+  DELSKIP_MASK,
   MISMATCH_MAP,
   MISMATCH_REV_MAP,
   SKIP_TYPE,
@@ -351,7 +351,7 @@ function processFeature(
     const mlen = mismatchLen(type, refLen)
     const mend = mstart + mlen
 
-    if (type === DELETION_TYPE || type === SKIP_TYPE) {
+    if ((1 << type) & DELSKIP_MASK) {
       const visStart = Math.max(mstart, regionStart) - regionStart
       const visEnd = Math.min(mend, regionEnd) - regionStart
 

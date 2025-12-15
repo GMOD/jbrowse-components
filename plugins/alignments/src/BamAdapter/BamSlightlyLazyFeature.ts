@@ -12,7 +12,7 @@ import {
 
 import type BamAdapter from './BamAdapter'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
-import type { Mismatch, MismatchType } from '../shared/types'
+import type { Mismatch } from '../shared/types'
 import type {
   Feature,
   SimpleFeatureSerialized,
@@ -43,7 +43,7 @@ export default class BamSlightlyLazyFeature
       const mismatches: Mismatch[] = []
       this.forEachMismatch(
         (type, start, length, base, qual, altbase, cliplen) => {
-          const typeStr = MISMATCH_MAP[type] as MismatchType
+          const typeStr = MISMATCH_MAP[type]!
           const mismatch: Mismatch = {
             start,
             length,

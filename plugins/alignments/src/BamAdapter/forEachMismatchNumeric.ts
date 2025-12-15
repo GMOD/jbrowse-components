@@ -33,8 +33,8 @@ import type { MismatchCallback } from '../shared/forEachMismatchTypes'
  * @param callback - Called for each mismatch/indel/clip
  */
 export function forEachMismatchNumeric(
-  cigar: Uint32Array,
-  numericSeq: Uint8Array,
+  cigar: ArrayLike<number>,
+  numericSeq: ArrayLike<number>,
   seqLength: number,
   md: ArrayLike<number> | undefined,
   qual: ArrayLike<number> | null | undefined,
@@ -153,6 +153,7 @@ export function forEachMismatchNumeric(
     } else if (op === CIGAR_D) {
       callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
 
+      // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
       if (hasMD && mdIdx < mdLength && md[mdIdx]! === 94) {
         mdIdx++
         while (mdIdx < mdLength && md[mdIdx]! >= 65) {

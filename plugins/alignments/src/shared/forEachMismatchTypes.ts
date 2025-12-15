@@ -14,6 +14,11 @@ export const HARDCLIP_TYPE = 5
 // = (1 << 1) | (1 << 4) | (1 << 5) = 2 | 16 | 32 = 50
 export const INTERBASE_MASK = 0b110010
 
+// Bitmask for deletion/skip types (deletion, skip)
+// These consume reference positions but not sequence positions
+// (1 << DELETION_TYPE) | (1 << SKIP_TYPE) = (1 << 2) | (1 << 3) = 4 | 8 = 12
+export const DELSKIP_MASK = 0b1100
+
 export const MISMATCH_MAP = [
   'mismatch',
   'insertion',

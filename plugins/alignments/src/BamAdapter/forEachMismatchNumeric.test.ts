@@ -66,6 +66,7 @@ function encodeCigar(cigar: string): Uint32Array {
 
 // Helper to encode MD string to bytes
 function encodeMD(md: string): Uint8Array {
+  // eslint-disable-next-line @typescript-eslint/no-misused-spread
   return new Uint8Array([...md].map(c => c.charCodeAt(0)))
 }
 

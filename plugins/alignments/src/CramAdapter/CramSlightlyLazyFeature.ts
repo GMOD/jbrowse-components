@@ -14,7 +14,7 @@ import { cacheGetter } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
-import type { Mismatch, MismatchType } from '../shared/types'
+import type { Mismatch } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -162,27 +162,29 @@ export default class CramSlightlyLazyFeature implements Feature {
 
   get mismatches() {
     const mismatches: Mismatch[] = []
-    this.forEachMismatch((type, start, length, base, qual, altbase, cliplen) => {
-      const typeStr = MISMATCH_MAP[type] as MismatchType
-      const mismatch: Mismatch = {
-        start,
-        length,
-        type: typeStr,
-        base,
-        qual: qual !== undefined && qual >= 0 ? qual : undefined,
-      }
-      if (altbase !== undefined && altbase > 0) {
-        mismatch.altbase = CHAR_FROM_CODE[altbase]
-      }
-      if (type === INSERTION_TYPE) {
-        mismatch.insertedBases = base
-        mismatch.base = `${cliplen}`
-      }
-      if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
-        mismatch.cliplen = cliplen
-      }
-      mismatches.push(mismatch)
-    })
+    this.forEachMismatch(
+      (type, start, length, base, qual, altbase, cliplen) => {
+        const typeStr = MISMATCH_MAP[type]!
+        const mismatch: Mismatch = {
+          start,
+          length,
+          type: typeStr,
+          base,
+          qual: qual !== undefined && qual >= 0 ? qual : undefined,
+        }
+        if (altbase !== undefined && altbase > 0) {
+          mismatch.altbase = CHAR_FROM_CODE[altbase]
+        }
+        if (type === INSERTION_TYPE) {
+          mismatch.insertedBases = base
+          mismatch.base = `${cliplen}`
+        }
+        if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
+          mismatch.cliplen = cliplen
+        }
+        mismatches.push(mismatch)
+      },
+    )
     return mismatches
   }
 
