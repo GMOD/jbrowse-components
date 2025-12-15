@@ -12,7 +12,7 @@ export type SerializedFilterChain = string[]
 export default class SerializableFilterChain {
   filterChain: Filter[]
 
-  constructor({ filters = [] }: { filters: SerializedFilterChain }) {
+  constructor({ filters }: { filters: SerializedFilterChain }) {
     this.filterChain = filters
       .map(f => f.trim())
       .filter(f => !!f)

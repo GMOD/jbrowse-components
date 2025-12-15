@@ -13,8 +13,6 @@ export interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters?: SerializableFilterChain
-  // TODO: Uncomment when ready to enable layout cache invalidation on navigation
-  // navigationEpoch?: number
 }
 
 export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
@@ -50,8 +48,6 @@ export class LayoutSession {
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
     return (
       cachedLayout.props.bpPerPx === this.props.bpPerPx &&
-      // TODO: Uncomment when ready to enable layout cache invalidation on navigation
-      // cachedLayout.props.navigationEpoch === this.props.navigationEpoch &&
       deepEqual(
         readConfObject(this.props.config),
         readConfObject(cachedLayout.props.config),

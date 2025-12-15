@@ -38,8 +38,8 @@ export interface Source {
  *   - inverted (boolean)
  */
 export function getScale({
-  domain = [],
-  range = [],
+  domain,
+  range,
   scaleType,
   pivotValue,
   inverted,

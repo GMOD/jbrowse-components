@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -70,9 +70,14 @@ const HierarchicalTrackSelector = observer(function ({
   toolbarHeight?: number
 }) {
   const [headerHeight, setHeaderHeight] = useState(0)
+  const [, startTransition] = useTransition()
   return (
     <>
-      <HierarchicalHeader model={model} setHeaderHeight={setHeaderHeight} />
+      <HierarchicalHeader
+        model={model}
+        setHeaderHeight={setHeaderHeight}
+        startTransition={startTransition}
+      />
       <AutoSizedHierarchicalTree
         model={model}
         offset={toolbarHeight + headerHeight}

@@ -24,7 +24,7 @@ export function getMultiVariantFeaturesAutorun(self: {
   adapterProps: () => Record<string, unknown>
   setError: (error: unknown) => void
   setFeatures: (f: Feature[]) => void
-  setMessage: (str: string) => void
+  setStatusMessage: (str: string) => void
   setHasPhased: (arg: boolean) => void
   setSampleInfo: (arg: Record<string, SampleInfo>) => void
   setSimplifiedFeaturesLoading: (arg: string) => void
@@ -64,6 +64,11 @@ export function getMultiVariantFeaturesAutorun(self: {
                 sessionId,
                 adapterConfig,
                 stopToken,
+                statusCallback: (arg: string) => {
+                  if (isAlive(self)) {
+                    self.setStatusMessage(arg)
+                  }
+                },
               },
             )) as {
               sampleInfo: Record<string, SampleInfo>

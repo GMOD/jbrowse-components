@@ -589,7 +589,11 @@ export function renameRegionIfNeeded(
     // modify it directly in the container
     const newRef = refNameMap[region.refName]
     if (newRef) {
-      return { ...region, refName: newRef, originalRefName: region.refName }
+      return {
+        ...region,
+        refName: newRef,
+        originalRefName: region.refName,
+      }
     }
   }
   return region
@@ -888,12 +892,12 @@ export function generateCodonTable(table: any) {
 // call statusCallback with current status and clear when finished
 export async function updateStatus<U>(
   msg: string,
-  cb: (arg: string) => void,
+  cb: ((arg: string) => void) | undefined,
   fn: () => U | Promise<U>,
 ) {
-  cb(msg)
+  cb?.(msg)
   const res = await fn()
-  cb('')
+  cb?.('')
   return res
 }
 
@@ -1008,7 +1012,7 @@ export function getProgressDisplayStr(current: number, total: number) {
   } else if (Math.floor(total / 1_000) > 0) {
     return `${reducePrecision(current / 1_000)}/${reducePrecision(total / 1_000)}Kb`
   } else {
-    return `${reducePrecision(current)}/${reducePrecision(total)}}bytes`
+    return `${reducePrecision(current)}/${reducePrecision(total)} bytes`
   }
 }
 
