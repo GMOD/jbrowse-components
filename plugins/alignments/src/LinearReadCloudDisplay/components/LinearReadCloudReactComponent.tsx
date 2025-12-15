@@ -99,10 +99,10 @@ const FeatureHighlights = observer(function ({
 })
 
 const CloudCanvases = observer(function ({
+  model,
   canvasWidth,
   height,
   canvasLeft,
-  model,
 }: {
   canvasWidth: number
   height: number
@@ -216,24 +216,16 @@ const Cloud = observer(function ({
     return null
   }, [model.selectedFeatureId, model.featuresForFlatbush])
 
-  const onMouseMove = useCallback(
+  const getFeatureUnderMouse = useCallback(
     (event: React.MouseEvent) => {
       if (!containerRef.current || !flatbushIndex) {
-        setHoveredFeature(undefined)
-        setHoveredFeatureData(undefined)
-        setMousePosition(undefined)
-        return
+        return { feature: undefined, position: undefined }
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      // Adjust for canvas position when offsetPx < 0
       const offsetX = event.clientX - rect.left - canvasLeft
       const offsetY = event.clientY - rect.top
 
-      // Track mouse position for tooltip
-      setMousePosition({ x: event.clientX, y: event.clientY })
-
-      // Search for features at this position
       const results = flatbushIndex.search(
         offsetX,
         offsetY,
@@ -244,26 +236,39 @@ const Cloud = observer(function ({
       if (results.length > 0) {
         const featureIndex = results[0]!
         const feature = model.featuresForFlatbush[featureIndex]
+        return { feature, position: { x: event.clientX, y: event.clientY } }
+      }
 
-        if (feature) {
-          // Highlight the entire chain instead of just the individual feature
-          setHoveredFeature({
-            x: feature.chainMinX,
-            y: feature.y1,
-            width: feature.chainMaxX - feature.chainMinX,
-            height: feature.y2 - feature.y1,
-          })
-          setHoveredFeatureData(feature.data)
-        } else {
-          setHoveredFeature(undefined)
-          setHoveredFeatureData(undefined)
-        }
+      return { feature: undefined, position: undefined }
+    },
+    [containerRef, flatbushIndex, model.featuresForFlatbush, canvasLeft],
+  )
+
+  const onMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      const { feature, position } = getFeatureUnderMouse(event)
+
+      if (feature) {
+        setHoveredFeature({
+          x: feature.chainMinX,
+          y: feature.y1,
+          width: feature.chainMaxX - feature.chainMinX,
+          height: feature.y2 - feature.y1,
+        })
+        setHoveredFeatureData(feature.data)
+        setMousePosition(position)
       } else {
         setHoveredFeature(undefined)
         setHoveredFeatureData(undefined)
+        setMousePosition(undefined)
       }
     },
-    [flatbushIndex, model.featuresForFlatbush, canvasLeft],
+    [
+      getFeatureUnderMouse,
+      setHoveredFeature,
+      setHoveredFeatureData,
+      setMousePosition,
+    ],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -274,38 +279,16 @@ const Cloud = observer(function ({
 
   const onClick = useCallback(
     (event: React.MouseEvent) => {
-      if (!containerRef.current || !flatbushIndex) {
-        return
-      }
+      const { feature } = getFeatureUnderMouse(event)
 
-      const rect = containerRef.current.getBoundingClientRect()
-      // Adjust for canvas position when offsetPx < 0
-      const offsetX = event.clientX - rect.left - canvasLeft
-      const offsetY = event.clientY - rect.top
-
-      // Search for features at this position
-      const results = flatbushIndex.search(
-        offsetX,
-        offsetY,
-        offsetX + 1,
-        offsetY + 1,
-      )
-
-      if (results.length > 0) {
-        const featureIndex = results[0]!
-        const feature = model.featuresForFlatbush[featureIndex]
-
-        if (feature) {
-          model.selectFeature(feature.chain)
-          // Store the chain ID for persistent highlighting
-          model.setSelectedFeatureId(feature.chainId)
-        }
+      if (feature) {
+        model.selectFeature(feature.chain)
+        model.setSelectedFeatureId(feature.chainId)
       } else {
-        // Clear selection when clicking on empty area
         model.setSelectedFeatureId(undefined)
       }
     },
-    [flatbushIndex, model, canvasLeft],
+    [getFeatureUnderMouse, model],
   )
 
   // note: the position absolute below avoids scrollbar from appearing on track

@@ -71,14 +71,22 @@ const DataDisplay = observer(function ({
 }) {
   const { drawn, loading } = model
   const view = getContainingView(model) as LinearGenomeViewModel
-  const left = (model.lastDrawnOffsetPx || 0) - view.offsetPx
-  console.log('Alignments shared DataDisplay', { left })
+  const calculatedLeft = (model.lastDrawnOffsetPx || 0) - view.offsetPx
+  const styleLeft = view.offsetPx < 0 ? 0 : calculatedLeft
+
   return (
     // this data-testid is located here because changing props on the canvas
     // itself is very sensitive to triggering ref invalidation
     <div data-testid={`drawn-${drawn}`}>
-      <div style={{ position: 'absolute', left }}>{children}</div>
-      {left !== 0 || loading ? <LoadingBar model={model} /> : null}
+      <div
+        style={{
+          position: 'absolute',
+          left: styleLeft,
+        }}
+      >
+        {children}
+      </div>
+      {calculatedLeft !== 0 || loading ? <LoadingBar model={model} /> : null}
     </div>
   )
 })
