@@ -12,6 +12,13 @@ import {
   CIGAR_X,
   SEQRET,
 } from '../PileupRenderer/renderers/cigarUtil'
+
+// Numeric decoder - returns char codes directly (lowercase for case-insensitive comparison)
+// '=' = 61, 'a' = 97, 'c' = 99, 'm' = 109, 'g' = 103, 'r' = 114, 's' = 115, 'v' = 118,
+// 't' = 116, 'w' = 119, 'y' = 121, 'h' = 104, 'k' = 107, 'd' = 100, 'b' = 98, 'n' = 110
+const SEQRET_NUMERIC_DECODER = new Uint8Array([
+  61, 97, 99, 109, 103, 114, 115, 118, 116, 119, 121, 104, 107, 100, 98, 110,
+])
 import { decodeSeq } from '../shared/decodeSeq'
 import {
   DELETION_TYPE,
@@ -67,6 +74,7 @@ export default class BamSlightlyLazyFeature
     const seqLength = this.seq_length
     const md = this.NUMERIC_MD
     const qual = this.qual
+    const ref = this.ref
 
     const mdLength = md?.length ?? 0
     const hasQual = !!qual
@@ -140,6 +148,28 @@ export default class BamSlightlyLazyFeature
               } else {
                 break
               }
+            }
+          }
+        } else if (ref) {
+          // No MD tag - compare against reference sequence
+          const safeEnd = soffset + len <= seqLength ? len : seqLength - soffset
+          for (let j = 0; j < safeEnd; j++) {
+            const seqIdx = soffset + j
+            const sb = numericSeq[seqIdx >> 1]!
+            const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
+            const seqBaseCode = SEQRET_NUMERIC_DECODER[nibble]!
+            // Compare case-insensitively (| 0x20 converts uppercase to lowercase)
+            const refBaseCode = ref.charCodeAt(roffset + j) | 0x20
+            if (seqBaseCode !== refBaseCode) {
+              callback(
+                MISMATCH_TYPE,
+                roffset + j,
+                1,
+                SEQRET[nibble]!,
+                hasQual ? qual[seqIdx]! : -1,
+                ref.charCodeAt(roffset + j),
+                0,
+              )
             }
           }
         }
