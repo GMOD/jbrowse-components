@@ -1,6 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
+import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil'
+import { renderModifications } from '../PileupRenderer/renderers/renderModifications'
 import {
   getCharWidthHeight,
   getColorBaseMap,
@@ -10,8 +12,8 @@ import {
   shouldDrawSNPsMuted,
 } from '../shared/util'
 
-import type { ColorBy } from '../shared/types'
-import type { FlatbushItem } from '../PileupRenderer/types'
+import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
+import type { FlatbushItem, LayoutFeature } from '../PileupRenderer/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -104,4 +106,59 @@ export function featureOverlapsRegion(
     featStart < region.end &&
     featEnd > region.start
   )
+}
+
+export function renderFeatureModifications({
+  ctx,
+  feat,
+  layoutFeat,
+  region,
+  regionStartPx,
+  bpPerPx,
+  colorBy,
+  visibleModifications,
+  allCoords,
+  allItems,
+}: {
+  ctx: CanvasRenderingContext2D
+  feat: Feature
+  layoutFeat: LayoutFeature
+  region: BaseBlock
+  regionStartPx: number
+  bpPerPx: number
+  colorBy: ColorBy
+  visibleModifications?: Record<string, ModificationTypeWithColor>
+  allCoords: number[]
+  allItems: FlatbushItem[]
+}) {
+  if (colorBy.type !== 'modifications' || !visibleModifications) {
+    return
+  }
+
+  const cigarOps = getCigarOps(
+    feat.get('NUMERIC_CIGAR') || feat.get('CIGAR'),
+  )
+  const modRet = renderModifications({
+    ctx,
+    feat: layoutFeat,
+    region,
+    bpPerPx,
+    renderArgs: {
+      colorBy,
+      visibleModifications,
+    },
+    cigarOps,
+  })
+
+  for (let i = 0; i < modRet.coords.length; i += 4) {
+    allCoords.push(
+      modRet.coords[i]! + regionStartPx,
+      modRet.coords[i + 1]!,
+      modRet.coords[i + 2]! + regionStartPx,
+      modRet.coords[i + 3]!,
+    )
+  }
+  for (const item of modRet.items) {
+    allItems.push(item)
+  }
 }

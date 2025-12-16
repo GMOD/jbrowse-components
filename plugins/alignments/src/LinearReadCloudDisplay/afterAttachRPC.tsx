@@ -12,7 +12,7 @@ import {
   buildFlatbushIndex,
   buildMismatchFlatbushIndex,
 } from './drawFeatsCommon'
-import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { setupModificationsAutorun } from '../shared/setupModificationsAutorun'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { FlatbushEntry } from '../shared/flatbushType'
@@ -220,31 +220,8 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
   )
 
   // Autorun to discover modifications in the visible region
-  createAutorun(
-    self,
-    async () => {
-      const view = getContainingView(self) as LGV
-      if (!view.initialized || !self.featureDensityStatsReadyAndRegionNotTooLarge) {
-        return
-      }
-
-      const { adapterConfig } = self
-      const { staticBlocks } = view
-      const { modifications, simplexModifications } =
-        await getUniqueModifications({
-          model: self,
-          adapterConfig,
-          blocks: staticBlocks,
-        })
-      if (isAlive(self)) {
-        self.updateVisibleModifications(modifications)
-        self.setSimplexModifications(simplexModifications)
-        self.setModificationsReady(true)
-      }
-    },
-    {
-      delay: 1000,
-      name: 'GetModInfo',
-    },
-  )
+  setupModificationsAutorun(self, () => {
+    const view = getContainingView(self) as LGV
+    return view.initialized && self.featureDensityStatsReadyAndRegionNotTooLarge
+  })
 }

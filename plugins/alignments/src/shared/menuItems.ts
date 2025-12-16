@@ -17,20 +17,29 @@ interface LinearReadDisplayModel {
   setColorScheme: (colorBy: ColorBy) => void
 }
 
-interface LinearReadDisplayModelWithModifications extends LinearReadDisplayModel {
+export interface ModificationsModel extends LinearReadDisplayModel {
   modificationsReady: boolean
   visibleModificationTypes: string[]
   modificationThreshold: number
   colorBy?: ColorBy
 }
 
-function hasModificationsSupport(
+export function hasModificationsSupport(
   model: LinearReadDisplayModel,
-): model is LinearReadDisplayModelWithModifications {
+): model is ModificationsModel {
   return 'modificationsReady' in model && 'visibleModificationTypes' in model
 }
 
-function getModificationsSubMenu(model: LinearReadDisplayModelWithModifications) {
+export interface ModificationsMenuOptions {
+  includeMethylation?: boolean
+}
+
+export function getModificationsSubMenu(
+  model: ModificationsModel,
+  options: ModificationsMenuOptions = {},
+) {
+  const { includeMethylation = false } = options
+
   if (!model.modificationsReady) {
     return [
       {
@@ -39,6 +48,23 @@ function getModificationsSubMenu(model: LinearReadDisplayModelWithModifications)
       },
     ]
   }
+
+  const methylationItems = includeMethylation
+    ? [
+        { type: 'divider' as const },
+        {
+          label: 'All reference CpGs',
+          onClick: () => {
+            model.setColorScheme({
+              type: 'methylation',
+              modifications: {
+                threshold: model.modificationThreshold,
+              },
+            })
+          },
+        },
+      ]
+    : []
 
   return [
     {
@@ -90,6 +116,7 @@ function getModificationsSubMenu(model: LinearReadDisplayModelWithModifications)
         })
       },
     })),
+    ...methylationItems,
     { type: 'divider' as const },
     {
       label: `Adjust threshold (${model.modificationThreshold}%)`,
@@ -102,6 +129,17 @@ function getModificationsSubMenu(model: LinearReadDisplayModelWithModifications)
       },
     },
   ]
+}
+
+export function getModificationsMenuItem(
+  model: ModificationsModel,
+  options: ModificationsMenuOptions = {},
+) {
+  return {
+    label: 'Modifications',
+    type: 'subMenu' as const,
+    subMenu: getModificationsSubMenu(model, options),
+  }
 }
 
 /**
@@ -136,13 +174,7 @@ export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
   ]
 
   const modificationsItem = hasModificationsSupport(model)
-    ? [
-        {
-          label: 'Modifications',
-          type: 'subMenu' as const,
-          subMenu: getModificationsSubMenu(model),
-        },
-      ]
+    ? [getModificationsMenuItem(model)]
     : []
 
   return {

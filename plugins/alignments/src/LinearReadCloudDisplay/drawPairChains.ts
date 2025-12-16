@@ -1,8 +1,6 @@
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
-import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil'
 import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
-import { renderModifications } from '../PileupRenderer/renderers/renderModifications'
 import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import { getPairedColor } from '../shared/color'
@@ -12,6 +10,7 @@ import {
   collectNonSupplementary,
   featureOverlapsRegion,
   getMismatchRenderingConfig,
+  renderFeatureModifications,
 } from './drawChainsUtil'
 
 import type { MismatchData } from './drawChainsUtil'
@@ -196,36 +195,18 @@ export function drawPairChains({
         allItems.push(item)
       }
 
-      // Render modifications if colorBy type is 'modifications'
-      if (colorBy.type === 'modifications' && visibleModifications) {
-        const cigarOps = getCigarOps(
-          feat.get('NUMERIC_CIGAR') || feat.get('CIGAR'),
-        )
-        const modRet = renderModifications({
-          ctx,
-          feat: layoutFeat,
-          region,
-          bpPerPx,
-          renderArgs: {
-            colorBy,
-            visibleModifications,
-          },
-          cigarOps,
-        })
-
-        // Adjust modification coordinates from region-relative to global canvas space
-        for (let i = 0; i < modRet.coords.length; i += 4) {
-          allCoords.push(
-            modRet.coords[i]! + regionStartPx,
-            modRet.coords[i + 1]!,
-            modRet.coords[i + 2]! + regionStartPx,
-            modRet.coords[i + 3]!,
-          )
-        }
-        for (const item of modRet.items) {
-          allItems.push(item)
-        }
-      }
+      renderFeatureModifications({
+        ctx,
+        feat,
+        layoutFeat,
+        region,
+        regionStartPx,
+        bpPerPx,
+        colorBy,
+        visibleModifications,
+        allCoords,
+        allItems,
+      })
     }
   })
 
