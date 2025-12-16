@@ -22,11 +22,11 @@ import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
-import { modificationData } from '../shared/modificationData'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
 } from '../shared/menuItems'
+import { modificationData } from '../shared/modificationData'
 
 import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

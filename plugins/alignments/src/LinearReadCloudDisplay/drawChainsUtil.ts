@@ -2,6 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil'
+import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
 import { renderModifications } from '../PileupRenderer/renderers/renderModifications'
 import {
   getCharWidthHeight,
@@ -12,8 +13,8 @@ import {
   shouldDrawSNPsMuted,
 } from '../shared/util'
 
-import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { FlatbushItem, LayoutFeature } from '../PileupRenderer/types'
+import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -108,6 +109,25 @@ export function featureOverlapsRegion(
   )
 }
 
+export function aggregateMismatchData(
+  ret: MismatchData,
+  regionStartPx: number,
+  allCoords: number[],
+  allItems: FlatbushItem[],
+) {
+  for (let i = 0; i < ret.coords.length; i += 4) {
+    allCoords.push(
+      ret.coords[i]! + regionStartPx,
+      ret.coords[i + 1]!,
+      ret.coords[i + 2]! + regionStartPx,
+      ret.coords[i + 3]!,
+    )
+  }
+  for (const item of ret.items) {
+    allItems.push(item)
+  }
+}
+
 export function renderFeatureModifications({
   ctx,
   feat,
@@ -135,9 +155,7 @@ export function renderFeatureModifications({
     return
   }
 
-  const cigarOps = getCigarOps(
-    feat.get('NUMERIC_CIGAR') || feat.get('CIGAR'),
-  )
+  const cigarOps = getCigarOps(feat.get('NUMERIC_CIGAR') || feat.get('CIGAR'))
   const modRet = renderModifications({
     ctx,
     feat: layoutFeat,
@@ -150,15 +168,57 @@ export function renderFeatureModifications({
     cigarOps,
   })
 
-  for (let i = 0; i < modRet.coords.length; i += 4) {
-    allCoords.push(
-      modRet.coords[i]! + regionStartPx,
-      modRet.coords[i + 1]!,
-      modRet.coords[i + 2]! + regionStartPx,
-      modRet.coords[i + 3]!,
-    )
-  }
-  for (const item of modRet.items) {
-    allItems.push(item)
-  }
+  aggregateMismatchData(modRet, regionStartPx, allCoords, allItems)
+}
+
+export function renderFeatureMismatchesAndModifications({
+  ctx,
+  feat,
+  layoutFeat,
+  region,
+  regionStartPx,
+  bpPerPx,
+  canvasWidth,
+  colorBy,
+  visibleModifications,
+  mismatchConfig,
+  allCoords,
+  allItems,
+}: {
+  ctx: CanvasRenderingContext2D
+  feat: Feature
+  layoutFeat: LayoutFeature
+  region: BaseBlock
+  regionStartPx: number
+  bpPerPx: number
+  canvasWidth: number
+  colorBy: ColorBy
+  visibleModifications?: Record<string, ModificationTypeWithColor>
+  mismatchConfig: MismatchRenderingConfig
+  allCoords: number[]
+  allItems: FlatbushItem[]
+}) {
+  const ret = renderMismatchesCallback({
+    ctx,
+    feat: layoutFeat,
+    checkRef: true,
+    bpPerPx,
+    regions: [region],
+    canvasWidth,
+    ...mismatchConfig,
+  })
+  aggregateMismatchData(ret, regionStartPx, allCoords, allItems)
+
+  renderFeatureModifications({
+    ctx,
+    feat,
+    layoutFeat,
+    region,
+    regionStartPx,
+    bpPerPx,
+    colorBy,
+    visibleModifications,
+    allCoords,
+    allItems,
+  })
 }

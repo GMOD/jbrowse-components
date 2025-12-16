@@ -1,22 +1,25 @@
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
-import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
-import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { drawChevron } from '../shared/chevron'
-import { getPairedColor } from '../shared/color'
-import { CHEVRON_WIDTH } from '../shared/util'
 import {
   chainIsPairedEnd,
   collectNonSupplementary,
   featureOverlapsRegion,
   getMismatchRenderingConfig,
-  renderFeatureModifications,
+  renderFeatureMismatchesAndModifications,
 } from './drawChainsUtil'
+import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
+import { getPairedColor } from '../shared/color'
+import { CHEVRON_WIDTH } from '../shared/util'
 
 import type { MismatchData } from './drawChainsUtil'
 import type { ComputedChain } from './drawFeatsCommon'
-import type { ChainData, ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { FlatbushItem } from '../PileupRenderer/types'
+import type {
+  ChainData,
+  ColorBy,
+  ModificationTypeWithColor,
+} from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
@@ -172,38 +175,17 @@ export function drawPairChains({
         strokeRectCtx(drawX, drawY, drawWidth, featureHeight, ctx, pairedStroke)
       }
 
-      const ret = renderMismatchesCallback({
-        ctx,
-        feat: layoutFeat,
-        bpPerPx,
-        regions: [region],
-        canvasWidth,
-        checkRef: true,
-        ...mismatchConfig,
-      })
-
-      // Adjust coordinates from region-relative to global canvas space
-      for (let i = 0; i < ret.coords.length; i += 4) {
-        allCoords.push(
-          ret.coords[i]! + regionStartPx,
-          ret.coords[i + 1]!,
-          ret.coords[i + 2]! + regionStartPx,
-          ret.coords[i + 3]!,
-        )
-      }
-      for (const item of ret.items) {
-        allItems.push(item)
-      }
-
-      renderFeatureModifications({
+      renderFeatureMismatchesAndModifications({
         ctx,
         feat,
         layoutFeat,
         region,
         regionStartPx,
         bpPerPx,
+        canvasWidth,
         colorBy,
         visibleModifications,
+        mismatchConfig,
         allCoords,
         allItems,
       })

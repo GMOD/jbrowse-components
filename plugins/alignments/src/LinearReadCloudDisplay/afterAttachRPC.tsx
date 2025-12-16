@@ -15,8 +15,8 @@ import {
 import { setupModificationsAutorun } from '../shared/setupModificationsAutorun'
 
 import type { LinearReadCloudDisplayModel } from './model'
-import type { FlatbushEntry } from '../shared/flatbushType'
 import type { FlatbushItem } from '../PileupRenderer/types'
+import type { FlatbushEntry } from '../shared/flatbushType'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -112,7 +112,9 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           drawProperPairs,
           flipStrandLongReadChains,
           trackMaxHeight,
-          visibleModifications: Object.fromEntries(visibleModifications.toJSON()),
+          visibleModifications: Object.fromEntries(
+            visibleModifications.toJSON(),
+          ),
           ...(drawCloud && { cloudModeHeight: height }),
           highResolutionScaling: 2,
           rpcDriverName: self.effectiveRpcDriverName,

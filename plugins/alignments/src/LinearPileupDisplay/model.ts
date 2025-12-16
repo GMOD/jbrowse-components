@@ -306,7 +306,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Modifications',
                   type: 'subMenu',
-                  subMenu: getModificationsSubMenu(self, { includeMethylation: true }),
+                  subMenu: getModificationsSubMenu(self, {
+                    includeMethylation: true,
+                  }),
                 },
                 {
                   label: 'Insert size',

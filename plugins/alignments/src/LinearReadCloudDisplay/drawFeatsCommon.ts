@@ -8,9 +8,13 @@ import { PairType, getPairedType } from '../shared/color'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
-import type { FlatbushEntry } from '../shared/flatbushType'
 import type { FlatbushItem } from '../PileupRenderer/types'
-import type { ChainData, ColorBy, ModificationTypeWithColor } from '../shared/types'
+import type { FlatbushEntry } from '../shared/flatbushType'
+import type {
+  ChainData,
+  ColorBy,
+  ModificationTypeWithColor,
+} from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -426,8 +430,8 @@ export function drawFeatsCore({
       mismatchFlatbush.add(
         mismatchCoords[i]!,
         mismatchCoords[i + 1]!,
-        mismatchCoords[i + 2]!,
-        mismatchCoords[i + 3]!,
+        mismatchCoords[i + 2],
+        mismatchCoords[i + 3],
       )
     }
   } else {
