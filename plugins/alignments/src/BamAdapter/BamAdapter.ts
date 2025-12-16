@@ -6,7 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { filterReadFlag, filterTagValue, parseSamHeader } from '../shared/util'
+import { parseSamHeader } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
 import type { ParsedSamHeader } from '../shared/util'
@@ -114,28 +114,14 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const records = await updateStatus(
         'Downloading alignments',
         statusCallback,
-        () => bam.getRecordsForRange(refName, start, end),
+        () => bam.getRecordsForRange(refName, start, end, { filterBy }),
       )
       checkStopToken(stopToken)
 
       await updateStatus('Processing alignments', statusCallback, async () => {
-        const {
-          flagInclude = 0,
-          flagExclude = 0,
-          tagFilter,
-          readName,
-        } = filterBy || {}
+        const { readName } = filterBy || {}
 
         for (const record of records) {
-          if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
-            continue
-          }
-          if (
-            tagFilter &&
-            filterTagValue(record.tags[tagFilter.tag], tagFilter.value)
-          ) {
-            continue
-          }
           if (readName && record.name !== readName) {
             continue
           }

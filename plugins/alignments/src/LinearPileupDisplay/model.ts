@@ -14,7 +14,7 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
-import { modificationData } from '../shared/modificationData'
+import { getModificationsSubMenu } from '../shared/menuItems'
 
 import type { SortedBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -24,9 +24,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // lazies
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
-const SetModificationThresholdDialog = lazy(
-  () => import('./components/SetModificationThresholdDialog'),
-)
 
 type LGV = LinearGenomeViewModel
 
@@ -309,89 +306,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Modifications',
                   type: 'subMenu',
-                  subMenu: self.modificationsReady
-                    ? [
-                        {
-                          label: `All modifications (>= ${self.modificationThreshold}% prob)`,
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        },
-                        ...self.visibleModificationTypes.map(key => ({
-                          label: `Show only ${modificationData[key]?.name || key}  (>= ${self.modificationThreshold}% prob)`,
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                isolatedModification: key,
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        })),
-                        { type: 'divider' },
-                        {
-                          label: 'All modifications (<50% prob colored blue)',
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                twoColor: true,
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        },
-                        ...self.visibleModificationTypes.map(key => ({
-                          label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                isolatedModification: key,
-                                twoColor: true,
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        })),
-                        { type: 'divider' },
-                        {
-                          label: 'All reference CpGs',
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'methylation',
-                              modifications: {
-                                threshold: self.modificationThreshold,
-                              },
-                            })
-                          },
-                        },
-                        { type: 'divider' },
-                        {
-                          label: `Adjust threshold (${self.modificationThreshold}%)`,
-                          onClick: () => {
-                            getSession(self).queueDialog(handleClose => [
-                              SetModificationThresholdDialog,
-                              {
-                                model: self,
-                                handleClose,
-                              },
-                            ])
-                          },
-                        },
-                      ]
-                    : [
-                        {
-                          label: 'Loading modifications...',
-                          onClick: () => {},
-                        },
-                      ],
+                  subMenu: getModificationsSubMenu(self, {
+                    includeMethylation: true,
+                  }),
                 },
                 {
                   label: 'Insert size',

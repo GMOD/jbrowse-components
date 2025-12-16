@@ -3,7 +3,7 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
 import configSchema from '../LinearReadCloudDisplay/configSchema'
 
-import type { ColorBy } from '../shared/types'
+import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ThemeOptions } from '@mui/material'
@@ -29,6 +29,7 @@ export interface RenderLinearReadCloudDisplayArgs {
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
   statusCallback?: (status: string) => void
   stopToken?: string
+  visibleModifications?: Record<string, ModificationTypeWithColor>
 }
 
 export default class RenderLinearReadCloudDisplay extends RpcMethodType {

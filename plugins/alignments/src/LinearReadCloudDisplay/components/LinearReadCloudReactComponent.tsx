@@ -7,13 +7,14 @@ import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
+import type { FlatbushItem } from '../../PileupRenderer/types'
 import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-function Tooltip({
+function FeatureTooltip({
   hoveredFeatureData,
   mousePosition,
 }: {
@@ -38,6 +39,36 @@ function Tooltip({
         <div>{assembleLocString(hoveredFeatureData)}</div>
         {hoveredFeatureData.tlen !== 0 ? (
           <div>Template length: {hoveredFeatureData.tlen}</div>
+        ) : null}
+      </div>
+    </BaseTooltip>
+  )
+}
+
+function MismatchTooltip({
+  mismatchData,
+  mousePosition,
+}: {
+  mismatchData: FlatbushItem
+  mousePosition: { x: number; y: number }
+}) {
+  const { type, seq, modType, probability } = mismatchData
+  return (
+    <BaseTooltip
+      clientPoint={{
+        x: mousePosition.x,
+        y: mousePosition.y + 20,
+      }}
+      placement="bottom-start"
+    >
+      <div>
+        <div>
+          <strong>{type}</strong>
+        </div>
+        {seq ? <div>Sequence: {seq}</div> : null}
+        {modType ? <div>Modification: {modType}</div> : null}
+        {probability !== undefined ? (
+          <div>Probability: {(probability * 100).toFixed(1)}%</div>
         ) : null}
       </div>
     </BaseTooltip>
@@ -183,6 +214,7 @@ const Cloud = observer(function ({
     height: number
   }>()
   const [hoveredFeatureData, setHoveredFeatureData] = useState<ReducedFeature>()
+  const [hoveredMismatchData, setHoveredMismatchData] = useState<FlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
     x: number
     y: number
@@ -192,6 +224,13 @@ const Cloud = observer(function ({
   const flatbushIndex = useMemo(() => {
     return model.featureLayout ? Flatbush.from(model.featureLayout.data) : null
   }, [model.featureLayout])
+
+  // Convert mismatch flatbush data to Flatbush instance
+  const mismatchFlatbushIndex = useMemo(() => {
+    return model.mismatchLayout
+      ? Flatbush.from(model.mismatchLayout.data)
+      : null
+  }, [model.mismatchLayout])
 
   // Look up the bounds of the selected feature by ID
   const selectedFeatureBounds = useMemo(() => {
@@ -244,9 +283,48 @@ const Cloud = observer(function ({
     [containerRef, flatbushIndex, model.featuresForFlatbush, canvasLeft],
   )
 
+  const getMismatchUnderMouse = useCallback(
+    (event: React.MouseEvent) => {
+      if (!containerRef.current || !mismatchFlatbushIndex) {
+        return undefined
+      }
+
+      const rect = containerRef.current.getBoundingClientRect()
+      const offsetX = event.clientX - rect.left - canvasLeft
+      const offsetY = event.clientY - rect.top
+
+      const results = mismatchFlatbushIndex.search(
+        offsetX,
+        offsetY,
+        offsetX + 1,
+        offsetY + 1,
+      )
+
+      if (results.length > 0) {
+        const mismatchIndex = results[0]!
+        return model.mismatchItems[mismatchIndex]
+      }
+
+      return undefined
+    },
+    [containerRef, mismatchFlatbushIndex, model.mismatchItems, canvasLeft],
+  )
+
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
+      // Check for mismatch first (higher priority for small targets)
+      const mismatch = getMismatchUnderMouse(event)
+      if (mismatch) {
+        setHoveredMismatchData(mismatch)
+        setHoveredFeature(undefined)
+        setHoveredFeatureData(undefined)
+        setMousePosition({ x: event.clientX, y: event.clientY })
+        return
+      }
+
+      // Fall back to feature hover
       const { feature, position } = getFeatureUnderMouse(event)
+      setHoveredMismatchData(undefined)
 
       if (feature) {
         setHoveredFeature({
@@ -263,17 +341,13 @@ const Cloud = observer(function ({
         setMousePosition(undefined)
       }
     },
-    [
-      getFeatureUnderMouse,
-      setHoveredFeature,
-      setHoveredFeatureData,
-      setMousePosition,
-    ],
+    [getMismatchUnderMouse, getFeatureUnderMouse],
   )
 
   const onMouseLeave = useCallback(() => {
     setHoveredFeature(undefined)
     setHoveredFeatureData(undefined)
+    setHoveredMismatchData(undefined)
     setMousePosition(undefined)
   }, [])
 
@@ -291,11 +365,18 @@ const Cloud = observer(function ({
     [getFeatureUnderMouse, model],
   )
 
+  const hasHover = hoveredMismatchData || hoveredFeatureData
+
   // note: the position absolute below avoids scrollbar from appearing on track
   return (
     <div
       ref={containerRef}
-      style={{ position: 'relative', width, height }}
+      style={{
+        position: 'relative',
+        width,
+        height,
+        cursor: hasHover ? 'pointer' : undefined,
+      }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
       onClick={onClick}
@@ -311,8 +392,13 @@ const Cloud = observer(function ({
         hoveredFeature={hoveredFeature}
         canvasLeft={canvasLeft}
       />
-      {hoveredFeatureData && mousePosition ? (
-        <Tooltip
+      {hoveredMismatchData && mousePosition ? (
+        <MismatchTooltip
+          mismatchData={hoveredMismatchData}
+          mousePosition={mousePosition}
+        />
+      ) : hoveredFeatureData && mousePosition ? (
+        <FeatureTooltip
           hoveredFeatureData={hoveredFeatureData}
           mousePosition={mousePosition}
         />
