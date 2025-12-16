@@ -13,6 +13,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TextField,
 } from '@mui/material'
 import { when } from 'mobx'
 
@@ -34,17 +35,18 @@ async function collapseIntrons({
   view,
   transcripts,
   assembly,
+  padding,
 }: {
   view: LinearGenomeViewModel
   transcripts: Feature[]
   assembly: Assembly
+  padding: number
 }) {
   const r0 = transcripts[0]?.get('refName')
   if (!r0) {
     return
   }
   const refName = assembly.getCanonicalRefName2(r0)
-  const padding = 100
   const subs = getExonsAndCDS(transcripts)
   const { id, ...rest } = getSnapshot(view)
   const newView = getSession(view).addView('LinearGenomeView', {
@@ -77,7 +79,10 @@ export default function CollapseIntronsDialog({
   handleClose: () => void
 }) {
   const [showAll, setShowAll] = useState(false)
+  const [windowSize, setWindowSize] = useState('100')
   const initialCount = 10
+  const windowSizeNum = +windowSize
+  const validWindowSize = !Number.isNaN(windowSizeNum) && windowSizeNum >= 0
   const sorted = [...transcripts].sort(
     (a, b) => b.get('end') - b.get('start') - (a.get('end') - a.get('start')),
   )
@@ -90,6 +95,7 @@ export default function CollapseIntronsDialog({
       view,
       transcripts,
       assembly,
+      padding: 100,
     })
     handleClose()
     return null
@@ -103,6 +109,27 @@ export default function CollapseIntronsDialog({
       title="Select transcript to collapse"
     >
       <DialogContent>
+        <TextField
+          label="Window size (bp)"
+          value={windowSize}
+          onChange={event => {
+            setWindowSize(event.target.value)
+          }}
+          error={windowSize !== '' && !validWindowSize}
+          helperText={
+            windowSize !== '' && !validWindowSize
+              ? 'Must be a non-negative number'
+              : ''
+          }
+          type="number"
+          slotProps={{
+            htmlInput: {
+              min: 0,
+              step: 10,
+            },
+          }}
+          style={{ marginBottom: 16 }}
+        />
         <Box sx={{ maxHeight: 600, overflow: 'auto' }}>
           <Table size="small" stickyHeader>
             <TableHead>
@@ -144,12 +171,14 @@ export default function CollapseIntronsDialog({
                         size="small"
                         variant="contained"
                         color="primary"
+                        disabled={!validWindowSize}
                         onClick={() => {
                           // eslint-disable-next-line @typescript-eslint/no-floating-promises
                           collapseIntrons({
                             view,
                             transcripts: [transcript],
                             assembly,
+                            padding: windowSizeNum,
                           })
                           handleClose()
                         }}
@@ -177,12 +206,14 @@ export default function CollapseIntronsDialog({
         <Button
           variant="contained"
           color="primary"
+          disabled={!validWindowSize}
           onClick={() => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             collapseIntrons({
               view,
               transcripts,
               assembly,
+              padding: windowSizeNum,
             })
             handleClose()
           }}
