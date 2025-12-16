@@ -1555,10 +1555,10 @@
     generic-filehandle2 "^2.0.16"
     quick-lru "^4.0.0"
 
-"@gmod/bbi@^8.0.1":
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-8.0.1.tgz#d6d88a0e7e2f77cef1f0446ad1858d6c8ef59b18"
-  integrity sha512-1xT3McXPwGtFqcaXeuHYGNfUO0iUzeFkLUWhdZD0MbZbkf0sIACMkTeFTDKrtm2sjMts/HHOC5qm/QF8x9azrg==
+"@gmod/bbi@^8.0.2":
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-8.0.2.tgz#8e0201d4265e03be4e469230099be73013823e0b"
+  integrity sha512-I80GwXNgXRGodxEqCLB49F2aVGwZJkKBnIzJ+uR1RI2t4N7RY/jfdIhSW593XwEgG1aJkNWdYyjEpuMXvyAcMQ==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     generic-filehandle2 "^2.0.16"
