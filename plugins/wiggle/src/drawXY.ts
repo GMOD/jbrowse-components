@@ -55,6 +55,176 @@ function darken(color: Colord, amount: number) {
 const fudgeFactor = 0.3
 const clipHeight = 2
 
+export interface WiggleFeatureArrays {
+  starts: ArrayLike<number>
+  ends: ArrayLike<number>
+  scores: ArrayLike<number>
+  minScores?: ArrayLike<number>
+  maxScores?: ArrayLike<number>
+}
+
+/**
+ * Optimized drawXY that takes structure-of-arrays directly from BigWig adapter.
+ * Avoids feature object creation and method call overhead.
+ * Best used with staticColor (e.g., MultiRowXYPlot renderer).
+ */
+export function drawXYArrays(
+  ctx: CanvasRenderingContext2D,
+  props: {
+    featureArrays: WiggleFeatureArrays
+    bpPerPx: number
+    regions: Region[]
+    scaleOpts: ScaleOpts
+    height: number
+    ticks: { values: number[] }
+    config: AnyConfigurationModel
+    displayCrossHatches: boolean
+    inverted: boolean
+    offset?: number
+    color: string
+    stopToken?: string
+  },
+) {
+  const {
+    featureArrays,
+    bpPerPx,
+    regions,
+    scaleOpts,
+    height: unadjustedHeight,
+    config,
+    ticks,
+    displayCrossHatches,
+    offset = 0,
+    color,
+    inverted,
+    stopToken,
+  } = props
+
+  const { starts, ends, scores, minScores, maxScores } = featureArrays
+  const len = starts.length
+
+  const region = regions[0]!
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
+  const width = (regionEnd - regionStart) * invBpPerPx
+
+  const height = unadjustedHeight - offset * 2
+
+  const filled = readConfObject(config, 'filled')
+  const clipColor = readConfObject(config, 'clipColor')
+  const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+  const minSize = readConfObject(config, 'minSize')
+
+  const scale = getScale({ ...scaleOpts, range: [0, height], inverted })
+  const originY = getOrigin(scaleOpts.scaleType)
+  const domain = scale.domain() as [number, number]
+  const niceMin = domain[0]
+  const niceMax = domain[1]
+  const domainSpan = niceMax - niceMin
+  const isLog = scaleOpts.scaleType === 'log'
+
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+
+  const log2 = Math.log(2)
+  const logMin = Math.log(niceMin) / log2
+  const logMax = Math.log(niceMax) / log2
+  const logSpan = logMax - logMin
+  const logRatio = logSpan !== 0 ? height / logSpan : 0
+
+  const toY = isLog
+    ? (n: number) => {
+        const scaled = (Math.log(n) / log2 - logMin) * logRatio
+        return (
+          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
+          offset
+        )
+      }
+    : (n: number) => {
+        const scaled = (n - niceMin) * linearRatio
+        return (
+          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
+          offset
+        )
+      }
+  const toOrigin = (n: number) => toY(originY) - toY(n)
+  const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
+
+  ctx.fillStyle = color
+
+  const isSummary = minScores !== undefined
+  const useMax = summaryScoreMode === 'max' && isSummary
+  const useMin = summaryScoreMode === 'min' && isSummary
+
+  let start = performance.now()
+  let hasClipping = false
+
+  for (let i = 0; i < len; i++) {
+    if (i % 10000 === 0 && performance.now() - start > 400) {
+      checkStopToken(stopToken)
+      start = performance.now()
+    }
+    const fstart = starts[i]!
+    const fend = ends[i]!
+    const leftPx = reversed
+      ? (regionEnd - fend) * invBpPerPx
+      : (fstart - regionStart) * invBpPerPx
+    const rightPx = reversed
+      ? (regionEnd - fstart) * invBpPerPx
+      : (fend - regionStart) * invBpPerPx
+
+    const score = useMax
+      ? maxScores![i]!
+      : useMin
+        ? minScores![i]!
+        : scores[i]!
+    const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+
+    if (score > niceMax || (score < niceMin && !isLog)) {
+      hasClipping = true
+    }
+
+    const y = toY(score)
+    const h = getHeight(score)
+    ctx.fillRect(leftPx, y, w, h)
+  }
+
+  // second pass for clipping indicators if needed
+  if (hasClipping) {
+    ctx.fillStyle = clipColor
+    for (let i = 0; i < len; i++) {
+      const fstart = starts[i]!
+      const fend = ends[i]!
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
+      const score = scores[i]!
+      const w = rightPx - leftPx + fudgeFactor
+
+      if (score > niceMax) {
+        ctx.fillRect(leftPx, offset, w, clipHeight)
+      } else if (score < niceMin && !isLog) {
+        ctx.fillRect(leftPx, unadjustedHeight - clipHeight, w, clipHeight)
+      }
+    }
+  }
+
+  if (displayCrossHatches) {
+    ctx.lineWidth = 1
+    ctx.strokeStyle = 'rgba(200,200,200,0.5)'
+    for (const tick of ticks.values) {
+      ctx.beginPath()
+      ctx.moveTo(0, Math.round(toY(tick)))
+      ctx.lineTo(width, Math.round(toY(tick)))
+      ctx.stroke()
+    }
+  }
+}
+
 export function drawXY(
   ctx: CanvasRenderingContext2D,
   props: {

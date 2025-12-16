@@ -10,9 +10,13 @@ import type { Feature } from '@jbrowse/core/util'
 import type { UnrectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
+import type { WiggleFeatureArrays } from '../drawXY'
+
 interface WiggleOptions extends BaseOptions {
   resolution?: number
 }
+
+export type { WiggleFeatureArrays }
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<{
@@ -90,7 +94,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
             basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
           }),
       )
-      console.log({ arrays })
 
       const { starts, ends, scores } = arrays
       const minScores = 'minScores' in arrays ? arrays.minScores : undefined
@@ -144,6 +147,99 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       }
       observer.complete()
     }, stopToken)
+  }
+
+  /**
+   * Returns raw feature arrays directly from the BigWig file.
+   * This is more efficient than getFeatures() when you don't need Feature objects.
+   */
+  public async getFeaturesAsArrays(
+    region: Region,
+    opts: WiggleOptions = {},
+  ): Promise<WiggleFeatureArrays> {
+    const { refName, start, end } = region
+    const {
+      bpPerPx = 0,
+      resolution = 1,
+      statusCallback = () => {},
+    } = opts
+    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+
+    const { bigwig } = await this.setup(opts)
+
+    const arrays = await updateStatus(
+      'Downloading bigwig data',
+      statusCallback,
+      () =>
+        bigwig.getFeaturesAsArrays(refName, start, end, {
+          ...opts,
+          basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+        }),
+    )
+
+    return {
+      starts: arrays.starts,
+      ends: arrays.ends,
+      scores: arrays.scores,
+      minScores: 'minScores' in arrays ? arrays.minScores : undefined,
+      maxScores: 'maxScores' in arrays ? arrays.maxScores : undefined,
+    }
+  }
+
+  /**
+   * Optimized stats calculation using arrays directly instead of Feature objects.
+   */
+  public async getRegionQuantitativeStats(region: Region, opts?: WiggleOptions) {
+    const { start, end } = region
+    const arrays = await this.getFeaturesAsArrays(region, {
+      ...opts,
+      // use low resolution for stats estimation
+      bpPerPx: (end - start) / 1000,
+    })
+
+    const { scores, minScores, maxScores } = arrays
+    const len = scores.length
+
+    if (len === 0) {
+      return {
+        scoreMin: 0,
+        scoreMax: 0,
+        scoreSum: 0,
+        scoreMean: 0,
+        scoreStdDev: 0,
+        featureCount: 0,
+        basesCovered: end - start,
+      }
+    }
+
+    let scoreMin = Number.MAX_VALUE
+    let scoreMax = Number.MIN_VALUE
+    let scoreSum = 0
+    let scoreSumSquares = 0
+
+    for (let i = 0; i < len; i++) {
+      const score = scores[i]!
+      const min = minScores?.[i] ?? score
+      const max = maxScores?.[i] ?? score
+
+      scoreMin = Math.min(scoreMin, min)
+      scoreMax = Math.max(scoreMax, max)
+      scoreSum += score
+      scoreSumSquares += score * score
+    }
+
+    const scoreMean = scoreSum / len
+    const scoreStdDev = Math.sqrt(scoreSumSquares / len - scoreMean * scoreMean)
+
+    return {
+      scoreMin,
+      scoreMax,
+      scoreSum,
+      scoreMean,
+      scoreStdDev,
+      featureCount: len,
+      basesCovered: end - start,
+    }
   }
 
   // always render bigwig instead of calculating a feature density for it
