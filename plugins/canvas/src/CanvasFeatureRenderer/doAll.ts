@@ -8,7 +8,7 @@ import { createRenderConfigContext } from './renderConfig'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature } from '@jbrowse/core/util'
-import type { GranularRectLayout } from '@jbrowse/core/util/layouts'
+import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 /**
  * Main rendering pipeline for CanvasFeatureRenderer
@@ -27,7 +27,7 @@ export async function doAll({
   pluginManager,
 }: {
   pluginManager: PluginManager
-  layout: GranularRectLayout<unknown>
+  layout: BaseLayout<unknown>
   features: Map<string, Feature>
   renderProps: RenderArgsDeserialized
 }) {
