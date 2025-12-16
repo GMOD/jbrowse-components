@@ -1,10 +1,10 @@
-import { useEffect, useState, useTransition } from 'react'
+import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
-import ClearIcon from '@mui/icons-material/Clear'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Grid, IconButton, InputAdornment, TextField } from '@mui/material'
+import { Grid, IconButton } from '@mui/material'
 
+import ClearableSearchField from '../ClearableSearchField'
 import ShoppingCart from '../ShoppingCart'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
@@ -18,46 +18,14 @@ export default function FacetedHeader({
   const { filterText, showOptions, showFilters, showSparse, useShoppingCart } =
     faceted
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const [localFilterText, setLocalFilterText] = useState(filterText)
-  const [, startTransition] = useTransition()
-
-  // Sync local state when model is cleared externally
-  useEffect(() => {
-    if (filterText === '') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLocalFilterText('')
-    }
-  }, [filterText])
 
   return (
     <>
       <Grid container spacing={4} alignItems="center">
-        <TextField
+        <ClearableSearchField
           label="Search..."
-          value={localFilterText}
-          onChange={event => {
-            const value = event.target.value
-            setLocalFilterText(value)
-            startTransition(() => {
-              faceted.setFilterText(value)
-            })
-          }}
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => {
-                      setLocalFilterText('')
-                      faceted.setFilterText('')
-                    }}
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
+          value={filterText}
+          onChange={value => faceted.setFilterText(value)}
         />
         <IconButton
           onClick={event => {

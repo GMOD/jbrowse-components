@@ -58,7 +58,7 @@ const ConnectionRow = observer(function ConnectionRow({
         name,
         assemblyNames.length ? `(${ellipses(assemblyNames.join(','))})` : '',
       ]
-        .filter(f => !!f)
+        .filter(Boolean)
         .join(' ')}
     />
   )
