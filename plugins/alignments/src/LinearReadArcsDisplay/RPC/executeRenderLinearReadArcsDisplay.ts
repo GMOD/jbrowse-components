@@ -39,6 +39,7 @@ export async function executeRenderLinearReadArcsDisplay({
     sessionId,
     view: viewSnapshot,
     adapterConfig,
+    sequenceAdapter,
     colorBy,
     drawInter,
     drawLongRange,
@@ -89,6 +90,14 @@ export async function executeRenderLinearReadArcsDisplay({
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
+
+  // Set sequenceAdapterConfig on the adapter for CRAM files that need it
+  if (sequenceAdapter) {
+    const adapter = dataAdapter as { sequenceAdapterConfig?: unknown }
+    if (adapter.sequenceAdapterConfig === undefined) {
+      adapter.sequenceAdapterConfig = sequenceAdapter
+    }
+  }
 
   const featuresArray = await updateStatus(
     'Fetching alignments',

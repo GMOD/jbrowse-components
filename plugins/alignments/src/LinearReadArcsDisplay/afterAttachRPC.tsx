@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingView,
   getSession,
@@ -45,11 +46,18 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
 
     try {
       const session = getSession(self)
-      const { rpcManager } = session
+      const { rpcManager, assemblyManager } = session
       const assemblyName = view.assemblyNames[0]
       if (!assemblyName) {
         return
       }
+
+      // Get the sequenceAdapter config for CRAM files that need it
+      const assembly = assemblyManager.get(assemblyName)
+      const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+      const sequenceAdapter = sequenceAdapterConfig
+        ? getSnapshot(sequenceAdapterConfig)
+        : undefined
 
       // Stop any previous rendering operation (use untracked to avoid triggering reactions)
       const previousToken = untracked(() => self.renderingStopToken)
@@ -78,6 +86,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
           sessionId: session.id,
           view: viewSnapshot,
           adapterConfig: self.adapterConfig,
+          sequenceAdapter,
           config: getSnapshot(self.configuration),
           theme: session.theme,
           filterBy,

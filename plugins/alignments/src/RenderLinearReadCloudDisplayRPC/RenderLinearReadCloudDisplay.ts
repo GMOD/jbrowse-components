@@ -12,6 +12,7 @@ export interface RenderLinearReadCloudDisplayArgs {
   sessionId: string
   view: Base1DViewModel
   adapterConfig: AnyConfigurationModel
+  sequenceAdapter?: Record<string, unknown>
   config: AnyConfigurationModel
   theme: ThemeOptions
   filterBy: Record<string, unknown>
