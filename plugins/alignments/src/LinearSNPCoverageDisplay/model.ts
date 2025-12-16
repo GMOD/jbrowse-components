@@ -5,6 +5,7 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import FilterListIcon from '@mui/icons-material/FilterList'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
@@ -25,6 +26,9 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const Tooltip = lazy(() => import('./components/Tooltip'))
 const InterbaseInfoDialog = lazy(
   () => import('./components/InterbaseInfoDialog'),
+)
+const FilterArcsByScoreDialog = lazy(
+  () => import('./components/FilterArcsByScoreDialog'),
 )
 
 // using a map because it preserves order
@@ -63,6 +67,10 @@ function stateModelFactory(
          * #property
          */
         showArcs: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        minArcScore: types.optional(types.number, 0),
         /**
          * #property
          */
@@ -167,16 +175,21 @@ function stateModelFactory(
          * Collect all skip features from rendered blocks for cross-region arc drawing
          * Uses a Map to deduplicate features that appear in multiple blocks
          * Only computed when showArcsSetting is true for performance
+         * Filters out arcs with score below minArcScore
          */
         get skipFeatures(): Feature[] {
           if (!this.showArcsSetting) {
             return []
           }
+          const { minArcScore } = self
           const skipFeaturesMap = new Map<string, Feature>()
           for (const block of self.blockState.values()) {
             if (block.features) {
               for (const feature of block.features.values()) {
-                if (feature.get('type') === 'skip') {
+                if (
+                  feature.get('type') === 'skip' &&
+                  (feature.get('score') ?? 1) >= minArcScore
+                ) {
                   skipFeaturesMap.set(feature.id(), feature)
                 }
               }
@@ -249,6 +262,12 @@ function stateModelFactory(
       setShowArcs(arg: boolean) {
         self.showArcs = arg
       },
+      /**
+       * #action
+       */
+      setMinArcScore(arg: number) {
+        self.minArcScore = arg
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -287,7 +306,7 @@ function stateModelFactory(
       const {
         renderProps: superRenderProps,
         renderingProps: superRenderingProps,
-        trackMenuItems: superTrackMenuItems,
+        wiggleBaseTrackMenuItems,
       } = self
       return {
         /**
@@ -384,7 +403,7 @@ function stateModelFactory(
          */
         trackMenuItems() {
           return [
-            ...superTrackMenuItems(),
+            ...wiggleBaseTrackMenuItems(),
             {
               label: 'Show insertion/clipping indicators',
               icon: VisibilityIcon,
@@ -412,6 +431,16 @@ function stateModelFactory(
               checked: self.showArcsSetting,
               onClick: () => {
                 self.setShowArcs(!self.showArcsSetting)
+              },
+            },
+            {
+              label: 'Filter arcs by score...',
+              icon: FilterListIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  FilterArcsByScoreDialog,
+                  { model: self, handleClose },
+                ])
               },
             },
           ]

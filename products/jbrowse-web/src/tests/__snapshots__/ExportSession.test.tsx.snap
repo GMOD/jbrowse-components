@@ -76,6 +76,7 @@ exports[`export session with alignments and gff tracks 1`] = `
                   "heightPreConfig": 45,
                   "id": "test-id-4",
                   "jexlFilters": [],
+                  "minArcScore": 0,
                   "resolution": 1,
                   "selectedRendering": "",
                   "type": "LinearSNPCoverageDisplay",
