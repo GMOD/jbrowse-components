@@ -10,7 +10,7 @@ import { shouldRenderChevrons } from '../shared/util'
 import type { LinearReadCloudDisplayModel } from './model'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { FlatbushItem } from '../PileupRenderer/types'
-import type { ChainData, ColorBy } from '../shared/types'
+import type { ChainData, ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -286,6 +286,7 @@ export interface DrawFeatsParams {
   bpPerPx: number
   canvasWidth: number
   stopToken?: string
+  visibleModifications?: Record<string, ModificationTypeWithColor>
 }
 
 export interface DrawFeatsResult {
@@ -380,6 +381,7 @@ export function drawFeatsCore({
       regionStartPx,
       bpPerPx: params.bpPerPx,
       colorBy: params.colorBy,
+      visibleModifications: params.visibleModifications,
       stopToken,
     })
 
@@ -397,6 +399,7 @@ export function drawFeatsCore({
       regionStartPx,
       bpPerPx: params.bpPerPx,
       colorBy: params.colorBy,
+      visibleModifications: params.visibleModifications,
       stopToken,
     })
 

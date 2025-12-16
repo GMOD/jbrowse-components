@@ -25,7 +25,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
 const SetModificationThresholdDialog = lazy(
-  () => import('./components/SetModificationThresholdDialog'),
+  () => import('../shared/components/SetModificationThresholdDialog'),
 )
 
 type LGV = LinearGenomeViewModel

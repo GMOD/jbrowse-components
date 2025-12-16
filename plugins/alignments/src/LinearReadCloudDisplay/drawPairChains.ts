@@ -1,6 +1,8 @@
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
+import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil'
 import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
+import { renderModifications } from '../PileupRenderer/renderers/renderModifications'
 import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import { getPairedColor } from '../shared/color'
@@ -14,7 +16,7 @@ import {
 
 import type { MismatchData } from './drawChainsUtil'
 import type { ComputedChain } from './drawFeatsCommon'
-import type { ChainData, ColorBy } from '../shared/types'
+import type { ChainData, ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { FlatbushItem } from '../PileupRenderer/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -34,6 +36,7 @@ export function drawPairChains({
   regionStartPx,
   bpPerPx,
   colorBy,
+  visibleModifications,
   stopToken,
 }: {
   ctx: CanvasRenderingContext2D
@@ -49,6 +52,7 @@ export function drawPairChains({
   regionStartPx: number
   bpPerPx: number
   colorBy: ColorBy
+  visibleModifications?: Record<string, ModificationTypeWithColor>
   stopToken?: string
 }): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
@@ -190,6 +194,37 @@ export function drawPairChains({
       }
       for (const item of ret.items) {
         allItems.push(item)
+      }
+
+      // Render modifications if colorBy type is 'modifications'
+      if (colorBy.type === 'modifications' && visibleModifications) {
+        const cigarOps = getCigarOps(
+          feat.get('NUMERIC_CIGAR') || feat.get('CIGAR'),
+        )
+        const modRet = renderModifications({
+          ctx,
+          feat: layoutFeat,
+          region,
+          bpPerPx,
+          renderArgs: {
+            colorBy,
+            visibleModifications,
+          },
+          cigarOps,
+        })
+
+        // Adjust modification coordinates from region-relative to global canvas space
+        for (let i = 0; i < modRet.coords.length; i += 4) {
+          allCoords.push(
+            modRet.coords[i]! + regionStartPx,
+            modRet.coords[i + 1]!,
+            modRet.coords[i + 2]! + regionStartPx,
+            modRet.coords[i + 3]!,
+          )
+        }
+        for (const item of modRet.items) {
+          allItems.push(item)
+        }
       }
     }
   })

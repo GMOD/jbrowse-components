@@ -12,6 +12,7 @@ import {
   buildFlatbushIndex,
   buildMismatchFlatbushIndex,
 } from './drawFeatsCommon'
+import { getUniqueModifications } from '../shared/getUniqueModifications'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { FlatbushEntry } from '../shared/flatbushType'
@@ -54,6 +55,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       noSpacing,
       trackMaxHeight,
       height,
+      visibleModifications,
     } = self
 
     try {
@@ -110,6 +112,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           drawProperPairs,
           flipStrandLongReadChains,
           trackMaxHeight,
+          visibleModifications: Object.fromEntries(visibleModifications.toJSON()),
           ...(drawCloud && { cloudModeHeight: height }),
           highResolutionScaling: 2,
           rpcDriverName: self.effectiveRpcDriverName,
@@ -213,6 +216,35 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
     },
     {
       name: 'LinearReadCloudRenderCanvas',
+    },
+  )
+
+  // Autorun to discover modifications in the visible region
+  createAutorun(
+    self,
+    async () => {
+      const view = getContainingView(self) as LGV
+      if (!view.initialized || !self.featureDensityStatsReadyAndRegionNotTooLarge) {
+        return
+      }
+
+      const { adapterConfig } = self
+      const { staticBlocks } = view
+      const { modifications, simplexModifications } =
+        await getUniqueModifications({
+          model: self,
+          adapterConfig,
+          blocks: staticBlocks,
+        })
+      if (isAlive(self)) {
+        self.updateVisibleModifications(modifications)
+        self.setSimplexModifications(simplexModifications)
+        self.setModificationsReady(true)
+      }
+    },
+    {
+      delay: 1000,
+      name: 'GetModInfo',
     },
   )
 }

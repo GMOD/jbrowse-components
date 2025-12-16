@@ -21,6 +21,8 @@ import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeat
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { modificationData } from '../shared/modificationData'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -32,6 +34,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SetFeatureHeightDialog = lazy(
   () => import('./components/SetFeatureHeightDialog'),
+)
+const SetModificationThresholdDialog = lazy(
+  () => import('../shared/components/SetModificationThresholdDialog'),
 )
 
 /**
@@ -52,6 +57,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       LinearReadDisplayBaseMixin(),
       LinearReadDisplayWithLayoutMixin(),
       LinearReadDisplayWithPairFiltersMixin(),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -123,6 +129,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get featureHeightSetting() {
         return self.featureHeight ?? getConf(self, 'featureHeight')
+      },
+      /**
+       * #getter
+       */
+      get modificationThreshold() {
+        return self.colorBy?.modifications?.threshold ?? 10
       },
     }))
     .actions(self => ({
