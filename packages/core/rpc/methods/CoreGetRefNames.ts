@@ -30,15 +30,22 @@ export default class CoreGetRefNames extends RpcMethodType {
         adapter.sequenceAdapterConfig = sequenceAdapter
       }
 
-      // Pre-warm the adapter cache for subadapters (e.g., SNPCoverageAdapter
-      // wraps CramAdapter/BamAdapter) with sequenceAdapter included in the config.
-      // This ensures the cache key matches what SNPCoverageAdapter.configure() uses.
+      // Also set sequenceAdapterConfig on subadapters (e.g., SNPCoverageAdapter
+      // wraps CramAdapter/BamAdapter). Use the base subadapter config to ensure
+      // consistent cache keys with other code paths.
       const subadapterConfigBase = adapterConfig.subadapter as
         | Record<string, unknown>
         | undefined
       if (subadapterConfigBase) {
-        const subadapterConfig = { ...subadapterConfigBase, sequenceAdapter }
-        await getAdapter(pm, sessionId, subadapterConfig)
+        const { dataAdapter: subAdapter } = await getAdapter(
+          pm,
+          sessionId,
+          subadapterConfigBase,
+        )
+        const sub = subAdapter as { sequenceAdapterConfig?: unknown }
+        if (sub.sequenceAdapterConfig === undefined) {
+          sub.sequenceAdapterConfig = sequenceAdapter
+        }
       }
     }
 

@@ -21,19 +21,26 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     const subadapterConfigBase = this.getConf('subadapter')
     const sequenceAdapter = this.getConf('sequenceAdapter')
 
-    // Include sequenceAdapter in the subadapter config so BAM/CRAM adapters
-    // can use it for reference sequence fetching
-    const subadapterConfig = sequenceAdapter
-      ? { ...subadapterConfigBase, sequenceAdapter }
-      : subadapterConfigBase
+    console.log('[SNPCoverageAdapter.configure] subadapterConfigBase.type:', subadapterConfigBase?.type, 'sequenceAdapter:', !!sequenceAdapter)
 
-    const dataAdapter = await this.getSubAdapter?.(subadapterConfig)
+    // Use the base subadapter config to ensure consistent cache keys
+    // Set sequenceAdapterConfig on the subadapter after creation
+    const dataAdapter = await this.getSubAdapter?.(subadapterConfigBase)
 
     if (!dataAdapter) {
       throw new Error('Failed to get subadapter')
     }
 
     const subadapter = dataAdapter.dataAdapter as BaseFeatureDataAdapter
+
+    // Set sequenceAdapterConfig on the subadapter for BAM/CRAM adapters
+    // that need it for reference sequence fetching
+    if (sequenceAdapter) {
+      const adapter = subadapter as { sequenceAdapterConfig?: unknown }
+      if (adapter.sequenceAdapterConfig === undefined) {
+        adapter.sequenceAdapterConfig = sequenceAdapter
+      }
+    }
 
     return { subadapter }
   }

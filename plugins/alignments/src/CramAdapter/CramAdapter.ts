@@ -77,7 +77,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   async getSequenceAdapter() {
     // Check config first, fall back to externally-set property for standalone tracks
-    const config = this.getConf('sequenceAdapter') || this.sequenceAdapterConfig
+    const configFromConf = this.getConf('sequenceAdapter')
+    const config = configFromConf || this.sequenceAdapterConfig
+    console.log('[CramAdapter.getSequenceAdapter] configFromConf:', configFromConf, 'sequenceAdapterConfig:', this.sequenceAdapterConfig, 'using:', config)
     if (!config || !this.getSubAdapter) {
       return undefined
     }

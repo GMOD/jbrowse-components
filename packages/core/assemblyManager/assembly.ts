@@ -74,16 +74,14 @@ async function loadRefNameMap(
     name: 'when assembly ready',
   })
 
-  // Include sequenceAdapter in the adapterConfig so adapters are created with it
-  const adapterConfigWithSeq = sequenceAdapter
-    ? { ...(adapterConfig as Record<string, unknown>), sequenceAdapter }
-    : adapterConfig
-
+  // Pass sequenceAdapter separately - CoreGetRefNames will set it on the adapter
+  // instance. Don't include it in adapterConfig to keep cache keys consistent
+  // with other RPC calls (like CoreGetFeatures) that use the base config.
   const refNames = (await assembly.rpcManager.call(
     sessionId || 'assemblyRpc',
     'CoreGetRefNames',
     {
-      adapterConfig: adapterConfigWithSeq,
+      adapterConfig,
       sequenceAdapter,
       stopToken,
       ...options,
