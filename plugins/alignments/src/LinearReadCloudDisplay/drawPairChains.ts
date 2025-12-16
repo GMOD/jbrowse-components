@@ -6,6 +6,8 @@ import { drawChevron } from '../shared/chevron'
 import { getPairedColor } from '../shared/color'
 import { CHEVRON_WIDTH } from '../shared/util'
 import {
+  chainIsPairedEnd,
+  collectNonSupplementary,
   featureOverlapsRegion,
   getConnectingLineEndpoint,
   getMismatchRenderingConfig,
@@ -13,7 +15,6 @@ import {
 
 import type { ChainData, ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
@@ -68,30 +69,16 @@ export function drawPairChains({
   forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain } = computedChain
 
-    // Guard clause: skip non-paired-end chains
-    let isPairedEnd = false
-    for (const element of chain) {
-      if (element.get('flags') & 1) {
-        isPairedEnd = true
-        break
-      }
-    }
-    if (!isPairedEnd) {
+    if (!chainIsPairedEnd(chain)) {
       return
     }
 
-    let chainY = chainYOffsets.get(id)
+    const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       return
     }
 
-    // Collect non-supplementary alignments
-    const nonSupplementary: Feature[] = []
-    for (const element of chain) {
-      if (!(element.get('flags') & 2048)) {
-        nonSupplementary.push(element)
-      }
-    }
+    const nonSupplementary = collectNonSupplementary(chain)
     const hasBothMates = nonSupplementary.length === 2
 
     // Get colors for this read pair/singleton
@@ -155,8 +142,8 @@ export function drawPairChains({
 
       const clippedStart = Math.max(featStart, regionStart)
       const clippedEnd = Math.min(featEnd, regionEnd)
-      let xPos = (clippedStart - regionStart) / bpPerPx
-      let width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
+      const xPos = (clippedStart - regionStart) / bpPerPx
+      const width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
 
       const layoutFeat = {
         feature: feat,
@@ -177,23 +164,25 @@ export function drawPairChains({
           pairedStroke,
         )
       } else {
-        if (width < 0) {
-          xPos += width
-          width = -width
+        // Handle negative dimensions for SVG exports
+        let drawX = xPos
+        let drawY = chainY
+        let drawWidth = width
+        if (drawWidth < 0) {
+          drawX += drawWidth
+          drawWidth = -drawWidth
         }
         if (featureHeight < 0) {
-          chainY += featureHeight
+          drawY += featureHeight
         }
 
-        if (pairedFill) {
-          if (lastColor !== pairedFill) {
-            ctx.fillStyle = pairedFill
-            lastColor = pairedFill
-          }
+        if (pairedFill && lastColor !== pairedFill) {
+          ctx.fillStyle = pairedFill
+          lastColor = pairedFill
         }
 
-        ctx.fillRect(xPos, chainY, width, featureHeight)
-        strokeRectCtx(xPos, chainY, width, featureHeight, ctx, pairedStroke)
+        ctx.fillRect(drawX, drawY, drawWidth, featureHeight)
+        strokeRectCtx(drawX, drawY, drawWidth, featureHeight, ctx, pairedStroke)
       }
 
       renderMismatchesCallback({

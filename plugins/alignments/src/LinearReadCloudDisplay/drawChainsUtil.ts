@@ -12,8 +12,28 @@ import {
 
 import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
+
+export function chainIsPairedEnd(chain: Feature[]) {
+  for (const element of chain) {
+    if (element.get('flags') & 1) {
+      return true
+    }
+  }
+  return false
+}
+
+export function collectNonSupplementary(chain: Feature[]) {
+  const result: Feature[] = []
+  for (const element of chain) {
+    if (!(element.get('flags') & 2048)) {
+      result.push(element)
+    }
+  }
+  return result
+}
 
 export interface MismatchRenderingConfig {
   mismatchAlpha: boolean | undefined

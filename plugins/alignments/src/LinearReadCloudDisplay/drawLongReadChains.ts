@@ -7,6 +7,8 @@ import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
 import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
 import { CHEVRON_WIDTH } from '../shared/util'
 import {
+  chainIsPairedEnd,
+  collectNonSupplementary,
   featureOverlapsRegion,
   getConnectingLineEndpoint,
   getMismatchRenderingConfig,
@@ -14,7 +16,6 @@ import {
 
 import type { ChainData, ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
@@ -71,30 +72,16 @@ export function drawLongReadChains({
   forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain } = computedChain
 
-    // Guard clause: skip paired-end reads (handled by drawPairChains)
-    let isPairedEnd = false
-    for (const element of chain) {
-      if (element.get('flags') & 1) {
-        isPairedEnd = true
-        break
-      }
-    }
-    if (isPairedEnd) {
+    if (chainIsPairedEnd(chain)) {
       return
     }
 
-    let chainY = chainYOffsets.get(id)
+    const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       return
     }
 
-    // Collect non-supplementary alignments
-    const nonSupplementary: Feature[] = []
-    for (const element of chain) {
-      if (!(element.get('flags') & 2048)) {
-        nonSupplementary.push(element)
-      }
-    }
+    const nonSupplementary = collectNonSupplementary(chain)
     const isSingleton = chain.length === 1
     const c1 = nonSupplementary[0] || chain[0]!
     const primaryStrand = getPrimaryStrandFromFlags(c1)
@@ -172,8 +159,8 @@ export function drawLongReadChains({
 
       const clippedStart = Math.max(featStart, regionStart)
       const clippedEnd = Math.min(featEnd, regionEnd)
-      let xPos = (clippedStart - regionStart) / bpPerPx
-      let width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
+      const xPos = (clippedStart - regionStart) / bpPerPx
+      const width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
 
       const layoutFeat = {
         feature: feat,
@@ -194,12 +181,16 @@ export function drawLongReadChains({
           featureStroke,
         )
       } else {
-        if (width < 0) {
-          xPos += width
-          width = -width
+        // Handle negative dimensions for SVG exports
+        let drawX = xPos
+        let drawY = chainY
+        let drawWidth = width
+        if (drawWidth < 0) {
+          drawX += drawWidth
+          drawWidth = -drawWidth
         }
         if (featureHeight < 0) {
-          chainY += featureHeight
+          drawY += featureHeight
         }
 
         if (featureFill && lastFillStyle !== featureFill) {
@@ -207,8 +198,8 @@ export function drawLongReadChains({
           lastFillStyle = featureFill
         }
 
-        ctx.fillRect(xPos, chainY, width, featureHeight)
-        strokeRectCtx(xPos, chainY, width, featureHeight, ctx, featureStroke)
+        ctx.fillRect(drawX, drawY, drawWidth, featureHeight)
+        strokeRectCtx(drawX, drawY, drawWidth, featureHeight, ctx, featureStroke)
       }
 
       renderMismatchesCallback({
