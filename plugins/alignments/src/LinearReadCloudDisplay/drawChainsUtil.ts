@@ -11,10 +11,20 @@ import {
 } from '../shared/util'
 
 import type { ColorBy } from '../shared/types'
+import type { FlatbushItem } from '../PileupRenderer/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
+
+export interface MismatchData {
+  coords: number[]
+  items: FlatbushItem[]
+}
+
+export function getStrandColorKey(strand: number) {
+  return strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
+}
 
 export function chainIsPairedEnd(chain: Feature[]) {
   for (const element of chain) {
@@ -94,17 +104,4 @@ export function featureOverlapsRegion(
     featStart < region.end &&
     featEnd > region.start
   )
-}
-
-export function getConnectingLineEndpoint(
-  inRegion: boolean,
-  position: number,
-  regionStart: number,
-  bpPerPx: number,
-  canvasWidth: number,
-) {
-  if (inRegion) {
-    return (position - regionStart) / bpPerPx
-  }
-  return position < regionStart ? -1000 : canvasWidth + 1000
 }

@@ -237,7 +237,12 @@ export async function executeRenderLinearReadCloudDisplay({
     statusCallback,
     () =>
       renderToAbstractCanvas(width, actualHeight, renderOpts, async ctx => {
-        const { layoutHeight, featuresForFlatbush } = drawFeatsCore({
+        const {
+          layoutHeight,
+          featuresForFlatbush,
+          mismatchFlatbush,
+          mismatchItems,
+        } = drawFeatsCore({
           ctx,
           params: {
             chainData,
@@ -269,6 +274,8 @@ export async function executeRenderLinearReadCloudDisplay({
         return {
           layoutHeight,
           featuresForFlatbush,
+          mismatchFlatbush,
+          mismatchItems,
         }
       }),
   )

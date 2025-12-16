@@ -9,6 +9,7 @@ import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { FlatbushEntry } from '../shared/flatbushType'
+import type { FlatbushItem } from '../PileupRenderer/types'
 import type { ChainData, ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -199,6 +200,19 @@ export function buildFlatbushIndex(
 }
 
 /**
+ * Build Flatbush index for mismatch mouseover detection
+ */
+export function buildMismatchFlatbushIndex(
+  mismatchFlatbushData: ArrayBuffer,
+  mismatchItems: FlatbushItem[],
+  self: LinearReadCloudDisplayModel,
+) {
+  const mismatchFlatbush = Flatbush.from(mismatchFlatbushData)
+  self.setMismatchLayout(mismatchFlatbush)
+  self.setMismatchItems(mismatchItems)
+}
+
+/**
  * Add full-width rectangles for each chain to enable mouseover on connecting lines
  */
 export function addChainMouseoverRects(
@@ -277,6 +291,8 @@ export interface DrawFeatsParams {
 export interface DrawFeatsResult {
   featuresForFlatbush: FlatbushEntry[]
   layoutHeight?: number
+  mismatchFlatbush: ArrayBuffer
+  mismatchItems: FlatbushItem[]
 }
 
 export function drawFeatsCore({
@@ -337,6 +353,10 @@ export function drawFeatsCore({
   // Clamp viewOffsetPx to 0 when negative
   const viewOffsetPx = Math.max(0, view.offsetPx)
 
+  // Collect mismatch data for flatbush tooltips
+  const mismatchCoords: number[] = []
+  const mismatchItems: FlatbushItem[] = []
+
   // Render each region independently with clipping to prevent bleeding between regions
   for (const region of params.regions) {
     ctx.save()
@@ -351,8 +371,7 @@ export function drawFeatsCore({
     ctx.translate(regionStartPx, 0)
 
     // Delegate rendering to specialized functions for paired and long-read chains
-    drawPairChains({
-      canvasWidth: region.widthPx,
+    const pairMismatches = drawPairChains({
       ctx,
       type,
       chainData,
@@ -363,12 +382,13 @@ export function drawFeatsCore({
       config: params.config,
       theme: params.theme,
       region,
+      regionStartPx,
       bpPerPx: params.bpPerPx,
       colorBy: params.colorBy,
       stopToken,
     })
 
-    drawLongReadChains({
+    const longReadMismatches = drawLongReadChains({
       ctx,
       chainData,
       chainYOffsets,
@@ -379,10 +399,15 @@ export function drawFeatsCore({
       config: params.config,
       theme: params.theme,
       region,
+      regionStartPx,
       bpPerPx: params.bpPerPx,
       colorBy: params.colorBy,
       stopToken,
     })
+
+    // Aggregate mismatch data
+    mismatchCoords.push(...pairMismatches.coords, ...longReadMismatches.coords)
+    mismatchItems.push(...pairMismatches.items, ...longReadMismatches.items)
 
     ctx.restore()
   }
@@ -396,7 +421,28 @@ export function drawFeatsCore({
     featuresForFlatbush,
   )
 
-  return { featuresForFlatbush, layoutHeight }
+  // Build flatbush index for mismatch tooltips
+  const mismatchFlatbush = new Flatbush(Math.max(mismatchItems.length, 1))
+  if (mismatchCoords.length) {
+    for (let i = 0; i < mismatchCoords.length; i += 4) {
+      mismatchFlatbush.add(
+        mismatchCoords[i]!,
+        mismatchCoords[i + 1]!,
+        mismatchCoords[i + 2]!,
+        mismatchCoords[i + 3]!,
+      )
+    }
+  } else {
+    mismatchFlatbush.add(0, 0, 0, 0)
+  }
+  mismatchFlatbush.finish()
+
+  return {
+    featuresForFlatbush,
+    layoutHeight,
+    mismatchFlatbush: mismatchFlatbush.data,
+    mismatchItems,
+  }
 }
 
 /**

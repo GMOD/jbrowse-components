@@ -8,10 +8,11 @@ import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
 import { createAutorun } from '../util'
-import { buildFlatbushIndex } from './drawFeatsCommon'
+import { buildFlatbushIndex, buildMismatchFlatbushIndex } from './drawFeatsCommon'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { FlatbushEntry } from '../shared/flatbushType'
+import type { FlatbushItem } from '../PileupRenderer/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -20,6 +21,8 @@ interface RenderResult {
   imageData?: ImageBitmap
   layoutHeight?: number
   featuresForFlatbush?: FlatbushEntry[]
+  mismatchFlatbush?: ArrayBuffer
+  mismatchItems?: FlatbushItem[]
   offsetPx?: number
 }
 
@@ -125,6 +128,13 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         }
         if (result.featuresForFlatbush) {
           buildFlatbushIndex(result.featuresForFlatbush, self)
+        }
+        if (result.mismatchFlatbush && result.mismatchItems) {
+          buildMismatchFlatbushIndex(
+            result.mismatchFlatbush,
+            result.mismatchItems,
+            self,
+          )
         }
         if (result.offsetPx !== undefined) {
           self.setLastDrawnOffsetPx(result.offsetPx)

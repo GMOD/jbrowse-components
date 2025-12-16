@@ -9,11 +9,13 @@ import {
   chainIsPairedEnd,
   collectNonSupplementary,
   featureOverlapsRegion,
-  getConnectingLineEndpoint,
   getMismatchRenderingConfig,
 } from './drawChainsUtil'
 
+import type { MismatchData } from './drawChainsUtil'
+import type { ComputedChain } from './drawFeatsCommon'
 import type { ChainData, ColorBy } from '../shared/types'
+import type { FlatbushItem } from '../PileupRenderer/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
@@ -29,7 +31,7 @@ export function drawPairChains({
   config,
   theme: configTheme,
   region,
-  canvasWidth,
+  regionStartPx,
   bpPerPx,
   colorBy,
   stopToken,
@@ -40,31 +42,27 @@ export function drawPairChains({
   chainYOffsets: Map<string, number>
   renderChevrons: boolean
   featureHeight: number
-  computedChains: {
-    distance: number
-    minX: number
-    maxX: number
-    chain: Feature[]
-    id: string
-  }[]
+  computedChains: ComputedChain[]
   config: AnyConfigurationModel
   theme: ThemeOptions
-  canvasWidth: number
   region: BaseBlock
+  regionStartPx: number
   bpPerPx: number
   colorBy: ColorBy
   stopToken?: string
-}): void {
+}): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
     config,
     configTheme,
     colorBy,
   )
+  const canvasWidth = region.widthPx
+  const regionStart = region.start
   let lastColor = ''
 
-  const regionStart = region.start
-  const regionEnd = region.end
+  const allCoords: number[] = []
+  const allItems: FlatbushItem[] = []
 
   forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain } = computedChain
@@ -90,41 +88,27 @@ export function drawPairChains({
     }) || ['lightgrey', '#888']
 
     // Draw connecting line for pairs with both mates visible
+    // Check if the line segment intersects the region (not just if features overlap)
     if (hasBothMates) {
       const v0 = nonSupplementary[0]!
       const v1 = nonSupplementary[1]!
 
+      const v0RefName = v0.get('refName')
+      const v1RefName = v1.get('refName')
       const v0Start = v0.get('start')
       const v1Start = v1.get('start')
 
-      const v0InRegion = featureOverlapsRegion(
-        v0.get('refName'),
-        v0Start,
-        v0.get('end'),
-        region,
-      )
-      const v1InRegion = featureOverlapsRegion(
-        v1.get('refName'),
-        v1Start,
-        v1.get('end'),
-        region,
-      )
+      // Line intersects region if both mates are on same refName and line spans the region
+      const bothOnRefName =
+        v0RefName === region.refName && v1RefName === region.refName
+      const lineMin = Math.min(v0Start, v1Start)
+      const lineMax = Math.max(v0Start, v1Start)
+      const lineIntersectsRegion =
+        bothOnRefName && lineMin < region.end && lineMax > regionStart
 
-      if (v0InRegion || v1InRegion) {
-        const r1s = getConnectingLineEndpoint(
-          v0InRegion,
-          v0Start,
-          regionStart,
-          bpPerPx,
-          canvasWidth,
-        )
-        const r2s = getConnectingLineEndpoint(
-          v1InRegion,
-          v1Start,
-          regionStart,
-          bpPerPx,
-          canvasWidth,
-        )
+      if (lineIntersectsRegion) {
+        const r1s = (v0Start - regionStart) / bpPerPx
+        const r2s = (v1Start - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2
         lineToCtx(r1s, lineY, r2s, lineY, ctx, '#6665')
       }
@@ -141,7 +125,7 @@ export function drawPairChains({
       }
 
       const clippedStart = Math.max(featStart, regionStart)
-      const clippedEnd = Math.min(featEnd, regionEnd)
+      const clippedEnd = Math.min(featEnd, region.end)
       const xPos = (clippedStart - regionStart) / bpPerPx
       const width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
 
@@ -185,7 +169,7 @@ export function drawPairChains({
         strokeRectCtx(drawX, drawY, drawWidth, featureHeight, ctx, pairedStroke)
       }
 
-      renderMismatchesCallback({
+      const ret = renderMismatchesCallback({
         ctx,
         feat: layoutFeat,
         bpPerPx,
@@ -194,6 +178,21 @@ export function drawPairChains({
         checkRef: true,
         ...mismatchConfig,
       })
+
+      // Adjust coordinates from region-relative to global canvas space
+      for (let i = 0; i < ret.coords.length; i += 4) {
+        allCoords.push(
+          ret.coords[i]! + regionStartPx,
+          ret.coords[i + 1]!,
+          ret.coords[i + 2]! + regionStartPx,
+          ret.coords[i + 3]!,
+        )
+      }
+      for (const item of ret.items) {
+        allItems.push(item)
+      }
     }
   })
+
+  return { coords: allCoords, items: allItems }
 }

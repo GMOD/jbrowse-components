@@ -10,11 +10,14 @@ import {
   chainIsPairedEnd,
   collectNonSupplementary,
   featureOverlapsRegion,
-  getConnectingLineEndpoint,
   getMismatchRenderingConfig,
+  getStrandColorKey,
 } from './drawChainsUtil'
 
+import type { MismatchData } from './drawChainsUtil'
+import type { ComputedChain } from './drawFeatsCommon'
 import type { ChainData, ColorBy } from '../shared/types'
+import type { FlatbushItem } from '../PileupRenderer/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
@@ -30,6 +33,7 @@ export function drawLongReadChains({
   config,
   theme: configTheme,
   region,
+  regionStartPx,
   bpPerPx,
   colorBy,
   stopToken,
@@ -39,21 +43,16 @@ export function drawLongReadChains({
   chainYOffsets: Map<string, number>
   renderChevrons: boolean
   featureHeight: number
-  computedChains: {
-    distance: number
-    minX: number
-    maxX: number
-    chain: Feature[]
-    id: string
-  }[]
+  computedChains: ComputedChain[]
   flipStrandLongReadChains: boolean
   config: AnyConfigurationModel
   theme: ThemeOptions
   region: BaseBlock
+  regionStartPx: number
   bpPerPx: number
   colorBy: ColorBy
   stopToken?: string
-}): void {
+}): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
     config,
@@ -61,12 +60,10 @@ export function drawLongReadChains({
     colorBy,
   )
   const canvasWidth = region.widthPx
-
-  const getStrandColorKey = (strand: number) =>
-    strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
-
   const regionStart = region.start
-  const regionEnd = region.end
+
+  const allCoords: number[] = []
+  const allItems: FlatbushItem[] = []
 
   let lastFillStyle = ''
   forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
@@ -87,41 +84,28 @@ export function drawLongReadChains({
     const primaryStrand = getPrimaryStrandFromFlags(c1)
 
     // Draw connecting line for multi-segment long reads
+    // Check if the line segment intersects the region (not just if features overlap)
     if (!isSingleton) {
       const firstFeat = chain[0]!
       const lastFeat = chain[chain.length - 1]!
 
+      const firstRefName = firstFeat.get('refName')
+      const lastRefName = lastFeat.get('refName')
       const firstStart = firstFeat.get('start')
       const lastEnd = lastFeat.get('end')
 
-      const firstInRegion = featureOverlapsRegion(
-        firstFeat.get('refName'),
-        firstStart,
-        firstFeat.get('end'),
-        region,
-      )
-      const lastInRegion = featureOverlapsRegion(
-        lastFeat.get('refName'),
-        lastFeat.get('start'),
-        lastEnd,
-        region,
-      )
+      // Line intersects region if both ends are on same refName and line spans the region
+      // Use min/max in case features aren't sorted by position
+      const bothOnRefName =
+        firstRefName === region.refName && lastRefName === region.refName
+      const lineMin = Math.min(firstStart, lastEnd)
+      const lineMax = Math.max(firstStart, lastEnd)
+      const lineIntersectsRegion =
+        bothOnRefName && lineMin < region.end && lineMax > regionStart
 
-      if (firstInRegion || lastInRegion) {
-        const firstPx = getConnectingLineEndpoint(
-          firstInRegion,
-          firstStart,
-          regionStart,
-          bpPerPx,
-          canvasWidth,
-        )
-        const lastPx = getConnectingLineEndpoint(
-          lastInRegion,
-          lastEnd,
-          regionStart,
-          bpPerPx,
-          canvasWidth,
-        )
+      if (lineIntersectsRegion) {
+        const firstPx = (firstStart - regionStart) / bpPerPx
+        const lastPx = (lastEnd - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2
         lineToCtx(firstPx, lineY, lastPx, lineY, ctx, '#6665')
       }
@@ -158,7 +142,7 @@ export function drawLongReadChains({
           ]
 
       const clippedStart = Math.max(featStart, regionStart)
-      const clippedEnd = Math.min(featEnd, regionEnd)
+      const clippedEnd = Math.min(featEnd, region.end)
       const xPos = (clippedStart - regionStart) / bpPerPx
       const width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
 
@@ -202,7 +186,7 @@ export function drawLongReadChains({
         strokeRectCtx(drawX, drawY, drawWidth, featureHeight, ctx, featureStroke)
       }
 
-      renderMismatchesCallback({
+      const ret = renderMismatchesCallback({
         ctx,
         feat: layoutFeat,
         checkRef: true,
@@ -211,6 +195,21 @@ export function drawLongReadChains({
         canvasWidth,
         ...mismatchConfig,
       })
+
+      // Adjust coordinates from region-relative to global canvas space
+      for (let i = 0; i < ret.coords.length; i += 4) {
+        allCoords.push(
+          ret.coords[i]! + regionStartPx,
+          ret.coords[i + 1]!,
+          ret.coords[i + 2]! + regionStartPx,
+          ret.coords[i + 3]!,
+        )
+      }
+      for (const item of ret.items) {
+        allItems.push(item)
+      }
     }
   })
+
+  return { coords: allCoords, items: allItems }
 }
