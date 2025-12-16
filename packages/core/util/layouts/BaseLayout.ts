@@ -23,6 +23,7 @@ export interface BaseLayout<T> {
     height: number,
     data?: unknown,
     serializableData?: unknown,
+    startingRow?: number,
   ): number | null
   collides(rect: Rectangle<T>, top: number): boolean
   addRectToBitmap(rect: Rectangle<T>, data: unknown): void

@@ -2,20 +2,20 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
-import { renderMismatches } from '../PileupRenderer/renderers/renderMismatches'
+import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
+import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
+import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
+import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
 import {
+  CHEVRON_WIDTH,
   getCharWidthHeight,
   getColorBaseMap,
   getContrastBaseMap,
   setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
-} from '../PileupRenderer/util'
-import { fillRectCtx, lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { drawChevron } from '../shared/chevron'
-import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
-import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
-import { CHEVRON_WIDTH } from '../shared/util'
+} from '../shared/util'
 
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { ChainData, ColorBy } from '../shared/types'
@@ -92,6 +92,7 @@ export function drawLongReadChains({
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 
+  let lastFillStyle = ''
   forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain, minX, maxX } = computedChain
 
@@ -107,7 +108,7 @@ export function drawLongReadChains({
       return
     }
 
-    const chainY = chainYOffsets.get(id)
+    let chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       return
     }
@@ -257,8 +258,8 @@ export function drawLongReadChains({
             strokeColor[getStrandColorKey(effectiveStrand)],
           ]
 
-      const xPos = startPx - viewOffsetPx
-      const width = Math.max(endPx - startPx, 3)
+      let xPos = startPx - viewOffsetPx
+      let width = Math.max(endPx - startPx, 3)
 
       // Render the alignment base shape
       const layoutFeat = {
@@ -280,7 +281,22 @@ export function drawLongReadChains({
           featureStroke,
         )
       } else {
-        fillRectCtx(xPos, chainY, width, featureHeight, ctx, featureFill)
+        // avoid drawing negative width features for SVG exports
+        if (width < 0) {
+          xPos += width
+          width = -width
+        }
+        if (featureHeight < 0) {
+          chainY += featureHeight
+          // no need to negate featureHeight, it's not used again
+        }
+
+        if (featureFill && lastFillStyle !== featureFill) {
+          ctx.fillStyle = featureFill
+          lastFillStyle = featureFill
+        }
+
+        ctx.fillRect(xPos, chainY, width, featureHeight)
         strokeRectCtx(xPos, chainY, width, featureHeight, ctx, featureStroke)
       }
 
@@ -297,9 +313,10 @@ export function drawLongReadChains({
         // The actual canvas clipping will handle bounds correctly
         const effectiveCanvasWidth = canvasWidth + Math.abs(offsetAdjustment)
 
-        renderMismatches({
+        renderMismatchesCallback({
           ctx,
           feat: layoutFeat,
+          checkRef: true,
           bpPerPx,
           regions,
           hideSmallIndels,

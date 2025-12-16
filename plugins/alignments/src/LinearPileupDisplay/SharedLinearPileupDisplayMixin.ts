@@ -589,6 +589,8 @@ export function SharedLinearPileupDisplayMixin(
               subMenu: [
                 {
                   label: 'Normal',
+                  type: 'radio',
+                  checked: self.featureHeight === 7 && self.noSpacing === false,
                   onClick: () => {
                     self.setFeatureHeight(7)
                     self.setNoSpacing(false)
@@ -596,6 +598,8 @@ export function SharedLinearPileupDisplayMixin(
                 },
                 {
                   label: 'Compact',
+                  type: 'radio',
+                  checked: self.featureHeight === 2 && self.noSpacing === true,
                   onClick: () => {
                     self.setFeatureHeight(2)
                     self.setNoSpacing(true)
@@ -603,13 +607,15 @@ export function SharedLinearPileupDisplayMixin(
                 },
                 {
                   label: 'Super-compact',
+                  type: 'radio',
+                  checked: self.featureHeight === 1 && self.noSpacing === true,
                   onClick: () => {
                     self.setFeatureHeight(1)
                     self.setNoSpacing(true)
                   },
                 },
                 {
-                  label: 'Manually set height',
+                  label: 'Custom',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SetFeatureHeightDialog,

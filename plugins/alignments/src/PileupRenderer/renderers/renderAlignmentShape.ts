@@ -1,6 +1,5 @@
-import { CIGAR_D, CIGAR_EQ, CIGAR_M, CIGAR_N, CIGAR_X } from './cigarUtil'
+import { CIGAR_N, CIGAR_REF_CONSUMING_MASK } from './cigarUtil'
 import { CHEVRON_WIDTH } from '../../shared/util'
-import { fillRectCtx } from '../util'
 
 import type { ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
@@ -72,7 +71,9 @@ export function renderAlignmentShape({
   const strand = feature.get('strand') * flip
   const renderChevrons = bpPerPx < 10 && heightPx > 5
 
+  let lastColor = color
   ctx.fillStyle = color
+
   let hasSkips = false
   for (let i = 0, l = cigarOps.length; i < l; i++) {
     if ((cigarOps[i]! & 0xf) === CIGAR_N) {
@@ -82,7 +83,6 @@ export function renderAlignmentShape({
   }
 
   // Check for skips (N operations)
-
   if (hasSkips) {
     const midY = topPx + heightPx / 2
 
@@ -96,12 +96,7 @@ export function renderAlignmentShape({
         const opLen = packed >> 4
         const op = packed & 0xf
 
-        if (
-          op === CIGAR_M ||
-          op === CIGAR_X ||
-          op === CIGAR_EQ ||
-          op === CIGAR_D
-        ) {
+        if ((1 << op) & CIGAR_REF_CONSUMING_MASK) {
           drawLen += opLen
         } else if (op === CIGAR_N) {
           if (drawLen) {
@@ -112,14 +107,14 @@ export function renderAlignmentShape({
             const rightPx = reversed
               ? (regionEnd - drawStart) * invBpPerPx
               : (drawEnd - regionStart) * invBpPerPx
-            fillRectCtx(
-              ctx,
-              leftPx,
-              topPx,
-              rightPx - leftPx,
-              heightPx,
-              canvasWidth,
-            )
+            const w = rightPx - leftPx
+            if (leftPx + w > 0 && leftPx < canvasWidth) {
+              if (lastColor !== color) {
+                ctx.fillStyle = color
+                lastColor = color
+              }
+              ctx.fillRect(leftPx, topPx, w, heightPx)
+            }
           }
           drawStart += drawLen + opLen
           drawLen = 0
@@ -138,14 +133,14 @@ export function renderAlignmentShape({
         if (renderChevrons) {
           drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
         } else {
-          fillRectCtx(
-            ctx,
-            leftPx,
-            topPx,
-            rightPx - leftPx,
-            heightPx,
-            canvasWidth,
-          )
+          const w = rightPx - leftPx
+          if (leftPx + w > 0 && leftPx < canvasWidth) {
+            if (lastColor !== color) {
+              ctx.fillStyle = color
+              lastColor = color
+            }
+            ctx.fillRect(leftPx, topPx, w, heightPx)
+          }
         }
       }
     } else if (strand === -1) {
@@ -157,12 +152,7 @@ export function renderAlignmentShape({
         const opLen = packed >> 4
         const op = packed & 0xf
 
-        if (
-          op === CIGAR_M ||
-          op === CIGAR_X ||
-          op === CIGAR_EQ ||
-          op === CIGAR_D
-        ) {
+        if ((1 << op) & CIGAR_REF_CONSUMING_MASK) {
           drawLen += opLen
         } else if (op === CIGAR_N) {
           if (drawLen) {
@@ -173,14 +163,14 @@ export function renderAlignmentShape({
             const rightPx = reversed
               ? (regionEnd - drawBegin) * invBpPerPx
               : (drawStart - regionStart) * invBpPerPx
-            fillRectCtx(
-              ctx,
-              leftPx,
-              topPx,
-              rightPx - leftPx,
-              heightPx,
-              canvasWidth,
-            )
+            const w = rightPx - leftPx
+            if (leftPx + w > 0 && leftPx < canvasWidth) {
+              if (lastColor !== color) {
+                ctx.fillStyle = color
+                lastColor = color
+              }
+              ctx.fillRect(leftPx, topPx, w, heightPx)
+            }
           }
           drawStart -= drawLen + opLen
           drawLen = 0
@@ -199,14 +189,14 @@ export function renderAlignmentShape({
         if (renderChevrons) {
           drawReverseChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
         } else {
-          fillRectCtx(
-            ctx,
-            leftPx,
-            topPx,
-            rightPx - leftPx,
-            heightPx,
-            canvasWidth,
-          )
+          const w = rightPx - leftPx
+          if (leftPx + w > 0 && leftPx < canvasWidth) {
+            if (lastColor !== color) {
+              ctx.fillStyle = color
+              lastColor = color
+            }
+            ctx.fillRect(leftPx, topPx, w, heightPx)
+          }
         }
       }
     }
@@ -226,7 +216,14 @@ export function renderAlignmentShape({
         drawForwardChevron(ctx, leftPx, rightPx, topPx, heightPx, midY)
       }
     } else {
-      fillRectCtx(ctx, leftPx, topPx, rightPx - leftPx, heightPx, canvasWidth)
+      const w = rightPx - leftPx
+      if (leftPx + w > 0 && leftPx < canvasWidth) {
+        if (lastColor !== color) {
+          ctx.fillStyle = color
+          lastColor = color
+        }
+        ctx.fillRect(leftPx, topPx, w, heightPx)
+      }
     }
   }
 }

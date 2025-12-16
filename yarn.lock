@@ -1545,10 +1545,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.4.tgz#5ecb44e40cf128e9f44f7c25e1406facdcaede9b"
   integrity sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==
 
-"@gmod/bam@^7.1.9":
-  version "7.1.9"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-7.1.9.tgz#a2f2ebd2f67dc8730934f1ee729891f0404e777b"
-  integrity sha512-GNsAputL9pZgrrYX8RXpCGCvMOR1U7jJuA5OiWvMf1PcknAWW++pR1quEOjxj6J6uosdlajQp8PNIOF57r8e6A==
+"@gmod/bam@^7.1.10":
+  version "7.1.10"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-7.1.10.tgz#33818847c7a28c0c7e7a61acd32c46dc230f653f"
+  integrity sha512-IksHRErVTBmhypnGQ0kDmCXPvm2q/StX06F5+doc8lT25eGldLpyONhslrYALkWhXGAeQj4cxbITXYEQeVeuxw==
   dependencies:
     "@gmod/bgzf-filehandle" "^6.0.6"
     crc "^4.3.2"
@@ -14130,13 +14130,13 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-swr@^2.3.3:
-  version "2.3.7"
-  resolved "https://registry.yarnpkg.com/swr/-/swr-2.3.7.tgz#93ca89c9c06a6a8dab72e9d8e85a687123f40356"
-  integrity sha512-ZEquQ82QvalqTxhBVv/DlAg2mbmUjF4UgpPg9wwk4ufb9rQnZXh1iKyyKBqV6bQGu1Ie7L1QwSYO07qFIa1p+g==
+swr@^2.3.8:
+  version "2.3.8"
+  resolved "https://registry.yarnpkg.com/swr/-/swr-2.3.8.tgz#aa15596321a34e575226a60576bade0b57adf7bf"
+  integrity sha512-gaCPRVoMq8WGDcWj9p4YWzCMPHzE0WNl6W8ADIx9c3JBEIdMkJGMzW+uzXvxHMltwcYACr9jP+32H8/hgwMR7w==
   dependencies:
     dequal "^2.0.3"
-    use-sync-external-store "^1.4.0"
+    use-sync-external-store "^1.6.0"
 
 symbol-tree@^3.2.4:
   version "3.2.4"

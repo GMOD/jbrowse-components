@@ -4,6 +4,7 @@ export interface BaseOptions {
   sessionId?: string
   statusCallback?: (message: string) => void
   headers?: Record<string, string>
+  statsEstimationMode?: boolean
 }
 
 export type SearchType = 'full' | 'prefix' | 'exact'
