@@ -8,7 +8,6 @@ import { fetchSequence } from '../util'
 import { generateCoverageBinsPrefixSum } from './generateCoverageBinsPrefixSum'
 
 import type { FeatureWithMismatchIterator } from '../shared/types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -19,9 +18,13 @@ import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
+  public sequenceAdapterConfig?: Record<string, unknown>
+
   protected async configure() {
     const subadapterConfigBase = this.getConf('subadapter')
-    const sequenceAdapter = this.getConf('sequenceAdapter')
+
+    // Initialize sequenceAdapterConfig from config if not set externally
+    this.sequenceAdapterConfig ??= this.getConf('sequenceAdapter')
 
     // Use the base subadapter config to ensure consistent cache keys
     // Set sequenceAdapterConfig on the subadapter after creation
@@ -35,10 +38,10 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
     // Set sequenceAdapterConfig on the subadapter for BAM/CRAM adapters
     // that need it for reference sequence fetching
-    if (sequenceAdapter) {
+    if (this.sequenceAdapterConfig) {
       const adapter = subadapter as { sequenceAdapterConfig?: unknown }
       if (adapter.sequenceAdapterConfig === undefined) {
-        adapter.sequenceAdapterConfig = sequenceAdapter
+        adapter.sequenceAdapterConfig = this.sequenceAdapterConfig
       }
     }
 
@@ -46,7 +49,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSequenceAdapter() {
-    const config = this.getConf('sequenceAdapter')
+    const config = this.sequenceAdapterConfig
     if (!config || !this.getSubAdapter) {
       return undefined
     }

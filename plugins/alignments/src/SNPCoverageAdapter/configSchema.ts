@@ -16,14 +16,6 @@ const configSchema = ConfigurationSchema(
       type: 'frozen',
       defaultValue: null,
     },
-    /**
-     * #slot
-     * sequence adapter for fetching reference sequences (needed by CRAM)
-     */
-    sequenceAdapter: {
-      type: 'frozen',
-      defaultValue: null,
-    },
   },
   { explicitlyTyped: true },
 )
