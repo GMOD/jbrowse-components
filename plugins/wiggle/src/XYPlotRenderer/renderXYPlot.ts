@@ -28,6 +28,14 @@ export async function renderXYPlot(
   const negColor = readConfObject(config, 'negColor')
   const posColor = readConfObject(config, 'posColor')
 
+  // Debug logging for color issue
+  console.log('[renderXYPlot] color values:', {
+    posColor,
+    negColor,
+    pivotValue,
+    colorIsCallback: config.color?.isCallback,
+  })
+
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
     statusCallback,

@@ -133,11 +133,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
             refName,
             source,
             uniqueId,
-            ...(isSummary && {
-              summary: true,
-              minScore: minScores[i],
-              maxScore: maxScores?.[i],
-            }),
+            summary: isSummary,
+            minScore: isSummary ? arrays.minScores[i] : undefined,
+            maxScore: isSummary ? arrays.maxScores[i] : undefined,
           }),
         })
       }

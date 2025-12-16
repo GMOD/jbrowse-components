@@ -21,10 +21,20 @@ test('open a bigwig track and change posColor', async () => {
 
   // Get the display model and change color
   const track = view.tracks[0]!
-  const display = track.displays[0] as { setPosColor: (c: string) => void }
+  const display = track.displays[0] as {
+    setPosColor: (c: string) => void
+    posColor: string | undefined
+  }
+
+  // Verify initial state
+  console.log('[test] before setPosColor, display.posColor =', display.posColor)
 
   // Change the positive color
   display.setPosColor('green')
+
+  // Verify the state changed
+  console.log('[test] after setPosColor, display.posColor =', display.posColor)
+  expect(display.posColor).toBe('green')
 
   // Wait for re-render with new color
   await waitFor(
