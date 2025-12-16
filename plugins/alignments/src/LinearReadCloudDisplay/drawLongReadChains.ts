@@ -183,7 +183,14 @@ export function drawLongReadChains({
         }
 
         ctx.fillRect(drawX, drawY, drawWidth, featureHeight)
-        strokeRectCtx(drawX, drawY, drawWidth, featureHeight, ctx, featureStroke)
+        strokeRectCtx(
+          drawX,
+          drawY,
+          drawWidth,
+          featureHeight,
+          ctx,
+          featureStroke,
+        )
       }
 
       const ret = renderMismatchesCallback({

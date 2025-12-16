@@ -46,6 +46,11 @@ export function drawFeats(
     ctx,
     canvasWidth,
     calculateYOffsets: computedChains =>
-      calculateStackYOffsetsUtil(computedChains, featureHeight, noSpacing, maxHeight),
+      calculateStackYOffsetsUtil(
+        computedChains,
+        featureHeight,
+        noSpacing,
+        maxHeight,
+      ),
   })
 }

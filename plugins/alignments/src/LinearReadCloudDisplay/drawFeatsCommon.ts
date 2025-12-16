@@ -304,9 +304,10 @@ export function drawFeatsCore({
   ctx: CanvasRenderingContext2D
   params: DrawFeatsParams
   view: any
-  calculateYOffsets: (
-    computedChains: ComputedChain[],
-  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
+  calculateYOffsets: (computedChains: ComputedChain[]) => {
+    chainYOffsets: Map<string, number>
+    layoutHeight?: number
+  }
 }): DrawFeatsResult {
   const {
     chainData,
@@ -451,9 +452,10 @@ export function drawFeatsCommon({
   self: LinearReadCloudDisplayModel
   ctx: CanvasRenderingContext2D
   canvasWidth: number
-  calculateYOffsets: (
-    computedChains: ComputedChain[],
-  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
+  calculateYOffsets: (computedChains: ComputedChain[]) => {
+    chainYOffsets: Map<string, number>
+    layoutHeight?: number
+  }
 }) {
   const { chainData } = self
   if (!chainData) {

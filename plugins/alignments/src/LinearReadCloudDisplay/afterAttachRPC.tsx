@@ -8,7 +8,10 @@ import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
 import { createAutorun } from '../util'
-import { buildFlatbushIndex, buildMismatchFlatbushIndex } from './drawFeatsCommon'
+import {
+  buildFlatbushIndex,
+  buildMismatchFlatbushIndex,
+} from './drawFeatsCommon'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { FlatbushEntry } from '../shared/flatbushType'

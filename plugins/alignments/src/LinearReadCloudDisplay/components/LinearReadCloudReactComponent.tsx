@@ -214,8 +214,7 @@ const Cloud = observer(function ({
     height: number
   }>()
   const [hoveredFeatureData, setHoveredFeatureData] = useState<ReducedFeature>()
-  const [hoveredMismatchData, setHoveredMismatchData] =
-    useState<FlatbushItem>()
+  const [hoveredMismatchData, setHoveredMismatchData] = useState<FlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
     x: number
     y: number
