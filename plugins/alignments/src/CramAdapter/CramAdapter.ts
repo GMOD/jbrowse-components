@@ -29,6 +29,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter>
 
+  // Fallback for standalone CRAM tracks that don't have sequenceAdapter in config
   public sequenceAdapterConfig?: Record<string, unknown>
 
   private ultraLongFeatureCache = new QuickLRU<number, Feature>({
@@ -75,20 +76,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSequenceAdapter() {
-    // First check if sequenceAdapter is in the config (explicit configuration)
-    const configSeqAdapter = this.getConf('sequenceAdapter')
-    // Fall back to the externally-set property (set by CoreGetRefNames)
-    const config = configSeqAdapter || this.sequenceAdapterConfig
-    console.log(
-      '[CramAdapter.getSequenceAdapter] instance:',
-      this.cramInstanceId,
-      'configSeqAdapter:',
-      !!configSeqAdapter,
-      'sequenceAdapterConfig:',
-      !!this.sequenceAdapterConfig,
-      'hasConfig:',
-      !!config,
-    )
+    // Check config first, fall back to externally-set property for standalone tracks
+    const config = this.getConf('sequenceAdapter') || this.sequenceAdapterConfig
     if (!config || !this.getSubAdapter) {
       return undefined
     }

@@ -21,36 +21,27 @@ export default class CoreGetRefNames extends RpcMethodType {
     if (!isFeatureAdapter(dataAdapter)) {
       return []
     }
-    // cache sequenceAdapter config on the adapter if provided (for BAM/CRAM)
+
+    // Set sequenceAdapterConfig on the adapter as fallback for standalone
+    // BAM/CRAM tracks that don't have sequenceAdapter in their config
     if (sequenceAdapter) {
       const adapter = dataAdapter as { sequenceAdapterConfig?: unknown }
       if (adapter.sequenceAdapterConfig === undefined) {
         adapter.sequenceAdapterConfig = sequenceAdapter
       }
 
-      // Also set sequenceAdapterConfig on any subadapters in the config
-      // (e.g., SNPCoverageAdapter wraps CramAdapter/BamAdapter)
+      // Pre-warm the adapter cache for subadapters (e.g., SNPCoverageAdapter
+      // wraps CramAdapter/BamAdapter) with sequenceAdapter included in the config.
+      // This ensures the cache key matches what SNPCoverageAdapter.configure() uses.
       const subadapterConfigBase = adapterConfig.subadapter as
         | Record<string, unknown>
         | undefined
       if (subadapterConfigBase) {
-        // Include sequenceAdapter in the subadapter config for CramAdapter
-        // so the cache key matches what SNPCoverageAdapter.configure() uses
-        const subadapterConfig =
-          subadapterConfigBase.type === 'CramAdapter'
-            ? { ...subadapterConfigBase, sequenceAdapter }
-            : subadapterConfigBase
-        const { dataAdapter: subAdapter } = await getAdapter(
-          pm,
-          sessionId,
-          subadapterConfig,
-        )
-        const sub = subAdapter as { sequenceAdapterConfig?: unknown }
-        if (sub.sequenceAdapterConfig === undefined) {
-          sub.sequenceAdapterConfig = sequenceAdapter
-        }
+        const subadapterConfig = { ...subadapterConfigBase, sequenceAdapter }
+        await getAdapter(pm, sessionId, subadapterConfig)
       }
     }
+
     return dataAdapter.getRefNames(deserializedArgs)
   }
 }

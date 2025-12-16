@@ -50,6 +50,15 @@ const configSchema = ConfigurationSchema(
         'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
       defaultValue: 5_000_000,
     },
+
+    /**
+     * #slot sequenceAdapter
+     * optional reference sequence adapter, used for calculating SNPs
+     */
+    sequenceAdapter: {
+      type: 'frozen',
+      defaultValue: null,
+    },
   },
   {
     explicitlyTyped: true,

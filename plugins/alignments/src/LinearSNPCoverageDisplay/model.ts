@@ -388,14 +388,6 @@ function stateModelFactory(
           const sequenceAdapter = sequenceAdapterConfig
             ? getSnapshot(sequenceAdapterConfig)
             : undefined
-          console.log(
-            '[LinearSNPCoverageDisplay.adapterConfig] assemblyName:',
-            assemblyName,
-            'hasSequenceAdapter:',
-            !!sequenceAdapter,
-            'subadapterType:',
-            subadapter?.type,
-          )
           return {
             type: 'SNPCoverageAdapter',
             subadapter,
