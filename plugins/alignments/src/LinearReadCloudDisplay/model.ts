@@ -30,7 +30,6 @@ import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// async
 const SetFeatureHeightDialog = lazy(
   () => import('./components/SetFeatureHeightDialog'),
 )
@@ -104,6 +103,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       renderingStopToken: undefined as string | undefined,
     }))
     .views(self => ({
+      get dataTestId() {
+        return self.drawCloud ? 'cloud-canvas' : 'stack-canvas'
+      },
       /**
        * #getter
        */

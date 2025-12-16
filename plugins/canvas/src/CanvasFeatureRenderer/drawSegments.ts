@@ -1,3 +1,4 @@
+import { drawChevrons } from './drawChevrons'
 import { getStrokeColor, isOffScreen } from './util'
 
 import type { DrawFeatureArgs } from './types'
@@ -11,6 +12,7 @@ export function drawSegments(args: DrawFeatureArgs) {
     theme,
     feature,
     canvasWidth,
+    reversed,
   } = args
 
   const left = featureLayout.x
@@ -31,4 +33,13 @@ export function drawSegments(args: DrawFeatureArgs) {
   ctx.moveTo(left, y)
   ctx.lineTo(left + width, y)
   ctx.stroke()
+
+  const { displayDirectionalChevrons } = configContext
+  if (displayDirectionalChevrons) {
+    const strand = feature.get('strand') as number
+    if (strand) {
+      const effectiveStrand = reversed ? -strand : strand
+      drawChevrons(ctx, left, y, width, effectiveStrand, color2)
+    }
+  }
 }

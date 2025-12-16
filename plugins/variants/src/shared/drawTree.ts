@@ -1,6 +1,8 @@
+import type { ClusterHierarchyNode } from './components/types'
+
 export function drawTree(
   ctx: CanvasRenderingContext2D,
-  hierarchy: any,
+  hierarchy: ClusterHierarchyNode,
   treeAreaWidth: number,
   totalHeight: number,
 ) {
@@ -8,23 +10,22 @@ export function drawTree(
   ctx.strokeStyle = '#0008'
   ctx.lineWidth = 1
 
+  // Use single path for all tree lines for better performance
+  ctx.beginPath()
   for (const link of hierarchy.links()) {
     const { source, target } = link
     const sy = source.x!
     const ty = target.x!
-    const tx = target.y
-    const sx = source.y
+    const tx = target.y!
+    const sx = source.y!
 
     // Vertical line
-    ctx.beginPath()
     ctx.moveTo(sx, sy)
     ctx.lineTo(sx, ty)
-    ctx.stroke()
 
     // Horizontal line
-    ctx.beginPath()
     ctx.moveTo(sx, ty)
     ctx.lineTo(tx, ty)
-    ctx.stroke()
   }
+  ctx.stroke()
 }

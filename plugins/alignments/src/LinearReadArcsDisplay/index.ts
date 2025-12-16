@@ -19,7 +19,9 @@ export default function register(pluginManager: PluginManager) {
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },
-      ReactComponent: lazy(() => import('./components/ReactComponent')),
+      ReactComponent: lazy(
+        () => import('./components/LinearReadArcsReactComponent'),
+      ),
     })
   })
 }

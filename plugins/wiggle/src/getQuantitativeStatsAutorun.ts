@@ -19,7 +19,7 @@ export function getQuantitativeStatsAutorun(self: {
   adapterProps: () => Record<string, unknown>
   setStatsLoading: (token: string) => void
   setError: (error: unknown) => void
-  setMessage: (str: string) => void
+  setStatusMessage: (str: string) => void
   updateQuantitativeStats: (stats: QuantitativeStats, region: string) => void
 }) {
   addDisposer(
@@ -50,7 +50,7 @@ export function getQuantitativeStatsAutorun(self: {
           }
         }
       },
-      { delay: 1000 },
+      { delay: 500 },
     ),
   )
 }

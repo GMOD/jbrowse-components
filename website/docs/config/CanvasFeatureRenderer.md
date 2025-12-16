@@ -258,3 +258,14 @@ geneGlyphMode: {
       defaultValue: 'all',
     }
 ```
+
+#### slot: displayDirectionalChevrons
+
+```js
+displayDirectionalChevrons: {
+      type: 'boolean',
+      description:
+        'Display directional chevrons on intron lines to indicate strand direction',
+      defaultValue: true,
+    }
+```

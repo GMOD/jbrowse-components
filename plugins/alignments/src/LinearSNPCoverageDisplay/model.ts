@@ -3,8 +3,15 @@ import { lazy } from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getEnv,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import FilterListIcon from '@mui/icons-material/FilterList'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
@@ -25,6 +32,9 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const Tooltip = lazy(() => import('./components/Tooltip'))
 const InterbaseInfoDialog = lazy(
   () => import('./components/InterbaseInfoDialog'),
+)
+const FilterArcsByScoreDialog = lazy(
+  () => import('./components/FilterArcsByScoreDialog'),
 )
 
 // using a map because it preserves order
@@ -66,6 +76,10 @@ function stateModelFactory(
         /**
          * #property
          */
+        minArcScore: types.optional(types.number, 0),
+        /**
+         * #property
+         */
         filterBySetting: types.frozen<FilterBy | undefined>(),
         /**
          * #property
@@ -90,25 +104,6 @@ function stateModelFactory(
        */
       get filterBy() {
         return self.filterBySetting ?? getConf(self, 'filterBy')
-      },
-
-      /**
-       * #getter
-       * Collect all skip features from rendered blocks for cross-region arc drawing
-       * Uses a Map to deduplicate features that appear in multiple blocks
-       */
-      get skipFeatures(): Feature[] {
-        const skipFeaturesMap = new Map<string, Feature>()
-        for (const block of self.blockState.values()) {
-          if (block.features) {
-            for (const feature of block.features.values()) {
-              if (feature.get('type') === 'skip') {
-                skipFeaturesMap.set(feature.id(), feature)
-              }
-            }
-          }
-        }
-        return [...skipFeaturesMap.values()]
       },
     }))
     .actions(self => ({
@@ -183,6 +178,33 @@ function stateModelFactory(
         },
         /**
          * #getter
+         * Collect all skip features from rendered blocks for cross-region arc drawing
+         * Uses a Map to deduplicate features that appear in multiple blocks
+         * Only computed when showArcsSetting is true for performance
+         * Filters out arcs with score below minArcScore
+         */
+        get skipFeatures(): Feature[] {
+          if (!this.showArcsSetting) {
+            return []
+          }
+          const { minArcScore } = self
+          const skipFeaturesMap = new Map<string, Feature>()
+          for (const block of self.blockState.values()) {
+            if (block.features) {
+              for (const feature of block.features.values()) {
+                if (
+                  feature.get('type') === 'skip' &&
+                  (feature.get('score') ?? 1) >= minArcScore
+                ) {
+                  skipFeaturesMap.set(feature.id(), feature)
+                }
+              }
+            }
+          }
+          return [...skipFeaturesMap.values()]
+        },
+        /**
+         * #getter
          */
         get showInterbaseCountsSetting() {
           return (
@@ -246,6 +268,12 @@ function stateModelFactory(
       setShowArcs(arg: boolean) {
         self.showArcs = arg
       },
+      /**
+       * #action
+       */
+      setMinArcScore(arg: number) {
+        self.minArcScore = arg
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -284,7 +312,7 @@ function stateModelFactory(
       const {
         renderProps: superRenderProps,
         renderingProps: superRenderingProps,
-        trackMenuItems: superTrackMenuItems,
+        wiggleBaseTrackMenuItems,
       } = self
       return {
         /**
@@ -349,9 +377,22 @@ function stateModelFactory(
          */
         get adapterConfig() {
           const subadapter = getConf(self.parentTrack, 'adapter')
+          const view = getContainingView(self) as LGV
+          const session = getSession(self)
+          const { assemblyManager } = session
+          const assemblyName = view.assemblyNames[0]
+          const assembly = assemblyName
+            ? assemblyManager.get(assemblyName)
+            : undefined
+          const sequenceAdapterConfig =
+            assembly?.configuration?.sequence?.adapter
+          const sequenceAdapter = sequenceAdapterConfig
+            ? getSnapshot(sequenceAdapterConfig)
+            : undefined
           return {
             type: 'SNPCoverageAdapter',
             subadapter,
+            sequenceAdapter,
           }
         },
 
@@ -381,7 +422,7 @@ function stateModelFactory(
          */
         trackMenuItems() {
           return [
-            ...superTrackMenuItems(),
+            ...wiggleBaseTrackMenuItems(),
             {
               label: 'Show insertion/clipping indicators',
               icon: VisibilityIcon,
@@ -409,6 +450,16 @@ function stateModelFactory(
               checked: self.showArcsSetting,
               onClick: () => {
                 self.setShowArcs(!self.showArcsSetting)
+              },
+            },
+            {
+              label: 'Filter arcs by score...',
+              icon: FilterListIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  FilterArcsByScoreDialog,
+                  { model: self, handleClose },
+                ])
               },
             },
           ]

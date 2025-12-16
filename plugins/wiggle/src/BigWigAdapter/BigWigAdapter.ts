@@ -81,31 +81,65 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
     return ObservableCreate<Feature>(async observer => {
       const { bigwig } = await this.setup(opts)
-      const feats = await updateStatus(
+
+      const arrays = await updateStatus(
         'Downloading bigwig data',
         statusCallback,
         () =>
-          bigwig.getFeatures(refName, start, end, {
+          bigwig.getFeaturesAsArrays(refName, start, end, {
             ...opts,
             basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
           }),
       )
 
-      for (const data of feats) {
-        const uniqueId = `${idPrefix}${data.start}-${data.end}`
-        // @ts-expect-error
-        data.refName = refName
-        data.uniqueId = uniqueId
-        if (source) {
-          // @ts-expect-error
-          data.source = source
-        }
+      const { starts, ends, scores } = arrays
+      const minScores = 'minScores' in arrays ? arrays.minScores : undefined
+      const maxScores = 'maxScores' in arrays ? arrays.maxScores : undefined
+      const isSummary = minScores !== undefined
+
+      for (const [i, start_] of starts.entries()) {
+        const featureStart = start_
+        const featureEnd = ends[i]!
+        const score = scores[i]!
+        const uniqueId = `${source}:${refName}:${featureStart}-${featureEnd}`
+
         observer.next({
-          // @ts-expect-error
-          get: (str: string) => (data as Record<string, unknown>)[str],
+          get: (str: string) => {
+            switch (str) {
+              case 'start':
+                return featureStart
+              case 'end':
+                return featureEnd
+              case 'score':
+                return score
+              case 'refName':
+                return refName
+              case 'source':
+                return source
+              case 'summary':
+                return isSummary
+              case 'minScore':
+                return minScores?.[i]
+              case 'maxScore':
+                return maxScores?.[i]
+              default:
+                return undefined
+            }
+          },
           id: () => uniqueId,
-          // @ts-expect-error
-          toJSON: () => data,
+          toJSON: () => ({
+            start: featureStart,
+            end: featureEnd,
+            score,
+            refName,
+            source,
+            uniqueId,
+            ...(isSummary && {
+              summary: true,
+              minScore: minScores[i],
+              maxScore: maxScores?.[i],
+            }),
+          }),
         })
       }
       observer.complete()

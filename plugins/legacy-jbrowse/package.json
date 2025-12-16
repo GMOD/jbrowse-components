@@ -39,7 +39,7 @@
     "@gmod/nclist": "^3.0.0",
     "@jbrowse/core": "^3.7.0",
     "@jbrowse/mobx-state-tree": "^5.4.7",
-    "generic-filehandle2": "^2.0.1",
+    "generic-filehandle2": "^2.0.16",
     "mobx": "^6.0.0",
     "rxjs": "^7.0.0",
     "set-value": "^4.0.1"

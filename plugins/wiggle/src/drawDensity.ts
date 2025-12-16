@@ -1,5 +1,4 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { featureSpanPx } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { fillRectCtx, getScale } from './util'
@@ -28,6 +27,10 @@ export function drawDensity(
   const { stopToken, features, regions, bpPerPx, scaleOpts, height, config } =
     props
   const region = regions[0]!
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
   const pivot = readConfObject(config, 'bicolorPivot')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const negColor = readConfObject(config, 'negColor')
@@ -62,7 +65,14 @@ export function drawDensity(
       checkStopToken(stopToken)
       start = performance.now()
     }
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
+    const leftPx = reversed
+      ? (regionEnd - fend) * invBpPerPx
+      : (fstart - regionStart) * invBpPerPx
+    const rightPx = reversed
+      ? (regionEnd - fstart) * invBpPerPx
+      : (fend - regionStart) * invBpPerPx
 
     // create reduced features, avoiding multiple features per px
     // bitwise OR is faster than Math.floor for positive numbers

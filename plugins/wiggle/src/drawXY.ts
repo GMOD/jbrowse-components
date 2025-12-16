@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { clamp, featureSpanPx } from '@jbrowse/core/util'
+import { clamp } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 // required to import this for typescript purposes
@@ -71,7 +71,11 @@ export function drawXY(
     filled: filledProp,
   } = props
   const region = regions[0]!
-  const width = (region.end - region.start) / bpPerPx
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
+  const width = (regionEnd - regionStart) * invBpPerPx
 
   const height = unadjustedHeight - offset * 2
 
@@ -82,13 +86,41 @@ export function drawXY(
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const minSize = readConfObject(config, 'minSize')
 
+  // Use d3-scale only to get the "niced" domain, then use simple arithmetic
   const scale = getScale({ ...scaleOpts, range: [0, height], inverted })
   const originY = getOrigin(scaleOpts.scaleType)
-  const domain = scale.domain()
-  const niceMin = domain[0]!
-  const niceMax = domain[1]!
+  const domain = scale.domain() as [number, number]
+  const niceMin = domain[0]
+  const niceMax = domain[1]
+  const domainSpan = niceMax - niceMin
+  const isLog = scaleOpts.scaleType === 'log'
 
-  const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
+  // Precompute values for linear scale
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+
+  // Precompute values for log scale (base 2)
+  const log2 = Math.log(2)
+  const logMin = Math.log(niceMin) / log2
+  const logMax = Math.log(niceMax) / log2
+  const logSpan = logMax - logMin
+  const logRatio = logSpan !== 0 ? height / logSpan : 0
+
+  // Simple arithmetic scale function - avoid d3-scale overhead in hot path
+  const toY = isLog
+    ? (n: number) => {
+        const scaled = (Math.log(n) / log2 - logMin) * logRatio
+        return (
+          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
+          offset
+        )
+      }
+    : (n: number) => {
+        const scaled = (n - niceMin) * linearRatio
+        return (
+          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
+          offset
+        )
+      }
   const toOrigin = (n: number) => toY(originY) - toY(n)
   const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
 
@@ -124,7 +156,9 @@ export function drawXY(
     const regionEnd = region.end
     const reversed = region.reversed
     const rpx = (bp: number) =>
-      Math.round(((reversed ? regionEnd - bp : bp - regionStart) / bpPerPx) * 10) / 10
+      Math.round(
+        ((reversed ? regionEnd - bp : bp - regionStart) / bpPerPx) * 10,
+      ) / 10
 
     // when staticColor is set, pre-compute all color variants once
     let staticLightened: string | undefined
@@ -174,9 +208,17 @@ export function drawXY(
       })
       // track clipping during data collection pass
       if (score > niceMax) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: true })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: true,
+        })
       } else if (score < niceMin && !isLog) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: false })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: false,
+        })
       }
     }
 
@@ -193,7 +235,14 @@ export function drawXY(
             (color === lastCol
               ? lastMix
               : (lastMix = lighten(colord(color), 0.4).toHex()))
-        fillRectCtx(leftPx, toY(maxScore), w, getHeight(maxScore), ctx, effectiveC)
+        fillRectCtx(
+          leftPx,
+          toY(maxScore),
+          w,
+          getHeight(maxScore),
+          ctx,
+          effectiveC,
+        )
         lastCol = color
       }
     }
@@ -201,7 +250,17 @@ export function drawXY(
     lastCol = undefined
     // pass 2: draw average scores
     for (const fd of featureData) {
-      const { feature, leftPx, rightPx, score, maxScore, minScore, summary, color, mixedColor } = fd
+      const {
+        feature,
+        leftPx,
+        rightPx,
+        score,
+        maxScore,
+        minScore,
+        summary,
+        color,
+        mixedColor,
+      } = fd
       const effectiveC =
         crossingOrigin && summary
           ? mixedColor ||
@@ -234,7 +293,14 @@ export function drawXY(
               ? lastMix
               : (lastMix = darken(colord(color), 0.4).toHex()))
 
-        fillRectCtx(leftPx, toY(minScore), w, getHeight(minScore), ctx, effectiveC)
+        fillRectCtx(
+          leftPx,
+          toY(minScore),
+          w,
+          getHeight(minScore),
+          ctx,
+          effectiveC,
+        )
         lastCol = color
       }
     }
@@ -266,7 +332,14 @@ export function drawXY(
         checkStopToken(stopToken)
         start = performance.now()
       }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const fstart = feature.get('start')
+      const fend = feature.get('end')
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
 
       // create reduced features, avoiding multiple features per px
       // bitwise OR is faster than Math.floor for positive numbers
@@ -280,9 +353,17 @@ export function drawXY(
 
       // track clipping during first pass
       if (score > niceMax) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: true })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: true,
+        })
       } else if (score < niceMin && !isLog) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: false })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: false,
+        })
       }
 
       // skip colorCallback when staticColor is set

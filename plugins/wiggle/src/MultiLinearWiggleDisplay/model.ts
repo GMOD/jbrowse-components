@@ -11,9 +11,9 @@ import {
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
 
 import type { Source } from '../util'
@@ -435,7 +435,6 @@ export function stateModelFactory(
       get hasGlobalStats() {
         return self.adapterCapabilities.includes('hasGlobalStats')
       },
-
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self

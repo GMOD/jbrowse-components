@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { MenuItem, MenuItemsGetter } from './MenuTypes'
-import type { PopupState } from './hooks'
 
 export function useAsyncMenuItems(
   menuItems: MenuItemsGetter,
@@ -60,32 +59,4 @@ export function useAsyncMenuItems(
 
   const loading = asyncState.fetchedFor !== menuItems
   return { items: asyncState.items, loading, error: asyncState.error }
-}
-
-// Cascading menu specific context and hooks
-
-export const CascadingContext = createContext({
-  parentPopupState: undefined,
-  rootPopupState: undefined,
-} as {
-  parentPopupState: PopupState | undefined
-  rootPopupState: PopupState | undefined
-})
-
-export function useCascadingContext(popupState: PopupState) {
-  const { rootPopupState } = useContext(CascadingContext)
-  return useMemo(
-    () => ({
-      rootPopupState: rootPopupState || popupState,
-      parentPopupState: popupState,
-    }),
-    [rootPopupState, popupState],
-  )
-}
-
-export function closeSiblingSubmenus(parentPopupState: PopupState | undefined) {
-  if (parentPopupState?.childHandle) {
-    parentPopupState.childHandle.close()
-    parentPopupState.setChildHandle(undefined)
-  }
 }

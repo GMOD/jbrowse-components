@@ -97,6 +97,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       width: undefined as number | undefined,
+      /**
+       * #volatile
+       * Set to true when the view is being initialized from a launch spec to
+       * avoid showing the import form during loading
+       */
+      isLoading: false,
     }))
     .views(self => ({
       /**
@@ -125,6 +131,21 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyNames() {
         return [...new Set(self.views.flatMap(v => v.assemblyNames))]
+      },
+
+      /**
+       * #getter
+       */
+      get loadingMessage() {
+        return this.showLoading ? 'Loading' : undefined
+      },
+
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return self.isLoading || (!this.initialized && self.views.length > 0)
       },
     }))
     .actions(self => ({
@@ -173,6 +194,13 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number) {
         self.width = newWidth
+      },
+
+      /**
+       * #action
+       */
+      setIsLoading(arg: boolean) {
+        self.isLoading = arg
       },
 
       /**

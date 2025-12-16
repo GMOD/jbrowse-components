@@ -44,21 +44,44 @@ export function drawLine(
     staticColor,
   } = props
   const region = regions[0]!
-  const width = (region.end - region.start) / bpPerPx
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
+  const width = (regionEnd - regionStart) * invBpPerPx
 
   const height = unadjustedHeight - offset * 2
   const clipColor = readConfObject(config, 'clipColor')
+
+  // Use d3-scale only to get the "niced" domain, then use simple arithmetic
   const scale = getScale({ ...scaleOpts, range: [0, height] })
-  const domain = scale.domain()
-  const niceMin = domain[0]!
-  const niceMax = domain[1]!
-  const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
+  const domain = scale.domain() as [number, number]
+  const niceMin = domain[0]
+  const niceMax = domain[1]
+  const domainSpan = niceMax - niceMin
+  const isLog = scaleOpts.scaleType === 'log'
+
+  // Precompute values for linear scale
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+
+  // Precompute values for log scale (base 2)
+  const log2 = Math.log(2)
+  const logMin = Math.log(niceMin) / log2
+  const logMax = Math.log(niceMax) / log2
+  const logSpan = logMax - logMin
+  const logRatio = logSpan !== 0 ? height / logSpan : 0
+
+  // Simple arithmetic scale function - avoid d3-scale overhead in hot path
+  const toY = isLog
+    ? (n: number) =>
+        clamp(height - (Math.log(n) / log2 - logMin) * logRatio, 0, height) +
+        offset
+    : (n: number) =>
+        clamp(height - (n - niceMin) * linearRatio, 0, height) + offset
 
   let lastVal: number | undefined
   let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []
-  const isLog = scaleOpts.scaleType === 'log'
-  const reversed = region.reversed
 
   // when staticColor is set, batch all path operations into a single stroke
   if (staticColor) {
@@ -85,9 +108,17 @@ export function drawLine(
 
       // track clipping
       if (score > niceMax) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: true })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: true,
+        })
       } else if (score < niceMin && !isLog) {
-        clippingFeatures.push({ leftPx, w: rightPx - leftPx + fudgeFactor, high: false })
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + fudgeFactor,
+          high: false,
+        })
       }
 
       const startY = lastVal !== undefined ? toY(lastVal) : scoreY

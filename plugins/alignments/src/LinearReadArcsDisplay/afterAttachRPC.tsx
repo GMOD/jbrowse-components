@@ -45,11 +45,18 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
 
     try {
       const session = getSession(self)
-      const { rpcManager } = session
+      const { rpcManager, assemblyManager } = session
       const assemblyName = view.assemblyNames[0]
       if (!assemblyName) {
         return
       }
+
+      // Get the sequenceAdapter config for CRAM files that need it
+      const assembly = assemblyManager.get(assemblyName)
+      const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+      const sequenceAdapter = sequenceAdapterConfig
+        ? getSnapshot(sequenceAdapterConfig)
+        : undefined
 
       // Stop any previous rendering operation (use untracked to avoid triggering reactions)
       const previousToken = untracked(() => self.renderingStopToken)
@@ -78,6 +85,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
           sessionId: session.id,
           view: viewSnapshot,
           adapterConfig: self.adapterConfig,
+          sequenceAdapter,
           config: getSnapshot(self.configuration),
           theme: session.theme,
           filterBy,
@@ -90,7 +98,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
           highResolutionScaling: 2,
           rpcDriverName: self.effectiveRpcDriverName,
           statusCallback: (msg: string) => {
-            self.setMessage(msg)
+            self.setStatusMessage(msg)
           },
           stopToken,
         },
@@ -125,7 +133,10 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(height)
     },
-    { delay: 1000, name: 'PerformRender' },
+    {
+      delay: 1000,
+      name: 'PerformRender',
+    },
   )
 
   // Autorun to draw the imageData to canvas when available
@@ -148,6 +159,8 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(renderingImageData, 0, 0)
     },
-    { name: 'RenderCanvas' },
+    {
+      name: 'RenderCanvas',
+    },
   )
 }

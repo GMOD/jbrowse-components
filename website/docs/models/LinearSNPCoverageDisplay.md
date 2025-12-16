@@ -62,6 +62,15 @@ IMaybe<ISimpleType<boolean>>
 showArcs: types.maybe(types.boolean)
 ```
 
+#### property: minArcScore
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+minArcScore: types.optional(types.number, 0)
+```
+
 #### property: filterBySetting
 
 ```js
@@ -105,16 +114,6 @@ any
 any
 ```
 
-#### getter: skipFeatures
-
-Collect all skip features from rendered blocks for cross-region arc drawing Uses
-a Map to deduplicate features that appear in multiple blocks
-
-```js
-// type
-Feature[]
-```
-
 #### getter: modificationThreshold
 
 ```js
@@ -134,6 +133,18 @@ any
 ```js
 // type
 any
+```
+
+#### getter: skipFeatures
+
+Collect all skip features from rendered blocks for cross-region arc drawing Uses
+a Map to deduplicate features that appear in multiple blocks Only computed when
+showArcsSetting is true for performance Filters out arcs with score below
+minArcScore
+
+```js
+// type
+Feature[]
 ```
 
 #### getter: showInterbaseCountsSetting
@@ -178,6 +189,7 @@ LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; mouseoverExt
 {
   type: string
   subadapter: any
+  sequenceAdapter: unknown
 }
 ```
 
@@ -222,7 +234,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { onIndicatorClick(_: unknown, item: { type: string; base: string; count: number; total: number; avgLength?: number; minLength?: number; maxLength?: number; }): void; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; }
+renderingProps: () => { onIndicatorClick(_: unknown, item: { type: "insertion" | "softclip" | "hardclip"; base: string; count: number; total: number; avgLength?: number; minLength?: number; maxLength?: number; topSequence?: string; }): void; displayModel: { ...; } & ... 3 more ... & IStateTreeNode<...>; }
 ```
 
 #### method: contextMenuItems
@@ -236,7 +248,7 @@ contextMenuItems: () => any[]
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### LinearSNPCoverageDisplay - Actions
@@ -288,4 +300,11 @@ setShowInterbaseCounts: (arg: boolean) => void
 ```js
 // type signature
 setShowArcs: (arg: boolean) => void
+```
+
+#### action: setMinArcScore
+
+```js
+// type signature
+setMinArcScore: (arg: number) => void
 ```

@@ -16,18 +16,21 @@ import { rpcResult } from 'librpc-web-mod'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { getInsertSizeStats } from '../../shared/insertSizeStats'
-import { calculateCloudYOffsetsUtil } from '../drawFeatsCloud'
+import { calculateCloudYOffsetsUtil } from '../LinearReadCloudDisplay/drawFeatsCloud'
 import {
   computeChainBounds,
   drawFeatsCore,
   filterChains,
   sortComputedChains,
-} from '../drawFeatsCommon'
-import { calculateStackYOffsetsCore } from '../drawFeatsStack'
+} from '../LinearReadCloudDisplay/drawFeatsCommon'
+import { calculateStackYOffsetsCore } from '../LinearReadCloudDisplay/drawFeatsStack'
+import { getInsertSizeStats } from '../shared/insertSizeStats'
 
 import type { RenderLinearReadCloudDisplayArgs } from './RenderLinearReadCloudDisplay'
-import type { ComputedChain, DrawFeatsParams } from '../drawFeatsCommon'
+import type {
+  ComputedChain,
+  DrawFeatsParams,
+} from '../LinearReadCloudDisplay/drawFeatsCommon'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -47,6 +50,7 @@ export async function executeRenderLinearReadCloudDisplay({
     sessionId,
     view: viewSnapshot,
     adapterConfig,
+    sequenceAdapter,
     config,
     theme,
     featureHeight,
@@ -106,6 +110,11 @@ export async function executeRenderLinearReadCloudDisplay({
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
+
+  // Set sequenceAdapterConfig on the adapter for CRAM files that need it
+  if (sequenceAdapter && !dataAdapter.sequenceAdapterConfig) {
+    dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
+  }
 
   const featuresArray = await updateStatus(
     'Fetching alignments',

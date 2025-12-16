@@ -52,11 +52,18 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
 
     try {
       const session = getSession(self)
-      const { rpcManager } = session
+      const { rpcManager, assemblyManager } = session
       const assemblyName = view.assemblyNames[0]
       if (!assemblyName) {
         return
       }
+
+      // Get the sequenceAdapter config for CRAM files that need it
+      const assembly = assemblyManager.get(assemblyName)
+      const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+      const sequenceAdapter = sequenceAdapterConfig
+        ? getSnapshot(sequenceAdapterConfig)
+        : undefined
 
       // Stop any previous rendering operation (use untracked to avoid triggering reactions)
       const previousToken = untracked(() => self.renderingStopToken)
@@ -85,6 +92,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           sessionId: session.id,
           view: viewSnapshot,
           adapterConfig: self.adapterConfig,
+          sequenceAdapter,
           config: getSnapshot(self.configuration),
           theme: session.theme,
           filterBy,
@@ -100,7 +108,9 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           highResolutionScaling: 2,
           rpcDriverName: self.effectiveRpcDriverName,
           statusCallback: (msg: string) => {
-            self.setMessage(msg)
+            if (isAlive(self)) {
+              self.setStatusMessage(msg)
+            }
           },
           stopToken,
         },
@@ -144,7 +154,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(true)
     },
-    { delay: 1000, name: 'StackRender' },
+    {
+      delay: 1000,
+      name: 'StackRender',
+    },
   )
 
   // Autorun for stack mode
@@ -159,7 +172,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(false)
     },
-    { delay: 1000, name: 'CloudRender' },
+    {
+      delay: 1000,
+      name: 'CloudRender',
+    },
   )
 
   // Autorun to draw the imageData to canvas when available
@@ -182,6 +198,8 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(renderingImageData, 0, 0)
     },
-    { name: 'RenderCanvas' },
+    {
+      name: 'LinearReadCloudRenderCanvas',
+    },
   )
 }

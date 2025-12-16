@@ -32,6 +32,8 @@ defaultRendering: {
         model: types.enumeration('Rendering', [
           'multirowxy',
           'xyplot',
+          'multirowxypoint',
+          'xypoint',
           'multirowdensity',
           'multiline',
           'multirowline',
@@ -45,8 +47,10 @@ defaultRendering: {
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
   MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
+  MultiXYPointRenderer: MultiXYPointRendererConfigSchema,
   MultiDensityRenderer: MultiDensityRendererConfigSchema,
   MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
+  MultiRowXYPointRenderer: MultiRowXYPointRendererConfigSchema,
   MultiLineRenderer: MultiLineRendererConfigSchema,
   MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
 })

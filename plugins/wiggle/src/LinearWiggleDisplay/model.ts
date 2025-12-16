@@ -6,9 +6,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -210,8 +210,9 @@ function stateModelFactory(
       return {
         /**
          * #method
+         * Base track menu items shared by all wiggle displays (Score submenu)
          */
-        trackMenuItems() {
+        wiggleBaseTrackMenuItems() {
           return [
             ...superTrackMenuItems(),
             {
@@ -219,6 +220,16 @@ function stateModelFactory(
               icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
             },
+          ]
+        },
+
+        /**
+         * #method
+         * Menu items specific to LinearWiggleDisplay (Color, Inverted, etc.)
+         * Not used by SNPCoverageDisplay
+         */
+        wiggleOnlyTrackMenuItems() {
+          return [
             ...(self.graphType
               ? [
                   {
@@ -293,6 +304,16 @@ function stateModelFactory(
                   },
                 ]
               : []),
+          ]
+        },
+
+        /**
+         * #method
+         */
+        trackMenuItems() {
+          return [
+            ...this.wiggleBaseTrackMenuItems(),
+            ...this.wiggleOnlyTrackMenuItems(),
           ]
         },
       }

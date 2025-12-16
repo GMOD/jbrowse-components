@@ -5,9 +5,9 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { fetchSequence } from '../util'
-import { generateCoverageBins } from './generateCoverageBins'
+import { generateCoverageBinsPrefixSum } from './generateCoverageBinsPrefixSum'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { FeatureWithMismatchIterator } from '../shared/types'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -18,47 +18,58 @@ import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
-  public sequenceAdapterConfig?: AnyConfigurationModel
+  private subadapterRef?: BaseFeatureDataAdapter
+
+  /**
+   * Override to propagate sequenceAdapterConfig to the subadapter
+   */
+  setSequenceAdapterConfig(config: Record<string, unknown>) {
+    super.setSequenceAdapterConfig(config)
+    // Propagate to subadapter if it exists
+    if (this.subadapterRef) {
+      this.subadapterRef.setSequenceAdapterConfig(config)
+    }
+  }
 
   protected async configure() {
-    const subadapterConfig = this.getConf('subadapter')
-    const dataAdapter = await this.getSubAdapter?.(subadapterConfig)
+    const subadapterConfigBase = this.getConf('subadapter')
+
+    // Initialize from config if not set externally via setSequenceAdapterConfig
+    this.sequenceAdapterConfig ??= this.getConf('sequenceAdapter')
+
+    // Use the base subadapter config to ensure consistent cache keys
+    const dataAdapter = await this.getSubAdapter?.(subadapterConfigBase)
 
     if (!dataAdapter) {
       throw new Error('Failed to get subadapter')
     }
 
-    // Propagate sequenceAdapterConfig to subadapter (e.g. CramAdapter)
-    const subadapter = dataAdapter.dataAdapter as BaseFeatureDataAdapter & {
-      sequenceAdapterConfig?: unknown
-    }
-    if (
-      this.sequenceAdapterConfig &&
-      subadapter.sequenceAdapterConfig === undefined
-    ) {
-      subadapter.sequenceAdapterConfig = this.sequenceAdapterConfig
+    const subadapter = dataAdapter.dataAdapter as BaseFeatureDataAdapter
+    this.subadapterRef = subadapter
+
+    // Propagate sequenceAdapterConfig to the subadapter
+    if (this.sequenceAdapterConfig) {
+      subadapter.setSequenceAdapterConfig(this.sequenceAdapterConfig)
     }
 
     return { subadapter }
   }
 
   async getSequenceAdapter() {
-    const config = this.sequenceAdapterConfig
+    const config = this.sequenceAdapterConfig ?? this.getConf('sequenceAdapter')
     if (!config || !this.getSubAdapter) {
       return undefined
     }
-    if (!this.sequenceAdapterP) {
-      this.sequenceAdapterP = this.getSubAdapter(config)
-        .then(r => {
-          const adapter = r.dataAdapter as BaseSequenceAdapter
-          // verify adapter has getSequence method (e.g. ChromSizesAdapter doesn't)
-          return 'getSequence' in adapter ? adapter : undefined
-        })
-        .catch((e: unknown) => {
-          this.sequenceAdapterP = undefined
-          throw e
-        })
-    }
+    this.sequenceAdapterP ??= this.getSubAdapter(config)
+      .then(r => {
+        const adapter = r.dataAdapter as BaseSequenceAdapter
+        // verify adapter has getSequence method (e.g. ChromSizesAdapter doesn't)
+        return 'getSequence' in adapter ? adapter : undefined
+      })
+      .catch((e: unknown) => {
+        this.sequenceAdapterP = undefined
+        throw e
+      })
     return this.sequenceAdapterP
   }
 
@@ -71,8 +82,8 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         subadapter.getFeatures(region, opts).pipe(toArray()),
       )
 
-      const { bins, skipmap } = await generateCoverageBins({
-        features,
+      const { bins, skipmap } = await generateCoverageBinsPrefixSum({
+        features: features as FeatureWithMismatchIterator[],
         region,
         opts,
         fetchSequence: sequenceAdapter

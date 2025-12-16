@@ -5,9 +5,8 @@ const { getMismatches } = MismatchParser
 
 export default class SyntenyFeature extends SimpleFeature {
   get(arg: string): any {
-    if (arg === 'mismatches') {
-      return getMismatches(this.get('CIGAR'))
-    }
-    return super.get(arg)
+    return arg === 'mismatches'
+      ? getMismatches(this.get('CIGAR'))
+      : super.get(arg)
   }
 }

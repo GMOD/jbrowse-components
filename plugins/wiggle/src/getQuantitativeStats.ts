@@ -14,7 +14,7 @@ export async function getQuantitativeStats(
     adapterConfig: AnyConfigurationModel
     configuration: AnyConfigurationModel
     autoscaleType: string
-    setMessage: (str: string) => void
+    setStatusMessage: (str: string) => void
     effectiveRpcDriverName?: string
   },
   opts: {
@@ -35,7 +35,7 @@ export async function getQuantitativeStats(
     rpcDriverName: effectiveRpcDriverName,
     statusCallback: (message: string) => {
       if (isAlive(self)) {
-        self.setMessage(message)
+        self.setStatusMessage(message)
       }
     },
     ...opts,
@@ -63,8 +63,7 @@ export async function getQuantitativeStats(
           ...results,
           currStatsBpPerPx,
         }
-  }
-  if (autoscaleType === 'local' || autoscaleType === 'localsd') {
+  } else if (autoscaleType === 'local' || autoscaleType === 'localsd') {
     const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
     const results = (await rpcManager.call(
       sessionId,
@@ -97,8 +96,7 @@ export async function getQuantitativeStats(
           ...results,
           currStatsBpPerPx,
         }
-  }
-  if (autoscaleType === 'zscale') {
+  } else if (autoscaleType === 'zscale') {
     return rpcManager.call(
       sessionId,
       'WiggleGetGlobalQuantitativeStats',

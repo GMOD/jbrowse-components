@@ -1,3 +1,4 @@
+import type { MismatchCallback } from './forEachMismatchTypes'
 import type { Feature } from '@jbrowse/core/util'
 
 export type SkipMap = Record<
@@ -55,6 +56,12 @@ export interface PreBinEntry {
   lengthMin: number
   lengthMax: number
   sequenceCounts?: Map<string, number>
+  // Computed fields added during finalization
+  avgProbability?: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
+  topSequence?: string
 }
 
 type PreBinType = Record<string, PreBinEntry>
@@ -167,3 +174,7 @@ export type MismatchType =
   | 'skip'
   | 'softclip'
   | 'hardclip'
+
+export interface FeatureWithMismatchIterator extends Feature {
+  forEachMismatch(callback: MismatchCallback): void
+}

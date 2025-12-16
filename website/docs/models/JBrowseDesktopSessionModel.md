@@ -70,7 +70,7 @@ any
 
 ```js
 // type
-{ undoIdx: number; targetPath: string; } & NonEmptyObject & { history: unknown[]; notTrackingUndo: boolean; } & { readonly canUndo: boolean; readonly canRedo: boolean; } & { stopTrackingUndo(): void; ... 5 more ...; redo(): void; } & IStateTreeNode<...>
+{ undoIdx: number; targetPath: string; } & NonEmptyObject & { history: PatchEntry[]; notTrackingUndo: boolean; } & { readonly canUndo: boolean; readonly canRedo: boolean; } & { ...; } & IStateTreeNode<...>
 ```
 
 #### getter: menus

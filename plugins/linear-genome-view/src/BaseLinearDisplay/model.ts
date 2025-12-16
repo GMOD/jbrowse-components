@@ -10,23 +10,18 @@ import {
   isFeature,
   isSelectionContainer,
   isSessionModelWithWidgets,
-  mergeIntervals,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
-import {
-  addDisposer,
-  getSnapshot,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { autorun, when } from 'mobx'
+import { autorun } from 'mobx'
 
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
@@ -43,8 +38,27 @@ import type { ThemeOptions } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
+const CollapseIntronsDialog = lazy(
+  () => import('./components/CollapseIntronsDialog'),
+)
 
 type LGV = LinearGenomeViewModel
+
+function hasExonsOrCDS(transcripts: Feature[]) {
+  return transcripts.some(t => {
+    const subs = t.get('subfeatures') ?? []
+    return subs.some(f => f.get('type') === 'exon' || f.get('type') === 'CDS')
+  })
+}
+
+function getTranscripts(feature?: Feature): Feature[] {
+  if (!feature) {
+    return []
+  }
+  return feature.get('type') === 'mRNA'
+    ? [feature]
+    : (feature.get('subfeatures') ?? [])
+}
 
 export interface Layout {
   minX: number
@@ -184,16 +198,6 @@ function stateModelFactory() {
         }
         return undefined
       },
-      /**
-       * #method
-       */
-      async copyInfoToClipboard(feature: Feature) {
-        const { uniqueId, ...rest } = feature.toJSON()
-        const session = getSession(self)
-        const { default: copy } = await import('copy-to-clipboard')
-        copy(JSON.stringify(rest, null, 4))
-        session.notify('Copied to clipboard', 'success')
-      },
     }))
     .views(self => ({
       /**
@@ -256,14 +260,13 @@ function stateModelFactory() {
        * #getter
        */
       searchFeatureByID(id: string): LayoutRecord | undefined {
-        let ret: LayoutRecord | undefined
         for (const block of self.blockState.values()) {
           const val = block.layout?.getByID(id)
           if (val) {
-            ret = val
+            return val
           }
         }
-        return ret
+        return undefined
       },
     }))
 
@@ -319,7 +322,7 @@ function stateModelFactory() {
               )
             } catch (e) {
               console.error(e)
-              getSession(e).notifyError(`${e}`, e)
+              getSession(self).notifyError(`${e}`, e)
             }
           })()
         }
@@ -399,26 +402,8 @@ function stateModelFactory() {
        */
       contextMenuItems(): MenuItem[] {
         const feat = self.contextMenuFeature
-        const { contextMenuFeature } = self
-        const singleTranscript =
-          contextMenuFeature?.get('type') === 'mRNA'
-            ? contextMenuFeature
-            : contextMenuFeature?.get('subfeatures')?.[0]
-        const exons =
-          singleTranscript
-            ?.get('subfeatures')
-            ?.filter(
-              f => f.get('type') === 'exon' || f.get('type') === 'CDS',
-            ) || []
-        const cds =
-          singleTranscript
-            ?.get('subfeatures')
-            ?.filter(
-              f => f.get('type') === 'exon' || f.get('type') === 'CDS',
-            ) || []
+        const transcripts = getTranscripts(feat)
 
-        // some GFF3 features have CDS and no exon subfeatures
-        const subs = exons.length ? exons : cds.length ? cds : []
         return feat
           ? [
               {
@@ -438,50 +423,36 @@ function stateModelFactory() {
               {
                 label: 'Copy info to clipboard',
                 icon: ContentCopyIcon,
-                onClick: () => {
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                  self.copyInfoToClipboard(feat)
+                onClick: async () => {
+                  const { uniqueId, ...rest } = feat.toJSON()
+                  const session = getSession(self)
+                  const { default: copy } = await import('copy-to-clipboard')
+                  copy(JSON.stringify(rest, null, 4))
+                  session.notify('Copied to clipboard', 'success')
                 },
               },
-              ...(exons.length > 0 && contextMenuFeature
+              ...(hasExonsOrCDS(transcripts)
                 ? [
                     {
                       label: 'Collapse introns',
-                      onClick: async () => {
+                      icon: CloseFullscreenIcon,
+                      onClick: () => {
                         const view = getContainingView(self) as LGV
                         const { assemblyManager } = getSession(self)
-                        const assemblyName = view.assemblyNames[0]
-                        const assembly = assemblyName
-                          ? assemblyManager.get(assemblyName)
-                          : undefined
-                        const r0 = contextMenuFeature.get('refName')
-                        const refName = assembly?.getCanonicalRefName(r0) || r0
-                        const w = 100
-
-                        // need to strip ID before copying view snap
-                        const { id, ...rest } = getSnapshot(view)
-                        const newView = getSession(self).addView(
-                          'LinearGenomeView',
-                          {
-                            ...rest,
-                            tracks: rest.tracks.map(track => {
-                              const { id, ...rest } = track
-                              return { ...rest }
-                            }),
-                            displayedRegions: mergeIntervals(
-                              subs.map(f => ({
-                                refName,
-                                start: f.get('start') - w,
-                                end: f.get('end') + w,
-                                assemblyName: view.assemblyNames[0],
-                              })),
-                              w,
-                            ),
-                          },
-                        ) as LGV
-                        await when(() => newView.initialized)
-
-                        newView.showAllRegions()
+                        const assembly = assemblyManager.get(
+                          view.assemblyNames[0]!,
+                        )
+                        if (assembly) {
+                          getSession(self).queueDialog(handleClose => [
+                            CollapseIntronsDialog,
+                            {
+                              view,
+                              transcripts,
+                              handleClose,
+                              assembly,
+                            },
+                          ])
+                        }
                       },
                     },
                   ]
@@ -495,44 +466,41 @@ function stateModelFactory() {
        * only, never sent to the worker. includes displayModel and callbacks
        */
       renderingProps() {
+        const getFeatureId = (featureId?: string) =>
+          featureId || self.featureIdUnderMouse
+
         return {
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
-            const f = featureId || self.featureIdUnderMouse
-            if (!f) {
-              self.clearFeatureSelection()
-            } else {
+            const f = getFeatureId(featureId)
+            if (f) {
               const feature = self.features.get(f)
               if (feature) {
                 self.selectFeature(feature)
               }
+            } else {
+              self.clearFeatureSelection()
             }
           },
           onClick() {
             self.clearFeatureSelection()
           },
-          // similar to click but opens a menu with further
-          // options
           onFeatureContextMenu(_: unknown, featureId?: string) {
-            const f = featureId || self.featureIdUnderMouse
-            if (!f) {
-              self.clearFeatureSelection()
-            } else {
-              // feature id under mouse passed to context menu
+            const f = getFeatureId(featureId)
+            if (f) {
               self.setContextMenuFeature(self.features.get(f))
+            } else {
+              self.clearFeatureSelection()
             }
           },
-
           onMouseMove(_: unknown, featureId?: string, extra?: string) {
             self.setFeatureIdUnderMouse(featureId)
             self.setMouseoverExtraInformation(extra)
           },
-
           onMouseLeave(_: unknown) {
             self.setFeatureIdUnderMouse(undefined)
             self.setMouseoverExtraInformation(undefined)
           },
-
           onContextMenu(_: unknown) {
             self.setContextMenuFeature(undefined)
             self.clearFeatureSelection()

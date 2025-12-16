@@ -1,25 +1,23 @@
 // adapted from https://github.com/mobxjs/mobx-state-tree/blob/master/packages/mst-middlewares/src/time-traveller.ts
 import {
-  applySnapshot,
+  applyPatch,
   getEnv,
-  getSnapshot,
-  onSnapshot,
+  onPatch,
   resolvePath,
   types,
 } from '@jbrowse/mobx-state-tree'
 
-import type { IAnyStateTreeNode, IDisposer } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IDisposer,
+  IJsonPatch,
+} from '@jbrowse/mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
 
-function debounce(func: (...args: unknown[]) => void, timeout = 300) {
-  let timer: ReturnType<typeof setTimeout>
-  return (...args: unknown[]) => {
-    clearTimeout(timer)
-    timer = setTimeout(() => {
-      func(...args)
-    }, timeout)
-  }
+export interface PatchEntry {
+  patches: IJsonPatch[]
+  inversePatches: IJsonPatch[]
 }
 
 const TimeTraveller = types
@@ -28,12 +26,12 @@ const TimeTraveller = types
     targetPath: '',
   })
   .volatile(() => ({
-    history: [] as unknown[],
+    history: [] as PatchEntry[],
     notTrackingUndo: false,
   }))
   .views(self => ({
     get canUndo() {
-      return self.undoIdx > 0 && !self.notTrackingUndo
+      return self.undoIdx >= 0 && !self.notTrackingUndo
     },
     get canRedo() {
       return self.undoIdx < self.history.length - 1 && !self.notTrackingUndo
@@ -41,29 +39,37 @@ const TimeTraveller = types
   }))
   .actions(self => {
     let targetStore: IAnyStateTreeNode
-    let snapshotDisposer: IDisposer
+    let patchDisposer: IDisposer | undefined
     let skipNextUndoState = false
+    let pendingPatches: IJsonPatch[] = []
+    let pendingInversePatches: IJsonPatch[] = []
+    let debounceTimer: ReturnType<typeof setTimeout> | undefined
+
+    function flushPatches(addUndoState: (entry: PatchEntry) => void) {
+      if (pendingPatches.length > 0) {
+        addUndoState({
+          patches: pendingPatches,
+          inversePatches: pendingInversePatches,
+        })
+        pendingPatches = []
+        pendingInversePatches = []
+      }
+    }
 
     return {
-      // allows user code to (temporarily) stop tracking undo states
       stopTrackingUndo() {
         self.notTrackingUndo = true
       },
-      // allows user code to resume tracking undo states
       resumeTrackingUndo() {
         self.notTrackingUndo = false
       },
-      addUndoState(todos: unknown) {
-        if (self.notTrackingUndo) {
-          return
-        }
-        if (skipNextUndoState) {
-          // skip recording if this state was caused by undo / redo
+      addUndoState(entry: PatchEntry) {
+        if (self.notTrackingUndo || skipNextUndoState) {
           skipNextUndoState = false
           return
         }
         self.history.splice(self.undoIdx + 1)
-        self.history.push(todos)
+        self.history.push(entry)
         if (self.history.length > MAX_HISTORY_LENGTH) {
           self.history.shift()
         }
@@ -71,7 +77,12 @@ const TimeTraveller = types
       },
 
       beforeDestroy() {
-        snapshotDisposer()
+        if (patchDisposer) {
+          patchDisposer()
+        }
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+        }
       },
       initialize() {
         targetStore = self.targetPath
@@ -85,32 +96,53 @@ const TimeTraveller = types
           )
         }
 
-        snapshotDisposer = onSnapshot(
-          targetStore,
-          debounce((snapshot: unknown) => {
-            this.addUndoState(snapshot)
-          }, 300),
-        )
-        if (self.history.length === 0) {
-          this.addUndoState(getSnapshot(targetStore))
-        }
+        patchDisposer = onPatch(targetStore, (patch, inversePatch) => {
+          if (self.notTrackingUndo || skipNextUndoState) {
+            skipNextUndoState = false
+            return
+          }
+          pendingPatches.push(patch)
+          pendingInversePatches.push(inversePatch)
+
+          if (debounceTimer) {
+            clearTimeout(debounceTimer)
+          }
+          debounceTimer = setTimeout(() => {
+            flushPatches(this.addUndoState.bind(this))
+          }, 300)
+        })
       },
       undo() {
-        self.undoIdx--
+        const entry = self.history[self.undoIdx]
+        if (!entry) {
+          return
+        }
         skipNextUndoState = true
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (targetStore) {
-          applySnapshot(targetStore, self.history[self.undoIdx])
+          for (let i = entry.inversePatches.length - 1; i >= 0; i--) {
+            applyPatch(targetStore, entry.inversePatches[i]!)
+          }
         }
+        self.undoIdx--
+        skipNextUndoState = false
       },
       redo() {
-        self.undoIdx++
+        const entry = self.history[self.undoIdx + 1]
+        if (!entry) {
+          return
+        }
+        skipNextUndoState = true
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (targetStore) {
-          applySnapshot(targetStore, self.history[self.undoIdx])
+          for (const patch of entry.patches) {
+            applyPatch(targetStore, patch)
+          }
         }
+        self.undoIdx++
+        skipNextUndoState = false
       },
     }
   })

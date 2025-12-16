@@ -42,14 +42,3 @@ htsgetTrackId: {
       defaultValue: '',
     }
 ```
-
-#### slot: sequenceAdapter
-
-```js
-sequenceAdapter: {
-      type: 'frozen',
-      description:
-        'sequence data adapter, used to calculate SNPs when BAM reads lacking MD tags',
-      defaultValue: null,
-    }
-```

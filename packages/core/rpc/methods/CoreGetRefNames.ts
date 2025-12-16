@@ -21,13 +21,14 @@ export default class CoreGetRefNames extends RpcMethodType {
     if (!isFeatureAdapter(dataAdapter)) {
       return []
     }
-    // cache sequenceAdapter config on the adapter if provided (for BAM/CRAM)
-    if (sequenceAdapter) {
-      const adapter = dataAdapter as { sequenceAdapterConfig?: unknown }
-      if (adapter.sequenceAdapterConfig === undefined) {
-        adapter.sequenceAdapterConfig = sequenceAdapter
-      }
+
+    // Set sequenceAdapterConfig on the adapter for BAM/CRAM adapters that need
+    // reference sequence data. Wrapper adapters like SNPCoverageAdapter override
+    // setSequenceAdapterConfig to propagate to their subadapters.
+    if (sequenceAdapter && !dataAdapter.sequenceAdapterConfig) {
+      dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
     }
+
     return dataAdapter.getRefNames(deserializedArgs)
   }
 }

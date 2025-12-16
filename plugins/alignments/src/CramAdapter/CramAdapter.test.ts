@@ -43,8 +43,8 @@ function makeAdapter(arg: string) {
 
 test('adapter can fetch features from volvox-sorted.cram', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
-  // Set sequenceAdapterConfig directly on adapter (normally done by CoreGetRefNames)
-  adapter.sequenceAdapterConfig = sequenceAdapterConfig
+  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
@@ -67,8 +67,8 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
 
 test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
-  // Set sequenceAdapterConfig directly on adapter (normally done by CoreGetRefNames)
-  adapter.sequenceAdapterConfig = sequenceAdapterConfig
+  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
