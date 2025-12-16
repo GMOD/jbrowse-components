@@ -8,7 +8,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "out",
+            "uri": "amel_hav3.1.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -17,568 +17,62 @@
   ],
   "tracks": [
     {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413294_Amel_HAv3.1_sorted",
-      "name": "ERR413294_Amel_HAv3.1_sorted",
+      "type": "FeatureTrack",
+      "trackId": "gencode_nclist_hg38",
+      "name": "NCBI RefSeq 104 (NCList)",
+      "assemblyNames": ["amel"],
+      "category": ["Annotation"],
       "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413294_Amel_HAv3.1_sorted.bw",
+        "type": "NCListAdapter",
+        "rootUrlTemplate": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104/{refseq}/trackData.jsonz",
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413295_Amel_HAv3.1_sorted",
-      "name": "ERR413295_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413295_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_hg38_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "jexl:get(feature,'gene_name')"
+            }
+          }
         }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413296_Amel_HAv3.1_sorted",
-      "name": "ERR413296_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413296_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413297_Amel_HAv3.1_sorted",
-      "name": "ERR413297_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413297_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413298_Amel_HAv3.1_sorted",
-      "name": "ERR413298_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413298_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413299_Amel_HAv3.1_sorted",
-      "name": "ERR413299_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413299_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413300_Amel_HAv3.1_sorted",
-      "name": "ERR413300_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413300_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413301_Amel_HAv3.1_sorted",
-      "name": "ERR413301_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413301_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413302_Amel_HAv3.1_sorted",
-      "name": "ERR413302_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413302_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413303_Amel_HAv3.1_sorted",
-      "name": "ERR413303_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413303_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413304_Amel_HAv3.1_sorted",
-      "name": "ERR413304_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413304_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR413305_Amel_HAv3.1_sorted",
-      "name": "ERR413305_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR413305_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR528750_Amel_HAv3.1_sorted",
-      "name": "ERR528750_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR528750_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR528751_Amel_HAv3.1_sorted",
-      "name": "ERR528751_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR528751_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR528752_Amel_HAv3.1_sorted",
-      "name": "ERR528752_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR528752_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR528753_Amel_HAv3.1_sorted",
-      "name": "ERR528753_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR528753_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ERR528754_Amel_HAv3.1_sorted",
-      "name": "ERR528754_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ERR528754_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071803_Amel_HAv3.1_sorted",
-      "name": "SRR071803_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071803_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071804_Amel_HAv3.1_sorted",
-      "name": "SRR071804_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071804_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071809_Amel_HAv3.1_sorted",
-      "name": "SRR071809_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071809_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071812_Amel_HAv3.1_sorted",
-      "name": "SRR071812_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071812_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071813_Amel_HAv3.1_sorted",
-      "name": "SRR071813_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071813_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071814_Amel_HAv3.1_sorted",
-      "name": "SRR071814_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071814_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071815_Amel_HAv3.1_sorted",
-      "name": "SRR071815_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071815_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071817_Amel_HAv3.1_sorted",
-      "name": "SRR071817_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071817_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071818_Amel_HAv3.1_sorted",
-      "name": "SRR071818_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071818_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071819_Amel_HAv3.1_sorted",
-      "name": "SRR071819_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071819_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071820_Amel_HAv3.1_sorted",
-      "name": "SRR071820_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071820_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071821_Amel_HAv3.1_sorted",
-      "name": "SRR071821_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071821_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR071822_Amel_HAv3.1_sorted",
-      "name": "SRR071822_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR071822_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR789759_Amel_HAv3.1_sorted",
-      "name": "SRR789759_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR789759_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR789760_Amel_HAv3.1_sorted",
-      "name": "SRR789760_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR789760_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR789761_Amel_HAv3.1_sorted",
-      "name": "SRR789761_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR789761_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR789762_Amel_HAv3.1_sorted",
-      "name": "SRR789762_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR789762_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR789763_Amel_HAv3.1_sorted",
-      "name": "SRR789763_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR789763_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR789764_Amel_HAv3.1_sorted",
-      "name": "SRR789764_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR789764_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR989674_Amel_HAv3.1_sorted",
-      "name": "SRR989674_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR989674_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR989675_Amel_HAv3.1_sorted",
-      "name": "SRR989675_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR989675_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR989676_Amel_HAv3.1_sorted",
-      "name": "SRR989676_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR989676_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "SRR989677_Amel_HAv3.1_sorted",
-      "name": "SRR989677_Amel_HAv3.1_sorted",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "SRR989677_Amel_HAv3.1_sorted.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["amel"]
+      ]
     },
     {
       "type": "FeatureTrack",
-      "trackId": "out.sorted.gff",
-      "name": "out.sorted.gff",
-      "category": ["Genes and Gene Predictions"],
+      "trackId": "gencode_nclist_hg38_gfftabix",
+      "assemblyNames": ["amel"],
+      "name": "NCBI RefSeq 104 (GFF3Tabix)",
+      "category": ["Annotation"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "out.sorted.gff.gz",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "out.sorted.gff.gz.tbi",
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104.gff.gz.tbi",
             "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+          }
         }
       },
-      "assemblyNames": ["amel"]
-    }
-  ],
-  "defaultSession": {
-    "name": "GCF_003254395.2",
-    "widgets": {
-      "hierarchicalTrackSelector": {
-        "id": "hierarchicalTrackSelector",
-        "type": "HierarchicalTrackSelectorWidget",
-        "view": "initialView"
-      }
-    },
-    "activeWidgets": {
-      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
-    },
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "id": "initialView",
-        "init": {
-          "assembly": "amel",
-          "loc": "NC_037638.1:9251400-9261400"
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_hg38_gfftabix_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "jexl:get(feature,'gene_name')"
+            }
+          }
         }
-      }
-    ]
-  }
+      ]
+    }
+  ]
 }

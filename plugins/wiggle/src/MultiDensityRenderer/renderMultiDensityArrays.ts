@@ -77,7 +77,6 @@ export async function renderMultiDensityArrays(
               ...renderProps,
               featureArrays: arrays,
               height: rowHeight,
-              color: source.color || '#f0f',
             })
             reducedBySource[source.name] = reducedFeatures
           }
