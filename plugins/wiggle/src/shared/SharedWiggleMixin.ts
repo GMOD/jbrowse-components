@@ -349,14 +349,6 @@ export default function SharedWiggleMixin(
           rendererTypeName,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-
-        // Debug logging for color issue
-        console.log('[rendererConfig] display state colors:', {
-          posColor,
-          negColor,
-          color,
-        })
-
         return self.rendererType.configSchema.create(
           {
             ...configBlob,

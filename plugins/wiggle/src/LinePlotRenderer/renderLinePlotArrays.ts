@@ -1,10 +1,9 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawLineArrays } from '../drawLine'
-import { serializeReducedFeatures } from '../util'
+import { getStaticColor, serializeReducedFeatures } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { WiggleFeatureArrays } from '../util'
@@ -13,19 +12,12 @@ export async function renderLinePlotArrays(
   renderProps: RenderArgsDeserialized,
   featureArrays: WiggleFeatureArrays,
 ) {
-  const {
-    config,
-    height,
-    regions,
-    bpPerPx,
-    statusCallback = () => {},
-  } = renderProps
+  const { config, height, regions, bpPerPx, statusCallback = () => {} } =
+    renderProps
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const configColor = readConfObject(config, 'color')
-  // Use 'grey' if color is the default '#f0f', otherwise use the config color
-  const color = configColor === '#f0f' ? 'grey' : configColor
+  const color = getStaticColor(config, 'grey')
 
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
@@ -41,7 +33,11 @@ export async function renderLinePlotArrays(
   )
 
   const features = []
-  for (const f of serializeReducedFeatures(reducedFeatures, 'bigwig', region.refName)) {
+  for (const f of serializeReducedFeatures(
+    reducedFeatures,
+    'bigwig',
+    region.refName,
+  )) {
     features.push(f)
   }
 

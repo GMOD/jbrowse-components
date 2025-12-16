@@ -27,7 +27,11 @@ export async function renderDensityArrays(
   )
 
   const features = []
-  for (const f of serializeReducedFeatures(reducedFeatures, 'bigwig', region.refName)) {
+  for (const f of serializeReducedFeatures(
+    reducedFeatures,
+    'bigwig',
+    region.refName,
+  )) {
     features.push(f)
   }
 

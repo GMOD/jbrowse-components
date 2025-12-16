@@ -1,10 +1,85 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   scaleLinear,
   scaleLog,
   scaleQuantize,
 } from '@mui/x-charts-vendor/d3-scale'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+
 export const YSCALEBAR_LABEL_OFFSET = 5
+
+// Default color used by wiggle config schema
+export const WIGGLE_COLOR_DEFAULT = '#f0f'
+
+/**
+ * Determines the appropriate color callback for wiggle plots.
+ *
+ * Priority:
+ * 1. If color is a jexl callback expression, evaluate per feature
+ * 2. If color is explicitly set (not default), use static color
+ * 3. If defaultColor provided (e.g. 'grey' for line plots), use it
+ * 4. Otherwise use bicolor pivot logic (posColor/negColor based on score)
+ */
+export function getColorCallback(
+  config: AnyConfigurationModel,
+  opts?: { defaultColor?: string },
+) {
+  const color = readConfObject(config, 'color')
+  const colorIsCallback = config.color?.isCallback
+  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
+
+  if (colorIsCallback) {
+    return (feature: Feature) => readConfObject(config, 'color', { feature })
+  }
+  if (!colorIsDefault) {
+    return () => color
+  }
+  if (opts?.defaultColor) {
+    return () => opts.defaultColor!
+  }
+  // Bicolor pivot logic
+  const pivotValue = readConfObject(config, 'bicolorPivotValue')
+  const negColor = readConfObject(config, 'negColor')
+  const posColor = readConfObject(config, 'posColor')
+  return (_feature: Feature, score: number) =>
+    score < pivotValue ? negColor : posColor
+}
+
+/**
+ * Determines the color for arrays-based rendering.
+ * Returns either a static color or bicolor config for drawXYArrays.
+ */
+export function getArraysColorConfig(config: AnyConfigurationModel) {
+  const color = readConfObject(config, 'color')
+  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
+
+  // Debug - temporary
+  console.log('[getArraysColorConfig] color:', color, 'isDefault:', colorIsDefault)
+
+  if (!colorIsDefault) {
+    return { color }
+  }
+  // Return bicolor config
+  return {
+    posColor: readConfObject(config, 'posColor'),
+    negColor: readConfObject(config, 'negColor'),
+    pivotValue: readConfObject(config, 'bicolorPivotValue'),
+  }
+}
+
+/**
+ * Gets a static color for line/density arrays rendering.
+ * Returns the configured color, or the defaultColor if color is default.
+ */
+export function getStaticColor(
+  config: AnyConfigurationModel,
+  defaultColor: string,
+) {
+  const color = readConfObject(config, 'color')
+  return color === WIGGLE_COLOR_DEFAULT ? defaultColor : color
+}
 
 export interface ScaleOpts {
   domain: number[]

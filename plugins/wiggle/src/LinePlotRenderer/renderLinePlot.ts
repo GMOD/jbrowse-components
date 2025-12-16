@@ -1,10 +1,9 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawLine } from '../drawLine'
-import { serializeWiggleFeature } from '../util'
+import { getColorCallback, serializeWiggleFeature } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -13,17 +12,12 @@ export async function renderLinePlot(
   renderProps: RenderArgsDeserialized,
   features: Map<string, Feature>,
 ) {
-  const {
-    config,
-    height,
-    regions,
-    bpPerPx,
-    statusCallback = () => {},
-  } = renderProps
+  const { config, height, regions, bpPerPx, statusCallback = () => {} } =
+    renderProps
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const c = readConfObject(config, 'color')
+  const colorCallback = getColorCallback(config, { defaultColor: 'grey' })
 
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
@@ -33,11 +27,7 @@ export async function renderLinePlot(
         drawLine(ctx, {
           ...renderProps,
           features,
-          colorCallback:
-            c === '#f0f'
-              ? () => 'grey'
-              : (feature: Feature) =>
-                  readConfObject(config, 'color', { feature }),
+          colorCallback,
         }),
       ),
   )
