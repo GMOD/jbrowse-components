@@ -230,6 +230,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Normal',
+                  type: 'radio',
+                  checked:
+                    self.featureHeightSetting === 7 && self.noSpacing !== true,
                   onClick: () => {
                     self.setFeatureHeight(7)
                     self.setNoSpacing(false)
@@ -237,6 +240,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Compact',
+                  type: 'radio',
+                  checked:
+                    self.featureHeightSetting === 3 && self.noSpacing === true,
                   onClick: () => {
                     self.setFeatureHeight(3)
                     self.setNoSpacing(true)
@@ -244,6 +250,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Super-compact',
+                  type: 'radio',
+                  checked:
+                    self.featureHeightSetting === 1 && self.noSpacing === true,
                   onClick: () => {
                     self.setFeatureHeight(1)
                     self.setNoSpacing(true)
