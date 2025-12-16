@@ -144,7 +144,12 @@ export function drawLine(
         if (high) {
           ctx.fillRect(leftPx, offset, w, WIGGLE_CLIP_HEIGHT)
         } else {
-          ctx.fillRect(leftPx, height - WIGGLE_CLIP_HEIGHT, w, height)
+          ctx.fillRect(
+            leftPx,
+            height - WIGGLE_CLIP_HEIGHT,
+            w,
+            WIGGLE_CLIP_HEIGHT,
+          )
         }
       }
     }
@@ -190,7 +195,7 @@ export function drawLine(
         ctx.fillRect(leftPx, offset, w, WIGGLE_CLIP_HEIGHT)
       } else if (score < niceMin && !isLog) {
         ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, height - WIGGLE_CLIP_HEIGHT, w, height)
+        ctx.fillRect(leftPx, height - WIGGLE_CLIP_HEIGHT, w, WIGGLE_CLIP_HEIGHT)
       }
     }
   }
@@ -364,7 +369,7 @@ export function drawLineArrays(
       if (high) {
         ctx.fillRect(leftPx, offset, w, WIGGLE_CLIP_HEIGHT)
       } else {
-        ctx.fillRect(leftPx, height - WIGGLE_CLIP_HEIGHT, w, height)
+        ctx.fillRect(leftPx, height - WIGGLE_CLIP_HEIGHT, w, WIGGLE_CLIP_HEIGHT)
       }
     }
   }

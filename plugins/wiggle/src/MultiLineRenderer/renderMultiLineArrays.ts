@@ -55,9 +55,13 @@ export async function renderMultiLineArrays(
   for (const source of sources) {
     const reduced = reducedBySource[source.name]
     if (reduced) {
-      features.push(
-        ...serializeReducedFeatures(reduced, source.name, region.refName),
-      )
+      for (const f of serializeReducedFeatures(
+        reduced,
+        source.name,
+        region.refName,
+      )) {
+        features.push(f)
+      }
     }
   }
 
