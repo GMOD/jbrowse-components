@@ -32,7 +32,7 @@ async function openSaveTrackDataDialog(
 ) {
   await user.click(await screen.findByTestId(hts(trackId), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Save track data'))
+  await user.click(await screen.findByText('Save track data', ...opts))
 }
 
 function readBlobAsText(blob: Blob): Promise<string> {

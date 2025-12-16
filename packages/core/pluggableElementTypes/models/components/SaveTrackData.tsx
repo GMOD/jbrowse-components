@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
@@ -43,9 +44,28 @@ const useStyles = makeStyles()({
 })
 
 async function fetchFeatures(track: IAnyStateTreeNode, regions: Region[]) {
-  const { rpcManager } = getSession(track)
+  const session = getSession(track)
+  const { rpcManager, assemblyManager } = session
   const adapterConfig = getConf(track, ['adapter'])
   const sessionId = getRpcSessionId(track)
+
+  // Get sequenceAdapter from assembly for CRAM/BAM adapters that need it
+  const assemblyName = regions[0]?.assemblyName
+  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+  const seqAdapterConfig = assembly?.configuration?.sequence?.adapter
+  const sequenceAdapter =
+    seqAdapterConfig && isStateTreeNode(seqAdapterConfig)
+      ? getSnapshot(seqAdapterConfig)
+      : seqAdapterConfig
+
+  // Call CoreGetRefNames first to set up sequenceAdapterConfig on the adapter
+  // and perform ref name aliasing
+  await rpcManager.call(sessionId, 'CoreGetRefNames', {
+    adapterConfig,
+    sequenceAdapter,
+    sessionId,
+  })
+
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
     regions,
