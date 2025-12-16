@@ -1,6 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { fillTextCtx, getCharWidthHeight } from '../util'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -11,6 +10,7 @@ import {
   CIGAR_X,
   getCigarOps,
 } from './cigarUtil'
+import { getCharWidthHeight } from '../../shared/util'
 
 import type { Mismatch } from '../../shared/types'
 import type { ProcessedRenderArgs } from '../types'
@@ -49,6 +49,7 @@ export function renderSoftClipping({
   }
 
   const heightLim = charHeight - 2
+  let lastFillStyle = ''
   let seqOffset = 0
   let refOffset = 0
   const CIGAR =
@@ -92,14 +93,16 @@ export function renderSoftClipping({
           ctx.fillRect(leftPx, topPx, widthPx, heightPx)
 
           if (widthPx >= charWidth && heightPx >= heightLim) {
-            fillTextCtx(
-              ctx,
-              base,
-              leftPx + (widthPx - charWidth) / 2 + 1,
-              topPx + heightPx,
-              canvasWidth,
-              theme.palette.getContrastText(baseColor),
-            )
+            const x = leftPx + (widthPx - charWidth) / 2 + 1
+            const y = topPx + heightPx
+            const color = theme.palette.getContrastText(baseColor)
+            if (x >= 0 && x <= canvasWidth) {
+              if (color && lastFillStyle !== color) {
+                ctx.fillStyle = color
+                lastFillStyle = color
+              }
+              ctx.fillText(base, x, y)
+            }
           }
         }
       }

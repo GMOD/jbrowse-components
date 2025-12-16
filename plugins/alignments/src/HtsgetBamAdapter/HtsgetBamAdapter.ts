@@ -1,6 +1,7 @@
 import { HtsgetFile } from '@gmod/bam'
 
 import BamAdapter from '../BamAdapter/BamAdapter'
+import BamSlightlyLazyFeature from '../BamAdapter/BamSlightlyLazyFeature'
 
 import type { BamFile } from '@gmod/bam'
 
@@ -13,7 +14,8 @@ export default class HtsgetBamAdapter extends BamAdapter {
         bam: new HtsgetFile({
           baseUrl: htsgetBase,
           trackId: htsgetTrackId,
-        }) as unknown as BamFile,
+          recordClass: BamSlightlyLazyFeature,
+        }) as unknown as BamFile<BamSlightlyLazyFeature>,
       }
     }
     return this.configureResult

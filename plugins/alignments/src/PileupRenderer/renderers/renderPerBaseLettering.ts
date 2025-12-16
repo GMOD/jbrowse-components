@@ -1,4 +1,3 @@
-import { fillTextCtx } from '../util'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -37,6 +36,7 @@ export function renderPerBaseLettering({
 }) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat
+  let lastFillStyle = ''
   const seq = feature.get('seq') as string | undefined
   const invBpPerPx = 1 / bpPerPx
   const w = invBpPerPx
@@ -85,14 +85,16 @@ export function renderPerBaseLettering({
           ctx.fillRect(leftPx, topPx, w + 0.5, heightPx)
 
           if (w >= charWidth && heightPx >= heightLim) {
-            fillTextCtx(
-              ctx,
-              letter,
-              leftPx + (w - charWidth) / 2 + 1,
-              topPx + heightPx,
-              canvasWidth,
-              colorContrastMap[letter],
-            )
+            const x = leftPx + (w - charWidth) / 2 + 1
+            const y = topPx + heightPx
+            const color = colorContrastMap[letter]
+            if (x >= 0 && x <= canvasWidth) {
+              if (color && lastFillStyle !== color) {
+                ctx.fillStyle = color
+                lastFillStyle = color
+              }
+              ctx.fillText(letter, x, y)
+            }
           }
         }
       }

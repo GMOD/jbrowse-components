@@ -253,6 +253,35 @@ function stateModelFactory(
             { name: 'PileupHeight' },
           ),
         )
+
+        addDisposer(
+          self,
+          autorun(
+            function syncColorByAutorun() {
+              const colorBy = self.PileupDisplay.colorBy
+              if (
+                colorBy?.type === 'modifications' ||
+                colorBy?.type === 'methylation'
+              ) {
+                self.SNPCoverageDisplay.setColorScheme(colorBy)
+              } else if (self.SNPCoverageDisplay.colorBy) {
+                self.SNPCoverageDisplay.setColorScheme(undefined)
+              }
+            },
+            { name: 'SyncColorBy' },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(
+            function syncFilterByAutorun() {
+              const filterBy = self.PileupDisplay.filterBy
+              self.SNPCoverageDisplay.setFilterBy(filterBy)
+            },
+            { name: 'SyncFilterBy' },
+          ),
+        )
       },
       /**
        * #action

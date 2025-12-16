@@ -163,7 +163,7 @@ test('handles features with spacing', () => {
 })
 
 test('rowMaxEnd optimization works correctly', () => {
-  const l = new PileupLayout({ featureHeight: 10, spacing: 0 })
+  const l = new PileupLayout({ featureHeight: 10, spacing: 0, padding: 0 })
 
   // Add feature ending at 100
   l.addRect('f1', 0, 100, 10)
