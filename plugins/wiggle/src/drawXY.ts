@@ -83,6 +83,8 @@ export function drawXYArrays(
     offset?: number
     color: string
     stopToken?: string
+    // allow filled prop to override config value (like drawXY)
+    filled?: boolean
   },
 ) {
   const {
@@ -98,10 +100,14 @@ export function drawXYArrays(
     color,
     inverted,
     stopToken,
+    filled: filledProp,
   } = props
 
   const { starts, ends, scores, minScores, maxScores } = featureArrays
   const len = starts.length
+  if (len === 0) {
+    return
+  }
 
   const region = regions[0]!
   const regionStart = region.start
@@ -112,7 +118,8 @@ export function drawXYArrays(
 
   const height = unadjustedHeight - offset * 2
 
-  const filled = readConfObject(config, 'filled')
+  // allow filled prop to override config value (for point renderers)
+  const filled = filledProp ?? readConfObject(config, 'filled')
   const clipColor = readConfObject(config, 'clipColor')
   const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
   const minSize = readConfObject(config, 'minSize')
@@ -125,75 +132,61 @@ export function drawXYArrays(
   const domainSpan = niceMax - niceMin
   const isLog = scaleOpts.scaleType === 'log'
 
+  // Precompute scale constants
   const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
-
   const log2 = Math.log(2)
   const logMin = Math.log(niceMin) / log2
-  const logMax = Math.log(niceMax) / log2
-  const logSpan = logMax - logMin
-  const logRatio = logSpan !== 0 ? height / logSpan : 0
+  const logRatio =
+    scaleOpts.scaleType === 'log'
+      ? height / (Math.log(niceMax) / log2 - logMin)
+      : 0
 
-  const toY = isLog
-    ? (n: number) => {
-        const scaled = (Math.log(n) / log2 - logMin) * logRatio
-        return (
-          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
-          offset
-        )
-      }
-    : (n: number) => {
-        const scaled = (n - niceMin) * linearRatio
-        return (
-          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
-          offset
-        )
-      }
-  const toOrigin = (n: number) => toY(originY) - toY(n)
-  const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
+  // Precompute origin Y for filled mode (must match toY logic with clamp)
+  const originYScaled = isLog
+    ? (Math.log(originY) / log2 - logMin) * logRatio
+    : (originY - niceMin) * linearRatio
+  const originYClamped = clamp(
+    inverted ? originYScaled : height - originYScaled,
+    0,
+    height,
+  )
+  const originYPx = originYClamped + offset
+
+  // Select score array once based on summaryScoreMode
+  const isSummary = minScores !== undefined
+  const scoreArr =
+    summaryScoreMode === 'max' && isSummary
+      ? maxScores!
+      : summaryScoreMode === 'min' && isSummary
+        ? minScores!
+        : scores
 
   ctx.fillStyle = color
 
-  const isSummary = minScores !== undefined
-  const useMax = summaryScoreMode === 'max' && isSummary
-  const useMin = summaryScoreMode === 'min' && isSummary
+  // Track clipping regions during main loop to avoid second pass
+  let clipHighCount = 0
+  let clipLowCount = 0
+  // Preallocate clipping arrays only if we might need them
+  const clipHighPx: number[] = []
+  const clipHighW: number[] = []
+  const clipLowPx: number[] = []
+  const clipLowW: number[] = []
 
-  let start = performance.now()
-  let hasClipping = false
+  // Time-based stop token check (Date.now is faster than performance.now)
+  let lastCheck = Date.now()
 
-  for (let i = 0; i < len; i++) {
-    if (i % 10000 === 0 && performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
-    const fstart = starts[i]!
-    const fend = ends[i]!
-    const leftPx = reversed
-      ? (regionEnd - fend) * invBpPerPx
-      : (fstart - regionStart) * invBpPerPx
-    const rightPx = reversed
-      ? (regionEnd - fstart) * invBpPerPx
-      : (fend - regionStart) * invBpPerPx
-
-    const score = useMax
-      ? maxScores![i]!
-      : useMin
-        ? minScores![i]!
-        : scores[i]!
-    const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
-
-    if (score > niceMax || (score < niceMin && !isLog)) {
-      hasClipping = true
-    }
-
-    const y = toY(score)
-    const h = getHeight(score)
-    ctx.fillRect(leftPx, y, w, h)
-  }
-
-  // second pass for clipping indicators if needed
-  if (hasClipping) {
-    ctx.fillStyle = clipColor
+  // Main drawing loop - fully inlined for performance
+  if (isLog) {
+    // Log scale path
     for (let i = 0; i < len; i++) {
+      // Check stop token every ~10000 iterations if 400ms elapsed
+      if (i % 10000 === 0) {
+        const now = Date.now()
+        if (now - lastCheck > 400) {
+          checkStopToken(stopToken)
+          lastCheck = now
+        }
+      }
       const fstart = starts[i]!
       const fend = ends[i]!
       const leftPx = reversed
@@ -202,14 +195,81 @@ export function drawXYArrays(
       const rightPx = reversed
         ? (regionEnd - fstart) * invBpPerPx
         : (fend - regionStart) * invBpPerPx
-      const score = scores[i]!
+      const score = scoreArr[i]!
       const w = rightPx - leftPx + fudgeFactor
 
+      // Inline toY for log scale (with clamp to match original)
+      const scaled = (Math.log(score) / log2 - logMin) * logRatio
+      const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
+      const y = yClamped + offset
+
+      // Inline getHeight
+      const h = filled ? originYPx - y : Math.max(minSize, 1)
+
+      ctx.fillRect(leftPx, y, Math.max(w, minSize), h)
+
+      // Track clipping
       if (score > niceMax) {
-        ctx.fillRect(leftPx, offset, w, clipHeight)
-      } else if (score < niceMin && !isLog) {
-        ctx.fillRect(leftPx, unadjustedHeight - clipHeight, w, clipHeight)
+        clipHighPx[clipHighCount] = leftPx
+        clipHighW[clipHighCount++] = w
       }
+    }
+  } else {
+    // Linear scale path (most common)
+    for (let i = 0; i < len; i++) {
+      // Check stop token every ~10000 iterations if 400ms elapsed
+      if (i % 10000 === 0) {
+        const now = Date.now()
+        if (now - lastCheck > 400) {
+          checkStopToken(stopToken)
+          lastCheck = now
+        }
+      }
+      const fstart = starts[i]!
+      const fend = ends[i]!
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
+      const score = scoreArr[i]!
+      const w = rightPx - leftPx + fudgeFactor
+
+      // Inline toY for linear scale (with clamp to match original)
+      const scaled = (score - niceMin) * linearRatio
+      const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
+      const y = yClamped + offset
+
+      // Inline getHeight
+      const h = filled ? originYPx - y : Math.max(minSize, 1)
+
+      ctx.fillRect(leftPx, y, Math.max(w, minSize), h)
+
+      // Track clipping
+      if (score > niceMax) {
+        clipHighPx[clipHighCount] = leftPx
+        clipHighW[clipHighCount++] = w
+      } else if (score < niceMin) {
+        clipLowPx[clipLowCount] = leftPx
+        clipLowW[clipLowCount++] = w
+      }
+    }
+  }
+
+  // Draw clipping indicators from cached data
+  if (clipHighCount > 0 || clipLowCount > 0) {
+    ctx.fillStyle = clipColor
+    for (let i = 0; i < clipHighCount; i++) {
+      ctx.fillRect(clipHighPx[i]!, offset, clipHighW[i]!, clipHeight)
+    }
+    for (let i = 0; i < clipLowCount; i++) {
+      ctx.fillRect(
+        clipLowPx[i]!,
+        unadjustedHeight - clipHeight,
+        clipLowW[i]!,
+        clipHeight,
+      )
     }
   }
 
@@ -217,9 +277,13 @@ export function drawXYArrays(
     ctx.lineWidth = 1
     ctx.strokeStyle = 'rgba(200,200,200,0.5)'
     for (const tick of ticks.values) {
+      const scaled = isLog
+        ? (Math.log(tick) / log2 - logMin) * logRatio
+        : (tick - niceMin) * linearRatio
+      const y = inverted ? scaled + offset : height - scaled + offset
       ctx.beginPath()
-      ctx.moveTo(0, Math.round(toY(tick)))
-      ctx.lineTo(width, Math.round(toY(tick)))
+      ctx.moveTo(0, Math.round(y))
+      ctx.lineTo(width, Math.round(y))
       ctx.stroke()
     }
   }
