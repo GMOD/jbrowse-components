@@ -71,7 +71,7 @@ const DataDisplay = observer(function ({
   const { drawn, loading } = model
   const view = getContainingView(model) as LinearGenomeViewModel
   const calculatedLeft = (model.lastDrawnOffsetPx || 0) - view.offsetPx
-  const styleLeft = view.offsetPx < 0 ? 0 : calculatedLeft
+  const styleLeft = calculatedLeft
 
   return (
     // this data-testid is located here because changing props on the canvas
