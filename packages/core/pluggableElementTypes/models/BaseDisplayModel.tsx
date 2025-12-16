@@ -124,7 +124,8 @@ function stateModelFactory() {
           return undefined
         }
       },
-
+    }))
+    .views(self => ({
       /**
        * #method
        * the react props that are passed to the Renderer when data
@@ -135,7 +136,7 @@ function stateModelFactory() {
         return {
           ...getParentRenderProps(self),
           notReady: getContainingView(self).minimized,
-          rpcDriverName: this.effectiveRpcDriverName,
+          rpcDriverName: self.effectiveRpcDriverName,
         }
       },
       /**

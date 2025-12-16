@@ -26,8 +26,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
-  public sequenceAdapterConfig?: Record<string, unknown>
-
   protected configure() {
     if (!this.configureResult) {
       const bamLocation = this.getConf('bamLocation')

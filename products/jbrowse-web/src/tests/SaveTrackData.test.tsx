@@ -32,7 +32,7 @@ async function openSaveTrackDataDialog(
 ) {
   await user.click(await screen.findByTestId(hts(trackId), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Save track data'))
+  await user.click(await screen.findByText('Save track data', ...opts))
 }
 
 function readBlobAsText(blob: Blob): Promise<string> {
@@ -64,7 +64,7 @@ test.each([
 
     await openSaveTrackDataDialog(user, trackId)
 
-    await screen.findByText('File type', ...opts)
+    await screen.findByText(/File type/, ...opts)
 
     // Wait for loading to complete before downloading
     await waitFor(
