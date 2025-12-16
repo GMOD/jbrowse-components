@@ -18,8 +18,6 @@ import type { LayoutFeature } from '../util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Theme } from '@mui/material'
 
-const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
-
 export function renderSoftClipping({
   ctx,
   feat,
@@ -51,6 +49,7 @@ export function renderSoftClipping({
   }
 
   const heightLim = charHeight - 2
+  let lastFillStyle = ''
   let seqOffset = 0
   let refOffset = 0
   const CIGAR =
@@ -98,9 +97,9 @@ export function renderSoftClipping({
             const y = topPx + heightPx
             const color = theme.palette.getContrastText(baseColor)
             if (x >= 0 && x <= canvasWidth) {
-              if (color && lastFillStyleMap.get(ctx) !== color) {
+              if (color && lastFillStyle !== color) {
                 ctx.fillStyle = color
-                lastFillStyleMap.set(ctx, color)
+                lastFillStyle = color
               }
               ctx.fillText(base, x, y)
             }

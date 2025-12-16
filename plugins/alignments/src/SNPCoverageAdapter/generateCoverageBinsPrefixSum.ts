@@ -393,7 +393,7 @@ function processFeature(
           pos: epos,
           entry: {
             strand: fstrand,
-            type: MISMATCH_MAP[type],
+            type: MISMATCH_MAP[type]! as 'insertion' | 'hardclip' | 'softclip',
             length: interbaseLen!,
             sequence: base,
           },

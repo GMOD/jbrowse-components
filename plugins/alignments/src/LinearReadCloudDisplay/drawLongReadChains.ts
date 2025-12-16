@@ -33,8 +33,6 @@ interface MinimalView {
   }) => { offsetPx: number; index: number } | undefined
 }
 
-const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
-
 export function drawLongReadChains({
   ctx,
   chainData,
@@ -94,6 +92,7 @@ export function drawLongReadChains({
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 
+  let lastFillStyle = ''
   forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain, minX, maxX } = computedChain
 
@@ -292,11 +291,9 @@ export function drawLongReadChains({
           // no need to negate featureHeight, it's not used again
         }
 
-        if (featureFill) {
-          if (lastFillStyleMap.get(ctx) !== featureFill) {
-            ctx.fillStyle = featureFill
-            lastFillStyleMap.set(ctx, featureFill)
-          }
+        if (featureFill && lastFillStyle !== featureFill) {
+          ctx.fillStyle = featureFill
+          lastFillStyle = featureFill
         }
 
         ctx.fillRect(xPos, chainY, width, featureHeight)

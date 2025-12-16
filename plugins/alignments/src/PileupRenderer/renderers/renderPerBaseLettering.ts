@@ -11,8 +11,6 @@ import {
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
 
-const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
-
 export function renderPerBaseLettering({
   ctx,
   feat,
@@ -38,6 +36,7 @@ export function renderPerBaseLettering({
 }) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat
+  let lastFillStyle = ''
   const seq = feature.get('seq') as string | undefined
   const invBpPerPx = 1 / bpPerPx
   const w = invBpPerPx
@@ -90,9 +89,9 @@ export function renderPerBaseLettering({
             const y = topPx + heightPx
             const color = colorContrastMap[letter]
             if (x >= 0 && x <= canvasWidth) {
-              if (color && lastFillStyleMap.get(ctx) !== color) {
+              if (color && lastFillStyle !== color) {
                 ctx.fillStyle = color
-                lastFillStyleMap.set(ctx, color)
+                lastFillStyle = color
               }
               ctx.fillText(letter, x, y)
             }

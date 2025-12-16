@@ -79,7 +79,7 @@ export function renderMismatchesCallback({
   const { heightPx, topPx, feature } = feat
   const bottomPx = topPx + heightPx
   const featStart = feature.get('start')
-  let lastColor = 'NONCOLOR'
+  let lastColor = ''
   const region = checkRef
     ? (regions.find(r => {
         const rn = feature.get('refName')

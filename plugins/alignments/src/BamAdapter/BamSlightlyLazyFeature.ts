@@ -24,8 +24,7 @@ export default class BamSlightlyLazyFeature
 {
   public adapter!: BamAdapter
   public ref?: string
-  private _mismatches?: Mismatch[]
-  private _fields?: SimpleFeatureSerialized
+  private _cachedFields?: SimpleFeatureSerialized
 
   id() {
     return `${this.adapter.id}-${this.fileOffset}`
@@ -39,36 +38,33 @@ export default class BamSlightlyLazyFeature
   // computing mismatches array up front was faster, so this is no longer the
   // primary way mismatches are used
   get mismatches() {
-    if (this._mismatches === undefined) {
-      const mismatches: Mismatch[] = []
-      this.forEachMismatch(
-        (type, start, length, base, qual, altbase, cliplen) => {
-          const typeStr = MISMATCH_MAP[type]!
-          const mismatch: Mismatch = {
-            start,
-            length,
-            type: typeStr,
-            base,
-          }
-          if (qual !== undefined && qual >= 0) {
-            mismatch.qual = qual
-          }
-          if (altbase !== undefined && altbase > 0) {
-            mismatch.altbase = CHAR_FROM_CODE[altbase]
-          }
-          if (type === INSERTION_TYPE) {
-            mismatch.insertedBases = base
-            mismatch.base = `${cliplen}`
-          }
-          if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
-            mismatch.cliplen = cliplen
-          }
-          mismatches.push(mismatch)
-        },
-      )
-      this._mismatches = mismatches
-    }
-    return this._mismatches
+    const mismatches: Mismatch[] = []
+    this.forEachMismatch(
+      (type, start, length, base, qual, altbase, cliplen) => {
+        const typeStr = MISMATCH_MAP[type]!
+        const mismatch: Mismatch = {
+          start,
+          length,
+          type: typeStr,
+          base,
+        }
+        if (qual !== undefined && qual >= 0) {
+          mismatch.qual = qual
+        }
+        if (altbase !== undefined && altbase > 0) {
+          mismatch.altbase = CHAR_FROM_CODE[altbase]
+        }
+        if (type === INSERTION_TYPE) {
+          mismatch.insertedBases = base
+          mismatch.base = `${cliplen}`
+        }
+        if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
+          mismatch.cliplen = cliplen
+        }
+        mismatches.push(mismatch)
+      },
+    )
+    return mismatches
   }
 
   forEachMismatch(callback: MismatchCallback) {
@@ -134,9 +130,9 @@ export default class BamSlightlyLazyFeature
   }
 
   get fields(): SimpleFeatureSerialized {
-    if (this._fields === undefined) {
+    if (this._cachedFields === undefined) {
       const p = this.isPaired()
-      this._fields = {
+      this._cachedFields = {
         start: this.start,
         name: this.name,
         end: this.end,
@@ -156,7 +152,7 @@ export default class BamSlightlyLazyFeature
         uniqueId: this.id(),
       }
     }
-    return this._fields
+    return this._cachedFields
   }
 
   toJSON(): SimpleFeatureSerialized {

@@ -31,8 +31,6 @@ interface MinimalView {
   }) => { offsetPx: number; index: number } | undefined
 }
 
-const lastFillStyleMap = new WeakMap<CanvasRenderingContext2D, string>()
-
 export function drawPairChains({
   ctx,
   type,
@@ -89,6 +87,7 @@ export function drawPairChains({
   const { charWidth, charHeight } = getCharWidthHeight()
   const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
   const drawIndels = shouldDrawIndels()
+  let lastColor = ''
 
   forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
     const { id, chain, minX, maxX } = computedChain
@@ -243,9 +242,9 @@ export function drawPairChains({
         }
 
         if (pairedFill) {
-          if (lastFillStyleMap.get(ctx) !== pairedFill) {
+          if (lastColor !== pairedFill) {
             ctx.fillStyle = pairedFill
-            lastFillStyleMap.set(ctx, pairedFill)
+            lastColor = pairedFill
           }
         }
 

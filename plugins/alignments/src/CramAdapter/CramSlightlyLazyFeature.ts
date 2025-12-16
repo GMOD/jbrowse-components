@@ -128,7 +128,7 @@ export default class CramSlightlyLazyFeature implements Feature {
       const packed = numeric[i]!
       const length = packed >> 4
       const opCode = NUMERIC_CIGAR_CODES[packed & 0xf]!
-      result += length + CHAR_FROM_CODE[opCode]
+      result += length + CHAR_FROM_CODE[opCode]!
     }
     return result
   }
