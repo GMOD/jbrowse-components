@@ -22,9 +22,8 @@ export default class MultiRowLineRenderer extends FeatureRendererType {
         s => arraysBySource[s.name],
       )
       if (allSourcesHaveArrays) {
-        const { renderMultiRowLineArrays } = await import(
-          './renderMultiRowLineArrays'
-        )
+        const { renderMultiRowLineArrays } =
+          await import('./renderMultiRowLineArrays')
         return renderMultiRowLineArrays(renderProps, arraysBySource)
       }
     }

@@ -8,9 +8,9 @@ import { rpcResult } from 'librpc-web-mod'
 
 import { drawLineArrays } from '../drawLine'
 
-import type { ReducedFeatureArrays } from '../util'
 import type { MultiWiggleFeatureArrays } from '../MultiWiggleAdapter/MultiWiggleAdapter'
 import type { MultiRenderArgsDeserialized } from '../types'
+import type { ReducedFeatureArrays } from '../util'
 
 interface SerializedFeature {
   uniqueId: string
@@ -29,8 +29,8 @@ function serializeReducedFeatures(
   const { starts, ends, scores } = reduced
   const features: SerializedFeature[] = []
 
-  for (let i = 0; i < starts.length; i++) {
-    const start = starts[i]!
+  for (const [i, start_] of starts.entries()) {
+    const start = start_
     const end = ends[i]!
     const score = scores[i]!
     features.push({

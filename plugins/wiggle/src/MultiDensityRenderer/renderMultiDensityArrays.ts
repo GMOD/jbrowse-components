@@ -7,44 +7,11 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawDensityArrays } from '../drawDensity'
+import { serializeReducedFeatures } from '../util'
 
-import type { ReducedFeatureArrays } from '../util'
 import type { MultiWiggleFeatureArrays } from '../MultiWiggleAdapter/MultiWiggleAdapter'
 import type { MultiRenderArgsDeserialized } from '../types'
-
-interface SerializedFeature {
-  uniqueId: string
-  start: number
-  end: number
-  score: number
-  source: string
-  refName: string
-}
-
-function serializeReducedFeatures(
-  reduced: ReducedFeatureArrays,
-  source: string,
-  refName: string,
-): SerializedFeature[] {
-  const { starts, ends, scores } = reduced
-  const features: SerializedFeature[] = []
-
-  for (let i = 0; i < starts.length; i++) {
-    const start = starts[i]!
-    const end = ends[i]!
-    const score = scores[i]!
-    features.push({
-      uniqueId: `${source}-${refName}-${start}`,
-      start,
-      end,
-      score,
-      source,
-      refName,
-    })
-  }
-
-  return features
-}
+import type { ReducedFeatureArrays } from '../util'
 
 export async function renderMultiDensityArrays(
   renderProps: MultiRenderArgsDeserialized,
@@ -88,7 +55,7 @@ export async function renderMultiDensityArrays(
   )
 
   // Serialize reduced features for tooltip support
-  const features: SerializedFeature[] = []
+  const features = []
   for (const source of sources) {
     const reduced = reducedBySource[source.name]
     if (reduced) {

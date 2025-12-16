@@ -2,11 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { clamp, featureSpanPx } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import {
-  getScale,
-  WIGGLE_CLIP_HEIGHT,
-  WIGGLE_FUDGE_FACTOR,
-} from './util'
+import { WIGGLE_CLIP_HEIGHT, WIGGLE_FUDGE_FACTOR, getScale } from './util'
 
 import type {
   ReducedFeatureArrays,

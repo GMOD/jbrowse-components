@@ -1,11 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import {
-  getScale,
-  WIGGLE_CLIP_HEIGHT,
-  WIGGLE_FUDGE_FACTOR,
-} from './util'
+import { WIGGLE_CLIP_HEIGHT, WIGGLE_FUDGE_FACTOR, getScale } from './util'
 
 import type {
   ReducedFeatureArrays,
@@ -153,7 +149,15 @@ export function drawDensityArrays(
     stopToken?: string
   },
 ): { reducedFeatures: ReducedFeatureArrays } {
-  const { stopToken, featureArrays, regions, bpPerPx, scaleOpts, height, config } = props
+  const {
+    stopToken,
+    featureArrays,
+    regions,
+    bpPerPx,
+    scaleOpts,
+    height,
+    config,
+  } = props
 
   const { starts, ends, scores } = featureArrays
   const len = starts.length
@@ -202,8 +206,7 @@ export function drawDensityArrays(
 
   // Check if features are sub-pixel by sampling the first feature
   // Only use two-pass deduplication when features are < 1px wide
-  const firstFeatureWidth =
-    len > 0 ? (ends[0]! - starts[0]!) * invBpPerPx : 0
+  const firstFeatureWidth = len > 0 ? (ends[0]! - starts[0]!) * invBpPerPx : 0
   const usePixelDedup = firstFeatureWidth < 1
 
   if (usePixelDedup) {
@@ -252,11 +255,7 @@ export function drawDensityArrays(
         const idx = featureIdxPerPx[px]!
         const score = maxScorePerPx[px]!
 
-        if (score >= domainMin) {
-          ctx.fillStyle = getColor(score)
-        } else {
-          ctx.fillStyle = '#eee'
-        }
+        ctx.fillStyle = score >= domainMin ? getColor(score) : '#eee'
         ctx.fillRect(px, 0, rectW, height)
 
         if (clipFlag[px] === 1) {
@@ -300,11 +299,7 @@ export function drawDensityArrays(
         prevLeftPx = leftPx
       }
 
-      if (score >= domainMin) {
-        ctx.fillStyle = getColor(score)
-      } else {
-        ctx.fillStyle = '#eee'
-      }
+      ctx.fillStyle = score >= domainMin ? getColor(score) : '#eee'
       ctx.fillRect(leftPx, 0, w, height)
 
       if (score > niceMax) {

@@ -5,18 +5,15 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
 
+import type { WiggleFeatureArrays } from '../drawXY'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { UnrectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
-import type { WiggleFeatureArrays } from '../drawXY'
-
 interface WiggleOptions extends BaseOptions {
   resolution?: number
 }
-
-export type { WiggleFeatureArrays }
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<{
@@ -72,7 +69,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
-    console.log('wtf')
     const { refName, start, end } = region
     const {
       bpPerPx = 0,
@@ -158,7 +154,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     region: Region,
     opts: WiggleOptions = {},
   ): Promise<WiggleFeatureArrays> {
-    console.log('wtf22')
     const { refName, start, end } = region
     const { bpPerPx = 0, resolution = 1, statusCallback = () => {} } = opts
     const resolutionMultiplier = this.getConf('resolutionMultiplier')
@@ -250,3 +245,5 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     }
   }
 }
+
+export { type WiggleFeatureArrays } from '../drawXY'

@@ -22,9 +22,8 @@ export default class MultiDensityPlotRenderer extends FeatureRendererType {
         s => arraysBySource[s.name],
       )
       if (allSourcesHaveArrays) {
-        const { renderMultiDensityArrays } = await import(
-          './renderMultiDensityArrays'
-        )
+        const { renderMultiDensityArrays } =
+          await import('./renderMultiDensityArrays')
         return renderMultiDensityArrays(renderProps, arraysBySource)
       }
     }

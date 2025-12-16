@@ -22,7 +22,8 @@ export default class MultiLineRenderer extends FeatureRendererType {
         s => arraysBySource[s.name],
       )
       if (allSourcesHaveArrays) {
-        const { renderMultiLineArrays } = await import('./renderMultiLineArrays')
+        const { renderMultiLineArrays } =
+          await import('./renderMultiLineArrays')
         return renderMultiLineArrays(renderProps, arraysBySource)
       }
     }

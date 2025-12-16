@@ -6,10 +6,10 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import mix from 'colord/plugins/mix' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 import {
-  getOrigin,
-  getScale,
   WIGGLE_CLIP_HEIGHT,
   WIGGLE_FUDGE_FACTOR,
+  getOrigin,
+  getScale,
 } from './util'
 
 import type {
@@ -20,8 +20,6 @@ import type {
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { Colord } from '@jbrowse/core/util/colord'
-
-export type { ReducedFeatureArrays, WiggleFeatureArrays }
 
 function fillRectCtx(
   x: number,
@@ -161,7 +159,7 @@ export function drawXYArrays(
     summaryScoreMode === 'max' && isSummary
       ? maxScores!
       : summaryScoreMode === 'min' && isSummary
-        ? minScores!
+        ? minScores
         : scores
 
   ctx.fillStyle = color
@@ -177,8 +175,7 @@ export function drawXYArrays(
 
   // Check if features are sub-pixel by sampling the first feature
   // Only use two-pass deduplication when features are < 1px wide
-  const firstFeatureWidth =
-    len > 0 ? (ends[0]! - starts[0]!) * invBpPerPx : 0
+  const firstFeatureWidth = len > 0 ? (ends[0]! - starts[0]!) * invBpPerPx : 0
   const usePixelDedup = filled && firstFeatureWidth < 1
 
   if (usePixelDedup) {
@@ -253,7 +250,12 @@ export function drawXYArrays(
       if (clipFlag[px] === 1) {
         ctx.fillRect(px, offset, rectW, WIGGLE_CLIP_HEIGHT)
       } else if (clipFlag[px] === 2) {
-        ctx.fillRect(px, unadjustedHeight - WIGGLE_CLIP_HEIGHT, rectW, WIGGLE_CLIP_HEIGHT)
+        ctx.fillRect(
+          px,
+          unadjustedHeight - WIGGLE_CLIP_HEIGHT,
+          rectW,
+          WIGGLE_CLIP_HEIGHT,
+        )
       }
     }
   } else if (filled) {
@@ -307,7 +309,12 @@ export function drawXYArrays(
         ctx.fillStyle = color
       } else if (score < niceMin && !isLog) {
         ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, unadjustedHeight - WIGGLE_CLIP_HEIGHT, w, WIGGLE_CLIP_HEIGHT)
+        ctx.fillRect(
+          leftPx,
+          unadjustedHeight - WIGGLE_CLIP_HEIGHT,
+          w,
+          WIGGLE_CLIP_HEIGHT,
+        )
         ctx.fillStyle = color
       }
     }
@@ -795,3 +802,5 @@ export function drawXY(
     reducedFeatures,
   }
 }
+
+export { type ReducedFeatureArrays, type WiggleFeatureArrays } from './util'

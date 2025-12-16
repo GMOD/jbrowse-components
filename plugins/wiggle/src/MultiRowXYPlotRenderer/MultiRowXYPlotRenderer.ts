@@ -23,9 +23,8 @@ export default class MultiRowXYPlotRenderer extends FeatureRendererType {
         s => arraysBySource[s.name],
       )
       if (allSourcesHaveArrays) {
-        const { renderMultiRowXYPlotArrays } = await import(
-          './renderMultiRowXYPlotArrays'
-        )
+        const { renderMultiRowXYPlotArrays } =
+          await import('./renderMultiRowXYPlotArrays')
         return renderMultiRowXYPlotArrays(renderProps, arraysBySource)
       }
     }

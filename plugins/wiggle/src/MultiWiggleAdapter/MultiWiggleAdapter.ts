@@ -16,9 +16,7 @@ interface WiggleOptions extends BaseOptions {
   resolution?: number
 }
 
-export interface MultiWiggleFeatureArrays {
-  [sourceName: string]: WiggleFeatureArrays
-}
+export type MultiWiggleFeatureArrays = Record<string, WiggleFeatureArrays>
 
 function getFilename(uri: string) {
   const filename = uri.slice(uri.lastIndexOf('/') + 1)
@@ -179,9 +177,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         const { source, dataAdapter } = adp
         // Check if adapter supports getFeaturesAsArrays
         if ('getFeaturesAsArrays' in dataAdapter) {
-          const arrays = await (
-            dataAdapter as any
-          ).getFeaturesAsArrays(region, opts)
+          const arrays = await (dataAdapter as any).getFeaturesAsArrays(
+            region,
+            opts,
+          )
           return { source, arrays }
         }
         return { source, arrays: null }
@@ -200,7 +199,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   /**
    * Optimized stats calculation using arrays directly instead of Feature objects.
    */
-  public async getRegionQuantitativeStats(region: Region, opts?: WiggleOptions) {
+  public async getRegionQuantitativeStats(
+    region: Region,
+    opts?: WiggleOptions,
+  ) {
     const { start, end } = region
     const arraysBySource = await this.getFeaturesAsArrays(region, {
       ...opts,

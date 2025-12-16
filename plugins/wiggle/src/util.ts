@@ -193,6 +193,46 @@ export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
 
+// Serialized feature format for RPC transport
+export interface SerializedFeature {
+  uniqueId: string
+  start: number
+  end: number
+  score: number
+  source: string
+  refName: string
+  maxScore?: number
+  minScore?: number
+  summary?: boolean
+}
+
+// Convert reduced feature arrays to serialized features for tooltip support
+export function serializeReducedFeatures(
+  reduced: ReducedFeatureArrays,
+  source: string,
+  refName: string,
+): SerializedFeature[] {
+  const { starts, ends, scores, minScores, maxScores } = reduced
+  const features: SerializedFeature[] = []
+  const hasSummary = minScores !== undefined && maxScores !== undefined
+
+  for (const [i, start] of starts.entries()) {
+    features.push({
+      uniqueId: `${source}-${refName}-${start}`,
+      start: start,
+      end: ends[i]!,
+      score: scores[i]!,
+      source,
+      refName,
+      minScore: minScores?.[i],
+      maxScore: maxScores?.[i],
+      summary: hasSummary ? true : undefined,
+    })
+  }
+
+  return features
+}
+
 // Shared constants for wiggle drawing
 export const WIGGLE_FUDGE_FACTOR = 0.3
 export const WIGGLE_CLIP_HEIGHT = 2
@@ -228,7 +268,10 @@ export interface ScaleValues {
 }
 
 // Precompute scale values once for use in hot loops
-export function getScaleValues(scaleOpts: ScaleOpts, height: number): ScaleValues {
+export function getScaleValues(
+  scaleOpts: ScaleOpts,
+  height: number,
+): ScaleValues {
   const scale = getScale({ ...scaleOpts, range: [0, height] })
   const domain = scale.domain() as [number, number]
   const niceMin = domain[0]
@@ -243,7 +286,16 @@ export function getScaleValues(scaleOpts: ScaleOpts, height: number): ScaleValue
   const logSpan = logMax - logMin
   const logRatio = logSpan !== 0 ? height / logSpan : 0
 
-  return { niceMin, niceMax, height, linearRatio, log2, logMin, logRatio, isLog }
+  return {
+    niceMin,
+    niceMax,
+    height,
+    linearRatio,
+    log2,
+    logMin,
+    logRatio,
+    isLog,
+  }
 }
 
 // avoid drawing negative width features for SVG exports
