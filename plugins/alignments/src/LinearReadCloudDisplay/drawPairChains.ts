@@ -258,6 +258,14 @@ export function drawPairChains({
         // This doesn't account for where the region is positioned in static blocks
         // Use canvas translation to shift the coordinate system by the offset difference
         ctx.save()
+
+        // Apply clipping rect for this region to prevent mismatches from bleeding
+        // into adjacent regions when multiple regions are displayed
+        const regionStartPx = region.offsetPx - viewOffsetPx
+        ctx.beginPath()
+        ctx.rect(regionStartPx, 0, region.widthPx, 100000)
+        ctx.clip()
+
         const offsetAdjustment = region.offsetPx - viewOffsetPx
         ctx.translate(offsetAdjustment, 0)
 
