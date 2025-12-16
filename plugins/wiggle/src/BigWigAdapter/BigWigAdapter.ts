@@ -92,10 +92,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
           }),
       )
 
-      const { starts, ends, scores } = arrays
-      const minScores = 'minScores' in arrays ? arrays.minScores : undefined
-      const maxScores = 'maxScores' in arrays ? arrays.maxScores : undefined
-      const isSummary = minScores !== undefined
+      const { starts, ends, scores, isSummary } = arrays
+      const minScores = isSummary ? arrays.minScores : undefined
+      const maxScores = isSummary ? arrays.maxScores : undefined
 
       for (const [i, start_] of starts.entries()) {
         const featureStart = start_
@@ -174,8 +173,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       starts: arrays.starts,
       ends: arrays.ends,
       scores: arrays.scores,
-      minScores: 'minScores' in arrays ? arrays.minScores : undefined,
-      maxScores: 'maxScores' in arrays ? arrays.maxScores : undefined,
+      minScores: arrays.isSummary ? arrays.minScores : undefined,
+      maxScores: arrays.isSummary ? arrays.maxScores : undefined,
     }
   }
 

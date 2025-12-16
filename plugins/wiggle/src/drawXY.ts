@@ -80,7 +80,11 @@ export function drawXYArrays(
     displayCrossHatches: boolean
     inverted: boolean
     offset?: number
-    color: string
+    color?: string
+    // optional bicolor support - when provided, color is determined by score vs pivotValue
+    posColor?: string
+    negColor?: string
+    pivotValue?: number
     stopToken?: string
     // allow filled prop to override config value (like drawXY)
     filled?: boolean
@@ -97,10 +101,17 @@ export function drawXYArrays(
     displayCrossHatches,
     offset = 0,
     color,
+    posColor,
+    negColor,
+    pivotValue = 0,
     inverted,
     stopToken,
     filled: filledProp,
   } = props
+
+  // Determine if we're using bicolor mode
+  const useBicolor = posColor !== undefined && negColor !== undefined
+  const staticColor = color ?? posColor ?? 'blue'
 
   const { starts, ends, scores, minScores, maxScores } = featureArrays
   const len = starts.length
@@ -162,7 +173,8 @@ export function drawXYArrays(
         ? minScores
         : scores
 
-  ctx.fillStyle = color
+  // Set initial fill color (will be changed per-feature in bicolor mode)
+  ctx.fillStyle = staticColor
 
   // Track reduced features for tooltip support
   const reducedStarts: number[] = []
@@ -229,6 +241,9 @@ export function drawXYArrays(
           : (score - niceMin) * linearRatio
         const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
         const y = yClamped + offset
+        if (useBicolor) {
+          ctx.fillStyle = score < pivotValue ? negColor! : posColor!
+        }
         ctx.fillRect(px, y, rectW, originYPx - y)
 
         // Build reduced features for tooltip support
@@ -300,13 +315,19 @@ export function drawXYArrays(
         : (score - niceMin) * linearRatio
       const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
       const y = yClamped + offset
+      const featureColor = useBicolor
+        ? score < pivotValue
+          ? negColor!
+          : posColor!
+        : staticColor
+      ctx.fillStyle = featureColor
       ctx.fillRect(leftPx, y, w, originYPx - y)
 
       // Draw clipping indicator
       if (score > niceMax) {
         ctx.fillStyle = clipColor
         ctx.fillRect(leftPx, offset, w, WIGGLE_CLIP_HEIGHT)
-        ctx.fillStyle = color
+        ctx.fillStyle = featureColor
       } else if (score < niceMin && !isLog) {
         ctx.fillStyle = clipColor
         ctx.fillRect(
@@ -315,7 +336,7 @@ export function drawXYArrays(
           w,
           WIGGLE_CLIP_HEIGHT,
         )
-        ctx.fillStyle = color
+        ctx.fillStyle = featureColor
       }
     }
   } else {
@@ -368,6 +389,9 @@ export function drawXYArrays(
       const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
       const y = yClamped + offset
 
+      if (useBicolor) {
+        ctx.fillStyle = score < pivotValue ? negColor! : posColor!
+      }
       ctx.fillRect(leftPx, y, Math.max(w, minSize), dotSize)
 
       // Track clipping
