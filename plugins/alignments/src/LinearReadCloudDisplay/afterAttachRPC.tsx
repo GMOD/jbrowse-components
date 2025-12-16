@@ -1,4 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingView,
   getSession,

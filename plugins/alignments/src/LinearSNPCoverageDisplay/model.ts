@@ -380,11 +380,12 @@ function stateModelFactory(
           const view = getContainingView(self) as LGV
           const session = getSession(self)
           const { assemblyManager } = session
-          const assemblyName = view.assemblyNames?.[0]
+          const assemblyName = view.assemblyNames[0]
           const assembly = assemblyName
             ? assemblyManager.get(assemblyName)
             : undefined
-          const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+          const sequenceAdapterConfig =
+            assembly?.configuration?.sequence?.adapter
           const sequenceAdapter = sequenceAdapterConfig
             ? getSnapshot(sequenceAdapterConfig)
             : undefined

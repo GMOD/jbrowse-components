@@ -61,7 +61,12 @@ export default class CoreGetFeatures extends RpcMethodType {
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    console.log('[CoreGetFeatures] adapterConfig.type:', (adapterConfig as any).type, 'sequenceAdapterConfig:', (dataAdapter as any).sequenceAdapterConfig)
+    // console.log(
+    //   '[CoreGetFeatures] adapterConfig.type:',
+    //   (adapterConfig as any).type,
+    //   'sequenceAdapterConfig:',
+    //   (dataAdapter as any).sequenceAdapterConfig,
+    // )
 
     const r = await firstValueFrom(
       dataAdapter
