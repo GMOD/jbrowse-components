@@ -1,5 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
@@ -7,15 +5,12 @@ import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
 import { drawChevron } from '../shared/chevron'
 import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
 import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
+import { CHEVRON_WIDTH } from '../shared/util'
 import {
-  CHEVRON_WIDTH,
-  getCharWidthHeight,
-  getColorBaseMap,
-  getContrastBaseMap,
-  setAlignmentFont,
-  shouldDrawIndels,
-  shouldDrawSNPsMuted,
-} from '../shared/util'
+  featureOverlapsRegion,
+  getConnectingLineEndpoint,
+  getMismatchRenderingConfig,
+} from './drawChainsUtil'
 
 import type { ChainData, ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -58,30 +53,19 @@ export function drawLongReadChains({
   colorBy: ColorBy
   stopToken?: string
 }): void {
-  // Setup rendering configuration from PileupRenderer
-  const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
-  const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth')
-  const largeInsertionIndicatorScale = readConfObject(
+  const mismatchConfig = getMismatchRenderingConfig(
+    ctx,
     config,
-    'largeInsertionIndicatorScale',
+    configTheme,
+    colorBy,
   )
-  const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
-  const theme = createJBrowseTheme(configTheme)
-  const colorMap = getColorBaseMap(theme)
-  const colorContrastMap = getContrastBaseMap(theme)
-  setAlignmentFont(ctx)
-  const { charWidth, charHeight } = getCharWidthHeight()
-  const drawSNPsMuted = shouldDrawSNPsMuted(colorBy.type)
-  const drawIndels = shouldDrawIndels()
   const canvasWidth = region.widthPx
 
   const getStrandColorKey = (strand: number) =>
     strand === -1 ? 'color_rev_strand' : 'color_fwd_strand'
 
-  // Context is already translated to region.offsetPx, so coordinates are relative to region
   const regionStart = region.start
   const regionEnd = region.end
-  const regionRefName = region.refName
 
   let lastFillStyle = ''
   forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
@@ -116,40 +100,41 @@ export function drawLongReadChains({
     const primaryStrand = getPrimaryStrandFromFlags(c1)
 
     // Draw connecting line for multi-segment long reads
-    // Draw if either end overlaps this region - clipping handles the bounds
     if (!isSingleton) {
       const firstFeat = chain[0]!
       const lastFeat = chain[chain.length - 1]!
 
-      const firstRefName = firstFeat.get('refName')
-      const lastRefName = lastFeat.get('refName')
       const firstStart = firstFeat.get('start')
-      const firstEnd = firstFeat.get('end')
-      const lastStart = lastFeat.get('start')
       const lastEnd = lastFeat.get('end')
 
-      const firstInRegion =
-        firstRefName === regionRefName &&
-        firstStart < regionEnd &&
-        firstEnd > regionStart
-      const lastInRegion =
-        lastRefName === regionRefName &&
-        lastStart < regionEnd &&
-        lastEnd > regionStart
+      const firstInRegion = featureOverlapsRegion(
+        firstFeat.get('refName'),
+        firstStart,
+        firstFeat.get('end'),
+        region,
+      )
+      const lastInRegion = featureOverlapsRegion(
+        lastFeat.get('refName'),
+        lastFeat.get('start'),
+        lastEnd,
+        region,
+      )
 
       if (firstInRegion || lastInRegion) {
-        // Calculate line endpoints - use actual positions, clipping will crop
-        const firstPx = firstInRegion
-          ? (firstStart - regionStart) / bpPerPx
-          : firstStart < regionStart
-            ? -1000
-            : canvasWidth + 1000
-        const lastPx = lastInRegion
-          ? (lastEnd - regionStart) / bpPerPx
-          : lastEnd < regionStart
-            ? -1000
-            : canvasWidth + 1000
-
+        const firstPx = getConnectingLineEndpoint(
+          firstInRegion,
+          firstStart,
+          regionStart,
+          bpPerPx,
+          canvasWidth,
+        )
+        const lastPx = getConnectingLineEndpoint(
+          lastInRegion,
+          lastEnd,
+          regionStart,
+          bpPerPx,
+          canvasWidth,
+        )
         const lineY = chainY + featureHeight / 2
         lineToCtx(firstPx, lineY, lastPx, lineY, ctx, '#6665')
       }
@@ -161,12 +146,7 @@ export function drawLongReadChains({
       const featStart = feat.get('start')
       const featEnd = feat.get('end')
 
-      // Skip features that don't overlap this region
-      if (
-        featRefName !== regionRefName ||
-        featEnd <= regionStart ||
-        featStart >= regionEnd
-      ) {
+      if (!featureOverlapsRegion(featRefName, featStart, featEnd, region)) {
         continue
       }
 
@@ -190,13 +170,11 @@ export function drawLongReadChains({
             strokeColor[getStrandColorKey(effectiveStrand)],
           ]
 
-      // Calculate pixel positions relative to region (context is already translated)
       const clippedStart = Math.max(featStart, regionStart)
       const clippedEnd = Math.min(featEnd, regionEnd)
       let xPos = (clippedStart - regionStart) / bpPerPx
       let width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
 
-      // Render the alignment base shape
       const layoutFeat = {
         feature: feat,
         heightPx: featureHeight,
@@ -216,7 +194,6 @@ export function drawLongReadChains({
           featureStroke,
         )
       } else {
-        // avoid drawing negative width features for SVG exports
         if (width < 0) {
           xPos += width
           width = -width
@@ -234,25 +211,14 @@ export function drawLongReadChains({
         strokeRectCtx(xPos, chainY, width, featureHeight, ctx, featureStroke)
       }
 
-      // Render mismatches - context is already translated so renderMismatches
-      // coordinates will work directly with this region
       renderMismatchesCallback({
         ctx,
         feat: layoutFeat,
         checkRef: true,
         bpPerPx,
         regions: [region],
-        hideSmallIndels,
-        mismatchAlpha,
-        drawSNPsMuted,
-        drawIndels,
-        largeInsertionIndicatorScale,
-        minSubfeatureWidth,
-        charWidth,
-        charHeight,
-        colorMap,
-        colorContrastMap,
         canvasWidth,
+        ...mismatchConfig,
       })
     }
   })
