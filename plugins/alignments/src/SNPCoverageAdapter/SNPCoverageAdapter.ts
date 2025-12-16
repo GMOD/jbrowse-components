@@ -23,13 +23,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     const subadapterConfigBase = this.getConf('subadapter')
     const sequenceAdapter = this.getConf('sequenceAdapter')
 
-    // console.log(
-    //   '[SNPCoverageAdapter.configure] subadapterConfigBase.type:',
-    //   subadapterConfigBase?.type,
-    //   'sequenceAdapter:',
-    //   !!sequenceAdapter,
-    // )
-
     // Use the base subadapter config to ensure consistent cache keys
     // Set sequenceAdapterConfig on the subadapter after creation
     const dataAdapter = await this.getSubAdapter?.(subadapterConfigBase)
