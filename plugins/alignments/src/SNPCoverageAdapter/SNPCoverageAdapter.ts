@@ -8,7 +8,6 @@ import { fetchSequence } from '../util'
 import { generateCoverageBinsPrefixSum } from './generateCoverageBinsPrefixSum'
 
 import type { FeatureWithMismatchIterator } from '../shared/types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -19,12 +18,26 @@ import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
+  private subadapterRef?: BaseFeatureDataAdapter
+
+  /**
+   * Override to propagate sequenceAdapterConfig to the subadapter
+   */
+  setSequenceAdapterConfig(config: Record<string, unknown>) {
+    super.setSequenceAdapterConfig(config)
+    // Propagate to subadapter if it exists
+    if (this.subadapterRef) {
+      this.subadapterRef.setSequenceAdapterConfig(config)
+    }
+  }
+
   protected async configure() {
     const subadapterConfigBase = this.getConf('subadapter')
-    const sequenceAdapter = this.getConf('sequenceAdapter')
+
+    // Initialize from config if not set externally via setSequenceAdapterConfig
+    this.sequenceAdapterConfig ??= this.getConf('sequenceAdapter')
 
     // Use the base subadapter config to ensure consistent cache keys
-    // Set sequenceAdapterConfig on the subadapter after creation
     const dataAdapter = await this.getSubAdapter?.(subadapterConfigBase)
 
     if (!dataAdapter) {
@@ -32,21 +45,18 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     }
 
     const subadapter = dataAdapter.dataAdapter as BaseFeatureDataAdapter
+    this.subadapterRef = subadapter
 
-    // Set sequenceAdapterConfig on the subadapter for BAM/CRAM adapters
-    // that need it for reference sequence fetching
-    if (sequenceAdapter) {
-      const adapter = subadapter as { sequenceAdapterConfig?: unknown }
-      if (adapter.sequenceAdapterConfig === undefined) {
-        adapter.sequenceAdapterConfig = sequenceAdapter
-      }
+    // Propagate sequenceAdapterConfig to the subadapter
+    if (this.sequenceAdapterConfig) {
+      subadapter.setSequenceAdapterConfig(this.sequenceAdapterConfig)
     }
 
     return { subadapter }
   }
 
   async getSequenceAdapter() {
-    const config = this.getConf('sequenceAdapter')
+    const config = this.sequenceAdapterConfig ?? this.getConf('sequenceAdapter')
     if (!config || !this.getSubAdapter) {
       return undefined
     }

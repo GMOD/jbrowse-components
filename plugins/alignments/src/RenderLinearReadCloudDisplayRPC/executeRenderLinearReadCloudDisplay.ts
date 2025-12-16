@@ -112,11 +112,8 @@ export async function executeRenderLinearReadCloudDisplay({
   ).dataAdapter as BaseFeatureDataAdapter
 
   // Set sequenceAdapterConfig on the adapter for CRAM files that need it
-  if (sequenceAdapter) {
-    const adapter = dataAdapter as { sequenceAdapterConfig?: unknown }
-    if (adapter.sequenceAdapterConfig === undefined) {
-      adapter.sequenceAdapterConfig = sequenceAdapter
-    }
+  if (sequenceAdapter && !dataAdapter.sequenceAdapterConfig) {
+    dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
   }
 
   const featuresArray = await updateStatus(

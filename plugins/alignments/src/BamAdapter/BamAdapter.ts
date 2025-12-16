@@ -49,7 +49,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSequenceAdapter() {
-    const config = this.getConf('sequenceAdapter')
+    const config = this.sequenceAdapterConfig
     if (!config || !this.getSubAdapter) {
       return undefined
     }

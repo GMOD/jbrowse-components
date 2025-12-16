@@ -13,6 +13,8 @@ const EmptyConfig = ConfigurationSchema('empty', {})
 export class BaseAdapter {
   public id: string
 
+  public sequenceAdapterConfig?: Record<string, unknown>
+
   static capabilities = [] as string[]
 
   constructor(
@@ -28,6 +30,15 @@ export class BaseAdapter {
     } else {
       this.id = 'test'
     }
+  }
+
+  /**
+   * Sets the sequence adapter configuration for adapters that need reference
+   * sequence data (e.g., CRAM adapters). Wrapper adapters like SNPCoverageAdapter
+   * can override this to propagate to their subadapters.
+   */
+  setSequenceAdapterConfig(config: Record<string, unknown>) {
+    this.sequenceAdapterConfig = config
   }
 
   /**

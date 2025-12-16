@@ -22,31 +22,11 @@ export default class CoreGetRefNames extends RpcMethodType {
       return []
     }
 
-    // Set sequenceAdapterConfig on the adapter as fallback for standalone
-    // BAM/CRAM tracks that don't have sequenceAdapter in their config
-    if (sequenceAdapter) {
-      const adapter = dataAdapter as { sequenceAdapterConfig?: unknown }
-      if (adapter.sequenceAdapterConfig === undefined) {
-        adapter.sequenceAdapterConfig = sequenceAdapter
-      }
-
-      // Also set sequenceAdapterConfig on subadapters (e.g., SNPCoverageAdapter
-      // wraps CramAdapter/BamAdapter). Use the base subadapter config to ensure
-      // consistent cache keys with other code paths.
-      const subadapterConfigBase = adapterConfig.subadapter as
-        | Record<string, unknown>
-        | undefined
-      if (subadapterConfigBase) {
-        const { dataAdapter: subAdapter } = await getAdapter(
-          pm,
-          sessionId,
-          subadapterConfigBase,
-        )
-        const sub = subAdapter as { sequenceAdapterConfig?: unknown }
-        if (sub.sequenceAdapterConfig === undefined) {
-          sub.sequenceAdapterConfig = sequenceAdapter
-        }
-      }
+    // Set sequenceAdapterConfig on the adapter for BAM/CRAM adapters that need
+    // reference sequence data. Wrapper adapters like SNPCoverageAdapter override
+    // setSequenceAdapterConfig to propagate to their subadapters.
+    if (sequenceAdapter && !dataAdapter.sequenceAdapterConfig) {
+      dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
     }
 
     return dataAdapter.getRefNames(deserializedArgs)
