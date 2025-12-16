@@ -193,6 +193,59 @@ export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
 
+// Shared constants for wiggle drawing
+export const WIGGLE_FUDGE_FACTOR = 0.3
+export const WIGGLE_CLIP_HEIGHT = 2
+
+// Structure-of-arrays for efficient BigWig rendering
+export interface WiggleFeatureArrays {
+  starts: ArrayLike<number>
+  ends: ArrayLike<number>
+  scores: ArrayLike<number>
+  minScores?: ArrayLike<number>
+  maxScores?: ArrayLike<number>
+}
+
+// Reduced feature arrays (one entry per pixel column) for tooltips
+export interface ReducedFeatureArrays {
+  starts: number[]
+  ends: number[]
+  scores: number[]
+  minScores?: number[]
+  maxScores?: number[]
+}
+
+// Precomputed scale values for fast rendering
+export interface ScaleValues {
+  niceMin: number
+  niceMax: number
+  height: number
+  linearRatio: number
+  log2: number
+  logMin: number
+  logRatio: number
+  isLog: boolean
+}
+
+// Precompute scale values once for use in hot loops
+export function getScaleValues(scaleOpts: ScaleOpts, height: number): ScaleValues {
+  const scale = getScale({ ...scaleOpts, range: [0, height] })
+  const domain = scale.domain() as [number, number]
+  const niceMin = domain[0]
+  const niceMax = domain[1]
+  const domainSpan = niceMax - niceMin
+  const isLog = scaleOpts.scaleType === 'log'
+
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+  const log2 = Math.log(2)
+  const logMin = Math.log(niceMin) / log2
+  const logMax = Math.log(niceMax) / log2
+  const logSpan = logMax - logMin
+  const logRatio = logSpan !== 0 ? height / logSpan : 0
+
+  return { niceMin, niceMax, height, linearRatio, log2, logMin, logRatio, isLog }
+}
+
 // avoid drawing negative width features for SVG exports
 export function fillRectCtx(
   x: number,

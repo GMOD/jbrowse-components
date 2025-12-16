@@ -72,6 +72,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
+    console.log('wtf')
     const { refName, start, end } = region
     const {
       bpPerPx = 0,
@@ -157,12 +158,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     region: Region,
     opts: WiggleOptions = {},
   ): Promise<WiggleFeatureArrays> {
+    console.log('wtf22')
     const { refName, start, end } = region
-    const {
-      bpPerPx = 0,
-      resolution = 1,
-      statusCallback = () => {},
-    } = opts
+    const { bpPerPx = 0, resolution = 1, statusCallback = () => {} } = opts
     const resolutionMultiplier = this.getConf('resolutionMultiplier')
 
     const { bigwig } = await this.setup(opts)
@@ -189,7 +187,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   /**
    * Optimized stats calculation using arrays directly instead of Feature objects.
    */
-  public async getRegionQuantitativeStats(region: Region, opts?: WiggleOptions) {
+  public async getRegionQuantitativeStats(
+    region: Region,
+    opts?: WiggleOptions,
+  ) {
     const { start, end } = region
     const arrays = await this.getFeaturesAsArrays(region, {
       ...opts,

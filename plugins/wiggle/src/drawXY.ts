@@ -5,12 +5,23 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 // required to import this for typescript purposes
 import mix from 'colord/plugins/mix' // eslint-disable-line @typescript-eslint/no-unused-vars
 
-import { getOrigin, getScale } from './util'
+import {
+  getOrigin,
+  getScale,
+  WIGGLE_CLIP_HEIGHT,
+  WIGGLE_FUDGE_FACTOR,
+} from './util'
 
-import type { ScaleOpts } from './util'
+import type {
+  ReducedFeatureArrays,
+  ScaleOpts,
+  WiggleFeatureArrays,
+} from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { Colord } from '@jbrowse/core/util/colord'
+
+export type { ReducedFeatureArrays, WiggleFeatureArrays }
 
 function fillRectCtx(
   x: number,
@@ -52,21 +63,11 @@ function darken(color: Colord, amount: number) {
   })
 }
 
-const fudgeFactor = 0.3
-const clipHeight = 2
-
-export interface WiggleFeatureArrays {
-  starts: ArrayLike<number>
-  ends: ArrayLike<number>
-  scores: ArrayLike<number>
-  minScores?: ArrayLike<number>
-  maxScores?: ArrayLike<number>
-}
-
 /**
  * Optimized drawXY that takes structure-of-arrays directly from BigWig adapter.
  * Avoids feature object creation and method call overhead.
  * Best used with staticColor (e.g., MultiRowXYPlot renderer).
+ * Returns reduced feature arrays (one per pixel column) for tooltip support.
  */
 export function drawXYArrays(
   ctx: CanvasRenderingContext2D,
@@ -86,7 +87,7 @@ export function drawXYArrays(
     // allow filled prop to override config value (like drawXY)
     filled?: boolean
   },
-) {
+): { reducedFeatures: ReducedFeatureArrays } {
   const {
     featureArrays,
     bpPerPx,
@@ -106,7 +107,9 @@ export function drawXYArrays(
   const { starts, ends, scores, minScores, maxScores } = featureArrays
   const len = starts.length
   if (len === 0) {
-    return
+    return {
+      reducedFeatures: { starts: [], ends: [], scores: [] },
+    }
   }
 
   const region = regions[0]!
@@ -163,23 +166,30 @@ export function drawXYArrays(
 
   ctx.fillStyle = color
 
-  // Track clipping regions during main loop to avoid second pass
-  let clipHighCount = 0
-  let clipLowCount = 0
-  // Preallocate clipping arrays only if we might need them
-  const clipHighPx: number[] = []
-  const clipHighW: number[] = []
-  const clipLowPx: number[] = []
-  const clipLowW: number[] = []
+  // Track reduced features for tooltip support
+  const reducedStarts: number[] = []
+  const reducedEnds: number[] = []
+  const reducedScores: number[] = []
+  const reducedMinScores: number[] | undefined = minScores ? [] : undefined
+  const reducedMaxScores: number[] | undefined = maxScores ? [] : undefined
 
-  // Time-based stop token check (Date.now is faster than performance.now)
   let lastCheck = Date.now()
 
-  // Main drawing loop - fully inlined for performance
-  if (isLog) {
-    // Log scale path
+  // When filled, use two-pass approach: collect max scores per pixel column,
+  // then draw once per column. This reduces fillRect calls significantly.
+  // When not filled (scatterplot), must draw each point individually since
+  // multiple points can be at the same x position with different y values.
+  if (filled) {
+    const widthPx = Math.ceil(width) + 1
+    const maxScorePerPx = new Float32Array(widthPx)
+    const hasData = new Uint8Array(widthPx)
+    // Track which feature index has the max score at each pixel (for reduced features)
+    const featureIdxPerPx = new Int32Array(widthPx)
+    // Track clipping per pixel: 1 = high clip, 2 = low clip
+    const clipFlag = new Uint8Array(widthPx)
+
+    // First pass: collect max score per pixel column
     for (let i = 0; i < len; i++) {
-      // Check stop token every ~10000 iterations if 400ms elapsed
       if (i % 10000 === 0) {
         const now = Date.now()
         if (now - lastCheck > 400) {
@@ -192,32 +202,71 @@ export function drawXYArrays(
       const leftPx = reversed
         ? (regionEnd - fend) * invBpPerPx
         : (fstart - regionStart) * invBpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) * invBpPerPx
-        : (fend - regionStart) * invBpPerPx
-      const score = scoreArr[i]!
-      const w = rightPx - leftPx + fudgeFactor
 
-      // Inline toY for log scale (with clamp to match original)
-      const scaled = (Math.log(score) / log2 - logMin) * logRatio
-      const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
-      const y = yClamped + offset
+      const pxCol = leftPx | 0
+      if (pxCol >= 0 && pxCol < widthPx) {
+        const score = scoreArr[i]!
+        if (!hasData[pxCol] || score > maxScorePerPx[pxCol]!) {
+          maxScorePerPx[pxCol] = score
+          hasData[pxCol] = 1
+          featureIdxPerPx[pxCol] = i
+        }
+        // Track clipping (keep if any feature in this pixel clips)
+        if (score > niceMax) {
+          clipFlag[pxCol] = 1
+        } else if (score < niceMin && !isLog && clipFlag[pxCol] !== 1) {
+          clipFlag[pxCol] = 2
+        }
+      }
+    }
 
-      // Inline getHeight
-      const h = filled ? originYPx - y : Math.max(minSize, 1)
+    // Second pass: draw one rect per pixel column and build reduced features
+    const rectW = Math.max(1 + WIGGLE_FUDGE_FACTOR, minSize)
+    for (let px = 0; px < widthPx; px++) {
+      if (hasData[px]) {
+        const score = maxScorePerPx[px]!
+        const scaled = isLog
+          ? (Math.log(score) / log2 - logMin) * logRatio
+          : (score - niceMin) * linearRatio
+        const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
+        const y = yClamped + offset
+        ctx.fillRect(px, y, rectW, originYPx - y)
 
-      ctx.fillRect(leftPx, y, Math.max(w, minSize), h)
+        // Build reduced features for tooltip support
+        const idx = featureIdxPerPx[px]!
+        reducedStarts.push(starts[idx]!)
+        reducedEnds.push(ends[idx]!)
+        reducedScores.push(scores[idx]!)
+        if (reducedMinScores && minScores) {
+          reducedMinScores.push(minScores[idx]!)
+        }
+        if (reducedMaxScores && maxScores) {
+          reducedMaxScores.push(maxScores[idx]!)
+        }
+      }
+    }
 
-      // Track clipping
-      if (score > niceMax) {
-        clipHighPx[clipHighCount] = leftPx
-        clipHighW[clipHighCount++] = w
+    // Draw clipping indicators
+    ctx.fillStyle = clipColor
+    for (let px = 0; px < widthPx; px++) {
+      if (clipFlag[px] === 1) {
+        ctx.fillRect(px, offset, rectW, WIGGLE_CLIP_HEIGHT)
+      } else if (clipFlag[px] === 2) {
+        ctx.fillRect(px, unadjustedHeight - WIGGLE_CLIP_HEIGHT, rectW, WIGGLE_CLIP_HEIGHT)
       }
     }
   } else {
-    // Linear scale path (most common)
+    // Non-filled (scatterplot) mode: draw each feature individually
+    const clipHighPx: number[] = []
+    const clipHighW: number[] = []
+    const clipLowPx: number[] = []
+    const clipLowW: number[] = []
+    let clipHighCount = 0
+    let clipLowCount = 0
+    let prevLeftPx = Number.NEGATIVE_INFINITY
+    const dotSize = Math.max(minSize, 1)
+
     for (let i = 0; i < len; i++) {
-      // Check stop token every ~10000 iterations if 400ms elapsed
       if (i % 10000 === 0) {
         const now = Date.now()
         if (now - lastCheck > 400) {
@@ -234,42 +283,54 @@ export function drawXYArrays(
         ? (regionEnd - fstart) * invBpPerPx
         : (fend - regionStart) * invBpPerPx
       const score = scoreArr[i]!
-      const w = rightPx - leftPx + fudgeFactor
+      const w = rightPx - leftPx + WIGGLE_FUDGE_FACTOR
 
-      // Inline toY for linear scale (with clamp to match original)
-      const scaled = (score - niceMin) * linearRatio
+      // Track reduced features (one per pixel column)
+      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+        reducedStarts.push(fstart)
+        reducedEnds.push(fend)
+        reducedScores.push(scores[i]!)
+        if (reducedMinScores && minScores) {
+          reducedMinScores.push(minScores[i]!)
+        }
+        if (reducedMaxScores && maxScores) {
+          reducedMaxScores.push(maxScores[i]!)
+        }
+        prevLeftPx = leftPx
+      }
+
+      const scaled = isLog
+        ? (Math.log(score) / log2 - logMin) * logRatio
+        : (score - niceMin) * linearRatio
       const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
       const y = yClamped + offset
 
-      // Inline getHeight
-      const h = filled ? originYPx - y : Math.max(minSize, 1)
-
-      ctx.fillRect(leftPx, y, Math.max(w, minSize), h)
+      ctx.fillRect(leftPx, y, Math.max(w, minSize), dotSize)
 
       // Track clipping
       if (score > niceMax) {
         clipHighPx[clipHighCount] = leftPx
         clipHighW[clipHighCount++] = w
-      } else if (score < niceMin) {
+      } else if (!isLog && score < niceMin) {
         clipLowPx[clipLowCount] = leftPx
         clipLowW[clipLowCount++] = w
       }
     }
-  }
 
-  // Draw clipping indicators from cached data
-  if (clipHighCount > 0 || clipLowCount > 0) {
-    ctx.fillStyle = clipColor
-    for (let i = 0; i < clipHighCount; i++) {
-      ctx.fillRect(clipHighPx[i]!, offset, clipHighW[i]!, clipHeight)
-    }
-    for (let i = 0; i < clipLowCount; i++) {
-      ctx.fillRect(
-        clipLowPx[i]!,
-        unadjustedHeight - clipHeight,
-        clipLowW[i]!,
-        clipHeight,
-      )
+    // Draw clipping indicators
+    if (clipHighCount > 0 || clipLowCount > 0) {
+      ctx.fillStyle = clipColor
+      for (let i = 0; i < clipHighCount; i++) {
+        ctx.fillRect(clipHighPx[i]!, offset, clipHighW[i]!, WIGGLE_CLIP_HEIGHT)
+      }
+      for (let i = 0; i < clipLowCount; i++) {
+        ctx.fillRect(
+          clipLowPx[i]!,
+          unadjustedHeight - WIGGLE_CLIP_HEIGHT,
+          clipLowW[i]!,
+          WIGGLE_CLIP_HEIGHT,
+        )
+      }
     }
   }
 
@@ -286,6 +347,16 @@ export function drawXYArrays(
       ctx.lineTo(width, Math.round(y))
       ctx.stroke()
     }
+  }
+
+  return {
+    reducedFeatures: {
+      starts: reducedStarts,
+      ends: reducedEnds,
+      scores: reducedScores,
+      minScores: reducedMinScores,
+      maxScores: reducedMaxScores,
+    },
   }
 }
 
@@ -466,13 +537,13 @@ export function drawXY(
       if (score > niceMax) {
         clippingFeatures.push({
           leftPx,
-          w: rightPx - leftPx + fudgeFactor,
+          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
           high: true,
         })
       } else if (score < niceMin && !isLog) {
         clippingFeatures.push({
           leftPx,
-          w: rightPx - leftPx + fudgeFactor,
+          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
           high: false,
         })
       }
@@ -484,7 +555,7 @@ export function drawXY(
     for (const fd of featureData) {
       const { leftPx, rightPx, maxScore, summary, color, lightenedColor } = fd
       if (summary) {
-        const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
         const effectiveC = crossingOrigin
           ? color
           : lightenedColor ||
@@ -526,7 +597,7 @@ export function drawXY(
                   .mix(colord(colorCallback(feature, minScore)))
                   .toString()))
           : color
-      const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
       // bitwise OR is faster than Math.floor for positive numbers
       if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
         reducedFeatures.push(feature)
@@ -541,7 +612,7 @@ export function drawXY(
     for (const fd of featureData) {
       const { leftPx, rightPx, minScore, summary, color, darkenedColor } = fd
       if (summary) {
-        const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
         const effectiveC = crossingOrigin
           ? color
           : darkenedColor ||
@@ -567,9 +638,9 @@ export function drawXY(
       ctx.fillStyle = clipColor
       for (const { leftPx, w, high } of clippingFeatures) {
         if (high) {
-          fillRectCtx(leftPx, offset, w, clipHeight, ctx)
+          fillRectCtx(leftPx, offset, w, WIGGLE_CLIP_HEIGHT, ctx)
         } else {
-          fillRectCtx(leftPx, unadjustedHeight, w, clipHeight, ctx)
+          fillRectCtx(leftPx, unadjustedHeight, w, WIGGLE_CLIP_HEIGHT, ctx)
         }
       }
       ctx.restore()
@@ -605,19 +676,19 @@ export function drawXY(
       }
 
       const score = feature.get('score')
-      const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
 
       // track clipping during first pass
       if (score > niceMax) {
         clippingFeatures.push({
           leftPx,
-          w: rightPx - leftPx + fudgeFactor,
+          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
           high: true,
         })
       } else if (score < niceMin && !isLog) {
         clippingFeatures.push({
           leftPx,
-          w: rightPx - leftPx + fudgeFactor,
+          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
           high: false,
         })
       }
@@ -644,9 +715,9 @@ export function drawXY(
       ctx.fillStyle = clipColor
       for (const { leftPx, w, high } of clippingFeatures) {
         if (high) {
-          fillRectCtx(leftPx, offset, w, clipHeight, ctx)
+          fillRectCtx(leftPx, offset, w, WIGGLE_CLIP_HEIGHT, ctx)
         } else {
-          fillRectCtx(leftPx, unadjustedHeight, w, clipHeight, ctx)
+          fillRectCtx(leftPx, unadjustedHeight, w, WIGGLE_CLIP_HEIGHT, ctx)
         }
       }
       ctx.restore()

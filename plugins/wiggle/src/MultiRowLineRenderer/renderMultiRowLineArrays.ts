@@ -6,9 +6,9 @@ import {
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
-import { drawXYArrays } from '../drawXY'
+import { drawLineArrays } from '../drawLine'
 
-import type { ReducedFeatureArrays } from '../drawXY'
+import type { ReducedFeatureArrays } from '../util'
 import type { MultiWiggleFeatureArrays } from '../MultiWiggleAdapter/MultiWiggleAdapter'
 import type { MultiRenderArgsDeserialized } from '../types'
 
@@ -19,9 +19,6 @@ interface SerializedFeature {
   score: number
   source: string
   refName: string
-  maxScore?: number
-  minScore?: number
-  summary?: boolean
 }
 
 function serializeReducedFeatures(
@@ -29,9 +26,8 @@ function serializeReducedFeatures(
   source: string,
   refName: string,
 ): SerializedFeature[] {
-  const { starts, ends, scores, minScores, maxScores } = reduced
+  const { starts, ends, scores } = reduced
   const features: SerializedFeature[] = []
-  const hasSummary = minScores !== undefined && maxScores !== undefined
 
   for (let i = 0; i < starts.length; i++) {
     const start = starts[i]!
@@ -44,16 +40,13 @@ function serializeReducedFeatures(
       score,
       source,
       refName,
-      minScore: minScores?.[i],
-      maxScore: maxScores?.[i],
-      summary: hasSummary ? true : undefined,
     })
   }
 
   return features
 }
 
-export async function renderMultiRowXYPlotArrays(
+export async function renderMultiRowLineArrays(
   renderProps: MultiRenderArgsDeserialized,
   arraysBySource: MultiWiggleFeatureArrays,
 ) {
@@ -80,7 +73,7 @@ export async function renderMultiRowXYPlotArrays(
         forEachWithStopTokenCheck(sources, stopToken, source => {
           const arrays = arraysBySource[source.name]
           if (arrays) {
-            const { reducedFeatures } = drawXYArrays(ctx, {
+            const { reducedFeatures } = drawLineArrays(ctx, {
               ...renderProps,
               featureArrays: arrays,
               height: rowHeight,

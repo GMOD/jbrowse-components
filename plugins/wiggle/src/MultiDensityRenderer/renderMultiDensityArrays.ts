@@ -6,9 +6,9 @@ import {
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
-import { drawXYArrays } from '../drawXY'
+import { drawDensityArrays } from '../drawDensity'
 
-import type { ReducedFeatureArrays } from '../drawXY'
+import type { ReducedFeatureArrays } from '../util'
 import type { MultiWiggleFeatureArrays } from '../MultiWiggleAdapter/MultiWiggleAdapter'
 import type { MultiRenderArgsDeserialized } from '../types'
 
@@ -19,9 +19,6 @@ interface SerializedFeature {
   score: number
   source: string
   refName: string
-  maxScore?: number
-  minScore?: number
-  summary?: boolean
 }
 
 function serializeReducedFeatures(
@@ -29,9 +26,8 @@ function serializeReducedFeatures(
   source: string,
   refName: string,
 ): SerializedFeature[] {
-  const { starts, ends, scores, minScores, maxScores } = reduced
+  const { starts, ends, scores } = reduced
   const features: SerializedFeature[] = []
-  const hasSummary = minScores !== undefined && maxScores !== undefined
 
   for (let i = 0; i < starts.length; i++) {
     const start = starts[i]!
@@ -44,16 +40,13 @@ function serializeReducedFeatures(
       score,
       source,
       refName,
-      minScore: minScores?.[i],
-      maxScore: maxScores?.[i],
-      summary: hasSummary ? true : undefined,
     })
   }
 
   return features
 }
 
-export async function renderMultiRowXYPlotArrays(
+export async function renderMultiDensityArrays(
   renderProps: MultiRenderArgsDeserialized,
   arraysBySource: MultiWiggleFeatureArrays,
 ) {
@@ -80,19 +73,14 @@ export async function renderMultiRowXYPlotArrays(
         forEachWithStopTokenCheck(sources, stopToken, source => {
           const arrays = arraysBySource[source.name]
           if (arrays) {
-            const { reducedFeatures } = drawXYArrays(ctx, {
+            const { reducedFeatures } = drawDensityArrays(ctx, {
               ...renderProps,
               featureArrays: arrays,
               height: rowHeight,
-              color: source.color || 'blue',
+              color: source.color || '#f0f',
             })
             reducedBySource[source.name] = reducedFeatures
           }
-          ctx.strokeStyle = 'rgba(200,200,200,0.8)'
-          ctx.beginPath()
-          ctx.moveTo(0, rowHeight)
-          ctx.lineTo(width, rowHeight)
-          ctx.stroke()
           ctx.translate(0, rowHeight)
         })
         ctx.restore()
