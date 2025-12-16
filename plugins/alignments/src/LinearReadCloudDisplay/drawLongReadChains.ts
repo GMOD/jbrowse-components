@@ -116,6 +116,7 @@ export function drawLongReadChains({
     const primaryStrand = getPrimaryStrandFromFlags(c1)
 
     // Draw connecting line for multi-segment long reads
+    // Draw if either end overlaps this region - clipping handles the bounds
     if (!isSingleton) {
       const firstFeat = chain[0]!
       const lastFeat = chain[chain.length - 1]!
@@ -127,7 +128,6 @@ export function drawLongReadChains({
       const lastStart = lastFeat.get('start')
       const lastEnd = lastFeat.get('end')
 
-      // Check if both ends are in this region
       const firstInRegion =
         firstRefName === regionRefName &&
         firstStart < regionEnd &&
@@ -137,9 +137,18 @@ export function drawLongReadChains({
         lastStart < regionEnd &&
         lastEnd > regionStart
 
-      if (firstInRegion && lastInRegion) {
-        const firstPx = (Math.max(firstStart, regionStart) - regionStart) / bpPerPx
-        const lastPx = (Math.min(lastEnd, regionEnd) - regionStart) / bpPerPx
+      if (firstInRegion || lastInRegion) {
+        // Calculate line endpoints - use actual positions, clipping will crop
+        const firstPx = firstInRegion
+          ? (firstStart - regionStart) / bpPerPx
+          : firstStart < regionStart
+            ? -1000
+            : canvasWidth + 1000
+        const lastPx = lastInRegion
+          ? (lastEnd - regionStart) / bpPerPx
+          : lastEnd < regionStart
+            ? -1000
+            : canvasWidth + 1000
 
         const lineY = chainY + featureHeight / 2
         lineToCtx(firstPx, lineY, lastPx, lineY, ctx, '#6665')

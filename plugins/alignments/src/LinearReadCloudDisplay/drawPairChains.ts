@@ -119,11 +119,11 @@ export function drawPairChains({
     }) || ['lightgrey', '#888']
 
     // Draw connecting line for pairs with both mates visible
+    // Draw if either mate overlaps this region - clipping handles the bounds
     if (hasBothMates) {
       const v0 = nonSupplementary[0]!
       const v1 = nonSupplementary[1]!
 
-      // Only draw if both mates are in this region
       const v0RefName = v0.get('refName')
       const v1RefName = v1.get('refName')
       const v0Start = v0.get('start')
@@ -136,9 +136,18 @@ export function drawPairChains({
       const v1InRegion =
         v1RefName === regionRefName && v1Start < regionEnd && v1End > regionStart
 
-      if (v0InRegion && v1InRegion) {
-        const r1s = (Math.max(v0Start, regionStart) - regionStart) / bpPerPx
-        const r2s = (Math.max(v1Start, regionStart) - regionStart) / bpPerPx
+      if (v0InRegion || v1InRegion) {
+        // Calculate line endpoints - use actual positions, clipping will crop
+        const r1s = v0InRegion
+          ? (v0Start - regionStart) / bpPerPx
+          : v0Start < regionStart
+            ? -1000
+            : canvasWidth + 1000
+        const r2s = v1InRegion
+          ? (v1Start - regionStart) / bpPerPx
+          : v1Start < regionStart
+            ? -1000
+            : canvasWidth + 1000
 
         const lineY = chainY + featureHeight / 2
         lineToCtx(r1s, lineY, r2s, lineY, ctx, '#6665')
