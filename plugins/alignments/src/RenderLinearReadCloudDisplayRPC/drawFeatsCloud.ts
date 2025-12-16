@@ -3,7 +3,7 @@ import { max, min } from '@jbrowse/core/util'
 import { drawFeatsCommon } from './drawFeatsCommon'
 
 import type { ComputedChain } from './drawFeatsCommon'
-import type { LinearReadCloudDisplayModel } from './model'
+import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 
 /**
  * Core utility function to calculate Y-offsets using logarithmic scaling

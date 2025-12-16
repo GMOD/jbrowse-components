@@ -16,21 +16,18 @@ import { rpcResult } from 'librpc-web-mod'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { calculateCloudYOffsetsUtil } from '../LinearReadCloudDisplay/drawFeatsCloud'
+import { calculateCloudYOffsetsUtil } from './drawFeatsCloud'
 import {
   computeChainBounds,
   drawFeatsCore,
   filterChains,
   sortComputedChains,
-} from '../LinearReadCloudDisplay/drawFeatsCommon'
-import { calculateStackYOffsetsCore } from '../LinearReadCloudDisplay/drawFeatsStack'
+} from './drawFeatsCommon'
+import { calculateStackYOffsetsCore } from './drawFeatsStack'
 import { getInsertSizeStats } from '../shared/insertSizeStats'
 
 import type { RenderLinearReadCloudDisplayArgs } from './RenderLinearReadCloudDisplay'
-import type {
-  ComputedChain,
-  DrawFeatsParams,
-} from '../LinearReadCloudDisplay/drawFeatsCommon'
+import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 

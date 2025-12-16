@@ -8,7 +8,7 @@ import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
 import { createAutorun } from '../util'
-import { buildFlatbushIndex } from './drawFeatsCommon'
+import { buildFlatbushIndex } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCommon'
 
 import type { LinearReadCloudDisplayModel } from './model'
 import type { FlatbushEntry } from '../shared/flatbushType'

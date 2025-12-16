@@ -2,8 +2,8 @@ import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { drawLongReadChains } from '../RenderLinearReadCloudDisplayRPC/drawLongReadChains'
-import { drawPairChains } from '../RenderLinearReadCloudDisplayRPC/drawPairChains'
+import { drawLongReadChains } from './drawLongReadChains'
+import { drawPairChains } from './drawPairChains'
 import { PairType, getPairedType } from '../shared/color'
 import { shouldRenderChevrons } from '../shared/util'
 

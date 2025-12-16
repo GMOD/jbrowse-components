@@ -3,7 +3,7 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { drawFeatsCommon } from './drawFeatsCommon'
 
 import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
-import type { LinearReadCloudDisplayModel } from './model'
+import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 import type { Feature } from '@jbrowse/core/util'
 
 interface LayoutData {

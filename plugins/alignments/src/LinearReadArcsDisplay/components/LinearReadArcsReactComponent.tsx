@@ -16,7 +16,15 @@ const Arcs = observer(function ({
   model: LinearReadArcsDisplayModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const screenWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+  const offsetPx = view.offsetPx
+
+  // Adjust canvas width and position when offsetPx is negative
+  // This ensures drawing code doesn't need to account for negative offsets
+  const canvasWidth = offsetPx < 0 ? screenWidth + offsetPx : screenWidth
+  const canvasLeft = offsetPx < 0 ? -offsetPx : 0
+
+  const width = screenWidth // Keep container full width
   const height = model.height
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const cb = useCallback(
@@ -24,18 +32,26 @@ const Arcs = observer(function ({
       model.setRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, width, height],
+    [model, canvasWidth, height],
   )
 
   // note: the position absolute below avoids scrollbar from appearing on track
   return (
-    <canvas
-      data-testid="arc-canvas"
-      ref={cb}
-      style={{ width, height, position: 'absolute' }}
-      width={width * 2}
-      height={height * 2}
-    />
+    <div style={{ position: 'relative', width, height }}>
+      <canvas
+        data-testid="arc-canvas"
+        ref={cb}
+        style={{
+          width: canvasWidth,
+          height,
+          position: 'absolute',
+          left: canvasLeft,
+          top: 0,
+        }}
+        width={canvasWidth * 2}
+        height={height * 2}
+      />
+    </div>
   )
 })
 

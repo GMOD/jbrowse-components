@@ -69,6 +69,10 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
   const { type } = colorBy
   const hasPaired = hasPairedReads(chainData)
 
+  // Clamp viewOffsetPx to 0 when negative - features should start at canvas pixel 0
+  // This matches the LinearReadCloudDisplay behavior
+  const viewOffsetPx = Math.max(0, offsetPx)
+
   ctx.lineWidth = lineWidth
 
   function draw(
@@ -90,8 +94,8 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     if (r1 !== undefined && r2 !== undefined) {
       const radius = (r2 - r1) / 2
       const absrad = Math.abs(radius)
-      const p = r1 - offsetPx
-      const p2 = r2 - offsetPx
+      const p = r1 - viewOffsetPx
+      const pEnd = r2 - viewOffsetPx
       const drawArcInsteadOfBezier = absrad > 10_000
 
       // bezier (used for non-long-range arcs) requires moveTo before beginPath
@@ -143,7 +147,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
         // instead draw vertical lines
         if (absrad > 100_000) {
           drawLineAtOffset(ctx, p + jitter(jitterVal), height, 'red')
-          drawLineAtOffset(ctx, p2 + jitter(jitterVal), height, 'red')
+          drawLineAtOffset(ctx, pEnd + jitter(jitterVal), height, 'red')
         } else if (drawArcInsteadOfBezier) {
           ctx.arc(p + radius + jitter(jitterVal), 0, absrad, 0, Math.PI)
           ctx.stroke()
@@ -170,7 +174,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
         ctx.stroke()
       }
     } else if (r1 && drawInter) {
-      drawLineAtOffset(ctx, r1 - offsetPx, height, 'purple')
+      drawLineAtOffset(ctx, r1 - viewOffsetPx, height, 'purple')
     }
   }
 
