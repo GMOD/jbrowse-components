@@ -38,7 +38,7 @@ function keyConfigPostFix() {
         window.location.pathname,
         new URLSearchParams(window.location.search).get('config'),
       ]
-        .filter(f => !!f)
+        .filter(Boolean)
         .join('-')
     : 'empty'
 }
@@ -49,7 +49,7 @@ export function getItemHeight(item: TreeNode) {
 
 function recentlyUsedK(assemblyNames: string[]) {
   return ['recentlyUsedTracks', keyConfigPostFix(), assemblyNames.join(',')]
-    .filter(f => !!f)
+    .filter(Boolean)
     .join('-')
 }
 
