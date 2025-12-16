@@ -15,29 +15,29 @@ exports[`adapter can fetch features from volvox.bw adapter can fetch stats from 
 
 exports[`adapter can fetch features from volvox.bw get local stats 1`] = `
 {
-  "basesCovered": 30000,
-  "featureCount": 30000,
-  "featureDensity": 1,
+  "basesCovered": 30098,
+  "featureCount": 751,
+  "featureDensity": 0.024951824041464548,
   "scoreMax": 38,
-  "scoreMean": 19.297233333333335,
+  "scoreMean": 19.301331545478018,
   "scoreMin": 0,
-  "scoreStdDev": 4.380942680236127,
-  "scoreSum": 578917,
-  "scoreSumSquares": 11747257,
+  "scoreStdDev": 4.09050138786663,
+  "scoreSum": 14495.299990653992,
+  "scoreSumSquares": 292327.74217388127,
 }
 `;
 
 exports[`adapter can fetch features from volvox.bw get region stats 1`] = `
 {
-  "basesCovered": 30001,
-  "featureCount": 30001,
-  "featureDensity": 1,
+  "basesCovered": 30000,
+  "featureCount": 751,
+  "featureDensity": 0.025033333333333335,
   "scoreMax": 38,
-  "scoreMean": 19.297356754774842,
+  "scoreMean": 19.301331545478018,
   "scoreMin": 5,
-  "scoreStdDev": 4.380921822290578,
-  "scoreSum": 578940,
-  "scoreSumSquares": 11747786,
+  "scoreStdDev": 4.08777711091585,
+  "scoreSum": 14495.299990653992,
+  "scoreSumSquares": 292327.74217388127,
 }
 `;
 
