@@ -11,7 +11,9 @@ import {
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 
-const RecentlyUsedTracks = observer(function ({ model }: {
+const RecentlyUsedTracks = observer(function ({
+  model,
+}: {
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useSmallBadgeStyles()
@@ -19,14 +21,18 @@ const RecentlyUsedTracks = observer(function ({ model }: {
 
   return view ? (
     <DropdownTrackSelector
-      onClick={() => model.setRecentlyUsedCounter(0)}
+      onClick={() => {
+        model.setRecentlyUsedCounter(0)
+      }}
       tracks={recentlyUsedTracks}
       model={model}
       extraMenuItems={getDropdownMenuItems({
         hasTracks: recentlyUsedTracks.length > 0,
         clearLabel: 'Clear recently used',
         emptyLabel: 'No recently used',
-        onClear: () => model.clearRecentlyUsed(),
+        onClear: () => {
+          model.clearRecentlyUsed()
+        },
       })}
     >
       <Tooltip title="Recently used tracks">

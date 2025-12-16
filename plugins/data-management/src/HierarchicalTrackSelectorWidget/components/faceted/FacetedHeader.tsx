@@ -25,7 +25,9 @@ export default function FacetedHeader({
         <ClearableSearchField
           label="Search..."
           value={filterText}
-          onChange={value => faceted.setFilterText(value)}
+          onChange={value => {
+            faceted.setFilterText(value)
+          }}
         />
         <IconButton
           onClick={event => {

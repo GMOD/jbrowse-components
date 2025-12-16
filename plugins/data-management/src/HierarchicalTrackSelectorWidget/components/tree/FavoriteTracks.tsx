@@ -11,7 +11,9 @@ import {
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 
-const FavoriteTracks = observer(function ({ model }: {
+const FavoriteTracks = observer(function ({
+  model,
+}: {
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useSmallBadgeStyles()
@@ -19,14 +21,18 @@ const FavoriteTracks = observer(function ({ model }: {
 
   return view ? (
     <DropdownTrackSelector
-      onClick={() => model.setFavoritesCounter(0)}
+      onClick={() => {
+        model.setFavoritesCounter(0)
+      }}
       tracks={favoriteTracks}
       model={model}
       extraMenuItems={getDropdownMenuItems({
         hasTracks: favoriteTracks.length > 0,
         clearLabel: 'Clear favorites',
         emptyLabel: 'No favorite tracks yet',
-        onClear: () => model.clearFavorites(),
+        onClear: () => {
+          model.clearFavorites()
+        },
       })}
     >
       <Tooltip title="Favorite tracks">

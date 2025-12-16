@@ -780,7 +780,9 @@ test('faceted model column filters', () => {
   expect(faceted.filters.get('adapter')).toEqual(['FromConfigAdapter'])
 
   // filteredRows should only include matching rows
-  expect(faceted.filteredRows.every(r => r.adapter === 'FromConfigAdapter')).toBe(true)
+  expect(
+    faceted.filteredRows.every(r => r.adapter === 'FromConfigAdapter'),
+  ).toBe(true)
 
   // clear filter by setting empty array
   faceted.setFilter('adapter', [])
@@ -1065,7 +1067,9 @@ test('faceted filter drilling down behavior', () => {
 
   // clearing one filter should show more rows again
   faceted.setFilter('category', [])
-  expect(faceted.filteredRows.length).toBeGreaterThanOrEqual(afterDrillDown.length)
+  expect(faceted.filteredRows.length).toBeGreaterThanOrEqual(
+    afterDrillDown.length,
+  )
 })
 
 test('faceted filter tracks unique values per column', () => {
@@ -1085,7 +1089,9 @@ test('faceted filter tracks unique values per column', () => {
   const { faceted } = model
 
   // get unique categories from rows
-  const categories = [...new Set(faceted.rows.map(r => r.category).filter(Boolean))]
+  const categories = [
+    ...new Set(faceted.rows.map(r => r.category).filter(Boolean)),
+  ]
 
   // should have multiple categories from test data
   expect(categories.length).toBeGreaterThanOrEqual(2)
@@ -1133,7 +1139,9 @@ function addTestData(session: ReturnType<typeof createTestSession>) {
   return session
 }
 
-function addTestDataWithCategories(session: ReturnType<typeof createTestSession>) {
+function addTestDataWithCategories(
+  session: ReturnType<typeof createTestSession>,
+) {
   session.addAssemblyConf({
     name: 'volMyt1',
     sequence: {

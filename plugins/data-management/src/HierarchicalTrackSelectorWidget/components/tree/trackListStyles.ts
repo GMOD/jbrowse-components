@@ -2,10 +2,14 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
+// styles are used by FavoriteTracks and RecentlyUsedTracks
+
 export const useSmallBadgeStyles = makeStyles()({
+  // eslint-disable-next-line tss-unused-classes/unused-classes
   smallBadge: {
     height: 14,
   },
+  // eslint-disable-next-line tss-unused-classes/unused-classes
   margin: {
     marginRight: 10,
   },

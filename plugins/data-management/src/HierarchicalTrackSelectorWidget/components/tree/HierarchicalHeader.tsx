@@ -37,7 +37,9 @@ const HierarchicalTrackSelectorHeader = observer(function ({
           className={classes.searchBox}
           label="Filter tracks"
           value={model.filterText}
-          onChange={value => model.setFilterText(value)}
+          onChange={value => {
+            model.setFilterText(value)
+          }}
         />
         <RecentlyUsedTracks model={model} />
         <FavoriteTracks model={model} />

@@ -20,6 +20,7 @@ export default function ClearableSearchField({
   // Sync local state when model value is cleared externally
   useEffect(() => {
     if (value === '') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalValue('')
     }
   }, [value])
