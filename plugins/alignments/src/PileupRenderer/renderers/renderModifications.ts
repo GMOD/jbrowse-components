@@ -8,9 +8,15 @@ import { getModificationName } from '../../shared/modificationData'
 import { alphaColor } from '../../shared/util'
 import { getTagAlt } from '../../util'
 
-import type { FlatbushItem, ProcessedRenderArgs } from '../types'
+import type { ColorBy, ModificationTypeWithColor } from '../../shared/types'
+import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
+
+export interface RenderModificationsArgs {
+  colorBy?: ColorBy
+  visibleModifications?: Record<string, ModificationTypeWithColor>
+}
 
 // Pre-compute colord object for blue color (used in two-color mode)
 const BLUE_COLORD = colord('blue')
@@ -28,7 +34,7 @@ export function renderModifications({
   feat: LayoutFeature
   region: Region
   bpPerPx: number
-  renderArgs: ProcessedRenderArgs
+  renderArgs: RenderModificationsArgs
   cigarOps: ArrayLike<number>
 }) {
   const items = [] as FlatbushItem[]
