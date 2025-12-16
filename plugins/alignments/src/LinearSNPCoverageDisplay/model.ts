@@ -3,7 +3,13 @@ import { lazy } from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getEnv,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -371,9 +377,29 @@ function stateModelFactory(
          */
         get adapterConfig() {
           const subadapter = getConf(self.parentTrack, 'adapter')
+          const view = getContainingView(self) as LGV
+          const session = getSession(self)
+          const { assemblyManager } = session
+          const assemblyName = view.assemblyNames?.[0]
+          const assembly = assemblyName
+            ? assemblyManager.get(assemblyName)
+            : undefined
+          const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+          const sequenceAdapter = sequenceAdapterConfig
+            ? getSnapshot(sequenceAdapterConfig)
+            : undefined
+          console.log(
+            '[LinearSNPCoverageDisplay.adapterConfig] assemblyName:',
+            assemblyName,
+            'hasSequenceAdapter:',
+            !!sequenceAdapter,
+            'subadapterType:',
+            subadapter?.type,
+          )
           return {
             type: 'SNPCoverageAdapter',
             subadapter,
+            sequenceAdapter,
           }
         },
 

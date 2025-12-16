@@ -40,6 +40,18 @@ const configSchema = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+
+    /**
+     * #slot sequenceAdapter
+     * optional reference sequence adapter config, used for decoding CRAM reads.
+     * if not provided, will be derived from the assembly's sequence adapter.
+     */
+    sequenceAdapter: {
+      type: 'frozen',
+      description:
+        'sequence adapter config for fetching reference sequences needed to decode CRAM',
+      defaultValue: null,
+    },
   },
   {
     explicitlyTyped: true,

@@ -15,35 +15,60 @@ import type {
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
+let snpInstanceCounter = 0
+
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
   public sequenceAdapterConfig?: AnyConfigurationModel
 
+  private snpInstanceId = ++snpInstanceCounter
+
+  constructor(...args: ConstructorParameters<typeof BaseFeatureDataAdapter>) {
+    super(...args)
+    const hasSeqAdapter = !!this.getConf('sequenceAdapter')
+    console.log(
+      '[SNPCoverageAdapter] Created instance',
+      this.snpInstanceId,
+      'hasSequenceAdapterInConfig:',
+      hasSeqAdapter,
+    )
+  }
+
   protected async configure() {
-    const subadapterConfig = this.getConf('subadapter')
+    const subadapterConfigBase = this.getConf('subadapter')
+    const sequenceAdapter = this.getConf('sequenceAdapter')
+
+    // Include sequenceAdapter in the subadapter config for CramAdapter
+    const subadapterConfig =
+      sequenceAdapter && subadapterConfigBase?.type === 'CramAdapter'
+        ? { ...subadapterConfigBase, sequenceAdapter }
+        : subadapterConfigBase
+
+    console.log(
+      '[SNPCoverageAdapter.configure] instance:',
+      this.snpInstanceId,
+      'subadapterType:',
+      subadapterConfigBase?.type,
+      'hasSequenceAdapterInConfig:',
+      !!sequenceAdapter,
+      'subadapterConfigHasSequenceAdapter:',
+      !!subadapterConfig?.sequenceAdapter,
+    )
+
     const dataAdapter = await this.getSubAdapter?.(subadapterConfig)
 
     if (!dataAdapter) {
       throw new Error('Failed to get subadapter')
     }
 
-    // Propagate sequenceAdapterConfig to subadapter (e.g. CramAdapter)
-    const subadapter = dataAdapter.dataAdapter as BaseFeatureDataAdapter & {
-      sequenceAdapterConfig?: unknown
-    }
-    if (
-      this.sequenceAdapterConfig &&
-      subadapter.sequenceAdapterConfig === undefined
-    ) {
-      subadapter.sequenceAdapterConfig = this.sequenceAdapterConfig
-    }
+    const subadapter = dataAdapter.dataAdapter as BaseFeatureDataAdapter
 
     return { subadapter }
   }
 
   async getSequenceAdapter() {
-    const config = this.sequenceAdapterConfig
+    const config = this.getConf('sequenceAdapter') || this.sequenceAdapterConfig
     if (!config || !this.getSubAdapter) {
       return undefined
     }

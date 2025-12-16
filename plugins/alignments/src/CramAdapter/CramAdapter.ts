@@ -75,7 +75,20 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSequenceAdapter() {
-    const config = this.sequenceAdapterConfig
+    // First check if sequenceAdapter is in the config (explicit configuration)
+    const configSeqAdapter = this.getConf('sequenceAdapter')
+    // Fall back to the externally-set property (set by CoreGetRefNames)
+    const config = configSeqAdapter || this.sequenceAdapterConfig
+    console.log(
+      '[CramAdapter.getSequenceAdapter] instance:',
+      this.cramInstanceId,
+      'configSeqAdapter:',
+      !!configSeqAdapter,
+      'sequenceAdapterConfig:',
+      !!this.sequenceAdapterConfig,
+      'hasConfig:',
+      !!config,
+    )
     if (!config || !this.getSubAdapter) {
       return undefined
     }
