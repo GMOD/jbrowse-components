@@ -64,7 +64,7 @@ test.each([
 
     await openSaveTrackDataDialog(user, trackId)
 
-    await screen.findByText('File type', ...opts)
+    await screen.findByText(/File type/, ...opts)
 
     // Wait for loading to complete before downloading
     await waitFor(
