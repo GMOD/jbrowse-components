@@ -40,7 +40,6 @@ const DropdownTrackSelector = observer(function ({
               <SanitizedHTML html={getTrackName(t, session)} />{' '}
               <TrackSelectorTrackMenu
                 id={t.trackId}
-                trackId={t.trackId}
                 model={model}
                 conf={t}
                 setOpen={setOpen}

@@ -18,20 +18,19 @@ const useStyles = makeStyles()({
 
 const TrackSelectorTrackMenu = function ({
   id,
-  trackId,
   stopPropagation,
   model,
   setOpen,
   conf,
 }: {
   id: string
-  trackId: string
   stopPropagation?: boolean
   conf: AnyConfigurationModel
   setOpen?: (arg: boolean) => void
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
+  const trackId = conf.trackId as string
 
   const getMenuItems = useCallback(
     () => [
