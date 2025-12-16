@@ -121,7 +121,6 @@ export function getModificationsSubMenu(
     {
       label: `Adjust threshold (${model.modificationThreshold}%)`,
       onClick: () => {
-        // @ts-expect-error getSession works on model
         getSession(model).queueDialog((handleClose: () => void) => [
           SetModificationThresholdDialog,
           { model, handleClose },

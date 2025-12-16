@@ -296,7 +296,7 @@ export interface DrawFeatsParams {
 export interface DrawFeatsResult {
   featuresForFlatbush: FlatbushEntry[]
   layoutHeight?: number
-  mismatchFlatbush: ArrayBuffer
+  mismatchFlatbush: ArrayBufferLike
   mismatchItems: FlatbushItem[]
 }
 

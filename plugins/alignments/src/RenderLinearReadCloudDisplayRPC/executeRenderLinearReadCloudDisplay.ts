@@ -206,7 +206,7 @@ export async function executeRenderLinearReadCloudDisplay({
     : calculateStackYOffsetsUtil(
         computedChains,
         featureHeight,
-        noSpacing ?? false,
+        noSpacing,
         trackMaxHeight ?? 1200,
       ).layoutHeight
 
@@ -252,7 +252,7 @@ export async function executeRenderLinearReadCloudDisplay({
               : calculateStackYOffsetsUtil(
                   chains,
                   featureHeight,
-                  noSpacing ?? false,
+                  noSpacing,
                   trackMaxHeight ?? 1200,
                 )
           },

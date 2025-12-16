@@ -26,7 +26,6 @@ import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
 } from '../shared/menuItems'
-import { modificationData } from '../shared/modificationData'
 
 import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -34,9 +33,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SetFeatureHeightDialog = lazy(
   () => import('./components/SetFeatureHeightDialog'),
-)
-const SetModificationThresholdDialog = lazy(
-  () => import('../shared/components/SetModificationThresholdDialog'),
 )
 
 /**
@@ -130,6 +126,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get featureHeightSetting() {
         return self.featureHeight ?? getConf(self, 'featureHeight')
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        */
