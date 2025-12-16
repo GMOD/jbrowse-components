@@ -849,7 +849,11 @@ function performDraw() {
       cigarClickMapBitmap,
     }
 
-    self.postMessage(result, [mainBitmap, clickMapBitmap, cigarClickMapBitmap])
+    ;(self as DedicatedWorkerGlobalScope).postMessage(result, [
+      mainBitmap,
+      clickMapBitmap,
+      cigarClickMapBitmap,
+    ])
   } catch (e) {
     if (e instanceof Error && e.message === 'aborted') {
       return

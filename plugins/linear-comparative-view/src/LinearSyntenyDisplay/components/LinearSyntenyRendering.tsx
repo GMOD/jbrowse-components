@@ -86,7 +86,9 @@ const LinearSyntenyRendering = observer(function ({
   )
 
   const workerRef = useRef<Worker | null>(null)
-  const renderingTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const renderingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
 
   const mainSyntenyCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
@@ -144,6 +146,7 @@ const LinearSyntenyRendering = observer(function ({
 
         // Intercept postMessage to track when rendering starts
         const originalPostMessage = worker.postMessage.bind(worker)
+        // @ts-expect-error overriding postMessage with simplified signature
         worker.postMessage = (message: unknown, transfer?: Transferable[]) => {
           if (
             typeof message === 'object' &&
