@@ -39,7 +39,6 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
       feature: RendererType.getLayoutSession(args)
         // @ts-expect-error
         ?.cachedLayout.layout.getDataByID(featureId)
-        // @ts-expect-error
         ?.toJSON(),
     }
   }

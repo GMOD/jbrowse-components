@@ -7,6 +7,7 @@ import MultiLayout from '../../util/layouts/MultiLayout'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { Region } from '../../util'
 import type SerializableFilterChain from './util/serializableFilterChain'
+import type { BaseLayout } from '../../util/layouts'
 
 export interface LayoutSessionProps {
   regions: Region[]
@@ -15,14 +16,24 @@ export interface LayoutSessionProps {
   filters?: SerializableFilterChain
 }
 
+// Generic type for any MultiLayout
+export type BaseMultiLayout = MultiLayout<BaseLayout<unknown>, unknown>
+
+// Default type for GranularRectLayout (backwards compatibility)
 export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 
 export interface CachedLayout {
-  layout: MyMultiLayout
+  layout: BaseMultiLayout
   props: LayoutSessionProps
 }
 
-export class LayoutSession {
+// Generic session interface that any layout session must implement
+export interface LayoutSessionLike {
+  layout: BaseMultiLayout
+  update(props: LayoutSessionProps): LayoutSessionLike
+}
+
+export class LayoutSession implements LayoutSessionLike {
   props: LayoutSessionProps
 
   cachedLayout: CachedLayout | undefined
@@ -56,7 +67,7 @@ export class LayoutSession {
     )
   }
 
-  get layout(): MyMultiLayout {
+  get layout(): BaseMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
         layout: this.makeLayout(),

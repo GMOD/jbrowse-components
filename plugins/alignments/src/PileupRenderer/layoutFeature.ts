@@ -18,7 +18,6 @@ export function layoutFeature({
   showSoftClip,
   heightPx,
   displayMode,
-  startingRow,
 }: {
   feature: Feature
   layout: BaseLayout<Feature>
@@ -27,7 +26,6 @@ export function layoutFeature({
   showSoftClip?: boolean
   heightPx: number
   displayMode: string
-  startingRow?: number
 }): LayoutRecord | null {
   let expansionBefore = 0
   let expansionAfter = 0
@@ -74,8 +72,6 @@ export function layoutFeature({
     feature.get('end') + expansionAfter,
     heightPx,
     feature,
-    undefined,
-    startingRow,
   )
   if (topPx === null) {
     return null
