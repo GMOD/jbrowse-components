@@ -16,34 +16,23 @@ import {
   shouldDrawSNPsMuted,
 } from '../shared/util'
 
-import type { FlatbushEntry } from '../shared/flatbushType'
 import type { ChainData, ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
-interface MinimalView {
-  offsetPx: number
-  bpToPx: (arg: {
-    refName: string
-    coord: number
-  }) => { offsetPx: number; index: number } | undefined
-}
-
 export function drawPairChains({
   ctx,
   type,
   chainData,
-  view,
   chainYOffsets,
   renderChevrons,
   featureHeight,
-  featuresForFlatbush,
   computedChains,
   config,
   theme: configTheme,
-  regions,
+  region,
   canvasWidth,
   bpPerPx,
   colorBy,
@@ -52,11 +41,9 @@ export function drawPairChains({
   ctx: CanvasRenderingContext2D
   type: string
   chainData: ChainData
-  view: MinimalView
   chainYOffsets: Map<string, number>
   renderChevrons: boolean
   featureHeight: number
-  featuresForFlatbush: FlatbushEntry[]
   computedChains: {
     distance: number
     minX: number
@@ -67,7 +54,7 @@ export function drawPairChains({
   config: AnyConfigurationModel
   theme: ThemeOptions
   canvasWidth: number
-  regions: BaseBlock[]
+  region: BaseBlock
   bpPerPx: number
   colorBy: ColorBy
   stopToken?: string
@@ -89,8 +76,13 @@ export function drawPairChains({
   const drawIndels = shouldDrawIndels()
   let lastColor = ''
 
+  // Context is already translated to region.offsetPx, so coordinates are relative to region
+  const regionStart = region.start
+  const regionEnd = region.end
+  const regionRefName = region.refName
+
   forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
-    const { id, chain, minX, maxX } = computedChain
+    const { id, chain } = computedChain
 
     // Guard clause: skip non-paired-end chains
     let isPairedEnd = false
@@ -126,38 +118,32 @@ export function drawPairChains({
       stats: chainData.stats,
     }) || ['lightgrey', '#888']
 
-    // Clamp viewOffsetPx to 0 when negative - features should start at canvas pixel 0
-    const viewOffsetPx = Math.max(0, view.offsetPx)
-
     // Draw connecting line for pairs with both mates visible
     if (hasBothMates) {
       const v0 = nonSupplementary[0]!
       const v1 = nonSupplementary[1]!
-      const r1s = view.bpToPx({
-        refName: v0.get('refName'),
-        coord: v0.get('start'),
-      })?.offsetPx
-      const r2s = view.bpToPx({
-        refName: v1.get('refName'),
-        coord: v1.get('start'),
-      })?.offsetPx
 
-      if (r1s !== undefined && r2s !== undefined) {
+      // Only draw if both mates are in this region
+      const v0RefName = v0.get('refName')
+      const v1RefName = v1.get('refName')
+      const v0Start = v0.get('start')
+      const v1Start = v1.get('start')
+      const v0End = v0.get('end')
+      const v1End = v1.get('end')
+
+      const v0InRegion =
+        v0RefName === regionRefName && v0Start < regionEnd && v0End > regionStart
+      const v1InRegion =
+        v1RefName === regionRefName && v1Start < regionEnd && v1End > regionStart
+
+      if (v0InRegion && v1InRegion) {
+        const r1s = (Math.max(v0Start, regionStart) - regionStart) / bpPerPx
+        const r2s = (Math.max(v1Start, regionStart) - regionStart) / bpPerPx
+
         const lineY = chainY + featureHeight / 2
-        lineToCtx(
-          r1s - viewOffsetPx,
-          lineY,
-          r2s - viewOffsetPx,
-          lineY,
-          ctx,
-          '#6665',
-        )
+        lineToCtx(r1s, lineY, r2s, lineY, ctx, '#6665')
       }
     }
-
-    // Draw the paired-end features (both mates or singleton)
-    const chainMinXPx = minX - viewOffsetPx
-    const chainMaxXPx = maxX - viewOffsetPx
 
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
@@ -165,51 +151,20 @@ export function drawPairChains({
       const featStart = feat.get('start')
       const featEnd = feat.get('end')
 
-      const s = view.bpToPx({
-        refName: featRefName,
-        coord: featStart,
-      })
-      const e = view.bpToPx({
-        refName: featRefName,
-        coord: featEnd,
-      })
-
-      const region = regions.find(
-        r =>
-          r.refName === featRefName && r.start < featEnd && featStart < r.end,
-      )
-
-      let startPx: number | undefined
-      let endPx: number | undefined
-
-      if (s && e) {
-        startPx = s.offsetPx
-        endPx = e.offsetPx
-      } else if (region) {
-        const clippedStart = Math.max(featStart, region.start)
-        const clippedEnd = Math.min(featEnd, region.end)
-
-        const clippedStartPx = view.bpToPx({
-          refName: featRefName,
-          coord: clippedStart,
-        })?.offsetPx
-        const clippedEndPx = view.bpToPx({
-          refName: featRefName,
-          coord: clippedEnd,
-        })?.offsetPx
-
-        if (clippedStartPx !== undefined && clippedEndPx !== undefined) {
-          startPx = clippedStartPx
-          endPx = clippedEndPx
-        }
-      }
-
-      if (startPx === undefined || endPx === undefined) {
+      // Skip features that don't overlap this region
+      if (
+        featRefName !== regionRefName ||
+        featEnd <= regionStart ||
+        featStart >= regionEnd
+      ) {
         continue
       }
 
-      let xPos = startPx - viewOffsetPx
-      let width = Math.max(endPx - startPx, 3)
+      // Calculate pixel positions relative to region (context is already translated)
+      const clippedStart = Math.max(featStart, regionStart)
+      const clippedEnd = Math.min(featEnd, regionEnd)
+      let xPos = (clippedStart - regionStart) / bpPerPx
+      let width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
 
       // Render the alignment base shape
       const layoutFeat = {
@@ -238,7 +193,6 @@ export function drawPairChains({
         }
         if (featureHeight < 0) {
           chainY += featureHeight
-          // no need to negate featureHeight, it's not used again
         }
 
         if (pairedFill) {
@@ -252,85 +206,26 @@ export function drawPairChains({
         strokeRectCtx(xPos, chainY, width, featureHeight, ctx, pairedStroke)
       }
 
-      // Render mismatches on top if available
-      if (region) {
-        // renderMismatches uses bpSpanPx which calculates (bp - region.start) / bpPerPx
-        // This doesn't account for where the region is positioned in static blocks
-        // Use canvas translation to shift the coordinate system by the offset difference
-        ctx.save()
-
-        // Apply clipping rect for this region to prevent mismatches from bleeding
-        // into adjacent regions when multiple regions are displayed
-        const regionStartPx = region.offsetPx - viewOffsetPx
-        ctx.beginPath()
-        ctx.rect(regionStartPx, 0, region.widthPx, 100000)
-        ctx.clip()
-
-        const offsetAdjustment = region.offsetPx - viewOffsetPx
-        ctx.translate(offsetAdjustment, 0)
-
-        // After translation, use a large canvasWidth to avoid clipping on the right side
-        // The actual canvas clipping will handle bounds correctly
-        const effectiveCanvasWidth = canvasWidth + Math.abs(offsetAdjustment)
-
-        renderMismatchesCallback({
-          ctx,
-          feat: layoutFeat,
-          bpPerPx,
-          regions,
-          hideSmallIndels,
-          mismatchAlpha,
-          drawSNPsMuted,
-          drawIndels,
-          largeInsertionIndicatorScale,
-          minSubfeatureWidth,
-          charWidth,
-          charHeight,
-          colorMap,
-          colorContrastMap,
-          canvasWidth: effectiveCanvasWidth,
-          checkRef: true,
-        })
-
-        ctx.restore()
-      }
+      // Render mismatches - context is already translated so renderMismatches
+      // coordinates will work directly with this region
+      renderMismatchesCallback({
+        ctx,
+        feat: layoutFeat,
+        bpPerPx,
+        regions: [region],
+        hideSmallIndels,
+        mismatchAlpha,
+        drawSNPsMuted,
+        drawIndels,
+        largeInsertionIndicatorScale,
+        minSubfeatureWidth,
+        charWidth,
+        charHeight,
+        colorMap,
+        colorContrastMap,
+        canvasWidth,
+        checkRef: true,
+      })
     }
-
-    // Add one flatbush entry per chain covering the full extent
-    // This allows hovering over the entire chain including connecting lines
-    const firstFeat = chain[0]!
-    featuresForFlatbush.push({
-      x1: chainMinXPx,
-      y1: chainY,
-      x2: chainMaxXPx,
-      y2: chainY + featureHeight,
-      data: {
-        name: firstFeat.get('name'),
-        refName: firstFeat.get('refName'),
-        start: firstFeat.get('start'),
-        end: firstFeat.get('end'),
-        strand: firstFeat.get('strand'),
-        flags: firstFeat.get('flags'),
-        id: firstFeat.id(),
-        tlen: firstFeat.get('template_length') || 0,
-        pair_orientation: firstFeat.get('pair_orientation') || '',
-        clipPos: firstFeat.get('clipPos') || 0,
-      },
-      chainId: id,
-      chainMinX: chainMinXPx,
-      chainMaxX: chainMaxXPx,
-      chain: chain.map(f => ({
-        name: f.get('name'),
-        refName: f.get('refName'),
-        start: f.get('start'),
-        end: f.get('end'),
-        strand: f.get('strand'),
-        flags: f.get('flags'),
-        id: f.id(),
-        tlen: f.get('template_length') || 0,
-        pair_orientation: f.get('pair_orientation') || '',
-        clipPos: f.get('clipPos') || 0,
-      })),
-    })
   })
 }

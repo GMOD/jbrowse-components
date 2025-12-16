@@ -334,43 +334,58 @@ export function drawFeatsCore({
 
   const renderChevrons = shouldRenderChevrons(view.bpPerPx, featureHeight)
 
-  // Delegate rendering to specialized functions for paired and long-read chains
-  drawPairChains({
-    canvasWidth: params.canvasWidth,
-    ctx,
-    type,
-    chainData,
-    view,
-    chainYOffsets,
-    renderChevrons,
-    featureHeight,
-    featuresForFlatbush,
-    computedChains,
-    config: params.config,
-    theme: params.theme,
-    regions: params.regions,
-    bpPerPx: params.bpPerPx,
-    colorBy: params.colorBy,
-    stopToken,
-  })
+  // Clamp viewOffsetPx to 0 when negative
+  const viewOffsetPx = Math.max(0, view.offsetPx)
 
-  drawLongReadChains({
-    ctx,
-    chainData,
-    view,
-    chainYOffsets,
-    renderChevrons,
-    featureHeight,
-    featuresForFlatbush,
-    computedChains,
-    flipStrandLongReadChains,
-    config: params.config,
-    theme: params.theme,
-    regions: params.regions,
-    bpPerPx: params.bpPerPx,
-    colorBy: params.colorBy,
-    stopToken,
-  })
+  // Render each region independently with clipping to prevent bleeding between regions
+  for (const region of params.regions) {
+    ctx.save()
+
+    // Set up clipping rect for this region
+    const regionStartPx = region.offsetPx - viewOffsetPx
+    ctx.beginPath()
+    ctx.rect(regionStartPx, 0, region.widthPx, 100000)
+    ctx.clip()
+
+    // Translate coordinate system for this region
+    ctx.translate(regionStartPx, 0)
+
+    // Delegate rendering to specialized functions for paired and long-read chains
+    drawPairChains({
+      canvasWidth: region.widthPx,
+      ctx,
+      type,
+      chainData,
+      chainYOffsets,
+      renderChevrons,
+      featureHeight,
+      computedChains,
+      config: params.config,
+      theme: params.theme,
+      region,
+      bpPerPx: params.bpPerPx,
+      colorBy: params.colorBy,
+      stopToken,
+    })
+
+    drawLongReadChains({
+      ctx,
+      chainData,
+      chainYOffsets,
+      renderChevrons,
+      featureHeight,
+      computedChains,
+      flipStrandLongReadChains,
+      config: params.config,
+      theme: params.theme,
+      region,
+      bpPerPx: params.bpPerPx,
+      colorBy: params.colorBy,
+      stopToken,
+    })
+
+    ctx.restore()
+  }
 
   // Add full-width rectangles for each chain to enable mouseover on connecting lines
   addChainMouseoverRects(
