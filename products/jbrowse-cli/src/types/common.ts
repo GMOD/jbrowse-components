@@ -101,13 +101,15 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
+const SUPPORTED_ADAPTERS = new Set([
+  'Gff3TabixAdapter',
+  'VcfTabixAdapter',
+  'Gff3Adapter',
+  'VcfAdapter',
+])
+
 export function supported(type = '') {
-  return [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
-    'Gff3Adapter',
-    'VcfAdapter',
-  ].includes(type)
+  return SUPPORTED_ADAPTERS.has(type)
 }
 
 export async function generateMeta({

@@ -92,6 +92,15 @@ IMaybe<ISimpleType<string>>
 trackGeneGlyphMode: types.maybe(types.string)
 ```
 
+#### property: trackDisplayDirectionalChevrons
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+trackDisplayDirectionalChevrons: types.maybe(types.boolean)
+```
+
 #### property: configuration
 
 ```js
@@ -120,6 +129,13 @@ any
 ```
 
 #### getter: rendererTypeName
+
+```js
+// type
+any
+```
+
+#### getter: sequenceAdapter
 
 ```js
 // type
@@ -162,6 +178,13 @@ any
 ```
 
 #### getter: geneGlyphMode
+
+```js
+// type
+any
+```
+
+#### getter: displayDirectionalChevrons
 
 ```js
 // type
@@ -264,4 +287,11 @@ setMaxHeight: (val?: number) => void
 ```js
 // type signature
 setGeneGlyphMode: (val: string) => void
+```
+
+#### action: toggleDisplayDirectionalChevrons
+
+```js
+// type signature
+toggleDisplayDirectionalChevrons: () => void
 ```

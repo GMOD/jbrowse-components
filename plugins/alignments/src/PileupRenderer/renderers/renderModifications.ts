@@ -1,4 +1,3 @@
-import { bpSpanPx, max, sum } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { getNextRefPos } from '../../MismatchParser'
@@ -8,11 +7,16 @@ import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModification
 import { getModificationName } from '../../shared/modificationData'
 import { alphaColor } from '../../shared/util'
 import { getTagAlt } from '../../util'
-import { fillRectCtx } from '../util'
 
-import type { FlatbushItem, ProcessedRenderArgs } from '../types'
+import type { ColorBy, ModificationTypeWithColor } from '../../shared/types'
+import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
+
+export interface RenderModificationsArgs {
+  colorBy?: ColorBy
+  visibleModifications?: Record<string, ModificationTypeWithColor>
+}
 
 // Pre-compute colord object for blue color (used in two-color mode)
 const BLUE_COLORD = colord('blue')
@@ -24,16 +28,14 @@ export function renderModifications({
   region,
   bpPerPx,
   renderArgs,
-  canvasWidth,
   cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   region: Region
   bpPerPx: number
-  renderArgs: ProcessedRenderArgs
-  canvasWidth: number
-  cigarOps: Uint32Array | number[]
+  renderArgs: RenderModificationsArgs
+  cigarOps: ArrayLike<number>
 }) {
   const items = [] as FlatbushItem[]
   const coords = [] as number[]
@@ -80,18 +82,24 @@ export function renderModifications({
     probIndex += positions.length
   }
 
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
+
   // this is a hole-y array, does not work with normal for loop
   // eslint-disable-next-line unicorn/no-array-for-each
   getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
     ({ allProbs, prob, type }, pos) => {
       const r = start + pos
-      const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
-      const mod = visibleModifications[type]
-      if (!mod) {
-        console.warn(`${type} not known yet`)
+
+      // Skip positions outside visible region
+      if (r < regionStart || r >= regionEnd) {
         return
       }
-      if (isolatedModification && mod.type !== isolatedModification) {
+
+      const mod = visibleModifications[type]
+      if (!mod || (isolatedModification && mod.type !== isolatedModification)) {
         return
       }
 
@@ -100,17 +108,32 @@ export function renderModifications({
         return
       }
 
+      const leftPx = reversed
+        ? (regionEnd - r - 1) * invBpPerPx
+        : (r - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - r) * invBpPerPx
+        : (r + 1 - regionStart) * invBpPerPx
       const widthPx = rightPx - leftPx + 0.5
       const col = mod.color || 'black'
-      const s = 1 - sum(allProbs)
-      const maxProb = max(allProbs)
-      if (twoColor && s > maxProb) {
-        const c = BLUE_COLORD.alpha(s).toHslString()
-        fillRectCtx(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth, c)
-      } else {
-        const c = alphaColor(col, prob)
-        fillRectCtx(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth, c)
+
+      // Compute sum and max in a single pass instead of two utility calls
+      let sumProbs = 0
+      let maxProb = 0
+      for (let i = 0, l = allProbs.length; i < l; i++) {
+        const p = allProbs[i]!
+        sumProbs += p
+        if (p > maxProb) {
+          maxProb = p
+        }
       }
+      const s = 1 - sumProbs
+
+      ctx.fillStyle =
+        twoColor && s > maxProb
+          ? BLUE_COLORD.alpha(s).toHslString()
+          : alphaColor(col, prob)
+      ctx.fillRect(leftPx, topPx, widthPx, heightPx)
 
       // Add to flatbush for mouseover with strand-specific info showing all modifications
       const modsAtPos = modsByPosition.get(pos)

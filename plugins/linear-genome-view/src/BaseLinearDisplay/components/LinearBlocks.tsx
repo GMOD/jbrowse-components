@@ -1,8 +1,5 @@
-import { useEffect, useRef } from 'react'
-
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import RenderedBlocks from './RenderedBlocks'
@@ -10,12 +7,15 @@ import RenderedBlocks from './RenderedBlocks'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { BaseLinearDisplayModel } from '../model'
 
+// Warning: these styles are sensitive to causing 1px gaps between blocks.
+// Using display:flex with fractional widths and style.left positioning works.
+// Avoid using transform:translateX or inline-block as they cause subpixel
+// rounding issues that result in visible gaps between track blocks.
 const useStyles = makeStyles()({
   linearBlocks: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
     position: 'absolute',
-    left: 0,
     minHeight: '100%',
     display: 'flex',
   },
@@ -27,30 +27,16 @@ const LinearBlocks = observer(function ({
   model: BaseLinearDisplayModel
 }) {
   const { classes } = useStyles()
-  const ref = useRef<HTMLDivElement>(null)
+  const { blockDefinitions } = model
   const viewModel = getContainingView(model) as LinearGenomeViewModel
-
-  useEffect(() => {
-    return autorun(
-      function linearBlocksTransformAutorun() {
-        try {
-          const { blockDefinitions } = model
-          const { offsetPx } = viewModel
-          const div = ref.current
-          if (div) {
-            const x = Math.round(blockDefinitions.offsetPx - offsetPx)
-            div.style.transform = `translateX(${x}px)`
-          }
-        } catch (e) {
-          // may error during cleanup
-        }
-      },
-      { name: 'LinearBlocksTransform' },
-    )
-  }, [model, viewModel])
-
+  // Warning: use style.left here, not transform:translateX, to avoid 1px gaps
   return (
-    <div ref={ref} className={classes.linearBlocks}>
+    <div
+      className={classes.linearBlocks}
+      style={{
+        left: blockDefinitions.offsetPx - viewModel.offsetPx,
+      }}
+    >
       <RenderedBlocks model={model} />
     </div>
   )

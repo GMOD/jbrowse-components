@@ -119,7 +119,11 @@ const TrackLabel = memo(function TrackLabel({
           className={classes.checkboxLabel}
           onClick={event => {
             if (event.ctrlKey || event.metaKey) {
-              model.addToSelection([conf])
+              if (model.selectionSet.has(conf)) {
+                model.removeFromSelection([conf])
+              } else {
+                model.addToSelection([conf])
+              }
               event.preventDefault()
             }
           }}
@@ -143,12 +147,7 @@ const TrackLabel = memo(function TrackLabel({
           }
         />
       </Tooltip>
-      <TrackSelectorTrackMenu
-        model={model}
-        trackId={trackId}
-        id={id}
-        conf={conf}
-      />
+      <TrackSelectorTrackMenu model={model} id={id} conf={conf} />
     </>
   )
 })

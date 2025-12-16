@@ -75,7 +75,7 @@ function handleReverseStrand(
   exons: any[],
   utr: any[],
 ): FeatureData {
-  const { seq = '', upstream = '', downstream = '' } = sequence
+  const { seq, upstream = '', downstream = '' } = sequence
 
   // For reverse strand, reverse complement the sequence and swap
   // upstream/downstream

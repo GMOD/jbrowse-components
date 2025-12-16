@@ -29,7 +29,7 @@ export function matches(
   const queryLower = query.toLowerCase()
   return (
     getTrackName(conf, session).toLowerCase().includes(queryLower) ||
-    !!categories.filter(c => c.toLowerCase().includes(queryLower)).length
+    categories.some(c => c.toLowerCase().includes(queryLower))
   )
 }
 

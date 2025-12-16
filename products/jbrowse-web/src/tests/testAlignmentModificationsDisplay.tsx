@@ -8,7 +8,7 @@ export async function testAlignmentModificationsDisplay({
   timeout = 50000,
 }: {
   config: any
-  canvasTestId: string
+  canvasTestId: string | RegExp
   timeout?: number
 }) {
   const opts = [{}, { timeout }] as const

@@ -9,7 +9,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { layoutFeats } from './layoutFeatures'
 import { renderAlignment } from './renderers/renderAlignment'
-import { renderMismatches } from './renderers/renderMismatches'
+import { renderMismatchesCallback } from './renderers/renderMismatchesCallback'
 import { renderSoftClipping } from './renderers/renderSoftClipping'
 import {
   getCharWidthHeight,
@@ -18,7 +18,7 @@ import {
   setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
-} from './util'
+} from '../shared/util'
 
 import type {
   FlatbushItem,
@@ -117,7 +117,7 @@ function renderFeatures({
     for (let i = 0, l = alignmentRet.items.length; i < l; i++) {
       items.push(alignmentRet.items[i]!)
     }
-    const ret = renderMismatches({
+    const ret = renderMismatchesCallback({
       ctx,
       feat,
       bpPerPx: renderArgs.bpPerPx,
@@ -178,7 +178,7 @@ export async function makeImageData({
   renderArgs: PreProcessedRenderArgs
   pluginManager: PluginManager
 }) {
-  const { statusCallback = () => {} } = renderArgs
+  const { statusCallback = () => {}, features } = renderArgs
 
   statusCallback('Creating layout')
   const { layoutRecords, height } = layoutFeats(renderArgs)
@@ -199,5 +199,13 @@ export async function makeImageData({
     }),
   )
 
-  return { result, height }
+  const featureNames: Record<string, string> = {}
+  for (const [id, feature] of features) {
+    const name = feature.get('name')
+    if (name) {
+      featureNames[id] = name
+    }
+  }
+
+  return { result, height, featureNames }
 }

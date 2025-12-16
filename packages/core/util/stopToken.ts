@@ -1,3 +1,5 @@
+import { isWebWorker } from './isWebWorker'
+
 /**
  * source https://github.com/panstromek/zebra-rs/blob/82d616225930b3ad423a2c6d883c79b94ee08ba6/webzebra/src/stopToken.ts#L34C1-L57C16
  *
@@ -28,14 +30,6 @@
  * IN THE SOFTWARE.
  */
 
-function isWebWorker() {
-  return (
-    // @ts-expect-error
-    typeof WorkerGlobalScope !== 'undefined' &&
-    // @ts-expect-error
-    self instanceof WorkerGlobalScope
-  )
-}
 export function createStopToken() {
   // URL not available in jest and can't properly mock it
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

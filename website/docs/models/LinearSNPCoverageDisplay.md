@@ -105,16 +105,6 @@ any
 any
 ```
 
-#### getter: skipFeatures
-
-Collect all skip features from rendered blocks for cross-region arc drawing Uses
-a Map to deduplicate features that appear in multiple blocks
-
-```js
-// type
-Feature[]
-```
-
 #### getter: modificationThreshold
 
 ```js
@@ -134,6 +124,17 @@ any
 ```js
 // type
 any
+```
+
+#### getter: skipFeatures
+
+Collect all skip features from rendered blocks for cross-region arc drawing Uses
+a Map to deduplicate features that appear in multiple blocks Only computed when
+showArcsSetting is true for performance
+
+```js
+// type
+Feature[]
 ```
 
 #### getter: showInterbaseCountsSetting
@@ -222,7 +223,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { onIndicatorClick(_: unknown, item: { type: string; base: string; count: number; total: number; avgLength?: number; minLength?: number; maxLength?: number; }): void; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; }
+renderingProps: () => { onIndicatorClick(_: unknown, item: { type: "insertion" | "softclip" | "hardclip"; base: string; count: number; total: number; avgLength?: number; minLength?: number; maxLength?: number; topSequence?: string; }): void; displayModel: { ...; } & ... 2 more ... & IStateTreeNode<...>; }
 ```
 
 #### method: contextMenuItems

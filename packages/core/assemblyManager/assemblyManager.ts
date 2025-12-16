@@ -13,6 +13,12 @@ import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 
+export interface AssemblyBaseOpts {
+  stopToken?: string
+  sessionId: string
+  statusCallback?: (arg: string) => void
+}
+
 /**
  * #stateModel AssemblyManager
  */
@@ -156,7 +162,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { stopToken?: string; sessionId: string },
+        opts: AssemblyBaseOpts,
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
@@ -171,7 +177,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getReverseRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { stopToken?: string; sessionId: string },
+        opts: AssemblyBaseOpts,
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)

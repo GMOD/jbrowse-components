@@ -8,9 +8,14 @@ import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
 import { createAutorun } from '../util'
-import { buildFlatbushIndex } from './drawFeatsCommon'
+import {
+  buildFlatbushIndex,
+  buildMismatchFlatbushIndex,
+} from './drawFeatsCommon'
+import { setupModificationsAutorun } from '../shared/setupModificationsAutorun'
 
 import type { LinearReadCloudDisplayModel } from './model'
+import type { FlatbushItem } from '../PileupRenderer/types'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -20,6 +25,8 @@ interface RenderResult {
   imageData?: ImageBitmap
   layoutHeight?: number
   featuresForFlatbush?: FlatbushEntry[]
+  mismatchFlatbush?: ArrayBuffer
+  mismatchItems?: FlatbushItem[]
   offsetPx?: number
 }
 
@@ -48,15 +55,23 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       noSpacing,
       trackMaxHeight,
       height,
+      visibleModifications,
     } = self
 
     try {
       const session = getSession(self)
-      const { rpcManager } = session
+      const { rpcManager, assemblyManager } = session
       const assemblyName = view.assemblyNames[0]
       if (!assemblyName) {
         return
       }
+
+      // Get the sequenceAdapter config for CRAM files that need it
+      const assembly = assemblyManager.get(assemblyName)
+      const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+      const sequenceAdapter = sequenceAdapterConfig
+        ? getSnapshot(sequenceAdapterConfig)
+        : undefined
 
       // Stop any previous rendering operation (use untracked to avoid triggering reactions)
       const previousToken = untracked(() => self.renderingStopToken)
@@ -85,6 +100,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           sessionId: session.id,
           view: viewSnapshot,
           adapterConfig: self.adapterConfig,
+          sequenceAdapter,
           config: getSnapshot(self.configuration),
           theme: session.theme,
           filterBy,
@@ -96,11 +112,16 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           drawProperPairs,
           flipStrandLongReadChains,
           trackMaxHeight,
+          visibleModifications: Object.fromEntries(
+            visibleModifications.toJSON(),
+          ),
           ...(drawCloud && { cloudModeHeight: height }),
           highResolutionScaling: 2,
           rpcDriverName: self.effectiveRpcDriverName,
           statusCallback: (msg: string) => {
-            self.setMessage(msg)
+            if (isAlive(self)) {
+              self.setStatusMessage(msg)
+            }
           },
           stopToken,
         },
@@ -115,6 +136,13 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         }
         if (result.featuresForFlatbush) {
           buildFlatbushIndex(result.featuresForFlatbush, self)
+        }
+        if (result.mismatchFlatbush && result.mismatchItems) {
+          buildMismatchFlatbushIndex(
+            result.mismatchFlatbush,
+            result.mismatchItems,
+            self,
+          )
         }
         if (result.offsetPx !== undefined) {
           self.setLastDrawnOffsetPx(result.offsetPx)
@@ -144,7 +172,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(true)
     },
-    { delay: 1000, name: 'StackRender' },
+    {
+      delay: 1000,
+      name: 'StackRender',
+    },
   )
 
   // Autorun for stack mode
@@ -159,7 +190,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       performRender(false)
     },
-    { delay: 1000, name: 'CloudRender' },
+    {
+      delay: 1000,
+      name: 'CloudRender',
+    },
   )
 
   // Autorun to draw the imageData to canvas when available
@@ -182,6 +216,14 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(renderingImageData, 0, 0)
     },
-    { name: 'RenderCanvas' },
+    {
+      name: 'LinearReadCloudRenderCanvas',
+    },
   )
+
+  // Autorun to discover modifications in the visible region
+  setupModificationsAutorun(self, () => {
+    const view = getContainingView(self) as LGV
+    return view.initialized && self.featureDensityStatsReadyAndRegionNotTooLarge
+  })
 }

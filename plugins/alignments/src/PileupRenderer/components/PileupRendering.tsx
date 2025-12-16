@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import { bpSpanPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -48,7 +47,8 @@ const PileupRendering = observer(function (props: {
   colorBy?: ColorBy
   filterBy?: FilterBy
   items: FlatbushItem[]
-  flatbush: any
+  flatbush: ArrayBufferLike
+  featureNames?: Record<string, string>
   onMouseMove?: (
     event: React.MouseEvent,
     featureId?: string,
@@ -78,6 +78,7 @@ const PileupRendering = observer(function (props: {
     filterBy,
     flatbush,
     items,
+    featureNames = {},
     onFeatureClick,
     onFeatureContextMenu,
     onContextMenu,
@@ -107,7 +108,12 @@ const PileupRendering = observer(function (props: {
     offset = 2,
   ) {
     const [leftBp, topPx, rightBp, bottomPx] = r
-    const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
+    const leftPx = region.reversed
+      ? (region.end - rightBp) / bpPerPx
+      : (leftBp - region.start) / bpPerPx
+    const rightPx = region.reversed
+      ? (region.end - leftBp) / bpPerPx
+      : (rightBp - region.start) / bpPerPx
     const rectTop = Math.round(topPx)
     const rectHeight = Math.round(bottomPx - topPx)
     return {
@@ -168,12 +174,15 @@ const PileupRendering = observer(function (props: {
         )
         const item = search.length ? items[search[0]!] : undefined
         setItemUnderMouse(item)
-        const label = getItemLabel(item)
-        onMouseMove?.(
-          event,
-          displayModel.getFeatureOverlapping(blockKey, clientBp, offsetY),
-          label,
+        const featureId = displayModel.getFeatureOverlapping(
+          blockKey,
+          clientBp,
+          offsetY,
         )
+        const label =
+          getItemLabel(item) ??
+          (featureId ? featureNames[featureId] : undefined)
+        onMouseMove?.(event, featureId, label)
       }}
       onClick={event => {
         if (!movedDuringLastMouseDown) {

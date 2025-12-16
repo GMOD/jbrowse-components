@@ -29,8 +29,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter>
 
-  public sequenceAdapterConfig?: Record<string, unknown>
-
   private ultraLongFeatureCache = new QuickLRU<number, Feature>({
     maxSize: 500,
   })

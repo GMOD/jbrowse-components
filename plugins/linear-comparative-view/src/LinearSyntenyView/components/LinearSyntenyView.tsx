@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 import LinearComparativeViewComponent from '../../LinearComparativeView/components/LinearComparativeView'
@@ -15,11 +16,15 @@ const LinearSyntenyView = observer(function ({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  return !model.initialized ? (
-    <LinearSyntenyImportForm model={model} />
-  ) : (
-    <LinearComparativeViewComponent model={model} />
-  )
+  const { showLoading, showImportForm, loadingMessage } = model
+
+  if (showLoading) {
+    return <LoadingEllipses variant="h6" message={loadingMessage} />
+  } else if (showImportForm) {
+    return <LinearSyntenyImportForm model={model} />
+  } else {
+    return <LinearComparativeViewComponent model={model} />
+  }
 })
 
 export default LinearSyntenyView

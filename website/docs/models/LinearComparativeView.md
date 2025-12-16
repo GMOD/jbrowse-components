@@ -149,6 +149,22 @@ any[][]
 any[]
 ```
 
+#### getter: loadingMessage
+
+```js
+// type
+string
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+boolean
+```
+
 ### LinearComparativeView - Methods
 
 #### method: headerMenuItems
@@ -182,6 +198,13 @@ rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```js
 // type signature
 setWidth: (newWidth: number) => void
+```
+
+#### action: setIsLoading
+
+```js
+// type signature
+setIsLoading: (arg: boolean) => void
 ```
 
 #### action: setViews

@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { clamp, featureSpanPx } from '@jbrowse/core/util'
+import { clamp } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 // required to import this for typescript purposes
@@ -65,7 +65,11 @@ export function drawXY(
     stopToken,
   } = props
   const region = regions[0]!
-  const width = (region.end - region.start) / bpPerPx
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
+  const width = (regionEnd - regionStart) * invBpPerPx
 
   const height = unadjustedHeight - offset * 2
 
@@ -132,7 +136,14 @@ export function drawXY(
         checkStopToken(stopToken)
         start = performance.now()
       }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const fstart = feature.get('start')
+      const fend = feature.get('end')
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
       if (feature.get('summary')) {
         const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
         const max = feature.get('maxScore')
@@ -154,7 +165,14 @@ export function drawXY(
         checkStopToken(stopToken)
         start = performance.now()
       }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const fstart = feature.get('start')
+      const fend = feature.get('end')
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
       const score = feature.get('score')
       const max = feature.get('maxScore')
       const min = feature.get('minScore')
@@ -188,7 +206,14 @@ export function drawXY(
         checkStopToken(stopToken)
         start = performance.now()
       }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const fstart = feature.get('start')
+      const fend = feature.get('end')
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
 
       if (feature.get('summary')) {
         const min = feature.get('minScore')
@@ -211,7 +236,14 @@ export function drawXY(
         checkStopToken(stopToken)
         start = performance.now()
       }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const fstart = feature.get('start')
+      const fend = feature.get('end')
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
 
       // create reduced features, avoiding multiple features per px
       if (
@@ -251,7 +283,14 @@ export function drawXY(
         checkStopToken(stopToken)
         start = performance.now()
       }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const fstart = feature.get('start')
+      const fend = feature.get('end')
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score')
       if (score > niceMax) {

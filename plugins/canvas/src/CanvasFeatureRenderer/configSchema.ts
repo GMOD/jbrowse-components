@@ -219,6 +219,16 @@ const CanvasFeatureRenderer = ConfigurationSchema(
         'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript, "longestCoding" shows only the longest coding transcript',
       defaultValue: 'all',
     },
+
+    /**
+     * #slot
+     */
+    displayDirectionalChevrons: {
+      type: 'boolean',
+      description:
+        'Display directional chevrons on intron lines to indicate strand direction',
+      defaultValue: true,
+    },
   },
   { explicitlyTyped: true },
 )

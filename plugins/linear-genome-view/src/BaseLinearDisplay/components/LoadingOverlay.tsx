@@ -30,10 +30,10 @@ const useStyles = makeStyles()({
 })
 
 export default function LoadingOverlay({
-  message,
+  statusMessage,
   children,
 }: {
-  message?: string
+  statusMessage?: string
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
@@ -42,7 +42,7 @@ export default function LoadingOverlay({
       {children}
       <div className={classes.overlay} data-testid="loading-overlay">
         <div className={classes.message}>
-          <LoadingEllipses message={message} />
+          <LoadingEllipses message={statusMessage} />
         </div>
       </div>
     </div>

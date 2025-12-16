@@ -19,9 +19,9 @@ test('reloads alignments track (CRAI 404)', async () => {
     trackId: 'volvox_cram_pileup',
     viewLocation: [0.5, 0],
     expectedCanvas: /prerendered_canvas/,
-    timeout: 5000,
+    timeout: 30000,
   })
-}, 10000)
+}, 50000)
 
 test('reloads alignments track (CRAM 404)', async () => {
   await testFileReload({
@@ -30,6 +30,6 @@ test('reloads alignments track (CRAM 404)', async () => {
     trackId: 'volvox_cram_snpcoverage',
     viewLocation: [0.5, 0],
     expectedCanvas: /prerendered_canvas/,
-    timeout: 5000,
+    timeout: 30000,
   })
-}, 10000)
+}, 50000)

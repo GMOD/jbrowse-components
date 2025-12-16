@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model'
 
-export const GridRaw = observer(function ({
+const DotplotGrid = observer(function ({
   model,
   children,
 }: {
@@ -97,21 +97,4 @@ export const GridRaw = observer(function ({
   )
 })
 
-export default function Grid({
-  model,
-  children,
-}: {
-  model: DotplotViewModel
-  children?: React.ReactNode
-}) {
-  const { viewWidth, viewHeight } = model
-  return (
-    <svg
-      width={viewWidth}
-      height={viewHeight}
-      style={{ background: 'rgba(0,0,0,0.12)' }}
-    >
-      <GridRaw model={model}>{children}</GridRaw>
-    </svg>
-  )
-}
+export default DotplotGrid

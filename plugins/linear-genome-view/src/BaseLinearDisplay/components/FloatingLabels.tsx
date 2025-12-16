@@ -88,12 +88,7 @@ function deduplicateFeatureLabels(
     }
 
     const [left, topPx, right, , feature] = val
-    const {
-      refName = '',
-      floatingLabels,
-      totalFeatureHeight,
-      actualTopPx,
-    } = feature
+    const { refName, floatingLabels, totalFeatureHeight, actualTopPx } = feature
 
     const effectiveTopPx = actualTopPx ?? topPx
 

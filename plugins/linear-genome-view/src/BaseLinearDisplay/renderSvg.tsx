@@ -7,8 +7,9 @@ import {
 } from '@jbrowse/core/util'
 
 import BlockState, { renderBlockData } from './models/serverSideRenderedBlock'
-import { calculateLabelPositions, getId } from './models/util'
+import { getId } from './models/util'
 import { ErrorBox } from '../LinearGenomeView/SVGErrorBox'
+import { calculateLabelPositions } from './models/calculateLabelPositions'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from './model'

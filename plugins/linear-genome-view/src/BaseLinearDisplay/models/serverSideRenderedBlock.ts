@@ -4,7 +4,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
   getContainingDisplay,
-  getContainingTrack,
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
@@ -78,7 +77,7 @@ const blockState = types
     /**
      * #volatile
      */
-    status: '',
+    blockStatusMessage: '',
     /**
      * #volatile
      */
@@ -138,8 +137,8 @@ const blockState = types
       /**
        * #action
        */
-      setStatus(message: string) {
-        self.status = message
+      setStatusMessage(message: string) {
+        self.blockStatusMessage = message
       },
       /**
        * #action
@@ -240,6 +239,16 @@ const blockState = types
       },
     }
   })
+  .views(self => ({
+    get statusMessage() {
+      return self.isRenderingPending
+        ? self.blockStatusMessage ||
+            // @ts-expect-error
+            getContainingDisplay(self).statusMessage ||
+            'Loading'
+        : undefined
+    },
+  }))
   .actions(self => ({
     afterAttach() {
       const display = getContainingDisplay(self)
@@ -299,7 +308,7 @@ export function renderBlockData(
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
-    const layoutId = getContainingTrack(display).id
+    const layoutId = parentTrack.id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
@@ -312,7 +321,7 @@ export function renderBlockData(
       renderArgs: {
         statusCallback: (message: string) => {
           if (isAlive(self)) {
-            self.setStatus(message)
+            self.setStatusMessage(message)
           }
         },
         assemblyName: self.region.assemblyName,
@@ -327,7 +336,9 @@ export function renderBlockData(
       },
     }
   } catch (e) {
-    return { displayError: e }
+    return {
+      displayError: e,
+    }
   }
 }
 

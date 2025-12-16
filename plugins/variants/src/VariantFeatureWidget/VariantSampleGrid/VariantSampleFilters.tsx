@@ -1,3 +1,5 @@
+import { useEffect, useState, useTransition } from 'react'
+
 import { TextField, Typography } from '@mui/material'
 
 type Filters = Record<string, string>
@@ -11,6 +13,14 @@ export default function SampleFilters({
   filter: Filters
   setFilter: (arg: Filters) => void
 }) {
+  const [localFilter, setLocalFilter] = useState(filter)
+  const [, startTransition] = useTransition()
+
+  // Sync local state when parent filter prop changes externally
+  useEffect(() => {
+    setLocalFilter(filter)
+  }, [filter])
+
   return (
     <>
       <Typography>
@@ -23,9 +33,14 @@ export default function SampleFilters({
         <TextField
           key={`filter-${field}`}
           placeholder={`Filter ${field}`}
-          value={filter[field] || ''}
+          value={localFilter[field] || ''}
           onChange={event => {
-            setFilter({ ...filter, [field]: event.target.value })
+            const value = event.target.value
+            const newFilter = { ...localFilter, [field]: value }
+            setLocalFilter(newFilter)
+            startTransition(() => {
+              setFilter(newFilter)
+            })
           }}
         />
       ))}

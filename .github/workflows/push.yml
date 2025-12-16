@@ -18,7 +18,7 @@ jobs:
       skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 1
       - name: Check commit message
@@ -35,51 +35,27 @@ jobs:
             echo "Running regular push jobs"
           fi
 
-  # Conditionally run the buildwebsite job
-  buildwebsite:
-    name: Build website
+  main:
+    name: Build, deploy, lint, typecheck, and test
     needs: check_commit_message
     if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - name: Install system dependencies
+        run:
+          sudo apt-get -y install tabix libcairo2-dev libpango1.0-dev
+          libjpeg-dev libgif-dev librsvg2-dev
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
           cache: 'yarn'
-          cache-dependency-path: 'website/yarn.lock'
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-        working-directory: website
-      - name: Build website
-        run: |
-          cd website/
-          yarn build
-          mkdir testing
-          mv build testing/jb2
-      - name: Check website links
-        uses: untitaker/hyperlink@fb5bb9c5011a3d143a54b4b30aedc30ec5bc0f89 # 0.2.0
-        with:
-          args: website/testing/ --check-anchors
 
-  # Conditionally run the buildjbrowseweb job
-  buildjbrowseweb:
-    name: Deploy jbrowse-web and storybooks to S3
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
-        with:
-          node-version: '22'
-          cache: 'yarn'
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+      # Deploy jbrowse-web first
       - name: Validate branch/tag name for S3 path safety
         env:
           REF_NAME: ${{ github.ref_name }}
@@ -106,6 +82,53 @@ jobs:
           aws s3 sync --delete --exclude="*.map" build s3://jbrowse.org/code/jb2/${{ github.ref_name }}
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${{ github.ref_name }}/*"
 
+      # Lint, typecheck, test
+      - name: Check code formatting
+        run: yarn prettier --check .
+      - name: Spellcheck
+        uses: crate-ci/typos@2d0ce569feab1f8752f1dde43cc2f2aa53236e06 # v1.40.0
+      - name: Lint code
+        run: yarn lint
+      - name: Typecheck code
+        run: yarn typecheck
+      - name: Run tests
+        run: yarn test-ci
+      - name: Build codebase
+        run: yarn build
+      - name: Test build
+        run: BUILT_TESTS=1 yarn built-test-ci
+      - name: Run browser tests with Puppeteer
+        id: browser-tests
+        run: node --experimental-strip-types browser-tests/runner.ts
+        working-directory: products/jbrowse-web
+        continue-on-error: true
+      - name: Upload snapshot diffs to S3
+        if: steps.browser-tests.outcome == 'failure'
+        run: |
+          SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
+          S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
+
+          if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
+            echo "Uploading snapshot diffs to S3..."
+            aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
+
+            echo ""
+            echo "============================================"
+            echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
+            echo "============================================"
+            for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
+              filename=$(basename "$file")
+              echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
+            done
+            echo "============================================"
+          else
+            echo "No snapshot diff files found"
+          fi
+      - name: Fail if browser tests failed
+        if: steps.browser-tests.outcome == 'failure'
+        run: exit 1
+
+      # Deploy storybooks
       - name: Build LGV storybook
         run: yarn storybook:build
         working-directory: products/jbrowse-react-linear-genome-view
@@ -139,78 +162,41 @@ jobs:
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${{ github.ref_name }}/*"
         working-directory: products/jbrowse-react-circular-genome-view
 
-  # Conditionally run the main job
-  main:
-    name: Lint, typecheck, test, and build
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install tabix
-        run: sudo apt-get -y install tabix
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
-        with:
-          node-version: '22'
-          cache: 'yarn'
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-      - name: Check code formatting
-        run: yarn prettier --check .
-      - name: Spellcheck
-        uses: crate-ci/typos@2d0ce569feab1f8752f1dde43cc2f2aa53236e06 # v1.40.0
-      - name: Lint code
-        run: yarn lint
-      - name: Typecheck code
-        run: yarn typecheck
-      - name: Run tests
-        run: yarn test-ci
-      - name: Build codebase
-        run: yarn build
-      - name: Test build
-        run: BUILT_TESTS=1 yarn built-test-ci
-      - name: Run browser tests with Puppeteer
-        id: browser-tests
-        run: node --experimental-strip-types browser-tests/runner.ts
-        working-directory: products/jbrowse-web
-        continue-on-error: true
-      - name: Upload snapshot diffs to S3
-        if: steps.browser-tests.outcome == 'failure'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
-        run: |
-          SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
-          S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
-
-          if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
-            echo "Uploading snapshot diffs to S3..."
-            aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
-
-            echo ""
-            echo "============================================"
-            echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
-            echo "============================================"
-            for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
-              filename=$(basename "$file")
-              echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
-            done
-            echo "============================================"
-          else
-            echo "No snapshot diff files found"
-          fi
-      - name: Fail if browser tests failed
-        if: steps.browser-tests.outcome == 'failure'
-        run: exit 1
       - name: Upload packed artifacts for component tests
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: packed-artifacts
           path: component_tests/*/packed/
           retention-days: 1
+
+  # Conditionally run the buildwebsite job
+  buildwebsite:
+    name: Build website
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: '22'
+          cache: 'yarn'
+          cache-dependency-path: 'website/yarn.lock'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: website
+      - name: Build website
+        run: |
+          cd website/
+          yarn build
+          mkdir testing
+          mv build testing/jb2
+      - name: Check website links
+        uses: untitaker/hyperlink@fb5bb9c5011a3d143a54b4b30aedc30ec5bc0f89 # 0.2.0
+        with:
+          args: website/testing/ --check-anchors
 
   # Separate job for component_tests with no permissions.
   # These tests install npm packages without a yarn.lock, so untrusted
@@ -225,14 +211,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
       - name: Download packed artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: packed-artifacts
           path: component_tests/

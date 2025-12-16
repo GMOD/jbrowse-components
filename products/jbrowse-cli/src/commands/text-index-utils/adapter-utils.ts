@@ -32,20 +32,16 @@ export function createTrixAdapter(
   }
 }
 
+const ADAPTER_LOCATION_KEYS: Record<string, string> = {
+  Gff3TabixAdapter: 'gffGzLocation',
+  Gff3Adapter: 'gffLocation',
+  VcfAdapter: 'vcfLocation',
+  VcfTabixAdapter: 'vcfGzLocation',
+}
+
 export function getAdapterLocation(
   adapter: any,
 ): UriLocation | LocalPathLocation | undefined {
-  const { type } = adapter || {}
-
-  if (type === 'Gff3TabixAdapter') {
-    return adapter.gffGzLocation || adapter
-  } else if (type === 'Gff3Adapter') {
-    return adapter.gffLocation || adapter
-  } else if (type === 'VcfAdapter') {
-    return adapter.vcfLocation || adapter
-  } else if (type === 'VcfTabixAdapter') {
-    return adapter.vcfGzLocation || adapter
-  }
-
-  return undefined
+  const key = ADAPTER_LOCATION_KEYS[adapter?.type]
+  return key ? (adapter[key] ?? adapter) : undefined
 }
