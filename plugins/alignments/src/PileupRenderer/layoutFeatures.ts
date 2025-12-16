@@ -3,13 +3,11 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { layoutFeature } from './layoutFeature'
 import { sortFeature } from './sortUtil'
 
-import type { LayoutRecord } from './layoutFeature'
-import type { PreProcessedRenderArgs } from './types'
+import type { LayoutFeature, PreProcessedRenderArgs } from './types'
 
 // layout determines the height of the canvas that we use to render
 export function layoutFeats(props: PreProcessedRenderArgs) {
-  const { layout, features, sortedBy, config, bpPerPx, showSoftClip, regions } =
-    props
+  const { layout, features, sortedBy, config, showSoftClip, regions } = props
   const region = regions[0]!
   const hasSortedBy = sortedBy?.type && region.start === sortedBy.pos
   const featureMap = hasSortedBy ? sortFeature(features, sortedBy) : features
@@ -23,14 +21,12 @@ export function layoutFeats(props: PreProcessedRenderArgs) {
     ? [...featureMap.values()]
     : [...featureMap.values()].sort((a, b) => a.get('start') - b.get('start'))
 
-  const layoutRecords: LayoutRecord[] = []
+  const layoutRecords: LayoutFeature[] = []
 
   for (const feature of featureArr) {
     const result = layoutFeature({
       feature,
       layout,
-      bpPerPx,
-      region,
       showSoftClip,
       heightPx,
       displayMode,
