@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import { fillRectCtx, getScale } from './util'
+import { getScale } from './util'
 
 import type { ScaleOpts } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -9,6 +9,24 @@ import type { Feature, Region } from '@jbrowse/core/util'
 
 const fudgeFactor = 0.3
 const clipHeight = 2
+
+function fillRectCtx(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  ctx: CanvasRenderingContext2D,
+) {
+  if (width < 0) {
+    x += width
+    width = -width
+  }
+  if (height < 0) {
+    y += height
+    height = -height
+  }
+  ctx.fillRect(x, y, width, height)
+}
 
 export function drawDensity(
   ctx: CanvasRenderingContext2D,

@@ -77,7 +77,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     } = opts
     const source = this.getConf('source')
     const resolutionMultiplier = this.getConf('resolutionMultiplier')
-    const idPrefix = `${source}:${refName}:`
 
     return ObservableCreate<Feature>(async observer => {
       const { bigwig } = await this.setup(opts)
@@ -91,6 +90,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
             basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
           }),
       )
+      console.log({ arrays })
 
       const { starts, ends, scores } = arrays
       const minScores = 'minScores' in arrays ? arrays.minScores : undefined
