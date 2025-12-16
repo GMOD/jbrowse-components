@@ -1,10 +1,13 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import { CascadingMenu } from '@jbrowse/core/ui'
+import { usePopupState } from '@jbrowse/core/ui/hooks'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
 import { getCachedElements, getPinnedContentBlock } from '../util'
 
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
@@ -15,6 +18,9 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
   const pinnedRef = useRef<HTMLSpanElement>(null)
   const lastBpPerPxRef = useRef<number | null>(null)
   const firstLabelRef = useRef<HTMLSpanElement | null>(null)
+  const blockMapRef = useRef<Map<string, BaseBlock>>(new Map())
+  const [clickedBlock, setClickedBlock] = useState<BaseBlock>()
+  const popupState = usePopupState()
 
   // Fast path: update transform and labels on scroll
   useEffect(() => {
@@ -37,8 +43,10 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
             pinned.style.display = ''
             pinned.textContent =
               (prefix ? `${prefix}:` : '') + pinnedBlock.refName
+            pinned.dataset.blockKey = pinnedBlock.key
           } else {
             pinned.style.display = 'none'
+            pinned.dataset.blockKey = ''
           }
         }
 
@@ -75,6 +83,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
 
         const fragment = document.createDocumentFragment()
         firstLabelRef.current = null
+        blockMapRef.current.clear()
 
         let index = 0
         for (const block of staticBlocks) {
@@ -94,10 +103,13 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
               span.dataset.testid = `refLabel-${refName}`
             }
             span.dataset.refname = refName
+            span.dataset.blockKey = block.key
             span.style.left = `${blockOffsetPx - 1}px`
             span.style.paddingLeft = '1px'
+            span.style.cursor = 'pointer'
             span.textContent = refName
             fragment.append(span)
+            blockMapRef.current.set(block.key, block)
             if (!firstLabelRef.current) {
               firstLabelRef.current = span
             }
@@ -115,8 +127,11 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
             pinned.style.display = ''
             pinned.textContent =
               (prefix ? `${prefix}:` : '') + pinnedBlock.refName
+            pinned.dataset.blockKey = pinnedBlock.key
+            blockMapRef.current.set(pinnedBlock.key, pinnedBlock)
           } else {
             pinned.style.display = 'none'
+            pinned.dataset.blockKey = ''
           }
         }
         if (firstLabelRef.current) {
@@ -132,11 +147,44 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
 
   const bgColor = theme.palette.background.paper
 
+  function handleLabelClick(event: React.MouseEvent) {
+    const target = event.target as HTMLElement
+    const blockKey = target.dataset.blockKey
+    if (blockKey) {
+      const block = blockMapRef.current.get(blockKey)
+      if (block) {
+        setClickedBlock(block)
+        popupState.open(target)
+      }
+    }
+  }
+
+  function getMenuItems() {
+    if (!clickedBlock) {
+      return []
+    }
+    const { refName, assemblyName } = clickedBlock
+
+    return [
+      {
+        label: `Show only ${refName}`,
+        onClick: () => {
+          model.navToLocString(refName, assemblyName)
+        },
+      },
+    ]
+  }
+
   return (
     <>
-      <div ref={innerRef} style={{ position: 'absolute' }} />
+      <div
+        ref={innerRef}
+        onClick={handleLabelClick}
+        style={{ position: 'absolute' }}
+      />
       <span
         ref={pinnedRef}
+        onClick={handleLabelClick}
         style={{
           fontSize: '11px',
           position: 'absolute',
@@ -146,7 +194,13 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
           lineHeight: 'normal',
           zIndex: 2,
           background: bgColor,
+          cursor: 'pointer',
         }}
+      />
+      <CascadingMenu
+        menuItems={getMenuItems()}
+        onMenuItemClick={(_event, callback) => callback()}
+        popupState={popupState}
       />
     </>
   )
