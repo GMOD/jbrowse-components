@@ -15,7 +15,7 @@ export default class LinePlotRenderer extends FeatureRendererType {
     // Use array-based rendering when:
     // 1. The adapter supports getFeaturesAsArrays
     // 2. The color is NOT a callback (jexl expression)
-    const colorIsCallback = config?.color?.isCallback
+    const colorIsCallback = config.color?.isCallback
     if (!colorIsCallback && 'getFeaturesAsArrays' in dataAdapter) {
       const featureArrays = await (dataAdapter as any).getFeaturesAsArrays(
         region,

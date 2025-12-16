@@ -113,9 +113,6 @@ export function drawXYArrays(
   const useBicolor = posColor !== undefined && negColor !== undefined
   const staticColor = color ?? posColor ?? 'blue'
 
-  // Debug logging
-  console.log('[drawXYArrays] color config:', { color, posColor, negColor, useBicolor, staticColor })
-
   const { starts, ends, scores, minScores, maxScores } = featureArrays
   const len = starts.length
   if (len === 0) {
@@ -178,7 +175,6 @@ export function drawXYArrays(
 
   // Set initial fill color (will be changed per-feature in bicolor mode)
   ctx.fillStyle = staticColor
-  console.log('[drawXYArrays] ctx.fillStyle set to:', ctx.fillStyle, 'staticColor was:', staticColor)
 
   // Track reduced features for tooltip support
   const reducedStarts: number[] = []
@@ -193,8 +189,6 @@ export function drawXYArrays(
   // Only use two-pass deduplication when features are < 1px wide
   const firstFeatureWidth = len > 0 ? (ends[0]! - starts[0]!) * invBpPerPx : 0
   const usePixelDedup = filled && firstFeatureWidth < 1
-
-  console.log('[drawXYArrays] drawing path:', { usePixelDedup, filled, len, useBicolor })
 
   if (usePixelDedup) {
     // Two-pass approach for sub-pixel features: collect max scores per pixel column,

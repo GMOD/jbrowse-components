@@ -1,8 +1,4 @@
-import {
-  fireEvent,
-  waitFor,
-  waitForElementToBeRemoved,
-} from '@testing-library/react'
+import { fireEvent, waitForElementToBeRemoved } from '@testing-library/react'
 
 import {
   createView,
@@ -39,19 +35,13 @@ test('open a bigwig track and change to green color', async () => {
     color: string | undefined
   }
 
-  console.log('[green test] before setColor, display.color =', display.color)
-
   // Change the color - this should trigger a re-render
   display.setColor('green')
 
-  console.log('[green test] after setColor, display.color =', display.color)
-
   // Wait for the canvas to be removed (re-render starts)
-  console.log('[green test] waiting for canvas to be removed...')
   await waitForElementToBeRemoved(() => queryByTestId(pv('1..4000-0')), {
     timeout: 10000,
   })
-  console.log('[green test] canvas removed, waiting for new canvas...')
 
   // Wait for the new canvas to appear (re-render completes)
   const canvas2 = await findByTestId(pv('1..4000-0'), {}, { timeout: 20000 })
@@ -59,7 +49,6 @@ test('open a bigwig track and change to green color', async () => {
   // Small delay to ensure canvas content is fully rendered
   await new Promise(resolve => setTimeout(resolve, 100))
 
-  console.log('[green test] new canvas found, taking snapshot')
   expectCanvasMatch(canvas2)
 }, 40000)
 

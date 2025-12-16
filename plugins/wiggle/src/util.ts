@@ -55,9 +55,6 @@ export function getArraysColorConfig(config: AnyConfigurationModel) {
   const color = readConfObject(config, 'color')
   const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
 
-  // Debug - temporary
-  console.log('[getArraysColorConfig] color:', color, 'isDefault:', colorIsDefault)
-
   if (!colorIsDefault) {
     return { color }
   }

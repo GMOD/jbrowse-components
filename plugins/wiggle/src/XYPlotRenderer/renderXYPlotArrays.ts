@@ -12,8 +12,13 @@ export async function renderXYPlotArrays(
   renderProps: RenderArgsDeserialized,
   featureArrays: WiggleFeatureArrays,
 ) {
-  const { config, height, regions, bpPerPx, statusCallback = () => {} } =
-    renderProps
+  const {
+    config,
+    height,
+    regions,
+    bpPerPx,
+    statusCallback = () => {},
+  } = renderProps
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
