@@ -28,6 +28,8 @@ export interface PileupLayoutOptions {
   spacing?: number
   /** Maximum layout height in pixels */
   maxHeight?: number
+  /** Horizontal padding added to right edge for collision detection (default 1) */
+  padding?: number
 }
 
 export interface PileupRectangle {
@@ -41,6 +43,7 @@ export default class PileupLayout<T> implements BaseLayout<T> {
   private featureHeight: number
   private spacing: number
   private rowHeight: number
+  private padding: number
   private maxRows: number
   private rows: number[][] = [] // Each row is a flat interval array [start1, end1, start2, end2, ...]
   private rowMaxEnd: number[] = [] // Track rightmost end per row for O(1) check
@@ -56,6 +59,7 @@ export default class PileupLayout<T> implements BaseLayout<T> {
     this.featureHeight = options.featureHeight ?? 7
     this.spacing = options.spacing ?? 0
     this.rowHeight = this.featureHeight + this.spacing
+    this.padding = options.padding ?? 1
     this.maxRows = options.maxHeight
       ? Math.floor(options.maxHeight / this.rowHeight)
       : 100000
@@ -84,8 +88,11 @@ export default class PileupLayout<T> implements BaseLayout<T> {
       startRow = this.lastRow + 1
     }
 
+    // Add padding to right edge for collision detection
+    const paddedRight = right + this.padding
+
     // Find first row where this feature fits
-    const row = this.findFreeRow(left, right, startRow)
+    const row = this.findFreeRow(left, paddedRight, startRow)
     if (row === null) {
       const rect: Rectangle<T> = {
         id,
@@ -102,8 +109,8 @@ export default class PileupLayout<T> implements BaseLayout<T> {
       return null
     }
 
-    // Add to row
-    this.addToRow(row, left, right)
+    // Add to row (with padding for collision detection)
+    this.addToRow(row, left, paddedRight)
 
     // Store rectangle
     const rect: Rectangle<T> = {
