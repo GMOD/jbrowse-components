@@ -201,10 +201,12 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
         scoreMin: 0,
         scoreMax: 0,
         scoreSum: 0,
+        scoreSumSquares: 0,
         scoreMean: 0,
         scoreStdDev: 0,
         featureCount: 0,
         basesCovered: end - start,
+        featureDensity: 0,
       }
     }
 
@@ -231,10 +233,12 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       scoreMin,
       scoreMax,
       scoreSum,
+      scoreSumSquares,
       scoreMean,
       scoreStdDev,
       featureCount: len,
       basesCovered: end - start,
+      featureDensity: len / (end - start),
     }
   }
 

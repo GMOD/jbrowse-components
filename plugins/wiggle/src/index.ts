@@ -15,11 +15,9 @@ import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay'
 import MultiQuantitativeTrackF from './MultiQuantitativeTrack'
 import MultiRowLineRendererF from './MultiRowLineRenderer'
 import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer'
-import MultiRowXYPointRendererF from './MultiRowXYPointRenderer'
 import MultiWiggleAdapterF from './MultiWiggleAdapter'
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'
 import MultiXYPlotRendererF from './MultiXYPlotRenderer'
-import MultiXYPointRendererF from './MultiXYPointRenderer'
 import QuantitativeTrackF from './QuantitativeTrack'
 import {
   MultiWiggleClusterScoreMatrix,
@@ -51,9 +49,7 @@ export default class WigglePlugin extends Plugin {
     XYPlotRendererF(pm)
     DensityRendererF(pm)
     MultiXYPlotRendererF(pm)
-    MultiXYPointRendererF(pm)
     MultiRowXYPlotRendererF(pm)
-    MultiRowXYPointRendererF(pm)
     MultiDensityRendererF(pm)
     MultiLineRendererF(pm)
     MultiRowLineRendererF(pm)

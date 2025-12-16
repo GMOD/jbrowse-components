@@ -39,9 +39,7 @@ const WiggleClusterDialog = lazy(
 // using a map because it preserves order
 const rendererTypes = new Map([
   ['xyplot', 'MultiXYPlotRenderer'],
-  ['xypoint', 'MultiXYPointRenderer'],
   ['multirowxy', 'MultiRowXYPlotRenderer'],
-  ['multirowxypoint', 'MultiRowXYPointRenderer'],
   ['multirowdensity', 'MultiDensityRenderer'],
   ['multiline', 'MultiLineRenderer'],
   ['multirowline', 'MultiRowLineRenderer'],
@@ -168,9 +166,7 @@ export function stateModelFactory(
       get graphType() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiXYPointRenderer' ||
           self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPointRenderer' ||
           self.rendererTypeName === 'MultiLineRenderer' ||
           self.rendererTypeName === 'MultiRowLineRenderer'
         )
@@ -181,7 +177,6 @@ export function stateModelFactory(
       get needsFullHeightScalebar() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiXYPointRenderer' ||
           self.rendererTypeName === 'MultiLineRenderer'
         )
       },
@@ -191,7 +186,6 @@ export function stateModelFactory(
       get isMultiRow() {
         return (
           self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPointRenderer' ||
           self.rendererTypeName === 'MultiRowLineRenderer' ||
           self.rendererTypeName === 'MultiDensityRenderer'
         )
@@ -214,8 +208,7 @@ export function stateModelFactory(
       get renderColorBoxes() {
         return !(
           self.rendererTypeName === 'MultiRowLineRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPointRenderer'
+          self.rendererTypeName === 'MultiRowXYPlotRenderer'
         )
       },
       /**
@@ -457,9 +450,7 @@ export function stateModelFactory(
                     label: 'Renderer type',
                     subMenu: [
                       'xyplot',
-                      'xypoint',
                       'multirowxy',
-                      'multirowxypoint',
                       'multirowdensity',
                       'multiline',
                       'multirowline',

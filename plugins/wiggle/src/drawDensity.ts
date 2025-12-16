@@ -193,9 +193,8 @@ export function drawDensityArrays(
   const isLog = scaleOpts.scaleType === 'log'
   const domainMin = scaleOpts.domain[0]!
 
-  // For arrays, always use the color scale to map score to color
-  // (the non-array version can use a config callback with Feature objects, but we don't have those)
-  const getColor = (score: number) => colorScale(score) as string
+  // For arrays, use the color scale directly to map score to color
+  // (fillStyle accepts any type and converts it)
 
   // Track reduced features for tooltip support
   const reducedStarts: number[] = []
@@ -255,7 +254,7 @@ export function drawDensityArrays(
         const idx = featureIdxPerPx[px]!
         const score = maxScorePerPx[px]!
 
-        ctx.fillStyle = score >= domainMin ? getColor(score) : '#eee'
+        ctx.fillStyle = score >= domainMin ? `${colorScale(score)}` : '#eee'
         ctx.fillRect(px, 0, rectW, height)
 
         if (clipFlag[px] === 1) {
@@ -299,7 +298,7 @@ export function drawDensityArrays(
         prevLeftPx = leftPx
       }
 
-      ctx.fillStyle = score >= domainMin ? getColor(score) : '#eee'
+      ctx.fillStyle = score >= domainMin ? `${colorScale(score)}` : '#eee'
       ctx.fillRect(leftPx, 0, w, height)
 
       if (score > niceMax) {
