@@ -306,8 +306,6 @@ export function drawFeatsCore({
   view: any
   calculateYOffsets: (
     computedChains: ComputedChain[],
-    params: DrawFeatsParams,
-    featureHeight: number,
   ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
 }): DrawFeatsResult {
   const {
@@ -339,11 +337,7 @@ export function drawFeatsCore({
   sortComputedChains(computedChains)
 
   // Calculate Y-offsets using the provided strategy
-  const { chainYOffsets, layoutHeight } = calculateYOffsets(
-    computedChains,
-    params,
-    featureHeight,
-  )
+  const { chainYOffsets, layoutHeight } = calculateYOffsets(computedChains)
 
   // Initialize array for Flatbush mouseover data
   const featuresForFlatbush: FlatbushEntry[] = []
@@ -459,8 +453,6 @@ export function drawFeatsCommon({
   canvasWidth: number
   calculateYOffsets: (
     computedChains: ComputedChain[],
-    self: LinearReadCloudDisplayModel,
-    featureHeight: number,
   ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
 }) {
   const { chainData } = self
@@ -495,13 +487,7 @@ export function drawFeatsCommon({
       bpPerPx: view.bpPerPx,
     },
     view,
-    calculateYOffsets: (
-      computedChains: ComputedChain[],
-      _params: DrawFeatsParams,
-      featureHeight: number,
-    ) => {
-      return calculateYOffsets(computedChains, self, featureHeight)
-    },
+    calculateYOffsets,
   })
 
   // Build and set Flatbush index
