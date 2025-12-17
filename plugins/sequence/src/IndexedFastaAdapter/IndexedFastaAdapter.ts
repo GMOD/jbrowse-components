@@ -25,20 +25,17 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     cache: new QuickLRU({ maxSize: 200 }),
     fill: async (args: T) => {
       const { refName, start, end, fasta } = args
-      // TODO:ABORT
       return fasta.getSequence(refName, start, end)
     },
   })
 
   public async getRefNames(_opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    // TODO:ABORT
     return fasta.getSequenceNames()
   }
 
   public async getRegions(_opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    // TODO:ABORT
     const seqSizes = await fasta.getSequenceSizes()
     return Object.keys(seqSizes).map(refName => ({
       refName,
@@ -86,38 +83,30 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
         stopToken,
         async () => {
           const { fasta } = await this.setup()
-          // TODO:ABORT
           const size = await fasta.getSequenceSize(refName)
           const regionEnd = Math.min(size || 0, end)
-          const chunks = []
           const chunkSize = 128000
 
           const s = start - (start % chunkSize)
           const e = end + (chunkSize - (end % chunkSize))
+          const chunkPromises = []
           for (let chunkStart = s; chunkStart < e; chunkStart += chunkSize) {
             const r = {
               refName,
               start: chunkStart,
               end: chunkStart + chunkSize,
             }
-
-            checkStopToken(stopToken)
-
-            const res = await this.seqCache.get(JSON.stringify(r), {
-              ...r,
-              fasta,
-            })
-            if (!res) {
-              break
-            }
-            chunks.push(res)
+            chunkPromises.push(
+              this.seqCache.get(`${refName}-${chunkStart}-${r.end}`, {
+                ...r,
+                fasta,
+              }),
+            )
           }
-          const seq = chunks
-            .filter(f => !!f)
-            .join('')
-            .slice(start - s)
-            .slice(0, end - start)
-          console.log('t1')
+          checkStopToken(stopToken)
+          const chunks = await Promise.all(chunkPromises)
+          const len = end - start
+          const seq = chunks.join('').slice(start - s, start - s + len)
           if (seq) {
             observer.next(
               new SimpleFeature({
@@ -136,10 +125,4 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
       observer.complete()
     })
   }
-
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the foreseeable future and can be purged
-   * from caches, etc
-   */
 }
