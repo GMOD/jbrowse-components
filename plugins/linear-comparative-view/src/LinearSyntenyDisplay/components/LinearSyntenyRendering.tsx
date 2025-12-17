@@ -11,8 +11,8 @@ import {
   getId,
   drawRef,
   drawCigarClickMap,
-  drawMouseoverClickMap,
 } from '../drawSynteny'
+import MouseoverCanvas from './MouseoverCanvas'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
 
@@ -89,16 +89,6 @@ const LinearSyntenyRendering = observer(function ({
   const [currY, setCurrY] = useState<number>()
   const mainSyntenyCanvasRefp = useRef<HTMLCanvasElement>(null)
 
-  // these useCallbacks avoid new refs from being created on any mouseover,
-  // etc.
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const mouseoverDetectionCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setMouseoverCanvasRef(ref)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
-  )
 
   const workerRef = useRef<Worker | null>(null)
   const renderingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -318,16 +308,6 @@ const LinearSyntenyRendering = observer(function ({
     height,
   ])
 
-  // Draw mouseover/click highlighting - runs on main thread regardless of worker setting
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  useEffect(() => {
-    if (!model.mouseoverCanvas) {
-      return
-    }
-    drawMouseoverClickMap(model)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model.mouseoverId, model.clickId, model.featPositions, offsetsKey])
-
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const clickMapCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
@@ -368,8 +348,8 @@ const LinearSyntenyRendering = observer(function ({
 
   return (
     <div className={classes.rel} style={{ width, height }}>
-      <canvas
-        ref={mouseoverDetectionCanvasRef}
+      <MouseoverCanvas
+        model={model}
         width={width}
         height={height}
         className={classes.mouseoverCanvas}
