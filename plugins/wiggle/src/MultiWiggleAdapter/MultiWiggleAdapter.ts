@@ -4,6 +4,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
 
+import type { WiggleFeatureArrays } from '../drawXY'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type {
@@ -14,6 +15,8 @@ import type {
 interface WiggleOptions extends BaseOptions {
   resolution?: number
 }
+
+export type MultiWiggleFeatureArrays = Record<string, WiggleFeatureArrays>
 
 function getFilename(uri: string) {
   const filename = uri.slice(uri.lastIndexOf('/') + 1)
@@ -64,7 +67,16 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     'hasGlobalStats',
   ]
 
+  private adaptersP?: Promise<AdapterEntry[]>
+
   public async getAdapters(): Promise<AdapterEntry[]> {
+    if (!this.adaptersP) {
+      this.adaptersP = this.getAdaptersImpl()
+    }
+    return this.adaptersP
+  }
+
+  private async getAdaptersImpl(): Promise<AdapterEntry[]> {
     const getSubAdapter = this.getSubAdapter
     if (!getSubAdapter) {
       throw new Error('no getSubAdapter available')
@@ -86,7 +98,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     // BigWigAdapter, even in the BigWigAdapter configSchema.ts, use a 'source'
     // field though, while the word 'name' still allowed in the config too. To
     // solve, we made name===source
-    const ret = await Promise.all(
+    return Promise.all(
       subConfs.map(async (conf: any) => {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
@@ -102,7 +114,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         }
       }),
     )
-    return ret
   }
 
   // note: can't really have dis-agreeing refNames
@@ -132,22 +143,126 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const adapters = await this.getAdapters()
       merge(
-        ...adapters.map(adp =>
-          adp.dataAdapter.getFeatures(region, opts).pipe(
-            map(p =>
-              // add source field if it does not exist
-              p.get('source')
-                ? p
-                : new SimpleFeature({
-                    ...p.toJSON(),
-                    uniqueId: `${adp.source}-${p.id()}`,
-                    source: adp.source,
-                  }),
-            ),
-          ),
-        ),
+        ...adapters.map(adp => {
+          const { source, dataAdapter } = adp
+          return dataAdapter.getFeatures(region, opts).pipe(
+            map(f => {
+              // BigWigAdapter sets source, so avoid expensive wrapping when possible
+              if (f.get('source')) {
+                return f
+              }
+              // Fallback for adapters that don't set source
+              const data = f.toJSON()
+              data.uniqueId = `${source}-${f.id()}`
+              data.source = source
+              return new SimpleFeature(data)
+            }),
+          )
+        }),
       ).subscribe(observer)
     }, opts.stopToken)
+  }
+
+  /**
+   * Returns raw feature arrays for each source.
+   * This is more efficient than getFeatures() when you don't need Feature objects.
+   */
+  public async getFeaturesAsArrays(
+    region: Region,
+    opts: WiggleOptions = {},
+  ): Promise<MultiWiggleFeatureArrays> {
+    const adapters = await this.getAdapters()
+    const results = await Promise.all(
+      adapters.map(async adp => {
+        const { source, dataAdapter } = adp
+        // Check if adapter supports getFeaturesAsArrays
+        if ('getFeaturesAsArrays' in dataAdapter) {
+          const arrays = await (dataAdapter as any).getFeaturesAsArrays(
+            region,
+            opts,
+          )
+          return { source, arrays }
+        }
+        return { source, arrays: null }
+      }),
+    )
+
+    const arraysBySource: MultiWiggleFeatureArrays = {}
+    for (const { source, arrays } of results) {
+      if (arrays) {
+        arraysBySource[source] = arrays
+      }
+    }
+    return arraysBySource
+  }
+
+  /**
+   * Optimized stats calculation using arrays directly instead of Feature objects.
+   */
+  public async getRegionQuantitativeStats(
+    region: Region,
+    opts?: WiggleOptions,
+  ) {
+    const { start, end } = region
+    const arraysBySource = await this.getFeaturesAsArrays(region, {
+      ...opts,
+      // use low resolution for stats estimation
+      bpPerPx: (end - start) / 1000,
+    })
+
+    let scoreMin = Number.MAX_VALUE
+    let scoreMax = Number.MIN_VALUE
+    let scoreSum = 0
+    let scoreSumSquares = 0
+    let featureCount = 0
+
+    for (const arrays of Object.values(arraysBySource)) {
+      const { scores, minScores, maxScores } = arrays
+      const len = scores.length
+
+      for (let i = 0; i < len; i++) {
+        const score = scores[i]!
+        const min = minScores?.[i] ?? score
+        const max = maxScores?.[i] ?? score
+
+        scoreMin = Math.min(scoreMin, min)
+        scoreMax = Math.max(scoreMax, max)
+        scoreSum += score
+        scoreSumSquares += score * score
+        featureCount++
+      }
+    }
+
+    if (featureCount === 0) {
+      return {
+        scoreMin: 0,
+        scoreMax: 0,
+        scoreSum: 0,
+        scoreSumSquares: 0,
+        scoreMean: 0,
+        scoreStdDev: 0,
+        featureCount: 0,
+        basesCovered: end - start,
+        featureDensity: 0,
+      }
+    }
+
+    const scoreMean = scoreSum / featureCount
+    const scoreStdDev = Math.sqrt(
+      scoreSumSquares / featureCount - scoreMean * scoreMean,
+    )
+
+    return {
+      scoreMin,
+      scoreMax,
+      scoreSum,
+      scoreSumSquares,
+      scoreMean,
+      scoreStdDev,
+      featureCount,
+      basesCovered: end - start,
+      featureDensity: featureCount / (end - start),
+    }
   }
 
   // always render bigwig instead of calculating a feature density for it

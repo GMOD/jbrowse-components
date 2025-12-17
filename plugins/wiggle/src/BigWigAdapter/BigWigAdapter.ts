@@ -5,6 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
 
+import type { WiggleFeatureArrays } from '../drawXY'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { UnrectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
@@ -75,9 +76,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       stopToken,
       statusCallback = () => {},
     } = opts
+    const source = this.getConf('source')
+    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+
     return ObservableCreate<Feature>(async observer => {
-      const source = this.getConf('source')
-      const resolutionMultiplier = this.getConf('resolutionMultiplier')
       const { bigwig } = await this.setup(opts)
 
       const arrays = await updateStatus(
@@ -90,10 +92,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
           }),
       )
 
-      const { starts, ends, scores } = arrays
-      const minScores = 'minScores' in arrays ? arrays.minScores : undefined
-      const maxScores = 'maxScores' in arrays ? arrays.maxScores : undefined
-      const isSummary = minScores !== undefined
+      const { starts, ends, scores, isSummary } = arrays
+      const minScores = isSummary ? arrays.minScores : undefined
+      const maxScores = isSummary ? arrays.maxScores : undefined
 
       for (const [i, start_] of starts.entries()) {
         const featureStart = start_
@@ -132,16 +133,110 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
             refName,
             source,
             uniqueId,
-            ...(isSummary && {
-              summary: true,
-              minScore: minScores[i],
-              maxScore: maxScores?.[i],
-            }),
+            summary: isSummary,
+            minScore: isSummary ? arrays.minScores[i] : undefined,
+            maxScore: isSummary ? arrays.maxScores[i] : undefined,
           }),
         })
       }
       observer.complete()
     }, stopToken)
+  }
+
+  /**
+   * Returns raw feature arrays directly from the BigWig file.
+   * This is more efficient than getFeatures() when you don't need Feature objects.
+   */
+  public async getFeaturesAsArrays(
+    region: Region,
+    opts: WiggleOptions = {},
+  ): Promise<WiggleFeatureArrays> {
+    const { refName, start, end } = region
+    const { bpPerPx = 0, resolution = 1, statusCallback = () => {} } = opts
+    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+
+    const { bigwig } = await this.setup(opts)
+
+    const arrays = await updateStatus(
+      'Downloading bigwig data',
+      statusCallback,
+      () =>
+        bigwig.getFeaturesAsArrays(refName, start, end, {
+          ...opts,
+          basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+        }),
+    )
+
+    return {
+      starts: arrays.starts,
+      ends: arrays.ends,
+      scores: arrays.scores,
+      minScores: arrays.isSummary ? arrays.minScores : undefined,
+      maxScores: arrays.isSummary ? arrays.maxScores : undefined,
+    }
+  }
+
+  /**
+   * Optimized stats calculation using arrays directly instead of Feature objects.
+   */
+  public async getRegionQuantitativeStats(
+    region: Region,
+    opts?: WiggleOptions,
+  ) {
+    const { start, end } = region
+    const arrays = await this.getFeaturesAsArrays(region, {
+      ...opts,
+      // use low resolution for stats estimation
+      bpPerPx: (end - start) / 1000,
+    })
+
+    const { scores, minScores, maxScores } = arrays
+    const len = scores.length
+
+    if (len === 0) {
+      return {
+        scoreMin: 0,
+        scoreMax: 0,
+        scoreSum: 0,
+        scoreSumSquares: 0,
+        scoreMean: 0,
+        scoreStdDev: 0,
+        featureCount: 0,
+        basesCovered: end - start,
+        featureDensity: 0,
+      }
+    }
+
+    let scoreMin = Number.MAX_VALUE
+    let scoreMax = Number.MIN_VALUE
+    let scoreSum = 0
+    let scoreSumSquares = 0
+
+    for (let i = 0; i < len; i++) {
+      const score = scores[i]!
+      const min = minScores?.[i] ?? score
+      const max = maxScores?.[i] ?? score
+
+      scoreMin = Math.min(scoreMin, min)
+      scoreMax = Math.max(scoreMax, max)
+      scoreSum += score
+      scoreSumSquares += score * score
+    }
+
+    const scoreMean = scoreSum / len
+    const scoreStdDev = Math.sqrt(scoreSumSquares / len - scoreMean * scoreMean)
+
+    return {
+      scoreMin,
+      scoreMax,
+      scoreSum,
+      scoreSumSquares,
+      scoreMean,
+      scoreStdDev,
+      featureCount: len,
+      basesCovered: end - start,
+      featureDensity: len / (end - start),
+    }
   }
 
   // always render bigwig instead of calculating a feature density for it
@@ -151,3 +246,5 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     }
   }
 }
+
+export { type WiggleFeatureArrays } from '../drawXY'

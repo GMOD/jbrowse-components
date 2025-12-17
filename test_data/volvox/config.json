@@ -757,6 +757,99 @@
     },
     {
       "type": "MultiQuantitativeTrack",
+      "trackId": "volvox_microarray_multi_multirowxy",
+      "name": "MultiWig (multirowxy)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "name": "k1",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v1.cram.bw"
+            }
+          },
+          {
+            "name": "k2",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v2.cram.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "multirowxy"
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "volvox_microarray_multi_multirowdensity",
+      "name": "MultiWig (multirowdensity)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "name": "k1",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v1.cram.bw"
+            }
+          },
+          {
+            "name": "k2",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v2.cram.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "multirowdensity"
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "volvox_microarray_multi_multirowline",
+      "name": "MultiWig (multirowline)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "name": "k1",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v1.cram.bw"
+            }
+          },
+          {
+            "name": "k2",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v2.cram.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "multirowline"
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
       "trackId": "mytrack",
       "name": "MultiWig (w/ colors and default line rendering)",
       "assemblyNames": ["volvox"],

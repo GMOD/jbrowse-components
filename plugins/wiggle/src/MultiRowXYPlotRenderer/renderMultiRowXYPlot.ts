@@ -8,6 +8,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
+import { serializeWiggleFeature } from '../util'
 
 import type { MultiRenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -38,12 +39,12 @@ export async function renderMultiRowXYPlot(
         let feats: Feature[] = []
         ctx.save()
         forEachWithStopTokenCheck(sources, stopToken, source => {
-          const sourceFeatures = groups[source.name] || []
           const { reducedFeatures } = drawXY(ctx, {
             ...renderProps,
-            features: sourceFeatures,
+            features: groups[source.name] || [],
             height: rowHeight,
-            colorCallback: () => source.color || 'blue',
+            staticColor: source.color || 'blue',
+            colorCallback: () => '', // unused when staticColor is set
           })
           ctx.strokeStyle = 'rgba(200,200,200,0.8)'
           ctx.beginPath()
@@ -60,7 +61,7 @@ export async function renderMultiRowXYPlot(
 
   const serialized = {
     ...rest,
-    features: reducedFeatures.map(f => f.toJSON()),
+    features: reducedFeatures.map(serializeWiggleFeature),
     height,
     width,
   }
