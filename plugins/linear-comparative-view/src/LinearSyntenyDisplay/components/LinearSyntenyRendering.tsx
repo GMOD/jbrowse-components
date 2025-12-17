@@ -11,6 +11,7 @@ import {
   getId,
   drawRef,
   drawCigarClickMap,
+  drawMouseoverClickMap,
 } from '../drawSynteny'
 import SyntenyContextMenu from './SyntenyContextMenu'
 import { getTooltip, onSynClick, onSynContextClick } from './util'
@@ -316,6 +317,16 @@ const LinearSyntenyRendering = observer(function ({
     width,
     height,
   ])
+
+  // Draw mouseover/click highlighting - runs on main thread regardless of worker setting
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  useEffect(() => {
+    if (!model.mouseoverCanvas) {
+      return
+    }
+    drawMouseoverClickMap(model)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model.mouseoverId, model.clickId, model.featPositions, offsetsKey])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const clickMapCanvasRef = useCallback(
