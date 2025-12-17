@@ -362,11 +362,9 @@ export function drawRef(
     mainCanvas.stroke()
   }
 
-  // Cache bpPerPx values and reciprocals for division in CIGAR loop
-  const bpPerPx0 = bpPerPxs[level]!
-  const bpPerPx1 = bpPerPxs[level + 1]!
-  const bpPerPxInv0 = 1 / bpPerPx0
-  const bpPerPxInv1 = 1 / bpPerPx1
+  // Cache reciprocals for division in CIGAR loop
+  const bpPerPxInv0 = 1 / bpPerPxs[level]!
+  const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
   // Cache colorBy checks outside loop for performance
   const useStrandColor = colorBy === 'strand'
@@ -497,8 +495,6 @@ export function drawRef(
                       px2,
                       y2,
                       mid,
-                      bpPerPx0,
-                      bpPerPx1,
                       drawCurves,
                     )
                   }
@@ -516,8 +512,6 @@ export function drawRef(
                     px2,
                     y2,
                     mid,
-                    bpPerPx0,
-                    bpPerPx1,
                     drawCurves,
                   )
                 }

@@ -8,7 +8,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-interface Pos {
+export interface Pos {
   offsetPx: number
 }
 

@@ -7,27 +7,13 @@ import { autorun, reaction } from 'mobx'
 import { drawMouseoverClickMap, drawRef, drawCigarClickMap } from './drawSynteny'
 import { serializeFeatPos } from './model'
 
-import type { LinearSyntenyDisplayModel } from './model'
+import type { FeatPos, LinearSyntenyDisplayModel } from './model'
 import type {
   DrawResultMessage,
   DrawSyntenyMessage,
   UpdateFeaturesMessage,
 } from './syntenyRendererWorker'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
-import type { Feature } from '@jbrowse/core/util'
-
-interface Pos {
-  offsetPx: number
-}
-
-interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
-  f: Feature
-  cigar: string[]
-}
 
 type LSV = LinearSyntenyViewModel
 
