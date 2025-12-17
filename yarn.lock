@@ -1545,25 +1545,25 @@
   resolved "https://registry.yarnpkg.com/@gmod/abortable-promise-cache/-/abortable-promise-cache-3.0.4.tgz#5ecb44e40cf128e9f44f7c25e1406facdcaede9b"
   integrity sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==
 
-"@gmod/bam@^7.1.12":
-  version "7.1.12"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-7.1.12.tgz#a3dc32cb1315bb6dbccf0a9b4c569e6faeafe707"
-  integrity sha512-Vw0hzKXs3pLiY0rHleVX6Snlly0sVAOHqJ7x3762dSzJ20oN5tNgMeXF+P8ORoTTjgeUVKz8WVi2JI9oFMh0Rw==
+"@gmod/bam@^7.1.15":
+  version "7.1.15"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-7.1.15.tgz#e6ed88cfe78cbfecef451bfbfef9fd07f8c4c3b0"
+  integrity sha512-Z8kA0zpjJtKiesQ/pD/eVmDhspQG0LcwkrstIw5/rYyVJ5/iBdeOFN8mKR3giuBO5zuJ+OsUFf3Lifjdqofxcw==
   dependencies:
-    "@gmod/bgzf-filehandle" "^6.0.6"
+    "@gmod/bgzf-filehandle" "^6.0.9"
+    "@jbrowse/quick-lru" "^7.3.5"
     crc "^4.3.2"
     generic-filehandle2 "^2.0.16"
-    quick-lru "^4.0.0"
 
-"@gmod/bbi@^8.0.3":
-  version "8.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-8.0.3.tgz#1d10bd0c7c77fb09d8fdd468075f0e344e208854"
-  integrity sha512-EHPCII3TdPnNtgpo8B0x7RTPBtQdVIwpA51cCDNaCRi7vPLjSvSaDi049OHtOzUVCzUe5OL90uyDYEVCcbKm0w==
+"@gmod/bbi@^8.0.4":
+  version "8.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-8.0.4.tgz#8f35bce087aa75553ddfeb901805359b796ca2e6"
+  integrity sha512-HuOxSwru+lYXYZHInJ8DNaiqV8hfASicTaELQdlxjE5Ns+SiNuB8pSXimnSpiiH00JDpfnupg8Srkh7XEXXaCA==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
+    "@jbrowse/quick-lru" "^7.0.0"
     generic-filehandle2 "^2.0.16"
     pako-esm2 "^2.0.2"
-    quick-lru "^4.0.0"
     rxjs "^7.8.0"
 
 "@gmod/bed@^2.1.2":
@@ -1571,7 +1571,7 @@
   resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.1.7.tgz#e533ae0ac72e6fa957ea3a5a946654735f875b7c"
   integrity sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==
 
-"@gmod/bgzf-filehandle@^6.0.3", "@gmod/bgzf-filehandle@^6.0.5", "@gmod/bgzf-filehandle@^6.0.6":
+"@gmod/bgzf-filehandle@^6.0.3":
   version "6.0.6"
   resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-6.0.6.tgz#60b775fea0161ab92cd191cb460b71799666103b"
   integrity sha512-W+Lcrem13zi25ZagwoNbAcSel6gDRRKy0/t6Z1/e0r5dRB5YyHIZxQBWnHKUVncuWrW4fDLv/396CRaK6IZwnw==
@@ -1579,15 +1579,23 @@
     generic-filehandle2 "^2.0.5"
     pako-esm2 "^2.0.2"
 
-"@gmod/cram@^7.0.2":
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-7.0.2.tgz#ae134076bd7c8e75b28aa34b71298195a8d10783"
-  integrity sha512-NB/D037DuVxU9FWaGW3Kcpbd1UL5u0UVUCJWWmczFjMbeu+Ry4HW6ldhbx1lhAo8WI3X7EjenVVag10DX3IFIQ==
+"@gmod/bgzf-filehandle@^6.0.9":
+  version "6.0.9"
+  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-6.0.9.tgz#e10990b0d5e77fd928157bae3798dcc49fba7399"
+  integrity sha512-Ia6SThW+4IdbGQiP/vER6xNpN7btKgegDildA7kgRLtTX3Ap4wkBuOCvRp2Zr7nQE8GISB9RnOCdGS8rVLoVBw==
   dependencies:
+    generic-filehandle2 "^2.0.16"
+    pako-esm2 "^2.0.2"
+
+"@gmod/cram@^7.0.3":
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-7.0.3.tgz#7659a354d24f4c3fd2e49d95f7108d6344e46294"
+  integrity sha512-gePcw+a28du9zPxrEDWPXxlGmVHQrxSqXZrzDI8D16sayUC04c17uB051KWd3S0MX9qQ0fHXonsSOJ86qZwnSQ==
+  dependencies:
+    "@jbrowse/quick-lru" "^7.0.0"
     crc "^4.3.2"
-    generic-filehandle2 "^2.0.15"
+    generic-filehandle2 "^2.0.16"
     md5 "^2.2.1"
-    quick-lru "^4.0.1"
 
 "@gmod/faidx@^2.0.0":
   version "2.0.0"
@@ -1599,12 +1607,12 @@
   resolved "https://registry.yarnpkg.com/@gmod/hclust/-/hclust-1.0.7.tgz#2513c40b863f47559232885b8635941273f646ea"
   integrity sha512-aG3ccCvxM00oaPi/guM6iAaQ1dBjb4OnqfEHXYN90grVi80x62nv9sqy5jKu7RlhNv4ohYbjgvtuwKkPuFlapA==
 
-"@gmod/http-range-fetcher@^5.0.0":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-5.0.1.tgz#9591e5fdc86159d6ea0abbbe6de4a26533d26bf9"
-  integrity sha512-O1Ly1s/sn0mb/OO4SvYkFnR9P+DfsX/qml1O7aqxSnxdrqNXaGRDSl4Ggw0ta30ctCTPvuXxsKA8Met5N4KRzg==
+"@gmod/http-range-fetcher@^5.0.5":
+  version "5.0.5"
+  resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-5.0.5.tgz#3b16d527889fabb676acd3b605c0efb650f74333"
+  integrity sha512-ZJoe2pCvuGhHJ61BF7qOhXGswbdqPel6x/YDlpjhEtHm/0M+7CYmuKcLShTnlfWyaV4WEOkP89AzenT17S3fuw==
   dependencies:
-    quick-lru "^4.0.0"
+    "@jbrowse/quick-lru" "^7.0.0"
 
 "@gmod/indexedfasta@^5.0.0":
   version "5.0.0"
@@ -1614,24 +1622,24 @@
     "@gmod/bgzf-filehandle" "^6.0.3"
     generic-filehandle2 "^2.0.1"
 
-"@gmod/nclist@^3.0.0":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-3.0.1.tgz#ab10eba0054212f56a1f9510a62a058158e706d4"
-  integrity sha512-/7oNR1a91n3iIB/xTyvILi7IiLCW+89DF2uh3dbE6SQ9s3lYu4JxhoeZFLhQ75G5oZi8jvu50kz9m9iSONWjdA==
+"@gmod/nclist@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-3.0.4.tgz#2304f2d8dde992a03ebdccd1c2ddf34eeaed8b40"
+  integrity sha512-nxFI1TdvLuoPWG0LHpsIplY6ng31hu941Y6M4QPPgbgO/2Z63GZKVT6Eo5g2d4xj1eSHxW8ZTrcKrrIgg3/rLQ==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
+    "@jbrowse/quick-lru" "^7.3.5"
     "@jridgewell/resolve-uri" "^3.1.2"
-    quick-lru "^4.0.0"
 
-"@gmod/tabix@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.2.0.tgz#a12853b09fa9eb3a95b2f54fdb47d964d3b81cc7"
-  integrity sha512-UObgfrNGZgi5lYfZPegkI58zr9jGIL6ypMmvonQzJ646Ko0eq137qAAHTafwSk2sIX6Kh5gfIbSvtRzRs5SQzQ==
+"@gmod/tabix@^3.2.1":
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.2.1.tgz#70cb327df7059163b90b484f3d04c3773e9eef6f"
+  integrity sha512-2CjZ7SN3UER/55SvBpQ4DRJgzYHXXXZV78Kyk6R/FH40miIwiLBhz6Um4ZC1aLuAS+EwELZHWUKpMJxQqNuEDg==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
-    "@gmod/bgzf-filehandle" "^6.0.3"
-    generic-filehandle2 "^2.0.1"
-    quick-lru "^4.0.0"
+    "@gmod/bgzf-filehandle" "^6.0.9"
+    "@jbrowse/quick-lru" "^7.3.5"
+    generic-filehandle2 "^2.0.16"
 
 "@gmod/trix@^3.0.2":
   version "3.0.4"
@@ -1884,6 +1892,11 @@
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/@jbrowse/mobx-state-tree/-/mobx-state-tree-5.5.0.tgz#8a892175ea45f4016f919c672100073a409396a8"
   integrity sha512-cZ+FfJMIcxT8MR5Mda4CISmXQjmbSxq78BmIzjG0xqeANeJULf4NgLAteUK6j3Deg6mRrYPJ9HauzMxO/lMsKg==
+
+"@jbrowse/quick-lru@^7.0.0", "@jbrowse/quick-lru@^7.3.5":
+  version "7.3.5"
+  resolved "https://registry.yarnpkg.com/@jbrowse/quick-lru/-/quick-lru-7.3.5.tgz#8625677d7e22050acfdefe5afa23b3eca701955b"
+  integrity sha512-DPEtODWKt+QGmCg+EO36sSmKOmdjJOwtxeV/4PBnf+7jqC/P7R4YIz+/yohtqh9UZ38dbLtXIlmigPlkZy8SAA==
 
 "@jest/console@30.2.0":
   version "30.2.0"
@@ -8239,7 +8252,7 @@ generator-function@^2.0.0:
   resolved "https://registry.yarnpkg.com/generator-function/-/generator-function-2.0.1.tgz#0e75dd410d1243687a0ba2e951b94eedb8f737a2"
   integrity sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==
 
-generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.15, generic-filehandle2@^2.0.16, generic-filehandle2@^2.0.5:
+generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.16, generic-filehandle2@^2.0.5:
   version "2.0.16"
   resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.16.tgz#17ac244e278b5ffcb98a165538045024eff52c90"
   integrity sha512-MwmxPCTvcgS72nL7JEYQpV7QE4vbbUaFX4TqO7zUq5RusOqwUGB8ag2Bnd9+Qm8jnX7kzwteLsSpJ4f1mr+0zw==
@@ -12544,7 +12557,7 @@ queue-microtask@^1.2.2:
   resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.2.3.tgz#4929228bbc724dfac43e0efb058caf7b6cfb6243"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
 
-quick-lru@^4.0.0, quick-lru@^4.0.1:
+quick-lru@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.1.tgz#5b8878f113a58217848c6482026c73e1ba57727f"
   integrity sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==
