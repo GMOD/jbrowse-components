@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, getSession, notEmpty } from '@jbrowse/core/util'
@@ -12,6 +12,7 @@ import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const YSCALEBAR_LABEL_OFFSET = 5
+const SVGNS = 'http://www.w3.org/2000/svg'
 
 export interface ArcDisplayModel {
   showArcsSetting: boolean
@@ -29,33 +30,29 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
     y: number
   } | null>(null)
 
+  const svgRef = useRef<SVGSVGElement>(null)
+  const arcMapRef = useRef<Map<string, ArcData>>(new Map())
+
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const effectiveHeight = height - YSCALEBAR_LABEL_OFFSET * 2
 
-  const { arcs, arcMap, drawnAtBpPerPx, drawnAtOffsetPx } = useMemo(() => {
+  const { arcs, drawnAtBpPerPx, drawnAtOffsetPx } = useMemo(() => {
     const currentOffsetPx = view.offsetPx
     const assembly = assemblyManager.get(view.assemblyNames[0]!)
-    const arcsArray = assembly
-      ? skipFeatures
-          .map(f =>
-            featureToArcData(
-              f,
-              view,
-              effectiveHeight,
-              currentOffsetPx,
-              assembly,
-            ),
-          )
-          .filter(notEmpty)
-      : []
-    // Build lookup map for event delegation
-    const map = new Map<string, ArcData>()
-    for (const arc of arcsArray) {
-      map.set(arc.id, arc)
-    }
     return {
-      arcs: arcsArray,
-      arcMap: map,
+      arcs: assembly
+        ? skipFeatures
+            .map(f =>
+              featureToArcData(
+                f,
+                view,
+                effectiveHeight,
+                currentOffsetPx,
+                assembly,
+              ),
+            )
+            .filter(notEmpty)
+        : [],
       drawnAtBpPerPx: view.bpPerPx,
       drawnAtOffsetPx: currentOffsetPx,
     }
@@ -63,27 +60,64 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skipFeatures, view.bpPerPx, effectiveHeight])
 
-  // Use refs to avoid recreating callbacks when arcMap changes
-  const arcMapRef = useRef(arcMap)
-  arcMapRef.current = arcMap
+  // Direct DOM manipulation - bypasses React VDOM for path elements
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) {
+      return
+    }
 
-  // Event delegation - single handler for all arcs
-  const handleMouseEnter = useCallback(
-    (event: React.MouseEvent<SVGPathElement>) => {
-      const id = event.currentTarget.dataset.id
+    // Clear existing paths
+    while (svg.firstChild) {
+      svg.removeChild(svg.firstChild)
+    }
+
+    // Build lookup map
+    const arcMap = new Map<string, ArcData>()
+
+    // Event handlers (shared across all paths)
+    const handleMouseEnter = (event: MouseEvent) => {
+      const target = event.currentTarget as SVGPathElement
+      const id = target.dataset.id
       if (id) {
-        const arc = arcMapRef.current.get(id)
+        const arc = arcMap.get(id)
         if (arc) {
           setHoverInfo({ arc, x: event.clientX, y: event.clientY })
         }
       }
-    },
-    [],
-  )
+    }
+    const handleMouseLeave = () => {
+      setHoverInfo(null)
+    }
 
-  const handleMouseLeave = useCallback(() => {
-    setHoverInfo(null)
-  }, [])
+    // Create paths directly in DOM
+    for (const arc of arcs) {
+      arcMap.set(arc.id, arc)
+      const path = document.createElementNS(SVGNS, 'path')
+      path.setAttribute('d', arc.path)
+      path.setAttribute('stroke', arc.stroke)
+      path.setAttribute('stroke-width', String(arc.strokeWidth))
+      path.setAttribute('fill', 'none')
+      path.setAttribute('pointer-events', 'stroke')
+      path.setAttribute('cursor', 'pointer')
+      path.dataset.id = arc.id
+      path.addEventListener('mouseenter', handleMouseEnter)
+      path.addEventListener('mouseleave', handleMouseLeave)
+      svg.appendChild(path)
+    }
+
+    arcMapRef.current = arcMap
+
+    // Cleanup
+    return () => {
+      while (svg.firstChild) {
+        const child = svg.firstChild as SVGPathElement
+        child.removeEventListener('mouseenter', handleMouseEnter)
+        child.removeEventListener('mouseleave', handleMouseLeave)
+        svg.removeChild(child)
+      }
+    }
+  }, [arcs])
 
   if (
     !showArcsSetting ||
@@ -98,6 +132,7 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
   return (
     <>
       <svg
+        ref={svgRef}
         style={{
           position: 'absolute',
           top: YSCALEBAR_LABEL_OFFSET,
@@ -106,22 +141,7 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
           height: effectiveHeight,
           width,
         }}
-      >
-        {arcs.map(arc => (
-          <path
-            key={arc.id}
-            data-id={arc.id}
-            d={arc.path}
-            stroke={arc.stroke}
-            strokeWidth={arc.strokeWidth}
-            fill="none"
-            pointerEvents="stroke"
-            cursor="pointer"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          />
-        ))}
-      </svg>
+      />
       {hoverInfo ? (
         <BaseTooltip clientPoint={{ x: hoverInfo.x + 5, y: hoverInfo.y }}>
           <ArcTooltipContents arc={hoverInfo.arc} />
