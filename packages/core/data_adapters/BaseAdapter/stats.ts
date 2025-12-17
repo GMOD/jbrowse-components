@@ -2,7 +2,7 @@ import { type Observable, firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { max, min, sum } from '../../util'
-import { blankStats, rectifyStats } from '../../util/stats'
+import { rectifyStats } from '../../util/stats'
 
 import type { BaseOptions } from './BaseOptions'
 import type { FeatureDensityStats } from './types'
@@ -84,4 +84,5 @@ export async function calculateFeatureDensityStats(
     interval *= 2
   }
 }
-export { blankStats }
+
+export { blankStats } from '../../util/stats'

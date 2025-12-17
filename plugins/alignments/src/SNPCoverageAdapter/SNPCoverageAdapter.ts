@@ -2,11 +2,11 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   aggregateQuantitativeStats,
   blankStats,
-  rectifyStats,
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { rectifyStats } from '@jbrowse/core/util/stats'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -16,7 +16,11 @@ import {
   generateCoverageBinsPrefixSum,
 } from './generateCoverageBinsPrefixSum'
 
-import type { ColorBy, FeatureWithMismatchIterator, FilterBy } from '../shared/types'
+import type {
+  ColorBy,
+  FeatureWithMismatchIterator,
+  FilterBy,
+} from '../shared/types'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -28,6 +32,7 @@ interface SNPCoverageOptions extends BaseOptions {
   filterBy?: FilterBy
   colorBy?: ColorBy
   staticBlocks?: Region[]
+  statsEstimationMode?: boolean
 }
 
 function makeFilterByKey(filterBy?: FilterBy) {
@@ -50,6 +55,28 @@ function makeCacheKey(region: Region, opts: SNPCoverageOptions) {
   return `${makeRegionFilterKey(region, opts)}|${colorByKey}`
 }
 
+// function estimateBinsByteSize(bins: CoverageBinsSoA) {
+//   const { starts, ends, scores, snpinfo, skipmap } = bins
+//   // TypedArrays: 4 bytes per element each
+//   const typedArrayBytes =
+//     starts.byteLength + ends.byteLength + scores.byteLength
+//   // Rough estimate for snpinfo objects (varies based on content)
+//   const snpinfoBytes = snpinfo.length * 100 // ~100 bytes per bin estimate
+//   // Rough estimate for skipmap
+//   const skipmapBytes = Object.keys(skipmap).length * 50
+//   return typedArrayBytes + snpinfoBytes + skipmapBytes
+// }
+
+// function formatBytes(bytes: number) {
+//   if (bytes < 1024) {
+//     return `${bytes}B`
+//   }
+//   if (bytes < 1024 * 1024) {
+//     return `${(bytes / 1024).toFixed(1)}KB`
+//   }
+//   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
+// }
+
 function computeStatsFromBins(
   bins: CoverageBinsSoA,
   regionStart: number,
@@ -62,8 +89,8 @@ function computeStatsFromBins(
   let scoreSumSquares = 0
   let featureCount = 0
 
-  for (let i = 0; i < starts.length; i++) {
-    const pos = starts[i]!
+  for (const [i, start] of starts.entries()) {
+    const pos = start
     if (pos >= regionStart && pos < regionEnd) {
       const score = scores[i]!
       scoreMin = Math.min(scoreMin, score)
@@ -89,13 +116,22 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   private subadapterRef?: BaseFeatureDataAdapter
 
-  // Full results cache (includes mismatch/modification data)
-  private cache = new QuickLRU<string, CoverageBinsSoA>({ maxSize: 50 })
-
-  // Depth-only cache for statsEstimationMode (keyed by region+filterBy only)
-  private depthCache = new QuickLRU<string, CoverageBinsSoA>({ maxSize: 50 })
+  // Cache for coverage results (keyed by region+filterBy+colorBy)
+  // Stats estimation uses empty colorBy key, full rendering includes colorBy
+  private cache = new QuickLRU<string, CoverageBinsSoA>({
+    maxSize: 50,
+    maxAge: 5 * 60 * 1000, // 5 minute TTL
+  })
 
   private lastBpPerPx?: number
+
+  // private estimateCacheBytes() {
+  //   let total = 0
+  //   for (const bins of this.cache.values()) {
+  //     total += estimateBinsByteSize(bins)
+  //   }
+  //   return total
+  // }
 
   /**
    * Override to propagate sequenceAdapterConfig to the subadapter
@@ -200,35 +236,35 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   ): Promise<CoverageBinsSoA> {
     const { bpPerPx, statsEstimationMode } = opts
 
-    // For statsEstimationMode, check caches before computing
+    // Clear cache when bpPerPx changes (zoom level changed)
+    if (this.lastBpPerPx !== undefined && this.lastBpPerPx !== bpPerPx) {
+      // console.log(
+      //   `[SNPCoverageAdapter] bpPerPx changed (${this.lastBpPerPx} -> ${bpPerPx}), clearing cache`,
+      // )
+      this.cache.clear()
+    }
+    this.lastBpPerPx = bpPerPx
+
+    // For statsEstimationMode, check for any cached result with same region+filterBy
     if (statsEstimationMode) {
-      const depthKey = makeRegionFilterKey(region, opts)
+      const regionFilterKey = makeRegionFilterKey(region, opts)
 
-      // First check depthCache (exact match for region+filterBy)
-      const cachedDepth = this.depthCache.get(depthKey)
-      if (cachedDepth) {
-        console.log(
-          `[SNPCoverageAdapter] depthCache HIT for statsEstimation ${region.refName}:${region.start}-${region.end}`,
-        )
-        return cachedDepth
-      }
-
-      // Check main cache for any entry matching this region+filterBy (any colorBy)
+      // Check cache for any entry matching this region+filterBy (any colorBy)
       for (const key of this.cache.keys()) {
-        if (key.startsWith(depthKey + '|')) {
+        if (key.startsWith(`${regionFilterKey}|`)) {
           const cached = this.cache.get(key)
           if (cached) {
-            console.log(
-              `[SNPCoverageAdapter] main cache HIT for statsEstimation ${region.refName}:${region.start}-${region.end} (reusing full result)`,
-            )
+            // console.log(
+            //   `[SNPCoverageAdapter] cache HIT for statsEstimation ${region.refName}:${region.start}-${region.end}`,
+            // )
             return cached
           }
         }
       }
 
-      console.log(
-        `[SNPCoverageAdapter] cache MISS for statsEstimation ${region.refName}:${region.start}-${region.end}`,
-      )
+      // console.log(
+      //   `[SNPCoverageAdapter] cache MISS for statsEstimation ${region.refName}:${region.start}-${region.end}`,
+      // )
       const { subadapter } = await this.configure()
       const features = await firstValueFrom(
         subadapter.getFeatures(region, opts).pipe(toArray()),
@@ -238,31 +274,26 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         region,
         opts,
       })
-      this.depthCache.set(depthKey, result)
+      // Cache with empty colorBy key for stats-only results
+      const statsKey = `${regionFilterKey}|`
+      this.cache.set(statsKey, result)
+      // console.log(
+      //   `[SNPCoverageAdapter] cached statsEstimation result`,
+      // )
       return result
     }
-
-    // Clear caches when bpPerPx changes (zoom level changed)
-    if (this.lastBpPerPx !== undefined && this.lastBpPerPx !== bpPerPx) {
-      console.log(
-        `[SNPCoverageAdapter] bpPerPx changed (${this.lastBpPerPx} -> ${bpPerPx}), clearing caches (had ${this.cache.size} + ${this.depthCache.size} entries)`,
-      )
-      this.cache.clear()
-      this.depthCache.clear()
-    }
-    this.lastBpPerPx = bpPerPx
 
     const cacheKey = makeCacheKey(region, opts)
     const cached = this.cache.get(cacheKey)
     if (cached) {
-      console.log(
-        `[SNPCoverageAdapter] cache HIT for ${region.refName}:${region.start}-${region.end} (size: ${this.cache.size})`,
-      )
+      // console.log(
+      //   `[SNPCoverageAdapter] cache HIT for ${region.refName}:${region.start}-${region.end}`,
+      // )
       return cached
     }
-    console.log(
-      `[SNPCoverageAdapter] cache MISS for ${region.refName}:${region.start}-${region.end} (size: ${this.cache.size})`,
-    )
+    // console.log(
+    //   `[SNPCoverageAdapter] cache MISS for ${region.refName}:${region.start}-${region.end}`,
+    // )
 
     const { subadapter } = await this.configure()
     const sequenceAdapter = await this.getSequenceAdapter()
@@ -281,6 +312,9 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     })
 
     this.cache.set(cacheKey, result)
+    // console.log(
+    //   `[SNPCoverageAdapter] cached full result: ${formatBytes(estimateBinsByteSize(result))} (total cache: ${formatBytes(this.estimateCacheBytes())})`,
+    // )
     return result
   }
 
@@ -314,10 +348,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         ),
       )
 
-      console.log(
-        `[SNPCoverageAdapter] fetched ${staticBlocks.length} static blocks for stats`,
-      )
-
       // For each dynamic region, find overlapping static blocks and compute stats
       const regionStats = regions.map(region => {
         const overlappingBlocks = staticBlockData.filter(
@@ -328,22 +358,22 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         )
 
         if (overlappingBlocks.length === 0) {
-          return {
+          return rectifyStats({
             scoreMin: 0,
             scoreMax: 0,
             scoreSum: 0,
             scoreSumSquares: 0,
             featureCount: 0,
             basesCovered: 0,
-          }
+          })
         }
 
         // Compute stats from overlapping blocks, subselecting to region bounds
         const blockStats = overlappingBlocks.map(({ bins }) =>
-          computeStatsFromBins(bins, region.start, region.end),
+          rectifyStats(computeStatsFromBins(bins, region.start, region.end)),
         )
 
-        return aggregateQuantitativeStats(blockStats.map(s => rectifyStats(s)))
+        return aggregateQuantitativeStats(blockStats)
       })
 
       return aggregateQuantitativeStats(regionStats)
@@ -363,24 +393,10 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   freeResources(region: Region) {
     const prefix = `${region.refName}:`
-    let cleared = 0
-    let depthCleared = 0
     for (const key of this.cache.keys()) {
       if (key.startsWith(prefix)) {
         this.cache.delete(key)
-        cleared++
       }
-    }
-    for (const key of this.depthCache.keys()) {
-      if (key.startsWith(prefix)) {
-        this.depthCache.delete(key)
-        depthCleared++
-      }
-    }
-    if (cleared > 0 || depthCleared > 0) {
-      console.log(
-        `[SNPCoverageAdapter] freeResources cleared ${cleared} + ${depthCleared} cache entries for ${region.refName} (remaining: ${this.cache.size} + ${this.depthCache.size})`,
-      )
     }
   }
 }

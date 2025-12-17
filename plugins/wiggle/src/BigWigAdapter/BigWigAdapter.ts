@@ -4,8 +4,8 @@ import {
   aggregateQuantitativeStats,
   blankStats,
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { updateStatus } from '@jbrowse/core/util'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
@@ -26,9 +26,31 @@ interface CachedStats {
   region: Region
 }
 
+// function estimateArraysByteSize(arrays: WiggleFeatureArrays) {
+//   const { starts, ends, scores, minScores, maxScores } = arrays
+//   // Int32Array: 4 bytes per element, Float32Array: 4 bytes per element
+//   let bytes = starts.byteLength + ends.byteLength + scores.byteLength
+//   if (minScores) {
+//     bytes += minScores.byteLength
+//   }
+//   if (maxScores) {
+//     bytes += maxScores.byteLength
+//   }
+//   return bytes
+// }
+
+// function formatBytes(bytes: number) {
+//   if (bytes < 1024) {
+//     return `${bytes}B`
+//   }
+//   if (bytes < 1024 * 1024) {
+//     return `${(bytes / 1024).toFixed(1)}KB`
+//   }
+//   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
+// }
+
 function computeStatsFromArrays(
   arrays: WiggleFeatureArrays,
-  originalRegion: Region,
   targetStart: number,
   targetEnd: number,
 ) {
@@ -114,13 +136,24 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   }>
 
   // Cache for stats arrays (keyed by region string)
-  private statsCache = new QuickLRU<string, CachedStats>({ maxSize: 50 })
+  private statsCache = new QuickLRU<string, CachedStats>({
+    maxSize: 50,
+    maxAge: 5 * 60 * 1000, // 5 minute TTL
+  })
 
   public static capabilities = [
     'hasResolution',
     'hasLocalStats',
     'hasGlobalStats',
   ]
+
+  // private estimateCacheBytes() {
+  //   let total = 0
+  //   for (const cached of this.statsCache.values()) {
+  //     total += estimateArraysByteSize(cached.arrays)
+  //   }
+  //   return total
+  // }
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
@@ -365,6 +398,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
           let cached = this.statsCache.get(cacheKey)
 
           if (!cached) {
+            // console.log(
+            //   `[BigWigAdapter] statsCache MISS for ${block.refName}:${block.start}-${block.end} (total cache: ${formatBytes(this.estimateCacheBytes())})`,
+            // )
             const { start, end } = block
             const arrays = await this.getFeaturesAsArrays(block, {
               ...opts,
@@ -373,13 +409,13 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
             })
             cached = { arrays, region: block }
             this.statsCache.set(cacheKey, cached)
-            console.log(
-              `[BigWigAdapter] statsCache MISS for ${block.refName}:${block.start}-${block.end}`,
-            )
+            // console.log(
+            //   `[BigWigAdapter] cached stats result: ${formatBytes(estimateArraysByteSize(arrays))} (total cache: ${formatBytes(this.estimateCacheBytes())})`,
+            // )
           } else {
-            console.log(
-              `[BigWigAdapter] statsCache HIT for ${block.refName}:${block.start}-${block.end}`,
-            )
+            // console.log(
+            //   `[BigWigAdapter] statsCache HIT for ${block.refName}:${block.start}-${block.end} (total cache: ${formatBytes(this.estimateCacheBytes())})`,
+            // )
           }
 
           return cached
@@ -410,8 +446,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
         }
 
         // Compute stats from overlapping blocks, subselecting to region bounds
-        const blockStats = overlappingBlocks.map(({ arrays, region: block }) =>
-          computeStatsFromArrays(arrays, block, region.start, region.end),
+        const blockStats = overlappingBlocks.map(({ arrays }) =>
+          computeStatsFromArrays(arrays, region.start, region.end),
         )
 
         return aggregateQuantitativeStats(blockStats)

@@ -137,7 +137,11 @@ export function makeImage(
   const logRatio = logSpan !== 0 ? height / logSpan : 0
 
   // For indicator scale, always linear with half height
-  const indicatorRatio = domainSpan !== 0 ? height / 2 / domainSpan : 0
+  // For log scale, use a smaller reference (10% of domainMax) to keep indicators visible
+  // since log scale compresses high values visually
+  const indicatorScaleMax = isLog ? domainMax / 10 : domainSpan
+  const indicatorRatio =
+    indicatorScaleMax !== 0 ? height / 2 / indicatorScaleMax : 0
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')

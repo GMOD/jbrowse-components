@@ -1,10 +1,43 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
+import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import type { Region } from '@jbrowse/core/util'
 
 export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'WiggleGetMultiRegionQuantitativeStats'
+
+  async serializeArguments(
+    args: RenderArgs & {
+      staticBlocks?: Region[]
+      stopToken?: string
+      statusCallback?: (arg: string) => void
+    },
+    rpcDriverClassName: string,
+  ) {
+    const pm = this.pluginManager
+    const assemblyManager = pm.rootModel?.session?.assemblyManager
+    if (!assemblyManager) {
+      throw new Error('no assembly manager')
+    }
+
+    // Also rename staticBlocks if present
+    let renamedStaticBlocks = args.staticBlocks
+    if (args.staticBlocks?.length) {
+      const renamed = await renameRegionsIfNeeded(assemblyManager, {
+        ...args,
+        regions: args.staticBlocks,
+      })
+      renamedStaticBlocks = renamed.regions
+    }
+
+    const baseResult = await super.serializeArguments(args, rpcDriverClassName)
+    return {
+      ...baseResult,
+      staticBlocks: renamedStaticBlocks,
+    }
+  }
 
   async execute(
     args: {

@@ -294,16 +294,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     const allStats = await Promise.all(
       adapters.map(async adp => {
         const { dataAdapter } = adp
-        if (dataAdapter.getMultiRegionQuantitativeStats) {
-          return dataAdapter.getMultiRegionQuantitativeStats(regions, opts)
-        }
-        // Fallback to base implementation
-        const stats = await Promise.all(
-          regions.map(region =>
-            dataAdapter.getRegionQuantitativeStats?.(region, opts),
-          ),
-        )
-        return aggregateQuantitativeStats(stats.filter(Boolean))
+        return dataAdapter.getMultiRegionQuantitativeStats(regions, opts)
       }),
     )
 
