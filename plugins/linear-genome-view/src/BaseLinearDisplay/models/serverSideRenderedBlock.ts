@@ -7,7 +7,7 @@ import {
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { stopStopToken, StopToken } from '@jbrowse/core/util/stopToken'
 import {
   getRpcSessionId,
   getTrackAssemblyNames,
@@ -57,7 +57,7 @@ const blockState = types
     /**
      * #volatile
      */
-    stopToken: undefined as string | undefined,
+    stopToken: undefined as StopToken | undefined,
     /**
      * #volatile
      */
@@ -143,7 +143,7 @@ const blockState = types
       /**
        * #action
        */
-      setLoading(newStopToken: string) {
+      setLoading(newStopToken: StopToken) {
         stopCurrentToken()
         self.isRenderingPending = true
         self.error = undefined
@@ -344,7 +344,7 @@ export function renderBlockData(
 
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
-  stopToken: string | undefined,
+  stopToken: StopToken | undefined,
   self: BlockModel,
 ) {
   if (!props || !isAlive(self)) {

@@ -8,7 +8,7 @@ import {
   max,
   measureText,
 } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { stopStopToken, StopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
 
@@ -78,7 +78,7 @@ export function stateModelFactory(
       /**
        * #volatile
        */
-      sourcesLoadingStopToken: undefined as string | undefined,
+      sourcesLoadingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
@@ -98,7 +98,7 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setSourcesLoading(str: string) {
+      setSourcesLoading(str: StopToken) {
         if (self.sourcesLoadingStopToken) {
           stopStopToken(self.sourcesLoadingStopToken)
         }

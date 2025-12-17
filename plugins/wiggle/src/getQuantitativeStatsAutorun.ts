@@ -1,5 +1,5 @@
 import { getContainingView, isAbortException } from '@jbrowse/core/util'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
+import { createStopToken, StopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -17,7 +17,7 @@ export function getQuantitativeStatsAutorun(self: {
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
   adapterProps: () => Record<string, unknown>
-  setStatsLoading: (token: string) => void
+  setStatsLoading: (token: StopToken) => void
   setError: (error: unknown) => void
   setStatusMessage: (str: string) => void
   updateQuantitativeStats: (stats: QuantitativeStats, region: string) => void

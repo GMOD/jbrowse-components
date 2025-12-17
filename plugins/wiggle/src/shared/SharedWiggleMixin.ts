@@ -6,7 +6,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { getEnv, getSession, isSelectionContainer } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { stopStopToken, StopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 
@@ -110,7 +110,7 @@ export default function SharedWiggleMixin(
       /**
        * #volatile
        */
-      statsFetchInProgress: undefined as undefined | string,
+      statsFetchInProgress: undefined as undefined | StopToken,
     }))
     .actions(self => ({
       /**
@@ -163,7 +163,7 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setStatsLoading(arg?: string) {
+      setStatsLoading(arg?: StopToken) {
         if (self.statsFetchInProgress) {
           stopStopToken(self.statsFetchInProgress)
         }

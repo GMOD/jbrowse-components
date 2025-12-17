@@ -6,7 +6,11 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  createStopToken,
+  stopStopToken,
+  StopToken,
+} from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button, DialogActions, DialogContent } from '@mui/material'
@@ -27,7 +31,7 @@ const ClusterDialogAuto = observer(function ({
   const [progress, setProgress] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
-  const [stopToken, setStopToken] = useState('')
+  const [stopToken, setStopToken] = useState<StopToken>()
 
   return (
     <>

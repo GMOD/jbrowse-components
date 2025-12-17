@@ -1,6 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { stopStopToken, StopToken } from '@jbrowse/core/util/stopToken'
 import { getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
@@ -86,7 +86,7 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      renderingStopToken: undefined as string | undefined,
+      renderingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
@@ -167,7 +167,7 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setRenderingStopToken(token: string | undefined) {
+      setRenderingStopToken(token: StopToken | undefined) {
         self.renderingStopToken = token
       },
       /**

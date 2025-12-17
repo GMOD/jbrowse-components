@@ -6,6 +6,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LGV = LinearGenomeViewModel
 
@@ -19,7 +20,7 @@ export async function getQuantitativeStats(
   },
   opts: {
     headers?: Record<string, string>
-    stopToken?: string
+    stopToken?: StopToken
     filters: string[]
     currStatsBpPerPx: number
   },

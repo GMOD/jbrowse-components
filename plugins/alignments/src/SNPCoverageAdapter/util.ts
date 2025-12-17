@@ -1,3 +1,4 @@
+import { StopToken } from '@jbrowse/core/util/stopToken'
 import { INTERBASE_MASK } from '../shared/forEachMismatchTypes'
 
 import type {
@@ -10,7 +11,7 @@ import type {
 export interface Opts {
   bpPerPx?: number
   colorBy?: ColorBy
-  stopToken?: string
+  stopToken?: StopToken
   /** When true, only compute depth (skip mismatch/modification processing) */
   statsEstimationMode?: boolean
 }

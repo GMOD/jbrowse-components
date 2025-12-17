@@ -2,7 +2,11 @@ import { useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  createStopToken,
+  stopStopToken,
+  StopToken,
+} from '@jbrowse/core/util/stopToken'
 import {
   Button,
   DialogActions,
@@ -40,7 +44,7 @@ interface RunDiagonalizationArgs {
     'tracks' | 'hview' | 'vview' | 'id' | 'type' | 'displayName'
   >
   session: AbstractSessionModel
-  stopToken: string
+  stopToken?: StopToken
   setProgress: (progress: number) => void
   setMessage: (message: string) => void
 }
@@ -138,7 +142,7 @@ const DiagonalizationProgressDialog = observer(function ({
   const [message, setMessage] = useState('Ready to start diagonalization')
   const [error, setError] = useState<unknown>()
   const [isRunning, setIsRunning] = useState(false)
-  const [stopToken, setStopToken] = useState<string>()
+  const [stopToken, setStopToken] = useState<StopToken>()
 
   const handleStart = async () => {
     const session = getSession(model)

@@ -9,7 +9,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { stopStopToken, StopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   type ExportSvgDisplayOptions,
@@ -102,7 +102,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        * Stop token for the current rendering operation
        */
-      renderingStopToken: undefined as string | undefined,
+      renderingStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       get dataTestId() {
@@ -208,7 +208,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        * Set the rendering stop token
        */
-      setRenderingStopToken(token: string | undefined) {
+      setRenderingStopToken(token?: StopToken) {
         self.renderingStopToken = token
       },
     }))

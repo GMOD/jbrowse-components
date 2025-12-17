@@ -1,6 +1,6 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
+import { createStopToken, StopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -13,7 +13,7 @@ export function getMultiVariantSourcesAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   adapterProps: () => Record<string, unknown>
-  setSourcesLoading: (aborter: string) => void
+  setSourcesLoading: (aborter: StopToken) => void
   setError: (error: unknown) => void
   setStatusMessage: (str: string) => void
   setSources: (sources: Source[]) => void
@@ -56,7 +56,10 @@ export function getMultiVariantSourcesAutorun(self: {
           }
         }
       },
-      { delay: 1000 },
+      {
+        delay: 1000,
+        name: 'GetMultiVariantSources',
+      },
     ),
   )
 }

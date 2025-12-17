@@ -7,7 +7,11 @@ import {
   isAbortException,
   useLocalStorage,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  createStopToken,
+  stopStopToken,
+  StopToken,
+} from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -35,7 +39,7 @@ const WiggleClusterDialogAuto = observer(function ({
   const [progress, setProgress] = useState('')
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
-  const [stopToken, setStopToken] = useState('')
+  const [stopToken, setStopToken] = useState<StopToken>()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
     'cluster-samplesPerPixel',

@@ -2,7 +2,7 @@ import type React from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { stopStopToken, StopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
@@ -81,7 +81,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        * Stop token for the current rendering operation
        */
-      renderingStopToken: undefined as string | undefined,
+      renderingStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       /**
@@ -150,7 +150,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        * Set the rendering stop token
        */
-      setRenderingStopToken(token: string | undefined) {
+      setRenderingStopToken(token?: StopToken) {
         self.renderingStopToken = token
       },
     }))

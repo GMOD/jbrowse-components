@@ -1,4 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { StopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
@@ -27,7 +28,7 @@ export function renderReactionData(self: any) {
   }
 }
 
-export async function renderReactionEffect(props?: any, stopToken?: string) {
+export async function renderReactionEffect(props?: any, stopToken?: StopToken) {
   if (!props) {
     throw new Error('cannot render with no props')
   }

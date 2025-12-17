@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
+  checkStopToken2,
   forEachWithStopTokenCheck,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
@@ -108,26 +109,25 @@ export function makeImage(
   // Use two pass rendering, which helps in visualizing the SNPs at higher
   // bpPerPx First pass: draw the gray background
   ctx.fillStyle = colorMap.total!
-  forEachWithStopTokenCheck(
-    features.values(),
-    stopToken,
-    function firstPass(feature) {
-      if (feature.get('type') === 'skip') {
-        return
-      }
-      const fstart = feature.get('start')
-      const fend = feature.get('end')
-      const leftPx = region.reversed
-        ? (region.end - fend) / bpPerPx
-        : (fstart - region.start) / bpPerPx
-      const rightPx = region.reversed
-        ? (region.end - fstart) / bpPerPx
-        : (fend - region.start) / bpPerPx
-      const w = rightPx - leftPx + fudgeFactor
-      const score = feature.get('score') as number
-      ctx.fillRect(leftPx, toY(score), w, toHeight(score))
-    },
-  )
+  const lastTime = { time: Date.now() }
+  let i = 0
+  for (const feature of features.values()) {
+    checkStopToken2(stopToken, i++, lastTime)
+    if (feature.get('type') === 'skip') {
+      continue
+    }
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
+    const leftPx = region.reversed
+      ? (region.end - fend) / bpPerPx
+      : (fstart - region.start) / bpPerPx
+    const rightPx = region.reversed
+      ? (region.end - fstart) / bpPerPx
+      : (fend - region.start) / bpPerPx
+    const w = rightPx - leftPx + fudgeFactor
+    const score = feature.get('score') as number
+    ctx.fillRect(leftPx, toY(score), w, toHeight(score))
+  }
 
   // Keep track of previous total which we will use it to draw the interbase
   // indicator (if there is a sudden clip, there will be no read coverage but
@@ -155,257 +155,250 @@ export function makeImage(
   // Second pass: draw the SNP data, and add a minimum feature width of 1px
   // which can be wider than the actual bpPerPx This reduces overdrawing of
   // the grey background over the SNPs
-  forEachWithStopTokenCheck(
-    features.values(),
-    stopToken,
-    function secondPass(feature) {
-      if (feature.get('type') === 'skip') {
-        return
-      }
-      const fstart = feature.get('start')
-      const fend = feature.get('end')
-      const leftPx = region.reversed
-        ? (region.end - fend) / bpPerPx
-        : (fstart - region.start) / bpPerPx
-      const rightPx = region.reversed
-        ? (region.end - fstart) / bpPerPx
-        : (fend - region.start) / bpPerPx
-      const snpinfo = feature.get('snpinfo') as BaseCoverageBin
-      const w = Math.max(rightPx - leftPx, 1)
-      const score0 = feature.get('score')
-      const h = toHeight(score0)
-      const bottom = toY(score0) + h
-      if (drawingModifications) {
-        let curr = 0
-        const refbase = snpinfo.refbase?.toUpperCase()
-        const { nonmods, mods, snps, ref } = snpinfo
-        // Sort keys once outside the loop
-        const nonmodKeys = Object.keys(nonmods).sort().reverse()
-        for (const m of nonmodKeys) {
-          // Remove prefix once for lookup
-          const modKey = m.replace(/^(nonmod_|mod_)/, '')
-          const mod = visibleModifications[modKey]
-          if (!mod) {
-            console.warn(`${m} not known yet`)
-            continue
-          }
-          if (isolatedModification && mod.type !== isolatedModification) {
-            continue
-          }
-          const { modifiable, detectable } = calculateModificationCounts({
-            base: mod.base,
-            isSimplex: simplexSet.has(mod.type),
-            refbase,
-            snps,
-            ref,
-            score0,
-          })
-
-          const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
-          const modFraction = (modifiable / score0) * (entryDepth / detectable)
-          const c = alphaColor('blue', avgProbability)
-
-          ctx.fillStyle = c
-          ctx.fillRect(
-            Math.round(leftPx),
-            bottom - (curr + modFraction * h),
-            w,
-            modFraction * h,
-          )
-          curr += modFraction * h
+  for (const feature of features.values()) {
+    checkStopToken2(stopToken, i++, lastTime)
+    if (feature.get('type') === 'skip') {
+      continue
+    }
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
+    const leftPx = region.reversed
+      ? (region.end - fend) / bpPerPx
+      : (fstart - region.start) / bpPerPx
+    const rightPx = region.reversed
+      ? (region.end - fstart) / bpPerPx
+      : (fend - region.start) / bpPerPx
+    const snpinfo = feature.get('snpinfo') as BaseCoverageBin
+    const w = Math.max(rightPx - leftPx, 1)
+    const score0 = feature.get('score')
+    const h = toHeight(score0)
+    const bottom = toY(score0) + h
+    if (drawingModifications) {
+      let curr = 0
+      const refbase = snpinfo.refbase?.toUpperCase()
+      const { nonmods, mods, snps, ref } = snpinfo
+      // Sort keys once outside the loop
+      const nonmodKeys = Object.keys(nonmods).sort().reverse()
+      for (const m of nonmodKeys) {
+        // Remove prefix once for lookup
+        const modKey = m.replace(/^(nonmod_|mod_)/, '')
+        const mod = visibleModifications[modKey]
+        if (!mod) {
+          console.warn(`${m} not known yet`)
+          continue
         }
-        // Sort keys once outside the loop
-        const modKeys = Object.keys(mods).sort().reverse()
-        for (const m of modKeys) {
-          const modKey = m.replace('mod_', '')
-          const mod = visibleModifications[modKey]
-          if (!mod) {
-            console.warn(`${m} not known yet`)
-            continue
-          }
-          if (isolatedModification && mod.type !== isolatedModification) {
-            continue
-          }
-          const { modifiable, detectable } = calculateModificationCounts({
-            base: mod.base,
-            isSimplex: simplexSet.has(mod.type),
-            refbase,
-            snps,
-            ref,
-            score0,
-          })
-
-          const { entryDepth, avgProbability = 0 } = mods[m]!
-          const modFraction = (modifiable / score0) * (entryDepth / detectable)
-          const c = alphaColor(mod.color || 'black', avgProbability)
-
-          ctx.fillStyle = c
-          ctx.fillRect(
-            Math.round(leftPx),
-            bottom - (curr + modFraction * h),
-            w,
-            modFraction * h,
-          )
-          curr += modFraction * h
+        if (isolatedModification && mod.type !== isolatedModification) {
+          continue
         }
-      } else if (drawingMethylation) {
-        const { depth, nonmods, mods } = snpinfo
-        let curr = 0
+        const { modifiable, detectable } = calculateModificationCounts({
+          base: mod.base,
+          isSimplex: simplexSet.has(mod.type),
+          refbase,
+          snps,
+          ref,
+          score0,
+        })
 
-        for (const base of Object.keys(mods).sort().reverse()) {
-          const { entryDepth } = mods[base]!
-          ctx.fillStyle = colorMap[base] || 'black'
-          ctx.fillRect(
-            Math.round(leftPx),
-            bottom - ((entryDepth + curr) / depth) * h,
-            w,
-            (entryDepth / depth) * h,
-          )
-          curr += entryDepth
-        }
-        for (const base of Object.keys(nonmods).sort().reverse()) {
-          const { entryDepth } = nonmods[base]!
-          ctx.fillStyle = colorMap[base] || 'black'
-          ctx.fillRect(
-            Math.round(leftPx),
-            bottom - ((entryDepth + curr) / depth) * h,
-            w,
-            (entryDepth / depth) * h,
-          )
-          curr += entryDepth
-        }
-      } else {
-        const { depth, snps } = snpinfo
-        let curr = 0
-        for (const base of Object.keys(snps).sort().reverse()) {
-          const { entryDepth } = snps[base]!
-          ctx.fillStyle = colorMap[base] || 'black'
-          ctx.fillRect(
-            Math.round(leftPx),
-            bottom - ((entryDepth + curr) / depth) * h,
-            w,
-            (entryDepth / depth) * h,
-          )
-          curr += entryDepth
-        }
-      }
+        const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
+        const modFraction = (modifiable / score0) * (entryDepth / detectable)
+        const c = alphaColor('blue', avgProbability)
 
-      const interbaseEvents = Object.keys(snpinfo.noncov)
-      if (showInterbaseCounts) {
-        let curr = 0
-        const r = 0.6
-        const x = leftPx - r + extraHorizontallyFlippedOffset
-        let totalHeight = 0
-        for (const base of interbaseEvents) {
-          const { entryDepth } = snpinfo.noncov[base]!
-          ctx.fillStyle = colorMap[base]!
-          ctx.fillRect(
-            x,
-            INTERBASE_INDICATOR_HEIGHT + toHeight2(curr),
-            r * 2,
-            toHeight2(entryDepth),
-          )
-          totalHeight += toHeight2(entryDepth)
-          curr += entryDepth
-        }
-
-        // Add to clickmap when zoomed in enough for meaningful interaction,
-        // or when interbase events represent a significant fraction of reads
-        const totalInterbaseCount = interbaseEvents.reduce(
-          (sum, base) => sum + (snpinfo.noncov[base]?.entryDepth ?? 0),
-          0,
+        ctx.fillStyle = c
+        ctx.fillRect(
+          Math.round(leftPx),
+          bottom - (curr + modFraction * h),
+          w,
+          modFraction * h,
         )
-        const isMajorityInterbase =
-          score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
-        if (
-          interbaseEvents.length > 0 &&
-          (bpPerPx < 50 || isMajorityInterbase)
-        ) {
-          const maxBase = interbaseEvents.reduce((a, b) =>
-            (snpinfo.noncov[a]?.entryDepth ?? 0) >
-            (snpinfo.noncov[b]?.entryDepth ?? 0)
-              ? a
-              : b,
-          )
-          const maxEntry = snpinfo.noncov[maxBase]
-          // Extend hitbox horizontally for easier mouse targeting
-          const clickWidth = Math.max(r * 2, 1.5)
-          coords.push(
-            x,
-            INTERBASE_INDICATOR_HEIGHT,
-            x + clickWidth,
-            INTERBASE_INDICATOR_HEIGHT + totalHeight,
-          )
-          items.push({
-            type: maxBase as 'insertion' | 'softclip' | 'hardclip',
-            base: maxBase,
-            count: curr,
-            total: score0,
-            avgLength: maxEntry?.avgLength,
-            minLength: maxEntry?.minLength,
-            maxLength: maxEntry?.maxLength,
-            topSequence: maxEntry?.topSequence,
-          })
+        curr += modFraction * h
+      }
+      // Sort keys once outside the loop
+      const modKeys = Object.keys(mods).sort().reverse()
+      for (const m of modKeys) {
+        const modKey = m.replace('mod_', '')
+        const mod = visibleModifications[modKey]
+        if (!mod) {
+          console.warn(`${m} not known yet`)
+          continue
+        }
+        if (isolatedModification && mod.type !== isolatedModification) {
+          continue
+        }
+        const { modifiable, detectable } = calculateModificationCounts({
+          base: mod.base,
+          isSimplex: simplexSet.has(mod.type),
+          refbase,
+          snps,
+          ref,
+          score0,
+        })
+
+        const { entryDepth, avgProbability = 0 } = mods[m]!
+        const modFraction = (modifiable / score0) * (entryDepth / detectable)
+        const c = alphaColor(mod.color || 'black', avgProbability)
+
+        ctx.fillStyle = c
+        ctx.fillRect(
+          Math.round(leftPx),
+          bottom - (curr + modFraction * h),
+          w,
+          modFraction * h,
+        )
+        curr += modFraction * h
+      }
+    } else if (drawingMethylation) {
+      const { depth, nonmods, mods } = snpinfo
+      let curr = 0
+
+      for (const base of Object.keys(mods).sort().reverse()) {
+        const { entryDepth } = mods[base]!
+        ctx.fillStyle = colorMap[base] || 'black'
+        ctx.fillRect(
+          Math.round(leftPx),
+          bottom - ((entryDepth + curr) / depth) * h,
+          w,
+          (entryDepth / depth) * h,
+        )
+        curr += entryDepth
+      }
+      for (const base of Object.keys(nonmods).sort().reverse()) {
+        const { entryDepth } = nonmods[base]!
+        ctx.fillStyle = colorMap[base] || 'black'
+        ctx.fillRect(
+          Math.round(leftPx),
+          bottom - ((entryDepth + curr) / depth) * h,
+          w,
+          (entryDepth / depth) * h,
+        )
+        curr += entryDepth
+      }
+    } else {
+      const { depth, snps } = snpinfo
+      let curr = 0
+      for (const base of Object.keys(snps).sort().reverse()) {
+        const { entryDepth } = snps[base]!
+        ctx.fillStyle = colorMap[base] || 'black'
+        ctx.fillRect(
+          Math.round(leftPx),
+          bottom - ((entryDepth + curr) / depth) * h,
+          w,
+          (entryDepth / depth) * h,
+        )
+        curr += entryDepth
+      }
+    }
+
+    const interbaseEvents = Object.keys(snpinfo.noncov)
+    if (showInterbaseCounts) {
+      let curr = 0
+      const r = 0.6
+      const x = leftPx - r + extraHorizontallyFlippedOffset
+      let totalHeight = 0
+      for (const base of interbaseEvents) {
+        const { entryDepth } = snpinfo.noncov[base]!
+        ctx.fillStyle = colorMap[base]!
+        ctx.fillRect(
+          x,
+          INTERBASE_INDICATOR_HEIGHT + toHeight2(curr),
+          r * 2,
+          toHeight2(entryDepth),
+        )
+        totalHeight += toHeight2(entryDepth)
+        curr += entryDepth
+      }
+
+      // Add to clickmap when zoomed in enough for meaningful interaction,
+      // or when interbase events represent a significant fraction of reads
+      const totalInterbaseCount = interbaseEvents.reduce(
+        (sum, base) => sum + (snpinfo.noncov[base]?.entryDepth ?? 0),
+        0,
+      )
+      const isMajorityInterbase =
+        score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
+      if (interbaseEvents.length > 0 && (bpPerPx < 50 || isMajorityInterbase)) {
+        const maxBase = interbaseEvents.reduce((a, b) =>
+          (snpinfo.noncov[a]?.entryDepth ?? 0) >
+          (snpinfo.noncov[b]?.entryDepth ?? 0)
+            ? a
+            : b,
+        )
+        const maxEntry = snpinfo.noncov[maxBase]
+        // Extend hitbox horizontally for easier mouse targeting
+        const clickWidth = Math.max(r * 2, 1.5)
+        coords.push(
+          x,
+          INTERBASE_INDICATOR_HEIGHT,
+          x + clickWidth,
+          INTERBASE_INDICATOR_HEIGHT + totalHeight,
+        )
+        items.push({
+          type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+          base: maxBase,
+          count: curr,
+          total: score0,
+          avgLength: maxEntry?.avgLength,
+          minLength: maxEntry?.minLength,
+          maxLength: maxEntry?.maxLength,
+          topSequence: maxEntry?.topSequence,
+        })
+      }
+    }
+
+    if (showInterbaseIndicators) {
+      let accum = 0
+      let max = 0
+      let maxBase = ''
+      for (const base of interbaseEvents) {
+        const { entryDepth } = snpinfo.noncov[base]!
+        accum += entryDepth
+        if (entryDepth > max) {
+          max = entryDepth
+          maxBase = base
         }
       }
 
-      if (showInterbaseIndicators) {
-        let accum = 0
-        let max = 0
-        let maxBase = ''
-        for (const base of interbaseEvents) {
-          const { entryDepth } = snpinfo.noncov[base]!
-          accum += entryDepth
-          if (entryDepth > max) {
-            max = entryDepth
-            maxBase = base
-          }
-        }
+      // avoid drawing a bunch of indicators if coverage is very low. note:
+      // also uses the prev total in the case of the "cliff"
+      const indicatorComparatorScore = Math.max(score0, prevTotal)
+      if (
+        accum > indicatorComparatorScore * indicatorThreshold &&
+        indicatorComparatorScore > MINIMUM_INTERBASE_INDICATOR_READ_DEPTH
+      ) {
+        ctx.fillStyle = colorMap[maxBase]!
+        ctx.beginPath()
+        const l = leftPx + extraHorizontallyFlippedOffset
+        ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)
+        ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
+        ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
+        ctx.fill()
 
-        // avoid drawing a bunch of indicators if coverage is very low. note:
-        // also uses the prev total in the case of the "cliff"
-        const indicatorComparatorScore = Math.max(score0, prevTotal)
-        if (
-          accum > indicatorComparatorScore * indicatorThreshold &&
-          indicatorComparatorScore > MINIMUM_INTERBASE_INDICATOR_READ_DEPTH
-        ) {
-          ctx.fillStyle = colorMap[maxBase]!
-          ctx.beginPath()
-          const l = leftPx + extraHorizontallyFlippedOffset
-          ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)
-          ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
-          ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
-          ctx.fill()
-
-          const maxEntry = snpinfo.noncov[maxBase]
-          // Add to Flatbush clickmap with extended hitbox for easier mouse targeting
-          const hitboxPadding = 3
-          coords.push(
-            l - INTERBASE_INDICATOR_WIDTH / 2 - hitboxPadding,
-            0,
-            l + INTERBASE_INDICATOR_WIDTH / 2 + hitboxPadding,
-            INTERBASE_INDICATOR_HEIGHT + hitboxPadding,
-          )
-          items.push({
-            type: maxBase as 'insertion' | 'softclip' | 'hardclip',
-            base: maxBase,
-            count: accum,
-            total: indicatorComparatorScore,
-            avgLength: maxEntry?.avgLength,
-            minLength: maxEntry?.minLength,
-            maxLength: maxEntry?.maxLength,
-            topSequence: maxEntry?.topSequence,
-          })
-        }
+        const maxEntry = snpinfo.noncov[maxBase]
+        // Add to Flatbush clickmap with extended hitbox for easier mouse targeting
+        const hitboxPadding = 3
+        coords.push(
+          l - INTERBASE_INDICATOR_WIDTH / 2 - hitboxPadding,
+          0,
+          l + INTERBASE_INDICATOR_WIDTH / 2 + hitboxPadding,
+          INTERBASE_INDICATOR_HEIGHT + hitboxPadding,
+        )
+        items.push({
+          type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+          base: maxBase,
+          count: accum,
+          total: indicatorComparatorScore,
+          avgLength: maxEntry?.avgLength,
+          minLength: maxEntry?.minLength,
+          maxLength: maxEntry?.maxLength,
+          topSequence: maxEntry?.topSequence,
+        })
       }
-      prevTotal = score0
-    },
-  )
+    }
+    prevTotal = score0
+  }
 
   // Note: Arc rendering has been moved to LinearSNPCoverageDisplay component
   // to support cross-region arc connections. Skip features are still collected
   // and returned for the display to render.
-
   if (displayCrossHatches) {
     ctx.lineWidth = 1
     ctx.strokeStyle = 'rgba(140,140,140,0.8)'
