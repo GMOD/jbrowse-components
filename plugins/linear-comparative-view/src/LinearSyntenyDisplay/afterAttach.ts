@@ -9,6 +9,7 @@ import { serializeFeatPos } from './model'
 
 import type { LinearSyntenyDisplayModel } from './model'
 import type {
+  DrawResultMessage,
   DrawSyntenyMessage,
   UpdateFeaturesMessage,
 } from './syntenyRendererWorker'
@@ -31,6 +32,105 @@ interface FeatPos {
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
+  let renderingTimeout: ReturnType<typeof setTimeout> | undefined
+
+  // Worker lifecycle management - create/destroy based on useWebWorker setting
+  addDisposer(
+    self,
+    reaction(
+      () => {
+        const view = getContainingView(self) as LSV
+        return view.useWebWorker
+      },
+      useWebWorker => {
+        // Terminate existing worker if any
+        if (self.worker) {
+          self.worker.terminate()
+          self.setWorker(null)
+        }
+
+        // Create new worker if enabled and OffscreenCanvas is available
+        if (useWebWorker && typeof OffscreenCanvas !== 'undefined') {
+          const worker = new Worker(
+            new URL('./syntenyRendererWorker', import.meta.url),
+          )
+
+          worker.onmessage = (e: MessageEvent<DrawResultMessage>) => {
+            clearTimeout(renderingTimeout)
+            renderingTimeout = undefined
+            self.setIsRendering(false)
+
+            const mainCtx = self.mainCanvas?.getContext('2d')
+            if (mainCtx) {
+              mainCtx.globalCompositeOperation = 'copy'
+              mainCtx.drawImage(e.data.mainBitmap, 0, 0)
+              mainCtx.globalCompositeOperation = 'source-over'
+              e.data.mainBitmap.close()
+            }
+
+            const clickMapCtx = self.clickMapCanvas?.getContext('2d')
+            if (clickMapCtx && self.clickMapCanvas) {
+              clickMapCtx.clearRect(
+                0,
+                0,
+                self.clickMapCanvas.width,
+                self.clickMapCanvas.height,
+              )
+              clickMapCtx.drawImage(e.data.clickMapBitmap, 0, 0)
+              e.data.clickMapBitmap.close()
+            }
+
+            const cigarClickMapCtx = self.cigarClickMapCanvas?.getContext('2d')
+            if (cigarClickMapCtx && self.cigarClickMapCanvas) {
+              cigarClickMapCtx.clearRect(
+                0,
+                0,
+                self.cigarClickMapCanvas.width,
+                self.cigarClickMapCanvas.height,
+              )
+              cigarClickMapCtx.drawImage(e.data.cigarClickMapBitmap, 0, 0)
+              e.data.cigarClickMapBitmap.close()
+            }
+          }
+
+          // Wrap postMessage to track rendering state
+          const originalPostMessage = worker.postMessage.bind(worker)
+          // @ts-expect-error
+          worker.postMessage = (message: unknown, transfer?: Transferable[]) => {
+            if (
+              typeof message === 'object' &&
+              message !== null &&
+              'type' in message &&
+              message.type === 'draw'
+            ) {
+              clearTimeout(renderingTimeout)
+              renderingTimeout = setTimeout(() => {
+                self.setIsRendering(true)
+              }, 50)
+            }
+            if (transfer) {
+              originalPostMessage(message, transfer)
+            } else {
+              originalPostMessage(message)
+            }
+          }
+
+          self.setWorker(worker)
+        }
+      },
+      { fireImmediately: true },
+    ),
+  )
+
+  // Cleanup worker on dispose
+  addDisposer(self, () => {
+    clearTimeout(renderingTimeout)
+    if (self.worker) {
+      self.worker.terminate()
+      self.setWorker(null)
+    }
+  })
+
   // Autorun to send features to worker when they change
   addDisposer(
     self,

@@ -185,7 +185,7 @@ function drawBezierBox(
   mid: number,
 ) {
   const len1 = Math.abs(x1 - x2)
-  const len2 = Math.abs(x1 - x2)
+  const len2 = Math.abs(x3 - x4)
   if (len1 < 5 && len2 < 5 && x2 < x1 && Math.abs(x1 - x3) > 100) {
     const tmp = x1
     x1 = x2
@@ -227,8 +227,6 @@ function drawLocationMarkers(
   x4: number,
   y2: number,
   mid: number,
-  bpPerPx1: number,
-  bpPerPx2: number,
   drawCurves?: boolean,
 ) {
   const width1 = Math.abs(x2 - x1)
@@ -334,7 +332,6 @@ function drawMatchSimple({
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function drawCigarClickMapImpl(
   msg: DrawParams,
   ctx: OffscreenCanvasRenderingContext2D,
@@ -603,10 +600,8 @@ function drawRefImpl(
     mainCtx.stroke()
   }
 
-  const bpPerPx0 = bpPerPxs[level]!
-  const bpPerPx1 = bpPerPxs[level + 1]!
-  const bpPerPxInv0 = 1 / bpPerPx0
-  const bpPerPxInv1 = 1 / bpPerPx1
+  const bpPerPxInv0 = 1 / bpPerPxs[level]!
+  const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
   const useStrandColor = colorBy === 'strand'
   const useQueryColor = colorBy === 'query'
@@ -724,8 +719,6 @@ function drawRefImpl(
                       px2,
                       y2,
                       mid,
-                      bpPerPx0,
-                      bpPerPx1,
                       drawCurves,
                     )
                   }
@@ -743,8 +736,6 @@ function drawRefImpl(
                     px2,
                     y2,
                     mid,
-                    bpPerPx0,
-                    bpPerPx1,
                     drawCurves,
                   )
                 }
@@ -838,6 +829,7 @@ function performDraw() {
 
   try {
     drawRefImpl(drawParams, mainCtx, clickMapCtx)
+    drawCigarClickMapImpl(drawParams, cigarClickMapCtx)
 
     // Transfer all bitmaps back to main thread
     const mainBitmap = mainCanvas.transferToImageBitmap()

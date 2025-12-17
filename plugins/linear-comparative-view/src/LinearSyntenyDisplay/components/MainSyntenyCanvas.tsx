@@ -4,7 +4,6 @@ import { getContainingView } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import type { DrawResultMessage } from '../syntenyRendererWorker'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import type { LinearSyntenyDisplayModel } from '../model'
 
@@ -33,8 +32,6 @@ const MainSyntenyCanvas = observer(function ({
 }) {
   const view = getContainingView(model) as LinearSyntenyViewModel
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const workerRef = useRef<Worker | null>(null)
-  const renderingTimeoutRef = useRef<Timer>()
   const xOffset = useRef(0)
   const delta = useRef(0)
   const scheduled = useRef(false)
@@ -43,95 +40,11 @@ const MainSyntenyCanvas = observer(function ({
   const setCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
-      // @ts-expect-error
-      canvasRef.current = ref
+      ;(canvasRef as React.MutableRefObject<HTMLCanvasElement | null>).current =
+        ref
     },
     [model],
   )
-
-  // Handle worker lifecycle based on useWebWorker setting
-  useEffect(() => {
-    const ref = canvasRef.current
-    if (
-      ref &&
-      !workerRef.current &&
-      typeof OffscreenCanvas !== 'undefined' &&
-      view.useWebWorker
-    ) {
-      const worker = new Worker(
-        new URL('../syntenyRendererWorker', import.meta.url),
-      )
-
-      worker.onmessage = (e: MessageEvent<DrawResultMessage>) => {
-        clearTimeout(renderingTimeoutRef.current)
-        renderingTimeoutRef.current = undefined
-        model.setIsRendering(false)
-
-        const mainCtx = model.mainCanvas?.getContext('2d')
-        if (mainCtx) {
-          mainCtx.globalCompositeOperation = 'copy'
-          mainCtx.drawImage(e.data.mainBitmap, 0, 0)
-          mainCtx.globalCompositeOperation = 'source-over'
-          e.data.mainBitmap.close()
-        }
-
-        const clickMapCtx = model.clickMapCanvas?.getContext('2d')
-        const cigarClickMapCtx = model.cigarClickMapCanvas?.getContext('2d')
-
-        if (clickMapCtx) {
-          clickMapCtx.clearRect(
-            0,
-            0,
-            model.clickMapCanvas!.width,
-            model.clickMapCanvas!.height,
-          )
-          clickMapCtx.drawImage(e.data.clickMapBitmap, 0, 0)
-          e.data.clickMapBitmap.close()
-        }
-
-        if (cigarClickMapCtx) {
-          cigarClickMapCtx.clearRect(
-            0,
-            0,
-            model.cigarClickMapCanvas!.width,
-            model.cigarClickMapCanvas!.height,
-          )
-          cigarClickMapCtx.drawImage(e.data.cigarClickMapBitmap, 0, 0)
-          e.data.cigarClickMapBitmap.close()
-        }
-      }
-
-      const originalPostMessage = worker.postMessage.bind(worker)
-      // @ts-expect-error
-      worker.postMessage = (message: unknown, transfer?: Transferable[]) => {
-        if (
-          typeof message === 'object' &&
-          message !== null &&
-          'type' in message &&
-          message.type === 'draw'
-        ) {
-          clearTimeout(renderingTimeoutRef.current)
-          renderingTimeoutRef.current = setTimeout(() => {
-            model.setIsRendering(true)
-          }, 50)
-        }
-        if (transfer) {
-          originalPostMessage(message, transfer)
-        } else {
-          originalPostMessage(message)
-        }
-      }
-
-      workerRef.current = worker
-      model.setWorker(worker)
-    }
-
-    if (!view.useWebWorker && workerRef.current) {
-      workerRef.current.terminate()
-      workerRef.current = null
-      model.setWorker(null)
-    }
-  }, [model, view.useWebWorker])
 
   // Wheel handler for zoom/scroll
   useEffect(() => {
@@ -159,7 +72,7 @@ const MainSyntenyCanvas = observer(function ({
               delta.current > 0
                 ? v.bpPerPx * (1 + delta.current)
                 : v.bpPerPx / (1 - delta.current),
-              event.clientX - (canvas.getBoundingClientRect().left || 0),
+              event.clientX - (canvas!.getBoundingClientRect().left || 0),
             )
           }
           delta.current = 0

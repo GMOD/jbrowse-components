@@ -154,7 +154,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
       const block = blockMapRef.current.get(blockKey)
       if (block) {
         setClickedBlock(block)
-        popupState.open(target)
+        popupState.open(event)
       }
     }
   }
@@ -199,7 +199,12 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
       />
       <CascadingMenu
         menuItems={getMenuItems()}
-        onMenuItemClick={(_event, callback) => callback()}
+        onMenuItemClick={(
+          _event: React.MouseEvent,
+          callback: () => void,
+        ) => {
+          callback()
+        }}
         popupState={popupState}
       />
     </>
