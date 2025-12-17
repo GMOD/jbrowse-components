@@ -68,7 +68,7 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
         ) : (
           <span>
             {obj2?.name || source}{' '}
-            {summary
+            {summary && feature.get('minScore') != null
               ? `min:${toP(feature.get('minScore'))} avg:${toP(
                   feature.get('score'),
                 )} max:${toP(feature.get('maxScore'))}`
