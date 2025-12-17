@@ -1,6 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { stopStopToken, StopToken } from '@jbrowse/core/util/stopToken'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
@@ -9,6 +9,7 @@ import {
 
 import type { HicFlatbushItem } from '../HicRenderer/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**

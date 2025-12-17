@@ -1,10 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  checkStopToken2,
-  forEachWithStopTokenCheck,
-  renderToAbstractCanvas,
-} from '@jbrowse/core/util'
+import { checkStopToken2, renderToAbstractCanvas } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { getOrigin, getScale } from '@jbrowse/plugin-wiggle'
@@ -29,6 +25,80 @@ const INTERBASE_INDICATOR_HEIGHT = 4.5
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
 const fudgeFactor = 0.6
+
+const sortedKeysDesc = (obj: object) => Object.keys(obj).sort().reverse()
+
+function findMaxBase(noncov: Record<string, { entryDepth: number }>) {
+  let max = 0
+  let maxBase = ''
+  for (const [base, entry] of Object.entries(noncov)) {
+    if (entry.entryDepth > max) {
+      max = entry.entryDepth
+      maxBase = base
+    }
+  }
+  return { maxBase, max }
+}
+
+function sumEntryDepths(
+  noncov: Record<string, { entryDepth: number }>,
+  keys: string[],
+) {
+  let sum = 0
+  for (const key of keys) {
+    sum += noncov[key]?.entryDepth ?? 0
+  }
+  return sum
+}
+
+function createInterbaseItem(
+  maxBase: string,
+  count: number,
+  total: number,
+  maxEntry?: {
+    avgLength?: number
+    minLength?: number
+    maxLength?: number
+    topSequence?: string
+  },
+): InterbaseIndicatorItem {
+  return {
+    type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+    base: maxBase,
+    count,
+    total,
+    avgLength: maxEntry?.avgLength,
+    minLength: maxEntry?.minLength,
+    maxLength: maxEntry?.maxLength,
+    topSequence: maxEntry?.topSequence,
+  }
+}
+
+function drawStackedBars(
+  ctx: CanvasRenderingContext2D,
+  entries: Record<string, { entryDepth: number }>,
+  colorMap: Record<string, string>,
+  leftPx: number,
+  bottom: number,
+  w: number,
+  h: number,
+  depth: number,
+  startCurr: number,
+) {
+  let curr = startCurr
+  for (const base of sortedKeysDesc(entries)) {
+    const { entryDepth } = entries[base]!
+    ctx.fillStyle = colorMap[base] || 'black'
+    ctx.fillRect(
+      Math.round(leftPx),
+      bottom - ((entryDepth + curr) / depth) * h,
+      w,
+      (entryDepth / depth) * h,
+    )
+    curr += entryDepth
+  }
+  return curr
+}
 
 export function makeImage(
   ctx: CanvasRenderingContext2D,
@@ -83,6 +153,16 @@ export function makeImage(
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
   const showInterbaseIndicators = readConfObject(cfg, 'showInterbaseIndicators')
 
+  const getPixelCoords = (fstart: number, fend: number) => {
+    const leftPx = region.reversed
+      ? (region.end - fend) / bpPerPx
+      : (fstart - region.start) / bpPerPx
+    const rightPx = region.reversed
+      ? (region.end - fstart) / bpPerPx
+      : (fend - region.start) / bpPerPx
+    return { leftPx, rightPx }
+  }
+
   // Simple arithmetic scale functions - avoid d3-scale overhead in hot path
   const toY = isLog
     ? (n: number) => height - (Math.log(n) / log2 - logMin) * logRatio + offset
@@ -106,38 +186,6 @@ export function makeImage(
     cpg_unmeth: 'blue',
   }
 
-  // Use two pass rendering, which helps in visualizing the SNPs at higher
-  // bpPerPx First pass: draw the gray background
-  ctx.fillStyle = colorMap.total!
-  const lastTime = { time: Date.now() }
-  let i = 0
-  for (const feature of features.values()) {
-    checkStopToken2(stopToken, i++, lastTime)
-    if (feature.get('type') === 'skip') {
-      continue
-    }
-    const fstart = feature.get('start')
-    const fend = feature.get('end')
-    const leftPx = region.reversed
-      ? (region.end - fend) / bpPerPx
-      : (fstart - region.start) / bpPerPx
-    const rightPx = region.reversed
-      ? (region.end - fstart) / bpPerPx
-      : (fend - region.start) / bpPerPx
-    const w = rightPx - leftPx + fudgeFactor
-    const score = feature.get('score') as number
-    ctx.fillRect(leftPx, toY(score), w, toHeight(score))
-  }
-
-  // Keep track of previous total which we will use it to draw the interbase
-  // indicator (if there is a sudden clip, there will be no read coverage but
-  // there will be "clip" coverage) at that position beyond the read.
-  //
-  // if the clip is right at a block boundary then prevTotal will not be
-  // available, so this is a best attempt to plot interbase indicator at the
-  // "cliffs"
-  let prevTotal = 0
-
   // extraHorizontallyFlippedOffset is used to draw interbase items, which
   // are located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
@@ -152,35 +200,55 @@ export function makeImage(
   // Pre-create Set for O(1) simplex lookups during rendering
   const simplexSet = new Set(simplexModifications)
 
-  // Second pass: draw the SNP data, and add a minimum feature width of 1px
-  // which can be wider than the actual bpPerPx This reduces overdrawing of
-  // the grey background over the SNPs
+  // Keep track of previous total which we will use it to draw the interbase
+  // indicator (if there is a sudden clip, there will be no read coverage but
+  // there will be "clip" coverage) at that position beyond the read.
+  //
+  // if the clip is right at a block boundary then prevTotal will not be
+  // available, so this is a best attempt to plot interbase indicator at the
+  // "cliffs"
+  let prevTotal = 0
+
+  // Track for reducedFeatures collection (one feature per pixel)
+  let prevReducedLeftPx = Number.NEGATIVE_INFINITY
+  const reducedFeatures: Feature[] = []
+  const skipFeatures: Feature[] = []
+
+  const lastTime = { time: Date.now() }
+  let i = 0
   for (const feature of features.values()) {
     checkStopToken2(stopToken, i++, lastTime)
     if (feature.get('type') === 'skip') {
+      skipFeatures.push(feature)
       continue
     }
     const fstart = feature.get('start')
     const fend = feature.get('end')
-    const leftPx = region.reversed
-      ? (region.end - fend) / bpPerPx
-      : (fstart - region.start) / bpPerPx
-    const rightPx = region.reversed
-      ? (region.end - fstart) / bpPerPx
-      : (fend - region.start) / bpPerPx
-    const snpinfo = feature.get('snpinfo') as BaseCoverageBin
-    const w = Math.max(rightPx - leftPx, 1)
+    const { leftPx, rightPx } = getPixelCoords(fstart, fend)
+
+    // Collect reducedFeatures (one per pixel) for tooltip functionality
+    if (Math.floor(leftPx) !== Math.floor(prevReducedLeftPx)) {
+      reducedFeatures.push(feature)
+      prevReducedLeftPx = leftPx
+    }
+
     const score0 = feature.get('score')
+    const snpinfo = feature.get('snpinfo') as BaseCoverageBin
+
+    // Draw the gray background
+    ctx.fillStyle = colorMap.total!
+    const bgWidth = rightPx - leftPx + fudgeFactor
+    ctx.fillRect(leftPx, toY(score0), bgWidth, toHeight(score0))
+
+    // Draw SNP data overlay
+    const w = Math.max(rightPx - leftPx, 1)
     const h = toHeight(score0)
     const bottom = toY(score0) + h
     if (drawingModifications) {
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
-      // Sort keys once outside the loop
-      const nonmodKeys = Object.keys(nonmods).sort().reverse()
-      for (const m of nonmodKeys) {
-        // Remove prefix once for lookup
+      for (const m of sortedKeysDesc(nonmods)) {
         const modKey = m.replace(/^(nonmod_|mod_)/, '')
         const mod = visibleModifications[modKey]
         if (!mod) {
@@ -212,9 +280,7 @@ export function makeImage(
         )
         curr += modFraction * h
       }
-      // Sort keys once outside the loop
-      const modKeys = Object.keys(mods).sort().reverse()
-      for (const m of modKeys) {
+      for (const m of sortedKeysDesc(mods)) {
         const modKey = m.replace('mod_', '')
         const mod = visibleModifications[modKey]
         if (!mod) {
@@ -248,44 +314,21 @@ export function makeImage(
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = snpinfo
-      let curr = 0
-
-      for (const base of Object.keys(mods).sort().reverse()) {
-        const { entryDepth } = mods[base]!
-        ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * h,
-          w,
-          (entryDepth / depth) * h,
-        )
-        curr += entryDepth
-      }
-      for (const base of Object.keys(nonmods).sort().reverse()) {
-        const { entryDepth } = nonmods[base]!
-        ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * h,
-          w,
-          (entryDepth / depth) * h,
-        )
-        curr += entryDepth
-      }
+      const curr = drawStackedBars(
+        ctx,
+        mods,
+        colorMap,
+        leftPx,
+        bottom,
+        w,
+        h,
+        depth,
+        0,
+      )
+      drawStackedBars(ctx, nonmods, colorMap, leftPx, bottom, w, h, depth, curr)
     } else {
       const { depth, snps } = snpinfo
-      let curr = 0
-      for (const base of Object.keys(snps).sort().reverse()) {
-        const { entryDepth } = snps[base]!
-        ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * h,
-          w,
-          (entryDepth / depth) * h,
-        )
-        curr += entryDepth
-      }
+      drawStackedBars(ctx, snps, colorMap, leftPx, bottom, w, h, depth, 0)
     }
 
     const interbaseEvents = Object.keys(snpinfo.noncov)
@@ -309,21 +352,14 @@ export function makeImage(
 
       // Add to clickmap when zoomed in enough for meaningful interaction,
       // or when interbase events represent a significant fraction of reads
-      const totalInterbaseCount = interbaseEvents.reduce(
-        (sum, base) => sum + (snpinfo.noncov[base]?.entryDepth ?? 0),
-        0,
+      const totalInterbaseCount = sumEntryDepths(
+        snpinfo.noncov,
+        interbaseEvents,
       )
       const isMajorityInterbase =
         score0 > 0 && totalInterbaseCount > score0 * indicatorThreshold
       if (interbaseEvents.length > 0 && (bpPerPx < 50 || isMajorityInterbase)) {
-        const maxBase = interbaseEvents.reduce((a, b) =>
-          (snpinfo.noncov[a]?.entryDepth ?? 0) >
-          (snpinfo.noncov[b]?.entryDepth ?? 0)
-            ? a
-            : b,
-        )
-        const maxEntry = snpinfo.noncov[maxBase]
-        // Extend hitbox horizontally for easier mouse targeting
+        const { maxBase } = findMaxBase(snpinfo.noncov)
         const clickWidth = Math.max(r * 2, 1.5)
         coords.push(
           x,
@@ -331,31 +367,15 @@ export function makeImage(
           x + clickWidth,
           INTERBASE_INDICATOR_HEIGHT + totalHeight,
         )
-        items.push({
-          type: maxBase as 'insertion' | 'softclip' | 'hardclip',
-          base: maxBase,
-          count: curr,
-          total: score0,
-          avgLength: maxEntry?.avgLength,
-          minLength: maxEntry?.minLength,
-          maxLength: maxEntry?.maxLength,
-          topSequence: maxEntry?.topSequence,
-        })
+        items.push(
+          createInterbaseItem(maxBase, curr, score0, snpinfo.noncov[maxBase]),
+        )
       }
     }
 
     if (showInterbaseIndicators) {
-      let accum = 0
-      let max = 0
-      let maxBase = ''
-      for (const base of interbaseEvents) {
-        const { entryDepth } = snpinfo.noncov[base]!
-        accum += entryDepth
-        if (entryDepth > max) {
-          max = entryDepth
-          maxBase = base
-        }
-      }
+      const { maxBase } = findMaxBase(snpinfo.noncov)
+      const accum = sumEntryDepths(snpinfo.noncov, interbaseEvents)
 
       // avoid drawing a bunch of indicators if coverage is very low. note:
       // also uses the prev total in the case of the "cliff"
@@ -372,8 +392,6 @@ export function makeImage(
         ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
         ctx.fill()
 
-        const maxEntry = snpinfo.noncov[maxBase]
-        // Add to Flatbush clickmap with extended hitbox for easier mouse targeting
         const hitboxPadding = 3
         coords.push(
           l - INTERBASE_INDICATOR_WIDTH / 2 - hitboxPadding,
@@ -381,16 +399,14 @@ export function makeImage(
           l + INTERBASE_INDICATOR_WIDTH / 2 + hitboxPadding,
           INTERBASE_INDICATOR_HEIGHT + hitboxPadding,
         )
-        items.push({
-          type: maxBase as 'insertion' | 'softclip' | 'hardclip',
-          base: maxBase,
-          count: accum,
-          total: indicatorComparatorScore,
-          avgLength: maxEntry?.avgLength,
-          minLength: maxEntry?.minLength,
-          maxLength: maxEntry?.maxLength,
-          topSequence: maxEntry?.topSequence,
-        })
+        items.push(
+          createInterbaseItem(
+            maxBase,
+            accum,
+            indicatorComparatorScore,
+            snpinfo.noncov[maxBase],
+          ),
+        )
       }
     }
     prevTotal = score0
@@ -410,25 +426,6 @@ export function makeImage(
     }
   }
 
-  // Return reducedFeatures for tooltip functionality
-  // Create reduced features, keeping only one feature per pixel to avoid
-  // serializing thousands of per-base features
-  let prevLeftPx = Number.NEGATIVE_INFINITY
-  const reducedFeatures: Feature[] = []
-  const skipFeatures: Feature[] = []
-  for (const feature of features.values()) {
-    if (feature.get('type') === 'skip') {
-      skipFeatures.push(feature)
-      continue
-    }
-    const start = feature.get('start')
-    const leftPx = (start - region.start) / bpPerPx
-    // Only keep one feature per pixel
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
-      reducedFeatures.push(feature)
-      prevLeftPx = leftPx
-    }
-  }
   return {
     reducedFeatures,
     skipFeatures,

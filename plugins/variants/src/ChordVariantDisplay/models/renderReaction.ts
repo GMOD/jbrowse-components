@@ -1,7 +1,7 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { StopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 
 export function renderReactionData(self: any) {

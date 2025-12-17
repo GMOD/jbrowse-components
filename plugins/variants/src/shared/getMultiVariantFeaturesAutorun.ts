@@ -4,7 +4,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
-import { createStopToken, StopToken } from '@jbrowse/core/util/stopToken'
+import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -12,6 +12,7 @@ import { autorun } from 'mobx'
 import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getMultiVariantFeaturesAutorun(self: {

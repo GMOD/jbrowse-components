@@ -2,11 +2,7 @@ import { useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  stopStopToken,
-  StopToken,
-} from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   Button,
   DialogActions,
@@ -19,6 +15,7 @@ import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface Region {
   refName: string

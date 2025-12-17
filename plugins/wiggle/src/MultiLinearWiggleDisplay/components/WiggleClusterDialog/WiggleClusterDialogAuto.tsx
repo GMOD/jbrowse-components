@@ -7,11 +7,7 @@ import {
   isAbortException,
   useLocalStorage,
 } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  stopStopToken,
-  StopToken,
-} from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -25,6 +21,7 @@ import { observer } from 'mobx-react'
 
 import type { ReducedModel } from './types'
 import type { Source } from '../../../util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const WiggleClusterDialogAuto = observer(function ({

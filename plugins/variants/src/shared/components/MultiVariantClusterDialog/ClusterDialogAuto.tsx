@@ -6,17 +6,14 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  stopStopToken,
-  StopToken,
-} from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { ReducedModel } from './types'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ClusterDialogAuto = observer(function ({

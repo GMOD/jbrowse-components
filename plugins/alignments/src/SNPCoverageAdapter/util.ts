@@ -1,4 +1,3 @@
-import { StopToken } from '@jbrowse/core/util/stopToken'
 import { INTERBASE_MASK } from '../shared/forEachMismatchTypes'
 
 import type {
@@ -7,6 +6,7 @@ import type {
   PreBaseCoverageBinSubtypes,
   PreBinEntry,
 } from '../shared/types'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface Opts {
   bpPerPx?: number

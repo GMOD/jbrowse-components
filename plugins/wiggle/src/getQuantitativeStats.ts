@@ -5,8 +5,8 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LGV = LinearGenomeViewModel
 

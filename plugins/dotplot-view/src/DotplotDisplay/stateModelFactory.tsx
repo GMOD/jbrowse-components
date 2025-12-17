@@ -13,9 +13,9 @@ import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
-import { StopToken } from '@jbrowse/core/util/stopToken'
 
 /**
  * #stateModel DotplotDisplay

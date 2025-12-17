@@ -7,7 +7,7 @@ import {
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
-import { stopStopToken, StopToken } from '@jbrowse/core/util/stopToken'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   getRpcSessionId,
   getTrackAssemblyNames,
@@ -18,6 +18,7 @@ import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
