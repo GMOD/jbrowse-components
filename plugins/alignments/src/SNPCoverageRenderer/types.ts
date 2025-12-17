@@ -1,11 +1,7 @@
 import { type Feature, reducePrecision, toLocale } from '@jbrowse/core/util'
 
-import type {
-  BaseCoverageBin,
-  ColorBy,
-  ModificationTypeWithColor,
-  SkipMap,
-} from '../shared/types'
+import type { CoverageBinsSoA } from '../SNPCoverageAdapter/generateCoverageBinsPrefixSum'
+import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
 
@@ -99,15 +95,8 @@ export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserializ
   features: Map<string, Feature>
 }
 
-// Structure-of-arrays format for efficient rendering
-export interface SNPCoverageArrays {
-  starts: Int32Array
-  ends: Int32Array
-  scores: Float32Array
-  snpinfo: BaseCoverageBin[]
-  skipmap: SkipMap
+export interface RenderArgsDeserializedWithArrays extends RenderArgsDeserialized {
+  featureArrays: CoverageBinsSoA
 }
 
-export interface RenderArgsDeserializedWithArrays extends RenderArgsDeserialized {
-  featureArrays: SNPCoverageArrays
-}
+export type { CoverageBinsSoA as SNPCoverageArrays } from '../SNPCoverageAdapter/generateCoverageBinsPrefixSum'

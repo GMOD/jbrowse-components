@@ -79,7 +79,12 @@ function drawStackedBars(
   for (const base of sortedKeysDesc(entries)) {
     const entryDepth = entries[base]!.entryDepth
     ctx.fillStyle = colorMap[base] || 'black'
-    ctx.fillRect(x, bottom - ((entryDepth + curr) / depth) * h, w, (entryDepth / depth) * h)
+    ctx.fillRect(
+      x,
+      bottom - ((entryDepth + curr) / depth) * h,
+      w,
+      (entryDepth / depth) * h,
+    )
     curr += entryDepth
   }
   return curr
@@ -309,11 +314,41 @@ export function makeImageArrays(
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = bin
-      const curr = drawStackedBars(ctx, mods, colorMap, roundedLeftPx, bottom, w, h, depth, 0)
-      drawStackedBars(ctx, nonmods, colorMap, roundedLeftPx, bottom, w, h, depth, curr)
+      const curr = drawStackedBars(
+        ctx,
+        mods,
+        colorMap,
+        roundedLeftPx,
+        bottom,
+        w,
+        h,
+        depth,
+        0,
+      )
+      drawStackedBars(
+        ctx,
+        nonmods,
+        colorMap,
+        roundedLeftPx,
+        bottom,
+        w,
+        h,
+        depth,
+        curr,
+      )
     } else {
       const { depth, snps } = bin
-      drawStackedBars(ctx, snps, colorMap, roundedLeftPx, bottom, w, h, depth, 0)
+      drawStackedBars(
+        ctx,
+        snps,
+        colorMap,
+        roundedLeftPx,
+        bottom,
+        w,
+        h,
+        depth,
+        0,
+      )
     }
 
     const noncov = bin.noncov
@@ -468,7 +503,7 @@ export async function renderSNPCoverageArrays(
   const { height, regions, bpPerPx, adapterConfig } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const adapterId = adapterConfig?.adapterId ?? 'unknown'
+  const adapterId = adapterConfig.adapterId ?? 'unknown'
 
   const { reducedFeatures, skipmap, coords, items, ...rest } =
     await renderToAbstractCanvas(width, height, props, ctx =>

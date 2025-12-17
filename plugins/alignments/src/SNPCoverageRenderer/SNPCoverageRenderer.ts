@@ -1,9 +1,9 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import FeatureRendererType, {
   type RenderArgs,
   type ResultsDeserialized,
   type ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
@@ -41,8 +41,12 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
   }
 
   async render(renderProps: RenderArgsDeserialized) {
-    const { sessionId, adapterConfig, regions, statusCallback = () => {} } =
-      renderProps
+    const {
+      sessionId,
+      adapterConfig,
+      regions,
+      statusCallback = () => {},
+    } = renderProps
     const pm = this.pluginManager
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     const region = regions[0]!

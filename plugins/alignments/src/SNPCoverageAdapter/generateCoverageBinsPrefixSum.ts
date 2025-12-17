@@ -19,6 +19,7 @@ import {
 
 import type { Opts } from './util'
 import type {
+  BaseCoverageBin,
   FeatureWithMismatchIterator,
   Mismatch,
   PreBaseCoverageBin,
@@ -27,6 +28,43 @@ import type {
 } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+
+// Structure-of-arrays result format for efficient rendering
+export interface CoverageBinsSoA {
+  starts: Int32Array
+  ends: Int32Array
+  scores: Float32Array
+  snpinfo: BaseCoverageBin[]
+  skipmap: SkipMap
+}
+
+// Convert bins Map to structure-of-arrays format
+function binsMapToSoA(
+  bins: Map<number, PreBaseCoverageBin>,
+  regionStart: number,
+  skipmap: SkipMap,
+): CoverageBinsSoA {
+  const count = bins.size
+  const starts = new Int32Array(count)
+  const ends = new Int32Array(count)
+  const scores = new Float32Array(count)
+  const snpinfo: BaseCoverageBin[] = new Array(count)
+
+  // Sort positions for sequential output
+  const positions = [...bins.keys()].sort((a, b) => a - b)
+
+  for (const [idx, position] of positions.entries()) {
+    const pos = position
+    const bin = bins.get(pos)!
+    const start = regionStart + pos
+    starts[idx] = start
+    ends[idx] = start + 1
+    scores[idx] = bin.depth
+    snpinfo[idx] = bin
+  }
+
+  return { starts, ends, scores, snpinfo, skipmap }
+}
 
 // Reusable change arrays for deletion prefix sums
 const MAX_REGION_SIZE = 1_000_000
@@ -74,6 +112,8 @@ function finalizeBinEntry(entry: PreBinEntry) {
  *
  * This is ~100-1000x faster than the original per-base iteration approach,
  * especially for high-coverage or long-read data.
+ *
+ * Returns structure-of-arrays format for efficient rendering.
  */
 export async function generateCoverageBinsPrefixSum({
   fetchSequence,
@@ -85,7 +125,7 @@ export async function generateCoverageBinsPrefixSum({
   region: Region
   opts: Opts
   fetchSequence?: (arg: Region) => Promise<string | undefined>
-}): Promise<{ bins: PreBaseCoverageBin[]; skipmap: SkipMap }> {
+}): Promise<CoverageBinsSoA> {
   const { stopToken, colorBy, statsEstimationMode } = opts
   const regionStart = region.start
   const regionEnd = region.end
@@ -100,13 +140,13 @@ export async function generateCoverageBinsPrefixSum({
   // example, for an overview of the data or when calculating statistics. Just
   // return depth-only bins for fast coverage estimation
   if (statsEstimationMode) {
-    const bins: PreBaseCoverageBin[] = new Array(regionSize)
+    const bins = new Map<number, PreBaseCoverageBin>()
     for (let i = 0; i < regionSize; i++) {
       const depth = depthSoA.depth[i]!
       if (depth === 0) {
         continue
       }
-      bins[i] = {
+      bins.set(i, {
         depth,
         readsCounted: depth,
         ref: {
@@ -126,9 +166,9 @@ export async function generateCoverageBinsPrefixSum({
         nonmods: {},
         delskips: {},
         noncov: {},
-      }
+      })
     }
-    return { bins, skipmap: {} }
+    return binsMapToSoA(bins, regionStart, {})
   }
 
   // Step 2: Process mismatches with prefix sums for deletions
@@ -196,9 +236,9 @@ export async function generateCoverageBinsPrefixSum({
     }
   }
 
-  // Step 4: Build final bins array - only create objects for positions with data
+  // Step 4: Build final bins Map - only create objects for positions with data
   checkStopToken(stopToken)
-  const bins: PreBaseCoverageBin[] = new Array(regionSize)
+  const bins = new Map<number, PreBaseCoverageBin>()
 
   // First pass: create bins only where we have depth > 0 or other data
   for (let i = 0; i < regionSize; i++) {
@@ -210,7 +250,7 @@ export async function generateCoverageBinsPrefixSum({
       continue
     }
 
-    bins[i] = {
+    bins.set(i, {
       depth: depth - delDepth,
       readsCounted: depth,
       ref: {
@@ -230,16 +270,17 @@ export async function generateCoverageBinsPrefixSum({
       nonmods: {},
       delskips: delDepth > 0 ? { deletion: createDeletionEntry(delDepth) } : {},
       noncov: {},
-    }
+    })
   }
 
   // Apply SNP events
   for (let i = 0, l = snpEvents.length; i < l; i++) {
     const { pos, entry } = snpEvents[i]!
 
-    let bin = bins[pos]
+    let bin = bins.get(pos)
     if (!bin) {
-      bin = bins[pos] = createEmptyBin()
+      bin = createEmptyBin()
+      bins.set(pos, bin)
     }
     const snpEntry = (bin.snps[entry.base] ??= createPreBinEntry())
     snpEntry.entryDepth++
@@ -254,9 +295,10 @@ export async function generateCoverageBinsPrefixSum({
   // Apply noncov events (insertions, clips)
   for (let i = 0, l = noncovEvents.length; i < l; i++) {
     const { pos, entry } = noncovEvents[i]!
-    let bin = bins[pos]
+    let bin = bins.get(pos)
     if (!bin) {
-      bin = bins[pos] = createEmptyBin()
+      bin = createEmptyBin()
+      bins.set(pos, bin)
     }
     const noncovEntry = (bin.noncov[entry.type] ??= createPreBinEntry())
     noncovEntry.entryDepth++
@@ -280,7 +322,7 @@ export async function generateCoverageBinsPrefixSum({
   for (let i = 0, l = modBins.length; i < l; i++) {
     const modBin = modBins[i]
     if (modBin) {
-      const bin = bins[i]
+      const bin = bins.get(i)
       if (bin) {
         Object.assign(bin.mods, modBin.mods)
         Object.assign(bin.nonmods, modBin.nonmods)
@@ -292,22 +334,19 @@ export async function generateCoverageBinsPrefixSum({
   }
 
   // Finalize entries
-  for (let i = 0, l = bins.length; i < l; i++) {
-    const bin = bins[i]
-    if (bin) {
-      for (const key in bin.mods) {
-        finalizeBinEntry(bin.mods[key]!)
-      }
-      for (const key in bin.nonmods) {
-        finalizeBinEntry(bin.nonmods[key]!)
-      }
-      for (const key in bin.noncov) {
-        finalizeBinEntry(bin.noncov[key]!)
-      }
+  for (const bin of bins.values()) {
+    for (const key in bin.mods) {
+      finalizeBinEntry(bin.mods[key]!)
+    }
+    for (const key in bin.nonmods) {
+      finalizeBinEntry(bin.nonmods[key]!)
+    }
+    for (const key in bin.noncov) {
+      finalizeBinEntry(bin.noncov[key]!)
     }
   }
 
-  return { bins, skipmap }
+  return binsMapToSoA(bins, regionStart, skipmap)
 }
 
 function createDeletionEntry(depth: number): PreBinEntry {

@@ -79,7 +79,12 @@ function drawStackedBars(
   for (const base of sortedKeysDesc(entries)) {
     const entryDepth = entries[base]!.entryDepth
     ctx.fillStyle = colorMap[base] || 'black'
-    ctx.fillRect(x, bottom - ((entryDepth + curr) / depth) * h, w, (entryDepth / depth) * h)
+    ctx.fillRect(
+      x,
+      bottom - ((entryDepth + curr) / depth) * h,
+      w,
+      (entryDepth / depth) * h,
+    )
     curr += entryDepth
   }
   return curr
@@ -299,11 +304,41 @@ export function makeImage(
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = snpinfo
-      const curr = drawStackedBars(ctx, mods, colorMap, roundedLeftPx, bottom, w, h, depth, 0)
-      drawStackedBars(ctx, nonmods, colorMap, roundedLeftPx, bottom, w, h, depth, curr)
+      const curr = drawStackedBars(
+        ctx,
+        mods,
+        colorMap,
+        roundedLeftPx,
+        bottom,
+        w,
+        h,
+        depth,
+        0,
+      )
+      drawStackedBars(
+        ctx,
+        nonmods,
+        colorMap,
+        roundedLeftPx,
+        bottom,
+        w,
+        h,
+        depth,
+        curr,
+      )
     } else {
       const { depth, snps } = snpinfo
-      drawStackedBars(ctx, snps, colorMap, roundedLeftPx, bottom, w, h, depth, 0)
+      drawStackedBars(
+        ctx,
+        snps,
+        colorMap,
+        roundedLeftPx,
+        bottom,
+        w,
+        h,
+        depth,
+        0,
+      )
     }
 
     const noncov = snpinfo.noncov

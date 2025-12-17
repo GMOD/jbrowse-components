@@ -5,10 +5,12 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { fetchSequence } from '../util'
-import { generateCoverageBinsPrefixSum } from './generateCoverageBinsPrefixSum'
+import {
+  type CoverageBinsSoA,
+  generateCoverageBinsPrefixSum,
+} from './generateCoverageBinsPrefixSum'
 
-import type { BaseCoverageBin, FeatureWithMismatchIterator } from '../shared/types'
-import type { SNPCoverageArrays } from '../SNPCoverageRenderer/types'
+import type { FeatureWithMismatchIterator } from '../shared/types'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -76,45 +78,27 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { subadapter } = await this.configure()
-      const sequenceAdapter = await this.getSequenceAdapter()
+      const { starts, ends, scores, snpinfo, skipmap } =
+        await this.getFeaturesAsArrays(region, opts)
 
-      const features = await firstValueFrom(
-        subadapter.getFeatures(region, opts).pipe(toArray()),
-      )
-
-      const { bins, skipmap } = await generateCoverageBinsPrefixSum({
-        features: features as FeatureWithMismatchIterator[],
-        region,
-        opts,
-        fetchSequence: sequenceAdapter
-          ? (region: Region) => fetchSequence(region, sequenceAdapter)
-          : undefined,
-      })
-
-      let index = 0
-      for (const bin of bins) {
-        // bins is a holey array
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (bin) {
-          const start = region.start + index
-          observer.next(
-            new SimpleFeature({
-              id: `${this.id}-${start}`,
-              data: {
-                score: bin.depth,
-                snpinfo: bin,
-                start,
-                end: start + 1,
-                refName: region.refName,
-              },
-            }),
-          )
-        }
-        index++
+      // Emit coverage features
+      for (const [i, start_] of starts.entries()) {
+        const start = start_
+        observer.next(
+          new SimpleFeature({
+            id: `${this.id}-${start}`,
+            data: {
+              score: scores[i],
+              snpinfo: snpinfo[i],
+              start,
+              end: ends[i],
+              refName: region.refName,
+            },
+          }),
+        )
       }
 
-      // make fake features from the coverage
+      // Emit skip features for arc rendering
       for (const [key, skip] of Object.entries(skipmap)) {
         observer.next(
           new SimpleFeature({
@@ -139,7 +123,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   async getFeaturesAsArrays(
     region: Region,
     opts: BaseOptions = {},
-  ): Promise<SNPCoverageArrays> {
+  ): Promise<CoverageBinsSoA> {
     const { subadapter } = await this.configure()
     const sequenceAdapter = await this.getSequenceAdapter()
 
@@ -147,7 +131,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       subadapter.getFeatures(region, opts).pipe(toArray()),
     )
 
-    const { bins, skipmap } = await generateCoverageBinsPrefixSum({
+    return generateCoverageBinsPrefixSum({
       features: features as FeatureWithMismatchIterator[],
       region,
       opts,
@@ -155,34 +139,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         ? (region: Region) => fetchSequence(region, sequenceAdapter)
         : undefined,
     })
-
-    // Count non-empty bins to allocate arrays
-    let count = 0
-    for (let i = 0; i < bins.length; i++) {
-      if (bins[i]) {
-        count++
-      }
-    }
-
-    const starts = new Int32Array(count)
-    const ends = new Int32Array(count)
-    const scores = new Float32Array(count)
-    const snpinfo: BaseCoverageBin[] = new Array(count)
-
-    let idx = 0
-    for (let i = 0; i < bins.length; i++) {
-      const bin = bins[i]
-      if (bin) {
-        const start = region.start + i
-        starts[idx] = start
-        ends[idx] = start + 1
-        scores[idx] = bin.depth
-        snpinfo[idx] = bin
-        idx++
-      }
-    }
-
-    return { starts, ends, scores, snpinfo, skipmap }
   }
 
   async getMultiRegionFeatureDensityStats(
