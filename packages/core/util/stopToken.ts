@@ -47,25 +47,18 @@ function isSharedArrayBufferAvailable() {
 
 const useSharedArrayBuffer = isSharedArrayBufferAvailable()
 
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line no-console
-  console.log(
-    `[stopToken] SharedArrayBuffer ${useSharedArrayBuffer ? 'available' : 'not available (using blob URL fallback)'}`,
-  )
-}
-
 export function createStopToken(): StopToken {
   // Prefer SharedArrayBuffer when available (faster, just memory access)
   if (useSharedArrayBuffer) {
     const buffer = new SharedArrayBuffer(4)
     new Int32Array(buffer)[0] = 0 // Initialize to not-aborted
     return buffer
+  } else {
+    // Fallback to blob URL approach
+    // URL not available in jest and can't properly mock it
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
   }
-
-  // Fallback to blob URL approach
-  // URL not available in jest and can't properly mock it
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
 }
 
 // Safely check if a value is a SharedArrayBuffer

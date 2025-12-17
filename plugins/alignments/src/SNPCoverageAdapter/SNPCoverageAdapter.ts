@@ -11,11 +11,9 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { fetchSequence } from '../util'
-import {
-  type CoverageBinsSoA,
-  generateCoverageBinsPrefixSum,
-} from './generateCoverageBinsPrefixSum'
+import { generateCoverageBinsPrefixSum } from './generateCoverageBinsPrefixSum'
 
+import type { CoverageBinsSoA } from './generateCoverageBinsPrefixSum'
 import type {
   ColorBy,
   FeatureWithMismatchIterator,

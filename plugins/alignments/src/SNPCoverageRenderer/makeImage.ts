@@ -204,8 +204,22 @@ export function makeImage(
   const reducedFeatures: Feature[] = []
   const skipFeatures: Feature[] = []
 
+  // Two-pass rendering produces clearer visuals: neighboring coverage bars can
+  // slightly overlap due to fudgeFactor, so drawing all backgrounds first then
+  // all SNP overlays ensures SNP colors aren't obscured by adjacent bars
+  interface FeatureData {
+    leftPx: number
+    rightPx: number
+    score0: number
+    snpinfo: BaseCoverageBin
+  }
+  const featureDataList: FeatureData[] = []
+
   const lastTime = { time: Date.now() }
   let i = 0
+
+  // Pass 1: Draw all gray backgrounds
+  ctx.fillStyle = totalColor
   for (const feature of features.values()) {
     checkStopToken2(stopToken, i++, lastTime)
     if (feature.get('type') === 'skip') {
@@ -231,15 +245,20 @@ export function makeImage(
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin
 
     // Draw the gray background
-    ctx.fillStyle = totalColor
     const bgWidth = rightPx - leftPx + fudgeFactor
     ctx.fillRect(leftPx, toY(score0), bgWidth, toHeight(score0))
 
-    // Draw SNP data overlay
-    const w = Math.max(rightPx - leftPx, 1)
+    // Store data for second pass
+    featureDataList.push({ leftPx, rightPx, score0, snpinfo })
+  }
+
+  // Pass 2: Draw SNP overlays on top
+  for (const { leftPx, rightPx, score0, snpinfo } of featureDataList) {
+    const w = Math.max(rightPx - leftPx + fudgeFactor, 1)
     const h = toHeight(score0)
     const bottom = toY(score0) + h
     const roundedLeftPx = Math.round(leftPx)
+
     if (drawingModifications) {
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()

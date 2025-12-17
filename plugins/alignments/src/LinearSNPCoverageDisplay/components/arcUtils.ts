@@ -16,10 +16,18 @@ export interface ArcData {
 
 export function getArcColor(strand: number) {
   return strand === 1
-    ? 'rgba(255,200,200,0.7)'
+    ? 'rgba(255,170,170,0.7)'
     : strand === -1
-      ? 'rgba(200,200,255,0.7)'
+      ? 'rgba(160,160,255,0.7)'
       : 'rgba(200,200,200,0.7)'
+}
+
+export function getArcSelectedColor(strand: number) {
+  return strand === 1
+    ? 'rgba(255,100,100,1)'
+    : strand === -1
+      ? 'rgba(100,100,255,1)'
+      : 'rgba(120,120,120,1)'
 }
 
 export function getStrandLabel(strand: number) {

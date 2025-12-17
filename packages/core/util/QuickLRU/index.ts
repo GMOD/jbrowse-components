@@ -1,3 +1,1 @@
-import QuickLRU from '@jbrowse/quick-lru'
-
-export default QuickLRU
+export { default } from '@jbrowse/quick-lru'
