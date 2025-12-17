@@ -3,11 +3,12 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
 
+import type { SerializedFeatPos } from './syntenyRendererWorker'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-interface Pos {
+export interface Pos {
   offsetPx: number
 }
 
@@ -18,6 +19,22 @@ export interface FeatPos {
   p22: Pos
   f: Feature
   cigar: string[]
+}
+
+export function serializeFeatPos(feat: FeatPos): SerializedFeatPos {
+  return {
+    p11: feat.p11,
+    p12: feat.p12,
+    p21: feat.p21,
+    p22: feat.p22,
+    id: feat.f.id(),
+    strand: feat.f.get('strand'),
+    refName: feat.f.get('refName'),
+    name: feat.f.get('name') || feat.f.get('id') || feat.f.id(),
+    start: feat.f.get('start'),
+    end: feat.f.get('end'),
+    cigar: feat.cigar,
+  }
 }
 
 /**
@@ -47,6 +64,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       * web worker for offscreen canvas rendering
+       */
+      worker: null as Worker | null,
+
       /**
        * #volatile
        * canvas used for drawing visible screen
@@ -112,6 +135,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * minimum alignment length to display (in bp)
        */
       minAlignmentLength: 0,
+
+      /**
+       * #volatile
+       * whether the worker is currently rendering (for loading overlay)
+       */
+      isRendering: false,
     }))
     .actions(self => ({
       /**
@@ -119,6 +148,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setFeatPositions(arg: FeatPos[]) {
         self.featPositions = arg
+      },
+      /**
+       * #action
+       */
+      setWorker(worker: Worker | null) {
+        self.worker = worker
       },
       /**
        * #action
@@ -179,6 +214,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setColorBy(value: string) {
         self.colorBy = value
+      },
+      /**
+       * #action
+       */
+      setIsRendering(value: boolean) {
+        self.isRendering = value
       },
     }))
 

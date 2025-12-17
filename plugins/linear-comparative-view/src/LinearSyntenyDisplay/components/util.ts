@@ -12,26 +12,13 @@ import {
 
 import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
 
-import type { LinearSyntenyDisplayModel } from '../model'
+import type { FeatPos, LinearSyntenyDisplayModel } from '../model'
 import type { Feature } from '@jbrowse/core/util'
-
-interface Pos {
-  offsetPx: number
-}
 
 export interface ClickCoord {
   clientX: number
   clientY: number
   feature: { f: Feature }
-}
-
-interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
-  f: Feature
-  cigar: string[]
 }
 
 export function drawMatchSimple({
@@ -124,8 +111,6 @@ export function drawLocationMarkers(
   x4: number,
   y2: number,
   mid: number,
-  bpPerPx1: number,
-  bpPerPx2: number,
   drawCurves?: boolean,
 ) {
   const width1 = Math.abs(x2 - x1)
@@ -204,7 +189,7 @@ export function drawBezierBox(
   mid: number,
 ) {
   const len1 = Math.abs(x1 - x2)
-  const len2 = Math.abs(x1 - x2)
+  const len2 = Math.abs(x3 - x4)
 
   // heuristic to not draw hourglass inversions with bezier curves when they
   // are thin and far apart because it results in areas that are not drawn well

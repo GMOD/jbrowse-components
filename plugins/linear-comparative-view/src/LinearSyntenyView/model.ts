@@ -59,6 +59,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers: false,
         /**
          * #property
+         * whether to use web worker for rendering (offscreen canvas)
+         */
+        useWebWorker: true,
+        /**
+         * #property
          * used for initializing the view from a session snapshot
          * example:
          * ```json
@@ -147,6 +152,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setDrawLocationMarkers(arg: boolean) {
         self.drawLocationMarkers = arg
+      },
+      /**
+       * #action
+       */
+      setUseWebWorker(arg: boolean) {
+        self.useWebWorker = arg
       },
       /**
        * #action
@@ -285,6 +296,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                   helpText:
                     'Location markers add periodic visual indicators along long syntenic blocks, helping you track position and scale within large conserved regions. This is particularly useful when examining very long syntenic matches where it can be difficult to gauge relative position.',
+                },
+                {
+                  label: 'Use web worker',
+                  type: 'checkbox',
+                  checked: self.useWebWorker,
+                  description:
+                    'Use a web worker for offscreen canvas rendering',
+                  onClick: () => {
+                    self.setUseWebWorker(!self.useWebWorker)
+                  },
+                  helpText:
+                    'When enabled, rendering is performed in a separate web worker thread using OffscreenCanvas, which can improve responsiveness. Disable this if you experience rendering issues or for debugging purposes.',
                 },
               ],
             },

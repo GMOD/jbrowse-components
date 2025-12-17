@@ -9,12 +9,13 @@ import type { AnyConfigurationModel } from '../configuration'
 import type { Assembly } from './assembly'
 import type PluginManager from '../PluginManager'
 import type RpcManager from '../rpc/RpcManager'
+import type { StopToken } from '../util/stopToken'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 
 export interface AssemblyBaseOpts {
-  stopToken?: string
+  stopToken?: StopToken
   sessionId: string
   statusCallback?: (arg: string) => void
 }

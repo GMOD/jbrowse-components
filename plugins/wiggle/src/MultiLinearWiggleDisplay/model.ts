@@ -20,6 +20,7 @@ import type { Source } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -78,7 +79,7 @@ export function stateModelFactory(
       /**
        * #volatile
        */
-      sourcesLoadingStopToken: undefined as string | undefined,
+      sourcesLoadingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
@@ -98,11 +99,11 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setSourcesLoading(str: string) {
+      setSourcesLoading(token: StopToken) {
         if (self.sourcesLoadingStopToken) {
           stopStopToken(self.sourcesLoadingStopToken)
         }
-        self.sourcesLoadingStopToken = str
+        self.sourcesLoadingStopToken = token
       },
       /**
        * #action

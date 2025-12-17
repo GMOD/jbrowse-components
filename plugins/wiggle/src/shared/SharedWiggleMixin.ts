@@ -14,6 +14,7 @@ import { getNiceDomain } from '../util'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // lazies
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog'))
@@ -110,7 +111,7 @@ export default function SharedWiggleMixin(
       /**
        * #volatile
        */
-      statsFetchInProgress: undefined as undefined | string,
+      statsFetchInProgress: undefined as StopToken | undefined,
     }))
     .actions(self => ({
       /**
@@ -163,11 +164,11 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setStatsLoading(arg?: string) {
+      setStatsLoading(token?: StopToken) {
         if (self.statsFetchInProgress) {
           stopStopToken(self.statsFetchInProgress)
         }
-        self.statsFetchInProgress = arg
+        self.statsFetchInProgress = token
       },
 
       /**

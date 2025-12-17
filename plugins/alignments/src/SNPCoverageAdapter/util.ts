@@ -6,11 +6,12 @@ import type {
   PreBaseCoverageBinSubtypes,
   PreBinEntry,
 } from '../shared/types'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface Opts {
   bpPerPx?: number
   colorBy?: ColorBy
-  stopToken?: string
+  stopToken?: StopToken
   /** When true, only compute depth (skip mismatch/modification processing) */
   statsEstimationMode?: boolean
 }

@@ -16,6 +16,7 @@ import {
 } from '../shared/menuItems'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
@@ -81,7 +82,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        * Stop token for the current rendering operation
        */
-      renderingStopToken: undefined as string | undefined,
+      renderingStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       /**
@@ -150,7 +151,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        * Set the rendering stop token
        */
-      setRenderingStopToken(token: string | undefined) {
+      setRenderingStopToken(token: StopToken | undefined) {
         self.renderingStopToken = token
       },
     }))

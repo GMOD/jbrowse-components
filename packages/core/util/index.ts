@@ -30,6 +30,7 @@ import type { ParsedLocString } from './locString'
 import type PluginManager from '../PluginManager'
 import type { BaseBlock } from './blockTypes'
 import type { Feature } from './simpleFeature'
+import type { StopToken } from './stopToken'
 import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import type { Region as MUIRegion } from './types/mst'
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
@@ -906,7 +907,7 @@ export async function updateStatus<U>(
 export async function updateStatus2<U>(
   msg: string,
   cb: (arg: string) => void,
-  stopToken: string | undefined,
+  stopToken: StopToken | undefined,
   fn: () => U | Promise<U>,
 ) {
   cb(msg)

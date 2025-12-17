@@ -30,28 +30,85 @@ import { isWebWorker } from './isWebWorker'
  * IN THE SOFTWARE.
  */
 
-export function createStopToken() {
+export type StopToken = string | SharedArrayBuffer
+
+// Check if SharedArrayBuffer is available (requires cross-origin isolation)
+function isSharedArrayBufferAvailable() {
+  try {
+    // Need to actually try to use it, not just check typeof
+    return (
+      typeof SharedArrayBuffer !== 'undefined' &&
+      new SharedArrayBuffer(4).byteLength === 4
+    )
+  } catch {
+    return false
+  }
+}
+
+const useSharedArrayBuffer = isSharedArrayBufferAvailable()
+
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line no-console
+  console.log(
+    `[stopToken] SharedArrayBuffer ${useSharedArrayBuffer ? 'available' : 'not available (using blob URL fallback)'}`,
+  )
+}
+
+export function createStopToken(): StopToken {
+  // Prefer SharedArrayBuffer when available (faster, just memory access)
+  if (useSharedArrayBuffer) {
+    const buffer = new SharedArrayBuffer(4)
+    new Int32Array(buffer)[0] = 0 // Initialize to not-aborted
+    return buffer
+  }
+
+  // Fallback to blob URL approach
   // URL not available in jest and can't properly mock it
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
 }
 
-export function stopStopToken(stopToken: string) {
-  // URL not available in jest and can't properly mock it
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  URL.revokeObjectURL?.(stopToken)
+// Safely check if a value is a SharedArrayBuffer
+function isSharedArrayBuffer(value: unknown): value is SharedArrayBuffer {
+  try {
+    return (
+      typeof SharedArrayBuffer !== 'undefined' &&
+      value instanceof SharedArrayBuffer
+    )
+  } catch {
+    return false
+  }
 }
 
-export function checkStopToken(stopToken: string | undefined) {
-  // avoid doing synchronous XHR on main thread
-  if (typeof jest === 'undefined' && stopToken !== undefined && isWebWorker()) {
-    const xhr = new XMLHttpRequest()
+export function stopStopToken(stopToken: StopToken) {
+  if (isSharedArrayBuffer(stopToken)) {
+    // Set abort flag
+    Atomics.store(new Int32Array(stopToken), 0, 1)
+  } else {
+    // Revoke blob URL
+    // URL not available in jest and can't properly mock it
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    URL.revokeObjectURL?.(stopToken)
+  }
+}
 
-    // synchronous XHR usage to check the token
+export function checkStopToken(stopToken: StopToken | undefined) {
+  if (stopToken === undefined) {
+    return
+  }
+
+  if (isSharedArrayBuffer(stopToken)) {
+    // Fast path: just check memory
+    if (Atomics.load(new Int32Array(stopToken), 0) === 1) {
+      throw new Error('aborted')
+    }
+  } else if (typeof jest === 'undefined' && isWebWorker()) {
+    // Slow path: synchronous XHR (avoid on main thread)
+    const xhr = new XMLHttpRequest()
     xhr.open('GET', stopToken, false)
     try {
       xhr.send(null)
-    } catch (e) {
+    } catch {
       throw new Error('aborted')
     }
   }
