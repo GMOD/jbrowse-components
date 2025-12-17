@@ -1,5 +1,10 @@
 import { BigWig } from '@gmod/bbi'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  aggregateQuantitativeStats,
+  blankStats,
+} from '@jbrowse/core/data_adapters/BaseAdapter/stats'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -13,6 +18,93 @@ import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
+  staticBlocks?: Region[]
+}
+
+interface CachedStats {
+  arrays: WiggleFeatureArrays
+  region: Region
+}
+
+function computeStatsFromArrays(
+  arrays: WiggleFeatureArrays,
+  originalRegion: Region,
+  targetStart: number,
+  targetEnd: number,
+) {
+  const { starts, ends, scores, minScores, maxScores } = arrays
+  const len = scores.length
+
+  if (len === 0) {
+    return {
+      scoreMin: 0,
+      scoreMax: 0,
+      scoreSum: 0,
+      scoreSumSquares: 0,
+      scoreMean: 0,
+      scoreStdDev: 0,
+      featureCount: 0,
+      basesCovered: targetEnd - targetStart,
+      featureDensity: 0,
+    }
+  }
+
+  let scoreMin = Number.MAX_VALUE
+  let scoreMax = Number.MIN_VALUE
+  let scoreSum = 0
+  let scoreSumSquares = 0
+  let featureCount = 0
+
+  for (let i = 0; i < len; i++) {
+    const featureStart = starts[i]!
+    const featureEnd = ends[i]!
+
+    // Skip features outside target range
+    if (featureEnd <= targetStart || featureStart >= targetEnd) {
+      continue
+    }
+
+    const score = scores[i]!
+    const min = minScores?.[i] ?? score
+    const max = maxScores?.[i] ?? score
+
+    scoreMin = Math.min(scoreMin, min)
+    scoreMax = Math.max(scoreMax, max)
+    scoreSum += score
+    scoreSumSquares += score * score
+    featureCount++
+  }
+
+  if (featureCount === 0) {
+    return {
+      scoreMin: 0,
+      scoreMax: 0,
+      scoreSum: 0,
+      scoreSumSquares: 0,
+      scoreMean: 0,
+      scoreStdDev: 0,
+      featureCount: 0,
+      basesCovered: targetEnd - targetStart,
+      featureDensity: 0,
+    }
+  }
+
+  const scoreMean = scoreSum / featureCount
+  const scoreStdDev = Math.sqrt(
+    scoreSumSquares / featureCount - scoreMean * scoreMean,
+  )
+
+  return {
+    scoreMin,
+    scoreMax,
+    scoreSum,
+    scoreSumSquares,
+    scoreMean,
+    scoreStdDev,
+    featureCount,
+    basesCovered: targetEnd - targetStart,
+    featureDensity: featureCount / (targetEnd - targetStart),
+  }
 }
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter {
@@ -20,6 +112,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     bigwig: BigWig
     header: Awaited<ReturnType<BigWig['getHeader']>>
   }>
+
+  // Cache for stats arrays (keyed by region string)
+  private statsCache = new QuickLRU<string, CachedStats>({ maxSize: 50 })
 
   public static capabilities = [
     'hasResolution',
@@ -244,6 +339,92 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     return {
       featureDensity: 0,
     }
+  }
+
+  /**
+   * Override to use static blocks for caching when available.
+   * Static blocks are stable "tiles" that don't change on small pans,
+   * providing better cache hit rates than dynamic blocks.
+   */
+  async getMultiRegionQuantitativeStats(
+    regions: Region[] = [],
+    opts: WiggleOptions = {},
+  ) {
+    if (!regions.length) {
+      return blankStats()
+    }
+
+    const { staticBlocks } = opts
+
+    // If staticBlocks provided, use them for caching and subselect for dynamic regions
+    if (staticBlocks?.length) {
+      // Fetch data for all static blocks (with caching)
+      const staticBlockData = await Promise.all(
+        staticBlocks.map(async block => {
+          const cacheKey = `${block.refName}:${block.start}-${block.end}`
+          let cached = this.statsCache.get(cacheKey)
+
+          if (!cached) {
+            const { start, end } = block
+            const arrays = await this.getFeaturesAsArrays(block, {
+              ...opts,
+              // use low resolution for stats estimation
+              bpPerPx: (end - start) / 1000,
+            })
+            cached = { arrays, region: block }
+            this.statsCache.set(cacheKey, cached)
+            console.log(
+              `[BigWigAdapter] statsCache MISS for ${block.refName}:${block.start}-${block.end}`,
+            )
+          } else {
+            console.log(
+              `[BigWigAdapter] statsCache HIT for ${block.refName}:${block.start}-${block.end}`,
+            )
+          }
+
+          return cached
+        }),
+      )
+
+      // For each dynamic region, find overlapping static blocks and compute stats
+      const regionStats = regions.map(region => {
+        const overlappingBlocks = staticBlockData.filter(
+          ({ region: block }) =>
+            block.refName === region.refName &&
+            block.start < region.end &&
+            block.end > region.start,
+        )
+
+        if (overlappingBlocks.length === 0) {
+          return {
+            scoreMin: 0,
+            scoreMax: 0,
+            scoreSum: 0,
+            scoreSumSquares: 0,
+            scoreMean: 0,
+            scoreStdDev: 0,
+            featureCount: 0,
+            basesCovered: region.end - region.start,
+            featureDensity: 0,
+          }
+        }
+
+        // Compute stats from overlapping blocks, subselecting to region bounds
+        const blockStats = overlappingBlocks.map(({ arrays, region: block }) =>
+          computeStatsFromArrays(arrays, block, region.start, region.end),
+        )
+
+        return aggregateQuantitativeStats(blockStats)
+      })
+
+      return aggregateQuantitativeStats(regionStats)
+    }
+
+    // Fallback: fetch directly for each dynamic region (original behavior)
+    const stats = await Promise.all(
+      regions.map(region => this.getRegionQuantitativeStats(region, opts)),
+    )
+    return aggregateQuantitativeStats(stats)
   }
 }
 

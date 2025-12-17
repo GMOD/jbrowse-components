@@ -13,6 +13,7 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFilt
       sessionId: string
       headers?: Record<string, string>
       regions: Region[]
+      staticBlocks?: Region[]
       bpPerPx: number
     },
     rpcDriverClassName: string,
@@ -22,13 +23,13 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFilt
       args,
       rpcDriverClassName,
     )
-    const { regions, adapterConfig, sessionId } = deserializedArgs
+    const { regions, staticBlocks, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     // @ts-expect-error
-    return dataAdapter.getMultiRegionQuantitativeStats(
-      regions,
-      deserializedArgs,
-    )
+    return dataAdapter.getMultiRegionQuantitativeStats(regions, {
+      ...deserializedArgs,
+      staticBlocks,
+    })
   }
 }

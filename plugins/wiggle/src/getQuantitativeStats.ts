@@ -65,13 +65,23 @@ export async function getQuantitativeStats(
           currStatsBpPerPx,
         }
   } else if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-    const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
+    const { dynamicBlocks, staticBlocks, bpPerPx } = getContainingView(
+      self,
+    ) as LGV
     const results = (await rpcManager.call(
       sessionId,
       'WiggleGetMultiRegionQuantitativeStats',
       {
         ...params,
         regions: dynamicBlocks.contentBlocks.map(region => {
+          const { start, end } = region
+          return {
+            ...JSON.parse(JSON.stringify(region)),
+            start: Math.floor(start),
+            end: Math.ceil(end),
+          }
+        }),
+        staticBlocks: staticBlocks.contentBlocks.map(region => {
           const { start, end } = region
           return {
             ...JSON.parse(JSON.stringify(region)),

@@ -1,4 +1,8 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  aggregateQuantitativeStats,
+  blankStats,
+} from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { SimpleFeature, max, min } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { merge } from 'rxjs'
@@ -14,6 +18,7 @@ import type {
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
+  staticBlocks?: Region[]
 }
 
 export type MultiWiggleFeatureArrays = Record<string, WiggleFeatureArrays>
@@ -270,6 +275,39 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     return {
       featureDensity: 0,
     }
+  }
+
+  /**
+   * Override to pass staticBlocks through to sub-adapters for caching.
+   */
+  async getMultiRegionQuantitativeStats(
+    regions: Region[] = [],
+    opts: WiggleOptions = {},
+  ) {
+    if (!regions.length) {
+      return blankStats()
+    }
+
+    const adapters = await this.getAdapters()
+
+    // Delegate to sub-adapters, passing staticBlocks through
+    const allStats = await Promise.all(
+      adapters.map(async adp => {
+        const { dataAdapter } = adp
+        if (dataAdapter.getMultiRegionQuantitativeStats) {
+          return dataAdapter.getMultiRegionQuantitativeStats(regions, opts)
+        }
+        // Fallback to base implementation
+        const stats = await Promise.all(
+          regions.map(region =>
+            dataAdapter.getRegionQuantitativeStats?.(region, opts),
+          ),
+        )
+        return aggregateQuantitativeStats(stats.filter(Boolean))
+      }),
+    )
+
+    return aggregateQuantitativeStats(allStats.filter(Boolean))
   }
 
   // in another adapter type, this could be dynamic depending on region or
