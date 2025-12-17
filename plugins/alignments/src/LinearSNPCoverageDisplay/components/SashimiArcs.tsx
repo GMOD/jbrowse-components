@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, getSession, notEmpty } from '@jbrowse/core/util'
@@ -32,29 +32,58 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const effectiveHeight = height - YSCALEBAR_LABEL_OFFSET * 2
 
-  const { arcs, drawnAtBpPerPx, drawnAtOffsetPx } = useMemo(() => {
+  const { arcs, arcMap, drawnAtBpPerPx, drawnAtOffsetPx } = useMemo(() => {
     const currentOffsetPx = view.offsetPx
     const assembly = assemblyManager.get(view.assemblyNames[0]!)
+    const arcsArray = assembly
+      ? skipFeatures
+          .map(f =>
+            featureToArcData(
+              f,
+              view,
+              effectiveHeight,
+              currentOffsetPx,
+              assembly,
+            ),
+          )
+          .filter(notEmpty)
+      : []
+    // Build lookup map for event delegation
+    const map = new Map<string, ArcData>()
+    for (const arc of arcsArray) {
+      map.set(arc.id, arc)
+    }
     return {
-      arcs: assembly
-        ? skipFeatures
-            .map(f =>
-              featureToArcData(
-                f,
-                view,
-                effectiveHeight,
-                currentOffsetPx,
-                assembly,
-              ),
-            )
-            .filter(notEmpty)
-        : [],
+      arcs: arcsArray,
+      arcMap: map,
       drawnAtBpPerPx: view.bpPerPx,
       drawnAtOffsetPx: currentOffsetPx,
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skipFeatures, view.bpPerPx, effectiveHeight])
+
+  // Use refs to avoid recreating callbacks when arcMap changes
+  const arcMapRef = useRef(arcMap)
+  arcMapRef.current = arcMap
+
+  // Event delegation - single handler for all arcs
+  const handleMouseEnter = useCallback(
+    (event: React.MouseEvent<SVGPathElement>) => {
+      const id = event.currentTarget.dataset.id
+      if (id) {
+        const arc = arcMapRef.current.get(id)
+        if (arc) {
+          setHoverInfo({ arc, x: event.clientX, y: event.clientY })
+        }
+      }
+    },
+    [],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    setHoverInfo(null)
+  }, [])
 
   if (
     !showArcsSetting ||
@@ -81,24 +110,15 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
         {arcs.map(arc => (
           <path
             key={arc.id}
+            data-id={arc.id}
             d={arc.path}
             stroke={arc.stroke}
             strokeWidth={arc.strokeWidth}
             fill="none"
-            style={{
-              pointerEvents: 'stroke',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={event => {
-              setHoverInfo({
-                arc,
-                x: event.clientX,
-                y: event.clientY,
-              })
-            }}
-            onMouseLeave={() => {
-              setHoverInfo(null)
-            }}
+            pointerEvents="stroke"
+            cursor="pointer"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
           />
         ))}
       </svg>
