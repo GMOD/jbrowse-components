@@ -87,6 +87,8 @@ export interface DrawResultMessage {
   mainBitmap: ImageBitmap
   clickMapBitmap: ImageBitmap
   cigarClickMapBitmap: ImageBitmap
+  offsets: number[]
+  bpPerPxs: number[]
 }
 
 let cachedFeatPositions: SerializedFeatPos[] = []
@@ -847,6 +849,8 @@ function performDraw() {
       mainBitmap,
       clickMapBitmap,
       cigarClickMapBitmap,
+      offsets: msg.offsets,
+      bpPerPxs: msg.bpPerPxs,
     }
 
     ;(self as DedicatedWorkerGlobalScope).postMessage(result, [
