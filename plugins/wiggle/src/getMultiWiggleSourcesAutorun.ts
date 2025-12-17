@@ -6,6 +6,7 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface Source {
@@ -21,7 +22,7 @@ export function getMultiWiggleSourcesAutorun(self: {
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
   adapterProps: () => Record<string, unknown>
-  setSourcesLoading: (aborter: string) => void
+  setSourcesLoading: (token: StopToken) => void
   setError: (error: unknown) => void
   setStatusMessage: (str: string) => void
   setSources: (sources: Source[]) => void

@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 
 import { CascadingMenu } from '@jbrowse/core/ui'
 import { usePopupState } from '@jbrowse/core/ui/hooks'
+import { getSession } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
 import { getCachedElements, getPinnedContentBlock } from '../util'
 
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '..'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
@@ -169,7 +170,10 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
       {
         label: `Show only ${refName}`,
         onClick: () => {
-          model.navToLocString(refName, assemblyName)
+          model.navToLocString(refName, assemblyName).catch((e: unknown) => {
+            console.error(e)
+            getSession(model).notifyError(`${e}`, e)
+          })
         },
       },
     ]
@@ -199,10 +203,7 @@ function ScalebarRefNameLabels({ model }: { model: LGV }) {
       />
       <CascadingMenu
         menuItems={getMenuItems()}
-        onMenuItemClick={(
-          _event: React.MouseEvent,
-          callback: () => void,
-        ) => {
+        onMenuItemClick={(_event: React.MouseEvent, callback: () => void) => {
           callback()
         }}
         popupState={popupState}

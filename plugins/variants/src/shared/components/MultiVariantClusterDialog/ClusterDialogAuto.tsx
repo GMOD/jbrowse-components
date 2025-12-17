@@ -13,6 +13,7 @@ import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { ReducedModel } from './types'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ClusterDialogAuto = observer(function ({
@@ -27,7 +28,7 @@ const ClusterDialogAuto = observer(function ({
   const [progress, setProgress] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
-  const [stopToken, setStopToken] = useState('')
+  const [stopToken, setStopToken] = useState<StopToken>()
 
   return (
     <>
@@ -39,7 +40,9 @@ const ClusterDialogAuto = observer(function ({
               <span>{progress || 'Loading...'}</span>
               <Button
                 onClick={() => {
-                  stopStopToken(stopToken)
+                  if (stopToken) {
+                    stopStopToken(stopToken)
+                  }
                 }}
               >
                 Stop

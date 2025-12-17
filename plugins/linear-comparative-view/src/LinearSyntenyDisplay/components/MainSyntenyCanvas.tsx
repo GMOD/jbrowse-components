@@ -40,8 +40,7 @@ const MainSyntenyCanvas = observer(function ({
   const setCanvasRef = useCallback(
     (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
-      ;(canvasRef as React.MutableRefObject<HTMLCanvasElement | null>).current =
-        ref
+      canvasRef.current = ref
     },
     [model],
   )

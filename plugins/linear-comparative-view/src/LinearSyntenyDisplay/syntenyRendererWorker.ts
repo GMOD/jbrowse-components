@@ -2,8 +2,32 @@ import { colord } from 'colord'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255
 
-function checkStopToken(stopToken: string | undefined) {
-  if (stopToken !== undefined) {
+type StopToken = string | SharedArrayBuffer
+
+// Safely check if a value is a SharedArrayBuffer (handles environments where SAB is undefined)
+function isSharedArrayBuffer(value: unknown): value is SharedArrayBuffer {
+  try {
+    return (
+      typeof SharedArrayBuffer !== 'undefined' &&
+      value instanceof SharedArrayBuffer
+    )
+  } catch {
+    return false
+  }
+}
+
+function checkStopToken(stopToken: StopToken | undefined) {
+  if (stopToken === undefined) {
+    return
+  }
+
+  if (isSharedArrayBuffer(stopToken)) {
+    // Fast path: just check memory
+    if (Atomics.load(new Int32Array(stopToken), 0) === 1) {
+      throw new Error('aborted')
+    }
+  } else if (typeof stopToken === 'string') {
+    // Slow path: synchronous XHR
     const xhr = new XMLHttpRequest()
     xhr.open('GET', stopToken, false)
     try {
@@ -12,6 +36,32 @@ function checkStopToken(stopToken: string | undefined) {
       throw new Error('aborted')
     }
   }
+}
+
+// For SharedArrayBuffer: check frequently (cheap memory read)
+// For sync XHR: throttle with time check to avoid overhead
+function shouldCheckStopToken(
+  i: number,
+  stopToken: StopToken | undefined,
+  lastCheck: { time: number },
+) {
+  if (stopToken === undefined) {
+    return false
+  }
+  if (i % 100 !== 0) {
+    return false
+  }
+  // SharedArrayBuffer is cheap, always check
+  if (isSharedArrayBuffer(stopToken)) {
+    return true
+  }
+  // Sync XHR is expensive, throttle to every 10ms
+  const now = Date.now()
+  if (now - lastCheck.time > 10) {
+    lastCheck.time = now
+    return true
+  }
+  return false
 }
 
 const category10 = [
@@ -73,7 +123,7 @@ export interface DrawSyntenyMessage {
   alpha: number
   minAlignmentLength: number
   colorBy: string
-  stopToken?: string
+  stopToken?: StopToken
 }
 
 export type WorkerMessage = DrawSyntenyMessage | UpdateFeaturesMessage
@@ -354,11 +404,11 @@ function drawCigarClickMapImpl(
   const bpPerPxInv0 = 1 / bpPerPxs[level]!
   const bpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
+  const lastCheck = { time: Date.now() }
   for (let i = 0, l = featPositions.length; i < l; i++) {
-    // // Check stop token every 100 features
-    // if (i % 100 === 0) {
-    //   checkStopToken(msg.stopToken)
-    // }
+    if (shouldCheckStopToken(i, msg.stopToken, lastCheck)) {
+      checkStopToken(msg.stopToken)
+    }
 
     const { p11, p12, p21, p22, strand, cigar } = featPositions[i]!
     const x11 = p11.offsetPx - offsets[level]!
@@ -531,11 +581,11 @@ function drawRefImpl(
     { x11: number; x21: number; y1: number; y2: number; mid: number }[]
   >()
 
+  const lastCheck = { time: Date.now() }
   for (let i = 0, l = featPositions.length; i < l; i++) {
-    // // Check stop token every 100 features
-    // if (i % 100 === 0) {
-    //   checkStopToken(msg.stopToken)
-    // }
+    if (shouldCheckStopToken(i, msg.stopToken, lastCheck)) {
+      checkStopToken(msg.stopToken)
+    }
 
     const feat = featPositions[i]!
     if (minAlignmentLength > 0) {
@@ -610,10 +660,9 @@ function drawRefImpl(
   mainCtx.strokeStyle = colorMapWithAlpha.M
 
   for (let i = 0, l = featPositions.length; i < l; i++) {
-    // // Check stop token every 100 features
-    // if (i % 100 === 0) {
-    //   checkStopToken(msg.stopToken)
-    // }
+    if (shouldCheckStopToken(i, msg.stopToken, lastCheck)) {
+      checkStopToken(msg.stopToken)
+    }
 
     const feat = featPositions[i]!
     const { strand, refName, cigar, p11, p12, p21, p22 } = feat
@@ -766,8 +815,7 @@ function drawRefImpl(
   clickMapCtx.clearRect(0, 0, width, height)
 
   for (let i = 0, l = featPositions.length; i < l; i++) {
-    // Check stop token every 100 features
-    if (i % 100 === 0) {
+    if (shouldCheckStopToken(i, msg.stopToken, lastCheck)) {
       checkStopToken(msg.stopToken)
     }
 
@@ -807,6 +855,13 @@ function performDraw() {
   pendingDrawMessage = null
 
   if (!msg || cachedFeatPositions.length === 0) {
+    return
+  }
+
+  // Check if already cancelled before we start
+  try {
+    checkStopToken(msg.stopToken)
+  } catch {
     return
   }
 

@@ -18,6 +18,7 @@ import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -57,7 +58,7 @@ const blockState = types
     /**
      * #volatile
      */
-    stopToken: undefined as string | undefined,
+    stopToken: undefined as StopToken | undefined,
     /**
      * #volatile
      */
@@ -143,7 +144,7 @@ const blockState = types
       /**
        * #action
        */
-      setLoading(newStopToken: string) {
+      setLoading(newStopToken: StopToken) {
         stopCurrentToken()
         self.isRenderingPending = true
         self.error = undefined
@@ -344,7 +345,7 @@ export function renderBlockData(
 
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
-  stopToken: string | undefined,
+  stopToken: StopToken,
   self: BlockModel,
 ) {
   if (!props || !isAlive(self)) {

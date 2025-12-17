@@ -118,17 +118,15 @@ const LinearSyntenyRendering = observer(function ({
           const { f, cigar } = model.featPositions[id]
           const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
           const cigarIdx = getId(r2!, g2!, b2!, unitMultiplier2)
-          if (cigarIdx % 2 === 0 && (r2 !== 0 || g2 !== 0 || b2 !== 0)) {
-            setTooltip(
-              getTooltip({
-                feature: f,
-                cigarOp: cigar[cigarIdx + 1],
-                cigarOpLen: cigar[cigarIdx],
-              }),
-            )
-          } else {
-            setTooltip('')
-          }
+          const hasCigarData =
+            cigarIdx % 2 === 0 && (r2 !== 0 || g2 !== 0 || b2 !== 0)
+          setTooltip(
+            getTooltip({
+              feature: f,
+              cigarOp: hasCigarData ? cigar[cigarIdx + 1] : undefined,
+              cigarOpLen: hasCigarData ? cigar[cigarIdx] : undefined,
+            }),
+          )
         }
       }
     },

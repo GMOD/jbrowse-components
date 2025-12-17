@@ -1,10 +1,15 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 
-import { drawMouseoverClickMap, drawRef, drawCigarClickMap } from './drawSynteny'
+import {
+  drawCigarClickMap,
+  drawMouseoverClickMap,
+  drawRef,
+} from './drawSynteny'
 import { serializeFeatPos } from './model'
 
 import type { FeatPos, LinearSyntenyDisplayModel } from './model'
@@ -14,11 +19,13 @@ import type {
   UpdateFeaturesMessage,
 } from './syntenyRendererWorker'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let renderingTimeout: ReturnType<typeof setTimeout> | undefined
+  let currentStopToken: StopToken | undefined
 
   // Worker lifecycle management - create/destroy based on useWebWorker setting
   addDisposer(
@@ -82,7 +89,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           // Wrap postMessage to track rendering state
           const originalPostMessage = worker.postMessage.bind(worker)
           // @ts-expect-error
-          worker.postMessage = (message: unknown, transfer?: Transferable[]) => {
+          worker.postMessage = (
+            message: unknown,
+            transfer?: Transferable[],
+          ) => {
             if (
               typeof message === 'object' &&
               message !== null &&
@@ -111,6 +121,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   // Cleanup worker on dispose
   addDisposer(self, () => {
     clearTimeout(renderingTimeout)
+    if (currentStopToken) {
+      stopStopToken(currentStopToken)
+      currentStopToken = undefined
+    }
     if (self.worker) {
       self.worker.terminate()
       self.setWorker(null)
@@ -175,6 +189,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const height = self.height
         const width = view.width
 
+        // Cancel any in-progress render by revoking the old stopToken
+        if (currentStopToken) {
+          stopStopToken(currentStopToken)
+        }
+        currentStopToken = createStopToken()
+
         const message: DrawSyntenyMessage = {
           type: 'draw',
           width,
@@ -189,6 +209,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           alpha,
           minAlignmentLength,
           colorBy,
+          stopToken: currentStopToken,
         }
 
         worker.postMessage(message)
@@ -327,14 +348,23 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
 
         // Access observables to trigger re-run when they change
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _alpha = self.alpha
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _minAlignmentLength = self.minAlignmentLength
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _colorBy = self.colorBy
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _drawCurves = view.drawCurves
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _drawCIGAR = view.drawCIGAR
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _drawLocationMarkers = view.drawLocationMarkers
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _offsets = view.views.map(v => v.offsetPx)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _bpPerPxs = view.views.map(v => v.bpPerPx)
 
         const width = view.width
