@@ -4,6 +4,7 @@ import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 
+import { drawMouseoverClickMap, drawRef, drawCigarClickMap } from './drawSynteny'
 import { serializeFeatPos } from './model'
 
 import type { LinearSyntenyDisplayModel } from './model'
@@ -185,6 +186,107 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         self.setFeatPositions(map)
       },
       {
+        fireImmediately: true,
+      },
+    ),
+  )
+
+  // Main-thread rendering when web worker is disabled
+  addDisposer(
+    self,
+    autorun(
+      function syntenyMainThreadDrawAutorun() {
+        const view = getContainingView(self) as LSV
+        if (
+          !view.initialized ||
+          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+        ) {
+          return
+        }
+
+        // Skip if using web worker
+        if (view.useWebWorker) {
+          return
+        }
+
+        const { featPositions } = self
+        if (featPositions.length === 0) {
+          return
+        }
+
+        const mainCanvas = self.mainCanvas
+        const cigarClickMapCanvas = self.cigarClickMapCanvas
+        if (!mainCanvas || !cigarClickMapCanvas) {
+          return
+        }
+
+        const mainCtx = mainCanvas.getContext('2d')
+        if (!mainCtx) {
+          return
+        }
+
+        // Access observables to trigger re-run when they change
+        const _alpha = self.alpha
+        const _minAlignmentLength = self.minAlignmentLength
+        const _colorBy = self.colorBy
+        const _drawCurves = view.drawCurves
+        const _drawCIGAR = view.drawCIGAR
+        const _drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
+        const _drawLocationMarkers = view.drawLocationMarkers
+        const _offsets = view.views.map(v => v.offsetPx)
+        const _bpPerPxs = view.views.map(v => v.bpPerPx)
+
+        const width = view.width
+        const height = self.height
+
+        mainCtx.clearRect(0, 0, width, height)
+        drawRef(self, mainCtx)
+        drawCigarClickMap(self, cigarClickMapCanvas.getContext('2d')!)
+      },
+      { name: 'SyntenyMainThreadDraw' },
+    ),
+  )
+
+  // Immediate reaction for mouseover/click changes (user interaction)
+  addDisposer(
+    self,
+    reaction(
+      () => ({
+        mouseoverId: self.mouseoverId,
+        clickId: self.clickId,
+        mouseoverCanvas: self.mouseoverCanvas,
+        featPositionsLength: self.featPositions.length,
+      }),
+      ({ mouseoverCanvas, featPositionsLength }) => {
+        if (!mouseoverCanvas || featPositionsLength === 0) {
+          return
+        }
+        drawMouseoverClickMap(self)
+      },
+      { fireImmediately: true },
+    ),
+  )
+
+  // Debounced reaction for offset changes (during scroll)
+  addDisposer(
+    self,
+    reaction(
+      () => {
+        const view = getContainingView(self) as LSV
+        return {
+          offsets: view.views.map(v => v.offsetPx),
+          mouseoverCanvas: self.mouseoverCanvas,
+          featPositionsLength: self.featPositions.length,
+        }
+      },
+      ({ mouseoverCanvas, featPositionsLength }) => {
+        if (!mouseoverCanvas || featPositionsLength === 0) {
+          return
+        }
+        drawMouseoverClickMap(self)
+      },
+      {
+        delay: 100,
         fireImmediately: true,
       },
     ),
