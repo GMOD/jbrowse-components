@@ -69,7 +69,7 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
 
     // Clear existing paths
     while (svg.firstChild) {
-      svg.removeChild(svg.firstChild)
+      svg.firstChild.remove()
     }
 
     // Build lookup map
@@ -103,7 +103,7 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
       path.dataset.id = arc.id
       path.addEventListener('mouseenter', handleMouseEnter)
       path.addEventListener('mouseleave', handleMouseLeave)
-      svg.appendChild(path)
+      svg.append(path)
     }
 
     arcMapRef.current = arcMap
@@ -114,7 +114,7 @@ const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
         const child = svg.firstChild as SVGPathElement
         child.removeEventListener('mouseenter', handleMouseEnter)
         child.removeEventListener('mouseleave', handleMouseLeave)
-        svg.removeChild(child)
+        child.remove()
       }
     }
   }, [arcs])
