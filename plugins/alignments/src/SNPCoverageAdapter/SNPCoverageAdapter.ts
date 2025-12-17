@@ -7,7 +7,8 @@ import { toArray } from 'rxjs/operators'
 import { fetchSequence } from '../util'
 import { generateCoverageBinsPrefixSum } from './generateCoverageBinsPrefixSum'
 
-import type { FeatureWithMismatchIterator } from '../shared/types'
+import type { BaseCoverageBin, FeatureWithMismatchIterator } from '../shared/types'
+import type { SNPCoverageArrays } from '../SNPCoverageRenderer/types'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
@@ -133,6 +134,55 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
       observer.complete()
     }, opts.stopToken)
+  }
+
+  async getFeaturesAsArrays(
+    region: Region,
+    opts: BaseOptions = {},
+  ): Promise<SNPCoverageArrays> {
+    const { subadapter } = await this.configure()
+    const sequenceAdapter = await this.getSequenceAdapter()
+
+    const features = await firstValueFrom(
+      subadapter.getFeatures(region, opts).pipe(toArray()),
+    )
+
+    const { bins, skipmap } = await generateCoverageBinsPrefixSum({
+      features: features as FeatureWithMismatchIterator[],
+      region,
+      opts,
+      fetchSequence: sequenceAdapter
+        ? (region: Region) => fetchSequence(region, sequenceAdapter)
+        : undefined,
+    })
+
+    // Count non-empty bins to allocate arrays
+    let count = 0
+    for (let i = 0; i < bins.length; i++) {
+      if (bins[i]) {
+        count++
+      }
+    }
+
+    const starts = new Int32Array(count)
+    const ends = new Int32Array(count)
+    const scores = new Float32Array(count)
+    const snpinfo: BaseCoverageBin[] = new Array(count)
+
+    let idx = 0
+    for (let i = 0; i < bins.length; i++) {
+      const bin = bins[i]
+      if (bin) {
+        const start = region.start + i
+        starts[idx] = start
+        ends[idx] = start + 1
+        scores[idx] = bin.depth
+        snpinfo[idx] = bin
+        idx++
+      }
+    }
+
+    return { starts, ends, scores, snpinfo, skipmap }
   }
 
   async getMultiRegionFeatureDensityStats(

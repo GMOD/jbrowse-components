@@ -117,6 +117,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
             .join('')
             .slice(start - s)
             .slice(0, end - start)
+          console.log('t1')
           if (seq) {
             observer.next(
               new SimpleFeature({
