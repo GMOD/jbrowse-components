@@ -165,9 +165,24 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        const { worker, featPositions, alpha, minAlignmentLength, colorBy } =
-          self
-        if (!worker || featPositions.length === 0) {
+        const {
+          worker,
+          featPositions,
+          alpha,
+          minAlignmentLength,
+          colorBy,
+          mainCanvas,
+          clickMapCanvas,
+          cigarClickMapCanvas,
+        } = self
+        // Wait for worker and canvases to be ready before sending draw messages
+        if (
+          !worker ||
+          featPositions.length === 0 ||
+          !mainCanvas ||
+          !clickMapCanvas ||
+          !cigarClickMapCanvas
+        ) {
           return
         }
 
