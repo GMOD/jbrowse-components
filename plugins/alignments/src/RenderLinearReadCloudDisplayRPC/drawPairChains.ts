@@ -40,6 +40,8 @@ export function drawPairChains({
   colorBy,
   visibleModifications,
   stopToken,
+  hideSmallIndels,
+  hideMismatches,
 }: {
   ctx: CanvasRenderingContext2D
   type: string
@@ -56,12 +58,15 @@ export function drawPairChains({
   colorBy: ColorBy
   visibleModifications?: Record<string, ModificationTypeWithColor>
   stopToken?: string
+  hideSmallIndels?: boolean
+  hideMismatches?: boolean
 }): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
     config,
     configTheme,
     colorBy,
+    { hideSmallIndels, hideMismatches },
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start

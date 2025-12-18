@@ -42,6 +42,8 @@ export function drawLongReadChains({
   colorBy,
   visibleModifications,
   stopToken,
+  hideSmallIndels,
+  hideMismatches,
 }: {
   ctx: CanvasRenderingContext2D
   chainData: ChainData
@@ -58,12 +60,15 @@ export function drawLongReadChains({
   colorBy: ColorBy
   visibleModifications?: Record<string, ModificationTypeWithColor>
   stopToken?: string
+  hideSmallIndels?: boolean
+  hideMismatches?: boolean
 }): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
     config,
     configTheme,
     colorBy,
+    { hideSmallIndels, hideMismatches },
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start

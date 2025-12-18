@@ -85,6 +85,7 @@ function renderFeatures({
     'largeInsertionIndicatorScale',
   )
   const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
+  const hideMismatches = readConfObject(config, 'hideMismatches') as boolean
   const defaultColor = readConfObject(config, 'color') === '#f0f'
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
@@ -123,6 +124,7 @@ function renderFeatures({
       bpPerPx: renderArgs.bpPerPx,
       regions: renderArgs.regions,
       hideSmallIndels,
+      hideMismatches,
       mismatchAlpha,
       drawSNPsMuted,
       drawIndels,

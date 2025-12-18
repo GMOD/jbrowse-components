@@ -64,6 +64,8 @@ export async function executeRenderLinearReadCloudDisplay({
     statusCallback = () => {},
     stopToken,
     visibleModifications,
+    hideSmallIndels,
+    hideMismatches,
   } = args
 
   // Recreate the view from the snapshot following DotplotRenderer pattern
@@ -236,6 +238,8 @@ export async function executeRenderLinearReadCloudDisplay({
             bpPerPx,
             stopToken,
             visibleModifications,
+            hideSmallIndels,
+            hideMismatches,
           },
           view: viewSnap,
           calculateYOffsets: (chains: ComputedChain[]) => {

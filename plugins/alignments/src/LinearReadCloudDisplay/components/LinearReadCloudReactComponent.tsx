@@ -363,7 +363,7 @@ const Cloud = observer(function ({
         const regions = view.dynamicBlocks.contentBlocks
         const refName = regions[0]?.refName || ''
         const { feature } = getFeatureUnderMouse(event)
-        const sourceRead = feature?.data?.name
+        const sourceRead = feature?.data.name
         if (isSessionModelWithWidgets(session)) {
           const featureWidget = session.addWidget(
             'BaseFeatureWidget',

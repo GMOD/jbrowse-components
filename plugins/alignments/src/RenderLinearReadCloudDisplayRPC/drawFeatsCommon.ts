@@ -279,6 +279,8 @@ export interface DrawFeatsParams {
   canvasWidth: number
   stopToken?: string
   visibleModifications?: Record<string, ModificationTypeWithColor>
+  hideSmallIndels?: boolean
+  hideMismatches?: boolean
 }
 
 export interface DrawFeatsResult {
@@ -375,6 +377,8 @@ export function drawFeatsCore({
       colorBy: params.colorBy,
       visibleModifications: params.visibleModifications,
       stopToken,
+      hideSmallIndels: params.hideSmallIndels,
+      hideMismatches: params.hideMismatches,
     })
 
     const longReadMismatches = drawLongReadChains({
@@ -393,6 +397,8 @@ export function drawFeatsCore({
       colorBy: params.colorBy,
       visibleModifications: params.visibleModifications,
       stopToken,
+      hideSmallIndels: params.hideSmallIndels,
+      hideMismatches: params.hideMismatches,
     })
 
     // Aggregate mismatch data (avoid push(...list) which can cause stack overflow)

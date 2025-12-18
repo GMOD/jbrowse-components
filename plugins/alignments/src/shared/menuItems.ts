@@ -172,9 +172,10 @@ export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
     },
   ]
 
-  const modificationsItem = hasModificationsSupport(model)
-    ? [getModificationsMenuItem(model)]
-    : []
+  const modificationsItem =
+    hasModificationsSupport(model) && model.visibleModificationTypes.length > 0
+      ? [getModificationsMenuItem(model)]
+      : []
 
   return {
     label: 'Color scheme',

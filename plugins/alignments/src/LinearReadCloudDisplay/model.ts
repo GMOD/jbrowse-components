@@ -81,6 +81,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * Maximum height for the layout (prevents infinite stacking)
          */
         trackMaxHeight: types.maybe(types.number),
+
+        /**
+         * #property
+         */
+        hideSmallIndelsSetting: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        hideMismatchesSetting: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -104,6 +114,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get featureHeightSetting() {
         return self.featureHeight ?? getConf(self, 'featureHeight')
+      },
+      /**
+       * #getter
+       */
+      get hideSmallIndels() {
+        return self.hideSmallIndelsSetting ?? getConf(self, 'hideSmallIndels')
+      },
+      /**
+       * #getter
+       */
+      get hideMismatches() {
+        return self.hideMismatchesSetting ?? getConf(self, 'hideMismatches')
       },
     }))
     .views(self => ({
@@ -168,6 +190,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setSelectedFeatureId(id: string | undefined) {
         self.selectedFeatureId = id
+      },
+      /**
+       * #action
+       */
+      setHideSmallIndels(arg: boolean) {
+        self.hideSmallIndelsSetting = arg
+      },
+      /**
+       * #action
+       */
+      setHideMismatches(arg: boolean) {
+        self.hideMismatchesSetting = arg
       },
     }))
     .views(self => {
@@ -277,6 +311,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               checked: self.flipStrandLongReadChains,
               onClick: () => {
                 self.setFlipStrandLongReadChains(!self.flipStrandLongReadChains)
+              },
+            },
+            {
+              label: 'Hide small indels (<10bp)',
+              type: 'checkbox',
+              checked: self.hideSmallIndels,
+              onClick: () => {
+                self.setHideSmallIndels(!self.hideSmallIndels)
+              },
+            },
+            {
+              label: 'Hide mismatches',
+              type: 'checkbox',
+              checked: self.hideMismatches,
+              onClick: () => {
+                self.setHideMismatches(!self.hideMismatches)
               },
             },
             getFilterByMenuItem(self),
