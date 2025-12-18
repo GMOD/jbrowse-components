@@ -3,12 +3,17 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { drawLongReadChains } from './drawLongReadChains'
 import { drawPairChains } from './drawPairChains'
 import { PairType, getPairedType } from '../shared/color'
+import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 import type { FlatbushItem } from '../PileupRenderer/types'
 import type { FlatbushEntry } from '../shared/flatbushType'
-import type { ChainData, ColorBy, ModificationTypeWithColor } from '../shared/types'
+import type {
+  ChainData,
+  ColorBy,
+  ModificationTypeWithColor,
+} from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -46,10 +51,10 @@ export function filterChains(
     }
 
     // Filter out proper pairs if drawProperPairs is false
-    // Check if this is a paired-end read using SAM flag 1 (read paired)
+    // Check if this is a paired-end read
     let isPairedEnd = false
     for (const element of chain) {
-      if (element.get('flags') & 1) {
+      if (element.get('flags') & SAM_FLAG_PAIRED) {
         isPairedEnd = true
         break
       }
@@ -59,7 +64,7 @@ export function filterChains(
       // Collect non-supplementary alignments
       const nonSupplementary: Feature[] = []
       for (const element of chain) {
-        if (!(element.get('flags') & 2048)) {
+        if (!(element.get('flags') & SAM_FLAG_SUPPLEMENTARY)) {
           nonSupplementary.push(element)
         }
       }

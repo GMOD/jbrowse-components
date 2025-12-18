@@ -19,6 +19,7 @@ import {
   getPairedInsertSizeColor,
   getPairedOrientationColor,
 } from '../shared/color'
+import { SAM_FLAG_MATE_UNMAPPED } from '../shared/samFlags'
 import { hasPairedReads } from '../shared/util'
 
 import type { ChainData, ColorBy } from '../shared/types'
@@ -204,7 +205,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
   forEachWithStopTokenCheck(chains, stopToken, chain => {
     if (chain.length === 1 && drawLongRange) {
       const f = chain[0]!
-      const isMateUnmapped = f.get('flags') & 8
+      const isMateUnmapped = f.get('flags') & SAM_FLAG_MATE_UNMAPPED
 
       if (hasPaired && !isMateUnmapped) {
         drawSingletonPairedEnd(f)

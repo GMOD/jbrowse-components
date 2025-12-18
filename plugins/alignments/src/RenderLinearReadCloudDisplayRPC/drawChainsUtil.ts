@@ -4,6 +4,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil'
 import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
 import { renderModifications } from '../PileupRenderer/renderers/renderModifications'
+import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
 import {
   getCharWidthHeight,
   getColorBaseMap,

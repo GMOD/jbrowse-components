@@ -141,7 +141,7 @@ export async function executeRenderLinearReadCloudDisplay({
         const flags = f.get('flags')
         // Only keep reads mapped in proper pair (flag 2)
         // Skip secondary (256) and supplementary (2048) alignments
-        if ((flags & 2) && !(flags & 256) && !(flags & 2048)) {
+        if (flags & 2 && !(flags & 256) && !(flags & 2048)) {
           const tlen = f.get('template_length')
           if (tlen !== 0 && !Number.isNaN(tlen)) {
             tlens.push(Math.abs(tlen))

@@ -1,3 +1,9 @@
+import {
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SUPPLEMENTARY,
+} from './samFlags'
+
 import type { Feature } from '@jbrowse/core/util'
 
 export interface CoreFeat {
@@ -53,11 +59,11 @@ export function getClipPos(f: Feature | CoreFeat) {
 }
 
 export function toCoreFeat(f: Feature | CoreFeat): CoreFeat {
-  return 'get' in f ? extractCoreFeat(f as Feature) : f
+  return 'get' in f ? extractCoreFeat(f) : f
 }
 
 export function toCoreFeatBasic(f: Feature | CoreFeat): CoreFeat {
-  return 'get' in f ? extractCoreFeatBasic(f as Feature) : f
+  return 'get' in f ? extractCoreFeatBasic(f) : f
 }
 
 export function getMateInfo(f: Feature): CoreFeat {
@@ -73,8 +79,11 @@ export function filterPairedChain(chain: Feature[]) {
   const result: Feature[] = []
   for (const f of chain) {
     const flags = f.get('flags')
-    // Filter out supplementary (2048) and mate unmapped (8)
-    if (!(flags & 2048) && !(flags & 8)) {
+    // Filter out supplementary and mate unmapped
+    if (
+      !(flags & SAM_FLAG_SUPPLEMENTARY) &&
+      !(flags & SAM_FLAG_MATE_UNMAPPED)
+    ) {
       result.push(f)
     }
   }
@@ -84,8 +93,8 @@ export function filterPairedChain(chain: Feature[]) {
 export function filterAndSortLongReadChain(chain: Feature[]) {
   const filtered: Feature[] = []
   for (const f of chain) {
-    // Filter out secondary alignments (256)
-    if (!(f.get('flags') & 256)) {
+    // Filter out secondary alignments
+    if (!(f.get('flags') & SAM_FLAG_SECONDARY)) {
       filtered.push(f)
     }
   }
