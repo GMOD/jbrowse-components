@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { clamp } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 // required to import this for typescript purposes
 import mix from 'colord/plugins/mix' // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -130,6 +130,8 @@ export function drawXYArrays(
   // Determine if we're using bicolor mode
   const useBicolor = posColor !== undefined && negColor !== undefined
   const staticColor = color ?? posColor ?? 'blue'
+  // Check alpha once - can't batch if color has alpha (overlapping rects blend differently)
+  const hasAlpha = colord(staticColor).alpha() < 1
 
   const { starts, ends, scores, minScores, maxScores } = featureArrays
   const len = starts.length
@@ -201,7 +203,7 @@ export function drawXYArrays(
   const reducedMinScores: number[] | undefined = minScores ? [] : undefined
   const reducedMaxScores: number[] | undefined = maxScores ? [] : undefined
 
-  let lastCheck = Date.now()
+  const lastCheck = { time: Date.now() }
 
   // Check if features are sub-pixel by sampling the first feature
   // Only use two-pass deduplication when features are < 1px wide
@@ -219,13 +221,7 @@ export function drawXYArrays(
 
     // First pass: collect max score per pixel column
     for (let i = 0; i < len; i++) {
-      if (i % 10000 === 0) {
-        const now = Date.now()
-        if (now - lastCheck > 400) {
-          checkStopToken(stopToken)
-          lastCheck = now
-        }
-      }
+      checkStopToken2(stopToken, i, lastCheck)
       const fstart = starts[i]!
       const fend = ends[i]!
       const leftPx = reversed
@@ -301,20 +297,12 @@ export function drawXYArrays(
     let clipHighCount = 0
     let clipLowCount = 0
 
-    // Can batch when not using bicolor and color has no alpha
-    const hasAlpha = colord(staticColor).alpha() < 1
     const canBatch = !useBicolor && !hasAlpha
 
     if (canBatch) {
       ctx.beginPath()
       for (let i = 0; i < len; i++) {
-        if (i % 10000 === 0) {
-          const now = Date.now()
-          if (now - lastCheck > 400) {
-            checkStopToken(stopToken)
-            lastCheck = now
-          }
-        }
+        checkStopToken2(stopToken, i, lastCheck)
         const fstart = starts[i]!
         const fend = ends[i]!
         const leftPx = reversed
@@ -358,13 +346,7 @@ export function drawXYArrays(
       ctx.fill()
     } else {
       for (let i = 0; i < len; i++) {
-        if (i % 10000 === 0) {
-          const now = Date.now()
-          if (now - lastCheck > 400) {
-            checkStopToken(stopToken)
-            lastCheck = now
-          }
-        }
+        checkStopToken2(stopToken, i, lastCheck)
         const fstart = starts[i]!
         const fend = ends[i]!
         const leftPx = reversed
@@ -438,20 +420,12 @@ export function drawXYArrays(
     let prevLeftPx = Number.NEGATIVE_INFINITY
     const dotSize = Math.max(minSize, 1)
 
-    // Can batch when not using bicolor and color has no alpha
-    const hasAlpha = colord(staticColor).alpha() < 1
     const canBatch = !useBicolor && !hasAlpha
 
     if (canBatch) {
       ctx.beginPath()
       for (let i = 0; i < len; i++) {
-        if (i % 10000 === 0) {
-          const now = Date.now()
-          if (now - lastCheck > 400) {
-            checkStopToken(stopToken)
-            lastCheck = now
-          }
-        }
+        checkStopToken2(stopToken, i, lastCheck)
         const fstart = starts[i]!
         const fend = ends[i]!
         const leftPx = reversed
@@ -495,13 +469,7 @@ export function drawXYArrays(
       ctx.fill()
     } else {
       for (let i = 0; i < len; i++) {
-        if (i % 10000 === 0) {
-          const now = Date.now()
-          if (now - lastCheck > 400) {
-            checkStopToken(stopToken)
-            lastCheck = now
-          }
-        }
+        checkStopToken2(stopToken, i, lastCheck)
         const fstart = starts[i]!
         const fend = ends[i]!
         const leftPx = reversed
@@ -685,7 +653,8 @@ export function drawXY(
   const reducedFeatures = []
   const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
 
-  let start = performance.now()
+  const lastCheck = { time: Date.now() }
+  let iter = 0
 
   // we handle whiskers separately to render max row, min row, and avg in three
   // passes. this reduces subpixel rendering issues. note: for stylistic
@@ -728,12 +697,8 @@ export function drawXY(
       staticMixed = staticColor // for static color, mixed is just the color itself
     }
 
-    start = performance.now()
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
+      checkStopToken2(stopToken, iter++, lastCheck)
       // inline featureSpanPx to avoid extra function calls and feature.get for start/end
       const fStart = feature.get('start')
       const fEnd = feature.get('end')
@@ -931,12 +896,8 @@ export function drawXY(
     const hasAlpha = staticColor ? colord(staticColor).alpha() < 1 : false
     if (staticColor && !hasAlpha) {
       ctx.beginPath()
-      start = performance.now()
       for (const feature of features.values()) {
-        if (performance.now() - start > 400) {
-          checkStopToken(stopToken)
-          start = performance.now()
-        }
+        checkStopToken2(stopToken, iter++, lastCheck)
         const fstart = feature.get('start')
         const fend = feature.get('end')
         const leftPx = reversed
@@ -985,12 +946,8 @@ export function drawXY(
       ctx.fillStyle = staticColor
       ctx.fill()
     } else {
-      start = performance.now()
       for (const feature of features.values()) {
-        if (performance.now() - start > 400) {
-          checkStopToken(stopToken)
-          start = performance.now()
-        }
+        checkStopToken2(stopToken, iter++, lastCheck)
         const fstart = feature.get('start')
         const fend = feature.get('end')
         const leftPx = reversed

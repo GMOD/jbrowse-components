@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { checkStopToken2, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { getOrigin, getScale } from '@jbrowse/plugin-wiggle'
@@ -209,38 +210,89 @@ export function makeImageArrays(
   const reducedFeatures: ReducedFeature[] = []
 
   const lastTime = { time: Date.now() }
-  for (let i = 0; i < len; i++) {
-    checkStopToken2(stopToken, i, lastTime)
 
-    const fstart = starts[i]!
-    const fend = ends[i]!
-    const score0 = scores[i]!
-    const bin = snpinfo[i]!
+  // Two-pass rendering: backgrounds first, then SNP overlays
+  // This produces clearer visuals and allows batching the backgrounds
+  interface FeatureData {
+    leftPx: number
+    rightPx: number
+    score0: number
+    bin: BaseCoverageBin
+  }
+  const featureDataList: FeatureData[] = []
 
-    const leftPx = reversed
-      ? (regionEnd - fend) / bpPerPx
-      : (fstart - regionStart) / bpPerPx
-    const rightPx = reversed
-      ? (regionEnd - fstart) / bpPerPx
-      : (fend - regionStart) / bpPerPx
+  // Pass 1: Draw all gray backgrounds (batched when no alpha)
+  const canBatch = colord(totalColor).alpha() >= 1
+  if (canBatch) {
+    ctx.beginPath()
+    for (let i = 0; i < len; i++) {
+      checkStopToken2(stopToken, i, lastTime)
+      const fstart = starts[i]!
+      const fend = ends[i]!
+      const score0 = scores[i]!
+      const bin = snpinfo[i]!
 
-    // Collect reducedFeatures (one per pixel) for tooltip functionality
-    if (Math.floor(leftPx) !== Math.floor(prevReducedLeftPx)) {
-      reducedFeatures.push({
-        start: fstart,
-        end: fend,
-        score: score0,
-        snpinfo: bin,
-        refName: region.refName,
-      })
-      prevReducedLeftPx = leftPx
+      const leftPx = reversed
+        ? (regionEnd - fend) / bpPerPx
+        : (fstart - regionStart) / bpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) / bpPerPx
+        : (fend - regionStart) / bpPerPx
+
+      if (Math.floor(leftPx) !== Math.floor(prevReducedLeftPx)) {
+        reducedFeatures.push({
+          start: fstart,
+          end: fend,
+          score: score0,
+          snpinfo: bin,
+          refName: region.refName,
+        })
+        prevReducedLeftPx = leftPx
+      }
+
+      const bgWidth = rightPx - leftPx + fudgeFactor
+      ctx.rect(leftPx, toY(score0), bgWidth, toHeight(score0))
+
+      featureDataList.push({ leftPx, rightPx, score0, bin })
     }
-
-    // Draw the gray background
     ctx.fillStyle = totalColor
-    const bgWidth = rightPx - leftPx + fudgeFactor
-    ctx.fillRect(leftPx, toY(score0), bgWidth, toHeight(score0))
+    ctx.fill()
+  } else {
+    ctx.fillStyle = totalColor
+    for (let i = 0; i < len; i++) {
+      checkStopToken2(stopToken, i, lastTime)
+      const fstart = starts[i]!
+      const fend = ends[i]!
+      const score0 = scores[i]!
+      const bin = snpinfo[i]!
 
+      const leftPx = reversed
+        ? (regionEnd - fend) / bpPerPx
+        : (fstart - regionStart) / bpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) / bpPerPx
+        : (fend - regionStart) / bpPerPx
+
+      if (Math.floor(leftPx) !== Math.floor(prevReducedLeftPx)) {
+        reducedFeatures.push({
+          start: fstart,
+          end: fend,
+          score: score0,
+          snpinfo: bin,
+          refName: region.refName,
+        })
+        prevReducedLeftPx = leftPx
+      }
+
+      const bgWidth = rightPx - leftPx + fudgeFactor
+      ctx.fillRect(leftPx, toY(score0), bgWidth, toHeight(score0))
+
+      featureDataList.push({ leftPx, rightPx, score0, bin })
+    }
+  }
+
+  // Pass 2: Draw SNP overlays on top
+  for (const { leftPx, rightPx, score0, bin } of featureDataList) {
     // Draw SNP data overlay
     const w = Math.max(rightPx - leftPx, 1)
     const h = toHeight(score0)
