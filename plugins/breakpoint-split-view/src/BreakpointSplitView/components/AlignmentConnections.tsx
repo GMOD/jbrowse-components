@@ -50,10 +50,7 @@ const AlignmentConnections = observer(function ({
     const layoutMatches = model.getMatchedFeaturesInLayout(trackId, matched)
     if (!hasPaired) {
       for (const m of layoutMatches) {
-        m.sort(
-          (a, b) =>
-            a.strandRelativeFirstClipLength - b.strandRelativeFirstClipLength,
-        )
+        m.sort((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
       }
     }
     return layoutMatches

@@ -10,7 +10,7 @@ import { decodeSeq } from '../shared/decodeSeq'
 import {
   HARDCLIP_TYPE,
   INSERTION_TYPE,
-  MISMATCH_MAP,
+  MISMATCH_TYPE,
   SOFTCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
 import { convertTagsToPlainArrays } from '../shared/util'
@@ -43,27 +43,47 @@ export default class BamSlightlyLazyFeature
     const mismatches: Mismatch[] = []
     this.forEachMismatch(
       (type, start, length, base, qual, altbase, cliplen) => {
-        const typeStr = MISMATCH_MAP[type]!
-        const mismatch: Mismatch = {
-          start,
-          length,
-          type: typeStr,
-          base,
+        if (type === MISMATCH_TYPE) {
+          mismatches.push({
+            type: 'mismatch',
+            start,
+            length,
+            base,
+            qual: qual !== undefined && qual >= 0 ? qual : undefined,
+            altbase:
+              altbase !== undefined && altbase > 0
+                ? CHAR_FROM_CODE[altbase]
+                : undefined,
+          })
+        } else if (type === INSERTION_TYPE) {
+          mismatches.push({
+            type: 'insertion',
+            start,
+            length,
+            insertlen: cliplen!,
+            insertedBases: base,
+          })
+        } else if (type === SOFTCLIP_TYPE) {
+          mismatches.push({
+            type: 'softclip',
+            start,
+            length,
+            cliplen: cliplen!,
+          })
+        } else if (type === HARDCLIP_TYPE) {
+          mismatches.push({
+            type: 'hardclip',
+            start,
+            length,
+            cliplen: cliplen!,
+          })
+        } else {
+          mismatches.push({
+            type: type === 2 ? 'deletion' : 'skip',
+            start,
+            length,
+          })
         }
-        if (qual !== undefined && qual >= 0) {
-          mismatch.qual = qual
-        }
-        if (altbase !== undefined && altbase > 0) {
-          mismatch.altbase = CHAR_FROM_CODE[altbase]
-        }
-        if (type === INSERTION_TYPE) {
-          mismatch.insertedBases = base
-          mismatch.base = `${cliplen}`
-        }
-        if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
-          mismatch.cliplen = cliplen
-        }
-        mismatches.push(mismatch)
       },
     )
     return mismatches
@@ -85,7 +105,7 @@ export default class BamSlightlyLazyFeature
     return this.qual?.join(' ')
   }
 
-  get strandRelativeFirstClipLength() {
+  get clipLengthAtStartOfRead() {
     const cigar = this.NUMERIC_CIGAR
     if (cigar.length === 0) {
       return 0
@@ -143,8 +163,8 @@ export default class BamSlightlyLazyFeature
         return this.next_pos
       case 'template_length':
         return this.template_length
-      case 'strandRelativeFirstClipLength':
-        return this.strandRelativeFirstClipLength
+      case 'clipLengthAtStartOfRead':
+        return this.clipLengthAtStartOfRead
 
       default:
         return this.fields[field]

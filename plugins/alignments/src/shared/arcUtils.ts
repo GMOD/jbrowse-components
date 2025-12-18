@@ -57,9 +57,9 @@ export function extractCoreFeatBasic(f: Feature): CoreFeat {
 
 export function getStrandRelativeFirstClipLength(f: Feature | CoreFeat) {
   return 'get' in f
-    ? f.get('strandRelativeFirstClipLength')
-    : (f as CoreFeat & { strandRelativeFirstClipLength: number })
-        .strandRelativeFirstClipLength
+    ? f.get('clipLengthAtStartOfRead')
+    : (f as CoreFeat & { clipLengthAtStartOfRead: number })
+        .clipLengthAtStartOfRead
 }
 
 export function toCoreFeat(f: Feature | CoreFeat): CoreFeat {
@@ -106,8 +106,7 @@ export function filterAndSortLongReadChain(chain: Feature[]) {
   }
   filtered.sort(
     (a, b) =>
-      a.get('strandRelativeFirstClipLength') -
-      b.get('strandRelativeFirstClipLength'),
+      a.get('clipLengthAtStartOfRead') - b.get('clipLengthAtStartOfRead'),
   )
   return filtered
 }

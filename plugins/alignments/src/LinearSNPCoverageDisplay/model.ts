@@ -419,33 +419,39 @@ function stateModelFactory(
           return [
             ...wiggleBaseTrackMenuItems(),
             {
-              label: 'Show insertion/clipping indicators',
+              label: 'Show...',
               icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showInterbaseIndicatorsSetting,
-              onClick: () => {
-                self.setShowInterbaseIndicators(
-                  !self.showInterbaseIndicatorsSetting,
-                )
-              },
-            },
-            {
-              label: 'Show insertion/clipping counts',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showInterbaseCountsSetting,
-              onClick: () => {
-                self.setShowInterbaseCounts(!self.showInterbaseCountsSetting)
-              },
-            },
-            {
-              label: 'Show arcs',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showArcsSetting,
-              onClick: () => {
-                self.setShowArcs(!self.showArcsSetting)
-              },
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Insertion/clipping indicators',
+                  type: 'checkbox',
+                  checked: self.showInterbaseIndicatorsSetting,
+                  onClick: () => {
+                    self.setShowInterbaseIndicators(
+                      !self.showInterbaseIndicatorsSetting,
+                    )
+                  },
+                },
+                {
+                  label: 'Insertion/clipping counts',
+                  type: 'checkbox',
+                  checked: self.showInterbaseCountsSetting,
+                  onClick: () => {
+                    self.setShowInterbaseCounts(
+                      !self.showInterbaseCountsSetting,
+                    )
+                  },
+                },
+                {
+                  label: 'Sashimi arcs',
+                  type: 'checkbox',
+                  checked: self.showArcsSetting,
+                  onClick: () => {
+                    self.setShowArcs(!self.showArcsSetting)
+                  },
+                },
+              ],
             },
             {
               label: 'Filter arcs by score...',

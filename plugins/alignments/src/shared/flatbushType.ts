@@ -8,7 +8,7 @@ export interface ReducedFeatureForFlatbush {
   id: string
   tlen: number
   pair_orientation: string
-  strandRelativeFirstClipLength: number
+  clipLengthAtStartOfRead: number
 }
 
 export interface FlatbushEntry {

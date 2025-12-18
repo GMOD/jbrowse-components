@@ -212,7 +212,7 @@ export function featurizeSA(
           start: saRealStart,
           end: saRealStart + saLengthOnRef,
           seqLength: saLength,
-          strandRelativeFirstClipLength: saClipPos,
+          clipLengthAtStartOfRead: saClipPos,
           CIGAR: saCigar,
           strand: (normalize ? strand : 1) * saStrandNormalized,
           uniqueId: `${id}_SA${index}`,

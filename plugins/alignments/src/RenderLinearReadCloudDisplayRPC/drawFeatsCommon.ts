@@ -240,8 +240,8 @@ export function addChainMouseoverRects(
           id: firstFeat.id(),
           tlen: firstFeat.get('template_length') || 0,
           pair_orientation: firstFeat.get('pair_orientation') || '',
-          strandRelativeFirstClipLength:
-            firstFeat.get('strandRelativeFirstClipLength') || 0,
+          clipLengthAtStartOfRead:
+            firstFeat.get('clipLengthAtStartOfRead') || 0,
         },
         chainId: id,
         chainMinX: chainMinXPx,
@@ -256,8 +256,7 @@ export function addChainMouseoverRects(
           id: f.id(),
           tlen: f.get('template_length') || 0,
           pair_orientation: f.get('pair_orientation') || '',
-          strandRelativeFirstClipLength:
-            f.get('strandRelativeFirstClipLength') || 0,
+          clipLengthAtStartOfRead: f.get('clipLengthAtStartOfRead') || 0,
         })),
       })
     }

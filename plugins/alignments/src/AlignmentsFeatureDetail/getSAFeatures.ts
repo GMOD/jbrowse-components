@@ -8,7 +8,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export interface ReducedFeature {
   refName: string
   start: number
-  strandRelativeFirstClipLength: number
+  clipLengthAtStartOfRead: number
   end: number
   strand: number
   seqLength: number
@@ -35,7 +35,7 @@ export async function getSAFeatures({
   const origStrand = feature.get('strand') as number
   const SA = (feature.get('tags')?.SA as string) || ''
   const readName = feature.get('name') as string
-  const strandRelativeFirstClipLength = getClip(cigar, 1)
+  const clipLengthAtStartOfRead = getClip(cigar, 1)
 
   // get the canonical refname for the read because if the read.get('refName')
   // is chr1 and the actual fasta refName is 1 then no tracks can be opened on
@@ -49,12 +49,12 @@ export async function getSAFeatures({
 
   const feat = {
     ...feature.toJSON(),
-    strandRelativeFirstClipLength,
+    clipLengthAtStartOfRead,
     strand: 1,
     mate: {
       refName: readName,
-      start: strandRelativeFirstClipLength,
-      end: strandRelativeFirstClipLength + getLengthSansClipping(cigar),
+      start: clipLengthAtStartOfRead,
+      end: clipLengthAtStartOfRead + getLengthSansClipping(cigar),
     },
   }
   const features = [feat, ...suppAlns] as ReducedFeature[]
@@ -67,6 +67,6 @@ export async function getSAFeatures({
     f.mate.uniqueId = `${f.uniqueId}_mate`
   }
   return features.toSorted(
-    (a, b) => a.strandRelativeFirstClipLength - b.strandRelativeFirstClipLength,
+    (a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
   )
 }

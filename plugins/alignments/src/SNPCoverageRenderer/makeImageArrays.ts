@@ -27,7 +27,7 @@ const INTERBASE_INDICATOR_HALF_WIDTH = INTERBASE_INDICATOR_WIDTH / 2
 // 'statistical significance' is low
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
-const fudgeFactor = 0.6
+const fudgeFactor = 0.8
 
 const sortedKeysDesc = (obj: object) => Object.keys(obj).sort().reverse()
 

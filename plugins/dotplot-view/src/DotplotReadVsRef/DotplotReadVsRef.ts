@@ -13,7 +13,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
   const session = getSession(self)
   try {
     const cigar = feature.get('CIGAR')
-    const strandRelativeFirstClipLength = getClip(cigar, 1)
+    const clipLengthAtStartOfRead = getClip(cigar, 1)
     const flags = feature.get('flags')
     const strand = feature.get('strand')
     const readName = feature.get('name')
@@ -38,16 +38,13 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
           strand: 1,
           mate: {
             refName: readName,
-            start: strandRelativeFirstClipLength,
-            end: strandRelativeFirstClipLength + getLengthSansClipping(cigar),
+            start: clipLengthAtStartOfRead,
+            end: clipLengthAtStartOfRead + getLengthSansClipping(cigar),
           },
         },
         ...SA2,
       ] as ReducedFeature[]
-    ).sort(
-      (a, b) =>
-        a.strandRelativeFirstClipLength - b.strandRelativeFirstClipLength,
-    )
+    ).sort((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
 
     session.addView('DotplotView', {
       type: 'DotplotView',
