@@ -7,10 +7,8 @@ import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
-import {
-  buildFlatbushIndex,
-  buildMismatchFlatbushIndex,
-} from '../RenderLinearReadCloudDisplayRPC/drawFeatsCommon'
+import { buildFlatbushIndex } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCommon'
+import { buildMismatchFlatbushIndex } from './drawFeatsCommon'
 import { setupModificationsAutorun } from '../shared/setupModificationsAutorun'
 import { createAutorun } from '../util'
 
