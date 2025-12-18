@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { colord } from '@jbrowse/core/util/colord'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { checkStopToken, checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopToken2, checkStopToken } from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import {
   scaleSequential,
@@ -11,10 +11,7 @@ import {
 
 import interpolateViridis from './viridis'
 
-import type {
-  HicFeature,
-  RenderArgsDeserializedWithFeatures,
-} from './HicRenderer'
+import type { RenderArgsDeserializedWithFeatures } from './HicRenderer'
 import type { HicFlatbushItem } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'

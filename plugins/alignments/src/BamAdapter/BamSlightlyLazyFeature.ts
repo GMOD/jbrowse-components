@@ -1,7 +1,11 @@
 import { BamRecord } from '@gmod/bam'
 
 import { forEachMismatchNumeric } from './forEachMismatchNumeric'
-import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
+import {
+  CHAR_FROM_CODE,
+  CIGAR_H,
+  CIGAR_S,
+} from '../PileupRenderer/renderers/cigarUtil'
 import { decodeSeq } from '../shared/decodeSeq'
 import {
   HARDCLIP_TYPE,
@@ -14,10 +18,7 @@ import { convertTagsToPlainArrays } from '../shared/util'
 import type BamAdapter from './BamAdapter'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
 import type { Mismatch } from '../shared/types'
-import type {
-  Feature,
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util/simpleFeature'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class BamSlightlyLazyFeature
   extends BamRecord
@@ -84,6 +85,19 @@ export default class BamSlightlyLazyFeature
     return this.qual?.join(' ')
   }
 
+  get strandRelativeFirstClipLength() {
+    const cigar = this.NUMERIC_CIGAR
+    if (cigar.length === 0) {
+      return 0
+    }
+    const packed = this.strand === -1 ? cigar[cigar.length - 1]! : cigar[0]!
+    const op = packed & 0xf
+    if (op === CIGAR_S || op === CIGAR_H) {
+      return packed >> 4
+    }
+    return 0
+  }
+
   get refName() {
     return this.adapter.refIdToName(this.ref_id)!
   }
@@ -129,9 +143,10 @@ export default class BamSlightlyLazyFeature
         return this.next_pos
       case 'template_length':
         return this.template_length
+      case 'strandRelativeFirstClipLength':
+        return this.strandRelativeFirstClipLength
 
       default:
-        console.log(field)
         return this.fields[field]
     }
   }

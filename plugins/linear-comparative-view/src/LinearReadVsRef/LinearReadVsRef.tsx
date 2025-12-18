@@ -27,7 +27,7 @@ const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
 interface ReducedFeature {
   refName: string
   start: number
-  clipPos: number
+  strandRelativeFirstClipLength: number
   end: number
   strand: number
   seqLength: number
@@ -128,7 +128,7 @@ export default function ReadVsRefDialog({
       const origStrand = feature.get('strand') as number
       const SA = (getTag(feature, 'SA') as string) || ''
       const readName = feature.get('name') as string
-      const clipPos = getClip(cigar, 1)
+      const strandRelativeFirstClipLength = getClip(cigar, 1)
 
       const readAssembly = `${readName}_assembly_${Date.now()}`
       const [trackAssembly] = getConf(track, 'assemblyNames')
@@ -148,13 +148,13 @@ export default function ReadVsRefDialog({
       const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
 
       const feat = feature.toJSON()
-      feat.clipPos = clipPos
+      feat.strandRelativeFirstClipLength = strandRelativeFirstClipLength
       feat.strand = 1
 
       feat.mate = {
         refName: readName,
-        start: clipPos,
-        end: clipPos + getLengthSansClipping(cigar),
+        start: strandRelativeFirstClipLength,
+        end: strandRelativeFirstClipLength + getLengthSansClipping(cigar),
       }
 
       // if secondary alignment or supplementary, calculate length from SA[0]'s
@@ -171,7 +171,10 @@ export default function ReadVsRefDialog({
         f.mate.syntenyId = idx
         f.mate.uniqueId = `${f.uniqueId}_mate`
       }
-      features.sort((a, b) => a.clipPos - b.clipPos)
+      features.sort(
+        (a, b) =>
+          a.strandRelativeFirstClipLength - b.strandRelativeFirstClipLength,
+      )
 
       const featSeq = feature.get('seq') as string | undefined
 

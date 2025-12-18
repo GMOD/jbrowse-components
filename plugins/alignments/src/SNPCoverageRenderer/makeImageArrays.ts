@@ -244,7 +244,12 @@ export function makeImageArrays(
     if (currentBin >= 0) {
       const bgWidth = maxRightPx - maxLeftPx + fudgeFactor
       if (canBatch) {
-        ctx.rect(maxLeftPx, toY(maxScoreInBin), bgWidth, toHeight(maxScoreInBin))
+        ctx.rect(
+          maxLeftPx,
+          toY(maxScoreInBin),
+          bgWidth,
+          toHeight(maxScoreInBin),
+        )
       } else {
         ctx.fillRect(
           maxLeftPx,

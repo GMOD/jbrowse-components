@@ -1,6 +1,6 @@
 import { featureSpanPx, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { checkStopToken, checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopToken2, checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
 import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'

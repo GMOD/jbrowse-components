@@ -32,7 +32,7 @@ export function getStrandColorKey(strand: number) {
 
 export function chainIsPairedEnd(chain: Feature[]) {
   for (const element of chain) {
-    if (element.get('flags') & 1) {
+    if (element.get('flags') & SAM_FLAG_PAIRED) {
       return true
     }
   }
@@ -42,7 +42,7 @@ export function chainIsPairedEnd(chain: Feature[]) {
 export function collectNonSupplementary(chain: Feature[]) {
   const result: Feature[] = []
   for (const element of chain) {
-    if (!(element.get('flags') & 2048)) {
+    if (!(element.get('flags') & SAM_FLAG_SUPPLEMENTARY)) {
       result.push(element)
     }
   }

@@ -3,7 +3,7 @@ import type { Feature } from '@jbrowse/core/util'
 export interface ReducedFeature {
   refName: string
   start: number
-  clipPos: number
+  strandRelativeFirstClipLength: number
   end: number
   seqLength: number
 }

@@ -8,8 +8,8 @@ import {
   extractCoreFeatBasic,
   filterAndSortLongReadChain,
   filterPairedChain,
-  getClipPos,
   getMateInfo,
+  getStrandRelativeFirstClipLength,
   jitter,
   toCoreFeat,
   toCoreFeatBasic,
@@ -66,7 +66,13 @@ function getArcEndpoint(
     return isReverse ? feat.start : feat.end
   }
   // For long reads, the second feature uses opposite logic
-  return isMate ? (isReverse ? feat.end : feat.start) : (isReverse ? feat.start : feat.end)
+  return isMate
+    ? isReverse
+      ? feat.end
+      : feat.start
+    : isReverse
+      ? feat.start
+      : feat.end
 }
 
 /**
@@ -118,7 +124,10 @@ function getArcStrokeColor(params: {
   }
 
   // Long-read coloring
-  if (colorByType === 'orientation' || colorByType === 'insertSizeAndOrientation') {
+  if (
+    colorByType === 'orientation' ||
+    colorByType === 'insertSizeAndOrientation'
+  ) {
     if (s1 === -1 && s2 === 1) {
       return 'navy'
     }
@@ -236,14 +245,14 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
   }
 
   function drawSingletonLongRead(f: Feature) {
-    const saFeatures = featurizeSA(
-      f.get('SA'),
-      f.id(),
-      f.get('strand'),
-      f.get('name'),
+    const allFeatures = [
+      f,
+      ...featurizeSA(f.get('SA'), f.id(), f.get('strand'), f.get('name')),
+    ].toSorted(
+      (a, b) =>
+        getStrandRelativeFirstClipLength(a) -
+        getStrandRelativeFirstClipLength(b),
     )
-    const allFeatures = [f, ...saFeatures]
-    allFeatures.sort((a, b) => getClipPos(a) - getClipPos(b))
 
     for (let i = 0, len = allFeatures.length; i < len - 1; i++) {
       draw(

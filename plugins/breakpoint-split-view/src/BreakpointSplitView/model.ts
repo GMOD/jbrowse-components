@@ -204,7 +204,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     feature,
                     layout: calc(tracks[level], feature),
                     level,
-                    clipPos: getClip(
+                    strandRelativeFirstClipLength: getClip(
                       feature.get('CIGAR'),
                       feature.get('strand'),
                     ),

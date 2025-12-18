@@ -1,4 +1,8 @@
-import { groupBy, renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import {
+  groupBy,
+  renderToAbstractCanvas,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'

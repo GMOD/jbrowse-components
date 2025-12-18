@@ -1,5 +1,5 @@
 import { updateStatus } from '@jbrowse/core/util'
-import { checkStopToken, checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { checkStopToken2, checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
 import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
@@ -134,9 +134,9 @@ function drawAlleleCountMode(drawCtx: DrawContext, mafs: Maf[]) {
 
   for (const { feature, mostFrequentAlt } of mafs) {
     const arr2 = [] as string[]
-    const hasPhaseSet = (
-      feature.get('FORMAT') as string | undefined
-    )?.includes('PS')
+    const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(
+      'PS',
+    )
     const x = idx * w
 
     if (hasPhaseSet) {
