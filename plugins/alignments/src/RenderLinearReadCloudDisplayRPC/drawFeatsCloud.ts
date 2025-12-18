@@ -1,21 +1,30 @@
-import { max, min } from '@jbrowse/core/util'
-
-import { drawFeatsCommon } from './drawFeatsCommon'
-
 import type { ComputedChain } from './drawFeatsCommon'
-import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 
 /**
- * Core utility function to calculate Y-offsets using logarithmic scaling
+ * Calculate Y-offsets using logarithmic scaling for cloud mode
  */
 export function calculateCloudYOffsetsUtil(
   computedChains: ComputedChain[],
   height: number,
 ) {
-  // Calculate Y-offsets based on distance (logarithmic scaling)
-  const distances = computedChains.map(c => c.distance).filter(d => d > 0)
+  // Single pass: find min/max distances while filtering d > 0
+  let minDistance = Number.MAX_VALUE
+  let maxDistance = Number.MIN_VALUE
+  let hasValidDistances = false
 
-  if (distances.length === 0) {
+  for (const { distance } of computedChains) {
+    if (distance > 0) {
+      hasValidDistances = true
+      if (distance < minDistance) {
+        minDistance = distance
+      }
+      if (distance > maxDistance) {
+        maxDistance = distance
+      }
+    }
+  }
+
+  if (!hasValidDistances) {
     return { chainYOffsets: new Map<string, number>() }
   }
 
@@ -25,8 +34,8 @@ export function calculateCloudYOffsetsUtil(
   const logOffset = 10
   const rangePadding = 100 // Add/subtract to reduce stratification when values are similar
 
-  const maxD = Math.log(max(distances) + logOffset + rangePadding)
-  const minD = Math.log(Math.max(1, min(distances) + logOffset - rangePadding))
+  const maxD = Math.log(maxDistance + logOffset + rangePadding)
+  const minD = Math.log(Math.max(1, minDistance + logOffset - rangePadding))
   const scaler = (height - 20) / (maxD - minD || 1)
 
   // Calculate Y-offsets for each chain
@@ -38,18 +47,4 @@ export function calculateCloudYOffsetsUtil(
   }
 
   return { chainYOffsets }
-}
-
-export function drawFeats(
-  self: LinearReadCloudDisplayModel,
-  ctx: CanvasRenderingContext2D,
-  canvasWidth: number,
-) {
-  drawFeatsCommon({
-    self,
-    ctx,
-    canvasWidth,
-    calculateYOffsets: computedChains =>
-      calculateCloudYOffsetsUtil(computedChains, self.height),
-  })
 }

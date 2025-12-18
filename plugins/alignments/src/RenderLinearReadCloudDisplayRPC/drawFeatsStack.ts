@@ -1,13 +1,9 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { PileupLayout } from '@jbrowse/core/util/layouts'
 
-import { drawFeatsCommon } from './drawFeatsCommon'
-
 import type { ComputedChain } from './drawFeatsCommon'
-import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 
 /**
- * Core utility function to calculate Y-offsets using PileupLayout
+ * Calculate Y-offsets using PileupLayout for stack mode
  */
 export function calculateStackYOffsetsUtil(
   computedChains: ComputedChain[],
@@ -30,27 +26,4 @@ export function calculateStackYOffsetsUtil(
   }
 
   return { chainYOffsets, layoutHeight: layout.getTotalHeight() }
-}
-
-export function drawFeats(
-  self: LinearReadCloudDisplayModel,
-  ctx: CanvasRenderingContext2D,
-  canvasWidth: number,
-) {
-  const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
-  const noSpacing = self.noSpacing ?? false
-  const maxHeight = self.trackMaxHeight ?? 1200
-
-  drawFeatsCommon({
-    self,
-    ctx,
-    canvasWidth,
-    calculateYOffsets: computedChains =>
-      calculateStackYOffsetsUtil(
-        computedChains,
-        featureHeight,
-        noSpacing,
-        maxHeight,
-      ),
-  })
 }

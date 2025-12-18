@@ -134,36 +134,28 @@ export async function executeRenderLinearReadCloudDisplay({
     'Processing alignments',
     statusCallback,
     async () => {
-      // For stats calculation, only use reads with proper paired flag (flag 2)
-      const filtered = deduped.filter(f => {
+      // Single pass: collect valid TLENs for stats calculation
+      // Only use reads with proper paired flag (flag 2), skip secondary/supplementary
+      const tlens: number[] = []
+      for (const f of deduped) {
         const flags = f.get('flags')
         // Only keep reads mapped in proper pair (flag 2)
-        if (!(flags & 2)) {
-          return false
-        }
-        // Skip secondary and supplementary alignments
-        if (flags & 256 || flags & 2048) {
-          return false
-        }
-        return true
-      })
-      let statsResult
-      if (filtered.length) {
-        // Filter out features without valid TLEN values
-        const validTlenFeatures = filtered.filter(f => {
+        // Skip secondary (256) and supplementary (2048) alignments
+        if ((flags & 2) && !(flags & 256) && !(flags & 2048)) {
           const tlen = f.get('template_length')
-          return tlen !== 0 && !Number.isNaN(tlen)
-        })
-        if (validTlenFeatures.length > 0) {
-          const tlens = validTlenFeatures.map(f =>
-            Math.abs(f.get('template_length')),
-          )
-          const insertSizeStats = getInsertSizeStats(tlens)
-          statsResult = {
-            ...insertSizeStats,
-            max: max(tlens),
-            min: min(tlens),
+          if (tlen !== 0 && !Number.isNaN(tlen)) {
+            tlens.push(Math.abs(tlen))
           }
+        }
+      }
+
+      let statsResult
+      if (tlens.length > 0) {
+        const insertSizeStats = getInsertSizeStats(tlens)
+        statsResult = {
+          ...insertSizeStats,
+          max: max(tlens),
+          min: min(tlens),
         }
       }
 

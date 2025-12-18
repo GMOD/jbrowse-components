@@ -1,5 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { drawLongReadChains } from './drawLongReadChains'
@@ -8,8 +6,9 @@ import { PairType, getPairedType } from '../shared/color'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
+import type { FlatbushItem } from '../PileupRenderer/types'
 import type { FlatbushEntry } from '../shared/flatbushType'
-import type { ChainData, ColorBy } from '../shared/types'
+import type { ChainData, ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -96,6 +95,7 @@ export function filterChains(
  */
 export function computeChainBounds(chains: Feature[][], view: LGV) {
   const computedChains: ComputedChain[] = []
+  const { bpPerPx } = view
 
   // get bounds on the 'distances' (TLEN for pairs, pixel span for others)
   for (const chain_ of chains) {
@@ -108,15 +108,15 @@ export function computeChainBounds(chains: Feature[][], view: LGV) {
 
     for (let j = 0; j < chainLength; j++) {
       const elt = chain[j]!
+      const start = elt.get('start')
+      const end = elt.get('end')
+      // Only call bpToPx once per feature, calculate end from start + length
       const rs = view.bpToPx({
         refName: elt.get('refName'),
-        coord: elt.get('start'),
+        coord: start,
       })?.offsetPx
-      const re = view.bpToPx({
-        refName: elt.get('refName'),
-        coord: elt.get('end'),
-      })?.offsetPx
-      if (rs !== undefined && re !== undefined) {
+      if (rs !== undefined) {
+        const re = rs + (end - start) / bpPerPx
         minX = Math.min(minX, rs)
         maxX = Math.max(maxX, re)
       }
@@ -272,11 +272,14 @@ export interface DrawFeatsParams {
   bpPerPx: number
   canvasWidth: number
   stopToken?: string
+  visibleModifications?: Record<string, ModificationTypeWithColor>
 }
 
 export interface DrawFeatsResult {
   featuresForFlatbush: FlatbushEntry[]
   layoutHeight?: number
+  mismatchFlatbush: ArrayBufferLike
+  mismatchItems: FlatbushItem[]
 }
 
 export function drawFeatsCore({
@@ -288,11 +291,10 @@ export function drawFeatsCore({
   ctx: CanvasRenderingContext2D
   params: DrawFeatsParams
   view: any
-  calculateYOffsets: (
-    computedChains: ComputedChain[],
-    params: DrawFeatsParams,
-    featureHeight: number,
-  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
+  calculateYOffsets: (computedChains: ComputedChain[]) => {
+    chainYOffsets: Map<string, number>
+    layoutHeight?: number
+  }
 }): DrawFeatsResult {
   const {
     chainData,
@@ -323,54 +325,86 @@ export function drawFeatsCore({
   sortComputedChains(computedChains)
 
   // Calculate Y-offsets using the provided strategy
-  const { chainYOffsets, layoutHeight } = calculateYOffsets(
-    computedChains,
-    params,
-    featureHeight,
-  )
+  const { chainYOffsets, layoutHeight } = calculateYOffsets(computedChains)
 
   // Initialize array for Flatbush mouseover data
   const featuresForFlatbush: FlatbushEntry[] = []
 
   const renderChevrons = shouldRenderChevrons(view.bpPerPx, featureHeight)
 
-  // Delegate rendering to specialized functions for paired and long-read chains
-  drawPairChains({
-    canvasWidth: params.canvasWidth,
-    ctx,
-    type,
-    chainData,
-    view,
-    chainYOffsets,
-    renderChevrons,
-    featureHeight,
-    featuresForFlatbush,
-    computedChains,
-    config: params.config,
-    theme: params.theme,
-    regions: params.regions,
-    bpPerPx: params.bpPerPx,
-    colorBy: params.colorBy,
-    stopToken,
-  })
+  // Clamp viewOffsetPx to 0 when negative
+  const viewOffsetPx = Math.max(0, view.offsetPx)
 
-  drawLongReadChains({
-    ctx,
-    chainData,
-    view,
-    chainYOffsets,
-    renderChevrons,
-    featureHeight,
-    featuresForFlatbush,
-    computedChains,
-    flipStrandLongReadChains,
-    config: params.config,
-    theme: params.theme,
-    regions: params.regions,
-    bpPerPx: params.bpPerPx,
-    colorBy: params.colorBy,
-    stopToken,
-  })
+  // Collect mismatch data for flatbush tooltips
+  const mismatchCoords: number[] = []
+  const mismatchItems: FlatbushItem[] = []
+
+  // Render each region independently with clipping to prevent bleeding between regions
+  for (const region of params.regions) {
+    ctx.save()
+
+    // Set up clipping rect for this region
+    const regionStartPx = region.offsetPx - viewOffsetPx
+    ctx.beginPath()
+    ctx.rect(regionStartPx, 0, region.widthPx, 100000)
+    ctx.clip()
+
+    // Translate coordinate system for this region
+    ctx.translate(regionStartPx, 0)
+
+    // Delegate rendering to specialized functions for paired and long-read chains
+    const pairMismatches = drawPairChains({
+      ctx,
+      type,
+      chainData,
+      chainYOffsets,
+      renderChevrons,
+      featureHeight,
+      computedChains,
+      config: params.config,
+      theme: params.theme,
+      region,
+      regionStartPx,
+      bpPerPx: params.bpPerPx,
+      colorBy: params.colorBy,
+      visibleModifications: params.visibleModifications,
+      stopToken,
+    })
+
+    const longReadMismatches = drawLongReadChains({
+      ctx,
+      chainData,
+      chainYOffsets,
+      renderChevrons,
+      featureHeight,
+      computedChains,
+      flipStrandLongReadChains,
+      config: params.config,
+      theme: params.theme,
+      region,
+      regionStartPx,
+      bpPerPx: params.bpPerPx,
+      colorBy: params.colorBy,
+      visibleModifications: params.visibleModifications,
+      stopToken,
+    })
+
+    // Aggregate mismatch data (avoid push(...list) which can cause stack overflow)
+    for (const coord of pairMismatches.coords) {
+      mismatchCoords.push(coord)
+    }
+    for (const coord of longReadMismatches.coords) {
+      mismatchCoords.push(coord)
+    }
+    for (const item of pairMismatches.items) {
+      mismatchItems.push(item)
+    }
+    for (const item of longReadMismatches.items) {
+      mismatchItems.push(item)
+    }
+
+    ctx.restore()
+  }
 
   // Add full-width rectangles for each chain to enable mouseover on connecting lines
   addChainMouseoverRects(
@@ -381,73 +415,39 @@ export function drawFeatsCore({
     featuresForFlatbush,
   )
 
-  return { featuresForFlatbush, layoutHeight }
+  // Build flatbush index for mismatch tooltips
+  const mismatchFlatbush = new Flatbush(Math.max(mismatchItems.length, 1))
+  if (mismatchCoords.length) {
+    for (let i = 0; i < mismatchCoords.length; i += 4) {
+      mismatchFlatbush.add(
+        mismatchCoords[i]!,
+        mismatchCoords[i + 1]!,
+        mismatchCoords[i + 2],
+        mismatchCoords[i + 3],
+      )
+    }
+  } else {
+    mismatchFlatbush.add(0, 0, 0, 0)
+  }
+  mismatchFlatbush.finish()
+
+  return {
+    featuresForFlatbush,
+    layoutHeight,
+    mismatchFlatbush: mismatchFlatbush.data,
+    mismatchItems,
+  }
 }
 
 /**
- * Common drawing function that delegates Y-offset calculation to a strategy function
+ * Build Flatbush index for mismatch mouseover detection
  */
-export function drawFeatsCommon({
-  self,
-  ctx,
-  canvasWidth,
-  calculateYOffsets,
-}: {
-  self: LinearReadCloudDisplayModel
-  ctx: CanvasRenderingContext2D
-  canvasWidth: number
-  calculateYOffsets: (
-    computedChains: ComputedChain[],
-    self: LinearReadCloudDisplayModel,
-    featureHeight: number,
-  ) => { chainYOffsets: Map<string, number>; layoutHeight?: number }
-}) {
-  const { chainData } = self
-  if (!chainData) {
-    return
-  }
-  const session = getSession(self)
-  const { assemblyManager } = session
-  const view = getContainingView(self) as LGV
-  const assemblyName = view.assemblyNames[0]!
-  const asm = assemblyManager.get(assemblyName)
-  if (!asm) {
-    return
-  }
-  const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
-
-  const { featuresForFlatbush, layoutHeight } = drawFeatsCore({
-    ctx,
-    params: {
-      canvasWidth,
-      chainData,
-      featureHeight,
-      colorBy: self.colorBy,
-      drawSingletons: self.drawSingletons,
-      drawProperPairs: self.drawProperPairs,
-      flipStrandLongReadChains: self.flipStrandLongReadChains,
-      noSpacing: self.noSpacing,
-      trackMaxHeight: self.trackMaxHeight,
-      config: self.configuration,
-      theme: session.theme!,
-      regions: view.staticBlocks.contentBlocks,
-      bpPerPx: view.bpPerPx,
-    },
-    view,
-    calculateYOffsets: (
-      computedChains: ComputedChain[],
-      _params: DrawFeatsParams,
-      featureHeight: number,
-    ) => {
-      return calculateYOffsets(computedChains, self, featureHeight)
-    },
-  })
-
-  // Build and set Flatbush index
-  buildFlatbushIndex(featuresForFlatbush, self)
-
-  // Set layout height if provided (for stack mode)
-  if (layoutHeight !== undefined) {
-    self.setLayoutHeight(layoutHeight)
-  }
+export function buildMismatchFlatbushIndex(
+  mismatchFlatbushData: ArrayBuffer,
+  mismatchItems: FlatbushItem[],
+  self: LinearReadCloudDisplayModel,
+) {
+  const mismatchFlatbush = Flatbush.from(mismatchFlatbushData)
+  self.setMismatchLayout(mismatchFlatbush)
+  self.setMismatchItems(mismatchItems)
 }

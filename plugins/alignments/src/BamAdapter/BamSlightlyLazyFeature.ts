@@ -84,6 +84,9 @@ export default class BamSlightlyLazyFeature
     return this.qual?.join(' ')
   }
 
+  get refName() {
+    return this.adapter.refIdToName(this.ref_id)!
+  }
   get(field: string): any {
     switch (field) {
       case 'mismatches':
@@ -93,7 +96,7 @@ export default class BamSlightlyLazyFeature
       case 'start':
         return this.start
       case 'refName':
-        return this.adapter.refIdToName(this.ref_id)!
+        return this.refName
       case 'end':
         return this.end
       case 'strand':
@@ -116,8 +119,19 @@ export default class BamSlightlyLazyFeature
         return this.NUMERIC_MD
       case 'seq_length':
         return this.seq_length
+      case 'flags':
+        return this.flags
+      case 'pair_orientation':
+        return this.pair_orientation
+      case 'next_ref':
+        return this.next_ref
+      case 'next_pos':
+        return this.next_pos
+      case 'template_length':
+        return this.template_length
 
       default:
+        console.log(field)
         return this.fields[field]
     }
   }
@@ -132,7 +146,6 @@ export default class BamSlightlyLazyFeature
 
   get fields(): SimpleFeatureSerialized {
     if (this._cachedFields === undefined) {
-      const p = this.isPaired()
       this._cachedFields = {
         start: this.start,
         name: this.name,
@@ -141,19 +154,28 @@ export default class BamSlightlyLazyFeature
         strand: this.strand,
         template_length: this.template_length,
         flags: this.flags,
-        tags: convertTagsToPlainArrays(this.tags),
-        refName: this.adapter.refIdToName(this.ref_id)!,
+        tags: this.tags,
+        refName: this.refName,
         type: 'match',
         pair_orientation: this.pair_orientation,
-        next_ref: p ? this.adapter.refIdToName(this.next_refid) : undefined,
-        next_pos: p ? this.next_pos : undefined,
-        next_segment_position: p
-          ? `${this.adapter.refIdToName(this.next_refid)}:${this.next_pos + 1}`
-          : undefined,
+        next_ref: this.next_ref,
+        next_pos: this.next_pos,
+        next_segment_position: this.next_segment_position,
         uniqueId: this.id(),
       }
     }
     return this._cachedFields
+  }
+  get next_ref() {
+    return this.isPaired()
+      ? this.adapter.refIdToName(this.next_refid)
+      : undefined
+  }
+
+  get next_segment_position() {
+    return this.isPaired()
+      ? `${this.adapter.refIdToName(this.next_refid)}:${this.next_pos + 1}`
+      : undefined
   }
 
   toJSON(): SimpleFeatureSerialized {
@@ -161,6 +183,7 @@ export default class BamSlightlyLazyFeature
       ...this.fields,
       CIGAR: this.CIGAR,
       seq: this.seq,
+      tags: convertTagsToPlainArrays(this.tags),
       qual: this.qualString,
     }
   }
