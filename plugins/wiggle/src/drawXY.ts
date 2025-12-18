@@ -292,73 +292,143 @@ export function drawXYArrays(
       }
     }
   } else if (filled) {
-    // Filled mode with features >= 1px: draw each feature individually
+    // Filled mode with features >= 1px
     let prevLeftPx = Number.NEGATIVE_INFINITY
+    const clipHighPx: number[] = []
+    const clipHighW: number[] = []
+    const clipLowPx: number[] = []
+    const clipLowW: number[] = []
+    let clipHighCount = 0
+    let clipLowCount = 0
 
-    for (let i = 0; i < len; i++) {
-      if (i % 10000 === 0) {
-        const now = Date.now()
-        if (now - lastCheck > 400) {
-          checkStopToken(stopToken)
-          lastCheck = now
+    // Can batch when not using bicolor and color has no alpha
+    const hasAlpha = colord(staticColor).alpha() < 1
+    const canBatch = !useBicolor && !hasAlpha
+
+    if (canBatch) {
+      ctx.beginPath()
+      for (let i = 0; i < len; i++) {
+        if (i % 10000 === 0) {
+          const now = Date.now()
+          if (now - lastCheck > 400) {
+            checkStopToken(stopToken)
+            lastCheck = now
+          }
+        }
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const score = scoreArr[i]!
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+
+        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+          reducedStarts.push(fstart)
+          reducedEnds.push(fend)
+          reducedScores.push(scores[i]!)
+          if (reducedMinScores && minScores) {
+            reducedMinScores.push(minScores[i]!)
+          }
+          if (reducedMaxScores && maxScores) {
+            reducedMaxScores.push(maxScores[i]!)
+          }
+          prevLeftPx = leftPx
+        }
+
+        const scaled = isLog
+          ? (Math.log(score) / log2 - logMin) * logRatio
+          : (score - niceMin) * linearRatio
+        const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
+        const y = yClamped + offset
+        addRectToPath(leftPx, y, w, originYPx - y, ctx)
+
+        if (score > niceMax) {
+          clipHighPx[clipHighCount] = leftPx
+          clipHighW[clipHighCount++] = w
+        } else if (score < niceMin && !isLog) {
+          clipLowPx[clipLowCount] = leftPx
+          clipLowW[clipLowCount++] = w
         }
       }
-      const fstart = starts[i]!
-      const fend = ends[i]!
-      const leftPx = reversed
-        ? (regionEnd - fend) * invBpPerPx
-        : (fstart - regionStart) * invBpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) * invBpPerPx
-        : (fend - regionStart) * invBpPerPx
-      const score = scoreArr[i]!
-      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-
-      // Track reduced features (one per pixel column)
-      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-        reducedStarts.push(fstart)
-        reducedEnds.push(fend)
-        reducedScores.push(scores[i]!)
-        if (reducedMinScores && minScores) {
-          reducedMinScores.push(minScores[i]!)
+      ctx.fillStyle = staticColor
+      ctx.fill()
+    } else {
+      for (let i = 0; i < len; i++) {
+        if (i % 10000 === 0) {
+          const now = Date.now()
+          if (now - lastCheck > 400) {
+            checkStopToken(stopToken)
+            lastCheck = now
+          }
         }
-        if (reducedMaxScores && maxScores) {
-          reducedMaxScores.push(maxScores[i]!)
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const score = scoreArr[i]!
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+
+        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+          reducedStarts.push(fstart)
+          reducedEnds.push(fend)
+          reducedScores.push(scores[i]!)
+          if (reducedMinScores && minScores) {
+            reducedMinScores.push(minScores[i]!)
+          }
+          if (reducedMaxScores && maxScores) {
+            reducedMaxScores.push(maxScores[i]!)
+          }
+          prevLeftPx = leftPx
         }
-        prevLeftPx = leftPx
-      }
 
-      const scaled = isLog
-        ? (Math.log(score) / log2 - logMin) * logRatio
-        : (score - niceMin) * linearRatio
-      const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
-      const y = yClamped + offset
-      const featureColor = useBicolor
-        ? score < pivotValue
-          ? negColor
-          : posColor
-        : staticColor
-      ctx.fillStyle = featureColor
-      ctx.fillRect(leftPx, y, w, originYPx - y)
-
-      // Draw clipping indicator
-      if (score > niceMax) {
-        ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, offset, w, WIGGLE_CLIP_HEIGHT)
+        const scaled = isLog
+          ? (Math.log(score) / log2 - logMin) * logRatio
+          : (score - niceMin) * linearRatio
+        const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
+        const y = yClamped + offset
+        const featureColor = useBicolor
+          ? score < pivotValue
+            ? negColor
+            : posColor
+          : staticColor
         ctx.fillStyle = featureColor
-      } else if (score < niceMin && !isLog) {
-        ctx.fillStyle = clipColor
+        ctx.fillRect(leftPx, y, w, originYPx - y)
+
+        if (score > niceMax) {
+          clipHighPx[clipHighCount] = leftPx
+          clipHighW[clipHighCount++] = w
+        } else if (score < niceMin && !isLog) {
+          clipLowPx[clipLowCount] = leftPx
+          clipLowW[clipLowCount++] = w
+        }
+      }
+    }
+
+    // Draw clipping indicators
+    if (clipHighCount > 0 || clipLowCount > 0) {
+      ctx.fillStyle = clipColor
+      for (let i = 0; i < clipHighCount; i++) {
+        ctx.fillRect(clipHighPx[i]!, offset, clipHighW[i]!, WIGGLE_CLIP_HEIGHT)
+      }
+      for (let i = 0; i < clipLowCount; i++) {
         ctx.fillRect(
-          leftPx,
+          clipLowPx[i]!,
           unadjustedHeight - WIGGLE_CLIP_HEIGHT,
-          w,
+          clipLowW[i]!,
           WIGGLE_CLIP_HEIGHT,
         )
-        ctx.fillStyle = featureColor
       }
     }
   } else {
-    // Non-filled (scatterplot) mode: draw each feature individually
+    // Non-filled (scatterplot) mode
     const clipHighPx: number[] = []
     const clipHighW: number[] = []
     const clipLowPx: number[] = []
@@ -368,57 +438,112 @@ export function drawXYArrays(
     let prevLeftPx = Number.NEGATIVE_INFINITY
     const dotSize = Math.max(minSize, 1)
 
-    for (let i = 0; i < len; i++) {
-      if (i % 10000 === 0) {
-        const now = Date.now()
-        if (now - lastCheck > 400) {
-          checkStopToken(stopToken)
-          lastCheck = now
+    // Can batch when not using bicolor and color has no alpha
+    const hasAlpha = colord(staticColor).alpha() < 1
+    const canBatch = !useBicolor && !hasAlpha
+
+    if (canBatch) {
+      ctx.beginPath()
+      for (let i = 0; i < len; i++) {
+        if (i % 10000 === 0) {
+          const now = Date.now()
+          if (now - lastCheck > 400) {
+            checkStopToken(stopToken)
+            lastCheck = now
+          }
+        }
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const score = scoreArr[i]!
+        const w = rightPx - leftPx + WIGGLE_FUDGE_FACTOR
+
+        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+          reducedStarts.push(fstart)
+          reducedEnds.push(fend)
+          reducedScores.push(scores[i]!)
+          if (reducedMinScores && minScores) {
+            reducedMinScores.push(minScores[i]!)
+          }
+          if (reducedMaxScores && maxScores) {
+            reducedMaxScores.push(maxScores[i]!)
+          }
+          prevLeftPx = leftPx
+        }
+
+        const scaled = isLog
+          ? (Math.log(score) / log2 - logMin) * logRatio
+          : (score - niceMin) * linearRatio
+        const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
+        const y = yClamped + offset
+        addRectToPath(leftPx, y, Math.max(w, minSize), dotSize, ctx)
+
+        if (score > niceMax) {
+          clipHighPx[clipHighCount] = leftPx
+          clipHighW[clipHighCount++] = w
+        } else if (!isLog && score < niceMin) {
+          clipLowPx[clipLowCount] = leftPx
+          clipLowW[clipLowCount++] = w
         }
       }
-      const fstart = starts[i]!
-      const fend = ends[i]!
-      const leftPx = reversed
-        ? (regionEnd - fend) * invBpPerPx
-        : (fstart - regionStart) * invBpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) * invBpPerPx
-        : (fend - regionStart) * invBpPerPx
-      const score = scoreArr[i]!
-      const w = rightPx - leftPx + WIGGLE_FUDGE_FACTOR
-
-      // Track reduced features (one per pixel column)
-      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-        reducedStarts.push(fstart)
-        reducedEnds.push(fend)
-        reducedScores.push(scores[i]!)
-        if (reducedMinScores && minScores) {
-          reducedMinScores.push(minScores[i]!)
+      ctx.fillStyle = staticColor
+      ctx.fill()
+    } else {
+      for (let i = 0; i < len; i++) {
+        if (i % 10000 === 0) {
+          const now = Date.now()
+          if (now - lastCheck > 400) {
+            checkStopToken(stopToken)
+            lastCheck = now
+          }
         }
-        if (reducedMaxScores && maxScores) {
-          reducedMaxScores.push(maxScores[i]!)
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const score = scoreArr[i]!
+        const w = rightPx - leftPx + WIGGLE_FUDGE_FACTOR
+
+        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+          reducedStarts.push(fstart)
+          reducedEnds.push(fend)
+          reducedScores.push(scores[i]!)
+          if (reducedMinScores && minScores) {
+            reducedMinScores.push(minScores[i]!)
+          }
+          if (reducedMaxScores && maxScores) {
+            reducedMaxScores.push(maxScores[i]!)
+          }
+          prevLeftPx = leftPx
         }
-        prevLeftPx = leftPx
-      }
 
-      const scaled = isLog
-        ? (Math.log(score) / log2 - logMin) * logRatio
-        : (score - niceMin) * linearRatio
-      const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
-      const y = yClamped + offset
+        const scaled = isLog
+          ? (Math.log(score) / log2 - logMin) * logRatio
+          : (score - niceMin) * linearRatio
+        const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
+        const y = yClamped + offset
 
-      if (useBicolor) {
-        ctx.fillStyle = score < pivotValue ? negColor : posColor
-      }
-      ctx.fillRect(leftPx, y, Math.max(w, minSize), dotSize)
+        if (useBicolor) {
+          ctx.fillStyle = score < pivotValue ? negColor : posColor
+        }
+        ctx.fillRect(leftPx, y, Math.max(w, minSize), dotSize)
 
-      // Track clipping
-      if (score > niceMax) {
-        clipHighPx[clipHighCount] = leftPx
-        clipHighW[clipHighCount++] = w
-      } else if (!isLog && score < niceMin) {
-        clipLowPx[clipLowCount] = leftPx
-        clipLowW[clipLowCount++] = w
+        if (score > niceMax) {
+          clipHighPx[clipHighCount] = leftPx
+          clipHighW[clipHighCount++] = w
+        } else if (!isLog && score < niceMin) {
+          clipLowPx[clipLowCount] = leftPx
+          clipLowW[clipLowCount++] = w
+        }
       }
     }
 
@@ -656,7 +781,9 @@ export function drawXY(
 
     // when staticColor is provided and not crossing origin, we can batch all
     // rects of the same color into a single path and fill once
-    const canBatch = staticColor && !crossingOrigin
+    // cannot batch if color has alpha since overlapping rects would blend differently
+    const hasAlpha = staticColor ? colord(staticColor).alpha() < 1 : false
+    const canBatch = staticColor && !crossingOrigin && !hasAlpha
 
     if (canBatch) {
       // pass 1: max scores (lightened)
@@ -800,7 +927,9 @@ export function drawXY(
     const isLog = scaleOpts.scaleType === 'log'
 
     // when staticColor is provided, we can batch all rects into a single path
-    if (staticColor) {
+    // cannot batch if color has alpha since overlapping rects would blend differently
+    const hasAlpha = staticColor ? colord(staticColor).alpha() < 1 : false
+    if (staticColor && !hasAlpha) {
       ctx.beginPath()
       start = performance.now()
       for (const feature of features.values()) {
