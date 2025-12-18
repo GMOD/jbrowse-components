@@ -290,7 +290,7 @@ const Base1DView = types
     } = snap as Omit<typeof snap, symbol>
     return {
       ...rest,
-      ...(displayedRegions?.length ? { displayedRegions } : {}),
+      ...(displayedRegions.length ? { displayedRegions } : {}),
       ...(bpPerPx ? { bpPerPx } : {}),
       ...(offsetPx ? { offsetPx } : {}),
       ...(interRegionPaddingWidth ? { interRegionPaddingWidth } : {}),

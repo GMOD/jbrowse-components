@@ -438,7 +438,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(drawCIGAR === false ? { drawCIGAR } : {}),
+        ...(!drawCIGAR ? { drawCIGAR } : {}),
         ...(drawCIGARMatchesOnly ? { drawCIGARMatchesOnly } : {}),
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),

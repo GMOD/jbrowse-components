@@ -220,6 +220,28 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         )
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        drawerPosition,
+        drawerWidth,
+        widgets,
+        activeWidgets,
+        minimized,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(drawerPosition !== 'right' ? { drawerPosition } : {}),
+        ...(drawerWidth !== 384 ? { drawerWidth } : {}),
+        ...(Object.keys(widgets).length ? { widgets } : {}),
+        ...(Object.keys(activeWidgets).length ? { activeWidgets } : {}),
+        ...(minimized ? { minimized } : {}),
+      } as typeof snap
+    })
 }
 
 /** Session mixin MST type for a session that manages drawer widgets */

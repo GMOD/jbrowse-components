@@ -2028,15 +2028,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(hideHeader ? { hideHeader } : {}),
         ...(hideHeaderOverview ? { hideHeaderOverview } : {}),
         ...(hideNoTracksActive ? { hideNoTracksActive } : {}),
-        ...(showGridlines === false ? { showGridlines } : {}),
+        ...(!showGridlines ? { showGridlines } : {}),
         ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-        ...(displayedRegions?.length ? { displayedRegions } : {}),
-        ...(highlight?.length ? { highlight } : {}),
+        ...(displayedRegions.length ? { displayedRegions } : {}),
+        ...(highlight.length ? { highlight } : {}),
         ...(showCenterLine ? { showCenterLine } : {}),
-        ...(showCytobandsSetting === false ? { showCytobandsSetting } : {}),
+        ...(!showCytobandsSetting ? { showCytobandsSetting } : {}),
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
-        ...(showTrackOutlines === false ? { showTrackOutlines } : {}),
+        ...(!showTrackOutlines ? { showTrackOutlines } : {}),
       } as typeof snap
     })
 }

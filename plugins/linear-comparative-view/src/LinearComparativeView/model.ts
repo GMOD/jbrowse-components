@@ -400,11 +400,11 @@ function stateModelFactory(pluginManager: PluginManager) {
       return {
         ...rest,
         ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-        ...(showIntraviewLinks === false ? { showIntraviewLinks } : {}),
+        ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
         ...(linkViews ? { linkViews } : {}),
         ...(interactiveOverlay ? { interactiveOverlay } : {}),
-        ...(showDynamicControls === false ? { showDynamicControls } : {}),
-        ...(viewTrackConfigs?.length ? { viewTrackConfigs } : {}),
+        ...(!showDynamicControls ? { showDynamicControls } : {}),
+        ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
       } as typeof snap
     })
 }

@@ -220,4 +220,18 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         ]
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { showForward, showReverse, showTranslation, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(!showForward ? { showForward } : {}),
+        ...(!showReverse ? { showReverse } : {}),
+        ...(!showTranslation ? { showTranslation } : {}),
+      } as typeof snap
+    })
 }

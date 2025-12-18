@@ -597,11 +597,13 @@ export default function SharedWiggleMixin(
         ...(posColor !== undefined ? { posColor } : {}),
         ...(negColor !== undefined ? { negColor } : {}),
         ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
-        ...(rendererTypeNameState !== undefined ? { rendererTypeNameState } : {}),
+        ...(rendererTypeNameState !== undefined
+          ? { rendererTypeNameState }
+          : {}),
         ...(scale !== undefined ? { scale } : {}),
         ...(autoscale !== undefined ? { autoscale } : {}),
         ...(displayCrossHatches !== undefined ? { displayCrossHatches } : {}),
-        ...(constraints?.min !== undefined || constraints?.max !== undefined
+        ...(constraints.min !== undefined || constraints.max !== undefined
           ? { constraints }
           : {}),
         ...(statsRegion !== undefined ? { statsRegion } : {}),

@@ -735,10 +735,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(bpPerPx !== defaultBpPerPx ? { bpPerPx } : {}),
         ...(hideVerticalResizeHandle ? { hideVerticalResizeHandle } : {}),
         ...(hideTrackSelectorButton ? { hideTrackSelectorButton } : {}),
-        ...(lockedFitToWindow === false ? { lockedFitToWindow } : {}),
+        ...(!lockedFitToWindow ? { lockedFitToWindow } : {}),
         ...(disableImportForm ? { disableImportForm } : {}),
         ...(height !== defaultHeight ? { height } : {}),
-        ...(displayedRegions?.length ? { displayedRegions } : {}),
+        ...(displayedRegions.length ? { displayedRegions } : {}),
         ...(scrollX ? { scrollX } : {}),
         ...(scrollY ? { scrollY } : {}),
         ...(minimumRadiusPx !== defaultMinimumRadiusPx

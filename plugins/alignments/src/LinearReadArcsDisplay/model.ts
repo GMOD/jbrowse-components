@@ -351,8 +351,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ...rest,
         ...(lineWidth !== undefined ? { lineWidth } : {}),
         ...(jitter !== undefined ? { jitter } : {}),
-        ...(drawInter === false ? { drawInter } : {}),
-        ...(drawLongRange === false ? { drawLongRange } : {}),
+        ...(!drawInter ? { drawInter } : {}),
+        ...(!drawLongRange ? { drawLongRange } : {}),
         ...(showLegend !== undefined ? { showLegend } : {}),
       } as typeof snap
     })

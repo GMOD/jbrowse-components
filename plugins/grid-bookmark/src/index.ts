@@ -220,6 +220,26 @@ export default class GridBookmarkPlugin extends Plugin {
                 },
               }
             })
+            .postProcessSnapshot(snap => {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              if (!snap) {
+                return snap
+              }
+              const {
+                bookmarkHighlightsVisible,
+                bookmarkLabelsVisible,
+                ...rest
+              } = snap as unknown as Record<string, unknown>
+              return {
+                ...rest,
+                ...(bookmarkHighlightsVisible === false
+                  ? { bookmarkHighlightsVisible }
+                  : {}),
+                ...(bookmarkLabelsVisible === false
+                  ? { bookmarkLabelsVisible }
+                  : {}),
+              } as typeof snap
+            })
 
           ;(pluggableElement as ViewType).stateModel = newStateModel
         }

@@ -121,6 +121,17 @@ export function BaseSessionModel<
         self.hovered = thing
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { margin, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(margin ? { margin } : {}),
+      } as typeof snap
+    })
 }
 
 /** Session mixin MST type for the most basic session */

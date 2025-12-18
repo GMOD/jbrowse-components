@@ -711,12 +711,10 @@ export default function MultiVariantBaseModelF(
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(layout?.length ? { layout } : {}),
+        ...(layout.length ? { layout } : {}),
         ...(minorAlleleFrequencyFilter ? { minorAlleleFrequencyFilter } : {}),
-        ...(showSidebarLabelsSetting === false
-          ? { showSidebarLabelsSetting }
-          : {}),
-        ...(showTree === false ? { showTree } : {}),
+        ...(!showSidebarLabelsSetting ? { showSidebarLabelsSetting } : {}),
+        ...(!showTree ? { showTree } : {}),
         ...(renderingMode !== 'alleleCount' ? { renderingMode } : {}),
         ...(rowHeightMode !== 'auto' ? { rowHeightMode } : {}),
         ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER

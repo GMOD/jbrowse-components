@@ -25,6 +25,7 @@ import { observable } from 'mobx'
 
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getPileupLegendItems } from '../shared/legendUtils'
+import { isDefaultFilterFlags } from '../shared/util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
 import type {
@@ -356,7 +357,7 @@ export function SharedLinearPileupDisplayMixin(
        * #method
        * Returns legend items based on current colorBy setting
        */
-      legendItems(theme?: Theme): LegendItem[] {
+      legendItems(theme: Theme): LegendItem[] {
         return getPileupLegendItems(self.colorBy, theme)
       },
     }))
@@ -698,5 +699,29 @@ export function SharedLinearPileupDisplayMixin(
         }
       }
       return snap
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        trackMaxHeight,
+        colorBySetting,
+        filterBySetting,
+        jexlFilters,
+        hideSmallIndelsSetting,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
+        ...(colorBySetting !== undefined ? { colorBySetting } : {}),
+        ...(!isDefaultFilterFlags(filterBySetting) ? { filterBySetting } : {}),
+        ...(jexlFilters.length ? { jexlFilters } : {}),
+        ...(hideSmallIndelsSetting !== undefined
+          ? { hideSmallIndelsSetting }
+          : {}),
+      } as typeof snap
     })
 }

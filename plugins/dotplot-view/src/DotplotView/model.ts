@@ -872,9 +872,9 @@ export default function stateModelFactory(pm: PluginManager) {
         ...(htextRotation !== defaultHtextRotation ? { htextRotation } : {}),
         ...(fontSize !== defaultFontSize ? { fontSize } : {}),
         ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-        ...(drawCigar === false ? { drawCigar } : {}),
-        ...(assemblyNames?.length ? { assemblyNames } : {}),
-        ...(viewTrackConfigs?.length ? { viewTrackConfigs } : {}),
+        ...(!drawCigar ? { drawCigar } : {}),
+        ...(assemblyNames.length ? { assemblyNames } : {}),
+        ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
       } as typeof snap
     })
 }

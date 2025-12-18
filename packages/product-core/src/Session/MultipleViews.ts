@@ -23,26 +23,28 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
     .compose(
       BaseSessionModel(pluginManager),
       DrawerWidgetSessionMixin(pluginManager),
+      types.model({
+        /**
+         * #property
+         */
+        views: types.array(
+          pluginManager.pluggableMstType('view', 'stateModel'),
+        ),
+        /**
+         * #property
+         */
+        stickyViewHeaders: types.optional(types.boolean, () =>
+          localStorageGetBoolean('stickyViewHeaders', true),
+        ),
+        /**
+         * #property
+         * enables the dockview-based tabbed/tiled workspace layout
+         */
+        useWorkspaces: types.optional(types.boolean, () =>
+          localStorageGetBoolean('useWorkspaces', false),
+        ),
+      }),
     )
-    .props({
-      /**
-       * #property
-       */
-      views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
-      /**
-       * #property
-       */
-      stickyViewHeaders: types.optional(types.boolean, () =>
-        localStorageGetBoolean('stickyViewHeaders', true),
-      ),
-      /**
-       * #property
-       * enables the dockview-based tabbed/tiled workspace layout
-       */
-      useWorkspaces: types.optional(types.boolean, () =>
-        localStorageGetBoolean('useWorkspaces', false),
-      ),
-    })
     .actions(self => ({
       /**
        * #action
@@ -161,7 +163,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       >
       return {
         ...rest,
-        ...(stickyViewHeaders === false ? { stickyViewHeaders } : {}),
+        ...(!stickyViewHeaders ? { stickyViewHeaders } : {}),
         ...(useWorkspaces ? { useWorkspaces } : {}),
       } as typeof snap
     })

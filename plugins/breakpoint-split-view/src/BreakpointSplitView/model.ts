@@ -480,9 +480,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...rest,
         ...(height !== 400 ? { height } : {}),
         ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-        ...(showIntraviewLinks === false ? { showIntraviewLinks } : {}),
+        ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
         ...(linkViews ? { linkViews } : {}),
-        ...(interactiveOverlay === false ? { interactiveOverlay } : {}),
+        ...(!interactiveOverlay ? { interactiveOverlay } : {}),
         ...(showHeader ? { showHeader } : {}),
       } as typeof snap
     })

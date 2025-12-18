@@ -121,6 +121,17 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         self.connectionInstances.clear()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { connectionInstances, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(connectionInstances.length ? { connectionInstances } : {}),
+      } as typeof snap
+    })
 }
 
 /** Session mixin MST type for a session that has connections */

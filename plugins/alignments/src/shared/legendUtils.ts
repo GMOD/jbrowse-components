@@ -13,7 +13,7 @@ export interface LegendItem {
  */
 export function getPileupLegendItems(
   colorBy: ColorBy | undefined,
-  theme?: Theme,
+  theme: Theme,
 ): LegendItem[] {
   const colorType = colorBy?.type
 
@@ -61,16 +61,16 @@ export function getPileupLegendItems(
   }
 
   // Default: show ACGT, insertion, deletion, hardclip, softclip
-  const bases = theme?.palette?.bases
-  const insertion = theme?.palette?.insertion
-  const deletion = theme?.palette?.deletion
-  const hardclip = theme?.palette?.hardclip
-  const softclip = theme?.palette?.softclip
+  const bases = theme.palette.bases
+  const insertion = theme.palette.insertion
+  const deletion = theme.palette.deletion
+  const hardclip = theme.palette.hardclip
+  const softclip = theme.palette.softclip
   return [
-    { color: bases?.A?.main, label: 'A' },
-    { color: bases?.C?.main, label: 'C' },
-    { color: bases?.G?.main, label: 'G' },
-    { color: bases?.T?.main, label: 'T' },
+    { color: bases.A.main, label: 'A' },
+    { color: bases.C.main, label: 'C' },
+    { color: bases.G.main, label: 'G' },
+    { color: bases.T.main, label: 'T' },
     { color: insertion, label: 'Insertion' },
     { color: deletion, label: 'Deletion' },
     { color: hardclip, label: 'Hard clip' },
@@ -84,7 +84,7 @@ export function getPileupLegendItems(
 export function getSNPCoverageLegendItems(
   colorBy: ColorBy | undefined,
   visibleModifications: Map<string, ModificationTypeWithColor>,
-  theme?: Theme,
+  theme: Theme,
 ): LegendItem[] {
   if (colorBy?.type === 'methylation') {
     return [
@@ -103,14 +103,14 @@ export function getSNPCoverageLegendItems(
     return items
   }
 
-  const bases = theme?.palette?.bases
-  const insertion = theme?.palette?.insertion
-  const deletion = theme?.palette?.deletion
+  const bases = theme.palette.bases
+  const insertion = theme.palette.insertion
+  const deletion = theme.palette.deletion
   return [
-    { color: bases?.A?.main, label: 'A' },
-    { color: bases?.C?.main, label: 'C' },
-    { color: bases?.G?.main, label: 'G' },
-    { color: bases?.T?.main, label: 'T' },
+    { color: bases.A.main, label: 'A' },
+    { color: bases.C.main, label: 'C' },
+    { color: bases.G.main, label: 'G' },
+    { color: bases.T.main, label: 'T' },
     { color: insertion, label: 'Insertion' },
     { color: deletion, label: 'Deletion' },
   ]

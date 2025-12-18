@@ -89,7 +89,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       const { sessionTracks, ...rest } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(sessionTracks?.length ? { sessionTracks } : {}),
+        ...(sessionTracks.length ? { sessionTracks } : {}),
       } as typeof snap
     })
 }

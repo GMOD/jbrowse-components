@@ -379,10 +379,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       if (!snap) {
         return snap
       }
-      const { showSoftClipping, mismatchAlpha, sortedBy, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+      const { showSoftClipping, mismatchAlpha, sortedBy, ...rest } =
+        snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         ...(showSoftClipping ? { showSoftClipping } : {}),

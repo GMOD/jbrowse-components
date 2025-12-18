@@ -96,6 +96,22 @@ export function DockviewLayoutMixin() {
         self.panelViewAssignments.delete(panelId)
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { dockviewLayout, panelViewAssignments, activePanelId, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(dockviewLayout !== undefined ? { dockviewLayout } : {}),
+        ...(Object.keys(panelViewAssignments).length
+          ? { panelViewAssignments }
+          : {}),
+        ...(activePanelId !== undefined ? { activePanelId } : {}),
+      } as typeof snap
+    })
 }
 
 export type DockviewLayoutMixinType = ReturnType<typeof DockviewLayoutMixin>

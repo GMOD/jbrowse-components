@@ -19,6 +19,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 const minDisplayHeight = 20
+const defaultDisplayHeight = 250
+const defaultSnpCovHeight = 45
 
 /**
  * #stateModel LinearAlignmentsDisplay
@@ -381,9 +383,12 @@ function stateModelFactory(
         snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(heightPreConfig !== undefined ? { height: heightPreConfig } : {}),
+        ...(heightPreConfig !== undefined &&
+        heightPreConfig !== defaultDisplayHeight
+          ? { height: heightPreConfig }
+          : {}),
         ...(lowerPanelType !== 'LinearPileupDisplay' ? { lowerPanelType } : {}),
-        ...(snpCovHeight !== 45 ? { snpCovHeight } : {}),
+        ...(snpCovHeight !== defaultSnpCovHeight ? { snpCovHeight } : {}),
       } as typeof snap
     })
 }

@@ -18,6 +18,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { getSNPCoverageLegendItems } from '../shared/legendUtils'
+import { isDefaultFilterFlags } from '../shared/util'
 import { createAutorun } from '../util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
@@ -484,7 +485,7 @@ function stateModelFactory(
          * #method
          * Returns legend items for SNP coverage display
          */
-        legendItems(theme?: Theme): LegendItem[] {
+        legendItems(theme: Theme): LegendItem[] {
           return getSNPCoverageLegendItems(
             self.colorBy,
             self.visibleModifications,
@@ -530,9 +531,9 @@ function stateModelFactory(
           : {}),
         ...(showArcs !== undefined ? { showArcs } : {}),
         ...(minArcScore ? { minArcScore } : {}),
-        ...(filterBySetting !== undefined ? { filterBySetting } : {}),
+        ...(!isDefaultFilterFlags(filterBySetting) ? { filterBySetting } : {}),
         ...(colorBySetting !== undefined ? { colorBySetting } : {}),
-        ...(jexlFilters?.length ? { jexlFilters } : {}),
+        ...(jexlFilters.length ? { jexlFilters } : {}),
       } as typeof snap
     })
 }
