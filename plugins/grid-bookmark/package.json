@@ -41,7 +41,7 @@
     "@jbrowse/plugin-linear-genome-view": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
-    "@mui/x-data-grid": "^8.22.0",
+    "@mui/x-data-grid": "^8.22.1",
     "@types/file-saver-es": "^2.0.1",
     "base64-js": "^1.5.1",
     "copy-to-clipboard": "^3.3.1",

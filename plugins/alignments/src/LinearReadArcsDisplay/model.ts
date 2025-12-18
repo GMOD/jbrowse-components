@@ -9,6 +9,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import {
   getColorSchemeMenuItem,
@@ -28,6 +29,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
  * - [FeatureDensityMixin](../featuredensitymixin)
+ * - [LinearReadArcsDisplaySettingsMixin](../linearreadarcdisplaysettingsmixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -37,6 +39,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       TrackHeightMixin(),
       FeatureDensityMixin(),
       LinearReadDisplayBaseMixin(),
+      LinearReadArcsDisplaySettingsMixin(),
       types.model({
         /**
          * #property
@@ -46,30 +49,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-
-        /**
-         * #property
-         * Width of the arc lines (thin, bold, extra bold)
-         */
-        lineWidth: types.maybe(types.number),
-
-        /**
-         * #property
-         * Jitter amount for x-position to better visualize overlapping arcs
-         */
-        jitter: types.maybe(types.number),
-
-        /**
-         * #property
-         * Whether to draw inter-region vertical lines
-         */
-        drawInter: true,
-
-        /**
-         * #property
-         * Whether to draw long-range connections
-         */
-        drawLongRange: true,
       }),
     )
     .volatile(() => ({
@@ -107,40 +86,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
-       * Toggle drawing of inter-region vertical lines
-       */
-      setDrawInter(f: boolean) {
-        self.drawInter = f
-      },
-
-      /**
-       * #action
-       * Toggle drawing of long-range connections
-       */
-      setDrawLongRange(f: boolean) {
-        self.drawLongRange = f
-      },
-
-      /**
-       * #action
-       * Set the line width (thin=1, bold=2, extrabold=5, etc)
-       */
-      setLineWidth(n: number) {
-        self.lineWidth = n
-      },
-
-      /**
-       * #action
-       * Set jitter amount for x-position
-       * Helpful to jitter the x direction so you see better evidence
-       * when e.g. 100 long reads map to same x position
-       */
-      setJitter(n: number) {
-        self.jitter = n
-      },
-
-      /**
-       * #action
        * Set the rendering imageData from RPC
        */
       setRenderingImageData(imageData: ImageBitmap | undefined) {
@@ -153,21 +98,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setRenderingStopToken(token?: StopToken) {
         self.renderingStopToken = token
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get lineWidthSetting() {
-        return self.lineWidth ?? getConf(self, 'lineWidth')
-      },
-
-      /**
-       * #getter
-       */
-      get jitterVal(): number {
-        return self.jitter ?? getConf(self, 'jitter')
       },
     }))
     .views(self => {
