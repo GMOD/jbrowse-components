@@ -12,7 +12,6 @@ import {
 } from '../../shared/forEachMismatchTypes'
 import { measureTextSmallNumber } from '../util'
 
-import type { MismatchCallback } from '../../shared/forEachMismatchTypes'
 import type { FeatureWithMismatchIterator, Mismatch } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'

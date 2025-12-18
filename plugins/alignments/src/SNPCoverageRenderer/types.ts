@@ -84,7 +84,7 @@ function formatStrandFromCounts(fwd?: number, rev?: number) {
 
 function formatCountPct(count: number, total: number) {
   const pct = total > 0 ? ((count / total) * 100).toFixed(1) : '0'
-  return `${count}/${total} (${pct}% of reads)`
+  return `${count}/${total} of reads (${pct}%)`
 }
 
 function pct(n: number, total = 1) {
