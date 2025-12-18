@@ -5,6 +5,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -14,12 +15,12 @@ export async function getQuantitativeStats(
     adapterConfig: AnyConfigurationModel
     configuration: AnyConfigurationModel
     autoscaleType: string
-    setMessage: (str: string) => void
+    setStatusMessage: (str: string) => void
     effectiveRpcDriverName?: string
   },
   opts: {
     headers?: Record<string, string>
-    stopToken?: string
+    stopToken?: StopToken
     filters: string[]
     currStatsBpPerPx: number
   },
@@ -35,7 +36,7 @@ export async function getQuantitativeStats(
     rpcDriverName: effectiveRpcDriverName,
     statusCallback: (message: string) => {
       if (isAlive(self)) {
-        self.setMessage(message)
+        self.setStatusMessage(message)
       }
     },
     ...opts,
@@ -63,15 +64,24 @@ export async function getQuantitativeStats(
           ...results,
           currStatsBpPerPx,
         }
-  }
-  if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-    const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
+  } else if (autoscaleType === 'local' || autoscaleType === 'localsd') {
+    const { dynamicBlocks, staticBlocks, bpPerPx } = getContainingView(
+      self,
+    ) as LGV
     const results = (await rpcManager.call(
       sessionId,
       'WiggleGetMultiRegionQuantitativeStats',
       {
         ...params,
         regions: dynamicBlocks.contentBlocks.map(region => {
+          const { start, end } = region
+          return {
+            ...JSON.parse(JSON.stringify(region)),
+            start: Math.floor(start),
+            end: Math.ceil(end),
+          }
+        }),
+        staticBlocks: staticBlocks.contentBlocks.map(region => {
           const { start, end } = region
           return {
             ...JSON.parse(JSON.stringify(region)),
@@ -97,8 +107,7 @@ export async function getQuantitativeStats(
           ...results,
           currStatsBpPerPx,
         }
-  }
-  if (autoscaleType === 'zscale') {
+  } else if (autoscaleType === 'zscale') {
     return rpcManager.call(
       sessionId,
       'WiggleGetGlobalQuantitativeStats',

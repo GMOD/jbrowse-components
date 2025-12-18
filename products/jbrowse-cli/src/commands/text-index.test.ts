@@ -256,7 +256,7 @@ test('indexes single assembly volvox config', async () => {
       'Name,ID,Note',
     ])
     // to update (e.g. if volvox config is updated) run:
-    // bin/dev text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
     expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
     expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
     expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
@@ -282,7 +282,7 @@ test('indexes entire volvox config', async () => {
       'Name,ID,Note',
     ])
     // to update (e.g. if volvox config is updated) run:
-    // bin/dev text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
     expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
     expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
     expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)

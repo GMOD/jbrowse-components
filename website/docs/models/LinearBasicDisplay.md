@@ -92,6 +92,15 @@ IMaybe<ISimpleType<string>>
 trackGeneGlyphMode: types.maybe(types.string)
 ```
 
+#### property: trackDisplayDirectionalChevrons
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+trackDisplayDirectionalChevrons: types.maybe(types.boolean)
+```
+
 #### property: configuration
 
 ```js
@@ -120,6 +129,13 @@ any
 ```
 
 #### getter: rendererTypeName
+
+```js
+// type
+any
+```
+
+#### getter: sequenceAdapter
 
 ```js
 // type
@@ -168,6 +184,13 @@ any
 any
 ```
 
+#### getter: displayDirectionalChevrons
+
+```js
+// type
+any
+```
+
 #### getter: rendererConfig
 
 ```js
@@ -198,7 +221,7 @@ renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubsc
 
 ```js
 // type signature
-renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; }
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
@@ -264,4 +287,11 @@ setMaxHeight: (val?: number) => void
 ```js
 // type signature
 setGeneGlyphMode: (val: string) => void
+```
+
+#### action: toggleDisplayDirectionalChevrons
+
+```js
+// type signature
+toggleDisplayDirectionalChevrons: () => void
 ```

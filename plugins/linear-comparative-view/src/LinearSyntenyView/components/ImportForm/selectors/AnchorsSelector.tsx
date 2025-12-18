@@ -15,9 +15,9 @@ const AnchorsSelector = observer(function ({
   setSwap,
   fileLocation,
   setFileLocation,
-  bed1Location = undefined,
+  bed1Location,
   setBed1Location = () => {},
-  bed2Location = undefined,
+  bed2Location,
   setBed2Location = () => {},
   radioOption,
 }: SelectorProps) {

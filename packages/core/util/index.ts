@@ -30,6 +30,7 @@ import type { ParsedLocString } from './locString'
 import type PluginManager from '../PluginManager'
 import type { BaseBlock } from './blockTypes'
 import type { Feature } from './simpleFeature'
+import type { StopToken } from './stopToken'
 import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import type { Region as MUIRegion } from './types/mst'
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
@@ -589,7 +590,11 @@ export function renameRegionIfNeeded(
     // modify it directly in the container
     const newRef = refNameMap[region.refName]
     if (newRef) {
-      return { ...region, refName: newRef, originalRefName: region.refName }
+      return {
+        ...region,
+        refName: newRef,
+        originalRefName: region.refName,
+      }
     }
   }
   return region
@@ -888,12 +893,12 @@ export function generateCodonTable(table: any) {
 // call statusCallback with current status and clear when finished
 export async function updateStatus<U>(
   msg: string,
-  cb: (arg: string) => void,
+  cb: ((arg: string) => void) | undefined,
   fn: () => U | Promise<U>,
 ) {
-  cb(msg)
+  cb?.(msg)
   const res = await fn()
-  cb('')
+  cb?.('')
   return res
 }
 
@@ -902,7 +907,7 @@ export async function updateStatus<U>(
 export async function updateStatus2<U>(
   msg: string,
   cb: (arg: string) => void,
-  stopToken: string | undefined,
+  stopToken: StopToken | undefined,
   fn: () => U | Promise<U>,
 ) {
   cb(msg)
@@ -1008,7 +1013,7 @@ export function getProgressDisplayStr(current: number, total: number) {
   } else if (Math.floor(total / 1_000) > 0) {
     return `${reducePrecision(current / 1_000)}/${reducePrecision(total / 1_000)}Kb`
   } else {
-    return `${reducePrecision(current)}/${reducePrecision(total)}}bytes`
+    return `${reducePrecision(current)}/${reducePrecision(total)} bytes`
   }
 }
 
@@ -1344,26 +1349,6 @@ export function localStorageSetBoolean(key: string, value: boolean) {
   localStorageSetItem(key, JSON.stringify(value))
 }
 
-export function forEachWithStopTokenCheck<T>(
-  iter: Iterable<T>,
-  stopToken: string | undefined,
-  arg: (arg: T, idx: number) => void,
-  durationMs = 400,
-  iters = 100,
-) {
-  let start = performance.now()
-  let i = 0
-  for (const t of iter) {
-    arg(t, i++)
-    if (iters % i === 0) {
-      if (performance.now() - start > durationMs) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-    }
-  }
-}
-
 export function testAdapter(
   fileName: string,
   regex: RegExp,
@@ -1386,3 +1371,4 @@ export { makeAbortableReaction } from './makeAbortableReaction'
 export * from './aborting'
 export * from './linkify'
 export * from './locString'
+export * from './stopToken'

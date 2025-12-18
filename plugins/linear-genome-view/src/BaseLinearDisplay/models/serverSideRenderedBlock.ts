@@ -4,7 +4,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
   getContainingDisplay,
-  getContainingTrack,
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
@@ -19,6 +18,7 @@ import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -58,7 +58,7 @@ const blockState = types
     /**
      * #volatile
      */
-    stopToken: undefined as string | undefined,
+    stopToken: undefined as StopToken | undefined,
     /**
      * #volatile
      */
@@ -78,7 +78,7 @@ const blockState = types
     /**
      * #volatile
      */
-    status: '',
+    blockStatusMessage: '',
     /**
      * #volatile
      */
@@ -138,13 +138,13 @@ const blockState = types
       /**
        * #action
        */
-      setStatus(message: string) {
-        self.status = message
+      setStatusMessage(message: string) {
+        self.blockStatusMessage = message
       },
       /**
        * #action
        */
-      setLoading(newStopToken: string) {
+      setLoading(newStopToken: StopToken) {
         stopCurrentToken()
         self.isRenderingPending = true
         self.error = undefined
@@ -240,6 +240,16 @@ const blockState = types
       },
     }
   })
+  .views(self => ({
+    get statusMessage() {
+      return self.isRenderingPending
+        ? self.blockStatusMessage ||
+            // @ts-expect-error
+            getContainingDisplay(self).statusMessage ||
+            'Loading'
+        : undefined
+    },
+  }))
   .actions(self => ({
     afterAttach() {
       const display = getContainingDisplay(self)
@@ -299,7 +309,7 @@ export function renderBlockData(
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
-    const layoutId = getContainingTrack(display).id
+    const layoutId = parentTrack.id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
@@ -312,7 +322,7 @@ export function renderBlockData(
       renderArgs: {
         statusCallback: (message: string) => {
           if (isAlive(self)) {
-            self.setStatus(message)
+            self.setStatusMessage(message)
           }
         },
         assemblyName: self.region.assemblyName,
@@ -327,13 +337,15 @@ export function renderBlockData(
       },
     }
   } catch (e) {
-    return { displayError: e }
+    return {
+      displayError: e,
+    }
   }
 }
 
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
-  stopToken: string | undefined,
+  stopToken: StopToken | undefined,
   self: BlockModel,
 ) {
   if (!props || !isAlive(self)) {

@@ -24,6 +24,7 @@ export interface FeatureLayout {
   totalFeatureHeight: number
   totalLayoutHeight: number
   totalLayoutWidth: number
+  leftPadding: number
   children: FeatureLayout[]
 }
 

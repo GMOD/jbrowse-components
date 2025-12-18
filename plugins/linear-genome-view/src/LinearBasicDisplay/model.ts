@@ -6,14 +6,9 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import {
-  SimpleFeature,
-  getContainingTrack,
-  getSession,
-} from '@jbrowse/core/util'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
-  addDisposer,
   cast,
   getEnv,
   getParent,
@@ -21,7 +16,6 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun } from 'mobx'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
@@ -79,6 +73,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         trackGeneGlyphMode: types.maybe(types.string),
+        /**
+         * #property
+         */
+        trackDisplayDirectionalChevrons: types.maybe(types.boolean),
         /**
          * #property
          */
@@ -185,6 +183,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           getConf(self, ['renderer', 'geneGlyphMode'])
         )
       },
+
+      /**
+       * #getter
+       */
+      get displayDirectionalChevrons() {
+        return (
+          self.trackDisplayDirectionalChevrons ??
+          getConf(self, ['renderer', 'displayDirectionalChevrons'])
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -203,6 +211,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
             geneGlyphMode: self.geneGlyphMode,
+            displayDirectionalChevrons: self.displayDirectionalChevrons,
           },
           getEnv(self),
         )
@@ -258,6 +267,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setGeneGlyphMode(val: string) {
         self.trackGeneGlyphMode = val
       },
+      /**
+       * #action
+       */
+      toggleDisplayDirectionalChevrons() {
+        self.trackDisplayDirectionalChevrons = !self.displayDirectionalChevrons
+      },
     }))
     .views(self => ({
       /**
@@ -301,6 +316,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...superProps,
             async onFeatureClick(_: unknown, featureId?: string) {
               const { rpcManager } = session
+              const { parentTrack } = self
               try {
                 const f = featureId || self.featureIdUnderMouse
                 if (!f) {
@@ -313,7 +329,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
+                      layoutId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -329,6 +345,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             async onFeatureContextMenu(_: unknown, featureId?: string) {
               const { rpcManager } = session
+              const { parentTrack } = self
               try {
                 const f = featureId || self.featureIdUnderMouse
                 if (!f) {
@@ -341,7 +358,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
+                      layoutId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -382,6 +399,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   checked: self.showDescriptions,
                   onClick: () => {
                     self.toggleShowDescriptions()
+                  },
+                },
+                {
+                  label: 'Show chevrons',
+                  type: 'checkbox',
+                  checked: self.displayDirectionalChevrons,
+                  onClick: () => {
+                    self.toggleDisplayDirectionalChevrons()
                   },
                 },
                 {
@@ -439,7 +464,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               })),
             },
             {
-              label: 'Set max height',
+              label: 'Set max track height',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
@@ -489,53 +514,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
-    .actions(self => ({
-      afterAttach() {
-        // Autorun synchronizes featureUnderMouse with featureIdUnderMouse
-        // asynchronously. This is needed because we don't serialize all
-        // features from the renderer over RPC to avoid overhead
-        addDisposer(
-          self,
-          autorun(async () => {
-            const session = getSession(self)
-            try {
-              const featureId = self.featureIdUnderMouse
-              if (self.featureUnderMouse?.id() !== featureId) {
-                if (!featureId) {
-                  self.setFeatureUnderMouse(undefined)
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = (await session.rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId,
-                      sessionId,
-                      layoutId: getContainingTrack(self).id,
-                      rendererType: self.rendererTypeName,
-                    },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
-
-                  // Check featureIdUnderMouse is still the same as the
-                  // feature.id that was returned e.g. that the user hasn't
-                  // moused over to a new position during the async operation
-                  if (
-                    isAlive(self) &&
-                    feature &&
-                    self.featureIdUnderMouse === feature.uniqueId
-                  ) {
-                    self.setFeatureUnderMouse(new SimpleFeature(feature))
-                  }
-                }
-              }
-            } catch (e) {
-              console.error(e)
-              session.notifyError(`${e}`, e)
-            }
-          }),
-        )
-      },
-    }))
 }
 
 export type FeatureTrackStateModel = ReturnType<typeof stateModelFactory>

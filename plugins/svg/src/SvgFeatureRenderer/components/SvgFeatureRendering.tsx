@@ -213,7 +213,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   onMouseUp?: React.MouseEventHandler
   onClick?: React.MouseEventHandler
 }) {
-  const { regions = [], config, exportSVG, featureDisplayHandler } = props
+  const { regions, config, exportSVG, featureDisplayHandler } = props
   const region = regions[0]!
   const displayMode = readConfObject(config, 'displayMode') as string
 
@@ -260,7 +260,7 @@ function Wrapper(props: {
   const {
     layout,
     blockKey,
-    regions = [],
+    regions,
     bpPerPx,
     displayModel = {},
     onMouseOut,

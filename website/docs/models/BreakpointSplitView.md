@@ -101,7 +101,39 @@ views: types.array(
         )
 ```
 
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<BreakpointSplitViewInit, BreakpointSplitViewInit, BreakpointSplitViewInit>
+// code
+init: types.frozen<BreakpointSplitViewInit | undefined>()
+```
+
 ### BreakpointSplitView - Getters
+
+#### getter: hasSomethingToShow
+
+```js
+// type
+boolean
+```
+
+#### getter: initialized
+
+```js
+// type
+boolean
+```
+
+#### getter: showImportForm
+
+```js
+// type
+boolean
+```
 
 #### getter: matchedTracks
 
@@ -224,4 +256,18 @@ setMatchedTrackFeatures: (obj: Record<string, Feature[][]>) => void
 ```js
 // type signature
 reverseViewOrder: () => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (init?: BreakpointSplitViewInit) => void
+```
+
+#### action: setViews
+
+```js
+// type signature
+setViews: (viewInits: { loc?: string; assembly: string; tracks?: string[]; }[]) => void
 ```

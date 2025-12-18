@@ -15,16 +15,14 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { autorun, observable } from 'mobx'
+import { observable } from 'mobx'
 
-import { createAutorun } from '../util'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { getUniqueTags } from '../shared/getUniqueTags'
 
 import type { ColorBy, FilterBy } from '../shared/types'
 import type {
@@ -587,10 +585,12 @@ export function SharedLinearPileupDisplayMixin(
             ...superTrackMenuItems(),
             {
               label: 'Set feature height...',
-              priority: 1,
+              priority: 0,
               subMenu: [
                 {
                   label: 'Normal',
+                  type: 'radio',
+                  checked: self.featureHeight === 7 && self.noSpacing === false,
                   onClick: () => {
                     self.setFeatureHeight(7)
                     self.setNoSpacing(false)
@@ -598,6 +598,8 @@ export function SharedLinearPileupDisplayMixin(
                 },
                 {
                   label: 'Compact',
+                  type: 'radio',
+                  checked: self.featureHeight === 2 && self.noSpacing === true,
                   onClick: () => {
                     self.setFeatureHeight(2)
                     self.setNoSpacing(true)
@@ -605,13 +607,15 @@ export function SharedLinearPileupDisplayMixin(
                 },
                 {
                   label: 'Super-compact',
+                  type: 'radio',
+                  checked: self.featureHeight === 1 && self.noSpacing === true,
                   onClick: () => {
                     self.setFeatureHeight(1)
                     self.setNoSpacing(true)
                   },
                 },
                 {
-                  label: 'Manually set height',
+                  label: 'Custom',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SetFeatureHeightDialog,
@@ -634,7 +638,7 @@ export function SharedLinearPileupDisplayMixin(
               },
             },
             {
-              label: 'Set max height...',
+              label: 'Set max track height...',
               priority: -1,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
@@ -670,78 +674,12 @@ export function SharedLinearPileupDisplayMixin(
     }))
     .actions(self => ({
       afterAttach() {
-        createAutorun(
-          self,
-          async () => {
-            const view = getContainingView(self) as LGV
-            if (!self.autorunReady) {
-              return
-            }
-
-            const { colorBy, tagsReady } = self
-            const { staticBlocks } = view
-            if (colorBy?.tag && !tagsReady) {
-              const vals = await getUniqueTags({
-                self,
-                tag: colorBy.tag,
-                blocks: staticBlocks,
-              })
-              if (isAlive(self)) {
-                self.updateColorTagMap(vals)
-                self.setTagsReady(true)
-              }
-            } else {
-              self.setTagsReady(true)
-            }
-          },
-          { delay: 1000 },
-        )
-
-        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
-        // asynchronously. this is needed due to how we do not serialize all
-        // features from the BAM/CRAM over the rpc
-        addDisposer(
-          self,
-          autorun(async () => {
-            const session = getSession(self)
-            try {
-              const featureId = self.featureIdUnderMouse
-              if (self.featureUnderMouse?.id() !== featureId) {
-                if (!featureId) {
-                  self.setFeatureUnderMouse(undefined)
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = (await session.rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId,
-                      sessionId,
-                      layoutId: getContainingTrack(self).id,
-                      rendererType: 'PileupRenderer',
-                      rpcDriverName: self.effectiveRpcDriverName,
-                    },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
-
-                  // check featureIdUnderMouse is still the same
-                  // as the feature.id that was returned e.g. that
-                  // the user hasn't moused over to a new position
-                  // during the async operation above
-                  if (
-                    isAlive(self) &&
-                    feature &&
-                    self.featureIdUnderMouse === feature.uniqueId
-                  ) {
-                    self.setFeatureUnderMouse(new SimpleFeature(feature))
-                  }
-                }
-              }
-            } catch (e) {
-              console.error(e)
-              session.notifyError(`${e}`, e)
-            }
-          }),
-        )
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          const { sharedDoAfterAttach } =
+            await import('./sharedDoAfterAttach.ts')
+          sharedDoAfterAttach(self)
+        })()
       },
     }))
     .preProcessSnapshot(snap => {

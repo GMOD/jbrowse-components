@@ -64,7 +64,7 @@ const Box = observer(function Box(props: {
   // if feature has parent and type is intron, then don't render the intron
   // subfeature (if it doesn't have a parent, then maybe the introns are
   // separately displayed features that should be displayed)
-  return feature.parent() && featureType === 'intron' ? null : (
+  return feature.parent?.() && featureType === 'intron' ? null : (
     <>
       {topLevel ? <Arrow {...props} /> : null}
       <rect

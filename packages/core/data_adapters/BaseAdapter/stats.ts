@@ -7,14 +7,16 @@ import { rectifyStats } from '../../util/stats'
 import type { BaseOptions } from './BaseOptions'
 import type { FeatureDensityStats } from './types'
 import type { Feature } from '../../util/simpleFeature'
-import type { QuantitativeStats } from '../../util/stats'
+import type { RectifiedQuantitativeStats } from '../../util/stats'
 import type { AugmentedRegion as Region } from '../../util/types'
 
 const DENSITY_SAMPLE_INITIAL_INTERVAL = 1000
 const DENSITY_SAMPLE_MIN_FEATURES = 70
 const DENSITY_SAMPLE_TIMEOUT_MS = 5000
 
-export function aggregateQuantitativeStats(stats: QuantitativeStats[]) {
+export function aggregateQuantitativeStats(
+  stats: RectifiedQuantitativeStats[],
+) {
   return rectifyStats({
     scoreMax: max(stats.map(s => s.scoreMax)),
     scoreMin: min(stats.map(s => s.scoreMin)),
@@ -82,3 +84,5 @@ export async function calculateFeatureDensityStats(
     interval *= 2
   }
 }
+
+export { blankStats } from '../../util/stats'

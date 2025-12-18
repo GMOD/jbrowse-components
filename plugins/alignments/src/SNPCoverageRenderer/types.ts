@@ -1,5 +1,6 @@
 import { type Feature, reducePrecision, toLocale } from '@jbrowse/core/util'
 
+import type { CoverageBinsSoA } from '../SNPCoverageAdapter/generateCoverageBinsPrefixSum'
 import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
@@ -25,6 +26,13 @@ export function getInterbaseTypeLabel(type: string) {
   return typeLabels[type] ?? type
 }
 
+function truncateSequence(seq: string, maxLength = 20) {
+  if (seq.length <= maxLength) {
+    return { text: seq, truncated: false }
+  }
+  return { text: `${seq.slice(0, maxLength)}...`, truncated: true }
+}
+
 export function formatInterbaseStats(
   count: number,
   total: number,
@@ -43,14 +51,23 @@ export function formatInterbaseStats(
     const avgStr = reducePrecision(avgLength, 1)
     if (minLength !== undefined && maxLength !== undefined) {
       if (minLength === maxLength) {
-        result +=
-          topSequence !== undefined
-            ? `\n${topSequence} (${toLocale(minLength)}bp ${type})`
-            : `\n${toLocale(minLength)}bp ${type}`
+        if (topSequence !== undefined) {
+          const { text, truncated } = truncateSequence(topSequence)
+          result += `\n${text} (${toLocale(minLength)}bp ${type})`
+          if (truncated) {
+            result += '\nClick to see full sequence'
+          }
+        } else {
+          result += `\n${toLocale(minLength)}bp ${type}`
+        }
       } else {
         result += `\n${toLocale(minLength)}bp - ${toLocale(maxLength)}bp ${type} (avg ${avgStr}bp)`
         if (topSequence !== undefined) {
-          result += `\nMost common: ${topSequence}`
+          const { text, truncated } = truncateSequence(topSequence)
+          result += `\nMost common: ${text}`
+          if (truncated) {
+            result += '\nClick to see full sequence'
+          }
         }
       }
     } else {
@@ -77,3 +94,9 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: Map<string, Feature>
 }
+
+export interface RenderArgsDeserializedWithArrays extends RenderArgsDeserialized {
+  featureArrays: CoverageBinsSoA
+}
+
+export type { CoverageBinsSoA as SNPCoverageArrays } from '../SNPCoverageAdapter/generateCoverageBinsPrefixSum'

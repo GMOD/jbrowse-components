@@ -38,11 +38,11 @@ export function getAssemblyNames(
 }
 
 export function getTrackConfigs(
-  configPath: string,
+  config: Config,
   trackIds?: string[],
   assemblyName?: string,
 ): Track[] {
-  const { tracks } = readConf(configPath)
+  const { tracks } = config
   if (!tracks) {
     return []
   }

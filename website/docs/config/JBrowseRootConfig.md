@@ -56,10 +56,11 @@ assemblies: types.array(assemblyConfigSchema)
 #### slot: tracks
 
 track configuration is an array of track config schemas. multiple instances of a
-track can exist that use the same configuration
+track can exist that use the same configuration. Always uses frozen for
+performance - editing creates temporary MST models.
 
 ```js
-tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
+tracks: types.frozen([] as { trackId: string; [key: string]: unknown }[])
 ```
 
 #### slot: internetAccounts

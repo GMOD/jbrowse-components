@@ -1048,6 +1048,105 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "subadapters": [
           {
+            "bigWigLocation": {
+              "uri": "v1.cram.bw",
+            },
+            "name": "k1",
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "v2.cram.bw",
+            },
+            "name": "k2",
+            "type": "BigWigAdapter",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "defaultRendering": "multirowxy",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig (multirowxy)",
+      "trackId": "volvox_microarray_multi_multirowxy",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "subadapters": [
+          {
+            "bigWigLocation": {
+              "uri": "v1.cram.bw",
+            },
+            "name": "k1",
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "v2.cram.bw",
+            },
+            "name": "k2",
+            "type": "BigWigAdapter",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "defaultRendering": "multirowdensity",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig (multirowdensity)",
+      "trackId": "volvox_microarray_multi_multirowdensity",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "subadapters": [
+          {
+            "bigWigLocation": {
+              "uri": "v1.cram.bw",
+            },
+            "name": "k1",
+            "type": "BigWigAdapter",
+          },
+          {
+            "bigWigLocation": {
+              "uri": "v2.cram.bw",
+            },
+            "name": "k2",
+            "type": "BigWigAdapter",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "defaultRendering": "multirowline",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig (multirowline)",
+      "trackId": "volvox_microarray_multi_multirowline",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "subadapters": [
+          {
             "color": "#f00",
             "name": "Grain1",
             "type": "BigWigAdapter",

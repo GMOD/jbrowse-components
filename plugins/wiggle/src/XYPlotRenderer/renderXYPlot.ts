@@ -1,9 +1,9 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
+import { getColorCallback, serializeWiggleFeature } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -22,10 +22,7 @@ export async function renderXYPlot(
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-
-  const pivotValue = readConfObject(config, 'bicolorPivotValue')
-  const negColor = readConfObject(config, 'negColor')
-  const posColor = readConfObject(config, 'posColor')
+  const colorCallback = getColorCallback(config)
 
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
@@ -34,9 +31,7 @@ export async function renderXYPlot(
       renderToAbstractCanvas(width, height, renderProps, ctx =>
         drawXY(ctx, {
           ...renderProps,
-          colorCallback: !config.color.isCallback
-            ? (_feature, score) => (score < pivotValue ? negColor : posColor)
-            : (feature, _score) => readConfObject(config, 'color', { feature }),
+          colorCallback,
           features: [...features.values()],
         }),
       ),
@@ -44,7 +39,7 @@ export async function renderXYPlot(
 
   const serialized = {
     ...rest,
-    features: reducedFeatures.map(f => f.toJSON()),
+    features: reducedFeatures.map(serializeWiggleFeature),
     height,
     width,
   }

@@ -1,6 +1,7 @@
 import path from 'path'
 import { Readable } from 'stream'
 
+import { Presets, SingleBar } from 'cli-progress'
 import { ixIxxStream } from 'ixixx'
 
 import { getAdapterLocation, getLoc } from './adapter-utils'
@@ -19,18 +20,34 @@ export async function runIxIxx({
   outLocation,
   name,
   prefixSize,
+  quiet,
 }: {
   readStream: Readable
   outLocation: string
   name: string
   prefixSize?: number
+  quiet?: boolean
 }): Promise<void> {
+  const progressBar = new SingleBar(
+    { format: '{bar} Sorting and writing index...', etaBuffer: 2000 },
+    Presets.shades_classic,
+  )
+
+  if (!quiet) {
+    progressBar.start(1, 0)
+  }
+
   await ixIxxStream(
     readStream,
     path.join(outLocation, 'trix', `${name}.ix`),
     path.join(outLocation, 'trix', `${name}.ixx`),
     prefixSize,
   )
+
+  if (!quiet) {
+    progressBar.update(1)
+    progressBar.stop()
+  }
 }
 
 export async function* indexFiles({
@@ -116,6 +133,7 @@ export async function indexDriver({
     name,
     prefixSize:
       typeof prefixSize === 'string' ? parseInt(prefixSize) : prefixSize,
+    quiet,
   })
 
   await generateMeta({

@@ -3,6 +3,7 @@ import path from 'path'
 import { createTrixAdapter } from './adapter-utils'
 import {
   ensureTrixDir,
+  getAssemblyNames,
   getTrackConfigs,
   readConf,
   writeConf,
@@ -29,17 +30,10 @@ export async function aggregateIndex(flags: any) {
   ensureTrixDir(outLocation)
 
   const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters || []
-  const asms =
-    assemblies?.split(',') ||
-    config.assemblies?.map(a => a.name) ||
-    (config.assembly ? [config.assembly.name] : [])
-
-  if (!asms.length) {
-    throw new Error('No assemblies found')
-  }
+  const asms = getAssemblyNames(config, assemblies)
 
   for (const asm of asms) {
-    const trackConfigs = getTrackConfigs(confPath, tracks?.split(','), asm)
+    const trackConfigs = getTrackConfigs(config, tracks?.split(','), asm)
     if (!trackConfigs.length) {
       console.log(`Indexing assembly ${asm}...(no tracks found)...`)
       continue

@@ -9,6 +9,7 @@ import {
 
 import type { HicFlatbushItem } from '../HicRenderer/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -86,7 +87,7 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      renderingStopToken: undefined as string | undefined,
+      renderingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
@@ -167,7 +168,7 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setRenderingStopToken(token: string | undefined) {
+      setRenderingStopToken(token: StopToken | undefined) {
         self.renderingStopToken = token
       },
       /**
