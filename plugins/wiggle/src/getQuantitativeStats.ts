@@ -5,6 +5,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -19,7 +20,7 @@ export async function getQuantitativeStats(
   },
   opts: {
     headers?: Record<string, string>
-    stopToken?: string
+    stopToken?: StopToken
     filters: string[]
     currStatsBpPerPx: number
   },
@@ -64,13 +65,23 @@ export async function getQuantitativeStats(
           currStatsBpPerPx,
         }
   } else if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-    const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
+    const { dynamicBlocks, staticBlocks, bpPerPx } = getContainingView(
+      self,
+    ) as LGV
     const results = (await rpcManager.call(
       sessionId,
       'WiggleGetMultiRegionQuantitativeStats',
       {
         ...params,
         regions: dynamicBlocks.contentBlocks.map(region => {
+          const { start, end } = region
+          return {
+            ...JSON.parse(JSON.stringify(region)),
+            start: Math.floor(start),
+            end: Math.ceil(end),
+          }
+        }),
+        staticBlocks: staticBlocks.contentBlocks.map(region => {
           const { start, end } = region
           return {
             ...JSON.parse(JSON.stringify(region)),

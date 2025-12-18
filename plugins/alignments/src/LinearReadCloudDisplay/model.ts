@@ -29,6 +29,7 @@ import {
 
 import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SetFeatureHeightDialog = lazy(
@@ -102,7 +103,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        * Stop token for the current rendering operation
        */
-      renderingStopToken: undefined as string | undefined,
+      renderingStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       get dataTestId() {
@@ -208,7 +209,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        * Set the rendering stop token
        */
-      setRenderingStopToken(token: string | undefined) {
+      setRenderingStopToken(token?: StopToken) {
         self.renderingStopToken = token
       },
     }))

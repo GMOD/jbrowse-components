@@ -26,7 +26,10 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -312,6 +315,7 @@ function stateModelFactory(
       const {
         renderProps: superRenderProps,
         renderingProps: superRenderingProps,
+        renderSvg: superRenderSvg,
         wiggleBaseTrackMenuItems,
       } = self
       return {
@@ -365,6 +369,17 @@ function stateModelFactory(
             },
           }
         },
+
+        /**
+         * #method
+         * Custom renderSvg that includes sashimi arcs
+         */
+        async renderSvg(opts: ExportSvgDisplayOptions) {
+          const { renderSNPCoverageSvg } =
+            await import('./components/renderSvg')
+          return renderSNPCoverageSvg(self, opts, superRenderSvg)
+        },
+
         /**
          * #getter
          */

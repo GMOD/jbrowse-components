@@ -11,10 +11,10 @@ import { alphaColor } from '../shared/util'
 
 import type {
   InterbaseIndicatorItem,
-  RenderArgsDeserializedWithFeatures,
+  RenderArgsDeserializedWithArrays,
+  SNPCoverageArrays,
 } from './types'
 import type { BaseCoverageBin } from '../shared/types'
-import type { Feature } from '@jbrowse/core/util'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
@@ -90,12 +90,21 @@ function drawStackedBars(
   return curr
 }
 
-export function makeImage(
+// Reduced feature format for serialization (avoids SimpleFeature overhead)
+interface ReducedFeature {
+  start: number
+  end: number
+  score: number
+  snpinfo: BaseCoverageBin
+  refName: string
+}
+
+export function makeImageArrays(
   ctx: CanvasRenderingContext2D,
-  props: RenderArgsDeserializedWithFeatures,
+  props: RenderArgsDeserializedWithArrays,
 ) {
   const {
-    features,
+    featureArrays,
     regions,
     bpPerPx,
     colorBy,
@@ -110,6 +119,10 @@ export function makeImage(
     stopToken,
     offset = 0,
   } = props
+
+  const { starts, ends, scores, snpinfo, skipmap } = featureArrays
+  const len = starts.length
+
   const theme = createJBrowseTheme(configTheme)
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
@@ -137,11 +150,7 @@ export function makeImage(
   const logRatio = logSpan !== 0 ? height / logSpan : 0
 
   // For indicator scale, always linear with half height
-  // For log scale, use a smaller reference (10% of domainMax) to keep indicators visible
-  // since log scale compresses high values visually
-  const indicatorScaleMax = isLog ? domainMax / 10 : domainSpan
-  const indicatorRatio =
-    indicatorScaleMax !== 0 ? height / 2 / indicatorScaleMax : 0
+  const indicatorRatio = domainSpan !== 0 ? height / 2 / domainSpan : 0
 
   const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
   const showInterbaseCounts = readConfObject(cfg, 'showInterbaseCounts')
@@ -193,41 +202,21 @@ export function makeImage(
   // Keep track of previous total which we will use it to draw the interbase
   // indicator (if there is a sudden clip, there will be no read coverage but
   // there will be "clip" coverage) at that position beyond the read.
-  //
-  // if the clip is right at a block boundary then prevTotal will not be
-  // available, so this is a best attempt to plot interbase indicator at the
-  // "cliffs"
   let prevTotal = 0
 
   // Track for reducedFeatures collection (one feature per pixel)
   let prevReducedLeftPx = Number.NEGATIVE_INFINITY
-  const reducedFeatures: Feature[] = []
-  const skipFeatures: Feature[] = []
-
-  // Two-pass rendering produces clearer visuals: neighboring coverage bars can
-  // slightly overlap due to fudgeFactor, so drawing all backgrounds first then
-  // all SNP overlays ensures SNP colors aren't obscured by adjacent bars
-  interface FeatureData {
-    leftPx: number
-    rightPx: number
-    score0: number
-    snpinfo: BaseCoverageBin
-  }
-  const featureDataList: FeatureData[] = []
+  const reducedFeatures: ReducedFeature[] = []
 
   const lastTime = { time: Date.now() }
-  let i = 0
+  for (let i = 0; i < len; i++) {
+    checkStopToken2(stopToken, i, lastTime)
 
-  // Pass 1: Draw all gray backgrounds
-  ctx.fillStyle = totalColor
-  for (const feature of features.values()) {
-    checkStopToken2(stopToken, i++, lastTime)
-    if (feature.get('type') === 'skip') {
-      skipFeatures.push(feature)
-      continue
-    }
-    const fstart = feature.get('start')
-    const fend = feature.get('end')
+    const fstart = starts[i]!
+    const fend = ends[i]!
+    const score0 = scores[i]!
+    const bin = snpinfo[i]!
+
     const leftPx = reversed
       ? (regionEnd - fend) / bpPerPx
       : (fstart - regionStart) / bpPerPx
@@ -237,32 +226,30 @@ export function makeImage(
 
     // Collect reducedFeatures (one per pixel) for tooltip functionality
     if (Math.floor(leftPx) !== Math.floor(prevReducedLeftPx)) {
-      reducedFeatures.push(feature)
+      reducedFeatures.push({
+        start: fstart,
+        end: fend,
+        score: score0,
+        snpinfo: bin,
+        refName: region.refName,
+      })
       prevReducedLeftPx = leftPx
     }
 
-    const score0 = feature.get('score')
-    const snpinfo = feature.get('snpinfo') as BaseCoverageBin
-
     // Draw the gray background
+    ctx.fillStyle = totalColor
     const bgWidth = rightPx - leftPx + fudgeFactor
     ctx.fillRect(leftPx, toY(score0), bgWidth, toHeight(score0))
 
-    // Store data for second pass
-    featureDataList.push({ leftPx, rightPx, score0, snpinfo })
-  }
-
-  // Pass 2: Draw SNP overlays on top
-  for (const { leftPx, rightPx, score0, snpinfo } of featureDataList) {
-    const w = Math.max(rightPx - leftPx + fudgeFactor, 1)
+    // Draw SNP data overlay
+    const w = Math.max(rightPx - leftPx, 1)
     const h = toHeight(score0)
     const bottom = toY(score0) + h
     const roundedLeftPx = Math.round(leftPx)
-
     if (drawingModifications) {
       let curr = 0
-      const refbase = snpinfo.refbase?.toUpperCase()
-      const { nonmods, mods, snps, ref } = snpinfo
+      const refbase = bin.refbase?.toUpperCase()
+      const { nonmods, mods, snps, ref } = bin
       for (const m of sortedKeysDesc(nonmods)) {
         const modKey = m.replace(/^(nonmod_|mod_)/, '')
         const mod = visibleModifications[modKey]
@@ -282,7 +269,7 @@ export function makeImage(
           score0,
         })
 
-        const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
+        const { entryDepth, avgProbability = 0 } = bin.nonmods[m]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
 
         ctx.fillStyle = alphaColor('blue', avgProbability)
@@ -326,7 +313,7 @@ export function makeImage(
         curr += modFraction * h
       }
     } else if (drawingMethylation) {
-      const { depth, nonmods, mods } = snpinfo
+      const { depth, nonmods, mods } = bin
       const curr = drawStackedBars(
         ctx,
         mods,
@@ -350,7 +337,7 @@ export function makeImage(
         curr,
       )
     } else {
-      const { depth, snps } = snpinfo
+      const { depth, snps } = bin
       drawStackedBars(
         ctx,
         snps,
@@ -364,7 +351,7 @@ export function makeImage(
       )
     }
 
-    const noncov = snpinfo.noncov
+    const noncov = bin.noncov
     const interbaseEvents = Object.keys(noncov)
     if (interbaseEvents.length > 0) {
       const { maxBase } = findMaxBase(noncov)
@@ -462,7 +449,7 @@ export function makeImage(
 
   return {
     reducedFeatures,
-    skipFeatures,
+    skipmap,
     coords,
     items,
   }
@@ -484,22 +471,49 @@ function buildClickMap(coords: number[], items: InterbaseIndicatorItem[]) {
   }
 }
 
-export async function renderSNPCoverageToCanvas(
-  props: RenderArgsDeserializedWithFeatures,
+function serializeReducedFeatures(
+  reducedFeatures: ReducedFeature[],
+  adapterId: string,
 ) {
-  const { height, regions, bpPerPx } = props
+  return reducedFeatures.map((f, idx) => ({
+    uniqueId: `${adapterId}-${f.start}-${idx}`,
+    ...f,
+  }))
+}
+
+function serializeSkipFeatures(
+  skipmap: SNPCoverageArrays['skipmap'],
+  refName: string,
+) {
+  return Object.entries(skipmap).map(([key, skip]) => ({
+    uniqueId: key,
+    type: 'skip',
+    refName,
+    start: skip.start,
+    end: skip.end,
+    strand: skip.strand,
+    score: skip.score,
+    effectiveStrand: skip.effectiveStrand,
+  }))
+}
+
+export async function renderSNPCoverageArrays(
+  props: RenderArgsDeserializedWithArrays,
+) {
+  const { height, regions, bpPerPx, adapterConfig } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
+  const adapterId = adapterConfig.adapterId ?? 'unknown'
 
-  const { reducedFeatures, skipFeatures, coords, items, ...rest } =
+  const { reducedFeatures, skipmap, coords, items, ...rest } =
     await renderToAbstractCanvas(width, height, props, ctx =>
-      makeImage(ctx, props),
+      makeImageArrays(ctx, props),
     )
 
   const serialized = {
     ...rest,
-    features: reducedFeatures.map(f => f.toJSON()),
-    skipFeatures: skipFeatures.map(f => f.toJSON()),
+    features: serializeReducedFeatures(reducedFeatures, adapterId),
+    skipFeatures: serializeSkipFeatures(skipmap, region.refName),
     clickMap: buildClickMap(coords, items),
     height,
     width,

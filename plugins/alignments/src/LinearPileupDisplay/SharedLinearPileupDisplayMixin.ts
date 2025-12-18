@@ -638,7 +638,7 @@ export function SharedLinearPileupDisplayMixin(
               },
             },
             {
-              label: 'Set max height...',
+              label: 'Set max track height...',
               priority: -1,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [

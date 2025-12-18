@@ -84,3 +84,5 @@ export async function calculateFeatureDensityStats(
     interval *= 2
   }
 }
+
+export { blankStats } from '../../util/stats'

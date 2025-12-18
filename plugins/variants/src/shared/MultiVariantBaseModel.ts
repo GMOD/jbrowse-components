@@ -22,6 +22,7 @@ import { getSources } from './getSources'
 import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
@@ -126,11 +127,11 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
-      sourcesLoadingStopToken: undefined as string | undefined,
+      sourcesLoadingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
-      simplifiedFeaturesStopToken: undefined as string | undefined,
+      simplifiedFeaturesStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
@@ -251,20 +252,20 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setSourcesLoading(str: string) {
+      setSourcesLoading(token: StopToken) {
         if (self.sourcesLoadingStopToken) {
           stopStopToken(self.sourcesLoadingStopToken)
         }
-        self.sourcesLoadingStopToken = str
+        self.sourcesLoadingStopToken = token
       },
       /**
        * #action
        */
-      setSimplifiedFeaturesLoading(str: string) {
+      setSimplifiedFeaturesLoading(token: StopToken) {
         if (self.simplifiedFeaturesStopToken) {
           stopStopToken(self.simplifiedFeaturesStopToken)
         }
-        self.simplifiedFeaturesStopToken = str
+        self.simplifiedFeaturesStopToken = token
       },
 
       /**

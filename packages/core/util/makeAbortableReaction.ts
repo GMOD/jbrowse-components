@@ -4,6 +4,7 @@ import { reaction } from 'mobx'
 import { isAbortException } from './aborting'
 import { createStopToken, stopStopToken } from './stopToken'
 
+import type { StopToken } from './stopToken'
 import type { IReactionOptions, IReactionPublic } from 'mobx'
 
 /**
@@ -28,17 +29,17 @@ export function makeAbortableReaction<T, U, V>(
   dataFunction: (arg: T) => U,
   asyncReactionFunction: (
     arg: U | undefined,
-    stopToken: string,
+    stopToken: StopToken,
     model: T,
     handle: IReactionPublic,
   ) => Promise<V>,
   // @ts-expect-error
   reactionOptions: IReactionOptions,
-  startedFunction: (stopToken: string) => void,
+  startedFunction: (stopToken: StopToken) => void,
   successFunction: (arg: V) => void,
   errorFunction: (err: unknown) => void,
 ) {
-  let inProgress: string | undefined
+  let inProgress: StopToken | undefined
 
   function handleError(error: unknown) {
     if (!isAbortException(error)) {

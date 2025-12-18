@@ -121,6 +121,26 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       await updateStatus('Processing alignments', statusCallback, async () => {
         const { readName } = filterBy || {}
 
+        // Pre-fetch reference sequence for all records that need it
+        let regionSeq: string | undefined
+        let regionStart = Infinity
+        let regionEnd = 0
+        if (sequenceAdapter) {
+          for (const record of records) {
+            if (!record.NUMERIC_MD) {
+              regionStart = Math.min(regionStart, record.start)
+              regionEnd = Math.max(regionEnd, record.end)
+            }
+          }
+          if (regionEnd > 0) {
+            regionSeq = await sequenceAdapter.getSequence({
+              refName: originalRefName || refName,
+              start: regionStart,
+              end: regionEnd,
+            })
+          }
+        }
+
         for (const record of records) {
           if (readName && record.name !== readName) {
             continue
@@ -130,12 +150,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           record.adapter = this
 
           // Only fetch reference sequence if MD tag is missing
-          if (!record.NUMERIC_MD && sequenceAdapter) {
-            record.ref = await sequenceAdapter.getSequence({
-              refName: originalRefName || refName,
-              start: record.start,
-              end: record.end,
-            })
+          if (!record.NUMERIC_MD && regionSeq) {
+            record.ref = regionSeq.slice(
+              record.start - regionStart,
+              record.end - regionStart,
+            )
           }
 
           observer.next(record)

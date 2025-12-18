@@ -1,3 +1,4 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import FeatureRendererType, {
   type RenderArgs,
   type ResultsDeserialized,
@@ -40,8 +41,32 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
   }
 
   async render(renderProps: RenderArgsDeserialized) {
+    const {
+      sessionId,
+      adapterConfig,
+      regions,
+      statusCallback = () => {},
+    } = renderProps
+    const pm = this.pluginManager
+    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+    const region = regions[0]!
+
+    // Use array-based rendering when the adapter supports getFeaturesAsArrays
+    if ('getFeaturesAsArrays' in dataAdapter) {
+      const featureArrays = await (dataAdapter as any).getFeaturesAsArrays(
+        region,
+        renderProps,
+      )
+      if (featureArrays && featureArrays.starts.length > 0) {
+        const { renderSNPCoverageArrays } = await import('./makeImageArrays')
+        return updateStatus('Rendering coverage', statusCallback, () =>
+          renderSNPCoverageArrays({ ...renderProps, featureArrays }),
+        )
+      }
+    }
+
+    // Fallback to feature-based rendering
     const features = await this.getFeatures(renderProps)
-    const { statusCallback = () => {} } = renderProps
     const { renderSNPCoverageToCanvas } = await import('./makeImage')
     return updateStatus('Rendering coverage', statusCallback, () =>
       renderSNPCoverageToCanvas({ ...renderProps, features }),
