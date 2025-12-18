@@ -19,10 +19,12 @@ import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { observable } from 'mobx'
 
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
+import { getPileupLegendItems } from '../shared/legendUtils'
 
 import type { ColorBy, FilterBy } from '../shared/types'
 import type {
@@ -30,7 +32,11 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
+import type { Theme } from '@mui/material'
 // lazies
 const FilterByTagDialog = lazy(
   () => import('../shared/components/FilterByTagDialog'),
@@ -364,6 +370,14 @@ export function SharedLinearPileupDisplayMixin(
       get filters() {
         return new SerializableFilterChain({ filters: self.jexlFilters })
       },
+
+      /**
+       * #method
+       * Returns legend items based on current colorBy setting
+       */
+      legendItems(theme?: Theme): LegendItem[] {
+        return getPileupLegendItems(self.colorBy, theme)
+      },
     }))
     .views(self => {
       const {
@@ -669,6 +683,15 @@ export function SharedLinearPileupDisplayMixin(
                     handleClose,
                   },
                 ])
+              },
+            },
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
               },
             },
           ]

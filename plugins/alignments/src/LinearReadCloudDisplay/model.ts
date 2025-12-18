@@ -13,8 +13,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   type ExportSvgDisplayOptions,
   FeatureDensityMixin,
+  type LegendItem,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
 import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
@@ -22,6 +24,7 @@ import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWit
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
 import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { getReadDisplayLegendItems } from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -91,6 +94,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         hideMismatchesSetting: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -202,6 +210,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setHideMismatches(arg: boolean) {
         self.hideMismatchesSetting = arg
+      },
+
+      /**
+       * #action
+       */
+      setShowLegend(s: boolean) {
+        self.showLegend = s
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Returns legend items based on current colorBy setting
+       */
+      legendItems(): LegendItem[] {
+        return getReadDisplayLegendItems(
+          self.colorBy,
+          self.visibleModifications,
+        )
       },
     }))
     .views(self => {
@@ -331,6 +358,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             getFilterByMenuItem(self),
             getColorSchemeMenuItem(self),
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
+            },
           ]
         },
 

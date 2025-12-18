@@ -7,10 +7,12 @@ import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
 import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
+import { getReadDisplayLegendItems } from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -18,7 +20,10 @@ import {
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LegendItem,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearReadArcsDisplay
@@ -50,8 +55,29 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
       }),
     )
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setShowLegend(s: boolean) {
+        self.showLegend = s
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Returns legend items based on current colorBy setting
+       */
+      legendItems(): LegendItem[] {
+        return getReadDisplayLegendItems(self.colorBy)
+      },
+    }))
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
@@ -150,6 +176,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             getColorSchemeMenuItem(self),
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
+            },
           ]
         },
 

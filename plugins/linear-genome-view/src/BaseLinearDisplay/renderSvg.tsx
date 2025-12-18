@@ -1,11 +1,13 @@
 import { Fragment } from 'react'
 
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   ReactRendering,
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
 
+import SVGLegend from './SVGLegend'
 import BlockState, { renderBlockData } from './models/serverSideRenderedBlock'
 import { getId } from './models/util'
 import { ErrorBox } from '../LinearGenomeView/SVGErrorBox'
@@ -87,6 +89,10 @@ export async function renderBaseLinearDisplaySvg(
   // Create a clip path ID for the labels that covers the entire view
   const labelsClipId = getId(id, 'labels')
 
+  // Get legend items if legend is enabled
+  const theme = createJBrowseTheme(opts.theme)
+  const legendItems = self.showLegend ? self.legendItems(theme) : []
+
   return (
     <>
       {renderings.map(([block, rendering], index) => {
@@ -137,6 +143,9 @@ export async function renderBaseLinearDisplaySvg(
           </g>
         ))}
       </g>
+      {legendItems.length > 0 ? (
+        <SVGLegend items={legendItems} width={width} />
+      ) : null}
     </>
   )
 }
