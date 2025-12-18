@@ -208,7 +208,11 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
 
       const destY = Math.min(height + jitter(jitterVal), absrad)
 
-      if (longRange && absrad > VERTICAL_LINE_THRESHOLD) {
+      if (absrad < 1) {
+        // Very small arcs - draw a simple rectangle
+        ctx.fillStyle = ctx.strokeStyle
+        ctx.fillRect(p, 0, pEnd - p, Math.max(absrad, lineWidth))
+      } else if (longRange && absrad > VERTICAL_LINE_THRESHOLD) {
         // Very large arcs - draw vertical lines instead
         drawVerticalLine(ctx, p + jitter(jitterVal), height, 'red')
         drawVerticalLine(ctx, pEnd + jitter(jitterVal), height, 'red')

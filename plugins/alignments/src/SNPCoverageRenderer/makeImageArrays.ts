@@ -227,76 +227,92 @@ export function makeImageArrays(
     fstart: number
     fend: number
   }
+
   const featureDataList: FeatureData[] = []
 
-  // Pass 1: Draw all gray backgrounds (batched when no alpha)
+  // Pass 1: Draw gray backgrounds with 0.5px binning (draw max score per bin)
+  // This reduces draw calls when many features map to the same pixel
+  const binSize = 0.5
   const canBatch = colord(totalColor).alpha() >= 1
+
+  let currentBin = -1
+  let maxScoreInBin = 0
+  let maxLeftPx = 0
+  let maxRightPx = 0
+
+  const drawBinnedRect = () => {
+    if (currentBin >= 0) {
+      const bgWidth = maxRightPx - maxLeftPx + fudgeFactor
+      if (canBatch) {
+        ctx.rect(maxLeftPx, toY(maxScoreInBin), bgWidth, toHeight(maxScoreInBin))
+      } else {
+        ctx.fillRect(
+          maxLeftPx,
+          toY(maxScoreInBin),
+          bgWidth,
+          toHeight(maxScoreInBin),
+        )
+      }
+    }
+  }
+
   if (canBatch) {
     ctx.beginPath()
-    for (let i = 0; i < len; i++) {
-      checkStopToken2(stopToken, i, lastTime)
-      const fstart = starts[i]!
-      const fend = ends[i]!
-      const score0 = scores[i]!
-      const bin = snpinfo[i]!
-
-      const leftPx = reversed
-        ? (regionEnd - fend) / bpPerPx
-        : (fstart - regionStart) / bpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) / bpPerPx
-        : (fend - regionStart) / bpPerPx
-
-      if (Math.floor(leftPx) !== Math.floor(prevReducedLeftPx)) {
-        reducedFeatures.push({
-          start: fstart,
-          end: fend,
-          score: score0,
-          snpinfo: bin,
-          refName: region.refName,
-        })
-        prevReducedLeftPx = leftPx
-      }
-
-      const bgWidth = rightPx - leftPx + fudgeFactor
-      ctx.rect(leftPx, toY(score0), bgWidth, toHeight(score0))
-
-      featureDataList.push({ leftPx, rightPx, score0, bin, fstart, fend })
-    }
-    ctx.fillStyle = totalColor
-    ctx.fill()
   } else {
     ctx.fillStyle = totalColor
-    for (let i = 0; i < len; i++) {
-      checkStopToken2(stopToken, i, lastTime)
-      const fstart = starts[i]!
-      const fend = ends[i]!
-      const score0 = scores[i]!
-      const bin = snpinfo[i]!
+  }
 
-      const leftPx = reversed
-        ? (regionEnd - fend) / bpPerPx
-        : (fstart - regionStart) / bpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) / bpPerPx
-        : (fend - regionStart) / bpPerPx
+  for (let i = 0; i < len; i++) {
+    checkStopToken2(stopToken, i, lastTime)
+    const fstart = starts[i]!
+    const fend = ends[i]!
+    const score0 = scores[i]!
+    const bin = snpinfo[i]!
 
-      if (Math.floor(leftPx) !== Math.floor(prevReducedLeftPx)) {
-        reducedFeatures.push({
-          start: fstart,
-          end: fend,
-          score: score0,
-          snpinfo: bin,
-          refName: region.refName,
-        })
-        prevReducedLeftPx = leftPx
-      }
+    const leftPx = reversed
+      ? (regionEnd - fend) / bpPerPx
+      : (fstart - regionStart) / bpPerPx
+    const rightPx = reversed
+      ? (regionEnd - fstart) / bpPerPx
+      : (fend - regionStart) / bpPerPx
 
-      const bgWidth = rightPx - leftPx + fudgeFactor
-      ctx.fillRect(leftPx, toY(score0), bgWidth, toHeight(score0))
+    const binKey = Math.floor(leftPx / binSize)
 
-      featureDataList.push({ leftPx, rightPx, score0, bin, fstart, fend })
+    // Draw previous bin if we've moved to a new bin
+    if (binKey !== currentBin) {
+      drawBinnedRect()
+      currentBin = binKey
+      maxScoreInBin = score0
+      maxLeftPx = leftPx
+      maxRightPx = rightPx
+    } else if (score0 > maxScoreInBin) {
+      maxScoreInBin = score0
+      maxLeftPx = leftPx
+      maxRightPx = rightPx
     }
+
+    // Collect reducedFeatures (one per pixel)
+    if (Math.floor(leftPx) !== Math.floor(prevReducedLeftPx)) {
+      reducedFeatures.push({
+        start: fstart,
+        end: fend,
+        score: score0,
+        snpinfo: bin,
+        refName: region.refName,
+      })
+      prevReducedLeftPx = leftPx
+    }
+
+    // Collect all feature data for Pass 2 (SNP overlays)
+    featureDataList.push({ leftPx, rightPx, score0, bin, fstart, fend })
+  }
+
+  // Draw the last bin
+  drawBinnedRect()
+
+  if (canBatch) {
+    ctx.fillStyle = totalColor
+    ctx.fill()
   }
 
   // Pass 2: Draw SNP overlays on top
