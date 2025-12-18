@@ -383,6 +383,30 @@ function stateModelFactory(pluginManager: PluginManager) {
         levels,
       }
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        trackSelectorType,
+        showIntraviewLinks,
+        linkViews,
+        interactiveOverlay,
+        showDynamicControls,
+        viewTrackConfigs,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(showIntraviewLinks === false ? { showIntraviewLinks } : {}),
+        ...(linkViews ? { linkViews } : {}),
+        ...(interactiveOverlay ? { interactiveOverlay } : {}),
+        ...(showDynamicControls === false ? { showDynamicControls } : {}),
+        ...(viewTrackConfigs?.length ? { viewTrackConfigs } : {}),
+      }
+    })
 }
 
 export type LinearComparativeViewStateModel = ReturnType<

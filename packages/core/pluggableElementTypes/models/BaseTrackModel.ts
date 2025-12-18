@@ -305,6 +305,18 @@ export function createBaseTrackModel(
         ]
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { minimized, pinned, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(minimized ? { minimized } : {}),
+        ...(pinned ? { pinned } : {}),
+      }
+    })
 }
 
 export type BaseTrackStateModel = ReturnType<typeof createBaseTrackModel>

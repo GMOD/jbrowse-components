@@ -696,8 +696,51 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { init, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        init,
+        offsetRadians,
+        bpPerPx,
+        hideVerticalResizeHandle,
+        hideTrackSelectorButton,
+        lockedFitToWindow,
+        disableImportForm,
+        height,
+        displayedRegions,
+        scrollX,
+        scrollY,
+        minimumRadiusPx,
+        spacingPx,
+        paddingPx,
+        lockedPaddingPx,
+        minVisibleWidth,
+        minimumBlockWidth,
+        trackSelectorType,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(offsetRadians !== -Math.PI / 2 ? { offsetRadians } : {}),
+        ...(bpPerPx !== 200 ? { bpPerPx } : {}),
+        ...(hideVerticalResizeHandle ? { hideVerticalResizeHandle } : {}),
+        ...(hideTrackSelectorButton ? { hideTrackSelectorButton } : {}),
+        ...(lockedFitToWindow === false ? { lockedFitToWindow } : {}),
+        ...(disableImportForm ? { disableImportForm } : {}),
+        ...(height !== 400 ? { height } : {}),
+        ...(displayedRegions?.length ? { displayedRegions } : {}),
+        ...(scrollX ? { scrollX } : {}),
+        ...(scrollY ? { scrollY } : {}),
+        ...(minimumRadiusPx !== 25 ? { minimumRadiusPx } : {}),
+        ...(spacingPx !== 10 ? { spacingPx } : {}),
+        ...(paddingPx !== 80 ? { paddingPx } : {}),
+        ...(lockedPaddingPx !== 100 ? { lockedPaddingPx } : {}),
+        ...(minVisibleWidth !== 6 ? { minVisibleWidth } : {}),
+        ...(minimumBlockWidth !== 20 ? { minimumBlockWidth } : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+      }
     })
 }
 

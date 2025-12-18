@@ -2000,9 +2000,44 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
-      } else {
-        const { init, ...rest } = snap as Omit<typeof snap, symbol>
-        return rest
+      }
+      const {
+        init,
+        offsetPx,
+        bpPerPx,
+        hideHeader,
+        hideHeaderOverview,
+        hideNoTracksActive,
+        showGridlines,
+        trackSelectorType,
+        displayedRegions,
+        highlight,
+        showCenterLine,
+        showCytobandsSetting,
+        trackLabels,
+        colorByCDS,
+        showTrackOutlines,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+
+      return {
+        ...rest,
+        // only include non-default values
+        ...(offsetPx ? { offsetPx } : {}),
+        ...(bpPerPx !== 1 ? { bpPerPx } : {}),
+        ...(hideHeader ? { hideHeader } : {}),
+        ...(hideHeaderOverview ? { hideHeaderOverview } : {}),
+        ...(hideNoTracksActive ? { hideNoTracksActive } : {}),
+        ...(showGridlines === false ? { showGridlines } : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(displayedRegions?.length ? { displayedRegions } : {}),
+        ...(highlight?.length ? { highlight } : {}),
+        // localStorage-based properties - filter against program defaults
+        ...(showCenterLine ? { showCenterLine } : {}),
+        ...(showCytobandsSetting === false ? { showCytobandsSetting } : {}),
+        ...(trackLabels ? { trackLabels } : {}),
+        ...(colorByCDS ? { colorByCDS } : {}),
+        ...(showTrackOutlines === false ? { showTrackOutlines } : {}),
       }
     })
 }

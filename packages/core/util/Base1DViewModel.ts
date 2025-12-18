@@ -275,6 +275,28 @@ const Base1DView = types
       moveTo(self, start, end)
     },
   }))
+  .postProcessSnapshot(snap => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!snap) {
+      return snap
+    }
+    const {
+      displayedRegions,
+      bpPerPx,
+      offsetPx,
+      interRegionPaddingWidth,
+      minimumBlockWidth,
+      ...rest
+    } = snap as Omit<typeof snap, symbol>
+    return {
+      ...rest,
+      ...(displayedRegions?.length ? { displayedRegions } : {}),
+      ...(bpPerPx ? { bpPerPx } : {}),
+      ...(offsetPx ? { offsetPx } : {}),
+      ...(interRegionPaddingWidth ? { interRegionPaddingWidth } : {}),
+      ...(minimumBlockWidth ? { minimumBlockWidth } : {}),
+    }
+  })
 
 export type Base1DViewStateModel = typeof Base1DView
 export type Base1DViewModel = Instance<Base1DViewStateModel>

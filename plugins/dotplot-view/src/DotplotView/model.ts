@@ -838,8 +838,37 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { init, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        init,
+        height,
+        borderSize,
+        tickSize,
+        vtextRotation,
+        htextRotation,
+        fontSize,
+        trackSelectorType,
+        drawCigar,
+        assemblyNames,
+        viewTrackConfigs,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(height !== 600 ? { height } : {}),
+        ...(borderSize !== 20 ? { borderSize } : {}),
+        ...(tickSize !== 5 ? { tickSize } : {}),
+        ...(vtextRotation ? { vtextRotation } : {}),
+        ...(htextRotation !== -90 ? { htextRotation } : {}),
+        ...(fontSize !== 15 ? { fontSize } : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(drawCigar === false ? { drawCigar } : {}),
+        ...(assemblyNames?.length ? { assemblyNames } : {}),
+        ...(viewTrackConfigs?.length ? { viewTrackConfigs } : {}),
+      }
     })
 }
 
