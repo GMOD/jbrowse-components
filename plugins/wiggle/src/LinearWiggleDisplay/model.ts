@@ -172,7 +172,7 @@ function stateModelFactory(
             superProps.notReady ||
             !domain ||
             !self.stats ||
-            self.statsRegion !== statsRegion,
+            self.stats.statsRegion !== statsRegion,
           height,
           ticks,
           inverted,
