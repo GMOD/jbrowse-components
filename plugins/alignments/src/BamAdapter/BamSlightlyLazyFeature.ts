@@ -9,6 +9,7 @@ import {
   MISMATCH_MAP,
   SOFTCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
+import { convertTagsToPlainArrays } from '../shared/util'
 
 import type BamAdapter from './BamAdapter'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
@@ -80,7 +81,15 @@ export default class BamSlightlyLazyFeature
   }
 
   get qualString() {
-    return this.qual?.join(' ')
+    const q = this.qual
+    if (!q) {
+      return undefined
+    }
+    let result = ''
+    for (let i = 0; i < q.length; i++) {
+      result += String.fromCharCode(q[i]! + 33)
+    }
+    return result
   }
 
   get(field: string): any {
@@ -140,7 +149,7 @@ export default class BamSlightlyLazyFeature
         strand: this.strand,
         template_length: this.template_length,
         flags: this.flags,
-        tags: this.tags,
+        tags: convertTagsToPlainArrays(this.tags),
         refName: this.adapter.refIdToName(this.ref_id)!,
         type: 'match',
         pair_orientation: this.pair_orientation,

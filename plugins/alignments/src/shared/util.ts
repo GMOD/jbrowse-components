@@ -210,3 +210,31 @@ export function measureTextSmallNumber(n: number, fontSize?: number) {
   }
   return measureText(String(n), fontSize)
 }
+
+function isTypedArray(
+  val: unknown,
+): val is
+  | Int8Array
+  | Uint8Array
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Float32Array
+  | Float64Array {
+  return ArrayBuffer.isView(val) && !(val instanceof DataView)
+}
+
+/**
+ * Convert TypedArrays in tags object to plain number arrays.
+ * This is needed because MobX State Tree cannot freeze TypedArray views.
+ */
+export function convertTagsToPlainArrays(
+  tags: Record<string, unknown>,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(tags)) {
+    result[key] = isTypedArray(value) ? [...value] : value
+  }
+  return result
+}

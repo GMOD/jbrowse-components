@@ -7,7 +7,10 @@ import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
-import type { FlatbushItem } from '../../PileupRenderer/types'
+import {
+  getFlatbushItemLabel,
+  type FlatbushItem,
+} from '../../PileupRenderer/types'
 import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -52,7 +55,6 @@ function MismatchTooltip({
   mismatchData: FlatbushItem
   mousePosition: { x: number; y: number }
 }) {
-  const { type, start } = mismatchData
   return (
     <BaseTooltip
       clientPoint={{
@@ -62,20 +64,8 @@ function MismatchTooltip({
       placement="bottom-start"
     >
       <div>
-        <div>
-          <strong>{type}</strong> @ {start + 1}
-        </div>
-        {type === 'mismatch' ? <div>Base: {mismatchData.base}</div> : null}
-        {type === 'insertion' ? <div>Sequence: {mismatchData.sequence}</div> : null}
-        {type === 'deletion' || type === 'softclip' || type === 'hardclip' ? (
-          <div>Length: {mismatchData.length}bp</div>
-        ) : null}
-        {type === 'modification' ? (
-          <>
-            <div>Modification: {mismatchData.modType}</div>
-            <div>Probability: {(mismatchData.probability * 100).toFixed(1)}%</div>
-          </>
-        ) : null}
+        <div>{getFlatbushItemLabel(mismatchData)}</div>
+        <div>Position: {mismatchData.start + 1}</div>
       </div>
     </BaseTooltip>
   )

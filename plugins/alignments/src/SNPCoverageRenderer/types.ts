@@ -128,6 +128,51 @@ export function formatBinAsTableRows(bin: BaseCoverageBin) {
   return rows
 }
 
+export function clickMapItemToFeatureData(
+  item: ClickMapItem,
+  refName?: string,
+): Record<string, unknown> {
+  if (item.type === 'snp') {
+    return {
+      uniqueId: `snp-${item.base}-${item.start}`,
+      type: 'snp',
+      refName,
+      start: item.start,
+      end: item.end,
+      details: item.bin ? formatBinAsTableRows(item.bin) : undefined,
+    }
+  }
+  if (item.type === 'modification') {
+    const pctVal = item.total > 0 ? ((item.count / item.total) * 100).toFixed(1) : '0'
+    const label = item.isUnmodified ? `Unmodified ${item.base}` : `${item.modType} (${item.base})`
+    return {
+      uniqueId: `mod-${item.modType}-${item.base}`,
+      type: 'modification',
+      refName,
+      start: item.start,
+      end: item.start + 1,
+      label,
+      count: `${item.count}/${item.total} (${pctVal}%)`,
+      strands: `${item.fwdCount}(+) ${item.revCount}(-)`,
+      probability: item.avgProb !== undefined ? `${(item.avgProb * 100).toFixed(1)}%` : undefined,
+    }
+  }
+  // interbase indicators (insertion, softclip, hardclip)
+  const pctVal = item.total > 0 ? ((item.count / item.total) * 100).toFixed(1) : '0'
+  return {
+    uniqueId: `${item.type}-${item.base}`,
+    type: item.type,
+    refName,
+    start: item.start,
+    end: item.start + 1,
+    count: `${item.count}/${item.total} (${pctVal}%)`,
+    size: item.minLength === item.maxLength
+      ? `${item.minLength}bp`
+      : `${item.minLength}-${item.maxLength}bp (avg ${item.avgLength?.toFixed(1)}bp)`,
+    sequence: item.topSequence,
+  }
+}
+
 export function formatInterbaseStats(
   count: number,
   total: number,

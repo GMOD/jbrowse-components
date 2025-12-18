@@ -10,7 +10,7 @@ import {
   SKIP_TYPE,
   SOFTCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
-import { cacheGetter } from '../shared/util'
+import { cacheGetter, convertTagsToPlainArrays } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
@@ -59,7 +59,15 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get qual() {
-    return (this.record.qualityScores || []).join(' ')
+    const q = this.record.qualityScores
+    if (!q) {
+      return undefined
+    }
+    let result = ''
+    for (let i = 0; i < q.length; i++) {
+      result += String.fromCharCode(q[i]! + 33)
+    }
+    return result
   }
 
   get qualRaw() {
@@ -287,7 +295,7 @@ export default class CramSlightlyLazyFeature implements Feature {
       strand: this.strand,
       template_length: this.template_length,
       flags: this.flags,
-      tags: this.tags,
+      tags: convertTagsToPlainArrays(this.tags),
       refName: this.refName,
       seq: this.seq,
       type: 'match',

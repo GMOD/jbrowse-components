@@ -1,92 +1,19 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
+
+import {
+  flatbushItemToFeatureData,
+  getFlatbushItemLabel,
+} from '../types'
 
 import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
-
-const LARGE_INSERTION_THRESHOLD = 10
-
-function flatbushItemToFeatureData(
-  item: FlatbushItem,
-  refName: string,
-  sourceRead?: string,
-): Record<string, unknown> {
-  const base = {
-    uniqueId: `${item.type}-${item.start}`,
-    type: item.type,
-    refName,
-    sourceRead,
-  }
-  switch (item.type) {
-    case 'insertion':
-      return {
-        ...base,
-        start: item.start,
-        end: item.start + item.sequence.length,
-        sequence: item.sequence,
-      }
-    case 'deletion':
-    case 'softclip':
-    case 'hardclip':
-      return {
-        ...base,
-        start: item.start,
-        end: item.start + item.length,
-      }
-    case 'modification':
-      return {
-        ...base,
-        start: item.start,
-        end: item.start + 1,
-        info: item.info,
-        modType: item.modType,
-        probability: item.probability.toFixed(3),
-      }
-    case 'mismatch':
-      return {
-        ...base,
-        start: item.start,
-        end: item.start + 1,
-        base: item.base,
-      }
-  }
-}
-
-function getItemLabel(item: FlatbushItem | undefined): string | undefined {
-  if (!item) {
-    return undefined
-  }
-
-  switch (item.type) {
-    case 'insertion':
-      return item.sequence.length > LARGE_INSERTION_THRESHOLD
-        ? `${item.sequence.length}bp insertion (click to see)`
-        : `Insertion: ${item.sequence}`
-    case 'deletion':
-      return `Deletion: ${item.length}bp`
-    case 'softclip':
-      return `Soft clip: ${item.length}bp`
-    case 'hardclip':
-      return `Hard clip: ${item.length}bp`
-    case 'modification':
-      return item.info
-    case 'mismatch':
-      return `Mismatch: ${item.base}`
-    default:
-      return undefined
-  }
-}
 
 const PileupRendering = observer(function (props: {
   blockKey: string
@@ -227,7 +154,7 @@ const PileupRendering = observer(function (props: {
           offsetY,
         )
         const label =
-          getItemLabel(item) ??
+          (item ? getFlatbushItemLabel(item) : undefined) ??
           (featureId ? featureNames[featureId] : undefined)
         onMouseMove?.(event, featureId, label)
       }}
