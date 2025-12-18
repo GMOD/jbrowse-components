@@ -405,7 +405,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(interactiveOverlay ? { interactiveOverlay } : {}),
         ...(showDynamicControls === false ? { showDynamicControls } : {}),
         ...(viewTrackConfigs?.length ? { viewTrackConfigs } : {}),
-      }
+      } as typeof snap
     })
 }
 

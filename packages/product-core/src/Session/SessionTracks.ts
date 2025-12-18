@@ -81,6 +81,17 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         },
       }
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { sessionTracks, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(sessionTracks?.length ? { sessionTracks } : {}),
+      } as typeof snap
+    })
 }
 
 /** Session mixin MST type for a session that has `sessionTracks` */

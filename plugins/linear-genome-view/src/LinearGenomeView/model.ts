@@ -2032,13 +2032,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
         ...(displayedRegions?.length ? { displayedRegions } : {}),
         ...(highlight?.length ? { highlight } : {}),
-        // localStorage-based properties - filter against program defaults
         ...(showCenterLine ? { showCenterLine } : {}),
         ...(showCytobandsSetting === false ? { showCytobandsSetting } : {}),
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(showTrackOutlines === false ? { showTrackOutlines } : {}),
-      }
+      } as typeof snap
     })
 }
 

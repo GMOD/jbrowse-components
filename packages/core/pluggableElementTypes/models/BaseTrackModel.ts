@@ -315,7 +315,7 @@ export function createBaseTrackModel(
         ...rest,
         ...(minimized ? { minimized } : {}),
         ...(pinned ? { pinned } : {}),
-      }
+      } as typeof snap
     })
 }
 

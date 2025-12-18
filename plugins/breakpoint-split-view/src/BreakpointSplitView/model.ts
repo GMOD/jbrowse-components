@@ -484,7 +484,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(linkViews ? { linkViews } : {}),
         ...(interactiveOverlay === false ? { interactiveOverlay } : {}),
         ...(showHeader ? { showHeader } : {}),
-      }
+      } as typeof snap
     })
 }
 

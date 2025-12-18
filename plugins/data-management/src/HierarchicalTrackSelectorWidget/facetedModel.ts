@@ -220,6 +220,22 @@ export function facetedStateTreeF() {
         )
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { filterText, showSparse, showFilters, showOptions, panelWidth, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(filterText ? { filterText } : {}),
+        ...(showSparse ? { showSparse } : {}),
+        ...(showFilters === false ? { showFilters } : {}),
+        ...(showOptions ? { showOptions } : {}),
+        ...(panelWidth !== 400 ? { panelWidth } : {}),
+      } as typeof snap
+    })
 }
 export type FacetedStateModel = ReturnType<typeof facetedStateTreeF>
 export type FacetedModel = Instance<FacetedStateModel>

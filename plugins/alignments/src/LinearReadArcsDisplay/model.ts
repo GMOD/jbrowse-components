@@ -334,6 +334,28 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        lineWidth,
+        jitter,
+        drawInter,
+        drawLongRange,
+        showLegend,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(lineWidth !== undefined ? { lineWidth } : {}),
+        ...(jitter !== undefined ? { jitter } : {}),
+        ...(drawInter === false ? { drawInter } : {}),
+        ...(drawLongRange === false ? { drawLongRange } : {}),
+        ...(showLegend !== undefined ? { showLegend } : {}),
+      } as typeof snap
+    })
 }
 
 export type LinearReadArcsDisplayStateModel = ReturnType<

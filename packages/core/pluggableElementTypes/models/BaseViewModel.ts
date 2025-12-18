@@ -80,7 +80,7 @@ const BaseViewModel = types
     return {
       ...rest,
       ...(minimized ? { minimized } : {}),
-    }
+    } as typeof snap
   })
 
 export default BaseViewModel

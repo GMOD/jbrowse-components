@@ -442,7 +442,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(drawCIGARMatchesOnly ? { drawCIGARMatchesOnly } : {}),
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
-      }
+      } as typeof snap
     })
 }
 export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>

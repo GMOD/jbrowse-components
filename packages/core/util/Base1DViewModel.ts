@@ -295,7 +295,7 @@ const Base1DView = types
       ...(offsetPx ? { offsetPx } : {}),
       ...(interRegionPaddingWidth ? { interRegionPaddingWidth } : {}),
       ...(minimumBlockWidth ? { minimumBlockWidth } : {}),
-    }
+    } as typeof snap
   })
 
 export type Base1DViewStateModel = typeof Base1DView

@@ -339,6 +339,17 @@ function stateModelFactory(
         },
       }
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { invertedSetting, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(invertedSetting !== undefined ? { invertedSetting } : {}),
+      } as typeof snap
+    })
 }
 
 export type WiggleDisplayStateModel = ReturnType<typeof stateModelFactory>

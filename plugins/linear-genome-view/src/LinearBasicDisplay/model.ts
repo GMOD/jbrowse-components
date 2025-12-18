@@ -514,6 +514,40 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        trackShowLabels,
+        trackShowDescriptions,
+        trackDisplayMode,
+        trackMaxHeight,
+        trackSubfeatureLabels,
+        trackGeneGlyphMode,
+        trackDisplayDirectionalChevrons,
+        jexlFilters,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(trackShowLabels !== undefined ? { trackShowLabels } : {}),
+        ...(trackShowDescriptions !== undefined
+          ? { trackShowDescriptions }
+          : {}),
+        ...(trackDisplayMode !== undefined ? { trackDisplayMode } : {}),
+        ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
+        ...(trackSubfeatureLabels !== undefined
+          ? { trackSubfeatureLabels }
+          : {}),
+        ...(trackGeneGlyphMode !== undefined ? { trackGeneGlyphMode } : {}),
+        ...(trackDisplayDirectionalChevrons !== undefined
+          ? { trackDisplayDirectionalChevrons }
+          : {}),
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+      } as typeof snap
+    })
 }
 
 export type FeatureTrackStateModel = ReturnType<typeof stateModelFactory>

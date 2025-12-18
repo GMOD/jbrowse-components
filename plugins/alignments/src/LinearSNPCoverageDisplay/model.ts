@@ -507,6 +507,34 @@ function stateModelFactory(
       }
       return snap
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        showInterbaseCounts,
+        showInterbaseIndicators,
+        showArcs,
+        minArcScore,
+        filterBySetting,
+        colorBySetting,
+        jexlFilters,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(showInterbaseCounts !== undefined ? { showInterbaseCounts } : {}),
+        ...(showInterbaseIndicators !== undefined
+          ? { showInterbaseIndicators }
+          : {}),
+        ...(showArcs !== undefined ? { showArcs } : {}),
+        ...(minArcScore ? { minArcScore } : {}),
+        ...(filterBySetting !== undefined ? { filterBySetting } : {}),
+        ...(colorBySetting !== undefined ? { colorBySetting } : {}),
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+      } as typeof snap
+    })
 }
 
 export type SNPCoverageDisplayStateModel = ReturnType<typeof stateModelFactory>

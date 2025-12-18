@@ -49,6 +49,13 @@ const ReturnToImportFormDialog = lazy(
 )
 type Coord = [number, number]
 
+// defaults for postProcessSnapshot filtering
+const defaultHeight = 600
+const defaultBorderSize = 20
+const defaultTickSize = 5
+const defaultHtextRotation = -90
+const defaultFontSize = 15
+
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
@@ -96,15 +103,15 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        height: 600,
+        height: defaultHeight,
         /**
          * #property
          */
-        borderSize: 20,
+        borderSize: defaultBorderSize,
         /**
          * #property
          */
-        tickSize: 5,
+        tickSize: defaultTickSize,
         /**
          * #property
          */
@@ -112,11 +119,11 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        htextRotation: -90,
+        htextRotation: defaultHtextRotation,
         /**
          * #property
          */
-        fontSize: 15,
+        fontSize: defaultFontSize,
         /**
          * #property
          */
@@ -858,17 +865,17 @@ export default function stateModelFactory(pm: PluginManager) {
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(height !== 600 ? { height } : {}),
-        ...(borderSize !== 20 ? { borderSize } : {}),
-        ...(tickSize !== 5 ? { tickSize } : {}),
+        ...(height !== defaultHeight ? { height } : {}),
+        ...(borderSize !== defaultBorderSize ? { borderSize } : {}),
+        ...(tickSize !== defaultTickSize ? { tickSize } : {}),
         ...(vtextRotation ? { vtextRotation } : {}),
-        ...(htextRotation !== -90 ? { htextRotation } : {}),
-        ...(fontSize !== 15 ? { fontSize } : {}),
+        ...(htextRotation !== defaultHtextRotation ? { htextRotation } : {}),
+        ...(fontSize !== defaultFontSize ? { fontSize } : {}),
         ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
         ...(drawCigar === false ? { drawCigar } : {}),
         ...(assemblyNames?.length ? { assemblyNames } : {}),
         ...(viewTrackConfigs?.length ? { viewTrackConfigs } : {}),
-      }
+      } as typeof snap
     })
 }
 

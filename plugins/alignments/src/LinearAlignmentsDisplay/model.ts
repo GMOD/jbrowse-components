@@ -372,6 +372,20 @@ function stateModelFactory(
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { heightPreConfig, lowerPanelType, snpCovHeight, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(heightPreConfig !== undefined ? { height: heightPreConfig } : {}),
+        ...(lowerPanelType !== 'LinearPileupDisplay' ? { lowerPanelType } : {}),
+        ...(snpCovHeight !== 45 ? { snpCovHeight } : {}),
+      } as typeof snap
+    })
 }
 
 export default stateModelFactory
