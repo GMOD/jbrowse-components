@@ -490,7 +490,7 @@ function stateModelFactory(
          * #method
          * Returns legend items for SNP coverage display
          */
-        legendItems(theme?: Theme): LegendItem[] {
+        legendItems(theme: Theme): LegendItem[] {
           return getSNPCoverageLegendItems(
             self.colorBy,
             self.visibleModifications,

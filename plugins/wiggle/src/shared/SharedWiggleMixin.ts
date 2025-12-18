@@ -91,10 +91,6 @@ export default function SharedWiggleMixin(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        statsRegion: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -104,9 +100,19 @@ export default function SharedWiggleMixin(
       message: undefined as undefined | string,
       /**
        * #volatile
+       * statsRegion is a serialized snapshot of view.dynamicBlocks at the time
+       * stats were fetched. since stats are fetched asynchronously, the view
+       * may have panned by the time they return. renderProps compares this to
+       * the current dynamicBlocks to detect stale stats and show a loading
+       * state until fresh stats arrive
        */
       stats: undefined as
-        | { currStatsBpPerPx: number; scoreMin: number; scoreMax: number }
+        | {
+            currStatsBpPerPx: number
+            scoreMin: number
+            scoreMax: number
+            statsRegion?: string
+          }
         | undefined,
       /**
        * #volatile
@@ -130,16 +136,15 @@ export default function SharedWiggleMixin(
         if (
           !self.stats ||
           Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
-          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
+          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON ||
+          self.stats.statsRegion !== statsRegion
         ) {
           self.stats = {
             currStatsBpPerPx,
             scoreMin,
             scoreMax,
+            statsRegion,
           }
-        }
-        if (statsRegion) {
-          self.statsRegion = statsRegion
         }
       },
       /**
@@ -169,13 +174,6 @@ export default function SharedWiggleMixin(
           stopStopToken(self.statsFetchInProgress)
         }
         self.statsFetchInProgress = arg
-      },
-
-      /**
-       * #action
-       */
-      setStatsRegion(statsRegion: string) {
-        self.statsRegion = statsRegion
       },
 
       /**

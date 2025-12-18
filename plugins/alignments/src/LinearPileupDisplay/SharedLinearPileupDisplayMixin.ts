@@ -375,7 +375,7 @@ export function SharedLinearPileupDisplayMixin(
        * #method
        * Returns legend items based on current colorBy setting
        */
-      legendItems(theme?: Theme): LegendItem[] {
+      legendItems(theme: Theme): LegendItem[] {
         return getPileupLegendItems(self.colorBy, theme)
       },
     }))
