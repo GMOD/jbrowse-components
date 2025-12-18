@@ -7,7 +7,8 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
     r.includes('indexedDB') ||
     r.includes('popupState') ||
     r.includes('Cannot update a component') ||
-    r.includes('was not wrapped in act')
+    r.includes('was not wrapped in act') ||
+    r.includes('Only HTTP(S) protocols are supported')
   ) {
     return undefined
   }

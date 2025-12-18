@@ -13,6 +13,7 @@ import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
@@ -45,7 +46,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           /**
            * #volatile
            */
-          stopToken: undefined as string | undefined,
+          stopToken: undefined as StopToken | undefined,
           /**
            * #volatile
            */
@@ -158,7 +159,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading(stopToken?: string) {
+      setLoading(stopToken?: StopToken) {
         self.filled = false
         self.message = undefined
         self.reactElement = undefined

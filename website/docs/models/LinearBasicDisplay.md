@@ -221,7 +221,7 @@ renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubsc
 
 ```js
 // type signature
-renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; }
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems

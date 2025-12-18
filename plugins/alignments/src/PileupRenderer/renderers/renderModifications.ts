@@ -5,12 +5,19 @@ import { getModPositions } from '../../ModificationParser/getModPositions'
 import { getModProbabilities } from '../../ModificationParser/getModProbabilities'
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
 import { getModificationName } from '../../shared/modificationData'
-import { alphaColor } from '../../shared/util'
+import { alphaColor, buildMismatchMap } from '../../shared/util'
 import { getTagAlt } from '../../util'
 
-import type { FlatbushItem, ProcessedRenderArgs } from '../types'
+import type { ColorBy, ModificationTypeWithColor } from '../../shared/types'
+import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
+
+export interface RenderModificationsArgs {
+  colorBy?: ColorBy
+  visibleModifications?: Record<string, ModificationTypeWithColor>
+  regionSequence?: string
+}
 
 // Pre-compute colord object for blue color (used in two-color mode)
 const BLUE_COLORD = colord('blue')
@@ -28,7 +35,7 @@ export function renderModifications({
   feat: LayoutFeature
   region: Region
   bpPerPx: number
-  renderArgs: ProcessedRenderArgs
+  renderArgs: RenderModificationsArgs
   cigarOps: ArrayLike<number>
 }) {
   const items = [] as FlatbushItem[]
@@ -42,6 +49,7 @@ export function renderModifications({
     return { coords, items }
   }
   const start = feature.get('start')
+  const mismatchMap = buildMismatchMap(feature, start)
   const isolatedModification = colorBy?.modifications?.isolatedModification
   const twoColor = colorBy?.modifications?.twoColor
   const modificationThreshold = colorBy?.modifications?.threshold ?? 10
@@ -132,16 +140,19 @@ export function renderModifications({
       // Add to flatbush for mouseover with strand-specific info showing all modifications
       const modsAtPos = modsByPosition.get(pos)
       if (rightPx - leftPx >= 0.2 && modsAtPos) {
+        const mismatchBase = mismatchMap.get(r)
         items.push({
           type: 'modification',
-          seq: modsAtPos
+          info: modsAtPos
             .map(
               m =>
                 `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
             )
-            .join('<br/>'),
+            .join('\n'),
           modType: type,
           probability: prob,
+          start: r,
+          mismatch: mismatchBase,
         })
         coords.push(leftPx, topPx, rightPx, bottomPx)
       }

@@ -148,7 +148,7 @@ callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomi...
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & { readonly RenderingComponent: React.FC<...>; ... 4 more ...; readonly effectiveRpcDriverName: any; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems

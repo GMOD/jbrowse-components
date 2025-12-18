@@ -7,10 +7,15 @@ import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
-import { buildFlatbushIndex } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCommon'
+import {
+  buildFlatbushIndex,
+  buildMismatchFlatbushIndex,
+} from '../RenderLinearReadCloudDisplayRPC/drawFeatsCommon'
+import { setupModificationsAutorun } from '../shared/setupModificationsAutorun'
 import { createAutorun } from '../util'
 
 import type { LinearReadCloudDisplayModel } from './model'
+import type { FlatbushItem } from '../PileupRenderer/types'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -20,6 +25,8 @@ interface RenderResult {
   imageData?: ImageBitmap
   layoutHeight?: number
   featuresForFlatbush?: FlatbushEntry[]
+  mismatchFlatbush?: ArrayBuffer
+  mismatchItems?: FlatbushItem[]
   offsetPx?: number
 }
 
@@ -48,6 +55,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       noSpacing,
       trackMaxHeight,
       height,
+      visibleModifications,
     } = self
 
     try {
@@ -104,6 +112,9 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
           drawProperPairs,
           flipStrandLongReadChains,
           trackMaxHeight,
+          visibleModifications: Object.fromEntries(
+            visibleModifications.toJSON(),
+          ),
           ...(drawCloud && { cloudModeHeight: height }),
           highResolutionScaling: 2,
           rpcDriverName: self.effectiveRpcDriverName,
@@ -125,6 +136,13 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         }
         if (result.featuresForFlatbush) {
           buildFlatbushIndex(result.featuresForFlatbush, self)
+        }
+        if (result.mismatchFlatbush && result.mismatchItems) {
+          buildMismatchFlatbushIndex(
+            result.mismatchFlatbush,
+            result.mismatchItems,
+            self,
+          )
         }
         if (result.offsetPx !== undefined) {
           self.setLastDrawnOffsetPx(result.offsetPx)
@@ -202,4 +220,10 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       name: 'LinearReadCloudRenderCanvas',
     },
   )
+
+  // Autorun to discover modifications in the visible region
+  setupModificationsAutorun(self, () => {
+    const view = getContainingView(self) as LGV
+    return view.initialized && self.featureDensityStatsReadyAndRegionNotTooLarge
+  })
 }

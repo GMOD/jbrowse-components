@@ -12,6 +12,7 @@ import { autorun } from 'mobx'
 import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getMultiVariantFeaturesAutorun(self: {
@@ -27,7 +28,7 @@ export function getMultiVariantFeaturesAutorun(self: {
   setStatusMessage: (str: string) => void
   setHasPhased: (arg: boolean) => void
   setSampleInfo: (arg: Record<string, SampleInfo>) => void
-  setSimplifiedFeaturesLoading: (arg: string) => void
+  setSimplifiedFeaturesLoading: (arg: StopToken) => void
 }) {
   addDisposer(
     self,
@@ -90,6 +91,7 @@ export function getMultiVariantFeaturesAutorun(self: {
       },
       {
         delay: 1000,
+        name: 'MultiVariantFeatures',
       },
     ),
   )

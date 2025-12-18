@@ -6,7 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { filterReadFlag, filterTagValue, parseSamHeader } from '../shared/util'
+import { parseSamHeader } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
 import type { ParsedSamHeader } from '../shared/util'
@@ -114,28 +114,34 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const records = await updateStatus(
         'Downloading alignments',
         statusCallback,
-        () => bam.getRecordsForRange(refName, start, end),
+        () => bam.getRecordsForRange(refName, start, end, { filterBy }),
       )
       checkStopToken(stopToken)
 
       await updateStatus('Processing alignments', statusCallback, async () => {
-        const {
-          flagInclude = 0,
-          flagExclude = 0,
-          tagFilter,
-          readName,
-        } = filterBy || {}
+        const { readName } = filterBy || {}
+
+        // Pre-fetch reference sequence for all records that need it
+        let regionSeq: string | undefined
+        let regionStart = Infinity
+        let regionEnd = 0
+        if (sequenceAdapter) {
+          for (const record of records) {
+            if (!record.NUMERIC_MD) {
+              regionStart = Math.min(regionStart, record.start)
+              regionEnd = Math.max(regionEnd, record.end)
+            }
+          }
+          if (regionEnd > 0) {
+            regionSeq = await sequenceAdapter.getSequence({
+              refName: originalRefName || refName,
+              start: regionStart,
+              end: regionEnd,
+            })
+          }
+        }
 
         for (const record of records) {
-          if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
-            continue
-          }
-          if (
-            tagFilter &&
-            filterTagValue(record.tags[tagFilter.tag], tagFilter.value)
-          ) {
-            continue
-          }
           if (readName && record.name !== readName) {
             continue
           }
@@ -144,12 +150,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           record.adapter = this
 
           // Only fetch reference sequence if MD tag is missing
-          if (!record.NUMERIC_MD && sequenceAdapter) {
-            record.ref = await sequenceAdapter.getSequence({
-              refName: originalRefName || refName,
-              start: record.start,
-              end: record.end,
-            })
+          if (!record.NUMERIC_MD && regionSeq) {
+            record.ref = regionSeq.slice(
+              record.start - regionStart,
+              record.end - regionStart,
+            )
           }
 
           observer.next(record)

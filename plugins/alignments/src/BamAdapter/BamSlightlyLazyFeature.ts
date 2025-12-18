@@ -9,6 +9,7 @@ import {
   MISMATCH_MAP,
   SOFTCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
+import { convertTagsToPlainArrays } from '../shared/util'
 
 import type BamAdapter from './BamAdapter'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
@@ -140,7 +141,7 @@ export default class BamSlightlyLazyFeature
         strand: this.strand,
         template_length: this.template_length,
         flags: this.flags,
-        tags: this.tags,
+        tags: convertTagsToPlainArrays(this.tags),
         refName: this.adapter.refIdToName(this.ref_id)!,
         type: 'match',
         pair_orientation: this.pair_orientation,

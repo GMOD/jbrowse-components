@@ -8,7 +8,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getAllChildren, treeToMap } from '../util'
+import { getAllChildren } from '../util'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { TreeCategoryNode } from '../../types'
@@ -36,6 +36,12 @@ function getAllSubcategories(node: TreeCategoryNode): string[] {
   return categoryIds
 }
 
+function getTrackIdsFromCategory(node: TreeCategoryNode): string[] {
+  return node.children
+    .filter(entry => entry.type === 'track')
+    .map(entry => entry.trackId)
+}
+
 const TrackCategory = observer(function ({
   item,
   model,
@@ -56,8 +62,7 @@ const TrackCategory = observer(function ({
       {
         label: 'Add to selection',
         onClick: () => {
-          const r = treeToMap(item).get(id)
-          model.addToSelection(getAllChildren(r))
+          model.addToSelection(getAllChildren(item))
         },
         helpText:
           'Add all tracks in this category to the current selection. This allows you to perform bulk operations on multiple tracks at once, such as configuring settings or exporting track configurations.',
@@ -65,8 +70,7 @@ const TrackCategory = observer(function ({
       {
         label: 'Remove from selection',
         onClick: () => {
-          const r = treeToMap(item).get(id)
-          model.removeFromSelection(getAllChildren(r))
+          model.removeFromSelection(getAllChildren(item))
         },
         helpText:
           'Remove all tracks in this category from the current selection. Use this to deselect tracks that were previously added to your selection.',
@@ -74,10 +78,8 @@ const TrackCategory = observer(function ({
       {
         label: 'Show all',
         onClick: () => {
-          for (const entry of treeToMap(item).get(id)?.children || []) {
-            if (entry.type === 'track') {
-              model.view.showTrack(entry.trackId)
-            }
+          for (const trackId of getTrackIdsFromCategory(item)) {
+            model.view.showTrack(trackId)
           }
         },
         helpText:
@@ -86,10 +88,8 @@ const TrackCategory = observer(function ({
       {
         label: 'Hide all',
         onClick: () => {
-          for (const entry of treeToMap(item).get(id)?.children || []) {
-            if (entry.type === 'track') {
-              model.view.hideTrack(entry.trackId)
-            }
+          for (const trackId of getTrackIdsFromCategory(item)) {
+            model.view.hideTrack(trackId)
           }
         },
         helpText:
@@ -101,9 +101,7 @@ const TrackCategory = observer(function ({
               label: 'Collapse all subcategories',
               onClick: () => {
                 for (const subcategoryId of subcategoryIds) {
-                  if (!model.collapsed.get(subcategoryId)) {
-                    model.toggleCategory(subcategoryId)
-                  }
+                  model.setCategoryCollapsed(subcategoryId, true)
                 }
               },
               helpText:
@@ -113,9 +111,7 @@ const TrackCategory = observer(function ({
               label: 'Expand all subcategories',
               onClick: () => {
                 for (const subcategoryId of subcategoryIds) {
-                  if (model.collapsed.get(subcategoryId)) {
-                    model.toggleCategory(subcategoryId)
-                  }
+                  model.setCategoryCollapsed(subcategoryId, false)
                 }
               },
               helpText:
@@ -124,7 +120,7 @@ const TrackCategory = observer(function ({
           ]
         : []),
     ]
-  }, [item, id, model])
+  }, [item, model])
 
   return (
     <div

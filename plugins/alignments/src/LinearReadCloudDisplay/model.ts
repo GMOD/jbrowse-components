@@ -21,6 +21,7 @@ import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeat
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -28,6 +29,7 @@ import {
 
 import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SetFeatureHeightDialog = lazy(
@@ -52,6 +54,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       LinearReadDisplayBaseMixin(),
       LinearReadDisplayWithLayoutMixin(),
       LinearReadDisplayWithPairFiltersMixin(),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -100,7 +103,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        * Stop token for the current rendering operation
        */
-      renderingStopToken: undefined as string | undefined,
+      renderingStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       get dataTestId() {
@@ -123,6 +126,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get featureHeightSetting() {
         return self.featureHeight ?? getConf(self, 'featureHeight')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get modificationThreshold() {
+        return self.colorBy?.modifications?.threshold ?? 10
       },
     }))
     .actions(self => ({
@@ -198,7 +209,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        * Set the rendering stop token
        */
-      setRenderingStopToken(token: string | undefined) {
+      setRenderingStopToken(token?: StopToken) {
         self.renderingStopToken = token
       },
     }))
@@ -230,6 +241,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Normal',
+                  type: 'radio',
+                  checked:
+                    self.featureHeightSetting === 7 && self.noSpacing !== true,
                   onClick: () => {
                     self.setFeatureHeight(7)
                     self.setNoSpacing(false)
@@ -237,6 +251,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Compact',
+                  type: 'radio',
+                  checked:
+                    self.featureHeightSetting === 3 && self.noSpacing === true,
                   onClick: () => {
                     self.setFeatureHeight(3)
                     self.setNoSpacing(true)
@@ -244,6 +261,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Super-compact',
+                  type: 'radio',
+                  checked:
+                    self.featureHeightSetting === 1 && self.noSpacing === true,
                   onClick: () => {
                     self.setFeatureHeight(1)
                     self.setNoSpacing(true)

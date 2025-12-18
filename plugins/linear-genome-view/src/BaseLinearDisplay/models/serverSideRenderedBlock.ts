@@ -18,6 +18,7 @@ import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -57,7 +58,7 @@ const blockState = types
     /**
      * #volatile
      */
-    stopToken: undefined as string | undefined,
+    stopToken: undefined as StopToken | undefined,
     /**
      * #volatile
      */
@@ -107,6 +108,13 @@ const blockState = types
      * Whether a render is currently in flight (but data is not ready yet)
      */
     isRenderingPending: true,
+    /**
+     * #volatile
+     * Cached reference to containing display for performance.
+     * Avoids expensive getContainingDisplay() tree traversal in statusMessage
+     * getter which is called frequently during rendering.
+     */
+    cachedDisplay: undefined as AbstractDisplayModel | undefined,
   }))
   .actions(self => {
     function stopCurrentToken() {
@@ -143,7 +151,7 @@ const blockState = types
       /**
        * #action
        */
-      setLoading(newStopToken: string) {
+      setLoading(newStopToken: StopToken) {
         stopCurrentToken()
         self.isRenderingPending = true
         self.error = undefined
@@ -244,7 +252,7 @@ const blockState = types
       return self.isRenderingPending
         ? self.blockStatusMessage ||
             // @ts-expect-error
-            getContainingDisplay(self).statusMessage ||
+            self.cachedDisplay?.statusMessage ||
             'Loading'
         : undefined
     },
@@ -252,6 +260,7 @@ const blockState = types
   .actions(self => ({
     afterAttach() {
       const display = getContainingDisplay(self)
+      self.cachedDisplay = display
       setTimeout(() => {
         if (isAlive(self)) {
           makeAbortableReaction(
@@ -344,7 +353,7 @@ export function renderBlockData(
 
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
-  stopToken: string | undefined,
+  stopToken: StopToken | undefined,
   self: BlockModel,
 ) {
   if (!props || !isAlive(self)) {

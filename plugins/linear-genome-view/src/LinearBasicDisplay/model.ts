@@ -464,7 +464,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               })),
             },
             {
-              label: 'Set max height',
+              label: 'Set max track height',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,

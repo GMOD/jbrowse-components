@@ -6,7 +6,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { setupModificationsAutorun } from '../shared/setupModificationsAutorun'
 import { createAutorun } from '../util'
 
 import type { ModificationType, SortedBy } from '../shared/types'
@@ -99,29 +99,5 @@ export function doAfterAttach(model: {
     },
   )
 
-  createAutorun(
-    model,
-    async () => {
-      if (!model.autorunReady) {
-        return
-      }
-      const { adapterConfig } = model
-      const { staticBlocks } = getContainingView(model) as LGV
-      const { modifications, simplexModifications } =
-        await getUniqueModifications({
-          model,
-          adapterConfig,
-          blocks: staticBlocks,
-        })
-      if (isAlive(model)) {
-        model.updateVisibleModifications(modifications)
-        model.setSimplexModifications(simplexModifications)
-        model.setModificationsReady(true)
-      }
-    },
-    {
-      delay: 1000,
-      name: 'GetModInfo',
-    },
-  )
+  setupModificationsAutorun(model, () => model.autorunReady)
 }

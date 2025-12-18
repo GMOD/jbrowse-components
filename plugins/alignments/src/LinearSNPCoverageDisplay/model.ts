@@ -26,13 +26,13 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
-const InterbaseInfoDialog = lazy(
-  () => import('./components/InterbaseInfoDialog'),
-)
 const FilterArcsByScoreDialog = lazy(
   () => import('./components/FilterArcsByScoreDialog'),
 )
@@ -312,6 +312,7 @@ function stateModelFactory(
       const {
         renderProps: superRenderProps,
         renderingProps: superRenderingProps,
+        renderSvg: superRenderSvg,
         wiggleBaseTrackMenuItems,
       } = self
       return {
@@ -345,26 +346,20 @@ function stateModelFactory(
         renderingProps() {
           return {
             ...superRenderingProps(),
-            onIndicatorClick(
-              _: unknown,
-              item: {
-                type: 'insertion' | 'softclip' | 'hardclip'
-                base: string
-                count: number
-                total: number
-                avgLength?: number
-                minLength?: number
-                maxLength?: number
-                topSequence?: string
-              },
-            ) {
-              getSession(self).queueDialog(handleClose => [
-                InterbaseInfoDialog,
-                { item, handleClose },
-              ])
-            },
+            displayModel: self,
           }
         },
+
+        /**
+         * #method
+         * Custom renderSvg that includes sashimi arcs
+         */
+        async renderSvg(opts: ExportSvgDisplayOptions) {
+          const { renderSNPCoverageSvg } =
+            await import('./components/renderSvg')
+          return renderSNPCoverageSvg(self, opts, superRenderSvg)
+        },
+
         /**
          * #getter
          */

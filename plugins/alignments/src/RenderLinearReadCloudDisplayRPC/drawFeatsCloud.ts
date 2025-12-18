@@ -7,7 +7,6 @@ import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/mode
 
 /**
  * Core utility function to calculate Y-offsets using logarithmic scaling
- * Shared between RPC and model contexts for maintainability
  */
 export function calculateCloudYOffsetsUtil(
   computedChains: ComputedChain[],
@@ -41,17 +40,6 @@ export function calculateCloudYOffsetsUtil(
   return { chainYOffsets }
 }
 
-/**
- * Calculate Y-offsets using logarithmic scaling based on distance (model-based version)
- * This is a thin adapter that extracts height from the model
- */
-function calculateCloudYOffsets(
-  computedChains: ComputedChain[],
-  self: LinearReadCloudDisplayModel,
-) {
-  return calculateCloudYOffsetsUtil(computedChains, self.height)
-}
-
 export function drawFeats(
   self: LinearReadCloudDisplayModel,
   ctx: CanvasRenderingContext2D,
@@ -61,6 +49,7 @@ export function drawFeats(
     self,
     ctx,
     canvasWidth,
-    calculateYOffsets: calculateCloudYOffsets,
+    calculateYOffsets: computedChains =>
+      calculateCloudYOffsetsUtil(computedChains, self.height),
   })
 }

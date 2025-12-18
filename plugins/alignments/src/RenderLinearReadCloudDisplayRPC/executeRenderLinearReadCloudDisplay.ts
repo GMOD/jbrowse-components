@@ -23,11 +23,11 @@ import {
   filterChains,
   sortComputedChains,
 } from './drawFeatsCommon'
-import { calculateStackYOffsetsCore } from './drawFeatsStack'
+import { calculateStackYOffsetsUtil } from './drawFeatsStack'
 import { getInsertSizeStats } from '../shared/insertSizeStats'
 
 import type { RenderLinearReadCloudDisplayArgs } from './RenderLinearReadCloudDisplay'
-import type { ComputedChain, DrawFeatsParams } from './drawFeatsCommon'
+import type { ComputedChain } from './drawFeatsCommon'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -63,6 +63,7 @@ export async function executeRenderLinearReadCloudDisplay({
     exportSVG,
     statusCallback = () => {},
     stopToken,
+    visibleModifications,
   } = args
 
   // Recreate the view from the snapshot following DotplotRenderer pattern
@@ -202,25 +203,11 @@ export async function executeRenderLinearReadCloudDisplay({
 
   const actualHeight = drawCloud
     ? (cloudModeHeight ?? 1200)
-    : calculateStackYOffsetsCore(
+    : calculateStackYOffsetsUtil(
         computedChains,
-        {
-          chainData,
-          featureHeight,
-          canvasWidth: width,
-          noSpacing,
-          colorBy,
-          drawSingletons,
-          drawProperPairs,
-          flipStrandLongReadChains,
-          trackMaxHeight,
-          config,
-          theme,
-          regions,
-          bpPerPx,
-          stopToken,
-        },
         featureHeight,
+        noSpacing,
+        trackMaxHeight ?? 1200,
       ).layoutHeight
 
   const renderOpts: RenderToAbstractCanvasOptions = {
@@ -234,7 +221,12 @@ export async function executeRenderLinearReadCloudDisplay({
     statusCallback,
     () =>
       renderToAbstractCanvas(width, actualHeight, renderOpts, async ctx => {
-        const { layoutHeight, featuresForFlatbush } = drawFeatsCore({
+        const {
+          layoutHeight,
+          featuresForFlatbush,
+          mismatchFlatbush,
+          mismatchItems,
+        } = drawFeatsCore({
           ctx,
           params: {
             chainData,
@@ -251,21 +243,25 @@ export async function executeRenderLinearReadCloudDisplay({
             regions,
             bpPerPx,
             stopToken,
+            visibleModifications,
           },
           view: viewSnap,
-          calculateYOffsets: (
-            chains: ComputedChain[],
-            params: DrawFeatsParams,
-            featureHeight: number,
-          ) => {
+          calculateYOffsets: (chains: ComputedChain[]) => {
             return drawCloud
               ? calculateCloudYOffsetsUtil(chains, actualHeight)
-              : calculateStackYOffsetsCore(chains, params, featureHeight)
+              : calculateStackYOffsetsUtil(
+                  chains,
+                  featureHeight,
+                  noSpacing,
+                  trackMaxHeight ?? 1200,
+                )
           },
         })
         return {
           layoutHeight,
           featuresForFlatbush,
+          mismatchFlatbush,
+          mismatchItems,
         }
       }),
   )
