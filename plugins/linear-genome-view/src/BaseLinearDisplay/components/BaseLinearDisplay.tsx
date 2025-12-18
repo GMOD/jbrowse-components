@@ -2,8 +2,10 @@ import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import FloatingLegend from './FloatingLegend'
 import LinearBlocks from './LinearBlocks'
 import MenuPage from './MenuPage'
 
@@ -31,7 +33,10 @@ const BaseLinearDisplay = observer(function (props: {
   const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
   const [contextCoord, setContextCoord] = useState<Coord>()
   const { model, children } = props
-  const { TooltipComponent, DisplayMessageComponent, height } = model
+  const { TooltipComponent, DisplayMessageComponent, height, showLegend } =
+    model
+  const theme = useTheme()
+  const legendItems = model.legendItems(theme)
   return (
     <div
       ref={ref}
@@ -63,6 +68,10 @@ const BaseLinearDisplay = observer(function (props: {
         <LinearBlocks {...props} />
       )}
       {children}
+
+      {showLegend && legendItems.length > 0 ? (
+        <FloatingLegend items={legendItems} />
+      ) : null}
 
       <Suspense fallback={null}>
         <TooltipComponent

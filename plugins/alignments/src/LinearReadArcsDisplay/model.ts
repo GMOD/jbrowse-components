@@ -8,8 +8,10 @@ import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
+import { getReadArcsLegendItems } from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -18,7 +20,10 @@ import {
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LegendItem,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearReadArcsDisplay
@@ -70,6 +75,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * Whether to draw long-range connections
          */
         drawLongRange: true,
+
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -153,6 +163,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setRenderingStopToken(token?: StopToken) {
         self.renderingStopToken = token
+      },
+
+      /**
+       * #action
+       */
+      setShowLegend(s: boolean) {
+        self.showLegend = s
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Returns legend items based on current colorBy setting
+       */
+      legendItems(): LegendItem[] {
+        return getReadArcsLegendItems(self.colorBy)
       },
     }))
     .views(self => ({
@@ -264,6 +290,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             getColorSchemeMenuItem(self),
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
+            },
           ]
         },
 

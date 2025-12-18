@@ -12,10 +12,12 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import FilterListIcon from '@mui/icons-material/FilterList'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { getSNPCoverageLegendItems } from '../shared/legendUtils'
 import { createAutorun } from '../util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
@@ -28,8 +30,10 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
+  LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { Theme } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -457,6 +461,15 @@ function stateModelFactory(
                 ])
               },
             },
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
+            },
           ]
         },
 
@@ -465,6 +478,18 @@ function stateModelFactory(
          */
         get filters() {
           return new SerializableFilterChain({ filters: self.jexlFilters })
+        },
+
+        /**
+         * #method
+         * Returns legend items for SNP coverage display
+         */
+        legendItems(theme?: Theme): LegendItem[] {
+          return getSNPCoverageLegendItems(
+            self.colorBy,
+            self.visibleModifications,
+            theme,
+          )
         },
       }
     })

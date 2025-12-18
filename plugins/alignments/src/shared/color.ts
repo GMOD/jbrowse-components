@@ -43,6 +43,10 @@ export const fillColor = {
   color_shortinsert: 'pink',
   color_unmapped_mate: '#8B008B',
   color_unknown: 'grey',
+  // Long-read split alignment orientation colors
+  color_longread_rev_fwd: 'navy',
+  color_longread_fwd_rev: 'green',
+  color_longread_same: 'grey',
 }
 
 // manually calculated by running
@@ -70,6 +74,10 @@ export const strokeColor = {
   color_shortinsert: '#FF3A5C',
   color_unmapped_mate: '#5A005A',
   color_unknown: '#444',
+  // Long-read split alignment orientation stroke colors
+  color_longread_rev_fwd: '#00004D',
+  color_longread_fwd_rev: '#005A00',
+  color_longread_same: '#444',
 }
 
 const defaultColor = [

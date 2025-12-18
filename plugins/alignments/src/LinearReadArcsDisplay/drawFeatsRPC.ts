@@ -2,6 +2,7 @@ import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 
 import { featurizeSA } from '../MismatchParser'
 import {
+  fillColor,
   getPairedInsertSizeAndOrientationColor,
   getPairedInsertSizeColor,
   getPairedOrientationColor,
@@ -106,7 +107,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
       }
 
       if (longRange && drawArcInsteadOfBezier) {
-        ctx.strokeStyle = 'red'
+        ctx.strokeStyle = fillColor.color_longinsert
       } else {
         if (hasPaired) {
           if (type === 'insertSizeAndOrientation') {
@@ -117,18 +118,20 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
           } else if (type === 'orientation') {
             ctx.strokeStyle = getPairedOrientationColor(k1)[0]
           } else if (type === 'insertSize') {
-            ctx.strokeStyle = getPairedInsertSizeColor(k1, stats)?.[0] || 'grey'
+            ctx.strokeStyle =
+              getPairedInsertSizeColor(k1, stats)?.[0] ||
+              fillColor.color_unknown
           } else if (type === 'gradient') {
             ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }
         } else {
           if (type === 'orientation' || type === 'insertSizeAndOrientation') {
             if (s1 === -1 && s2 === 1) {
-              ctx.strokeStyle = 'navy'
+              ctx.strokeStyle = fillColor.color_longread_rev_fwd
             } else if (s1 === 1 && s2 === -1) {
-              ctx.strokeStyle = 'green'
+              ctx.strokeStyle = fillColor.color_longread_fwd_rev
             } else {
-              ctx.strokeStyle = 'grey'
+              ctx.strokeStyle = fillColor.color_longread_same
             }
           } else if (type === 'gradient') {
             ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
@@ -142,8 +145,18 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
         // avoid drawing gigantic circles that glitch out the rendering,
         // instead draw vertical lines
         if (absrad > 100_000) {
-          drawLineAtOffset(ctx, p + jitter(jitterVal), height, 'red')
-          drawLineAtOffset(ctx, p2 + jitter(jitterVal), height, 'red')
+          drawLineAtOffset(
+            ctx,
+            p + jitter(jitterVal),
+            height,
+            fillColor.color_longinsert,
+          )
+          drawLineAtOffset(
+            ctx,
+            p2 + jitter(jitterVal),
+            height,
+            fillColor.color_longinsert,
+          )
         } else if (drawArcInsteadOfBezier) {
           ctx.arc(p + radius + jitter(jitterVal), 0, absrad, 0, Math.PI)
           ctx.stroke()
@@ -170,7 +183,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
         ctx.stroke()
       }
     } else if (r1 && drawInter) {
-      drawLineAtOffset(ctx, r1 - offsetPx, height, 'purple')
+      drawLineAtOffset(ctx, r1 - offsetPx, height, fillColor.color_interchrom)
     }
   }
 

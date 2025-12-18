@@ -79,6 +79,7 @@ export type {
   BaseLinearDisplayModel,
   BlockModel,
   ExportSvgDisplayOptions,
+  LegendItem,
 } from './BaseLinearDisplay'
 
 export {
