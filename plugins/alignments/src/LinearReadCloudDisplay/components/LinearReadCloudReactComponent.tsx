@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { assembleLocString, getContainingView } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getContainingView,
+  toLocale,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -65,7 +69,7 @@ function MismatchTooltip({
     >
       <div>
         <div>{getFlatbushItemLabel(mismatchData)}</div>
-        <div>Position: {mismatchData.start + 1}</div>
+        <div>Position: {toLocale(mismatchData.start + 1)}</div>
       </div>
     </BaseTooltip>
   )

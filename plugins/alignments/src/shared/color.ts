@@ -196,7 +196,9 @@ export function getPairedOrientationColorOrDefault(f: {
   const type = orientationTypes.fr
   const r = type[f.pair_orientation || ''] as keyof typeof pairMap
   const type2 = pairMap[r] as keyof typeof fillColor
-  return [fillColor[type2], strokeColor[type2]] as const
+  return r === 'LR'
+    ? undefined
+    : ([fillColor[type2], strokeColor[type2]] as const)
 }
 
 /**

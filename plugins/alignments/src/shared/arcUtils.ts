@@ -1,4 +1,5 @@
 import {
+  SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
@@ -13,6 +14,7 @@ export interface CoreFeat {
   end: number
   tlen?: number
   pair_orientation?: string
+  next_ref?: string
 }
 
 export function jitter(n: number) {
@@ -40,6 +42,7 @@ export function extractCoreFeat(f: Feature): CoreFeat {
     strand: f.get('strand'),
     tlen: f.get('template_length'),
     pair_orientation: f.get('pair_orientation'),
+    next_ref: f.get('next_ref'),
   }
 }
 
@@ -67,11 +70,13 @@ export function toCoreFeatBasic(f: Feature | CoreFeat): CoreFeat {
 }
 
 export function getMateInfo(f: Feature): CoreFeat {
+  const flags = f.get('flags') || 0
+  const mateStrand = flags & SAM_FLAG_MATE_REVERSE ? -1 : 1
   return {
     refName: f.get('next_ref') || '',
     start: f.get('next_pos') || 0,
     end: f.get('next_pos') || 0,
-    strand: f.get('strand'),
+    strand: mateStrand,
   }
 }
 
