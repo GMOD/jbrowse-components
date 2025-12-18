@@ -300,7 +300,14 @@ export function makeImageArrays(
   }
 
   // Pass 2: Draw SNP overlays on top
-  for (const { leftPx, rightPx, score0, bin, fstart, fend } of featureDataList) {
+  for (const {
+    leftPx,
+    rightPx,
+    score0,
+    bin,
+    fstart,
+    fend,
+  } of featureDataList) {
     // Draw SNP data overlay
     const w = Math.max(rightPx - leftPx, 1)
     const h = toHeight(score0)
@@ -342,7 +349,12 @@ export function makeImageArrays(
         // Add significant modifications (>4%) to clickmap
         const frequency = entryDepth / detectable
         if (frequency >= SNP_CLICKMAP_THRESHOLD) {
-          coords.push(roundedLeftPx, bottom - (curr + modHeight), roundedLeftPx + w, bottom - curr)
+          coords.push(
+            roundedLeftPx,
+            bottom - (curr + modHeight),
+            roundedLeftPx + w,
+            bottom - curr,
+          )
           items.push({
             type: 'modification',
             modType: mod.type,
@@ -350,8 +362,8 @@ export function makeImageArrays(
             count: entryDepth,
             total: detectable,
             avgProb: avgProbability,
-            fwdCount: entry['1'] ?? 0,
-            revCount: entry['-1'] ?? 0,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
             isUnmodified: true,
             start: fstart,
           })
@@ -390,7 +402,12 @@ export function makeImageArrays(
         // Add significant modifications (>4%) to clickmap
         const frequency = entryDepth / detectable
         if (frequency >= SNP_CLICKMAP_THRESHOLD) {
-          coords.push(roundedLeftPx, bottom - (curr + modHeight), roundedLeftPx + w, bottom - curr)
+          coords.push(
+            roundedLeftPx,
+            bottom - (curr + modHeight),
+            roundedLeftPx + w,
+            bottom - curr,
+          )
           items.push({
             type: 'modification',
             modType: mod.type,
@@ -398,8 +415,8 @@ export function makeImageArrays(
             count: entryDepth,
             total: detectable,
             avgProb: avgProbability,
-            fwdCount: entry['1'] ?? 0,
-            revCount: entry['-1'] ?? 0,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
             isUnmodified: false,
             start: fstart,
           })
@@ -414,11 +431,21 @@ export function makeImageArrays(
       for (const [modKey, entry] of Object.entries(mods)) {
         const entryHeight = (entry.entryDepth / depth) * h
         ctx.fillStyle = colorMap[modKey] || 'black'
-        ctx.fillRect(roundedLeftPx, bottom - (currHeight + entryHeight), w, entryHeight)
+        ctx.fillRect(
+          roundedLeftPx,
+          bottom - (currHeight + entryHeight),
+          w,
+          entryHeight,
+        )
 
         const frequency = entry.entryDepth / depth
         if (frequency >= SNP_CLICKMAP_THRESHOLD) {
-          coords.push(roundedLeftPx, bottom - (currHeight + entryHeight), roundedLeftPx + w, bottom - currHeight)
+          coords.push(
+            roundedLeftPx,
+            bottom - (currHeight + entryHeight),
+            roundedLeftPx + w,
+            bottom - currHeight,
+          )
           items.push({
             type: 'modification',
             modType: modKey.replace('cpg_', '').replace('_', ' '),
@@ -426,8 +453,8 @@ export function makeImageArrays(
             count: entry.entryDepth,
             total: depth,
             avgProb: entry.avgProbability,
-            fwdCount: entry['1'] ?? 0,
-            revCount: entry['-1'] ?? 0,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
             isUnmodified: modKey.includes('unmeth'),
             start: fstart,
           })
@@ -439,11 +466,21 @@ export function makeImageArrays(
       for (const [modKey, entry] of Object.entries(nonmods)) {
         const entryHeight = (entry.entryDepth / depth) * h
         ctx.fillStyle = colorMap[modKey] || 'black'
-        ctx.fillRect(roundedLeftPx, bottom - (currHeight + entryHeight), w, entryHeight)
+        ctx.fillRect(
+          roundedLeftPx,
+          bottom - (currHeight + entryHeight),
+          w,
+          entryHeight,
+        )
 
         const frequency = entry.entryDepth / depth
         if (frequency >= SNP_CLICKMAP_THRESHOLD) {
-          coords.push(roundedLeftPx, bottom - (currHeight + entryHeight), roundedLeftPx + w, bottom - currHeight)
+          coords.push(
+            roundedLeftPx,
+            bottom - (currHeight + entryHeight),
+            roundedLeftPx + w,
+            bottom - currHeight,
+          )
           items.push({
             type: 'modification',
             modType: modKey.replace('cpg_', '').replace('_', ' '),
@@ -451,8 +488,8 @@ export function makeImageArrays(
             count: entry.entryDepth,
             total: depth,
             avgProb: entry.avgProbability,
-            fwdCount: entry['1'] ?? 0,
-            revCount: entry['-1'] ?? 0,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
             isUnmodified: true,
             start: fstart,
           })
@@ -491,8 +528,8 @@ export function makeImageArrays(
             total: score0,
             refbase,
             avgQual: entry.avgProbability,
-            fwdCount: entry['1'] ?? 0,
-            revCount: entry['-1'] ?? 0,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
             bin,
             start: fstart,
             end: fend,
@@ -537,7 +574,13 @@ export function makeImageArrays(
             INTERBASE_INDICATOR_HEIGHT + totalHeight,
           )
           items.push(
-            createInterbaseItem(maxBase, totalCount, score0, fstart, noncov[maxBase]),
+            createInterbaseItem(
+              maxBase,
+              totalCount,
+              score0,
+              fstart,
+              noncov[maxBase],
+            ),
           )
         }
       } else {

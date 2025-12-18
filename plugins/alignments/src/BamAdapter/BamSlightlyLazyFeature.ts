@@ -81,15 +81,7 @@ export default class BamSlightlyLazyFeature
   }
 
   get qualString() {
-    const q = this.qual
-    if (!q) {
-      return undefined
-    }
-    let result = ''
-    for (let i = 0; i < q.length; i++) {
-      result += String.fromCharCode(q[i]! + 33)
-    }
-    return result
+    return this.qual?.join(' ')
   }
 
   get(field: string): any {

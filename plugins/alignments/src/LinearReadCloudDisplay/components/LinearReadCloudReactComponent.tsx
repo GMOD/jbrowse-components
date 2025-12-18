@@ -5,12 +5,12 @@ import { assembleLocString, getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
+import {
+  type FlatbushItem,
+  getFlatbushItemLabel,
+} from '../../PileupRenderer/types'
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
-import {
-  getFlatbushItemLabel,
-  type FlatbushItem,
-} from '../../PileupRenderer/types'
 import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

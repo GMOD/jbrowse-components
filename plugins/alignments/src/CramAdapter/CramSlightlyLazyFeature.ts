@@ -59,15 +59,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get qual() {
-    const q = this.record.qualityScores
-    if (!q) {
-      return undefined
-    }
-    let result = ''
-    for (let i = 0; i < q.length; i++) {
-      result += String.fromCharCode(q[i]! + 33)
-    }
-    return result
+    return (this.record.qualityScores || []).join(' ')
   }
 
   get qualRaw() {

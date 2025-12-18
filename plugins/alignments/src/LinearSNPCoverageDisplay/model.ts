@@ -19,12 +19,15 @@ import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import {
+  type ClickMapItem,
+  clickMapItemToFeatureData,
+} from '../SNPCoverageRenderer/types'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun } from '../util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
-import { clickMapItemToFeatureData, type ClickMapItem } from '../SNPCoverageRenderer/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
@@ -356,7 +359,10 @@ function stateModelFactory(
               const session = getSession(self)
               const view = getContainingView(self) as LGV
               const region = view.dynamicBlocks.contentBlocks[0]
-              const featureData = clickMapItemToFeatureData(item, region?.refName)
+              const featureData = clickMapItemToFeatureData(
+                item,
+                region?.refName,
+              )
 
               if (isSessionModelWithWidgets(session)) {
                 const featureWidget = session.addWidget(

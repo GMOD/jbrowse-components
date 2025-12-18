@@ -313,7 +313,11 @@ export function renderMismatchesCallback({
           }
         }
       } else {
-        items.push({ type: 'insertion', sequence: base || 'unknown', start: mstart })
+        items.push({
+          type: 'insertion',
+          sequence: base || 'unknown',
+          start: mstart,
+        })
         const txt = `${len}`
         if (bpPerPx > largeInsertionIndicatorScale) {
           coords.push(leftPx - 1, topPx, leftPx + 1, bottomPx)

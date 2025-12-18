@@ -1,14 +1,16 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import {
-  flatbushItemToFeatureData,
-  getFlatbushItemLabel,
-} from '../types'
+import { flatbushItemToFeatureData, getFlatbushItemLabel } from '../types'
 
 import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { FlatbushItem } from '../types'
@@ -166,7 +168,11 @@ const PileupRendering = observer(function (props: {
             const sourceRead = featureIdUnderMouse
               ? featureNames[featureIdUnderMouse]
               : undefined
-            const featureData = flatbushItemToFeatureData(itemUnderMouse, refName, sourceRead)
+            const featureData = flatbushItemToFeatureData(
+              itemUnderMouse,
+              refName,
+              sourceRead,
+            )
             if (isSessionModelWithWidgets(session)) {
               const featureWidget = session.addWidget(
                 'BaseFeatureWidget',

@@ -56,7 +56,7 @@ export async function renderSNPCoverageToCanvas(
   const { features, height, regions, bpPerPx, adapterConfig } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const adapterId = adapterConfig?.adapterId ?? 'unknown'
+  const adapterId = adapterConfig.adapterId ?? 'unknown'
 
   // Convert features to arrays and delegate to makeImageArrays
   const featureArrays = featuresToArrays(features)

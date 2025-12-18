@@ -9,6 +9,19 @@ import { renderPerBaseQuality } from './renderPerBaseQuality'
 import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 
+function collectResults(
+  ret: { coords: number[]; items: FlatbushItem[] },
+  coords: number[],
+  items: FlatbushItem[],
+) {
+  for (let i = 0, l = ret.coords.length; i < l; i++) {
+    coords.push(ret.coords[i]!)
+  }
+  for (let i = 0, l = ret.items.length; i < l; i++) {
+    items.push(ret.items[i]!)
+  }
+}
+
 export function renderAlignment({
   ctx,
   feat,
@@ -88,32 +101,27 @@ export function renderAlignment({
     }
 
     case 'modifications': {
-      const ret = renderModifications({
-        ctx,
-        feat,
-        region,
-        bpPerPx,
-        renderArgs,
-        cigarOps,
-      })
-      for (let i = 0, l = ret.coords.length; i < l; i++) {
-        coords.push(ret.coords[i]!)
-      }
-      for (let i = 0, l = ret.items.length; i < l; i++) {
-        items.push(ret.items[i]!)
-      }
+      collectResults(
+        renderModifications({
+          ctx,
+          feat,
+          region,
+          bpPerPx,
+          renderArgs,
+          cigarOps,
+        }),
+        coords,
+        items,
+      )
       break
     }
 
     case 'methylation': {
-      renderMethylation({
-        ctx,
-        feat,
-        region,
-        bpPerPx,
-        renderArgs,
-        cigarOps,
-      })
+      collectResults(
+        renderMethylation({ ctx, feat, region, bpPerPx, renderArgs, cigarOps }),
+        coords,
+        items,
+      )
       break
     }
   }

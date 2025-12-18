@@ -19,7 +19,13 @@ export type FlatbushItem =
   | { type: 'deletion'; length: number; start: number }
   | { type: 'softclip'; length: number; start: number }
   | { type: 'hardclip'; length: number; start: number }
-  | { type: 'modification'; info: string; modType: string; probability: number; start: number }
+  | {
+      type: 'modification'
+      info: string
+      modType: string
+      probability: number
+      start: number
+    }
 
 const LARGE_INSERTION_THRESHOLD = 10
 
