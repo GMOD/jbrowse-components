@@ -1,10 +1,18 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+  toLocale,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import {
+  clickMapItemToFeatureData,
   formatInterbaseStats,
   formatModificationStats,
   formatSNPStats,
@@ -14,20 +22,25 @@ import {
 import type { ClickMapItem } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-function getItemLabel(item: ClickMapItem | undefined) {
+function getItemLabel(item: ClickMapItem | undefined, refName?: string) {
   if (!item) {
     return undefined
   }
+  let label: string
   if (item.type === 'snp') {
-    return formatSNPStats(item)
+    label = formatSNPStats(item)
+  } else if (item.type === 'modification') {
+    label = formatModificationStats(item)
+  } else {
+    const { type, count, total, avgLength, minLength, maxLength, topSequence } =
+      item
+    label = `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total, type, { avgLength, minLength, maxLength, topSequence })}`
   }
-  if (item.type === 'modification') {
-    return formatModificationStats(item)
-  }
-  const { type, count, total, avgLength, minLength, maxLength, topSequence } =
-    item
-  return `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total, type, { avgLength, minLength, maxLength, topSequence })}`
+  const pos = item.start + 1
+  const location = refName ? `${refName}:${toLocale(pos)}` : `${pos}`
+  return `${label}\nPosition: ${location}`
 }
 
 const SNPCoverageRendering = observer(function (props: {
@@ -37,6 +50,7 @@ const SNPCoverageRendering = observer(function (props: {
   width: number
   height: number
   blockKey: string
+  displayModel?: BaseLinearDisplayModel
   clickMap?: {
     flatbush: ArrayBuffer
     items: ClickMapItem[]
@@ -48,7 +62,6 @@ const SNPCoverageRendering = observer(function (props: {
     extra?: string,
   ) => void
   onFeatureClick?: (event: React.MouseEvent, featureId?: string) => void
-  onIndicatorClick?: (event: React.MouseEvent, item: ClickMapItem) => void
 }) {
   const {
     regions,
@@ -57,10 +70,10 @@ const SNPCoverageRendering = observer(function (props: {
     width,
     height,
     clickMap,
+    displayModel,
     onMouseLeave,
     onMouseMove,
     onFeatureClick,
-    onIndicatorClick,
   } = props
   const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
@@ -126,7 +139,7 @@ const SNPCoverageRendering = observer(function (props: {
       data-testid="snpcoverage-rendering-test"
       onMouseMove={e => {
         const item = getInterbaseItemUnderMouse(e.clientX, e.clientY)
-        const label = getItemLabel(item)
+        const label = getItemLabel(item, region.refName)
         setIsOverIndicator(!!item)
         if (label) {
           onMouseMove?.(e, undefined, label)
@@ -136,8 +149,22 @@ const SNPCoverageRendering = observer(function (props: {
       }}
       onClick={e => {
         const item = getInterbaseItemUnderMouse(e.clientX, e.clientY)
-        if (item && onIndicatorClick) {
-          onIndicatorClick(e, item)
+        if (item && displayModel) {
+          const session = getSession(displayModel)
+          const view = getContainingView(displayModel)
+          const featureData = clickMapItemToFeatureData(item, region.refName)
+          if (isSessionModelWithWidgets(session)) {
+            const featureWidget = session.addWidget(
+              'BaseFeatureWidget',
+              'baseFeature',
+              {
+                featureData,
+                view,
+                track: getContainingTrack(displayModel),
+              },
+            )
+            session.showWidget(featureWidget)
+          }
         } else {
           onFeatureClick?.(e, getFeatureUnderMouse(e.clientX)?.id())
         }

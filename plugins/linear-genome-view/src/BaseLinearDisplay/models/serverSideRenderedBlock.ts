@@ -108,6 +108,13 @@ const blockState = types
      * Whether a render is currently in flight (but data is not ready yet)
      */
     isRenderingPending: true,
+    /**
+     * #volatile
+     * Cached reference to containing display for performance.
+     * Avoids expensive getContainingDisplay() tree traversal in statusMessage
+     * getter which is called frequently during rendering.
+     */
+    cachedDisplay: undefined as AbstractDisplayModel | undefined,
   }))
   .actions(self => {
     function stopCurrentToken() {
@@ -245,7 +252,7 @@ const blockState = types
       return self.isRenderingPending
         ? self.blockStatusMessage ||
             // @ts-expect-error
-            getContainingDisplay(self).statusMessage ||
+            self.cachedDisplay?.statusMessage ||
             'Loading'
         : undefined
     },
@@ -253,6 +260,7 @@ const blockState = types
   .actions(self => ({
     afterAttach() {
       const display = getContainingDisplay(self)
+      self.cachedDisplay = display
       setTimeout(() => {
         if (isAlive(self)) {
           makeAbortableReaction(

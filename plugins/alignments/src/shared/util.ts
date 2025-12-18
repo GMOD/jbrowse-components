@@ -1,7 +1,9 @@
 import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import type { ChainData } from './types'
+import { MISMATCH_TYPE } from './forEachMismatchTypes'
+
+import type { ChainData, FeatureWithMismatchIterator } from './types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
@@ -237,4 +239,21 @@ export function convertTagsToPlainArrays(
     result[key] = isTypedArray(value) ? [...value] : value
   }
   return result
+}
+
+/**
+ * Build a map of reference positions to mismatch bases for a feature.
+ * Used to detect when a modification occurs at a mismatch position.
+ */
+export function buildMismatchMap(feature: Feature, featureStart: number) {
+  const mismatchMap = new Map<number, string>()
+  if ('forEachMismatch' in feature) {
+    const feat = feature as FeatureWithMismatchIterator
+    feat.forEachMismatch((type, mismatchStart, _len, base) => {
+      if (type === MISMATCH_TYPE) {
+        mismatchMap.set(featureStart + mismatchStart, base)
+      }
+    })
+  }
+  return mismatchMap
 }

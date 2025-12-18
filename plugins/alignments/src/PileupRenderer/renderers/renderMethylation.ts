@@ -1,6 +1,7 @@
 import { colord } from '@jbrowse/core/util/colord'
 
 import { getMethBins } from '../../ModificationParser/getMethBins'
+import { buildMismatchMap } from '../../shared/util'
 
 import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
@@ -47,6 +48,7 @@ export function renderMethylation({
   const fend = feature.get('end')
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
     getMethBins(feature, cigarOps)
+  const mismatchMap = buildMismatchMap(feature, fstart)
 
   function getColAndProb(
     k: number,
@@ -101,12 +103,14 @@ export function renderMethylation({
     if (rightPx - leftPx >= 0.2) {
       const prob = info?.prob ?? 0
       const modType = info?.type ?? 'unmethylated'
+      const mismatchBase = mismatchMap.get(start)
       items.push({
         type: 'modification',
         info: `${label} ${modType} (${(prob * 100).toFixed(1)}%)`,
         modType: 'methylation',
         probability: prob,
         start,
+        mismatch: mismatchBase,
       })
       coords.push(leftPx, topPx, rightPx, bottomPx)
     }

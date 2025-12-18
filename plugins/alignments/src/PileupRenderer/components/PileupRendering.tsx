@@ -1,11 +1,13 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingTrack,
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
+  toLocale,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
@@ -16,6 +18,40 @@ import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
+
+function PileupTooltip({
+  item,
+  featureName,
+  refName,
+  mousePosition,
+}: {
+  item?: FlatbushItem
+  featureName?: string
+  refName: string
+  mousePosition: { x: number; y: number }
+}) {
+  return (
+    <BaseTooltip
+      clientPoint={{ x: mousePosition.x, y: mousePosition.y + 20 }}
+      placement="bottom-start"
+    >
+      <div>
+        {item ? (
+          <>
+            <div style={{ whiteSpace: 'pre-line' }}>
+              {getFlatbushItemLabel(item)}
+            </div>
+            <div>
+              Position: {refName}:{toLocale(item.start + 1)}
+            </div>
+          </>
+        ) : featureName ? (
+          <div>{featureName}</div>
+        ) : null}
+      </div>
+    </BaseTooltip>
+  )
+}
 
 const PileupRendering = observer(function (props: {
   blockKey: string
@@ -70,6 +106,8 @@ const PileupRendering = observer(function (props: {
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const [itemUnderMouse, setItemUnderMouse] = useState<FlatbushItem>()
+  const [featureNameUnderMouse, setFeatureNameUnderMouse] = useState<string>()
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>()
   const selectedRect = selectedFeatureId
     ? displayModel.getFeatureByID(blockKey, selectedFeatureId)
     : undefined
@@ -122,7 +160,12 @@ const PileupRendering = observer(function (props: {
         height,
         cursor: isClickable ? 'pointer' : 'default',
       }}
-      onMouseLeave={onMouseLeave}
+      onMouseLeave={event => {
+        setItemUnderMouse(undefined)
+        setFeatureNameUnderMouse(undefined)
+        setMousePosition(undefined)
+        onMouseLeave?.(event)
+      }}
       onMouseDown={(_event: React.MouseEvent) => {
         setMouseIsDown(true)
         setMovedDuringLastMouseDown(false)
@@ -155,10 +198,16 @@ const PileupRendering = observer(function (props: {
           clientBp,
           offsetY,
         )
-        const label =
-          (item ? getFlatbushItemLabel(item) : undefined) ??
-          (featureId ? featureNames[featureId] : undefined)
-        onMouseMove?.(event, featureId, label)
+        const featureName =
+          !item && featureId ? featureNames[featureId] : undefined
+        setFeatureNameUnderMouse(featureName)
+        setMousePosition(
+          item || featureName
+            ? { x: event.clientX, y: event.clientY }
+            : undefined,
+        )
+        // Don't pass label - we handle tooltips ourselves
+        onMouseMove?.(event, featureId)
       }}
       onClick={event => {
         if (!movedDuringLastMouseDown) {
@@ -221,6 +270,14 @@ const PileupRendering = observer(function (props: {
             pointerEvents: 'none',
             ...selected,
           }}
+        />
+      ) : null}
+      {(itemUnderMouse || featureNameUnderMouse) && mousePosition ? (
+        <PileupTooltip
+          item={itemUnderMouse}
+          featureName={featureNameUnderMouse}
+          refName={refName}
+          mousePosition={mousePosition}
         />
       ) : null}
     </div>

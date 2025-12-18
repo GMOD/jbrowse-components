@@ -2,12 +2,7 @@ import { lazy } from 'react'
 
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import {
   cast,
   getEnv,
@@ -19,10 +14,6 @@ import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import {
-  type ClickMapItem,
-  clickMapItemToFeatureData,
-} from '../SNPCoverageRenderer/types'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun } from '../util'
@@ -355,28 +346,7 @@ function stateModelFactory(
         renderingProps() {
           return {
             ...superRenderingProps(),
-            onIndicatorClick(_: unknown, item: ClickMapItem) {
-              const session = getSession(self)
-              const view = getContainingView(self) as LGV
-              const region = view.dynamicBlocks.contentBlocks[0]
-              const featureData = clickMapItemToFeatureData(
-                item,
-                region?.refName,
-              )
-
-              if (isSessionModelWithWidgets(session)) {
-                const featureWidget = session.addWidget(
-                  'BaseFeatureWidget',
-                  'baseFeature',
-                  {
-                    featureData,
-                    view,
-                    track: getContainingTrack(self),
-                  },
-                )
-                session.showWidget(featureWidget)
-              }
-            },
+            displayModel: self,
           }
         },
 

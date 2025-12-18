@@ -25,6 +25,7 @@ export type FlatbushItem =
       modType: string
       probability: number
       start: number
+      mismatch?: string
     }
 
 const LARGE_INSERTION_THRESHOLD = 10
@@ -41,8 +42,10 @@ export function getFlatbushItemLabel(item: FlatbushItem): string {
       return `Soft clip: ${item.length}bp`
     case 'hardclip':
       return `Hard clip: ${item.length}bp`
-    case 'modification':
-      return item.info
+    case 'modification': {
+      const mismatchInfo = item.mismatch ? `\nMismatch: ${item.mismatch}` : ''
+      return item.info + mismatchInfo
+    }
     case 'mismatch':
       return `Mismatch: ${item.base}`
   }
@@ -83,6 +86,7 @@ export function flatbushItemToFeatureData(
         info: item.info,
         modType: item.modType,
         probability: item.probability.toFixed(3),
+        ...(item.mismatch ? { mismatch: item.mismatch } : {}),
       }
     case 'mismatch':
       return {

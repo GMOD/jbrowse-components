@@ -13,14 +13,10 @@ import {
 import { measureTextSmallNumber } from '../util'
 
 import type { MismatchCallback } from '../../shared/forEachMismatchTypes'
-import type { Mismatch } from '../../shared/types'
+import type { FeatureWithMismatchIterator, Mismatch } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
-
-interface FeatureWithMismatchIterator {
-  forEachMismatch(callback: MismatchCallback): void
-}
 
 const alphaColorCache = new Map<string, string>()
 function applyQualAlpha(baseColor: string, qual: number) {
