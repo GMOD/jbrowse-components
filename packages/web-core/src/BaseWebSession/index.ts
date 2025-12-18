@@ -9,7 +9,14 @@ import {
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import { addDisposer, cast, getParent, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getParent,
+  getSnapshot,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import {
   DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
@@ -415,7 +422,9 @@ export function BaseWebSession({
             priority: 999,
             disabled: isRefSeq,
             onClick: () => {
-              const snap = structuredClone(config) as {
+              const snap = structuredClone(
+                isStateTreeNode(config) ? getSnapshot(config) : config,
+              ) as {
                 [key: string]: unknown
                 displays?: Display[]
               }

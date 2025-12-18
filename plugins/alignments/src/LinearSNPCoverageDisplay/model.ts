@@ -33,9 +33,6 @@ import type {
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
-const InterbaseInfoDialog = lazy(
-  () => import('./components/InterbaseInfoDialog'),
-)
 const FilterArcsByScoreDialog = lazy(
   () => import('./components/FilterArcsByScoreDialog'),
 )
@@ -349,24 +346,7 @@ function stateModelFactory(
         renderingProps() {
           return {
             ...superRenderingProps(),
-            onIndicatorClick(
-              _: unknown,
-              item: {
-                type: 'insertion' | 'softclip' | 'hardclip'
-                base: string
-                count: number
-                total: number
-                avgLength?: number
-                minLength?: number
-                maxLength?: number
-                topSequence?: string
-              },
-            ) {
-              getSession(self).queueDialog(handleClose => [
-                InterbaseInfoDialog,
-                { item, handleClose },
-              ])
-            },
+            displayModel: self,
           }
         },
 

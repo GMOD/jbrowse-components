@@ -27,11 +27,18 @@ import {
 } from './types'
 
 import type { ParsedLocString } from './locString'
+import type {
+  AbstractDisplayModel,
+  AbstractTrackModel,
+  AbstractViewModel,
+  AssemblyManager,
+  Region,
+  TypeTestedByPredicate,
+} from './types'
 import type PluginManager from '../PluginManager'
 import type { BaseBlock } from './blockTypes'
 import type { Feature } from './simpleFeature'
 import type { StopToken } from './stopToken'
-import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
 import type { Region as MUIRegion } from './types/mst'
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
 import type {
@@ -50,6 +57,17 @@ export * from './coarseStripHTML'
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
 export * from './rpc'
+
+// WeakMap caches for containing model lookups to avoid repeated tree traversal
+const containingDisplayCache = new WeakMap<
+  IAnyStateTreeNode,
+  AbstractDisplayModel
+>()
+const containingTrackCache = new WeakMap<
+  IAnyStateTreeNode,
+  AbstractTrackModel
+>()
+const containingViewCache = new WeakMap<IAnyStateTreeNode, AbstractViewModel>()
 
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -257,23 +275,39 @@ export function getSession(node: IAnyStateTreeNode) {
 
 /**
  * get the state model of the view in the state tree that contains the given
- * node
+ * node. Results are cached for performance.
  */
-export function getContainingView(node: IAnyStateTreeNode) {
+export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
+  const cached = containingViewCache.get(node)
+  // Validate cached result is still alive (handles re-parenting edge cases)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isViewModel)
+    const result = findParentThatIs(node, isViewModel)
+    containingViewCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no containing view found')
   }
 }
 
 /**
- * get the state model of the view in the state tree that contains the given
- * node
+ * get the state model of the track in the state tree that contains the given
+ * node. Results are cached for performance.
  */
-export function getContainingTrack(node: IAnyStateTreeNode) {
+export function getContainingTrack(
+  node: IAnyStateTreeNode,
+): AbstractTrackModel {
+  const cached = containingTrackCache.get(node)
+  // Validate cached result is still alive (handles re-parenting edge cases)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isTrackModel)
+    const result = findParentThatIs(node, isTrackModel)
+    containingTrackCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no containing track found')
   }
@@ -281,11 +315,20 @@ export function getContainingTrack(node: IAnyStateTreeNode) {
 
 /**
  * get the state model of the display in the state tree that contains the given
- * node
+ * node. Results are cached for performance.
  */
-export function getContainingDisplay(node: IAnyStateTreeNode) {
+export function getContainingDisplay(
+  node: IAnyStateTreeNode,
+): AbstractDisplayModel {
+  const cached = containingDisplayCache.get(node)
+  // Validate cached result is still alive (handles re-parenting edge cases)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isDisplayModel)
+    const result = findParentThatIs(node, isDisplayModel)
+    containingDisplayCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no containing display found')
   }

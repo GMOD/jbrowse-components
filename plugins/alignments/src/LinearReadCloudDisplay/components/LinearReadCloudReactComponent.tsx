@@ -5,9 +5,12 @@ import { assembleLocString, getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
+import {
+  type FlatbushItem,
+  getFlatbushItemLabel,
+} from '../../PileupRenderer/types'
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
-import type { FlatbushItem } from '../../PileupRenderer/types'
 import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -52,7 +55,6 @@ function MismatchTooltip({
   mismatchData: FlatbushItem
   mousePosition: { x: number; y: number }
 }) {
-  const { type, seq, modType, probability } = mismatchData
   return (
     <BaseTooltip
       clientPoint={{
@@ -62,14 +64,8 @@ function MismatchTooltip({
       placement="bottom-start"
     >
       <div>
-        <div>
-          <strong>{type}</strong>
-        </div>
-        {seq ? <div>Sequence: {seq}</div> : null}
-        {modType ? <div>Modification: {modType}</div> : null}
-        {probability !== undefined ? (
-          <div>Probability: {(probability * 100).toFixed(1)}%</div>
-        ) : null}
+        <div>{getFlatbushItemLabel(mismatchData)}</div>
+        <div>Position: {mismatchData.start + 1}</div>
       </div>
     </BaseTooltip>
   )

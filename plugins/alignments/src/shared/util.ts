@@ -1,7 +1,9 @@
 import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import type { ChainData } from './types'
+import { MISMATCH_TYPE } from './forEachMismatchTypes'
+
+import type { ChainData, FeatureWithMismatchIterator } from './types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
@@ -209,4 +211,49 @@ export function measureTextSmallNumber(n: number, fontSize?: number) {
     return width
   }
   return measureText(String(n), fontSize)
+}
+
+function isTypedArray(
+  val: unknown,
+): val is
+  | Int8Array
+  | Uint8Array
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Float32Array
+  | Float64Array {
+  return ArrayBuffer.isView(val) && !(val instanceof DataView)
+}
+
+/**
+ * Convert TypedArrays in tags object to plain number arrays.
+ * This is needed because MobX State Tree cannot freeze TypedArray views.
+ */
+export function convertTagsToPlainArrays(
+  tags: Record<string, unknown>,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(tags)) {
+    result[key] = isTypedArray(value) ? [...value] : value
+  }
+  return result
+}
+
+/**
+ * Build a map of reference positions to mismatch bases for a feature.
+ * Used to detect when a modification occurs at a mismatch position.
+ */
+export function buildMismatchMap(feature: Feature, featureStart: number) {
+  const mismatchMap = new Map<number, string>()
+  if ('forEachMismatch' in feature) {
+    const feat = feature as FeatureWithMismatchIterator
+    feat.forEachMismatch((type, mismatchStart, _len, base) => {
+      if (type === MISMATCH_TYPE) {
+        mismatchMap.set(featureStart + mismatchStart, base)
+      }
+    })
+  }
+  return mismatchMap
 }

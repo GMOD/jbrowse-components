@@ -12,15 +12,10 @@ import {
 } from '../../shared/forEachMismatchTypes'
 import { measureTextSmallNumber } from '../util'
 
-import type { MismatchCallback } from '../../shared/forEachMismatchTypes'
-import type { Mismatch } from '../../shared/types'
+import type { FeatureWithMismatchIterator, Mismatch } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
-
-interface FeatureWithMismatchIterator {
-  forEachMismatch(callback: MismatchCallback): void
-}
 
 const alphaColorCache = new Map<string, string>()
 function applyQualAlpha(baseColor: string, qual: number) {
@@ -157,7 +152,8 @@ export function renderMismatchesCallback({
       if (rightPx - leftPx >= 0.2) {
         items.push({
           type: 'mismatch',
-          seq: base,
+          base,
+          start: mismatchStart,
         })
         coords.push(leftPx, topPx, rightPx, bottomPx)
       }
@@ -208,7 +204,8 @@ export function renderMismatchesCallback({
         if (bpPerPx < 3) {
           items.push({
             type: 'deletion',
-            seq: `${length}`,
+            length,
+            start: mismatchStart,
           })
           coords.push(leftPx, topPx, rightPx, bottomPx)
         }
@@ -304,13 +301,18 @@ export function renderMismatchesCallback({
           if (bpPerPx < 3) {
             items.push({
               type: 'insertion',
-              seq: base || 'unknown',
+              sequence: base || 'unknown',
+              start: mstart,
             })
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, bottomPx)
           }
         }
       } else {
-        items.push({ type: 'insertion', seq: base || 'unknown' })
+        items.push({
+          type: 'insertion',
+          sequence: base || 'unknown',
+          start: mstart,
+        })
         const txt = `${len}`
         if (bpPerPx > largeInsertionIndicatorScale) {
           coords.push(leftPx - 1, topPx, leftPx + 1, bottomPx)
@@ -378,7 +380,7 @@ export function renderMismatchesCallback({
         }
         ctx.fillRect(pos, topPx, clipW, heightPx)
       }
-      items.push({ type: typeName, seq: base })
+      items.push({ type: typeName, length: +base, start: mstart })
       coords.push(pos - clipW, topPx, pos + clipW * 2, bottomPx)
       if (invBpPerPx >= charWidth && canRenderText) {
         const l = pos - clipW
