@@ -1,10 +1,6 @@
-import {
-  featureSpanPx,
-  forEachWithStopTokenCheck,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { featureSpanPx, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { checkStopToken, checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
 import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
@@ -58,8 +54,10 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
     stopToken,
   } = drawCtx
   const { items, coords } = itemData
+  const lastCheck = { time: Date.now() }
+  let idx = 0
 
-  forEachWithStopTokenCheck(mafs, stopToken, ({ feature }) => {
+  for (const { feature } of mafs) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const featureId = feature.id()
     const bpLen = feature.get('end') - feature.get('start')
@@ -92,7 +90,8 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
         }
       }
     }
-  })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
 }
 
 function drawAlleleCountMode(
@@ -117,8 +116,10 @@ function drawAlleleCountMode(
     stopToken,
   } = drawCtx
   const { items, coords } = itemData
+  const lastCheck = { time: Date.now() }
+  let idx = 0
 
-  forEachWithStopTokenCheck(mafs, stopToken, ({ mostFrequentAlt, feature }) => {
+  for (const { mostFrequentAlt, feature } of mafs) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const featureId = feature.id()
     const bpLen = feature.get('end') - feature.get('start')
@@ -162,7 +163,8 @@ function drawAlleleCountMode(
         }
       }
     }
-  })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
 }
 
 export async function makeImageData(

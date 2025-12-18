@@ -1,4 +1,4 @@
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { featurizeSA } from '../MismatchParser'
 import {
@@ -264,7 +264,9 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     }
   }
 
-  forEachWithStopTokenCheck(chains, stopToken, chain => {
+  const lastCheck = { time: Date.now() }
+  let idx = 0
+  for (const chain of chains) {
     if (chain.length === 1 && drawLongRange) {
       const f = chain[0]!
       const isMateUnmapped = f.get('flags') & SAM_FLAG_MATE_UNMAPPED
@@ -277,5 +279,6 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     } else {
       drawMultiFeatureChain(chain)
     }
-  })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
 }

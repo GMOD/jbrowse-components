@@ -1,4 +1,4 @@
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import {
   chainIsPairedEnd,
@@ -69,17 +69,21 @@ export function drawPairChains({
 
   const allCoords: number[] = []
   const allItems: FlatbushItem[] = []
+  const lastCheck = { time: Date.now() }
+  let idx = 0
 
-  forEachWithStopTokenCheck(computedChains, stopToken, computedChain => {
+  for (const computedChain of computedChains) {
     const { id, chain } = computedChain
 
     if (!chainIsPairedEnd(chain)) {
-      return
+      checkStopToken2(stopToken, idx++, lastCheck)
+      continue
     }
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
-      return
+      checkStopToken2(stopToken, idx++, lastCheck)
+      continue
     }
 
     const nonSupplementary = collectNonSupplementary(chain)
@@ -190,7 +194,8 @@ export function drawPairChains({
         allItems,
       })
     }
-  })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
 
   return { coords: allCoords, items: allItems }
 }

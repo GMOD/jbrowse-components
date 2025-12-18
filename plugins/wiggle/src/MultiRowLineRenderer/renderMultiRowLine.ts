@@ -1,10 +1,6 @@
-import {
-  forEachWithStopTokenCheck,
-  groupBy,
-  renderToAbstractCanvas,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { groupBy, renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawLine } from '../drawLine'
@@ -38,7 +34,9 @@ export async function renderMultiRowLine(
         const groups = groupBy(features.values(), f => f.get('source'))
         let feats: Feature[] = []
         ctx.save()
-        forEachWithStopTokenCheck(sources, stopToken, source => {
+        const lastCheck = { time: Date.now() }
+        let idx = 0
+        for (const source of sources) {
           const { reducedFeatures } = drawLine(ctx, {
             ...renderProps,
             features: groups[source.name] || [],
@@ -53,7 +51,8 @@ export async function renderMultiRowLine(
           ctx.stroke()
           ctx.translate(0, rowHeight)
           feats = feats.concat(reducedFeatures)
-        })
+          checkStopToken2(stopToken, idx++, lastCheck)
+        }
         ctx.restore()
         return { reducedFeatures: feats }
       }),

@@ -248,20 +248,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Draw inter-region vertical lines',
-              type: 'checkbox',
-              checked: self.drawInter,
-              onClick: () => {
-                self.setDrawInter(!self.drawInter)
-              },
-            },
-            {
-              label: 'Draw long range connections',
-              type: 'checkbox',
-              checked: self.drawLongRange,
-              onClick: () => {
-                self.setDrawLongRange(!self.drawLongRange)
-              },
+              label: 'Show...',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label:
+                    'Inter-chromosomal connections (purple vertical lines)',
+                  type: 'checkbox',
+                  checked: self.drawInter,
+                  onClick: () => {
+                    self.setDrawInter(!self.drawInter)
+                  },
+                },
+                {
+                  label: 'Long range connections (red vertical lines)',
+                  type: 'checkbox',
+                  checked: self.drawLongRange,
+                  onClick: () => {
+                    self.setDrawLongRange(!self.drawLongRange)
+                  },
+                },
+              ],
             },
             getColorSchemeMenuItem(self),
           ]
