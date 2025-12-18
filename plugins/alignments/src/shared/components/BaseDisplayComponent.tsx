@@ -19,6 +19,8 @@ interface BaseDisplayModel {
   loading: boolean
   lastDrawnOffsetPx?: number
   statusMessage?: string
+  showLegend?: boolean
+  legendItems?: () => { color?: string; label: string }[]
 }
 
 const useStyles = makeStyles()({
@@ -61,6 +63,60 @@ const BaseDisplayComponent = observer(function ({
   )
 })
 
+// Inline FloatingLegend component pinned to right side of view
+function FloatingLegend({
+  items,
+}: {
+  items: { color?: string; label: string }[]
+}) {
+  if (items.length === 0) {
+    return null
+  }
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        right: 10,
+        top: 10,
+        background: 'rgba(255,255,255,0.4)',
+        padding: 3,
+        fontSize: 10,
+        pointerEvents: 'none',
+        zIndex: 100,
+        maxWidth: 200,
+      }}
+    >
+      {items.map((item, idx) => (
+        <div
+          key={`${item.label}-${idx}`}
+          style={{ display: 'flex', alignItems: 'center', marginBottom: 1 }}
+        >
+          {item.color ? (
+            <div
+              style={{
+                width: 12,
+                height: 12,
+                marginRight: 6,
+                flexShrink: 0,
+                backgroundColor: item.color,
+              }}
+            />
+          ) : null}
+          <span
+            style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {item.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 const DataDisplay = observer(function ({
   model,
   children,
@@ -68,10 +124,11 @@ const DataDisplay = observer(function ({
   model: BaseDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading } = model
+  const { drawn, loading, showLegend, legendItems } = model
   const view = getContainingView(model) as LinearGenomeViewModel
   const calculatedLeft = (model.lastDrawnOffsetPx || 0) - view.offsetPx
   const styleLeft = view.offsetPx < 0 ? 0 : calculatedLeft
+  const items = legendItems?.() ?? []
 
   return (
     // this data-testid is located here because changing props on the canvas
@@ -85,6 +142,7 @@ const DataDisplay = observer(function ({
       >
         {children}
       </div>
+      {showLegend && items.length > 0 ? <FloatingLegend items={items} /> : null}
       {calculatedLeft !== 0 || loading ? <LoadingBar model={model} /> : null}
     </div>
   )

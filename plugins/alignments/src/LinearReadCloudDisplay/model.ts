@@ -14,14 +14,17 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   type ExportSvgDisplayOptions,
   FeatureDensityMixin,
+  type LegendItem,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
 import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { getReadCloudLegendItems } from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -81,6 +84,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * Maximum height for the layout (prevents infinite stacking)
          */
         trackMaxHeight: types.maybe(types.number),
+
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -212,6 +220,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setRenderingStopToken(token?: StopToken) {
         self.renderingStopToken = token
       },
+
+      /**
+       * #action
+       */
+      setShowLegend(s: boolean) {
+        self.showLegend = s
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Returns legend items based on current colorBy setting
+       */
+      legendItems(): LegendItem[] {
+        return getReadCloudLegendItems(self.colorBy, self.visibleModifications)
+      },
     }))
     .views(self => {
       const {
@@ -325,6 +349,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             getFilterByMenuItem(self),
             getColorSchemeMenuItem(self),
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
+            },
           ]
         },
 

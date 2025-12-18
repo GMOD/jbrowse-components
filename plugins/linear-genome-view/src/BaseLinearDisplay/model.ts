@@ -30,11 +30,12 @@ import BlockState from './models/serverSideRenderedBlock'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type { ExportSvgOptions } from '../LinearGenomeView/types'
+import type { LegendItem } from './components/FloatingLegend'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ThemeOptions } from '@mui/material'
+import type { Theme, ThemeOptions } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
@@ -128,6 +129,10 @@ function stateModelFactory() {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -182,6 +187,15 @@ function stateModelFactory() {
        */
       get TooltipComponent(): AnyReactComponentType {
         return Tooltip as AnyReactComponentType
+      },
+
+      /**
+       * #method
+       * Override in subclasses to provide legend items for the display
+       * @param _theme - MUI theme for accessing palette colors
+       */
+      legendItems(_theme?: Theme): LegendItem[] {
+        return []
       },
 
       /**
@@ -367,6 +381,12 @@ function stateModelFactory() {
        */
       setMouseoverExtraInformation(extra?: string) {
         self.mouseoverExtraInformation = extra
+      },
+      /**
+       * #action
+       */
+      setShowLegend(s: boolean) {
+        self.showLegend = s
       },
     }))
 
@@ -588,3 +608,5 @@ export const BaseLinearDisplay = stateModelFactory()
 
 export type BaseLinearDisplayStateModel = typeof BaseLinearDisplay
 export type BaseLinearDisplayModel = Instance<BaseLinearDisplayStateModel>
+
+export { type LegendItem } from './components/FloatingLegend'

@@ -29,13 +29,15 @@ const Arcs = observer(function ({
 
   // note: the position absolute below avoids scrollbar from appearing on track
   return (
-    <canvas
-      data-testid="arc-canvas"
-      ref={cb}
-      style={{ width, height, position: 'absolute' }}
-      width={width * 2}
-      height={height * 2}
-    />
+    <div style={{ position: 'relative', width, height }}>
+      <canvas
+        data-testid="arc-canvas"
+        ref={cb}
+        style={{ width, height, position: 'absolute' }}
+        width={width * 2}
+        height={height * 2}
+      />
+    </div>
   )
 })
 

@@ -5,6 +5,7 @@ export type {
   BaseLinearDisplayModel,
   BaseLinearDisplayStateModel,
   ExportSvgDisplayOptions,
+  LegendItem,
 } from './model'
 export {
   BlockMsg,
