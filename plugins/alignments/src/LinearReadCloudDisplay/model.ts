@@ -9,7 +9,6 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   type ExportSvgDisplayOptions,
@@ -21,6 +20,7 @@ import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeat
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
+import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import {
   getColorSchemeMenuItem,
@@ -29,7 +29,6 @@ import {
 
 import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SetFeatureHeightDialog = lazy(
@@ -54,6 +53,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       LinearReadDisplayBaseMixin(),
       LinearReadDisplayWithLayoutMixin(),
       LinearReadDisplayWithPairFiltersMixin(),
+      RPCRenderingMixin(),
       SharedModificationsMixin(),
       types.model({
         /**
@@ -91,35 +91,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       layoutHeight: 0,
       /**
        * #volatile
-       * ImageData returned from RPC rendering
-       */
-      renderingImageData: undefined as ImageBitmap | undefined,
-      /**
-       * #volatile
        * Chain ID of the currently selected feature for persistent highlighting
        */
       selectedFeatureId: undefined as string | undefined,
-      /**
-       * #volatile
-       * Stop token for the current rendering operation
-       */
-      renderingStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       get dataTestId() {
         return self.drawCloud ? 'cloud-canvas' : 'stack-canvas'
-      },
-      /**
-       * #getter
-       */
-      get colorBy() {
-        return self.colorBySetting ?? getConf(self, 'colorBy')
-      },
-      /**
-       * #getter
-       */
-      get filterBy() {
-        return self.filterBySetting ?? getConf(self, 'filterBy')
       },
       /**
        * #getter
@@ -137,12 +115,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      reload() {
-        self.error = undefined
-      },
       /**
        * #action
        * Set whether to remove spacing between features
@@ -192,25 +164,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
-       * Set the rendering imageData from RPC
-       */
-      setRenderingImageData(imageData: ImageBitmap | undefined) {
-        self.renderingImageData = imageData
-      },
-      /**
-       * #action
        * Set the ID of the selected feature for persistent highlighting
        */
       setSelectedFeatureId(id: string | undefined) {
         self.selectedFeatureId = id
-      },
-
-      /**
-       * #action
-       * Set the rendering stop token
-       */
-      setRenderingStopToken(token?: StopToken) {
-        self.renderingStopToken = token
       },
     }))
     .views(self => {
@@ -220,16 +177,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       } = self
 
       return {
-        // we don't use a server side renderer, so this fills in minimal
-        // info so as not to crash
+        /**
+         * #method
+         */
         renderProps() {
           return {
             ...superRenderProps(),
-            // We use RPC rendering, so we're always ready (data is fetched in RPC)
             notReady: false,
           }
         },
-
         /**
          * #method
          */
@@ -339,13 +295,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
-    .actions(self => ({
-      beforeDestroy() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-        }
-      },
-    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

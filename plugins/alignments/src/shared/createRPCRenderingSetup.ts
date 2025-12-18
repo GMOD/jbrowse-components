@@ -9,6 +9,8 @@ import { untracked } from 'mobx'
 
 import { createAutorun } from '../util'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -19,9 +21,9 @@ export interface RPCRenderableModel {
   featureDensityStatsReadyAndRegionNotTooLarge: boolean
   effectiveRpcDriverName: string
   adapterConfig: unknown
-  configuration: unknown
-  renderingStopToken?: string
-  setRenderingStopToken: (token?: string) => void
+  configuration: AnyConfigurationModel
+  renderingStopToken?: StopToken
+  setRenderingStopToken: (token?: StopToken) => void
   setLoading: (loading: boolean) => void
   setError: (error: unknown) => void
   setRenderingImageData: (imageData: ImageBitmap | undefined) => void
@@ -32,7 +34,10 @@ export interface RPCRenderableModel {
   setStatusMessage?: (msg: string) => void
 }
 
-export interface RPCRenderSetupParams<T extends RPCRenderableModel> {
+export interface RPCRenderSetupParams<
+  T extends RPCRenderableModel,
+  R = Record<string, unknown>,
+> {
   self: T
   rpcMethodName: string
   getRPCParams: (params: {
@@ -41,19 +46,13 @@ export interface RPCRenderSetupParams<T extends RPCRenderableModel> {
     sequenceAdapter: unknown
     stopToken: StopToken
   }) => Record<string, unknown>
-  onResult: (result: {
-    imageData?: ImageBitmap
-    offsetPx?: number
-    [key: string]: unknown
-  }) => void
+  onResult: (result: R) => void
 }
 
-export function createRPCRenderFunction<T extends RPCRenderableModel>({
-  self,
-  rpcMethodName,
-  getRPCParams,
-  onResult,
-}: RPCRenderSetupParams<T>) {
+export function createRPCRenderFunction<
+  T extends RPCRenderableModel,
+  R = Record<string, unknown>,
+>({ self, rpcMethodName, getRPCParams, onResult }: RPCRenderSetupParams<T, R>) {
   return async () => {
     const view = getContainingView(self) as LGV
 
@@ -112,7 +111,7 @@ export function createRPCRenderFunction<T extends RPCRenderableModel>({
         },
         stopToken,
         ...getRPCParams({ view, session, sequenceAdapter, stopToken }),
-      })) as { imageData?: ImageBitmap; offsetPx?: number }
+      })) as R & { imageData?: ImageBitmap; offsetPx?: number }
 
       if (result.imageData) {
         self.setRenderingImageData(result.imageData)

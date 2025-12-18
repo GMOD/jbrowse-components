@@ -1,8 +1,7 @@
 import type React from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
@@ -11,13 +10,13 @@ import {
 
 import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
+import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
 } from '../shared/menuItems'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
@@ -30,6 +29,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
  * - [TrackHeightMixin](../trackheightmixin)
  * - [FeatureDensityMixin](../featuredensitymixin)
  * - [LinearReadArcsDisplaySettingsMixin](../linearreadarcdisplaysettingsmixin)
+ * - [RPCRenderingMixin](../rpcrenderingmixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -40,6 +40,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       FeatureDensityMixin(),
       LinearReadDisplayBaseMixin(),
       LinearReadArcsDisplaySettingsMixin(),
+      RPCRenderingMixin(),
       types.model({
         /**
          * #property
@@ -51,55 +52,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       * ImageData returned from RPC rendering
-       */
-      renderingImageData: undefined as ImageBitmap | undefined,
-      /**
-       * #volatile
-       * Stop token for the current rendering operation
-       */
-      renderingStopToken: undefined as StopToken | undefined,
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get colorBy() {
-        return self.colorBySetting ?? getConf(self, 'colorBy')
-      },
-      /**
-       * #getter
-       */
-      get filterBy() {
-        return self.filterBySetting ?? getConf(self, 'filterBy')
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      reload() {
-        self.error = undefined
-      },
-      /**
-       * #action
-       * Set the rendering imageData from RPC
-       */
-      setRenderingImageData(imageData: ImageBitmap | undefined) {
-        self.renderingImageData = imageData
-      },
-
-      /**
-       * #action
-       * Set the rendering stop token
-       */
-      setRenderingStopToken(token?: StopToken) {
-        self.renderingStopToken = token
-      },
-    }))
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
@@ -108,16 +60,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       return {
         /**
          * #method
-         * only used to tell system it's ready for export
          */
         renderProps() {
           return {
             ...superRenderProps(),
-            // We use RPC rendering, so we're always ready (data is fetched in RPC)
             notReady: false,
           }
         },
-
         /**
          * #method
          */
@@ -215,13 +164,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
-    .actions(self => ({
-      beforeDestroy() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-        }
-      },
-    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

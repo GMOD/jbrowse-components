@@ -364,13 +364,16 @@ const Cloud = observer(function ({
         const refName = regions[0]?.refName || ''
         const { feature } = getFeatureUnderMouse(event)
         const sourceRead = feature?.data?.name
-        const featureData = flatbushItemToFeatureData(mismatch, refName, sourceRead)
         if (isSessionModelWithWidgets(session)) {
           const featureWidget = session.addWidget(
             'BaseFeatureWidget',
             'baseFeature',
             {
-              featureData,
+              featureData: flatbushItemToFeatureData(
+                mismatch,
+                refName,
+                sourceRead,
+              ),
               view,
               track: getContainingTrack(model),
             },
