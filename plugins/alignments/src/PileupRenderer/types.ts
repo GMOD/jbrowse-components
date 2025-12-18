@@ -13,20 +13,13 @@ export interface LayoutFeature {
   feature: Feature
 }
 
-export type FlatbushItemType =
-  | 'mismatch'
-  | 'insertion'
-  | 'deletion'
-  | 'softclip'
-  | 'hardclip'
-  | 'modification'
-
-export interface FlatbushItem {
-  type: FlatbushItemType
-  seq: string
-  modType?: string
-  probability?: number
-}
+export type FlatbushItem =
+  | { type: 'mismatch'; base: string; start: number }
+  | { type: 'insertion'; sequence: string; start: number }
+  | { type: 'deletion'; length: number; start: number }
+  | { type: 'softclip'; length: number; start: number }
+  | { type: 'hardclip'; length: number; start: number }
+  | { type: 'modification'; info: string; modType: string; probability: number; start: number }
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: ColorBy

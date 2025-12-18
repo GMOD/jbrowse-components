@@ -28,6 +28,7 @@ function fillRectCtx(
   height: number,
   ctx: CanvasRenderingContext2D,
   color?: string,
+  lastFillStyle?: { value: string },
 ) {
   if (width < 0) {
     x += width
@@ -38,7 +39,14 @@ function fillRectCtx(
     height = -height
   }
   if (color) {
-    ctx.fillStyle = color
+    if (lastFillStyle) {
+      if (color !== lastFillStyle.value) {
+        ctx.fillStyle = color
+        lastFillStyle.value = color
+      }
+    } else {
+      ctx.fillStyle = color
+    }
   }
   ctx.fillRect(x, y, width, height)
 }
@@ -345,6 +353,7 @@ export function drawXYArrays(
       ctx.fillStyle = staticColor
       ctx.fill()
     } else {
+      let lastFillStyle = ''
       for (let i = 0; i < len; i++) {
         checkStopToken2(stopToken, i, lastCheck)
         const fstart = starts[i]!
@@ -381,7 +390,10 @@ export function drawXYArrays(
             ? negColor
             : posColor
           : staticColor
-        ctx.fillStyle = featureColor
+        if (featureColor !== lastFillStyle) {
+          ctx.fillStyle = featureColor
+          lastFillStyle = featureColor
+        }
         ctx.fillRect(leftPx, y, w, originYPx - y)
 
         if (score > niceMax) {
@@ -468,6 +480,11 @@ export function drawXYArrays(
       ctx.fillStyle = staticColor
       ctx.fill()
     } else {
+      let lastFillStyle = ''
+      if (!useBicolor) {
+        ctx.fillStyle = staticColor
+        lastFillStyle = staticColor
+      }
       for (let i = 0; i < len; i++) {
         checkStopToken2(stopToken, i, lastCheck)
         const fstart = starts[i]!
@@ -501,7 +518,11 @@ export function drawXYArrays(
         const y = yClamped + offset
 
         if (useBicolor) {
-          ctx.fillStyle = score < pivotValue ? negColor : posColor
+          const featureColor = score < pivotValue ? negColor : posColor
+          if (featureColor !== lastFillStyle) {
+            ctx.fillStyle = featureColor
+            lastFillStyle = featureColor
+          }
         }
         ctx.fillRect(leftPx, y, Math.max(w, minSize), dotSize)
 
@@ -791,6 +812,7 @@ export function drawXY(
     } else {
       let lastCol: string | undefined
       let lastMix: string | undefined
+      const lastFillStyle = { value: '' }
       // pass 1: draw max scores
       for (const fd of featureData) {
         const { leftPx, rightPx, maxScore, summary, color, lightenedColor } = fd
@@ -809,12 +831,14 @@ export function drawXY(
             getHeight(maxScore),
             ctx,
             effectiveC,
+            lastFillStyle,
           )
           lastCol = color
         }
       }
       lastMix = undefined
       lastCol = undefined
+      lastFillStyle.value = ''
       // pass 2: draw average scores
       for (const fd of featureData) {
         const {
@@ -843,11 +867,20 @@ export function drawXY(
           reducedFeatures.push(feature)
           prevLeftPx = leftPx
         }
-        fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, effectiveC)
+        fillRectCtx(
+          leftPx,
+          toY(score),
+          w,
+          getHeight(score),
+          ctx,
+          effectiveC,
+          lastFillStyle,
+        )
         lastCol = color
       }
       lastMix = undefined
       lastCol = undefined
+      lastFillStyle.value = ''
       // pass 3: draw min scores
       for (const fd of featureData) {
         const { leftPx, rightPx, minScore, summary, color, darkenedColor } = fd
@@ -867,6 +900,7 @@ export function drawXY(
             getHeight(minScore),
             ctx,
             effectiveC,
+            lastFillStyle,
           )
           lastCol = color
         }
@@ -946,6 +980,7 @@ export function drawXY(
       ctx.fillStyle = staticColor
       ctx.fill()
     } else {
+      const lastFillStyle = { value: '' }
       for (const feature of features.values()) {
         checkStopToken2(stopToken, iter++, lastCheck)
         const fstart = feature.get('start')
@@ -987,13 +1022,21 @@ export function drawXY(
         if (summaryScoreMode === 'max') {
           const summary = feature.get('summary')
           const s = summary ? feature.get('maxScore') : score
-          fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
+          fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c, lastFillStyle)
         } else if (summaryScoreMode === 'min') {
           const summary = feature.get('summary')
           const s = summary ? feature.get('minScore') : score
-          fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
+          fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c, lastFillStyle)
         } else {
-          fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+          fillRectCtx(
+            leftPx,
+            toY(score),
+            w,
+            getHeight(score),
+            ctx,
+            c,
+            lastFillStyle,
+          )
         }
       }
     }

@@ -6,6 +6,7 @@ import { rpcResult } from 'librpc-web-mod'
 import { makeImageArrays } from './makeImageArrays'
 
 import type {
+  ClickMapItem,
   RenderArgsDeserializedWithFeatures,
   SNPCoverageArrays,
 } from './types'
@@ -89,10 +90,7 @@ export async function renderSNPCoverageToCanvas(
   return rpcResult(serialized, collectTransferables(rest))
 }
 
-function buildClickMap(
-  coords: number[],
-  items: { type: string; base: string; count: number; total: number }[],
-) {
+function buildClickMap(coords: number[], items: ClickMapItem[]) {
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (coords.length) {
     for (let i = 0; i < coords.length; i += 4) {

@@ -52,7 +52,7 @@ function MismatchTooltip({
   mismatchData: FlatbushItem
   mousePosition: { x: number; y: number }
 }) {
-  const { type, seq, modType, probability } = mismatchData
+  const { type, start } = mismatchData
   return (
     <BaseTooltip
       clientPoint={{
@@ -63,12 +63,18 @@ function MismatchTooltip({
     >
       <div>
         <div>
-          <strong>{type}</strong>
+          <strong>{type}</strong> @ {start + 1}
         </div>
-        {seq ? <div>Sequence: {seq}</div> : null}
-        {modType ? <div>Modification: {modType}</div> : null}
-        {probability !== undefined ? (
-          <div>Probability: {(probability * 100).toFixed(1)}%</div>
+        {type === 'mismatch' ? <div>Base: {mismatchData.base}</div> : null}
+        {type === 'insertion' ? <div>Sequence: {mismatchData.sequence}</div> : null}
+        {type === 'deletion' || type === 'softclip' || type === 'hardclip' ? (
+          <div>Length: {mismatchData.length}bp</div>
+        ) : null}
+        {type === 'modification' ? (
+          <>
+            <div>Modification: {mismatchData.modType}</div>
+            <div>Probability: {(mismatchData.probability * 100).toFixed(1)}%</div>
+          </>
         ) : null}
       </div>
     </BaseTooltip>

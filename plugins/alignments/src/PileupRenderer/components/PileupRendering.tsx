@@ -1,6 +1,12 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -11,6 +17,52 @@ import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LARGE_INSERTION_THRESHOLD = 10
 
+function flatbushItemToFeatureData(
+  item: FlatbushItem,
+  refName: string,
+  sourceRead?: string,
+): Record<string, unknown> {
+  const base = {
+    uniqueId: `${item.type}-${item.start}`,
+    type: item.type,
+    refName,
+    sourceRead,
+  }
+  switch (item.type) {
+    case 'insertion':
+      return {
+        ...base,
+        start: item.start,
+        end: item.start + item.sequence.length,
+        sequence: item.sequence,
+      }
+    case 'deletion':
+    case 'softclip':
+    case 'hardclip':
+      return {
+        ...base,
+        start: item.start,
+        end: item.start + item.length,
+      }
+    case 'modification':
+      return {
+        ...base,
+        start: item.start,
+        end: item.start + 1,
+        info: item.info,
+        modType: item.modType,
+        probability: item.probability.toFixed(3),
+      }
+    case 'mismatch':
+      return {
+        ...base,
+        start: item.start,
+        end: item.start + 1,
+        base: item.base,
+      }
+  }
+}
+
 function getItemLabel(item: FlatbushItem | undefined): string | undefined {
   if (!item) {
     return undefined
@@ -18,19 +70,19 @@ function getItemLabel(item: FlatbushItem | undefined): string | undefined {
 
   switch (item.type) {
     case 'insertion':
-      return item.seq.length > LARGE_INSERTION_THRESHOLD
-        ? `${item.seq.length}bp insertion (click to see)`
-        : `Insertion: ${item.seq}`
+      return item.sequence.length > LARGE_INSERTION_THRESHOLD
+        ? `${item.sequence.length}bp insertion (click to see)`
+        : `Insertion: ${item.sequence}`
     case 'deletion':
-      return `Deletion: ${item.seq}bp`
+      return `Deletion: ${item.length}bp`
     case 'softclip':
-      return `Soft clip: ${item.seq}bp`
+      return `Soft clip: ${item.length}bp`
     case 'hardclip':
-      return `Hard clip: ${item.seq}bp`
+      return `Hard clip: ${item.length}bp`
     case 'modification':
-      return item.seq
+      return item.info
     case 'mismatch':
-      return `Mismatch: ${item.seq}`
+      return `Mismatch: ${item.base}`
     default:
       return undefined
   }
@@ -58,11 +110,6 @@ const PileupRendering = observer(function (props: {
   onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
   onFeatureContextMenu?: (event: React.MouseEvent, featureId: string) => void
   onContextMenu?: (event: React.MouseEvent) => void
-  onMismatchClick?: (
-    event: React.MouseEvent,
-    item: FlatbushItem,
-    featureId?: string,
-  ) => void
 }) {
   const {
     onMouseMove,
@@ -82,8 +129,8 @@ const PileupRendering = observer(function (props: {
     onFeatureClick,
     onFeatureContextMenu,
     onContextMenu,
-    onMismatchClick,
   } = props
+  const { refName } = regions[0]!
   const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel
@@ -186,8 +233,25 @@ const PileupRendering = observer(function (props: {
       }}
       onClick={event => {
         if (!movedDuringLastMouseDown) {
-          if (itemUnderMouse && onMismatchClick) {
-            onMismatchClick(event, itemUnderMouse, featureIdUnderMouse)
+          if (itemUnderMouse) {
+            const session = getSession(displayModel)
+            const view = getContainingView(displayModel)
+            const sourceRead = featureIdUnderMouse
+              ? featureNames[featureIdUnderMouse]
+              : undefined
+            const featureData = flatbushItemToFeatureData(itemUnderMouse, refName, sourceRead)
+            if (isSessionModelWithWidgets(session)) {
+              const featureWidget = session.addWidget(
+                'BaseFeatureWidget',
+                'baseFeature',
+                {
+                  featureData,
+                  view,
+                  track: getContainingTrack(displayModel),
+                },
+              )
+              session.showWidget(featureWidget)
+            }
           } else if (onFeatureClick && featureIdUnderMouse) {
             onFeatureClick(event, featureIdUnderMouse)
           }

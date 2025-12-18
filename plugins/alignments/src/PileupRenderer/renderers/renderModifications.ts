@@ -140,7 +140,7 @@ export function renderModifications({
       if (rightPx - leftPx >= 0.2 && modsAtPos) {
         items.push({
           type: 'modification',
-          seq: modsAtPos
+          info: modsAtPos
             .map(
               m =>
                 `${m.base}${m.strand}${m.type} ${getModificationName(m.type)} (${(m.prob * 100).toFixed(1)}%)`,
@@ -148,6 +148,7 @@ export function renderModifications({
             .join('<br/>'),
           modType: type,
           probability: prob,
+          start: r,
         })
         coords.push(leftPx, topPx, rightPx, bottomPx)
       }

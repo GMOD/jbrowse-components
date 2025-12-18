@@ -2,7 +2,12 @@ import { lazy } from 'react'
 
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import {
   cast,
   getEnv,
@@ -19,6 +24,7 @@ import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { createAutorun } from '../util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
+import { formatBinAsTableRows, type ClickMapItem } from '../SNPCoverageRenderer/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
@@ -33,9 +39,6 @@ import type {
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
-const InterbaseInfoDialog = lazy(
-  () => import('./components/InterbaseInfoDialog'),
-)
 const FilterArcsByScoreDialog = lazy(
   () => import('./components/FilterArcsByScoreDialog'),
 )
@@ -349,23 +352,66 @@ function stateModelFactory(
         renderingProps() {
           return {
             ...superRenderingProps(),
-            onIndicatorClick(
-              _: unknown,
-              item: {
-                type: 'insertion' | 'softclip' | 'hardclip'
-                base: string
-                count: number
-                total: number
-                avgLength?: number
-                minLength?: number
-                maxLength?: number
-                topSequence?: string
-              },
-            ) {
-              getSession(self).queueDialog(handleClose => [
-                InterbaseInfoDialog,
-                { item, handleClose },
-              ])
+            onIndicatorClick(_: unknown, item: ClickMapItem) {
+              const session = getSession(self)
+              const view = getContainingView(self) as LGV
+              const region = view.dynamicBlocks.contentBlocks[0]
+
+              // Create feature data for the widget based on item type
+              let featureData: Record<string, unknown>
+
+              if (item.type === 'snp') {
+                featureData = {
+                  uniqueId: `snp-${item.base}-${item.start}`,
+                  type: 'snp',
+                  refName: region?.refName,
+                  start: item.start,
+                  end: item.end,
+                  details: item.bin ? formatBinAsTableRows(item.bin) : undefined,
+                }
+              } else if (item.type === 'modification') {
+                const pctVal = item.total > 0 ? ((item.count / item.total) * 100).toFixed(1) : '0'
+                const label = item.isUnmodified ? `Unmodified ${item.base}` : `${item.modType} (${item.base})`
+                featureData = {
+                  uniqueId: `mod-${item.modType}-${item.base}`,
+                  type: 'modification',
+                  refName: region?.refName,
+                  start: item.start,
+                  end: item.start + 1,
+                  label,
+                  count: `${item.count}/${item.total} (${pctVal}%)`,
+                  strands: `${item.fwdCount}(+) ${item.revCount}(-)`,
+                  probability: item.avgProb !== undefined ? `${(item.avgProb * 100).toFixed(1)}%` : undefined,
+                }
+              } else {
+                // interbase indicators (insertion, softclip, hardclip)
+                const pctVal = item.total > 0 ? ((item.count / item.total) * 100).toFixed(1) : '0'
+                featureData = {
+                  uniqueId: `${item.type}-${item.base}`,
+                  type: item.type,
+                  refName: region?.refName,
+                  start: item.start,
+                  end: item.start + 1,
+                  count: `${item.count}/${item.total} (${pctVal}%)`,
+                  size: item.minLength === item.maxLength
+                    ? `${item.minLength}bp`
+                    : `${item.minLength}-${item.maxLength}bp (avg ${item.avgLength?.toFixed(1)}bp)`,
+                  sequence: item.topSequence,
+                }
+              }
+
+              if (isSessionModelWithWidgets(session)) {
+                const featureWidget = session.addWidget(
+                  'BaseFeatureWidget',
+                  'baseFeature',
+                  {
+                    featureData,
+                    view,
+                    track: getContainingTrack(self),
+                  },
+                )
+                session.showWidget(featureWidget)
+              }
             },
           }
         },

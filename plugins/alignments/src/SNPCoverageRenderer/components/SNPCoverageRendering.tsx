@@ -4,15 +4,26 @@ import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import { formatInterbaseStats, getInterbaseTypeLabel } from '../types'
+import {
+  formatInterbaseStats,
+  formatModificationStats,
+  formatSNPStats,
+  getInterbaseTypeLabel,
+} from '../types'
 
-import type { InterbaseIndicatorItem } from '../types'
+import type { ClickMapItem } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-function getItemLabel(item: InterbaseIndicatorItem | undefined) {
+function getItemLabel(item: ClickMapItem | undefined) {
   if (!item) {
     return undefined
+  }
+  if (item.type === 'snp') {
+    return formatSNPStats(item)
+  }
+  if (item.type === 'modification') {
+    return formatModificationStats(item)
   }
   const { type, count, total, avgLength, minLength, maxLength, topSequence } =
     item
@@ -28,7 +39,7 @@ const SNPCoverageRendering = observer(function (props: {
   blockKey: string
   clickMap?: {
     flatbush: ArrayBuffer
-    items: InterbaseIndicatorItem[]
+    items: ClickMapItem[]
   }
   onMouseLeave?: (event: React.MouseEvent) => void
   onMouseMove?: (
@@ -37,10 +48,7 @@ const SNPCoverageRendering = observer(function (props: {
     extra?: string,
   ) => void
   onFeatureClick?: (event: React.MouseEvent, featureId?: string) => void
-  onIndicatorClick?: (
-    event: React.MouseEvent,
-    item: InterbaseIndicatorItem,
-  ) => void
+  onIndicatorClick?: (event: React.MouseEvent, item: ClickMapItem) => void
 }) {
   const {
     regions,
