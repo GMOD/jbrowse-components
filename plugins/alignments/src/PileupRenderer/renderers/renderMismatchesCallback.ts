@@ -251,7 +251,7 @@ export function renderMismatchesCallback({
           m.base,
           m.qual,
           m.altbase?.charCodeAt(0),
-          m.cliplen || +m.base,
+          m.cliplen,
         )
       }
     }
@@ -380,7 +380,7 @@ export function renderMismatchesCallback({
         }
         ctx.fillRect(pos, topPx, clipW, heightPx)
       }
-      items.push({ type: typeName, length: +base, start: mstart })
+      items.push({ type: typeName, length: cliplen, start: mstart })
       coords.push(pos - clipW, topPx, pos + clipW * 2, bottomPx)
       if (invBpPerPx >= charWidth && canRenderText) {
         const l = pos - clipW
