@@ -36,6 +36,21 @@ const Breakends = observer(function ({
     totalFeatures,
   )
 
+  const tracks = views.map(v => v.getTrack(trackId))
+
+  const heightCache = (() => {
+    const cache = new Map<number, number>()
+    for (let level = 0; level < views.length; level++) {
+      if (getTrackYPosOverride) {
+        cache.set(level, getTrackYPosOverride(trackId, level))
+      } else {
+        const rect = views[level]?.trackRefs[trackId]?.getBoundingClientRect()
+        cache.set(level, rect?.top || 0)
+      }
+    }
+    return cache
+  })()
+
   if (!assembly) {
     return null
   }
@@ -74,10 +89,12 @@ const Breakends = observer(function ({
             level1,
             level2,
             views,
+            tracks,
             c1,
             c2,
             yOffset,
             getTrackYPosOverride,
+            heightCache,
           )
 
           if (!relevantAlt) {

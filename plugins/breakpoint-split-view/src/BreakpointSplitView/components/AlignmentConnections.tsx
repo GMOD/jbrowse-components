@@ -59,6 +59,21 @@ const AlignmentConnections = observer(function ({
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const yOffset = getYOffset(parentRef)
 
+  const tracks = views.map(v => v.getTrack(trackId))
+
+  const heightCache = (() => {
+    const cache = new Map<number, number>()
+    for (let level = 0; level < views.length; level++) {
+      if (getTrackYPosOverride) {
+        cache.set(level, getTrackYPosOverride(trackId, level))
+      } else {
+        const rect = views[level]?.trackRefs[trackId]?.getBoundingClientRect()
+        cache.set(level, rect?.top || 0)
+      }
+    }
+    return cache
+  })()
+
   if (!assembly) {
     return null
   }
@@ -113,12 +128,11 @@ const AlignmentConnections = observer(function ({
           const reversed2 = views[level2]!.pxToBp(x2).reversed
           const rf1 = reversed1 ? -1 : 1
           const rf2 = reversed2 ? -1 : 1
-          const tracks = views.map(v => v.getTrack(trackId))
           const y1 =
-            yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
+            yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride, heightCache) -
             yOffset
           const y2 =
-            yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
+            yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride, heightCache) -
             yOffset
           const sameLevel = level1 === level2
           const abnormalSpecialRenderFlag = sameLevel && isAbnormal
@@ -131,6 +145,7 @@ const AlignmentConnections = observer(function ({
             trackId,
             level1,
             getTrackYPosOverride,
+            heightCache,
           )
 
           const path = [
