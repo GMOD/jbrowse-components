@@ -560,7 +560,9 @@ export function stateModelFactory(
       const { layout, showSidebar, ...rest } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(layout.length ? { layout } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(layout?.length ? { layout } : {}),
         ...(!showSidebar ? { showSidebar } : {}),
       } as typeof snap
     })

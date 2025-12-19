@@ -290,7 +290,9 @@ const Base1DView = types
     } = snap as Omit<typeof snap, symbol>
     return {
       ...rest,
-      ...(displayedRegions.length ? { displayedRegions } : {}),
+      // mst types wrong, nullish needed
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      ...(displayedRegions?.length ? { displayedRegions } : {}),
       ...(bpPerPx ? { bpPerPx } : {}),
       ...(offsetPx ? { offsetPx } : {}),
       ...(interRegionPaddingWidth ? { interRegionPaddingWidth } : {}),

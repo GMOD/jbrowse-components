@@ -106,7 +106,9 @@ export function DockviewLayoutMixin() {
       return {
         ...rest,
         ...(dockviewLayout !== undefined ? { dockviewLayout } : {}),
-        ...(Object.keys(panelViewAssignments).length
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(panelViewAssignments && Object.keys(panelViewAssignments).length
           ? { panelViewAssignments }
           : {}),
         ...(activePanelId !== undefined ? { activePanelId } : {}),

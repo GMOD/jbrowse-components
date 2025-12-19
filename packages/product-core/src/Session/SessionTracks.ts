@@ -89,7 +89,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       const { sessionTracks, ...rest } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(sessionTracks.length ? { sessionTracks } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(sessionTracks?.length ? { sessionTracks } : {}),
       } as typeof snap
     })
 }

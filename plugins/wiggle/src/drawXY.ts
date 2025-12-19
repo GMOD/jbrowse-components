@@ -213,8 +213,10 @@ export function drawXYArrays(
 
   const lastCheck = { time: Date.now() }
 
-  // Check if features are sub-pixel by sampling the first feature
-  // Only use two-pass deduplication when features are < 1px wide
+  // Use pixel deduplication when features are sub-pixel for efficiency.
+  // The first pass marks all pixel columns each feature covers (not just the
+  // starting column), so variable-width features are handled correctly even
+  // if only the first feature is checked here.
   const firstFeatureWidth = len > 0 ? (ends[0]! - starts[0]!) * invBpPerPx : 0
   const usePixelDedup = filled && firstFeatureWidth < 1
 
@@ -227,7 +229,7 @@ export function drawXYArrays(
     const featureIdxPerPx = new Int32Array(widthPx)
     const clipFlag = new Uint8Array(widthPx)
 
-    // First pass: collect max score per pixel column
+    // First pass: collect max score per pixel column, marking all columns each feature covers
     for (let i = 0; i < len; i++) {
       checkStopToken2(stopToken, i, lastCheck)
       const fstart = starts[i]!
@@ -235,10 +237,16 @@ export function drawXYArrays(
       const leftPx = reversed
         ? (regionEnd - fend) * invBpPerPx
         : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
 
-      const pxCol = leftPx | 0
-      if (pxCol >= 0 && pxCol < widthPx) {
-        const score = scoreArr[i]!
+      // Mark all pixel columns this feature covers
+      const startCol = Math.max(0, leftPx | 0)
+      const endCol = Math.min(widthPx - 1, rightPx | 0)
+      const score = scoreArr[i]!
+
+      for (let pxCol = startCol; pxCol <= endCol; pxCol++) {
         if (!hasData[pxCol] || score > maxScorePerPx[pxCol]!) {
           maxScorePerPx[pxCol] = score
           hasData[pxCol] = 1
@@ -254,6 +262,7 @@ export function drawXYArrays(
 
     // Second pass: draw one rect per pixel column and build reduced features
     const rectW = Math.max(1 + WIGGLE_FUDGE_FACTOR, minSize)
+    let lastAddedIdx = -1
     for (let px = 0; px < widthPx; px++) {
       if (hasData[px]) {
         const idx = featureIdxPerPx[px]!
@@ -268,15 +277,18 @@ export function drawXYArrays(
         }
         ctx.fillRect(px, y, rectW, originYPx - y)
 
-        // Build reduced features for tooltip support
-        reducedStarts.push(starts[idx]!)
-        reducedEnds.push(ends[idx]!)
-        reducedScores.push(scores[idx]!)
-        if (reducedMinScores && minScores) {
-          reducedMinScores.push(minScores[idx]!)
-        }
-        if (reducedMaxScores && maxScores) {
-          reducedMaxScores.push(maxScores[idx]!)
+        // Build reduced features for tooltip support (avoid duplicates)
+        if (idx !== lastAddedIdx) {
+          reducedStarts.push(starts[idx]!)
+          reducedEnds.push(ends[idx]!)
+          reducedScores.push(scores[idx]!)
+          if (reducedMinScores && minScores) {
+            reducedMinScores.push(minScores[idx]!)
+          }
+          if (reducedMaxScores && maxScores) {
+            reducedMaxScores.push(maxScores[idx]!)
+          }
+          lastAddedIdx = idx
         }
       }
     }

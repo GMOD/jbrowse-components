@@ -237,8 +237,12 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         ...rest,
         ...(drawerPosition !== 'right' ? { drawerPosition } : {}),
         ...(drawerWidth !== 384 ? { drawerWidth } : {}),
-        ...(Object.keys(widgets).length ? { widgets } : {}),
-        ...(Object.keys(activeWidgets).length ? { activeWidgets } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(Object.keys(widgets ?? {}).length ? { widgets } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(Object.keys(activeWidgets ?? {}).length ? { activeWidgets } : {}),
         ...(minimized ? { minimized } : {}),
       } as typeof snap
     })

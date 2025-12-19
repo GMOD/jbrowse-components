@@ -746,7 +746,9 @@ export function SharedLinearPileupDisplayMixin(
         ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
         ...(colorBySetting !== undefined ? { colorBySetting } : {}),
         ...(!isDefaultFilterFlags(filterBySetting) ? { filterBySetting } : {}),
-        ...(jexlFilters.length ? { jexlFilters } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
         ...(hideSmallIndelsSetting !== undefined
           ? { hideSmallIndelsSetting }
           : {}),

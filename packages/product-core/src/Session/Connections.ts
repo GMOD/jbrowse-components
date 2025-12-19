@@ -122,6 +122,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
+      // mst types wrong, nullish needed
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
@@ -129,7 +130,9 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       const { connectionInstances, ...rest } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(connectionInstances.length ? { connectionInstances } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(connectionInstances?.length ? { connectionInstances } : {}),
       } as typeof snap
     })
 }

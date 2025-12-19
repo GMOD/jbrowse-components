@@ -539,7 +539,9 @@ function stateModelFactory(
         ...(minArcScore ? { minArcScore } : {}),
         ...(!isDefaultFilterFlags(filterBySetting) ? { filterBySetting } : {}),
         ...(colorBySetting !== undefined ? { colorBySetting } : {}),
-        ...(jexlFilters.length ? { jexlFilters } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
       } as typeof snap
     })
 }
