@@ -198,18 +198,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return features.map(c =>
           c
             .map(feature => {
-              const level = tracks.findIndex(track => calc(track, feature))
-              return level !== -1
-                ? {
+              for (let level = 0; level < tracks.length; level++) {
+                const layout = calc(tracks[level], feature)
+                if (layout) {
+                  const cigar = feature.get('CIGAR')
+                  const strand = feature.get('strand')
+                  return {
                     feature,
-                    layout: calc(tracks[level], feature),
+                    layout,
                     level,
-                    clipLengthAtStartOfRead: getClip(
-                      feature.get('CIGAR'),
-                      feature.get('strand'),
-                    ),
+                    clipLengthAtStartOfRead: getClip(cigar, strand),
                   }
-                : undefined
+                }
+              }
+              return undefined
             })
             .filter(notEmpty),
         )
