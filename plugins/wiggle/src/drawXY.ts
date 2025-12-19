@@ -69,6 +69,52 @@ function addRectToPath(
   ctx.rect(x, y, width, height)
 }
 
+/**
+ * Convert Feature objects to structure-of-arrays format for use with drawXYArrays.
+ * Optionally computes per-feature colors using the provided callback.
+ */
+function featuresToArrays(
+  features: Map<string, Feature> | Feature[],
+  colorCallback?: (f: Feature, score: number) => string,
+): WiggleFeatureArrays & { colors?: string[] } {
+  const featureList = Array.isArray(features)
+    ? features
+    : Array.from(features.values())
+  const len = featureList.length
+  const starts = new Int32Array(len)
+  const ends = new Int32Array(len)
+  const scores = new Float32Array(len)
+  const minScoresArr = new Float32Array(len)
+  const maxScoresArr = new Float32Array(len)
+  const colors = colorCallback ? new Array<string>(len) : undefined
+  let hasSummary = false
+
+  for (let i = 0; i < len; i++) {
+    const f = featureList[i]!
+    const score = f.get('score')
+    starts[i] = f.get('start')
+    ends[i] = f.get('end')
+    scores[i] = score
+    if (f.get('summary')) {
+      hasSummary = true
+      minScoresArr[i] = f.get('minScore')
+      maxScoresArr[i] = f.get('maxScore')
+    }
+    if (colors && colorCallback) {
+      colors[i] = colorCallback(f, score)
+    }
+  }
+
+  return {
+    starts,
+    ends,
+    scores,
+    minScores: hasSummary ? minScoresArr : undefined,
+    maxScores: hasSummary ? maxScoresArr : undefined,
+    colors,
+  }
+}
+
 function lighten(color: Colord, amount: number) {
   const hslColor = color.toHsl()
   const l = hslColor.l * (1 + amount)
@@ -96,7 +142,7 @@ function darken(color: Colord, amount: number) {
 export function drawXYArrays(
   ctx: CanvasRenderingContext2D,
   props: {
-    featureArrays: WiggleFeatureArrays
+    featureArrays: WiggleFeatureArrays & { colors?: string[] }
     bpPerPx: number
     regions: Region[]
     scaleOpts: ScaleOpts
@@ -135,13 +181,14 @@ export function drawXYArrays(
     filled: filledProp,
   } = props
 
-  // Determine if we're using bicolor mode
-  const useBicolor = posColor !== undefined && negColor !== undefined
+  // Determine color mode: per-feature colors, bicolor, or static color
+  const { starts, ends, scores, minScores, maxScores, colors } = featureArrays
+  const usePerFeatureColors = colors !== undefined && colors.length > 0
+  const useBicolor = !usePerFeatureColors && posColor !== undefined && negColor !== undefined
   const staticColor = color ?? posColor ?? 'blue'
-  // Check alpha once - can't batch if color has alpha (overlapping rects blend differently)
+  // Check alpha once - can't batch if color has alpha or per-feature colors
   const hasAlpha = colord(staticColor).alpha() < 1
-
-  const { starts, ends, scores, minScores, maxScores } = featureArrays
+  const canBatch = !usePerFeatureColors && !useBicolor && !hasAlpha
   const len = starts.length
   if (len === 0) {
     return {
@@ -192,8 +239,123 @@ export function drawXYArrays(
   )
   const originYPx = originYClamped + offset
 
-  // Select score array once based on summaryScoreMode
+  // Track reduced features for tooltip support
+  const reducedStarts: number[] = []
+  const reducedEnds: number[] = []
+  const reducedScores: number[] = []
+  const reducedMinScores: number[] | undefined = minScores ? [] : undefined
+  const reducedMaxScores: number[] | undefined = maxScores ? [] : undefined
+
+  const lastCheck = { time: Date.now() }
   const isSummary = minScores !== undefined
+
+  // Handle whiskers mode with 3-pass rendering (max, avg, min scores)
+  if (summaryScoreMode === 'whiskers' && isSummary && filled) {
+    const colordStatic = colord(staticColor)
+    const lightenedColor = lighten(colordStatic, 0.4).toHex()
+    const darkenedColor = darken(colordStatic, 0.4).toHex()
+    let prevLeftPx = Number.NEGATIVE_INFINITY
+
+    const toY = (n: number) => {
+      const scaled = isLog
+        ? (Math.log(n) / log2 - logMin) * logRatio
+        : (n - niceMin) * linearRatio
+      return clamp(inverted ? scaled : height - scaled, 0, height) + offset
+    }
+    const toOrigin = (n: number) => toY(originY) - toY(n)
+
+    // Pass 1: max scores (lightened)
+    ctx.beginPath()
+    for (let i = 0; i < len; i++) {
+      checkStopToken2(stopToken, i, lastCheck)
+      const fstart = starts[i]!
+      const fend = ends[i]!
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
+      const maxScore = maxScores![i]!
+      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+      addRectToPath(leftPx, toY(maxScore), w, toOrigin(maxScore), ctx)
+    }
+    ctx.fillStyle = lightenedColor
+    ctx.fill()
+
+    // Pass 2: average scores
+    ctx.beginPath()
+    for (let i = 0; i < len; i++) {
+      const fstart = starts[i]!
+      const fend = ends[i]!
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
+      const score = scores[i]!
+      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+
+      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+        reducedStarts.push(fstart)
+        reducedEnds.push(fend)
+        reducedScores.push(score)
+        if (reducedMinScores) {
+          reducedMinScores.push(minScores![i]!)
+        }
+        if (reducedMaxScores) {
+          reducedMaxScores.push(maxScores![i]!)
+        }
+        prevLeftPx = leftPx
+      }
+      addRectToPath(leftPx, toY(score), w, toOrigin(score), ctx)
+    }
+    ctx.fillStyle = staticColor
+    ctx.fill()
+
+    // Pass 3: min scores (darkened)
+    ctx.beginPath()
+    for (let i = 0; i < len; i++) {
+      const fstart = starts[i]!
+      const fend = ends[i]!
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
+      const minScore = minScores![i]!
+      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+      addRectToPath(leftPx, toY(minScore), w, toOrigin(minScore), ctx)
+    }
+    ctx.fillStyle = darkenedColor
+    ctx.fill()
+
+    if (displayCrossHatches) {
+      ctx.lineWidth = 1
+      ctx.strokeStyle = 'rgba(200,200,200,0.5)'
+      for (const tick of ticks.values) {
+        const y = toY(tick)
+        ctx.beginPath()
+        ctx.moveTo(0, Math.round(y))
+        ctx.lineTo(width, Math.round(y))
+        ctx.stroke()
+      }
+    }
+
+    return {
+      reducedFeatures: {
+        starts: reducedStarts,
+        ends: reducedEnds,
+        scores: reducedScores,
+        minScores: reducedMinScores,
+        maxScores: reducedMaxScores,
+      },
+    }
+  }
+
+  // Select score array once based on summaryScoreMode
   const scoreArr =
     summaryScoreMode === 'max' && isSummary
       ? maxScores!
@@ -204,17 +366,10 @@ export function drawXYArrays(
   // Set initial fill color (will be changed per-feature in bicolor mode)
   ctx.fillStyle = staticColor
 
-  // Track reduced features for tooltip support
-  const reducedStarts: number[] = []
-  const reducedEnds: number[] = []
-  const reducedScores: number[] = []
-  const reducedMinScores: number[] | undefined = minScores ? [] : undefined
-  const reducedMaxScores: number[] | undefined = maxScores ? [] : undefined
-
-  const lastCheck = { time: Date.now() }
-
-  // Check if features are sub-pixel by sampling the first feature
-  // Only use two-pass deduplication when features are < 1px wide
+  // Use pixel deduplication when features are sub-pixel for efficiency.
+  // The first pass marks all pixel columns each feature covers (not just the
+  // starting column), so variable-width features are handled correctly even
+  // if only the first feature is checked here.
   const firstFeatureWidth = len > 0 ? (ends[0]! - starts[0]!) * invBpPerPx : 0
   const usePixelDedup = filled && firstFeatureWidth < 1
 
@@ -227,7 +382,7 @@ export function drawXYArrays(
     const featureIdxPerPx = new Int32Array(widthPx)
     const clipFlag = new Uint8Array(widthPx)
 
-    // First pass: collect max score per pixel column
+    // First pass: collect max score per pixel column, marking all columns each feature covers
     for (let i = 0; i < len; i++) {
       checkStopToken2(stopToken, i, lastCheck)
       const fstart = starts[i]!
@@ -235,10 +390,16 @@ export function drawXYArrays(
       const leftPx = reversed
         ? (regionEnd - fend) * invBpPerPx
         : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
 
-      const pxCol = leftPx | 0
-      if (pxCol >= 0 && pxCol < widthPx) {
-        const score = scoreArr[i]!
+      // Mark all pixel columns this feature covers
+      const startCol = Math.max(0, leftPx | 0)
+      const endCol = Math.min(widthPx - 1, rightPx | 0)
+      const score = scoreArr[i]!
+
+      for (let pxCol = startCol; pxCol <= endCol; pxCol++) {
         if (!hasData[pxCol] || score > maxScorePerPx[pxCol]!) {
           maxScorePerPx[pxCol] = score
           hasData[pxCol] = 1
@@ -254,6 +415,7 @@ export function drawXYArrays(
 
     // Second pass: draw one rect per pixel column and build reduced features
     const rectW = Math.max(1 + WIGGLE_FUDGE_FACTOR, minSize)
+    let lastAddedIdx = -1
     for (let px = 0; px < widthPx; px++) {
       if (hasData[px]) {
         const idx = featureIdxPerPx[px]!
@@ -268,15 +430,18 @@ export function drawXYArrays(
         }
         ctx.fillRect(px, y, rectW, originYPx - y)
 
-        // Build reduced features for tooltip support
-        reducedStarts.push(starts[idx]!)
-        reducedEnds.push(ends[idx]!)
-        reducedScores.push(scores[idx]!)
-        if (reducedMinScores && minScores) {
-          reducedMinScores.push(minScores[idx]!)
-        }
-        if (reducedMaxScores && maxScores) {
-          reducedMaxScores.push(maxScores[idx]!)
+        // Build reduced features for tooltip support (avoid duplicates)
+        if (idx !== lastAddedIdx) {
+          reducedStarts.push(starts[idx]!)
+          reducedEnds.push(ends[idx]!)
+          reducedScores.push(scores[idx]!)
+          if (reducedMinScores && minScores) {
+            reducedMinScores.push(minScores[idx]!)
+          }
+          if (reducedMaxScores && maxScores) {
+            reducedMaxScores.push(maxScores[idx]!)
+          }
+          lastAddedIdx = idx
         }
       }
     }
@@ -304,8 +469,6 @@ export function drawXYArrays(
     const clipLowW: number[] = []
     let clipHighCount = 0
     let clipLowCount = 0
-
-    const canBatch = !useBicolor && !hasAlpha
 
     if (canBatch) {
       ctx.beginPath()
@@ -599,7 +762,7 @@ export function drawXY(
     // override config filled value (for point renderers)
     filled?: boolean
   },
-) {
+): { reducedFeatures: ReducedFeatureArrays } {
   const {
     features,
     bpPerPx,
@@ -616,6 +779,20 @@ export function drawXY(
     staticColor,
     filled: filledProp,
   } = props
+
+  const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+
+  // When staticColor is set, delegate to drawXYArrays (handles all summaryScoreModes)
+  if (staticColor) {
+    const featureArrays = featuresToArrays(features)
+    return drawXYArrays(ctx, {
+      ...props,
+      featureArrays,
+      color: staticColor,
+      filled: filledProp,
+    })
+  }
+
   const region = regions[0]!
   const regionStart = region.start
   const regionEnd = region.end
@@ -628,7 +805,6 @@ export function drawXY(
   // allow filled prop to override config value (for point renderers)
   const filled = filledProp ?? readConfObject(config, 'filled')
   const clipColor = readConfObject(config, 'clipColor')
-  const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const minSize = readConfObject(config, 'minSize')
 
@@ -921,123 +1097,67 @@ export function drawXY(
       ctx.restore()
     }
   } else {
-    // track clipping info during first pass to avoid re-iterating
+    // Non-whiskers mode with colorCallback (per-feature colors)
+    // Note: staticColor case is handled at the top by delegating to drawXYArrays
     const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
     const isLog = scaleOpts.scaleType === 'log'
+    const lastFillStyle = { value: '' }
 
-    // when staticColor is provided, we can batch all rects into a single path
-    // cannot batch if color has alpha since overlapping rects would blend differently
-    const hasAlpha = staticColor ? colord(staticColor).alpha() < 1 : false
-    if (staticColor && !hasAlpha) {
-      ctx.beginPath()
-      for (const feature of features.values()) {
-        checkStopToken2(stopToken, iter++, lastCheck)
-        const fstart = feature.get('start')
-        const fend = feature.get('end')
-        const leftPx = reversed
-          ? (regionEnd - fend) * invBpPerPx
-          : (fstart - regionStart) * invBpPerPx
-        const rightPx = reversed
-          ? (regionEnd - fstart) * invBpPerPx
-          : (fend - regionStart) * invBpPerPx
+    for (const feature of features.values()) {
+      checkStopToken2(stopToken, iter++, lastCheck)
+      const fstart = feature.get('start')
+      const fend = feature.get('end')
+      const leftPx = reversed
+        ? (regionEnd - fend) * invBpPerPx
+        : (fstart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fstart) * invBpPerPx
+        : (fend - regionStart) * invBpPerPx
 
-        // create reduced features, avoiding multiple features per px
-        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-          reducedFeatures.push(feature)
-          prevLeftPx = leftPx
-        }
-
-        const score = feature.get('score')
-        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-
-        // track clipping during first pass
-        if (score > niceMax) {
-          clippingFeatures.push({
-            leftPx,
-            w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
-            high: true,
-          })
-        } else if (score < niceMin && !isLog) {
-          clippingFeatures.push({
-            leftPx,
-            w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
-            high: false,
-          })
-        }
-
-        if (summaryScoreMode === 'max') {
-          const summary = feature.get('summary')
-          const s = summary ? feature.get('maxScore') : score
-          addRectToPath(leftPx, toY(s), w, getHeight(s), ctx)
-        } else if (summaryScoreMode === 'min') {
-          const summary = feature.get('summary')
-          const s = summary ? feature.get('minScore') : score
-          addRectToPath(leftPx, toY(s), w, getHeight(s), ctx)
-        } else {
-          addRectToPath(leftPx, toY(score), w, getHeight(score), ctx)
-        }
+      // create reduced features, avoiding multiple features per px
+      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+        reducedFeatures.push(feature)
+        prevLeftPx = leftPx
       }
-      ctx.fillStyle = staticColor
-      ctx.fill()
-    } else {
-      const lastFillStyle = { value: '' }
-      for (const feature of features.values()) {
-        checkStopToken2(stopToken, iter++, lastCheck)
-        const fstart = feature.get('start')
-        const fend = feature.get('end')
-        const leftPx = reversed
-          ? (regionEnd - fend) * invBpPerPx
-          : (fstart - regionStart) * invBpPerPx
-        const rightPx = reversed
-          ? (regionEnd - fstart) * invBpPerPx
-          : (fend - regionStart) * invBpPerPx
 
-        // create reduced features, avoiding multiple features per px
-        // bitwise OR is faster than Math.floor for positive numbers
-        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-          reducedFeatures.push(feature)
-          prevLeftPx = leftPx
-        }
+      const score = feature.get('score')
+      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
 
-        const score = feature.get('score')
-        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+      // track clipping during first pass
+      if (score > niceMax) {
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
+          high: true,
+        })
+      } else if (score < niceMin && !isLog) {
+        clippingFeatures.push({
+          leftPx,
+          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
+          high: false,
+        })
+      }
 
-        // track clipping during first pass
-        if (score > niceMax) {
-          clippingFeatures.push({
-            leftPx,
-            w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
-            high: true,
-          })
-        } else if (score < niceMin && !isLog) {
-          clippingFeatures.push({
-            leftPx,
-            w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
-            high: false,
-          })
-        }
+      const c = colorCallback(feature, score)
 
-        const c = colorCallback(feature, score)
-
-        if (summaryScoreMode === 'max') {
-          const summary = feature.get('summary')
-          const s = summary ? feature.get('maxScore') : score
-          fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c, lastFillStyle)
-        } else if (summaryScoreMode === 'min') {
-          const summary = feature.get('summary')
-          const s = summary ? feature.get('minScore') : score
-          fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c, lastFillStyle)
-        } else {
-          fillRectCtx(
-            leftPx,
-            toY(score),
-            w,
-            getHeight(score),
-            ctx,
-            c,
-            lastFillStyle,
-          )
-        }
+      if (summaryScoreMode === 'max') {
+        const summary = feature.get('summary')
+        const s = summary ? feature.get('maxScore') : score
+        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c, lastFillStyle)
+      } else if (summaryScoreMode === 'min') {
+        const summary = feature.get('summary')
+        const s = summary ? feature.get('minScore') : score
+        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c, lastFillStyle)
+      } else {
+        fillRectCtx(
+          leftPx,
+          toY(score),
+          w,
+          getHeight(score),
+          ctx,
+          c,
+          lastFillStyle,
+        )
       }
     }
 
@@ -1067,8 +1187,9 @@ export function drawXY(
     }
   }
 
+  // Convert reducedFeatures to arrays format
   return {
-    reducedFeatures,
+    reducedFeatures: featuresToArrays(reducedFeatures),
   }
 }
 

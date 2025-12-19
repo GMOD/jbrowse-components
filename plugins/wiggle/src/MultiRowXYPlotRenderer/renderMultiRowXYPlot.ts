@@ -8,8 +8,9 @@ import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
-import { serializeWiggleFeature } from '../util'
+import { serializeReducedFeatures } from '../util'
 
+import type { ReducedFeatureArrays } from '../util'
 import type { MultiRenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -36,7 +37,7 @@ export async function renderMultiRowXYPlot(
     () =>
       renderToAbstractCanvas(width, height, renderProps, ctx => {
         const groups = groupBy(features.values(), f => f.get('source'))
-        let feats: Feature[] = []
+        const allReducedFeatures: ReducedFeatureArrays[] = []
         ctx.save()
         const lastCheck = { time: Date.now() }
         let idx = 0
@@ -54,17 +55,17 @@ export async function renderMultiRowXYPlot(
           ctx.lineTo(width, rowHeight)
           ctx.stroke()
           ctx.translate(0, rowHeight)
-          feats = feats.concat(reducedFeatures)
+          allReducedFeatures.push(reducedFeatures)
           checkStopToken2(stopToken, idx++, lastCheck)
         }
         ctx.restore()
-        return { reducedFeatures: feats }
+        return { reducedFeatures: allReducedFeatures }
       }),
   )
 
   const serialized = {
     ...rest,
-    features: reducedFeatures.map(serializeWiggleFeature),
+    features: reducedFeatures.flatMap(r => [...serializeReducedFeatures(r)]),
     height,
     width,
   }
