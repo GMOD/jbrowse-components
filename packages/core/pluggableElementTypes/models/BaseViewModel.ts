@@ -71,6 +71,17 @@ const BaseViewModel = types
       self.minimized = flag
     },
   }))
+  .postProcessSnapshot(snap => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!snap) {
+      return snap
+    }
+    const { minimized, ...rest } = snap as Omit<typeof snap, symbol>
+    return {
+      ...rest,
+      ...(minimized ? { minimized } : {}),
+    } as typeof snap
+  })
 
 export default BaseViewModel
 

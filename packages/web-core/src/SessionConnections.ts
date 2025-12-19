@@ -73,4 +73,15 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
         },
       }
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { sessionConnections, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(sessionConnections.length ? { sessionConnections } : {}),
+      } as typeof snap
+    })
 }

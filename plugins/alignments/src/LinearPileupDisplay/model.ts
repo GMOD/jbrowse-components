@@ -394,6 +394,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { showSoftClipping, mismatchAlpha, sortedBy, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(showSoftClipping ? { showSoftClipping } : {}),
+        ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+        ...(sortedBy !== undefined ? { sortedBy } : {}),
+      } as typeof snap
+    })
 }
 
 export type LinearPileupDisplayStateModel = ReturnType<typeof stateModelFactory>

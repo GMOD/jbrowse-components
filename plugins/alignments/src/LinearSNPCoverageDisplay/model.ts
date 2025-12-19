@@ -18,6 +18,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
 import { getSNPCoverageLegendItems } from '../shared/legendUtils'
+import { isDefaultFilterFlags } from '../shared/util'
 import { createAutorun } from '../util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
@@ -512,6 +513,36 @@ function stateModelFactory(
         }
       }
       return snap
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        showInterbaseCounts,
+        showInterbaseIndicators,
+        showArcs,
+        minArcScore,
+        filterBySetting,
+        colorBySetting,
+        jexlFilters,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(showInterbaseCounts !== undefined ? { showInterbaseCounts } : {}),
+        ...(showInterbaseIndicators !== undefined
+          ? { showInterbaseIndicators }
+          : {}),
+        ...(showArcs !== undefined ? { showArcs } : {}),
+        ...(minArcScore ? { minArcScore } : {}),
+        ...(!isDefaultFilterFlags(filterBySetting) ? { filterBySetting } : {}),
+        ...(colorBySetting !== undefined ? { colorBySetting } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+      } as typeof snap
     })
 }
 

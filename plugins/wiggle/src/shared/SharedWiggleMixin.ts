@@ -563,4 +563,46 @@ export default function SharedWiggleMixin(
         },
       }
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        selectedRendering,
+        resolution,
+        fill,
+        minSize,
+        color,
+        posColor,
+        negColor,
+        summaryScoreMode,
+        rendererTypeNameState,
+        scale,
+        autoscale,
+        displayCrossHatches,
+        constraints,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(selectedRendering ? { selectedRendering } : {}),
+        ...(resolution !== 1 ? { resolution } : {}),
+        ...(fill !== undefined ? { fill } : {}),
+        ...(minSize !== undefined ? { minSize } : {}),
+        ...(color !== undefined ? { color } : {}),
+        ...(posColor !== undefined ? { posColor } : {}),
+        ...(negColor !== undefined ? { negColor } : {}),
+        ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
+        ...(rendererTypeNameState !== undefined
+          ? { rendererTypeNameState }
+          : {}),
+        ...(scale !== undefined ? { scale } : {}),
+        ...(autoscale !== undefined ? { autoscale } : {}),
+        ...(displayCrossHatches !== undefined ? { displayCrossHatches } : {}),
+        ...(constraints.min !== undefined || constraints.max !== undefined
+          ? { constraints }
+          : {}),
+      } as typeof snap
+    })
 }

@@ -2000,10 +2000,44 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
-      } else {
-        const { init, ...rest } = snap as Omit<typeof snap, symbol>
-        return rest
       }
+      const {
+        init,
+        offsetPx,
+        bpPerPx,
+        hideHeader,
+        hideHeaderOverview,
+        hideNoTracksActive,
+        showGridlines,
+        trackSelectorType,
+        displayedRegions,
+        highlight,
+        showCenterLine,
+        showCytobandsSetting,
+        trackLabels,
+        colorByCDS,
+        showTrackOutlines,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+
+      return {
+        ...rest,
+        // only include non-default values
+        ...(offsetPx ? { offsetPx } : {}),
+        ...(bpPerPx !== 1 ? { bpPerPx } : {}),
+        ...(hideHeader ? { hideHeader } : {}),
+        ...(hideHeaderOverview ? { hideHeaderOverview } : {}),
+        ...(hideNoTracksActive ? { hideNoTracksActive } : {}),
+        ...(!showGridlines ? { showGridlines } : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(displayedRegions.length ? { displayedRegions } : {}),
+        ...(highlight.length ? { highlight } : {}),
+        ...(showCenterLine ? { showCenterLine } : {}),
+        ...(!showCytobandsSetting ? { showCytobandsSetting } : {}),
+        ...(trackLabels ? { trackLabels } : {}),
+        ...(colorByCDS ? { colorByCDS } : {}),
+        ...(!showTrackOutlines ? { showTrackOutlines } : {}),
+      } as typeof snap
     })
 }
 
