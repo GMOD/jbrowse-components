@@ -13,7 +13,6 @@ import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
-import { getClip } from './getClip'
 import { calc, getBlockFeatures, intersect } from './util'
 
 import type { BreakpointSplitViewInit, ExportSvgOptions } from './types'
@@ -201,13 +200,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               for (let level = 0; level < tracks.length; level++) {
                 const layout = calc(tracks[level], feature)
                 if (layout) {
-                  const cigar = feature.get('CIGAR')
-                  const strand = feature.get('strand')
                   return {
                     feature,
                     layout,
                     level,
-                    clipLengthAtStartOfRead: getClip(cigar, strand),
+                    clipLengthAtStartOfRead:
+                      feature.get('clipLengthAtStartOfRead') ?? 0,
                   }
                 }
               }
