@@ -1,15 +1,11 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import {
-  BaseFeatureDataAdapter,
-  isFeatureAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import type { MultiWiggleFeatureArrays } from './MultiWiggleAdapter/MultiWiggleAdapter'
 import type { MultiRenderArgsDeserialized } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderReturn } from '@jbrowse/core/pluggableElementTypes/renderers/RendererType'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -42,7 +38,6 @@ export async function renderMultiWiggle(
       region,
       renderProps,
     )
-    console.log('here')
     return renderArrays(renderProps, arraysBySource)
   } else {
     const feats = await firstValueFrom(

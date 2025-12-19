@@ -1,21 +1,17 @@
-import {
-  groupBy,
-  renderToAbstractCanvas,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
-import { drawXY } from '../drawXY'
+import { drawXYArrays } from '../drawXY'
 
+import type { MultiWiggleFeatureArrays } from '../MultiWiggleAdapter/MultiWiggleAdapter'
 import type { MultiRenderArgsDeserialized } from '../types'
 import type { ReducedFeatureArrays } from '../util'
-import type { Feature } from '@jbrowse/core/util'
 
-export async function renderMultiXYPlot(
+export async function renderMultiXYPlotArrays(
   renderProps: MultiRenderArgsDeserialized,
-  features: Map<string, Feature>,
+  arraysBySource: MultiWiggleFeatureArrays,
 ) {
   const {
     sources,
@@ -34,18 +30,19 @@ export async function renderMultiXYPlot(
     statusCallback,
     () =>
       renderToAbstractCanvas(width, height, renderProps, ctx => {
-        const groups = groupBy(features.values(), f => f.get('source'))
         const reducedFeatures: Record<string, ReducedFeatureArrays> = {}
         const lastCheck = { time: Date.now() }
         let idx = 0
         for (const source of sources) {
-          const { reducedFeatures: reduced } = drawXY(ctx, {
-            ...renderProps,
-            features: groups[source.name] || [],
-            staticColor: source.color || 'blue',
-            colorCallback: () => '', // unused when staticColor is set
-          })
-          reducedFeatures[source.name] = reduced
+          const arrays = arraysBySource[source.name]
+          if (arrays) {
+            const { reducedFeatures: reduced } = drawXYArrays(ctx, {
+              ...renderProps,
+              featureArrays: arrays,
+              color: source.color || 'blue',
+            })
+            reducedFeatures[source.name] = reduced
+          }
           checkStopToken2(stopToken, idx++, lastCheck)
         }
         return { reducedFeatures }

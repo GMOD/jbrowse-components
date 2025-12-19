@@ -3,14 +3,14 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
-import { getColorCallback, serializeReducedFeatures } from '../util'
+import { getColorCallback } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderXYPlot(
   renderProps: RenderArgsDeserialized,
-  features: Map<string, Feature>,
+  features: Feature[],
 ) {
   const {
     config,
@@ -32,16 +32,14 @@ export async function renderXYPlot(
         drawXY(ctx, {
           ...renderProps,
           colorCallback,
-          features: [...features.values()],
+          features,
         }),
       ),
   )
 
   const serialized = {
     ...rest,
-    features: [
-      ...serializeReducedFeatures(reducedFeatures, 'bigwig', region.refName),
-    ],
+    reducedFeatures,
     height,
     width,
   }

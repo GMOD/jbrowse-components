@@ -8,7 +8,6 @@ import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
-import { serializeReducedFeatures } from '../util'
 
 import type { MultiRenderArgsDeserialized } from '../types'
 import type { ReducedFeatureArrays } from '../util'
@@ -37,49 +36,35 @@ export async function renderMultiRowXYPlot(
     () =>
       renderToAbstractCanvas(width, height, renderProps, ctx => {
         const groups = groupBy(features.values(), f => f.get('source'))
-        const allReducedFeatures: ReducedFeatureArrays[] = []
+        const reducedFeatures: Record<string, ReducedFeatureArrays> = {}
         ctx.save()
         const lastCheck = { time: Date.now() }
         let idx = 0
         for (const source of sources) {
-          const { reducedFeatures } = drawXY(ctx, {
+          const { reducedFeatures: reduced } = drawXY(ctx, {
             ...renderProps,
             features: groups[source.name] || [],
             height: rowHeight,
             staticColor: source.color || 'blue',
             colorCallback: () => '', // unused when staticColor is set
           })
+          reducedFeatures[source.name] = reduced
           ctx.strokeStyle = 'rgba(200,200,200,0.8)'
           ctx.beginPath()
           ctx.moveTo(0, rowHeight)
           ctx.lineTo(width, rowHeight)
           ctx.stroke()
           ctx.translate(0, rowHeight)
-          allReducedFeatures.push(reducedFeatures)
           checkStopToken2(stopToken, idx++, lastCheck)
         }
         ctx.restore()
-        return { reducedFeatures: allReducedFeatures }
+        return { reducedFeatures }
       }),
   )
 
-  const serializedFeatures = []
-  for (const [i, source] of sources.entries()) {
-    const reduced = reducedFeatures[i]
-    if (reduced) {
-      for (const f of serializeReducedFeatures(
-        reduced,
-        source.name,
-        region.refName,
-      )) {
-        serializedFeatures.push(f)
-      }
-    }
-  }
-
   const serialized = {
     ...rest,
-    features: serializedFeatures,
+    reducedFeatures,
     height,
     width,
   }

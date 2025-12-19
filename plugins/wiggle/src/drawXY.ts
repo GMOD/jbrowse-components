@@ -293,7 +293,7 @@ export function drawXYArrays(
           : (fend - regionStart) * invBpPerPx
         const maxScore = maxScores![i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-        const baseColor = colors![i]!
+        const baseColor = colors[i]!
         let featureColor = baseColor
         if (!crossingOrigin) {
           if (baseColor !== lastColor) {
@@ -341,7 +341,7 @@ export function drawXYArrays(
           prevLeftPx = leftPx
         }
 
-        const featureColor = colors![i]!
+        const featureColor = colors[i]!
         fillRectCtx(
           leftPx,
           toY(score),
@@ -367,7 +367,7 @@ export function drawXYArrays(
           : (fend - regionStart) * invBpPerPx
         const minScore = minScores[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-        const baseColor = colors![i]!
+        const baseColor = colors[i]!
         let featureColor = baseColor
         if (!crossingOrigin) {
           if (baseColor !== lastColor) {

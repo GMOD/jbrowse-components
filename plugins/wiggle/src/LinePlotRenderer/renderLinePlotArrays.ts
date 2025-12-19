@@ -3,7 +3,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawLineArrays } from '../drawLine'
-import { getStaticColor, serializeReducedFeatures } from '../util'
+import { getStaticColor } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { WiggleFeatureArrays } from '../util'
@@ -37,18 +37,9 @@ export async function renderLinePlotArrays(
       ),
   )
 
-  const features = []
-  for (const f of serializeReducedFeatures(
-    reducedFeatures,
-    'bigwig',
-    region.refName,
-  )) {
-    features.push(f)
-  }
-
   const serialized = {
     ...rest,
-    features,
+    reducedFeatures,
     height,
     width,
   }

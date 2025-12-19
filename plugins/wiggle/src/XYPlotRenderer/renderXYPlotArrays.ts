@@ -3,7 +3,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXYArrays } from '../drawXY'
-import { getArraysColorConfig, serializeReducedFeatures } from '../util'
+import { getArraysColorConfig } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { WiggleFeatureArrays } from '../util'
@@ -36,18 +36,9 @@ export async function renderXYPlotArrays(
       ),
   )
 
-  const features = []
-  for (const f of serializeReducedFeatures(
-    reducedFeatures,
-    'bigwig',
-    region.refName,
-  )) {
-    features.push(f)
-  }
-
   const serialized = {
     ...rest,
-    features,
+    reducedFeatures,
     height,
     width,
   }
