@@ -13,7 +13,8 @@ export default class MultiLineRenderer extends FeatureRendererType {
       renderProps,
       () => this.getFeatures(renderProps),
       async (props, arrays) => {
-        const { renderMultiLineArrays } = await import('./renderMultiLineArrays')
+        const { renderMultiLineArrays } =
+          await import('./renderMultiLineArrays')
         return renderMultiLineArrays(props, arrays)
       },
       async (props, features) => {

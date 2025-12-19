@@ -97,10 +97,14 @@ function featuresToArrays(
   const minScoresArr = new Float32Array(len)
   const maxScoresArr = new Float32Array(len)
   const colors = colorCallback ? new Array<string>(len) : undefined
-  const lightenedColors = colorCallback && whiskers ? new Array<string>(len) : undefined
-  const darkenedColors = colorCallback && whiskers ? new Array<string>(len) : undefined
-  const maxScoreColors = colorCallback && whiskers ? new Array<string>(len) : undefined
-  const minScoreColors = colorCallback && whiskers ? new Array<string>(len) : undefined
+  const lightenedColors =
+    colorCallback && whiskers ? new Array<string>(len) : undefined
+  const darkenedColors =
+    colorCallback && whiskers ? new Array<string>(len) : undefined
+  const maxScoreColors =
+    colorCallback && whiskers ? new Array<string>(len) : undefined
+  const minScoreColors =
+    colorCallback && whiskers ? new Array<string>(len) : undefined
   let hasSummary = false
 
   // Cache for color transformations to avoid recomputing for same colors
@@ -235,7 +239,8 @@ export function drawXYArrays(
     minScoreColors,
   } = featureArrays
   const usePerFeatureColors = colors !== undefined && colors.length > 0
-  const useBicolor = !usePerFeatureColors && posColor !== undefined && negColor !== undefined
+  const useBicolor =
+    !usePerFeatureColors && posColor !== undefined && negColor !== undefined
   const staticColor = color ?? posColor ?? 'blue'
   // Check alpha once - can't batch if color has alpha or per-feature colors
   const hasAlpha = colord(staticColor).alpha() < 1
@@ -320,7 +325,8 @@ export function drawXYArrays(
 
     // Check if crossing origin for mixed color mode
     const bicolorPivotValue = readConfObject(config, 'bicolorPivotValue')
-    const crossingOrigin = niceMin < bicolorPivotValue && niceMax > bicolorPivotValue
+    const crossingOrigin =
+      niceMin < bicolorPivotValue && niceMax > bicolorPivotValue
 
     if (useWhiskersPerFeatureColors) {
       // Per-feature colors path (cannot batch)
@@ -339,8 +345,16 @@ export function drawXYArrays(
           : (fend - regionStart) * invBpPerPx
         const maxScore = maxScores![i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-        const featureColor = crossingOrigin ? colors![i]! : lightenedColors![i]!
-        fillRectCtx(leftPx, toY(maxScore), w, toOrigin(maxScore), ctx, featureColor, lastFillStyle)
+        const featureColor = crossingOrigin ? colors![i]! : lightenedColors[i]!
+        fillRectCtx(
+          leftPx,
+          toY(maxScore),
+          w,
+          toOrigin(maxScore),
+          ctx,
+          featureColor,
+          lastFillStyle,
+        )
       }
       lastFillStyle.value = ''
 
@@ -362,7 +376,7 @@ export function drawXYArrays(
           reducedEnds.push(fend)
           reducedScores.push(score)
           if (reducedMinScores) {
-            reducedMinScores.push(minScores![i]!)
+            reducedMinScores.push(minScores[i]!)
           }
           if (reducedMaxScores) {
             reducedMaxScores.push(maxScores![i]!)
@@ -373,9 +387,19 @@ export function drawXYArrays(
         // For crossing origin, mix maxScore and minScore colors
         let featureColor = colors![i]!
         if (crossingOrigin && maxScoreColors && minScoreColors) {
-          featureColor = colord(maxScoreColors[i]!).mix(colord(minScoreColors[i]!)).toHex()
+          featureColor = colord(maxScoreColors[i]!)
+            .mix(colord(minScoreColors[i]!))
+            .toHex()
         }
-        fillRectCtx(leftPx, toY(score), w, toOrigin(score), ctx, featureColor, lastFillStyle)
+        fillRectCtx(
+          leftPx,
+          toY(score),
+          w,
+          toOrigin(score),
+          ctx,
+          featureColor,
+          lastFillStyle,
+        )
       }
       lastFillStyle.value = ''
 
@@ -389,10 +413,18 @@ export function drawXYArrays(
         const rightPx = reversed
           ? (regionEnd - fstart) * invBpPerPx
           : (fend - regionStart) * invBpPerPx
-        const minScore = minScores![i]!
+        const minScore = minScores[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
         const featureColor = crossingOrigin ? colors![i]! : darkenedColors![i]!
-        fillRectCtx(leftPx, toY(minScore), w, toOrigin(minScore), ctx, featureColor, lastFillStyle)
+        fillRectCtx(
+          leftPx,
+          toY(minScore),
+          w,
+          toOrigin(minScore),
+          ctx,
+          featureColor,
+          lastFillStyle,
+        )
       }
     } else {
       // Static color path (can batch all rects)
@@ -434,7 +466,7 @@ export function drawXYArrays(
           reducedEnds.push(fend)
           reducedScores.push(score)
           if (reducedMinScores) {
-            reducedMinScores.push(minScores![i]!)
+            reducedMinScores.push(minScores[i]!)
           }
           if (reducedMaxScores) {
             reducedMaxScores.push(maxScores![i]!)
@@ -457,7 +489,7 @@ export function drawXYArrays(
         const rightPx = reversed
           ? (regionEnd - fstart) * invBpPerPx
           : (fend - regionStart) * invBpPerPx
-        const minScore = minScores![i]!
+        const minScore = minScores[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
         addRectToPath(leftPx, toY(minScore), w, toOrigin(minScore), ctx)
       }
@@ -559,7 +591,7 @@ export function drawXYArrays(
         const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
         const y = yClamped + offset
         if (usePerFeatureColors) {
-          ctx.fillStyle = colors![idx]!
+          ctx.fillStyle = colors[idx]!
         } else if (useBicolor) {
           ctx.fillStyle = score < pivotValue ? negColor : posColor
         }
@@ -684,7 +716,7 @@ export function drawXYArrays(
         const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
         const y = yClamped + offset
         const featureColor = usePerFeatureColors
-          ? colors![i]!
+          ? colors[i]!
           : useBicolor
             ? score < pivotValue
               ? negColor
@@ -816,7 +848,7 @@ export function drawXYArrays(
         const y = yClamped + offset
 
         if (usePerFeatureColors) {
-          const featureColor = colors![i]!
+          const featureColor = colors[i]!
           if (featureColor !== lastFillStyle) {
             ctx.fillStyle = featureColor
             lastFillStyle = featureColor
@@ -906,17 +938,8 @@ export function drawXY(
 ): { reducedFeatures: ReducedFeatureArrays } {
   const {
     features,
-    bpPerPx,
-    regions,
-    scaleOpts,
-    height: unadjustedHeight,
     config,
-    ticks,
-    displayCrossHatches,
-    offset = 0,
     colorCallback,
-    inverted,
-    stopToken,
     staticColor,
     filled: filledProp,
   } = props

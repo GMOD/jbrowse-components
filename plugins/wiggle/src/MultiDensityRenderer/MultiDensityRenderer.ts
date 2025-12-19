@@ -13,7 +13,8 @@ export default class MultiDensityPlotRenderer extends FeatureRendererType {
       renderProps,
       () => this.getFeatures(renderProps),
       async (props, arrays) => {
-        const { renderMultiDensityArrays } = await import('./renderMultiDensityArrays')
+        const { renderMultiDensityArrays } =
+          await import('./renderMultiDensityArrays')
         return renderMultiDensityArrays(props, arrays)
       },
       async (props, features) => {

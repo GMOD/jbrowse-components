@@ -10,8 +10,8 @@ import { rpcResult } from 'librpc-web-mod'
 import { drawXY } from '../drawXY'
 import { serializeReducedFeatures } from '../util'
 
-import type { ReducedFeatureArrays } from '../util'
 import type { MultiRenderArgsDeserialized } from '../types'
+import type { ReducedFeatureArrays } from '../util'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiXYPlot(
@@ -53,9 +53,23 @@ export async function renderMultiXYPlot(
       }),
   )
 
+  const serializedFeatures = []
+  for (const [i, source] of sources.entries()) {
+    const reduced = reducedFeatures[i]
+    if (reduced) {
+      for (const f of serializeReducedFeatures(
+        reduced,
+        source.name,
+        region.refName,
+      )) {
+        serializedFeatures.push(f)
+      }
+    }
+  }
+
   const serialized = {
     ...rest,
-    features: reducedFeatures.flatMap(r => [...serializeReducedFeatures(r)]),
+    features: serializedFeatures,
     height,
     width,
   }

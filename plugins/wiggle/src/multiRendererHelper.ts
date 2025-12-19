@@ -3,17 +3,18 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { MultiWiggleFeatureArrays } from './MultiWiggleAdapter/MultiWiggleAdapter'
 import type { MultiRenderArgsDeserialized } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RenderReturn } from '@jbrowse/core/pluggableElementTypes/renderers/RendererType'
 import type { Feature } from '@jbrowse/core/util'
 
 type RenderArraysFn = (
   props: MultiRenderArgsDeserialized,
   arraysBySource: MultiWiggleFeatureArrays,
-) => Promise<unknown>
+) => Promise<RenderReturn>
 
 type RenderFeaturesFn = (
   props: MultiRenderArgsDeserialized,
   features: Map<string, Feature>,
-) => Promise<unknown>
+) => Promise<RenderReturn>
 
 /**
  * Shared render logic for Multi* wiggle renderers.
@@ -28,7 +29,11 @@ export async function renderMultiWiggle(
   renderFeatures: RenderFeaturesFn,
 ) {
   const { sessionId, adapterConfig, regions } = renderProps
-  const { dataAdapter } = await getAdapter(pluginManager, sessionId, adapterConfig)
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  )
   const region = regions[0]!
 
   // Try array-based rendering for better performance

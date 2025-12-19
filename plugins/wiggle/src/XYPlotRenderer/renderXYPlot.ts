@@ -39,7 +39,7 @@ export async function renderXYPlot(
 
   const serialized = {
     ...rest,
-    features: [...serializeReducedFeatures(reducedFeatures)],
+    features: [...serializeReducedFeatures(reducedFeatures, 'bigwig', region.refName)],
     height,
     width,
   }

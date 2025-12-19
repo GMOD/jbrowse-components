@@ -39,10 +39,15 @@ function makeRenderProps(overrides = {}) {
   }
 }
 
-function imageToBuffer(img: InstanceType<typeof Image>, width: number, height: number) {
+function imageToBuffer(
+  img: InstanceType<typeof Image>,
+  width: number,
+  height: number,
+) {
   const canvas = createCanvas(width, height)
-  const ctx = canvas.getContext('2d')!
-  ctx.drawImage(img as unknown as CanvasImageSource, 0, 0)
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(img, 0, 0)
+  // eslint-disable-next-line no-restricted-globals
   return Buffer.from(
     canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
     'base64',
@@ -292,7 +297,8 @@ describe('drawXYArrays', () => {
       )
 
       expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 10, 100),
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 10, 100),
       ).toMatchImageSnapshot()
     })
 
@@ -317,7 +323,8 @@ describe('drawXYArrays', () => {
 
       // Should have no gaps - all pixel columns 0-9 should be filled
       expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 10, 100),
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 10, 100),
       ).toMatchImageSnapshot()
     })
 
@@ -342,7 +349,8 @@ describe('drawXYArrays', () => {
 
       // Should show gaps between features (columns 1-2, 4-5, 7-9 empty)
       expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 10, 100),
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 10, 100),
       ).toMatchImageSnapshot()
     })
 
@@ -365,7 +373,8 @@ describe('drawXYArrays', () => {
       )
 
       expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 150, 100),
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 150, 100),
       ).toMatchImageSnapshot()
     })
 
@@ -388,7 +397,8 @@ describe('drawXYArrays', () => {
       )
 
       expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 100, 100),
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 100, 100),
       ).toMatchImageSnapshot()
     })
 
@@ -414,7 +424,8 @@ describe('drawXYArrays', () => {
 
       // Should render at max score height (80)
       expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 1, 100),
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 1, 100),
       ).toMatchImageSnapshot()
     })
   })

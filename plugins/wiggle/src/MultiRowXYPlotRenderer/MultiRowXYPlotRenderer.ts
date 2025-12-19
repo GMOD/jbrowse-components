@@ -13,7 +13,8 @@ export default class MultiRowXYPlotRenderer extends FeatureRendererType {
       renderProps,
       () => this.getFeatures(renderProps),
       async (props, arrays) => {
-        const { renderMultiRowXYPlotArrays } = await import('./renderMultiRowXYPlotArrays')
+        const { renderMultiRowXYPlotArrays } =
+          await import('./renderMultiRowXYPlotArrays')
         return renderMultiRowXYPlotArrays(props, arrays)
       },
       async (props, features) => {
