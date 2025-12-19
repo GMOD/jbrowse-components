@@ -69,4 +69,15 @@ export function SessionAssembliesMixin(
         },
       }
     })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { sessionAssemblies, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(sessionAssemblies.length ? { sessionAssemblies } : {}),
+      } as typeof snap
+    })
 }

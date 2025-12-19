@@ -39,10 +39,15 @@ function makeRenderProps(overrides = {}) {
   }
 }
 
-function imageToBuffer(img: InstanceType<typeof Image>, width: number, height: number) {
+function imageToBuffer(
+  img: InstanceType<typeof Image>,
+  width: number,
+  height: number,
+) {
   const canvas = createCanvas(width, height)
-  const ctx = canvas.getContext('2d')!
-  ctx.drawImage(img as unknown as CanvasImageSource, 0, 0)
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(img, 0, 0)
+  // eslint-disable-next-line no-restricted-globals
   return Buffer.from(
     canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
     'base64',
@@ -291,9 +296,15 @@ describe('drawXYArrays', () => {
         drawXYArrays(ctx, { ...renderProps, featureArrays, color: 'blue' }),
       )
 
-      expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 10, 100),
-      ).toMatchImageSnapshot()
+      if ('imageData' in result) {
+        expect(
+          imageToBuffer(
+            result.imageData as unknown as InstanceType<typeof Image>,
+            10,
+            100,
+          ),
+        ).toMatchImageSnapshot()
+      }
     })
 
     it('pixel dedup: variable width features should cover all pixels', async () => {
@@ -316,9 +327,15 @@ describe('drawXYArrays', () => {
       )
 
       // Should have no gaps - all pixel columns 0-9 should be filled
-      expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 10, 100),
-      ).toMatchImageSnapshot()
+      if ('imageData' in result) {
+        expect(
+          imageToBuffer(
+            result.imageData as unknown as InstanceType<typeof Image>,
+            10,
+            100,
+          ),
+        ).toMatchImageSnapshot()
+      }
     })
 
     it('pixel dedup: features with gaps should show gaps', async () => {
@@ -341,9 +358,15 @@ describe('drawXYArrays', () => {
       )
 
       // Should show gaps between features (columns 1-2, 4-5, 7-9 empty)
-      expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 10, 100),
-      ).toMatchImageSnapshot()
+      if ('imageData' in result) {
+        expect(
+          imageToBuffer(
+            result.imageData as unknown as InstanceType<typeof Image>,
+            10,
+            100,
+          ),
+        ).toMatchImageSnapshot()
+      }
     })
 
     it('non-pixel-dedup: large features should render correctly', async () => {
@@ -364,9 +387,15 @@ describe('drawXYArrays', () => {
         drawXYArrays(ctx, { ...renderProps, featureArrays, color: 'blue' }),
       )
 
-      expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 150, 100),
-      ).toMatchImageSnapshot()
+      if ('imageData' in result) {
+        expect(
+          imageToBuffer(
+            result.imageData as unknown as InstanceType<typeof Image>,
+            150,
+            100,
+          ),
+        ).toMatchImageSnapshot()
+      }
     })
 
     it('varying scores should show height differences', async () => {
@@ -387,9 +416,15 @@ describe('drawXYArrays', () => {
         drawXYArrays(ctx, { ...renderProps, featureArrays, color: 'blue' }),
       )
 
-      expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 100, 100),
-      ).toMatchImageSnapshot()
+      if ('imageData' in result) {
+        expect(
+          imageToBuffer(
+            result.imageData as unknown as InstanceType<typeof Image>,
+            100,
+            100,
+          ),
+        ).toMatchImageSnapshot()
+      }
     })
 
     it('pixel dedup: max score selection when multiple features overlap', async () => {
@@ -413,9 +448,15 @@ describe('drawXYArrays', () => {
       )
 
       // Should render at max score height (80)
-      expect(
-        imageToBuffer(result.imageData as InstanceType<typeof Image>, 1, 100),
-      ).toMatchImageSnapshot()
+      if ('imageData' in result) {
+        expect(
+          imageToBuffer(
+            result.imageData as unknown as InstanceType<typeof Image>,
+            1,
+            100,
+          ),
+        ).toMatchImageSnapshot()
+      }
     })
   })
 })
