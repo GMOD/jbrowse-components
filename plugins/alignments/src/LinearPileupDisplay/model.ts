@@ -60,6 +60,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        minSubfeatureWidthSetting: types.maybe(types.number),
+
+        /**
+         * #property
+         */
         sortedBy: types.frozen<SortedBy | undefined>(),
       }),
     )
@@ -103,6 +108,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       toggleMismatchAlpha() {
         self.mismatchAlpha = !self.mismatchAlpha
+      },
+      /**
+       * #action
+       */
+      toggleMinSubfeatureWidth() {
+        self.minSubfeatureWidthSetting =
+          self.minSubfeatureWidthSetting === 0 ? 1 : 0.1
       },
       /**
        * #action
@@ -187,6 +199,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           noSpacing,
           trackMaxHeight,
           mismatchAlpha,
+          minSubfeatureWidthSetting,
           rendererTypeName,
           hideSmallIndels,
           hideMismatches,
@@ -200,6 +213,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...(hideMismatches !== undefined ? { hideMismatches } : {}),
             ...(noSpacing !== undefined ? { noSpacing } : {}),
             ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+            ...(minSubfeatureWidthSetting !== undefined
+              ? { minSubfeatureWidth: minSubfeatureWidthSetting }
+              : {}),
             ...(trackMaxHeight !== undefined
               ? { maxHeight: trackMaxHeight }
               : {}),
@@ -216,6 +232,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         get mismatchAlphaSetting() {
           return readConfObject(self.rendererConfig, 'mismatchAlpha')
+        },
+        /**
+         * #getter
+         */
+        get minSubfeatureWidth() {
+          return readConfObject(self.rendererConfig, 'minSubfeatureWidth')
         },
         /**
          * #method
@@ -376,6 +398,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.toggleMismatchAlpha()
               },
             },
+            {
+              label: 'Thin mismatch markers',
+              type: 'checkbox',
+              checked: self.minSubfeatureWidth === 0,
+              onClick: () => {
+                self.toggleMinSubfeatureWidth()
+              },
+            },
           ] as const
         },
       }
@@ -399,12 +429,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       if (!snap) {
         return snap
       }
-      const { showSoftClipping, mismatchAlpha, sortedBy, ...rest } =
-        snap as Omit<typeof snap, symbol>
+      const {
+        showSoftClipping,
+        mismatchAlpha,
+        minSubfeatureWidthSetting,
+        sortedBy,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         ...(showSoftClipping ? { showSoftClipping } : {}),
         ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+        ...(minSubfeatureWidthSetting !== undefined
+          ? { minSubfeatureWidthSetting }
+          : {}),
         ...(sortedBy !== undefined ? { sortedBy } : {}),
       } as typeof snap
     })
