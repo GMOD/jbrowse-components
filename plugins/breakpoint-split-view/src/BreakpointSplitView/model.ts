@@ -7,8 +7,6 @@ import {
   addMiddleware,
   cast,
   getPath,
-  getRelativePathBetweenNodes,
-  getStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
 import LinkIcon from '@mui/icons-material/Link'
@@ -235,13 +233,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               ]
 
               if (self.linkViews && syncActions.includes(rawCall.name)) {
-                const sourceNode = getStateTreeNode(rawCall.context)
-                const path = getRelativePathBetweenNodes(
-                  getStateTreeNode(self),
-                  sourceNode,
-                )
+                const sourcePath = getPath(rawCall.context)
                 const result = next(rawCall)
-                this.onSubviewAction(rawCall.name, path, rawCall.args)
+                // Sync to all other views
+                for (const view of self.views) {
+                  const viewPath = getPath(view)
+                  if (viewPath !== sourcePath) {
+                    // @ts-expect-error
+                    view[rawCall.name](rawCall.args[0])
+                  }
+                }
                 return result
               }
             }
