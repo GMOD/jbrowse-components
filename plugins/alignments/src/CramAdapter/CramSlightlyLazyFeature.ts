@@ -5,12 +5,11 @@ import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
-  MISMATCH_MAP,
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
 } from '../shared/forEachMismatchTypes'
-import { cacheGetter } from '../shared/util'
+import { cacheGetter, convertTagsToPlainArrays } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
 import type { MismatchCallback } from '../shared/forEachMismatchTypes'
@@ -164,25 +163,47 @@ export default class CramSlightlyLazyFeature implements Feature {
     const mismatches: Mismatch[] = []
     this.forEachMismatch(
       (type, start, length, base, qual, altbase, cliplen) => {
-        const typeStr = MISMATCH_MAP[type]!
-        const mismatch: Mismatch = {
-          start,
-          length,
-          type: typeStr,
-          base,
-          qual: qual !== undefined && qual >= 0 ? qual : undefined,
+        if (type === MISMATCH_TYPE) {
+          mismatches.push({
+            type: 'mismatch',
+            start,
+            length,
+            base,
+            qual: qual !== undefined && qual >= 0 ? qual : undefined,
+            altbase:
+              altbase !== undefined && altbase > 0
+                ? CHAR_FROM_CODE[altbase]
+                : undefined,
+          })
+        } else if (type === INSERTION_TYPE) {
+          mismatches.push({
+            type: 'insertion',
+            start,
+            length,
+            insertlen: cliplen!,
+            insertedBases: base,
+          })
+        } else if (type === SOFTCLIP_TYPE) {
+          mismatches.push({
+            type: 'softclip',
+            start,
+            length,
+            cliplen: cliplen!,
+          })
+        } else if (type === HARDCLIP_TYPE) {
+          mismatches.push({
+            type: 'hardclip',
+            start,
+            length,
+            cliplen: cliplen!,
+          })
+        } else {
+          mismatches.push({
+            type: type === 2 ? 'deletion' : 'skip',
+            start,
+            length,
+          })
         }
-        if (altbase !== undefined && altbase > 0) {
-          mismatch.altbase = CHAR_FROM_CODE[altbase]
-        }
-        if (type === INSERTION_TYPE) {
-          mismatch.insertedBases = base
-          mismatch.base = `${cliplen}`
-        }
-        if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
-          mismatch.cliplen = cliplen
-        }
-        mismatches.push(mismatch)
       },
     )
     return mismatches
@@ -287,7 +308,7 @@ export default class CramSlightlyLazyFeature implements Feature {
       strand: this.strand,
       template_length: this.template_length,
       flags: this.flags,
-      tags: this.tags,
+      tags: convertTagsToPlainArrays(this.tags),
       refName: this.refName,
       seq: this.seq,
       type: 'match',

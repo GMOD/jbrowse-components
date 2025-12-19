@@ -130,6 +130,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
+       * Sort by a specific position (used for sorting at mismatch positions)
+       */
+      setSortedByAtPosition(type: string, pos: number, refName: string) {
+        const view = getContainingView(self) as LGV
+        const assemblyName = view.assemblyNames[0]
+        if (!assemblyName) {
+          return
+        }
+        self.sortReady = false
+        self.sortedBy = {
+          type,
+          pos: pos + 1,
+          refName,
+          assemblyName,
+        }
+      },
+      /**
+       * #action
        * overrides base from SharedLinearPileupDisplay to make sortReady false
        * since changing feature height destroys the sort-induced layout
        */
@@ -171,6 +189,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           mismatchAlpha,
           rendererTypeName,
           hideSmallIndels,
+          hideMismatches,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
         return self.rendererType.configSchema.create(
@@ -178,6 +197,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...configBlob,
             ...(featureHeight !== undefined ? { height: featureHeight } : {}),
             ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
+            ...(hideMismatches !== undefined ? { hideMismatches } : {}),
             ...(noSpacing !== undefined ? { noSpacing } : {}),
             ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
             ...(trackMaxHeight !== undefined
@@ -374,6 +394,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { showSoftClipping, mismatchAlpha, sortedBy, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(showSoftClipping ? { showSoftClipping } : {}),
+        ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+        ...(sortedBy !== undefined ? { sortedBy } : {}),
+      } as typeof snap
+    })
 }
 
 export type LinearPileupDisplayStateModel = ReturnType<typeof stateModelFactory>

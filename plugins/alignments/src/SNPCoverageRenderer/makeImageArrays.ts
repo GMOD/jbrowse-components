@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { checkStopToken2, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { getOrigin, getScale } from '@jbrowse/plugin-wiggle'
@@ -10,6 +11,7 @@ import { calculateModificationCounts } from './calculateModificationCounts'
 import { alphaColor } from '../shared/util'
 
 import type {
+  ClickMapItem,
   InterbaseIndicatorItem,
   RenderArgsDeserializedWithArrays,
   SNPCoverageArrays,
@@ -25,7 +27,7 @@ const INTERBASE_INDICATOR_HALF_WIDTH = INTERBASE_INDICATOR_WIDTH / 2
 // 'statistical significance' is low
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
-const fudgeFactor = 0.6
+const fudgeFactor = 0.8
 
 const sortedKeysDesc = (obj: object) => Object.keys(obj).sort().reverse()
 
@@ -45,6 +47,7 @@ function createInterbaseItem(
   maxBase: string,
   count: number,
   total: number,
+  start: number,
   maxEntry?: {
     avgLength?: number
     minLength?: number
@@ -61,6 +64,7 @@ function createInterbaseItem(
     minLength: maxEntry?.minLength,
     maxLength: maxEntry?.maxLength,
     topSequence: maxEntry?.topSequence,
+    start,
   }
 }
 
@@ -189,9 +193,12 @@ export function makeImageArrays(
   // are located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = reversed ? 1 / bpPerPx : 0
 
-  // Flatbush clickmap data for interbase indicators
+  // Flatbush clickmap data for SNPs and interbase indicators
   const coords = [] as number[]
-  const items = [] as InterbaseIndicatorItem[]
+  const items = [] as ClickMapItem[]
+
+  // SNP frequency threshold for adding to clickmap (4%)
+  const SNP_CLICKMAP_THRESHOLD = 0.04
 
   const drawingModifications = colorBy.type === 'modifications'
   const drawingMethylation = colorBy.type === 'methylation'
@@ -209,9 +216,59 @@ export function makeImageArrays(
   const reducedFeatures: ReducedFeature[] = []
 
   const lastTime = { time: Date.now() }
+
+  // Two-pass rendering: backgrounds first, then SNP overlays
+  // This produces clearer visuals and allows batching the backgrounds
+  interface FeatureData {
+    leftPx: number
+    rightPx: number
+    score0: number
+    bin: BaseCoverageBin
+    fstart: number
+    fend: number
+  }
+
+  const featureDataList: FeatureData[] = []
+
+  // Pass 1: Draw gray backgrounds with 0.5px binning (draw max score per bin)
+  // This reduces draw calls when many features map to the same pixel
+  const binSize = 0.5
+  const canBatch = colord(totalColor).alpha() >= 1
+
+  let currentBin = -1
+  let maxScoreInBin = 0
+  let maxLeftPx = 0
+  let maxRightPx = 0
+
+  const drawBinnedRect = () => {
+    if (currentBin >= 0) {
+      const bgWidth = maxRightPx - maxLeftPx + fudgeFactor
+      if (canBatch) {
+        ctx.rect(
+          maxLeftPx,
+          toY(maxScoreInBin),
+          bgWidth,
+          toHeight(maxScoreInBin),
+        )
+      } else {
+        ctx.fillRect(
+          maxLeftPx,
+          toY(maxScoreInBin),
+          bgWidth,
+          toHeight(maxScoreInBin),
+        )
+      }
+    }
+  }
+
+  if (canBatch) {
+    ctx.beginPath()
+  } else {
+    ctx.fillStyle = totalColor
+  }
+
   for (let i = 0; i < len; i++) {
     checkStopToken2(stopToken, i, lastTime)
-
     const fstart = starts[i]!
     const fend = ends[i]!
     const score0 = scores[i]!
@@ -224,7 +281,22 @@ export function makeImageArrays(
       ? (regionEnd - fstart) / bpPerPx
       : (fend - regionStart) / bpPerPx
 
-    // Collect reducedFeatures (one per pixel) for tooltip functionality
+    const binKey = Math.floor(leftPx / binSize)
+
+    // Draw previous bin if we've moved to a new bin
+    if (binKey !== currentBin) {
+      drawBinnedRect()
+      currentBin = binKey
+      maxScoreInBin = score0
+      maxLeftPx = leftPx
+      maxRightPx = rightPx
+    } else if (score0 > maxScoreInBin) {
+      maxScoreInBin = score0
+      maxLeftPx = leftPx
+      maxRightPx = rightPx
+    }
+
+    // Collect reducedFeatures (one per pixel)
     if (Math.floor(leftPx) !== Math.floor(prevReducedLeftPx)) {
       reducedFeatures.push({
         start: fstart,
@@ -236,11 +308,27 @@ export function makeImageArrays(
       prevReducedLeftPx = leftPx
     }
 
-    // Draw the gray background
-    ctx.fillStyle = totalColor
-    const bgWidth = rightPx - leftPx + fudgeFactor
-    ctx.fillRect(leftPx, toY(score0), bgWidth, toHeight(score0))
+    // Collect all feature data for Pass 2 (SNP overlays)
+    featureDataList.push({ leftPx, rightPx, score0, bin, fstart, fend })
+  }
 
+  // Draw the last bin
+  drawBinnedRect()
+
+  if (canBatch) {
+    ctx.fillStyle = totalColor
+    ctx.fill()
+  }
+
+  // Pass 2: Draw SNP overlays on top
+  for (const {
+    leftPx,
+    rightPx,
+    score0,
+    bin,
+    fstart,
+    fend,
+  } of featureDataList) {
     // Draw SNP data overlay
     const w = Math.max(rightPx - leftPx, 1)
     const h = toHeight(score0)
@@ -250,6 +338,8 @@ export function makeImageArrays(
       let curr = 0
       const refbase = bin.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = bin
+
+      // Draw and track unmodified bases (nonmods)
       for (const m of sortedKeysDesc(nonmods)) {
         const modKey = m.replace(/^(nonmod_|mod_)/, '')
         const mod = visibleModifications[modKey]
@@ -269,18 +359,40 @@ export function makeImageArrays(
           score0,
         })
 
-        const { entryDepth, avgProbability = 0 } = bin.nonmods[m]!
+        const entry = bin.nonmods[m]!
+        const { entryDepth, avgProbability = 0 } = entry
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
+        const modHeight = modFraction * h
 
         ctx.fillStyle = alphaColor('blue', avgProbability)
-        ctx.fillRect(
-          roundedLeftPx,
-          bottom - (curr + modFraction * h),
-          w,
-          modFraction * h,
-        )
-        curr += modFraction * h
+        ctx.fillRect(roundedLeftPx, bottom - (curr + modHeight), w, modHeight)
+
+        // Add significant modifications (>4%) to clickmap
+        const frequency = entryDepth / detectable
+        if (frequency >= SNP_CLICKMAP_THRESHOLD) {
+          coords.push(
+            roundedLeftPx,
+            bottom - (curr + modHeight),
+            roundedLeftPx + w,
+            bottom - curr,
+          )
+          items.push({
+            type: 'modification',
+            modType: mod.type,
+            base: mod.base,
+            count: entryDepth,
+            total: detectable,
+            avgProb: avgProbability,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
+            isUnmodified: true,
+            start: fstart,
+          })
+        }
+        curr += modHeight
       }
+
+      // Draw and track modified bases (mods)
       for (const m of sortedKeysDesc(mods)) {
         const modKey = m.replace('mod_', '')
         const mod = visibleModifications[modKey]
@@ -300,44 +412,113 @@ export function makeImageArrays(
           score0,
         })
 
-        const { entryDepth, avgProbability = 0 } = mods[m]!
+        const entry = mods[m]!
+        const { entryDepth, avgProbability = 0 } = entry
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
+        const modHeight = modFraction * h
 
         ctx.fillStyle = alphaColor(mod.color || 'black', avgProbability)
-        ctx.fillRect(
-          roundedLeftPx,
-          bottom - (curr + modFraction * h),
-          w,
-          modFraction * h,
-        )
-        curr += modFraction * h
+        ctx.fillRect(roundedLeftPx, bottom - (curr + modHeight), w, modHeight)
+
+        // Add significant modifications (>4%) to clickmap
+        const frequency = entryDepth / detectable
+        if (frequency >= SNP_CLICKMAP_THRESHOLD) {
+          coords.push(
+            roundedLeftPx,
+            bottom - (curr + modHeight),
+            roundedLeftPx + w,
+            bottom - curr,
+          )
+          items.push({
+            type: 'modification',
+            modType: mod.type,
+            base: mod.base,
+            count: entryDepth,
+            total: detectable,
+            avgProb: avgProbability,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
+            isUnmodified: false,
+            start: fstart,
+          })
+        }
+        curr += modHeight
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = bin
-      const curr = drawStackedBars(
-        ctx,
-        mods,
-        colorMap,
-        roundedLeftPx,
-        bottom,
-        w,
-        h,
-        depth,
-        0,
-      )
-      drawStackedBars(
-        ctx,
-        nonmods,
-        colorMap,
-        roundedLeftPx,
-        bottom,
-        w,
-        h,
-        depth,
-        curr,
-      )
+      let currHeight = 0
+
+      // Draw mods and add significant ones to clickmap
+      for (const [modKey, entry] of Object.entries(mods)) {
+        const entryHeight = (entry.entryDepth / depth) * h
+        ctx.fillStyle = colorMap[modKey] || 'black'
+        ctx.fillRect(
+          roundedLeftPx,
+          bottom - (currHeight + entryHeight),
+          w,
+          entryHeight,
+        )
+
+        const frequency = entry.entryDepth / depth
+        if (frequency >= SNP_CLICKMAP_THRESHOLD) {
+          coords.push(
+            roundedLeftPx,
+            bottom - (currHeight + entryHeight),
+            roundedLeftPx + w,
+            bottom - currHeight,
+          )
+          items.push({
+            type: 'modification',
+            modType: modKey.replace('cpg_', '').replace('_', ' '),
+            base: 'CpG',
+            count: entry.entryDepth,
+            total: depth,
+            avgProb: entry.avgProbability,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
+            isUnmodified: modKey.includes('unmeth'),
+            start: fstart,
+          })
+        }
+        currHeight += entryHeight
+      }
+
+      // Draw nonmods and add significant ones to clickmap
+      for (const [modKey, entry] of Object.entries(nonmods)) {
+        const entryHeight = (entry.entryDepth / depth) * h
+        ctx.fillStyle = colorMap[modKey] || 'black'
+        ctx.fillRect(
+          roundedLeftPx,
+          bottom - (currHeight + entryHeight),
+          w,
+          entryHeight,
+        )
+
+        const frequency = entry.entryDepth / depth
+        if (frequency >= SNP_CLICKMAP_THRESHOLD) {
+          coords.push(
+            roundedLeftPx,
+            bottom - (currHeight + entryHeight),
+            roundedLeftPx + w,
+            bottom - currHeight,
+          )
+          items.push({
+            type: 'modification',
+            modType: modKey.replace('cpg_', '').replace('_', ' '),
+            base: 'CpG',
+            count: entry.entryDepth,
+            total: depth,
+            avgProb: entry.avgProbability,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
+            isUnmodified: true,
+            start: fstart,
+          })
+        }
+        currHeight += entryHeight
+      }
     } else {
-      const { depth, snps } = bin
+      const { depth, snps, refbase } = bin
       drawStackedBars(
         ctx,
         snps,
@@ -349,6 +530,33 @@ export function makeImageArrays(
         depth,
         0,
       )
+
+      // Add significant SNPs (>4% frequency) to clickmap - prioritized over default tooltip
+      for (const [base, entry] of Object.entries(snps)) {
+        const frequency = entry.entryDepth / score0
+        if (frequency >= SNP_CLICKMAP_THRESHOLD) {
+          const snpHeight = (entry.entryDepth / depth) * h
+          coords.push(
+            roundedLeftPx,
+            bottom - snpHeight,
+            roundedLeftPx + w,
+            bottom,
+          )
+          items.push({
+            type: 'snp',
+            base,
+            count: entry.entryDepth,
+            total: score0,
+            refbase,
+            avgQual: entry.avgProbability,
+            fwdCount: entry['1'],
+            revCount: entry['-1'],
+            bin,
+            start: fstart,
+            end: fend,
+          })
+        }
+      }
     }
 
     const noncov = bin.noncov
@@ -387,7 +595,13 @@ export function makeImageArrays(
             INTERBASE_INDICATOR_HEIGHT + totalHeight,
           )
           items.push(
-            createInterbaseItem(maxBase, totalCount, score0, noncov[maxBase]),
+            createInterbaseItem(
+              maxBase,
+              totalCount,
+              score0,
+              fstart,
+              noncov[maxBase],
+            ),
           )
         }
       } else {
@@ -424,6 +638,7 @@ export function makeImageArrays(
               maxBase,
               totalCount,
               indicatorComparatorScore,
+              fstart,
               noncov[maxBase],
             ),
           )
@@ -455,7 +670,7 @@ export function makeImageArrays(
   }
 }
 
-function buildClickMap(coords: number[], items: InterbaseIndicatorItem[]) {
+function buildClickMap(coords: number[], items: ClickMapItem[]) {
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (coords.length) {
     for (let i = 0; i < coords.length; i += 4) {

@@ -171,8 +171,7 @@ function stateModelFactory(
           notReady:
             superProps.notReady ||
             !domain ||
-            !self.stats ||
-            self.statsRegion !== statsRegion,
+            self.stats?.statsRegion !== statsRegion,
           height,
           ticks,
           inverted,
@@ -338,6 +337,17 @@ function stateModelFactory(
           return renderSvg(self, opts, superRenderSvg)
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { invertedSetting, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(invertedSetting !== undefined ? { invertedSetting } : {}),
+      } as typeof snap
     })
 }
 

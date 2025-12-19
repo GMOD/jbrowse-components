@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -19,6 +20,8 @@ interface BaseDisplayModel {
   loading: boolean
   lastDrawnOffsetPx?: number
   statusMessage?: string
+  showLegend?: boolean
+  legendItems?: () => { color?: string; label: string }[]
 }
 
 const useStyles = makeStyles()({
@@ -68,10 +71,11 @@ const DataDisplay = observer(function ({
   model: BaseDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading } = model
+  const { drawn, loading, showLegend, legendItems } = model
   const view = getContainingView(model) as LinearGenomeViewModel
   const calculatedLeft = (model.lastDrawnOffsetPx || 0) - view.offsetPx
-  const styleLeft = view.offsetPx < 0 ? 0 : calculatedLeft
+  const styleLeft = calculatedLeft
+  const items = legendItems?.() ?? []
 
   return (
     // this data-testid is located here because changing props on the canvas
@@ -85,6 +89,7 @@ const DataDisplay = observer(function ({
       >
         {children}
       </div>
+      {showLegend && items.length > 0 ? <FloatingLegend items={items} /> : null}
       {calculatedLeft !== 0 || loading ? <LoadingBar model={model} /> : null}
     </div>
   )

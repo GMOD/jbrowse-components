@@ -52,24 +52,13 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
     const region = regions[0]!
 
     // Use array-based rendering when the adapter supports getFeaturesAsArrays
-    if ('getFeaturesAsArrays' in dataAdapter) {
-      const featureArrays = await (dataAdapter as any).getFeaturesAsArrays(
-        region,
-        renderProps,
-      )
-      if (featureArrays && featureArrays.starts.length > 0) {
-        const { renderSNPCoverageArrays } = await import('./makeImageArrays')
-        return updateStatus('Rendering coverage', statusCallback, () =>
-          renderSNPCoverageArrays({ ...renderProps, featureArrays }),
-        )
-      }
-    }
-
-    // Fallback to feature-based rendering
-    const features = await this.getFeatures(renderProps)
-    const { renderSNPCoverageToCanvas } = await import('./makeImage')
+    const featureArrays = await (dataAdapter as any).getFeaturesAsArrays(
+      region,
+      renderProps,
+    )
+    const { renderSNPCoverageArrays } = await import('./makeImageArrays')
     return updateStatus('Rendering coverage', statusCallback, () =>
-      renderSNPCoverageToCanvas({ ...renderProps, features }),
+      renderSNPCoverageArrays({ ...renderProps, featureArrays }),
     )
   }
 }

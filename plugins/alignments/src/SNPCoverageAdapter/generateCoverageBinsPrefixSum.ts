@@ -460,14 +460,27 @@ function processFeature(
     const mismatches = feature.get('mismatches') as Mismatch[] | undefined
     if (mismatches) {
       for (const m of mismatches) {
+        let base: string
+        let cliplen: number | undefined
+        if (m.type === 'mismatch') {
+          base = m.base
+        } else if (m.type === 'insertion') {
+          base = m.insertedBases ?? ''
+          cliplen = m.insertlen
+        } else if (m.type === 'softclip' || m.type === 'hardclip') {
+          base = ''
+          cliplen = m.cliplen
+        } else {
+          base = ''
+        }
         mismatchHandler(
           MISMATCH_REV_MAP[m.type],
           m.start,
           m.length,
-          m.base,
-          m.qual,
-          m.altbase?.charCodeAt(0),
-          m.cliplen,
+          base,
+          m.type === 'mismatch' ? m.qual : undefined,
+          m.type === 'mismatch' ? m.altbase?.charCodeAt(0) : undefined,
+          cliplen,
         )
       }
     }

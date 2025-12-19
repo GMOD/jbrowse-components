@@ -2,25 +2,11 @@
 
 exports[`JBrowseWebSessionModel creates with no parent and just a name 1`] = `
 {
-  "activePanelId": undefined,
-  "activeWidgets": {},
-  "connectionInstances": [],
-  "dockviewLayout": undefined,
-  "drawerPosition": "right",
-  "drawerWidth": 384,
+  "drawerPosition": undefined,
+  "drawerWidth": undefined,
   "focusedViewId": undefined,
-  "margin": 0,
-  "minimized": false,
   "name": "testSession",
-  "panelViewAssignments": {},
-  "sessionAssemblies": [],
-  "sessionConnections": [],
   "sessionPlugins": [],
-  "sessionTracks": [],
-  "stickyViewHeaders": true,
-  "temporaryAssemblies": [],
-  "useWorkspaces": false,
   "views": [],
-  "widgets": {},
 }
 `;

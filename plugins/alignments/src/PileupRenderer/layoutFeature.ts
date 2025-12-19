@@ -29,7 +29,7 @@ export function layoutFeature({
     if (mismatches) {
       for (const mismatch of mismatches) {
         if (mismatch.type === 'softclip') {
-          const cliplen = mismatch.cliplen ?? 0
+          const cliplen = mismatch.cliplen
           if (mismatch.start === 0) {
             s -= cliplen
           } else {

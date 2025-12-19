@@ -1,6 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { bpToPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { drawFeature } from './drawFeature'
 import {
@@ -66,8 +67,10 @@ export function makeImageData({
   ctx.textAlign = 'left'
 
   const { subfeatureLabels, transcriptTypes } = configContext
+  const lastCheck = { time: Date.now() }
+  let idx = 0
 
-  forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
+  for (const record of layoutRecords) {
     const {
       feature,
       layout: featureLayout,
@@ -156,7 +159,8 @@ export function makeImageData({
         featureLayout: adjustedLayout,
       })
     }
-  })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
 
   return {
     flatbush: buildFlatbush(coords, items.length).data,

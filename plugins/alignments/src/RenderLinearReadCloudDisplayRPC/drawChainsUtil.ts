@@ -4,6 +4,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil'
 import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
 import { renderModifications } from '../PileupRenderer/renderers/renderModifications'
+import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
 import {
   getCharWidthHeight,
   getColorBaseMap,
@@ -31,7 +32,7 @@ export function getStrandColorKey(strand: number) {
 
 export function chainIsPairedEnd(chain: Feature[]) {
   for (const element of chain) {
-    if (element.get('flags') & 1) {
+    if (element.get('flags') & SAM_FLAG_PAIRED) {
       return true
     }
   }
@@ -41,7 +42,7 @@ export function chainIsPairedEnd(chain: Feature[]) {
 export function collectNonSupplementary(chain: Feature[]) {
   const result: Feature[] = []
   for (const element of chain) {
-    if (!(element.get('flags') & 2048)) {
+    if (!(element.get('flags') & SAM_FLAG_SUPPLEMENTARY)) {
       result.push(element)
     }
   }
@@ -53,6 +54,7 @@ export interface MismatchRenderingConfig {
   minSubfeatureWidth: number
   largeInsertionIndicatorScale: number
   hideSmallIndels: boolean
+  hideMismatches: boolean
   colorMap: Record<string, string>
   colorContrastMap: Record<string, string>
   charWidth: number
@@ -66,6 +68,7 @@ export function getMismatchRenderingConfig(
   config: AnyConfigurationModel,
   configTheme: ThemeOptions,
   colorBy: ColorBy,
+  overrides?: { hideSmallIndels?: boolean; hideMismatches?: boolean },
 ): MismatchRenderingConfig {
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
   const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth') ?? 1
@@ -73,7 +76,12 @@ export function getMismatchRenderingConfig(
     config,
     'largeInsertionIndicatorScale',
   )
-  const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
+  const hideSmallIndels =
+    overrides?.hideSmallIndels ??
+    (readConfObject(config, 'hideSmallIndels') as boolean)
+  const hideMismatches =
+    overrides?.hideMismatches ??
+    (readConfObject(config, 'hideMismatches') as boolean)
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
@@ -87,6 +95,7 @@ export function getMismatchRenderingConfig(
     minSubfeatureWidth,
     largeInsertionIndicatorScale,
     hideSmallIndels,
+    hideMismatches,
     colorMap,
     colorContrastMap,
     charWidth,

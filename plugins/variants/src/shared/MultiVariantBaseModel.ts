@@ -689,6 +689,44 @@ export default function MultiVariantBaseModelF(
         })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        layout,
+        minorAlleleFrequencyFilter,
+        showSidebarLabelsSetting,
+        showTree,
+        renderingMode,
+        rowHeightMode,
+        lengthCutoffFilter,
+        jexlFilters,
+        referenceDrawingMode,
+        clusterTree,
+        treeAreaWidth,
+        lineZoneHeight,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(layout.length ? { layout } : {}),
+        ...(minorAlleleFrequencyFilter ? { minorAlleleFrequencyFilter } : {}),
+        ...(!showSidebarLabelsSetting ? { showSidebarLabelsSetting } : {}),
+        ...(!showTree ? { showTree } : {}),
+        ...(renderingMode !== 'alleleCount' ? { renderingMode } : {}),
+        ...(rowHeightMode !== 'auto' ? { rowHeightMode } : {}),
+        ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
+          ? { lengthCutoffFilter }
+          : {}),
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+        ...(referenceDrawingMode !== 'skip' ? { referenceDrawingMode } : {}),
+        ...(clusterTree !== undefined ? { clusterTree } : {}),
+        ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
+        ...(lineZoneHeight ? { lineZoneHeight } : {}),
+      } as typeof snap
+    })
 }
 
 export type MultiVariantBaseStateModel = ReturnType<

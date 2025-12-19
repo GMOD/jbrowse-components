@@ -204,7 +204,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     feature,
                     layout: calc(tracks[level], feature),
                     level,
-                    clipPos: getClip(
+                    clipLengthAtStartOfRead: getClip(
                       feature.get('CIGAR'),
                       feature.get('strand'),
                     ),
@@ -462,8 +462,29 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { init, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        init,
+        height,
+        trackSelectorType,
+        showIntraviewLinks,
+        linkViews,
+        interactiveOverlay,
+        showHeader,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(height !== 400 ? { height } : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
+        ...(linkViews ? { linkViews } : {}),
+        ...(!interactiveOverlay ? { interactiveOverlay } : {}),
+        ...(showHeader ? { showHeader } : {}),
+      } as typeof snap
     })
 }
 

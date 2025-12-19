@@ -19,10 +19,13 @@ import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { observable } from 'mobx'
 
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
+import { getPileupLegendItems } from '../shared/legendUtils'
+import { isDefaultFilterFlags } from '../shared/util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
 import type {
@@ -30,7 +33,11 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
+import type { Theme } from '@mui/material'
 // lazies
 const FilterByTagDialog = lazy(
   () => import('../shared/components/FilterByTagDialog'),
@@ -42,7 +49,6 @@ const SetFeatureHeightDialog = lazy(
 const SetMaxHeightDialog = lazy(
   () => import('../shared/components/SetMaxHeightDialog'),
 )
-const MismatchInfoDialog = lazy(() => import('./components/MismatchInfoDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -101,6 +107,10 @@ export function SharedLinearPileupDisplayMixin(
          * #property
          */
         hideSmallIndelsSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        hideMismatchesSetting: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -148,6 +158,12 @@ export function SharedLinearPileupDisplayMixin(
        */
       get hideSmallIndels() {
         return self.hideSmallIndelsSetting
+      },
+      /**
+       * #getter
+       */
+      get hideMismatches() {
+        return self.hideMismatchesSetting
       },
     }))
     .actions(self => ({
@@ -276,6 +292,13 @@ export function SharedLinearPileupDisplayMixin(
       setHideSmallIndels(arg: boolean) {
         self.hideSmallIndelsSetting = arg
       },
+
+      /**
+       * #action
+       */
+      setHideMismatches(arg: boolean) {
+        self.hideMismatchesSetting = arg
+      },
     }))
 
     .views(self => ({
@@ -298,6 +321,7 @@ export function SharedLinearPileupDisplayMixin(
           featureHeight: height,
           noSpacing,
           hideSmallIndels,
+          hideMismatches,
           trackMaxHeight: maxHeight,
           rendererTypeName,
         } = self
@@ -306,6 +330,7 @@ export function SharedLinearPileupDisplayMixin(
           {
             ...configBlob,
             ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
+            ...(hideMismatches !== undefined ? { hideMismatches } : {}),
             ...(height !== undefined ? { height } : {}),
             ...(noSpacing !== undefined ? { noSpacing } : {}),
             ...(maxHeight !== undefined ? { maxHeight } : {}),
@@ -345,6 +370,14 @@ export function SharedLinearPileupDisplayMixin(
        */
       get filters() {
         return new SerializableFilterChain({ filters: self.jexlFilters })
+      },
+
+      /**
+       * #method
+       * Returns legend items based on current colorBy setting
+       */
+      legendItems(theme: Theme): LegendItem[] {
+        return getPileupLegendItems(self.colorBy, theme)
       },
     }))
     .views(self => {
@@ -455,25 +488,6 @@ export function SharedLinearPileupDisplayMixin(
 
             onClick() {
               self.clearFeatureSelection()
-            },
-            async onMismatchClick(
-              _: unknown,
-              item: {
-                type: string
-                seq: string
-                modType?: string
-                probability?: number
-              },
-              featureId?: string,
-            ) {
-              getSession(self).queueDialog(handleClose => [
-                MismatchInfoDialog,
-                {
-                  item,
-                  featureId,
-                  handleClose,
-                },
-              ])
             },
             // similar to click but opens a menu with further options
             async onFeatureContextMenu(_: unknown, featureId?: string) {
@@ -638,6 +652,15 @@ export function SharedLinearPileupDisplayMixin(
               },
             },
             {
+              label: 'Hide mismatches',
+              priority: -1,
+              type: 'checkbox',
+              checked: self.hideMismatches,
+              onClick: () => {
+                self.setHideMismatches(!self.hideMismatches)
+              },
+            },
+            {
               label: 'Set max track height...',
               priority: -1,
               onClick: () => {
@@ -661,6 +684,15 @@ export function SharedLinearPileupDisplayMixin(
                     handleClose,
                   },
                 ])
+              },
+            },
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
               },
             },
           ]
@@ -695,5 +727,31 @@ export function SharedLinearPileupDisplayMixin(
         }
       }
       return snap
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        trackMaxHeight,
+        colorBySetting,
+        filterBySetting,
+        jexlFilters,
+        hideSmallIndelsSetting,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
+        ...(colorBySetting !== undefined ? { colorBySetting } : {}),
+        ...(!isDefaultFilterFlags(filterBySetting) ? { filterBySetting } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+        ...(hideSmallIndelsSetting !== undefined
+          ? { hideSmallIndelsSetting }
+          : {}),
+      } as typeof snap
     })
 }

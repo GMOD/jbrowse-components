@@ -424,8 +424,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { init, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        init,
+        drawCIGAR,
+        drawCIGARMatchesOnly,
+        drawCurves,
+        drawLocationMarkers,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(!drawCIGAR ? { drawCIGAR } : {}),
+        ...(drawCIGARMatchesOnly ? { drawCIGARMatchesOnly } : {}),
+        ...(drawCurves ? { drawCurves } : {}),
+        ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
+      } as typeof snap
     })
 }
 export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>

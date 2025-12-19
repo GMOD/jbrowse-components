@@ -9,19 +9,22 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   type ExportSvgDisplayOptions,
   FeatureDensityMixin,
+  type LegendItem,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
 import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
+import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { getReadDisplayLegendItems } from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -29,7 +32,6 @@ import {
 
 import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SetFeatureHeightDialog = lazy(
@@ -54,6 +56,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       LinearReadDisplayBaseMixin(),
       LinearReadDisplayWithLayoutMixin(),
       LinearReadDisplayWithPairFiltersMixin(),
+      RPCRenderingMixin(),
       SharedModificationsMixin(),
       types.model({
         /**
@@ -81,6 +84,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * Maximum height for the layout (prevents infinite stacking)
          */
         trackMaxHeight: types.maybe(types.number),
+
+        /**
+         * #property
+         */
+        hideSmallIndelsSetting: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        hideMismatchesSetting: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -91,19 +109,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       layoutHeight: 0,
       /**
        * #volatile
-       * ImageData returned from RPC rendering
-       */
-      renderingImageData: undefined as ImageBitmap | undefined,
-      /**
-       * #volatile
        * Chain ID of the currently selected feature for persistent highlighting
        */
       selectedFeatureId: undefined as string | undefined,
-      /**
-       * #volatile
-       * Stop token for the current rendering operation
-       */
-      renderingStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       get dataTestId() {
@@ -112,20 +120,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get colorBy() {
-        return self.colorBySetting ?? getConf(self, 'colorBy')
-      },
-      /**
-       * #getter
-       */
-      get filterBy() {
-        return self.filterBySetting ?? getConf(self, 'filterBy')
-      },
-      /**
-       * #getter
-       */
       get featureHeightSetting() {
         return self.featureHeight ?? getConf(self, 'featureHeight')
+      },
+      /**
+       * #getter
+       */
+      get hideSmallIndels() {
+        return self.hideSmallIndelsSetting ?? getConf(self, 'hideSmallIndels')
+      },
+      /**
+       * #getter
+       */
+      get hideMismatches() {
+        return self.hideMismatchesSetting ?? getConf(self, 'hideMismatches')
       },
     }))
     .views(self => ({
@@ -137,12 +145,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      reload() {
-        self.error = undefined
-      },
       /**
        * #action
        * Set whether to remove spacing between features
@@ -192,25 +194,41 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
-       * Set the rendering imageData from RPC
-       */
-      setRenderingImageData(imageData: ImageBitmap | undefined) {
-        self.renderingImageData = imageData
-      },
-      /**
-       * #action
        * Set the ID of the selected feature for persistent highlighting
        */
       setSelectedFeatureId(id: string | undefined) {
         self.selectedFeatureId = id
       },
+      /**
+       * #action
+       */
+      setHideSmallIndels(arg: boolean) {
+        self.hideSmallIndelsSetting = arg
+      },
+      /**
+       * #action
+       */
+      setHideMismatches(arg: boolean) {
+        self.hideMismatchesSetting = arg
+      },
 
       /**
        * #action
-       * Set the rendering stop token
        */
-      setRenderingStopToken(token?: StopToken) {
-        self.renderingStopToken = token
+      setShowLegend(s: boolean) {
+        self.showLegend = s
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Returns legend items based on current colorBy setting
+       */
+      legendItems(): LegendItem[] {
+        return getReadDisplayLegendItems(
+          self.colorBy,
+          self.visibleModifications,
+        )
       },
     }))
     .views(self => {
@@ -220,16 +238,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       } = self
 
       return {
-        // we don't use a server side renderer, so this fills in minimal
-        // info so as not to crash
+        /**
+         * #method
+         */
         renderProps() {
           return {
             ...superRenderProps(),
-            // We use RPC rendering, so we're always ready (data is fetched in RPC)
             notReady: false,
           }
         },
-
         /**
          * #method
          */
@@ -323,8 +340,33 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 self.setFlipStrandLongReadChains(!self.flipStrandLongReadChains)
               },
             },
+            {
+              label: 'Hide small indels (<10bp)',
+              type: 'checkbox',
+              checked: self.hideSmallIndels,
+              onClick: () => {
+                self.setHideSmallIndels(!self.hideSmallIndels)
+              },
+            },
+            {
+              label: 'Hide mismatches',
+              type: 'checkbox',
+              checked: self.hideMismatches,
+              onClick: () => {
+                self.setHideMismatches(!self.hideMismatches)
+              },
+            },
             getFilterByMenuItem(self),
             getColorSchemeMenuItem(self),
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
+            },
           ]
         },
 
@@ -340,13 +382,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }
     })
     .actions(self => ({
-      beforeDestroy() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-        }
-      },
-    }))
-    .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
@@ -360,6 +395,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { drawCloud, noSpacing, trackMaxHeight, showLegend, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(drawCloud ? { drawCloud } : {}),
+        ...(noSpacing !== undefined ? { noSpacing } : {}),
+        ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
+        ...(showLegend !== undefined ? { showLegend } : {}),
+      } as typeof snap
+    })
 }
 
 export type LinearReadCloudDisplayStateModel = ReturnType<

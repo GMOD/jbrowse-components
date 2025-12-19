@@ -52,6 +52,14 @@ function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
   const minWidth = 100
   const defaultHeight = 400
+  const defaultOffsetRadians = -Math.PI / 2
+  const defaultBpPerPx = 200
+  const defaultMinimumRadiusPx = 25
+  const defaultSpacingPx = 10
+  const defaultPaddingPx = 80
+  const defaultLockedPaddingPx = 100
+  const defaultMinVisibleWidth = 6
+  const defaultMinimumBlockWidth = 20
   return types
     .compose(
       'CircularView',
@@ -65,11 +73,11 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * similar to offsetPx in linear genome view
          */
-        offsetRadians: -Math.PI / 2,
+        offsetRadians: defaultOffsetRadians,
         /**
          * #property
          */
-        bpPerPx: 200,
+        bpPerPx: defaultBpPerPx,
         /**
          * #property
          */
@@ -114,27 +122,27 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        minimumRadiusPx: 25,
+        minimumRadiusPx: defaultMinimumRadiusPx,
         /**
          * #property
          */
-        spacingPx: 10,
+        spacingPx: defaultSpacingPx,
         /**
          * #property
          */
-        paddingPx: 80,
+        paddingPx: defaultPaddingPx,
         /**
          * #property
          */
-        lockedPaddingPx: 100,
+        lockedPaddingPx: defaultLockedPaddingPx,
         /**
          * #property
          */
-        minVisibleWidth: 6,
+        minVisibleWidth: defaultMinVisibleWidth,
         /**
          * #property
          */
-        minimumBlockWidth: 20,
+        minimumBlockWidth: defaultMinimumBlockWidth,
         /**
          * #property
          */
@@ -696,8 +704,59 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { init, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        init,
+        offsetRadians,
+        bpPerPx,
+        hideVerticalResizeHandle,
+        hideTrackSelectorButton,
+        lockedFitToWindow,
+        disableImportForm,
+        height,
+        displayedRegions,
+        scrollX,
+        scrollY,
+        minimumRadiusPx,
+        spacingPx,
+        paddingPx,
+        lockedPaddingPx,
+        minVisibleWidth,
+        minimumBlockWidth,
+        trackSelectorType,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(offsetRadians !== defaultOffsetRadians ? { offsetRadians } : {}),
+        ...(bpPerPx !== defaultBpPerPx ? { bpPerPx } : {}),
+        ...(hideVerticalResizeHandle ? { hideVerticalResizeHandle } : {}),
+        ...(hideTrackSelectorButton ? { hideTrackSelectorButton } : {}),
+        ...(!lockedFitToWindow ? { lockedFitToWindow } : {}),
+        ...(disableImportForm ? { disableImportForm } : {}),
+        ...(height !== defaultHeight ? { height } : {}),
+        ...(displayedRegions.length ? { displayedRegions } : {}),
+        ...(scrollX ? { scrollX } : {}),
+        ...(scrollY ? { scrollY } : {}),
+        ...(minimumRadiusPx !== defaultMinimumRadiusPx
+          ? { minimumRadiusPx }
+          : {}),
+        ...(spacingPx !== defaultSpacingPx ? { spacingPx } : {}),
+        ...(paddingPx !== defaultPaddingPx ? { paddingPx } : {}),
+        ...(lockedPaddingPx !== defaultLockedPaddingPx
+          ? { lockedPaddingPx }
+          : {}),
+        ...(minVisibleWidth !== defaultMinVisibleWidth
+          ? { minVisibleWidth }
+          : {}),
+        ...(minimumBlockWidth !== defaultMinimumBlockWidth
+          ? { minimumBlockWidth }
+          : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+      } as typeof snap
     })
 }
 

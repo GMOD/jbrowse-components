@@ -12,10 +12,13 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import FilterListIcon from '@mui/icons-material/FilterList'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import { getUniqueModifications } from '../shared/getUniqueModifications'
+import { getSNPCoverageLegendItems } from '../shared/legendUtils'
+import { isDefaultFilterFlags } from '../shared/util'
 import { createAutorun } from '../util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
@@ -28,14 +31,13 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
+  LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { Theme } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
-const InterbaseInfoDialog = lazy(
-  () => import('./components/InterbaseInfoDialog'),
-)
 const FilterArcsByScoreDialog = lazy(
   () => import('./components/FilterArcsByScoreDialog'),
 )
@@ -349,24 +351,7 @@ function stateModelFactory(
         renderingProps() {
           return {
             ...superRenderingProps(),
-            onIndicatorClick(
-              _: unknown,
-              item: {
-                type: 'insertion' | 'softclip' | 'hardclip'
-                base: string
-                count: number
-                total: number
-                avgLength?: number
-                minLength?: number
-                maxLength?: number
-                topSequence?: string
-              },
-            ) {
-              getSession(self).queueDialog(handleClose => [
-                InterbaseInfoDialog,
-                { item, handleClose },
-              ])
-            },
+            displayModel: self,
           }
         },
 
@@ -439,33 +424,39 @@ function stateModelFactory(
           return [
             ...wiggleBaseTrackMenuItems(),
             {
-              label: 'Show insertion/clipping indicators',
+              label: 'Show...',
               icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showInterbaseIndicatorsSetting,
-              onClick: () => {
-                self.setShowInterbaseIndicators(
-                  !self.showInterbaseIndicatorsSetting,
-                )
-              },
-            },
-            {
-              label: 'Show insertion/clipping counts',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showInterbaseCountsSetting,
-              onClick: () => {
-                self.setShowInterbaseCounts(!self.showInterbaseCountsSetting)
-              },
-            },
-            {
-              label: 'Show arcs',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showArcsSetting,
-              onClick: () => {
-                self.setShowArcs(!self.showArcsSetting)
-              },
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Insertion/clipping indicators',
+                  type: 'checkbox',
+                  checked: self.showInterbaseIndicatorsSetting,
+                  onClick: () => {
+                    self.setShowInterbaseIndicators(
+                      !self.showInterbaseIndicatorsSetting,
+                    )
+                  },
+                },
+                {
+                  label: 'Insertion/clipping counts',
+                  type: 'checkbox',
+                  checked: self.showInterbaseCountsSetting,
+                  onClick: () => {
+                    self.setShowInterbaseCounts(
+                      !self.showInterbaseCountsSetting,
+                    )
+                  },
+                },
+                {
+                  label: 'Sashimi arcs',
+                  type: 'checkbox',
+                  checked: self.showArcsSetting,
+                  onClick: () => {
+                    self.setShowArcs(!self.showArcsSetting)
+                  },
+                },
+              ],
             },
             {
               label: 'Filter arcs by score...',
@@ -477,6 +468,15 @@ function stateModelFactory(
                 ])
               },
             },
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
+            },
           ]
         },
 
@@ -485,6 +485,18 @@ function stateModelFactory(
          */
         get filters() {
           return new SerializableFilterChain({ filters: self.jexlFilters })
+        },
+
+        /**
+         * #method
+         * Returns legend items for SNP coverage display
+         */
+        legendItems(theme: Theme): LegendItem[] {
+          return getSNPCoverageLegendItems(
+            self.colorBy,
+            self.visibleModifications,
+            theme,
+          )
         },
       }
     })
@@ -501,6 +513,36 @@ function stateModelFactory(
         }
       }
       return snap
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        showInterbaseCounts,
+        showInterbaseIndicators,
+        showArcs,
+        minArcScore,
+        filterBySetting,
+        colorBySetting,
+        jexlFilters,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(showInterbaseCounts !== undefined ? { showInterbaseCounts } : {}),
+        ...(showInterbaseIndicators !== undefined
+          ? { showInterbaseIndicators }
+          : {}),
+        ...(showArcs !== undefined ? { showArcs } : {}),
+        ...(minArcScore ? { minArcScore } : {}),
+        ...(!isDefaultFilterFlags(filterBySetting) ? { filterBySetting } : {}),
+        ...(colorBySetting !== undefined ? { colorBySetting } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+      } as typeof snap
     })
 }
 
