@@ -318,6 +318,7 @@ export function renderBlockData(
 
     const sessionId = getRpcSessionId(display)
     const layoutId = parentTrack.id
+    const statsId = parentTrack.id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
@@ -339,6 +340,7 @@ export function renderBlockData(
         rendererType: rendererType.name,
         sessionId,
         layoutId,
+        statsId,
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
         timeout: 1_000_000,

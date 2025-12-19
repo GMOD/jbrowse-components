@@ -40,7 +40,7 @@ function makeFilterByKey(filterBy?: FilterBy) {
 }
 
 function makeRegionFilterKey(region: Region, opts: SNPCoverageOptions) {
-  return `${region.refName}:${region.start}-${region.end}|${makeFilterByKey(opts.filterBy)}`
+  return `${region.refName}:${region.start}-${region.end}|${makeFilterByKey(opts.filterBy)}|${opts.statsId || ''}`
 }
 
 function makeCacheKey(region: Region, opts: SNPCoverageOptions) {
@@ -233,6 +233,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     opts: SNPCoverageOptions = {},
   ): Promise<CoverageBinsSoA> {
     const { bpPerPx, statsEstimationMode } = opts
+    console.log(opts.sessionId)
 
     // Clear cache when bpPerPx changes (zoom level changed)
     if (this.lastBpPerPx !== undefined && this.lastBpPerPx !== bpPerPx) {

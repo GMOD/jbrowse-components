@@ -1094,6 +1094,16 @@ export function getLayoutId({
   return `${sessionId}-${layoutId}`
 }
 
+export function getStatsId({
+  sessionId,
+  statsId,
+}: {
+  sessionId: string
+  statsId: string
+}) {
+  return `${sessionId}-${statsId}`
+}
+
 // Hook from https://usehooks.com/useLocalStorage/
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(() => {

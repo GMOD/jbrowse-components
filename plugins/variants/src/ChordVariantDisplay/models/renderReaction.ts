@@ -1,4 +1,8 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -23,6 +27,8 @@ export function renderReactionData(self: any) {
       regions: structuredClone(view.displayedRegions),
       blockDefinitions: self.blockDefinitions,
       sessionId: getRpcSessionId(self),
+      layoutId: getContainingTrack(self).id,
+      statsId: getContainingTrack(self).id,
       timeout: 1000000,
     },
   }

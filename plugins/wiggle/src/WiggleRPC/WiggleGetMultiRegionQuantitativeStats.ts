@@ -44,6 +44,7 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFilt
       adapterConfig: Record<string, unknown>
       stopToken?: string
       sessionId: string
+      statsId: string
       headers?: Record<string, string>
       regions: Region[]
       staticBlocks?: Region[]
