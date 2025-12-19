@@ -69,14 +69,24 @@ function addRectToPath(
   ctx.rect(x, y, width, height)
 }
 
+interface ColorArrays {
+  colors?: string[]
+  lightenedColors?: string[]
+  darkenedColors?: string[]
+  maxScoreColors?: string[]
+  minScoreColors?: string[]
+}
+
 /**
  * Convert Feature objects to structure-of-arrays format for use with drawXYArrays.
  * Optionally computes per-feature colors using the provided callback.
+ * When whiskers=true, also pre-computes lightened/darkened colors for the 3-pass rendering.
  */
 function featuresToArrays(
   features: Map<string, Feature> | Feature[],
   colorCallback?: (f: Feature, score: number) => string,
-): WiggleFeatureArrays & { colors?: string[] } {
+  whiskers?: boolean,
+): WiggleFeatureArrays & ColorArrays {
   const featureList = Array.isArray(features)
     ? features
     : Array.from(features.values())
@@ -87,7 +97,16 @@ function featuresToArrays(
   const minScoresArr = new Float32Array(len)
   const maxScoresArr = new Float32Array(len)
   const colors = colorCallback ? new Array<string>(len) : undefined
+  const lightenedColors = colorCallback && whiskers ? new Array<string>(len) : undefined
+  const darkenedColors = colorCallback && whiskers ? new Array<string>(len) : undefined
+  const maxScoreColors = colorCallback && whiskers ? new Array<string>(len) : undefined
+  const minScoreColors = colorCallback && whiskers ? new Array<string>(len) : undefined
   let hasSummary = false
+
+  // Cache for color transformations to avoid recomputing for same colors
+  let lastColor = ''
+  let lastLightened = ''
+  let lastDarkened = ''
 
   for (let i = 0; i < len; i++) {
     const f = featureList[i]!
@@ -95,13 +114,30 @@ function featuresToArrays(
     starts[i] = f.get('start')
     ends[i] = f.get('end')
     scores[i] = score
-    if (f.get('summary')) {
+    const isSummary = f.get('summary')
+    if (isSummary) {
       hasSummary = true
       minScoresArr[i] = f.get('minScore')
       maxScoresArr[i] = f.get('maxScore')
     }
     if (colors && colorCallback) {
-      colors[i] = colorCallback(f, score)
+      const color = colorCallback(f, score)
+      colors[i] = color
+      if (whiskers) {
+        // Cache lightened/darkened colors to avoid recomputing for same color
+        if (color !== lastColor) {
+          const colordColor = colord(color)
+          lastLightened = lighten(colordColor, 0.4).toHex()
+          lastDarkened = darken(colordColor, 0.4).toHex()
+          lastColor = color
+        }
+        lightenedColors![i] = lastLightened
+        darkenedColors![i] = lastDarkened
+        if (isSummary) {
+          maxScoreColors![i] = colorCallback(f, maxScoresArr[i]!)
+          minScoreColors![i] = colorCallback(f, minScoresArr[i]!)
+        }
+      }
     }
   }
 
@@ -112,6 +148,10 @@ function featuresToArrays(
     minScores: hasSummary ? minScoresArr : undefined,
     maxScores: hasSummary ? maxScoresArr : undefined,
     colors,
+    lightenedColors,
+    darkenedColors,
+    maxScoreColors,
+    minScoreColors,
   }
 }
 
@@ -142,7 +182,7 @@ function darken(color: Colord, amount: number) {
 export function drawXYArrays(
   ctx: CanvasRenderingContext2D,
   props: {
-    featureArrays: WiggleFeatureArrays & { colors?: string[] }
+    featureArrays: WiggleFeatureArrays & ColorArrays
     bpPerPx: number
     regions: Region[]
     scaleOpts: ScaleOpts
@@ -182,7 +222,18 @@ export function drawXYArrays(
   } = props
 
   // Determine color mode: per-feature colors, bicolor, or static color
-  const { starts, ends, scores, minScores, maxScores, colors } = featureArrays
+  const {
+    starts,
+    ends,
+    scores,
+    minScores,
+    maxScores,
+    colors,
+    lightenedColors,
+    darkenedColors,
+    maxScoreColors,
+    minScoreColors,
+  } = featureArrays
   const usePerFeatureColors = colors !== undefined && colors.length > 0
   const useBicolor = !usePerFeatureColors && posColor !== undefined && negColor !== undefined
   const staticColor = color ?? posColor ?? 'blue'
@@ -251,9 +302,6 @@ export function drawXYArrays(
 
   // Handle whiskers mode with 3-pass rendering (max, avg, min scores)
   if (summaryScoreMode === 'whiskers' && isSummary && filled) {
-    const colordStatic = colord(staticColor)
-    const lightenedColor = lighten(colordStatic, 0.4).toHex()
-    const darkenedColor = darken(colordStatic, 0.4).toHex()
     let prevLeftPx = Number.NEGATIVE_INFINITY
 
     const toY = (n: number) => {
@@ -264,73 +312,158 @@ export function drawXYArrays(
     }
     const toOrigin = (n: number) => toY(originY) - toY(n)
 
-    // Pass 1: max scores (lightened)
-    ctx.beginPath()
-    for (let i = 0; i < len; i++) {
-      checkStopToken2(stopToken, i, lastCheck)
-      const fstart = starts[i]!
-      const fend = ends[i]!
-      const leftPx = reversed
-        ? (regionEnd - fend) * invBpPerPx
-        : (fstart - regionStart) * invBpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) * invBpPerPx
-        : (fend - regionStart) * invBpPerPx
-      const maxScore = maxScores![i]!
-      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-      addRectToPath(leftPx, toY(maxScore), w, toOrigin(maxScore), ctx)
-    }
-    ctx.fillStyle = lightenedColor
-    ctx.fill()
+    // Determine if we can batch (static color, no alpha)
+    const useWhiskersPerFeatureColors = lightenedColors !== undefined
+    const colordStatic = colord(staticColor)
+    const lightenedColor = lighten(colordStatic, 0.4).toHex()
+    const darkenedColor = darken(colordStatic, 0.4).toHex()
 
-    // Pass 2: average scores
-    ctx.beginPath()
-    for (let i = 0; i < len; i++) {
-      const fstart = starts[i]!
-      const fend = ends[i]!
-      const leftPx = reversed
-        ? (regionEnd - fend) * invBpPerPx
-        : (fstart - regionStart) * invBpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) * invBpPerPx
-        : (fend - regionStart) * invBpPerPx
-      const score = scores[i]!
-      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+    // Check if crossing origin for mixed color mode
+    const bicolorPivotValue = readConfObject(config, 'bicolorPivotValue')
+    const crossingOrigin = niceMin < bicolorPivotValue && niceMax > bicolorPivotValue
 
-      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-        reducedStarts.push(fstart)
-        reducedEnds.push(fend)
-        reducedScores.push(score)
-        if (reducedMinScores) {
-          reducedMinScores.push(minScores![i]!)
-        }
-        if (reducedMaxScores) {
-          reducedMaxScores.push(maxScores![i]!)
-        }
-        prevLeftPx = leftPx
+    if (useWhiskersPerFeatureColors) {
+      // Per-feature colors path (cannot batch)
+      const lastFillStyle = { value: '' }
+
+      // Pass 1: max scores (lightened)
+      for (let i = 0; i < len; i++) {
+        checkStopToken2(stopToken, i, lastCheck)
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const maxScore = maxScores![i]!
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+        const featureColor = crossingOrigin ? colors![i]! : lightenedColors![i]!
+        fillRectCtx(leftPx, toY(maxScore), w, toOrigin(maxScore), ctx, featureColor, lastFillStyle)
       }
-      addRectToPath(leftPx, toY(score), w, toOrigin(score), ctx)
-    }
-    ctx.fillStyle = staticColor
-    ctx.fill()
+      lastFillStyle.value = ''
 
-    // Pass 3: min scores (darkened)
-    ctx.beginPath()
-    for (let i = 0; i < len; i++) {
-      const fstart = starts[i]!
-      const fend = ends[i]!
-      const leftPx = reversed
-        ? (regionEnd - fend) * invBpPerPx
-        : (fstart - regionStart) * invBpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) * invBpPerPx
-        : (fend - regionStart) * invBpPerPx
-      const minScore = minScores![i]!
-      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-      addRectToPath(leftPx, toY(minScore), w, toOrigin(minScore), ctx)
+      // Pass 2: average scores
+      for (let i = 0; i < len; i++) {
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const score = scores[i]!
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+
+        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+          reducedStarts.push(fstart)
+          reducedEnds.push(fend)
+          reducedScores.push(score)
+          if (reducedMinScores) {
+            reducedMinScores.push(minScores![i]!)
+          }
+          if (reducedMaxScores) {
+            reducedMaxScores.push(maxScores![i]!)
+          }
+          prevLeftPx = leftPx
+        }
+
+        // For crossing origin, mix maxScore and minScore colors
+        let featureColor = colors![i]!
+        if (crossingOrigin && maxScoreColors && minScoreColors) {
+          featureColor = colord(maxScoreColors[i]!).mix(colord(minScoreColors[i]!)).toHex()
+        }
+        fillRectCtx(leftPx, toY(score), w, toOrigin(score), ctx, featureColor, lastFillStyle)
+      }
+      lastFillStyle.value = ''
+
+      // Pass 3: min scores (darkened)
+      for (let i = 0; i < len; i++) {
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const minScore = minScores![i]!
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+        const featureColor = crossingOrigin ? colors![i]! : darkenedColors![i]!
+        fillRectCtx(leftPx, toY(minScore), w, toOrigin(minScore), ctx, featureColor, lastFillStyle)
+      }
+    } else {
+      // Static color path (can batch all rects)
+      // Pass 1: max scores (lightened)
+      ctx.beginPath()
+      for (let i = 0; i < len; i++) {
+        checkStopToken2(stopToken, i, lastCheck)
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const maxScore = maxScores![i]!
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+        addRectToPath(leftPx, toY(maxScore), w, toOrigin(maxScore), ctx)
+      }
+      ctx.fillStyle = lightenedColor
+      ctx.fill()
+
+      // Pass 2: average scores
+      ctx.beginPath()
+      for (let i = 0; i < len; i++) {
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const score = scores[i]!
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+
+        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+          reducedStarts.push(fstart)
+          reducedEnds.push(fend)
+          reducedScores.push(score)
+          if (reducedMinScores) {
+            reducedMinScores.push(minScores![i]!)
+          }
+          if (reducedMaxScores) {
+            reducedMaxScores.push(maxScores![i]!)
+          }
+          prevLeftPx = leftPx
+        }
+        addRectToPath(leftPx, toY(score), w, toOrigin(score), ctx)
+      }
+      ctx.fillStyle = staticColor
+      ctx.fill()
+
+      // Pass 3: min scores (darkened)
+      ctx.beginPath()
+      for (let i = 0; i < len; i++) {
+        const fstart = starts[i]!
+        const fend = ends[i]!
+        const leftPx = reversed
+          ? (regionEnd - fend) * invBpPerPx
+          : (fstart - regionStart) * invBpPerPx
+        const rightPx = reversed
+          ? (regionEnd - fstart) * invBpPerPx
+          : (fend - regionStart) * invBpPerPx
+        const minScore = minScores![i]!
+        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
+        addRectToPath(leftPx, toY(minScore), w, toOrigin(minScore), ctx)
+      }
+      ctx.fillStyle = darkenedColor
+      ctx.fill()
     }
-    ctx.fillStyle = darkenedColor
-    ctx.fill()
 
     if (displayCrossHatches) {
       ctx.lineWidth = 1
@@ -425,7 +558,9 @@ export function drawXYArrays(
           : (score - niceMin) * linearRatio
         const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
         const y = yClamped + offset
-        if (useBicolor) {
+        if (usePerFeatureColors) {
+          ctx.fillStyle = colors![idx]!
+        } else if (useBicolor) {
           ctx.fillStyle = score < pivotValue ? negColor : posColor
         }
         ctx.fillRect(px, y, rectW, originYPx - y)
@@ -548,11 +683,13 @@ export function drawXYArrays(
           : (score - niceMin) * linearRatio
         const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
         const y = yClamped + offset
-        const featureColor = useBicolor
-          ? score < pivotValue
-            ? negColor
-            : posColor
-          : staticColor
+        const featureColor = usePerFeatureColors
+          ? colors![i]!
+          : useBicolor
+            ? score < pivotValue
+              ? negColor
+              : posColor
+            : staticColor
         if (featureColor !== lastFillStyle) {
           ctx.fillStyle = featureColor
           lastFillStyle = featureColor
@@ -594,8 +731,6 @@ export function drawXYArrays(
     let clipLowCount = 0
     let prevLeftPx = Number.NEGATIVE_INFINITY
     const dotSize = Math.max(minSize, 1)
-
-    const canBatch = !useBicolor && !hasAlpha
 
     if (canBatch) {
       ctx.beginPath()
@@ -644,7 +779,7 @@ export function drawXYArrays(
       ctx.fill()
     } else {
       let lastFillStyle = ''
-      if (!useBicolor) {
+      if (!useBicolor && !usePerFeatureColors) {
         ctx.fillStyle = staticColor
         lastFillStyle = staticColor
       }
@@ -680,7 +815,13 @@ export function drawXYArrays(
         const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
         const y = yClamped + offset
 
-        if (useBicolor) {
+        if (usePerFeatureColors) {
+          const featureColor = colors![i]!
+          if (featureColor !== lastFillStyle) {
+            ctx.fillStyle = featureColor
+            lastFillStyle = featureColor
+          }
+        } else if (useBicolor) {
           const featureColor = score < pivotValue ? negColor : posColor
           if (featureColor !== lastFillStyle) {
             ctx.fillStyle = featureColor
@@ -793,404 +934,15 @@ export function drawXY(
     })
   }
 
-  const region = regions[0]!
-  const regionStart = region.start
-  const regionEnd = region.end
-  const reversed = region.reversed
-  const invBpPerPx = 1 / bpPerPx
-  const width = (regionEnd - regionStart) * invBpPerPx
-
-  const height = unadjustedHeight - offset * 2
-
-  // allow filled prop to override config value (for point renderers)
-  const filled = filledProp ?? readConfObject(config, 'filled')
-  const clipColor = readConfObject(config, 'clipColor')
-  const pivotValue = readConfObject(config, 'bicolorPivotValue')
-  const minSize = readConfObject(config, 'minSize')
-
-  // Use d3-scale only to get the "niced" domain, then use simple arithmetic
-  const scale = getScale({ ...scaleOpts, range: [0, height], inverted })
-  const originY = getOrigin(scaleOpts.scaleType)
-  const domain = scale.domain() as [number, number]
-  const niceMin = domain[0]
-  const niceMax = domain[1]
-  const domainSpan = niceMax - niceMin
-  const isLog = scaleOpts.scaleType === 'log'
-
-  // Precompute values for linear scale
-  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
-
-  // Precompute values for log scale (base 2)
-  const log2 = Math.log(2)
-  const logMin = Math.log(niceMin) / log2
-  const logMax = Math.log(niceMax) / log2
-  const logSpan = logMax - logMin
-  const logRatio = logSpan !== 0 ? height / logSpan : 0
-
-  // Simple arithmetic scale function - avoid d3-scale overhead in hot path
-  const toY = isLog
-    ? (n: number) => {
-        const scaled = (Math.log(n) / log2 - logMin) * logRatio
-        return (
-          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
-          offset
-        )
-      }
-    : (n: number) => {
-        const scaled = (n - niceMin) * linearRatio
-        return (
-          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
-          offset
-        )
-      }
-  const toOrigin = (n: number) => toY(originY) - toY(n)
-  const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
-
-  let prevLeftPx = Number.NEGATIVE_INFINITY
-  const reducedFeatures = []
-  const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
-
-  const lastCheck = { time: Date.now() }
-  let iter = 0
-
-  // we handle whiskers separately to render max row, min row, and avg in three
-  // passes. this reduces subpixel rendering issues. note: for stylistic
-  // reasons, clipping indicator is only drawn for score, not min/max score
-  if (summaryScoreMode === 'whiskers') {
-    // pre-compute feature data to avoid repeated feature.get() calls across passes
-    // when staticColor is set, also pre-compute derived colors
-    const featureData: {
-      feature: Feature
-      leftPx: number
-      rightPx: number
-      score: number
-      maxScore: number
-      minScore: number
-      summary: boolean
-      color: string
-      lightenedColor?: string
-      darkenedColor?: string
-      mixedColor?: string
-    }[] = []
-    const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
-    const isLog = scaleOpts.scaleType === 'log'
-    // inline featureSpanPx: pre-compute region values for pixel calculation
-    const regionStart = region.start
-    const regionEnd = region.end
-    const reversed = region.reversed
-    const rpx = (bp: number) =>
-      Math.round(
-        ((reversed ? regionEnd - bp : bp - regionStart) / bpPerPx) * 10,
-      ) / 10
-
-    // when staticColor is set, pre-compute all color variants once
-    let staticLightened: string | undefined
-    let staticDarkened: string | undefined
-    let staticMixed: string | undefined
-    if (staticColor) {
-      const colordStatic = colord(staticColor)
-      staticLightened = lighten(colordStatic, 0.4).toHex()
-      staticDarkened = darken(colordStatic, 0.4).toHex()
-      staticMixed = staticColor // for static color, mixed is just the color itself
-    }
-
-    for (const feature of features.values()) {
-      checkStopToken2(stopToken, iter++, lastCheck)
-      // inline featureSpanPx to avoid extra function calls and feature.get for start/end
-      const fStart = feature.get('start')
-      const fEnd = feature.get('end')
-      const px1 = rpx(fStart)
-      const px2 = rpx(fEnd)
-      const leftPx = reversed ? px2 : px1
-      const rightPx = reversed ? px1 : px2
-      const score = feature.get('score')
-      const maxScore = feature.get('maxScore')
-      const minScore = feature.get('minScore')
-      const summary = feature.get('summary')
-
-      // compute color once per feature
-      const color = staticColor || colorCallback(feature, score)
-
-      featureData.push({
-        feature,
-        leftPx,
-        rightPx,
-        score,
-        maxScore,
-        minScore,
-        summary,
-        color,
-        // pre-compute color variants if not using staticColor
-        lightenedColor: staticLightened,
-        darkenedColor: staticDarkened,
-        mixedColor: staticMixed,
-      })
-      // track clipping during data collection pass
-      if (score > niceMax) {
-        clippingFeatures.push({
-          leftPx,
-          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
-          high: true,
-        })
-      } else if (score < niceMin && !isLog) {
-        clippingFeatures.push({
-          leftPx,
-          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
-          high: false,
-        })
-      }
-    }
-
-    // when staticColor is provided and not crossing origin, we can batch all
-    // rects of the same color into a single path and fill once
-    // cannot batch if color has alpha since overlapping rects would blend differently
-    const hasAlpha = staticColor ? colord(staticColor).alpha() < 1 : false
-    const canBatch = staticColor && !crossingOrigin && !hasAlpha
-
-    if (canBatch) {
-      // pass 1: max scores (lightened)
-      ctx.beginPath()
-      for (const fd of featureData) {
-        const { leftPx, rightPx, maxScore, summary } = fd
-        if (summary) {
-          const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-          addRectToPath(leftPx, toY(maxScore), w, getHeight(maxScore), ctx)
-        }
-      }
-      ctx.fillStyle = staticLightened!
-      ctx.fill()
-
-      // pass 2: average scores
-      ctx.beginPath()
-      for (const fd of featureData) {
-        const { feature, leftPx, rightPx, score } = fd
-        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-          reducedFeatures.push(feature)
-          prevLeftPx = leftPx
-        }
-        addRectToPath(leftPx, toY(score), w, getHeight(score), ctx)
-      }
-      ctx.fillStyle = staticColor
-      ctx.fill()
-
-      // pass 3: min scores (darkened)
-      ctx.beginPath()
-      for (const fd of featureData) {
-        const { leftPx, rightPx, minScore, summary } = fd
-        if (summary) {
-          const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-          addRectToPath(leftPx, toY(minScore), w, getHeight(minScore), ctx)
-        }
-      }
-      ctx.fillStyle = staticDarkened!
-      ctx.fill()
-    } else {
-      let lastCol: string | undefined
-      let lastMix: string | undefined
-      const lastFillStyle = { value: '' }
-      // pass 1: draw max scores
-      for (const fd of featureData) {
-        const { leftPx, rightPx, maxScore, summary, color, lightenedColor } = fd
-        if (summary) {
-          const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-          const effectiveC = crossingOrigin
-            ? color
-            : lightenedColor ||
-              (color === lastCol
-                ? lastMix
-                : (lastMix = lighten(colord(color), 0.4).toHex()))
-          fillRectCtx(
-            leftPx,
-            toY(maxScore),
-            w,
-            getHeight(maxScore),
-            ctx,
-            effectiveC,
-            lastFillStyle,
-          )
-          lastCol = color
-        }
-      }
-      lastMix = undefined
-      lastCol = undefined
-      lastFillStyle.value = ''
-      // pass 2: draw average scores
-      for (const fd of featureData) {
-        const {
-          feature,
-          leftPx,
-          rightPx,
-          score,
-          maxScore,
-          minScore,
-          summary,
-          color,
-          mixedColor,
-        } = fd
-        const effectiveC =
-          crossingOrigin && summary
-            ? mixedColor ||
-              (color === lastCol
-                ? lastMix
-                : (lastMix = colord(colorCallback(feature, maxScore))
-                    .mix(colord(colorCallback(feature, minScore)))
-                    .toString()))
-            : color
-        const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-        // bitwise OR is faster than Math.floor for positive numbers
-        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-          reducedFeatures.push(feature)
-          prevLeftPx = leftPx
-        }
-        fillRectCtx(
-          leftPx,
-          toY(score),
-          w,
-          getHeight(score),
-          ctx,
-          effectiveC,
-          lastFillStyle,
-        )
-        lastCol = color
-      }
-      lastMix = undefined
-      lastCol = undefined
-      lastFillStyle.value = ''
-      // pass 3: draw min scores
-      for (const fd of featureData) {
-        const { leftPx, rightPx, minScore, summary, color, darkenedColor } = fd
-        if (summary) {
-          const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-          const effectiveC = crossingOrigin
-            ? color
-            : darkenedColor ||
-              (color === lastCol
-                ? lastMix
-                : (lastMix = darken(colord(color), 0.4).toHex()))
-
-          fillRectCtx(
-            leftPx,
-            toY(minScore),
-            w,
-            getHeight(minScore),
-            ctx,
-            effectiveC,
-            lastFillStyle,
-          )
-          lastCol = color
-        }
-      }
-    }
-
-    // draw clipping indicators from cached data
-    if (clippingFeatures.length > 0) {
-      ctx.save()
-      ctx.fillStyle = clipColor
-      for (const { leftPx, w, high } of clippingFeatures) {
-        if (high) {
-          fillRectCtx(leftPx, offset, w, WIGGLE_CLIP_HEIGHT, ctx)
-        } else {
-          fillRectCtx(leftPx, unadjustedHeight, w, WIGGLE_CLIP_HEIGHT, ctx)
-        }
-      }
-      ctx.restore()
-    }
-  } else {
-    // Non-whiskers mode with colorCallback (per-feature colors)
-    // Note: staticColor case is handled at the top by delegating to drawXYArrays
-    const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
-    const isLog = scaleOpts.scaleType === 'log'
-    const lastFillStyle = { value: '' }
-
-    for (const feature of features.values()) {
-      checkStopToken2(stopToken, iter++, lastCheck)
-      const fstart = feature.get('start')
-      const fend = feature.get('end')
-      const leftPx = reversed
-        ? (regionEnd - fend) * invBpPerPx
-        : (fstart - regionStart) * invBpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) * invBpPerPx
-        : (fend - regionStart) * invBpPerPx
-
-      // create reduced features, avoiding multiple features per px
-      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-        reducedFeatures.push(feature)
-        prevLeftPx = leftPx
-      }
-
-      const score = feature.get('score')
-      const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-
-      // track clipping during first pass
-      if (score > niceMax) {
-        clippingFeatures.push({
-          leftPx,
-          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
-          high: true,
-        })
-      } else if (score < niceMin && !isLog) {
-        clippingFeatures.push({
-          leftPx,
-          w: rightPx - leftPx + WIGGLE_FUDGE_FACTOR,
-          high: false,
-        })
-      }
-
-      const c = colorCallback(feature, score)
-
-      if (summaryScoreMode === 'max') {
-        const summary = feature.get('summary')
-        const s = summary ? feature.get('maxScore') : score
-        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c, lastFillStyle)
-      } else if (summaryScoreMode === 'min') {
-        const summary = feature.get('summary')
-        const s = summary ? feature.get('minScore') : score
-        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c, lastFillStyle)
-      } else {
-        fillRectCtx(
-          leftPx,
-          toY(score),
-          w,
-          getHeight(score),
-          ctx,
-          c,
-          lastFillStyle,
-        )
-      }
-    }
-
-    // draw clipping indicators from cached data
-    if (clippingFeatures.length > 0) {
-      ctx.save()
-      ctx.fillStyle = clipColor
-      for (const { leftPx, w, high } of clippingFeatures) {
-        if (high) {
-          fillRectCtx(leftPx, offset, w, WIGGLE_CLIP_HEIGHT, ctx)
-        } else {
-          fillRectCtx(leftPx, unadjustedHeight, w, WIGGLE_CLIP_HEIGHT, ctx)
-        }
-      }
-      ctx.restore()
-    }
-  }
-
-  if (displayCrossHatches) {
-    ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-    for (const tick of ticks.values) {
-      ctx.beginPath()
-      ctx.moveTo(0, Math.round(toY(tick)))
-      ctx.lineTo(width, Math.round(toY(tick)))
-      ctx.stroke()
-    }
-  }
-
-  // Convert reducedFeatures to arrays format
-  return {
-    reducedFeatures: featuresToArrays(reducedFeatures),
-  }
+  // Delegate to drawXYArrays with per-feature colors
+  // For whiskers mode, pass whiskers=true to pre-compute lightened/darkened colors
+  const isWhiskers = summaryScoreMode === 'whiskers'
+  const featureArrays = featuresToArrays(features, colorCallback, isWhiskers)
+  return drawXYArrays(ctx, {
+    ...props,
+    featureArrays,
+    filled: filledProp,
+  })
 }
 
 export { type ReducedFeatureArrays, type WiggleFeatureArrays } from './util'
