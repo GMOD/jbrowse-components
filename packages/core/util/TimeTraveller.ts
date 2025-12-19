@@ -96,7 +96,7 @@ const TimeTraveller = types
           )
         }
 
-        patchDisposer = onPatch(targetStore, (patch, inversePatch) => {
+        const patcher = (patch: IJsonPatch, inversePatch: IJsonPatch) => {
           if (self.notTrackingUndo || skipNextUndoState) {
             skipNextUndoState = false
             return
@@ -115,7 +115,8 @@ const TimeTraveller = types
           debounceTimer = setTimeout(() => {
             flushPatches(this.addUndoState.bind(this))
           }, 300)
-        })
+        }
+        patchDisposer = onPatch(targetStore, patcher)
       },
       undo() {
         const entry = self.history[self.undoIdx]
