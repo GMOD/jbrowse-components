@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 import { bpSpanPx } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
@@ -31,43 +29,27 @@ export default function Sequence({
   const len = e - s
   const w = Math.max((rightPx - leftPx) / len, 0.8)
 
-  return (
-    <>
-      {seq.split('').map((letter, index) => {
-        const color =
-          sequenceType === 'dna'
-            ? // @ts-expect-error
-              theme.palette.bases[letter.toUpperCase()]
-            : undefined
-        const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
-        return (
-          /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          <Fragment key={`${letter}-${index}`}>
-            <rect
-              x={x}
-              y={y}
-              width={w}
-              height={height}
-              fill={color ? color.main : '#aaa'}
-              stroke={render ? '#555' : 'none'}
-            />
-            {render ? (
-              <text
-                x={x + w / 2}
-                y={y + height / 2}
-                dominantBaseline="middle"
-                textAnchor="middle"
-                fontSize={height - 2}
-                fill={
-                  color ? theme.palette.getContrastText(color.main) : 'black'
-                }
-              >
-                {letter}
-              </text>
-            ) : null}
-          </Fragment>
-        )
-      })}
-    </>
-  )
+  let svg = ''
+  for (let index = 0; index < seq.length; index++) {
+    const letter = seq[index]!
+    const color =
+      sequenceType === 'dna'
+        ? // @ts-expect-error
+          theme.palette.bases[letter.toUpperCase()]
+        : undefined
+    const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
+    const fill = color ? color.main : '#aaa'
+    const stroke = render ? '#555' : 'none'
+
+    svg += `<rect x="${x}" y="${y}" width="${w}" height="${height}" fill="${fill}" stroke="${stroke}"/>`
+
+    if (render) {
+      const textFill = color
+        ? theme.palette.getContrastText(color.main)
+        : 'black'
+      svg += `<text x="${x + w / 2}" y="${y + height / 2}" dominant-baseline="middle" text-anchor="middle" font-size="${height - 2}" fill="${textFill}">${letter}</text>`
+    }
+  }
+
+  return <g dangerouslySetInnerHTML={{ __html: svg }} />
 }
