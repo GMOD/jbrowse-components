@@ -125,6 +125,17 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     thing: Record<string, unknown>,
     rpcDriverClassName: string,
   ) {
+    const rootModel = this.pluginManager.rootModel
+
+    // Skip expensive deep traversal only if we have a valid root model with no internet accounts
+    // (Don't skip if rootModel isn't set up - let serializeNewAuthArguments handle that case)
+    if (
+      isAppRootModel(rootModel) &&
+      rootModel.internetAccounts?.length === 0
+    ) {
+      return thing
+    }
+
     const uris = [] as UriLocation[]
 
     // exclude renderingProps from deep traversal - it is only needed
