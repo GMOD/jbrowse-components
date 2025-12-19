@@ -296,15 +296,10 @@ describe('drawXYArrays', () => {
         drawXYArrays(ctx, { ...renderProps, featureArrays, color: 'blue' }),
       )
 
-      if ('imageData' in result) {
-        expect(
-          imageToBuffer(
-            result.imageData as unknown as InstanceType<typeof Image>,
-            10,
-            100,
-          ),
-        ).toMatchImageSnapshot()
-      }
+      expect(
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 10, 100),
+      ).toMatchImageSnapshot()
     })
 
     it('pixel dedup: variable width features should cover all pixels', async () => {
@@ -327,15 +322,10 @@ describe('drawXYArrays', () => {
       )
 
       // Should have no gaps - all pixel columns 0-9 should be filled
-      if ('imageData' in result) {
-        expect(
-          imageToBuffer(
-            result.imageData as unknown as InstanceType<typeof Image>,
-            10,
-            100,
-          ),
-        ).toMatchImageSnapshot()
-      }
+      expect(
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 10, 100),
+      ).toMatchImageSnapshot()
     })
 
     it('pixel dedup: features with gaps should show gaps', async () => {
@@ -358,15 +348,10 @@ describe('drawXYArrays', () => {
       )
 
       // Should show gaps between features (columns 1-2, 4-5, 7-9 empty)
-      if ('imageData' in result) {
-        expect(
-          imageToBuffer(
-            result.imageData as unknown as InstanceType<typeof Image>,
-            10,
-            100,
-          ),
-        ).toMatchImageSnapshot()
-      }
+      expect(
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 10, 100),
+      ).toMatchImageSnapshot()
     })
 
     it('non-pixel-dedup: large features should render correctly', async () => {
@@ -387,15 +372,10 @@ describe('drawXYArrays', () => {
         drawXYArrays(ctx, { ...renderProps, featureArrays, color: 'blue' }),
       )
 
-      if ('imageData' in result) {
-        expect(
-          imageToBuffer(
-            result.imageData as unknown as InstanceType<typeof Image>,
-            150,
-            100,
-          ),
-        ).toMatchImageSnapshot()
-      }
+      expect(
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 150, 100),
+      ).toMatchImageSnapshot()
     })
 
     it('varying scores should show height differences', async () => {
@@ -416,15 +396,10 @@ describe('drawXYArrays', () => {
         drawXYArrays(ctx, { ...renderProps, featureArrays, color: 'blue' }),
       )
 
-      if ('imageData' in result) {
-        expect(
-          imageToBuffer(
-            result.imageData as unknown as InstanceType<typeof Image>,
-            100,
-            100,
-          ),
-        ).toMatchImageSnapshot()
-      }
+      expect(
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 100, 100),
+      ).toMatchImageSnapshot()
     })
 
     it('pixel dedup: max score selection when multiple features overlap', async () => {
@@ -448,15 +423,10 @@ describe('drawXYArrays', () => {
       )
 
       // Should render at max score height (80)
-      if ('imageData' in result) {
-        expect(
-          imageToBuffer(
-            result.imageData as unknown as InstanceType<typeof Image>,
-            1,
-            100,
-          ),
-        ).toMatchImageSnapshot()
-      }
+      expect(
+        // @ts-expect-error
+        imageToBuffer(result.imageData, 1, 100),
+      ).toMatchImageSnapshot()
     })
   })
 })
