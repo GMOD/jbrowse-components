@@ -463,6 +463,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           },
         ]
       },
+
+      /**
+       * #method
+       */
+      rubberBandMenuItems() {
+        return [
+          {
+            label: 'Zoom to region(s)',
+            onClick: () => {
+              for (const view of self.views) {
+                const { leftOffset, rightOffset } = view
+                if (leftOffset && rightOffset) {
+                  view.moveTo(leftOffset, rightOffset)
+                }
+              }
+            },
+          },
+        ]
+      },
     }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
