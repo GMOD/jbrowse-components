@@ -1,9 +1,6 @@
-import {
-  forEachWithStopTokenCheck,
-  renderToAbstractCanvas,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXYArrays } from '../drawXY'
@@ -37,7 +34,9 @@ export async function renderMultiRowXYPlotArrays(
       renderToAbstractCanvas(width, height, renderProps, ctx => {
         const reducedBySource: Record<string, ReducedFeatureArrays> = {}
         ctx.save()
-        forEachWithStopTokenCheck(sources, stopToken, source => {
+        const lastCheck = { time: Date.now() }
+        let idx = 0
+        for (const source of sources) {
           const arrays = arraysBySource[source.name]
           if (arrays) {
             const { reducedFeatures } = drawXYArrays(ctx, {
@@ -54,7 +53,8 @@ export async function renderMultiRowXYPlotArrays(
           ctx.lineTo(width, rowHeight)
           ctx.stroke()
           ctx.translate(0, rowHeight)
-        })
+          checkStopToken2(stopToken, idx++, lastCheck)
+        }
         ctx.restore()
         return { reducedBySource }
       }),

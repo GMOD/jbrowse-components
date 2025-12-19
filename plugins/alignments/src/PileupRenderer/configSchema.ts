@@ -64,6 +64,14 @@ const PileupRenderer = ConfigurationSchema(
     /**
      * #slot
      */
+    hideMismatches: {
+      type: 'boolean',
+      description: 'Hides SNP mismatches',
+      defaultValue: false,
+    },
+    /**
+     * #slot
+     */
     maxHeight: {
       type: 'integer',
       description: 'the maximum height to be used in a pileup rendering',

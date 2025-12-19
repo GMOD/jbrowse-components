@@ -1,8 +1,7 @@
 import type React from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
@@ -10,15 +9,16 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
+import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
-import { getReadArcsLegendItems } from '../shared/legendUtils'
+import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
+import { getReadDisplayLegendItems } from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
 } from '../shared/menuItems'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -33,6 +33,8 @@ import type {
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
  * - [FeatureDensityMixin](../featuredensitymixin)
+ * - [LinearReadArcsDisplaySettingsMixin](../linearreadarcdisplaysettingsmixin)
+ * - [RPCRenderingMixin](../rpcrenderingmixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -42,6 +44,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       TrackHeightMixin(),
       FeatureDensityMixin(),
       LinearReadDisplayBaseMixin(),
+      LinearReadArcsDisplaySettingsMixin(),
+      RPCRenderingMixin(),
       types.model({
         /**
          * #property
@@ -51,120 +55,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-
-        /**
-         * #property
-         * Width of the arc lines (thin, bold, extra bold)
-         */
-        lineWidth: types.maybe(types.number),
-
-        /**
-         * #property
-         * Jitter amount for x-position to better visualize overlapping arcs
-         */
-        jitter: types.maybe(types.number),
-
-        /**
-         * #property
-         * Whether to draw inter-region vertical lines
-         */
-        drawInter: true,
-
-        /**
-         * #property
-         * Whether to draw long-range connections
-         */
-        drawLongRange: true,
-
         /**
          * #property
          */
         showLegend: types.maybe(types.boolean),
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       * ImageData returned from RPC rendering
-       */
-      renderingImageData: undefined as ImageBitmap | undefined,
-      /**
-       * #volatile
-       * Stop token for the current rendering operation
-       */
-      renderingStopToken: undefined as StopToken | undefined,
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get colorBy() {
-        return self.colorBySetting ?? getConf(self, 'colorBy')
-      },
-      /**
-       * #getter
-       */
-      get filterBy() {
-        return self.filterBySetting ?? getConf(self, 'filterBy')
-      },
-    }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      reload() {
-        self.error = undefined
-      },
-      /**
-       * #action
-       * Toggle drawing of inter-region vertical lines
-       */
-      setDrawInter(f: boolean) {
-        self.drawInter = f
-      },
-
-      /**
-       * #action
-       * Toggle drawing of long-range connections
-       */
-      setDrawLongRange(f: boolean) {
-        self.drawLongRange = f
-      },
-
-      /**
-       * #action
-       * Set the line width (thin=1, bold=2, extrabold=5, etc)
-       */
-      setLineWidth(n: number) {
-        self.lineWidth = n
-      },
-
-      /**
-       * #action
-       * Set jitter amount for x-position
-       * Helpful to jitter the x direction so you see better evidence
-       * when e.g. 100 long reads map to same x position
-       */
-      setJitter(n: number) {
-        self.jitter = n
-      },
-
-      /**
-       * #action
-       * Set the rendering imageData from RPC
-       */
-      setRenderingImageData(imageData: ImageBitmap | undefined) {
-        self.renderingImageData = imageData
-      },
-
-      /**
-       * #action
-       * Set the rendering stop token
-       */
-      setRenderingStopToken(token?: StopToken) {
-        self.renderingStopToken = token
-      },
-
       /**
        * #action
        */
@@ -178,22 +75,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Returns legend items based on current colorBy setting
        */
       legendItems(): LegendItem[] {
-        return getReadArcsLegendItems(self.colorBy)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get lineWidthSetting() {
-        return self.lineWidth ?? getConf(self, 'lineWidth')
-      },
-
-      /**
-       * #getter
-       */
-      get jitterVal(): number {
-        return self.jitter ?? getConf(self, 'jitter')
+        return getReadDisplayLegendItems(self.colorBy)
       },
     }))
     .views(self => {
@@ -204,16 +86,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       return {
         /**
          * #method
-         * only used to tell system it's ready for export
          */
         renderProps() {
           return {
             ...superRenderProps(),
-            // We use RPC rendering, so we're always ready (data is fetched in RPC)
             notReady: false,
           }
         },
-
         /**
          * #method
          */
@@ -274,20 +153,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Draw inter-region vertical lines',
-              type: 'checkbox',
-              checked: self.drawInter,
-              onClick: () => {
-                self.setDrawInter(!self.drawInter)
-              },
-            },
-            {
-              label: 'Draw long range connections',
-              type: 'checkbox',
-              checked: self.drawLongRange,
-              onClick: () => {
-                self.setDrawLongRange(!self.drawLongRange)
-              },
+              label: 'Show...',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label:
+                    'Inter-chromosomal connections (purple vertical lines)',
+                  type: 'checkbox',
+                  checked: self.drawInter,
+                  onClick: () => {
+                    self.setDrawInter(!self.drawInter)
+                  },
+                },
+                {
+                  label: 'Long range connections (red vertical lines)',
+                  type: 'checkbox',
+                  checked: self.drawLongRange,
+                  onClick: () => {
+                    self.setDrawLongRange(!self.drawLongRange)
+                  },
+                },
+              ],
             },
             getColorSchemeMenuItem(self),
             {
@@ -313,13 +199,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
-    .actions(self => ({
-      beforeDestroy() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-        }
-      },
-    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

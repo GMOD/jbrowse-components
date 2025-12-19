@@ -246,12 +246,6 @@ export function getSingletonColor(
   f: { tlen?: number; pair_orientation?: string; flags?: number },
   stats?: ChainStats,
 ) {
-  // Check orientation first
-  // const orientationColor = getPairedOrientationColorOrDefault(f)
-  // if (orientationColor) {
-  //   return orientationColor
-  // }
-
   // Check insert size
   const tlen = Math.abs(f.tlen || 0)
   // If TLEN is abnormally large, color it dark red

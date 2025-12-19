@@ -1,11 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  forEachWithStopTokenCheck,
-  renderToAbstractCanvas,
-} from '@jbrowse/core/util'
+import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { layoutFeats } from './layoutFeatures'
 import { renderAlignment } from './renderers/renderAlignment'
@@ -87,6 +85,7 @@ function renderFeatures({
     'largeInsertionIndicatorScale',
   )
   const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
+  const hideMismatches = readConfObject(config, 'hideMismatches') as boolean
   const defaultColor = readConfObject(config, 'color') === '#f0f'
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
@@ -98,8 +97,10 @@ function renderFeatures({
   const drawIndels = shouldDrawIndels()
   const coords = [] as number[]
   const items = [] as FlatbushItem[]
+  const lastCheck = { time: Date.now() }
+  let idx = 0
 
-  forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
+  for (const feat of layoutRecords) {
     const alignmentRet = renderAlignment({
       ctx,
       feat,
@@ -123,6 +124,7 @@ function renderFeatures({
       bpPerPx: renderArgs.bpPerPx,
       regions: renderArgs.regions,
       hideSmallIndels,
+      hideMismatches,
       mismatchAlpha,
       drawSNPsMuted,
       drawIndels,
@@ -151,7 +153,8 @@ function renderFeatures({
         canvasWidth,
       })
     }
-  })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
 
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (coords.length) {

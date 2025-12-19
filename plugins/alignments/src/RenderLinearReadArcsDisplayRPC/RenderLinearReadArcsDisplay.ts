@@ -1,9 +1,9 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import configSchema from '../configSchema'
+import configSchema from '../LinearReadArcsDisplay/configSchema'
 
-import type { ColorBy } from '../../shared/types'
+import type { ColorBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ThemeOptions } from '@mui/material'

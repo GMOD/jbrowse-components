@@ -1,9 +1,6 @@
-import {
-  forEachWithStopTokenCheck,
-  renderToAbstractCanvas,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawLineArrays } from '../drawLine'
@@ -35,7 +32,9 @@ export async function renderMultiLineArrays(
     () =>
       renderToAbstractCanvas(width, height, renderProps, ctx => {
         const reducedBySource: Record<string, ReducedFeatureArrays> = {}
-        forEachWithStopTokenCheck(sources, stopToken, source => {
+        const lastCheck = { time: Date.now() }
+        let idx = 0
+        for (const source of sources) {
           const arrays = arraysBySource[source.name]
           if (arrays) {
             const { reducedFeatures } = drawLineArrays(ctx, {
@@ -45,7 +44,8 @@ export async function renderMultiLineArrays(
             })
             reducedBySource[source.name] = reducedFeatures
           }
-        })
+          checkStopToken2(stopToken, idx++, lastCheck)
+        }
         return { reducedBySource }
       }),
   )

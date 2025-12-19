@@ -47,6 +47,7 @@ export function renderMismatchesCallback({
   colorMap,
   colorContrastMap,
   hideSmallIndels,
+  hideMismatches,
   canvasWidth,
   drawSNPsMuted,
   checkRef,
@@ -64,6 +65,7 @@ export function renderMismatchesCallback({
   minSubfeatureWidth: number
   largeInsertionIndicatorScale: number
   hideSmallIndels: boolean
+  hideMismatches?: boolean
   checkRef?: boolean
   charWidth: number
   charHeight: number
@@ -149,45 +151,47 @@ export function renderMismatchesCallback({
     const widthPx = Math.max(minSubfeatureWidth, rightPx - leftPx)
 
     if (type === MISMATCH_TYPE) {
-      if (rightPx - leftPx >= 0.2) {
-        items.push({
-          type: 'mismatch',
-          base,
-          start: mismatchStart,
-        })
-        coords.push(leftPx, topPx, rightPx, bottomPx)
-      }
-
-      if (!drawSNPsMuted) {
-        const baseColor = colorMap[base] || '#888'
-        const c =
-          useAlpha && qualVal ? applyQualAlpha(baseColor, qualVal) : baseColor
-        const l = Math.round(leftPx)
-        const w = widthPx
-        if (l + w > 0 && l < canvasWidth) {
-          if (lastColor !== c) {
-            ctx.fillStyle = c
-            lastColor = c
-          }
-          ctx.fillRect(l, topPx, w, heightPx)
+      if (!hideMismatches) {
+        if (rightPx - leftPx >= 0.2) {
+          items.push({
+            type: 'mismatch',
+            base,
+            start: mismatchStart,
+          })
+          coords.push(leftPx, topPx, rightPx, bottomPx)
         }
-      }
 
-      if (widthPx >= charWidth && canRenderText) {
-        const contrastColor = drawSNPsMuted
-          ? 'black'
-          : colorContrastMap[base] || 'black'
-        const textColor =
-          useAlpha && qualVal
-            ? applyQualAlpha(contrastColor, qualVal)
-            : contrastColor
-        const x = leftPx + (widthPx - charWidth) / 2 + 1
-        if (x > 0 && x < canvasWidth) {
-          if (textColor && lastColor !== textColor) {
-            ctx.fillStyle = textColor
-            lastColor = textColor
+        if (!drawSNPsMuted) {
+          const baseColor = colorMap[base] || '#888'
+          const c =
+            useAlpha && qualVal ? applyQualAlpha(baseColor, qualVal) : baseColor
+          const l = Math.round(leftPx)
+          const w = widthPx
+          if (l + w > 0 && l < canvasWidth) {
+            if (lastColor !== c) {
+              ctx.fillStyle = c
+              lastColor = c
+            }
+            ctx.fillRect(l, topPx, w, heightPx)
           }
-          ctx.fillText(base, x, bottomPx)
+        }
+
+        if (widthPx >= charWidth && canRenderText) {
+          const contrastColor = drawSNPsMuted
+            ? 'black'
+            : colorContrastMap[base] || 'black'
+          const textColor =
+            useAlpha && qualVal
+              ? applyQualAlpha(contrastColor, qualVal)
+              : contrastColor
+          const x = leftPx + (widthPx - charWidth) / 2 + 1
+          if (x > 0 && x < canvasWidth) {
+            if (textColor && lastColor !== textColor) {
+              ctx.fillStyle = textColor
+              lastColor = textColor
+            }
+            ctx.fillText(base, x, bottomPx)
+          }
         }
       }
     } else if (type === DELETION_TYPE && drawIndels) {
@@ -244,14 +248,27 @@ export function renderMismatchesCallback({
     if (mismatches) {
       for (let i = 0, l = mismatches.length; i < l; i++) {
         const m = mismatches[i]!
+        let base: string
+        let cliplen: number | undefined
+        if (m.type === 'mismatch') {
+          base = m.base
+        } else if (m.type === 'insertion') {
+          base = m.insertedBases ?? ''
+          cliplen = m.insertlen
+        } else if (m.type === 'softclip' || m.type === 'hardclip') {
+          base = ''
+          cliplen = m.cliplen
+        } else {
+          base = ''
+        }
         mismatchHandler(
           MISMATCH_REV_MAP[m.type],
           m.start,
           m.length,
-          m.base,
-          m.qual,
-          m.altbase?.charCodeAt(0),
-          m.cliplen || +m.base,
+          base,
+          m.type === 'mismatch' ? m.qual : undefined,
+          m.type === 'mismatch' ? m.altbase?.charCodeAt(0) : undefined,
+          cliplen,
         )
       }
     }
@@ -380,7 +397,7 @@ export function renderMismatchesCallback({
         }
         ctx.fillRect(pos, topPx, clipW, heightPx)
       }
-      items.push({ type: typeName, length: +base, start: mstart })
+      items.push({ type: typeName, length: cliplen, start: mstart })
       coords.push(pos - clipW, topPx, pos + clipW * 2, bottomPx)
       if (invBpPerPx >= charWidth && canRenderText) {
         const l = pos - clipW

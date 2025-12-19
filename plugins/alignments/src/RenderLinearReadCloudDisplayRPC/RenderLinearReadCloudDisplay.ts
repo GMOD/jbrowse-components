@@ -30,6 +30,8 @@ export interface RenderLinearReadCloudDisplayArgs {
   statusCallback?: (status: string) => void
   stopToken?: string
   visibleModifications?: Record<string, ModificationTypeWithColor>
+  hideSmallIndels?: boolean
+  hideMismatches?: boolean
 }
 
 export default class RenderLinearReadCloudDisplay extends RpcMethodType {

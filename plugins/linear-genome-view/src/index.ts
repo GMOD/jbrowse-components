@@ -91,6 +91,7 @@ export {
   BaseLinearDisplayComponent,
   BlockMsg,
   FeatureDensityMixin,
+  FloatingLegend,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,

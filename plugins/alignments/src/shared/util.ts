@@ -2,6 +2,7 @@ import { measureText } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { MISMATCH_TYPE } from './forEachMismatchTypes'
+import { SAM_FLAG_PAIRED } from './samFlags'
 
 import type { ChainData, FeatureWithMismatchIterator } from './types'
 import type { Feature } from '@jbrowse/core/util'
@@ -14,7 +15,7 @@ import type { Theme } from '@mui/material'
  */
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {
-    if (f[0]!.get('flags') & 1) {
+    if (f[0]!.get('flags') & SAM_FLAG_PAIRED) {
       return true
     }
   }
