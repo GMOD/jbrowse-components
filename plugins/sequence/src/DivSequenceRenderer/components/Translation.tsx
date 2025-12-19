@@ -60,11 +60,11 @@ export default function Translation({
 
   let svg = `<rect x="0" y="${y}" width="${width}" height="${height}" fill="${defaultFill}"/>`
 
-  for (let index = 0; index < translated.length; index++) {
-    const element = translated[index]!
+  for (let i = 0, l = translated.length; i < l; i++) {
+    const element = translated[i]!
     const x = region.reversed
-      ? width - (index + 1) * codonWidth - offset
-      : codonWidth * index + offset
+      ? width - (i + 1) * codonWidth - offset
+      : codonWidth * i + offset
     const { letter, codon } = element
     const codonFill = defaultStarts.includes(codon)
       ? theme.palette.startCodon

@@ -10,7 +10,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 export async function renderLinePlot(
   renderProps: RenderArgsDeserialized,
-  features: Map<string, Feature>,
+  features: Feature[],
 ) {
   const {
     config,

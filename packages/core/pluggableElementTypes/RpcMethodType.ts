@@ -129,10 +129,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
     // Skip expensive deep traversal only if we have a valid root model with no internet accounts
     // (Don't skip if rootModel isn't set up - let serializeNewAuthArguments handle that case)
-    if (
-      isAppRootModel(rootModel) &&
-      rootModel.internetAccounts?.length === 0
-    ) {
+    if (isAppRootModel(rootModel) && rootModel.internetAccounts.length === 0) {
       return thing
     }
 

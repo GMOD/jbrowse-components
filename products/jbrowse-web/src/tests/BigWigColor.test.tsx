@@ -15,7 +15,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-function getCanvasData(canvas: HTMLElement) {
+function getCanvasData(canvas: Element) {
   const ctx = (canvas as HTMLCanvasElement).getContext('2d')
   return ctx?.getImageData(0, 0, 100, 100).data.toString()
 }
@@ -51,7 +51,7 @@ test('open a bigwig track and change to green color', async () => {
     () => {
       const canvas = document.querySelector(
         `[data-testid="${pv('1..4000-0')}"]`,
-      ) as HTMLCanvasElement | null
+      )
       if (!canvas) {
         throw new Error('Canvas not found')
       }
@@ -96,7 +96,7 @@ test('open a bigwig track and change to purple color', async () => {
     () => {
       const canvas = document.querySelector(
         `[data-testid="${pv('1..4000-0')}"]`,
-      ) as HTMLCanvasElement | null
+      )
       if (!canvas) {
         throw new Error('Canvas not found')
       }

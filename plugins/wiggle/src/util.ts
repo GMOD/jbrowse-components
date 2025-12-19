@@ -265,46 +265,6 @@ export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
 
-// Serialized feature format for RPC transport
-export interface SerializedFeature {
-  uniqueId: string
-  start: number
-  end: number
-  score: number
-  source: string
-  refName: string
-  maxScore?: number
-  minScore?: number
-  summary?: boolean
-}
-
-// Convert reduced feature arrays to serialized features for tooltip support
-export function serializeReducedFeatures(
-  reduced: ReducedFeatureArrays,
-  source: string,
-  refName: string,
-): SerializedFeature[] {
-  const { starts, ends, scores, minScores, maxScores } = reduced
-  const features: SerializedFeature[] = []
-  const hasSummary = minScores !== undefined && maxScores !== undefined
-
-  for (const [i, start] of starts.entries()) {
-    features.push({
-      uniqueId: `${source}-${refName}-${start}`,
-      start: start,
-      end: ends[i]!,
-      score: scores[i]!,
-      source,
-      refName,
-      minScore: minScores?.[i],
-      maxScore: maxScores?.[i],
-      summary: hasSummary ? true : undefined,
-    })
-  }
-
-  return features
-}
-
 // Shared constants for wiggle drawing
 export const WIGGLE_FUDGE_FACTOR = 0.3
 export const WIGGLE_CLIP_HEIGHT = 2
