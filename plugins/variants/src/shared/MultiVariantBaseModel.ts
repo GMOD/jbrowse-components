@@ -22,6 +22,7 @@ import { getSources } from './getSources'
 import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
@@ -126,11 +127,11 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
-      sourcesLoadingStopToken: undefined as string | undefined,
+      sourcesLoadingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
-      simplifiedFeaturesStopToken: undefined as string | undefined,
+      simplifiedFeaturesStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
@@ -251,20 +252,20 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setSourcesLoading(str: string) {
+      setSourcesLoading(token: StopToken) {
         if (self.sourcesLoadingStopToken) {
           stopStopToken(self.sourcesLoadingStopToken)
         }
-        self.sourcesLoadingStopToken = str
+        self.sourcesLoadingStopToken = token
       },
       /**
        * #action
        */
-      setSimplifiedFeaturesLoading(str: string) {
+      setSimplifiedFeaturesLoading(token: StopToken) {
         if (self.simplifiedFeaturesStopToken) {
           stopStopToken(self.simplifiedFeaturesStopToken)
         }
-        self.simplifiedFeaturesStopToken = str
+        self.simplifiedFeaturesStopToken = token
       },
 
       /**
@@ -688,6 +689,44 @@ export default function MultiVariantBaseModelF(
         })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        layout,
+        minorAlleleFrequencyFilter,
+        showSidebarLabelsSetting,
+        showTree,
+        renderingMode,
+        rowHeightMode,
+        lengthCutoffFilter,
+        jexlFilters,
+        referenceDrawingMode,
+        clusterTree,
+        treeAreaWidth,
+        lineZoneHeight,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(layout.length ? { layout } : {}),
+        ...(minorAlleleFrequencyFilter ? { minorAlleleFrequencyFilter } : {}),
+        ...(!showSidebarLabelsSetting ? { showSidebarLabelsSetting } : {}),
+        ...(!showTree ? { showTree } : {}),
+        ...(renderingMode !== 'alleleCount' ? { renderingMode } : {}),
+        ...(rowHeightMode !== 'auto' ? { rowHeightMode } : {}),
+        ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
+          ? { lengthCutoffFilter }
+          : {}),
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+        ...(referenceDrawingMode !== 'skip' ? { referenceDrawingMode } : {}),
+        ...(clusterTree !== undefined ? { clusterTree } : {}),
+        ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
+        ...(lineZoneHeight ? { lineZoneHeight } : {}),
+      } as typeof snap
+    })
 }
 
 export type MultiVariantBaseStateModel = ReturnType<

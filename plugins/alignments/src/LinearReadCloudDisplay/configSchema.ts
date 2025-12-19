@@ -37,6 +37,22 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
+      hideSmallIndels: {
+        type: 'boolean',
+        defaultValue: false,
+      },
+
+      /**
+       * #slot
+       */
+      hideMismatches: {
+        type: 'boolean',
+        defaultValue: false,
+      },
+
+      /**
+       * #slot
+       */
       colorBy: {
         type: 'frozen',
         defaultValue: { type: 'insertSizeAndOrientation' },

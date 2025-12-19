@@ -17,7 +17,6 @@ export async function testMultiVariantDisplay({
     displayType === 'matrix'
       ? 'Multi-sample variant display (matrix)'
       : 'Multi-sample variant display (regular)'
-  const useAll = displayType === 'regular'
 
   const { view, findByTestId, findAllByText, findByText, findAllByTestId } =
     await createView()
@@ -28,24 +27,12 @@ export async function testMultiVariantDisplay({
   fireEvent.click(await findByText('Display types', ...opts))
   fireEvent.click(await findByText(displayText, ...opts))
 
-  if (useAll) {
-    await new Promise(res => setTimeout(res, 1000))
-  }
-
   if (phasedMode) {
-    if (useAll) {
-      await new Promise(res => setTimeout(res, 1000))
-    }
-    view.tracks[0].displays[0].setPhasedMode('phased')
+    fireEvent.click(await findByTestId('track_menu_icon', ...opts))
+    fireEvent.click(await findByText('Rendering mode', ...opts))
+    fireEvent.click(await findByText(/^Phased/, ...opts))
   }
 
-  if (useAll) {
-    fireEvent.click((await findAllByText('Force load', ...opts))[0]!)
-    expectCanvasMatch(
-      (await findAllByTestId(/prerendered_canvas/, ...opts))[0]!,
-    )
-  } else {
-    fireEvent.click(await findByText('Force load', ...opts))
-    expectCanvasMatch(await findByTestId(/prerendered_canvas/, ...opts))
-  }
+  fireEvent.click((await findAllByText('Force load', ...opts))[0]!)
+  expectCanvasMatch((await findAllByTestId(/prerendered_canvas/, ...opts))[0]!)
 }

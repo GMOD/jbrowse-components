@@ -2,7 +2,13 @@ import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
-import { addDisposer, getPath, onAction, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getPath,
+  onAction,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
@@ -10,7 +16,7 @@ import { autorun } from 'mobx'
 import { getClip } from './getClip'
 import { calc, getBlockFeatures, intersect } from './util'
 
-import type { ExportSvgOptions } from './types'
+import type { BreakpointSplitViewInit, ExportSvgOptions } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -66,6 +72,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         ),
+        /**
+         * #property
+         * used for initializing the view from a session snapshot
+         */
+        init: types.frozen<BreakpointSplitViewInit | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -77,6 +88,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get hasSomethingToShow() {
+        return self.views.length > 0 || !!self.init
+      },
+
+      /**
+       * #getter
+       */
+      get initialized() {
+        return self.views.length > 0 && self.views.every(v => v.initialized)
+      },
+
+      /**
+       * #getter
+       */
+      get showImportForm() {
+        return !this.hasSomethingToShow
+      },
     }))
     .views(self => ({
       /**
@@ -171,7 +204,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     feature,
                     layout: calc(tracks[level], feature),
                     level,
-                    clipPos: getClip(
+                    clipLengthAtStartOfRead: getClip(
                       feature.get('CIGAR'),
                       feature.get('strand'),
                     ),
@@ -277,9 +310,55 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       reverseViewOrder() {
         self.views.reverse()
       },
+
+      /**
+       * #action
+       */
+      setInit(init?: BreakpointSplitViewInit) {
+        self.init = init
+      },
+
+      /**
+       * #action
+       */
+      setViews(
+        viewInits: {
+          loc?: string
+          assembly: string
+          tracks?: string[]
+        }[],
+      ) {
+        self.views = cast(
+          viewInits.map(viewInit => ({
+            type: 'LinearGenomeView' as const,
+            hideHeader: true,
+            init: viewInit,
+          })),
+        )
+      },
     }))
     .actions(self => ({
       afterAttach() {
+        // Init autorun for initializing from session snapshot
+        addDisposer(
+          self,
+          autorun(
+            function breakpointSplitViewInitAutorun() {
+              const { init, width } = self
+              if (!width || !init) {
+                return
+              }
+
+              // Set up the views with their init properties
+              // The child LinearGenomeViews will handle their own initialization
+              self.setViews(init.views)
+
+              // Clear init state
+              self.setInit(undefined)
+            },
+            { name: 'BreakpointSplitViewInit' },
+          ),
+        )
         addDisposer(
           self,
           autorun(async () => {
@@ -382,6 +461,31 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        init,
+        height,
+        trackSelectorType,
+        showIntraviewLinks,
+        linkViews,
+        interactiveOverlay,
+        showHeader,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(height !== 400 ? { height } : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
+        ...(linkViews ? { linkViews } : {}),
+        ...(!interactiveOverlay ? { interactiveOverlay } : {}),
+        ...(showHeader ? { showHeader } : {}),
+      } as typeof snap
+    })
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>

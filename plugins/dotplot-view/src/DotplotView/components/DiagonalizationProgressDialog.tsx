@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface Region {
   refName: string
@@ -40,7 +41,7 @@ interface RunDiagonalizationArgs {
     'tracks' | 'hview' | 'vview' | 'id' | 'type' | 'displayName'
   >
   session: AbstractSessionModel
-  stopToken: string
+  stopToken?: StopToken
   setProgress: (progress: number) => void
   setMessage: (message: string) => void
 }
@@ -138,7 +139,7 @@ const DiagonalizationProgressDialog = observer(function ({
   const [message, setMessage] = useState('Ready to start diagonalization')
   const [error, setError] = useState<unknown>()
   const [isRunning, setIsRunning] = useState(false)
-  const [stopToken, setStopToken] = useState<string>()
+  const [stopToken, setStopToken] = useState<StopToken>()
 
   const handleStart = async () => {
     const session = getSession(model)

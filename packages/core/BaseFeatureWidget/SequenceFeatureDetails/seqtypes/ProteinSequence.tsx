@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react'
 
+import { convertCodingSequenceToPeptides } from '../../../util/convertCodingSequenceToPeptides'
 import { proteinColor } from '../consts'
 import { splitString } from '../util'
 import SequenceDisplay from './SequenceDisplay'
-import { convertCodingSequenceToPeptides } from '../../../util/convertCodingSequenceToPeptides'
 
 import type { Feat } from '../../util'
 import type { SequenceFeatureDetailsModel } from '../model'

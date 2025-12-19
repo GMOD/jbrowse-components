@@ -27,10 +27,18 @@ import {
 } from './types'
 
 import type { ParsedLocString } from './locString'
+import type {
+  AbstractDisplayModel,
+  AbstractTrackModel,
+  AbstractViewModel,
+  AssemblyManager,
+  Region,
+  TypeTestedByPredicate,
+} from './types'
 import type PluginManager from '../PluginManager'
 import type { BaseBlock } from './blockTypes'
 import type { Feature } from './simpleFeature'
-import type { AssemblyManager, Region, TypeTestedByPredicate } from './types'
+import type { StopToken } from './stopToken'
 import type { Region as MUIRegion } from './types/mst'
 import type { BaseOptions } from '../data_adapters/BaseAdapter'
 import type {
@@ -49,6 +57,17 @@ export * from './coarseStripHTML'
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
 export * from './rpc'
+
+// WeakMap caches for containing model lookups to avoid repeated tree traversal
+const containingDisplayCache = new WeakMap<
+  IAnyStateTreeNode,
+  AbstractDisplayModel
+>()
+const containingTrackCache = new WeakMap<
+  IAnyStateTreeNode,
+  AbstractTrackModel
+>()
+const containingViewCache = new WeakMap<IAnyStateTreeNode, AbstractViewModel>()
 
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -256,23 +275,39 @@ export function getSession(node: IAnyStateTreeNode) {
 
 /**
  * get the state model of the view in the state tree that contains the given
- * node
+ * node. Results are cached for performance.
  */
-export function getContainingView(node: IAnyStateTreeNode) {
+export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
+  const cached = containingViewCache.get(node)
+  // Validate cached result is still alive (handles re-parenting edge cases)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isViewModel)
+    const result = findParentThatIs(node, isViewModel)
+    containingViewCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no containing view found')
   }
 }
 
 /**
- * get the state model of the view in the state tree that contains the given
- * node
+ * get the state model of the track in the state tree that contains the given
+ * node. Results are cached for performance.
  */
-export function getContainingTrack(node: IAnyStateTreeNode) {
+export function getContainingTrack(
+  node: IAnyStateTreeNode,
+): AbstractTrackModel {
+  const cached = containingTrackCache.get(node)
+  // Validate cached result is still alive (handles re-parenting edge cases)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isTrackModel)
+    const result = findParentThatIs(node, isTrackModel)
+    containingTrackCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no containing track found')
   }
@@ -280,11 +315,20 @@ export function getContainingTrack(node: IAnyStateTreeNode) {
 
 /**
  * get the state model of the display in the state tree that contains the given
- * node
+ * node. Results are cached for performance.
  */
-export function getContainingDisplay(node: IAnyStateTreeNode) {
+export function getContainingDisplay(
+  node: IAnyStateTreeNode,
+): AbstractDisplayModel {
+  const cached = containingDisplayCache.get(node)
+  // Validate cached result is still alive (handles re-parenting edge cases)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isDisplayModel)
+    const result = findParentThatIs(node, isDisplayModel)
+    containingDisplayCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no containing display found')
   }
@@ -589,7 +633,11 @@ export function renameRegionIfNeeded(
     // modify it directly in the container
     const newRef = refNameMap[region.refName]
     if (newRef) {
-      return { ...region, refName: newRef, originalRefName: region.refName }
+      return {
+        ...region,
+        refName: newRef,
+        originalRefName: region.refName,
+      }
     }
   }
   return region
@@ -888,12 +936,12 @@ export function generateCodonTable(table: any) {
 // call statusCallback with current status and clear when finished
 export async function updateStatus<U>(
   msg: string,
-  cb: (arg: string) => void,
+  cb: ((arg: string) => void) | undefined,
   fn: () => U | Promise<U>,
 ) {
-  cb(msg)
+  cb?.(msg)
   const res = await fn()
-  cb('')
+  cb?.('')
   return res
 }
 
@@ -902,7 +950,7 @@ export async function updateStatus<U>(
 export async function updateStatus2<U>(
   msg: string,
   cb: (arg: string) => void,
-  stopToken: string | undefined,
+  stopToken: StopToken | undefined,
   fn: () => U | Promise<U>,
 ) {
   cb(msg)
@@ -990,24 +1038,25 @@ export function isSupportedIndexingAdapter(type = '') {
 
 export function getBpDisplayStr(total: number) {
   if (Math.floor(total / 1_000_000) > 0) {
-    return `${r(total / 1_000_000)}Mbp`
+    return `${reducePrecision(total / 1_000_000)}Mbp`
   } else if (Math.floor(total / 1_000) > 0) {
-    return `${r(total / 1_000)}Kbp`
+    return `${reducePrecision(total / 1_000)}Kbp`
   } else {
     return `${Math.floor(total)}bp`
   }
 }
 
-function r(s: number) {
-  return toLocale(Number.parseFloat(s.toPrecision(3)))
+export function reducePrecision(s: number, n = 3) {
+  return toLocale(Number.parseFloat(s.toPrecision(n)))
 }
+
 export function getProgressDisplayStr(current: number, total: number) {
   if (Math.floor(total / 1_000_000) > 0) {
-    return `${r(current / 1_000_000)}/${r(total / 1_000_000)}Mb`
+    return `${reducePrecision(current / 1_000_000)}/${reducePrecision(total / 1_000_000)}Mb`
   } else if (Math.floor(total / 1_000) > 0) {
-    return `${r(current / 1_000)}/${r(total / 1_000)}Kb`
+    return `${reducePrecision(current / 1_000)}/${reducePrecision(total / 1_000)}Kb`
   } else {
-    return `${r(current)}/${r(total)}}bytes`
+    return `${reducePrecision(current)}/${reducePrecision(total)} bytes`
   }
 }
 
@@ -1033,20 +1082,6 @@ export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
   return Math.floor(bpPerPx / 1_000) > 0
     ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
     : toLocale(Math.floor(totalBp))
-}
-
-export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
-  // @ts-expect-error
-  const { dynamicBlocks, staticBlocks, offsetPx } = getContainingView(model)
-  const b = dynamicBlocks?.contentBlocks[0] || {}
-  const staticblock = staticBlocks?.contentBlocks[0] || {}
-  const staticblock1 = staticBlocks?.contentBlocks[1] || {}
-  return {
-    offsetPx: exportSVG ? 0 : offsetPx - staticblock.offsetPx,
-    offsetPx1: exportSVG ? 0 : offsetPx - staticblock1.offsetPx,
-    start: b.start as number,
-    end: b.end as number,
-  }
 }
 
 export function getLayoutId({
@@ -1357,26 +1392,6 @@ export function localStorageSetBoolean(key: string, value: boolean) {
   localStorageSetItem(key, JSON.stringify(value))
 }
 
-export function forEachWithStopTokenCheck<T>(
-  iter: Iterable<T>,
-  stopToken: string | undefined,
-  arg: (arg: T, idx: number) => void,
-  durationMs = 400,
-  iters = 100,
-) {
-  let start = performance.now()
-  let i = 0
-  for (const t of iter) {
-    arg(t, i++)
-    if (iters % i === 0) {
-      if (performance.now() - start > durationMs) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-    }
-  }
-}
-
 export function testAdapter(
   fileName: string,
   regex: RegExp,
@@ -1399,3 +1414,4 @@ export { makeAbortableReaction } from './makeAbortableReaction'
 export * from './aborting'
 export * from './linkify'
 export * from './locString'
+export * from './stopToken'

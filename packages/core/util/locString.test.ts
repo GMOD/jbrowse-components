@@ -89,7 +89,7 @@ describe('parseLocString', () => {
   test('test unknown reference sequence', () => {
     expect(() => {
       parseLocString('chr3', refName => refName === 'chr1')
-    }).toThrow('Unknown reference sequence "chr3"')
+    }).toThrow('Unknown feature or sequence "chr3"')
   })
 })
 

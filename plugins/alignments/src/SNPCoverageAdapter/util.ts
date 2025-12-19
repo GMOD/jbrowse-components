@@ -1,22 +1,59 @@
+import { INTERBASE_MASK } from '../shared/forEachMismatchTypes'
+
 import type {
   ColorBy,
-  Mismatch,
   PreBaseCoverageBin,
   PreBaseCoverageBinSubtypes,
+  PreBinEntry,
 } from '../shared/types'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface Opts {
   bpPerPx?: number
   colorBy?: ColorBy
-  stopToken?: string
+  stopToken?: StopToken
+  /** When true, only compute depth (skip mismatch/modification processing) */
+  statsEstimationMode?: boolean
 }
 
-export function mismatchLen(mismatch: Mismatch) {
-  return !isInterbase(mismatch.type) ? mismatch.length : 1
+// Uses bitwise check: converts type to bit position, then ANDs with INTERBASE_MASK
+// INTERBASE_MASK = 0b110010 = (1<<1)|(1<<4)|(1<<5) for insertion, softclip, hardclip
+export function mismatchLen(type: number, length: number) {
+  return ((1 << type) & INTERBASE_MASK) === 0 ? length : 1
 }
 
-export function isInterbase(type: string) {
-  return type === 'softclip' || type === 'hardclip' || type === 'insertion'
+// Uses bitwise check: converts type to bit position, then ANDs with INTERBASE_MASK
+// INTERBASE_MASK = 0b110010 = (1<<1)|(1<<4)|(1<<5) for insertion, softclip, hardclip
+export function isInterbase(type: number) {
+  return ((1 << type) & INTERBASE_MASK) !== 0
+}
+
+export function createPreBinEntry(): PreBinEntry {
+  return {
+    entryDepth: 0,
+    probabilityTotal: 0,
+    probabilityCount: 0,
+    lengthTotal: 0,
+    lengthCount: 0,
+    lengthMin: Infinity,
+    lengthMax: -Infinity,
+    '-1': 0,
+    '0': 0,
+    '1': 0,
+  }
+}
+
+export function createEmptyBin(): PreBaseCoverageBin {
+  return {
+    depth: 0,
+    readsCounted: 0,
+    snps: {},
+    ref: createPreBinEntry(),
+    mods: {},
+    nonmods: {},
+    delskips: {},
+    noncov: {},
+  }
 }
 
 export function inc(
@@ -24,19 +61,25 @@ export function inc(
   strand: -1 | 0 | 1,
   type: keyof PreBaseCoverageBinSubtypes,
   field: string,
+  length?: number,
+  sequence?: string,
 ) {
-  let thisBin = bin[type][field]
-  if (thisBin === undefined) {
-    thisBin = bin[type][field] = {
-      entryDepth: 0,
-      probabilities: [],
-      '-1': 0,
-      '0': 0,
-      '1': 0,
-    }
+  const entry = (bin[type][field] ??= createPreBinEntry())
+  entry.entryDepth++
+  entry[strand]++
+  if (length !== undefined) {
+    entry.lengthTotal += length
+    entry.lengthCount++
+    entry.lengthMin = Math.min(entry.lengthMin, length)
+    entry.lengthMax = Math.max(entry.lengthMax, length)
   }
-  thisBin.entryDepth++
-  thisBin[strand]++
+  if (sequence !== undefined) {
+    entry.sequenceCounts ??= new Map()
+    entry.sequenceCounts.set(
+      sequence,
+      (entry.sequenceCounts.get(sequence) ?? 0) + 1,
+    )
+  }
 }
 
 export function incWithProbabilities(
@@ -46,17 +89,9 @@ export function incWithProbabilities(
   field: string,
   probability: number,
 ) {
-  let thisBin = bin[type][field]
-  if (thisBin === undefined) {
-    thisBin = bin[type][field] = {
-      entryDepth: 0,
-      probabilities: [],
-      '-1': 0,
-      '0': 0,
-      '1': 0,
-    }
-  }
-  thisBin.entryDepth++
-  thisBin.probabilities.push(probability)
-  thisBin[strand]++
+  const entry = (bin[type][field] ??= createPreBinEntry())
+  entry.entryDepth++
+  entry.probabilityTotal += probability
+  entry.probabilityCount++
+  entry[strand]++
 }

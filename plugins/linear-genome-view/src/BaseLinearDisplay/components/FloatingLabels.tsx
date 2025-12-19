@@ -7,6 +7,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { autorun, untracked } from 'mobx'
+import { observer } from 'mobx-react'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -88,12 +89,7 @@ function deduplicateFeatureLabels(
     }
 
     const [left, topPx, right, , feature] = val
-    const {
-      refName = '',
-      floatingLabels,
-      totalFeatureHeight,
-      actualTopPx,
-    } = feature
+    const { refName, floatingLabels, totalFeatureHeight, actualTopPx } = feature
 
     const effectiveTopPx = actualTopPx ?? topPx
 
@@ -139,15 +135,14 @@ interface LabelPositionData {
   lastX?: number
 }
 
-function FloatingLabels({
+const FloatingLabels = observer(function ({
   model,
 }: {
   model: FeatureTrackModel
-}): React.ReactElement {
+}) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)
   const assemblyName = view.assemblyNames[0]
-  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
   const containerRef = useRef<HTMLDivElement>(null)
   const domElementsRef = useRef<Map<string, HTMLDivElement>>(new Map())
@@ -155,18 +150,19 @@ function FloatingLabels({
 
   // Autorun 1: Rebuild DOM elements when layoutFeatures changes
   useEffect(() => {
-    if (!assembly) {
-      return
-    }
-
     return autorun(
       function floatingLabelsLayoutAutorun() {
         const container = containerRef.current
-        if (!container) {
+        // Access assembly inside autorun so it re-runs when assembly loads
+        const asm = assemblyName ? assemblyManager.get(assemblyName) : undefined
+        if (!container || !asm) {
           return
         }
 
         const { layoutFeatures } = model
+        // Track bpPerPx to recalculate positions on zoom changes
+        const { bpPerPx } = view
+        void bpPerPx
         const domElements = domElementsRef.current
         const labelPositions = labelPositionsRef.current
         const newKeys = new Set<string>()
@@ -174,7 +170,7 @@ function FloatingLabels({
         const featureLabels = deduplicateFeatureLabels(
           layoutFeatures,
           view,
-          assembly,
+          asm,
         )
 
         for (const [
@@ -193,16 +189,12 @@ function FloatingLabels({
               continue
             }
 
-            const featureVisualLeftPx = leftPx
             const y = featureVisualBottom + relativeY
-
             const labelKey = `${key}-${i}`
             newKeys.add(labelKey)
 
-            // Store position data for fast offset updates
-            // Use rightPx (actual feature bounds) to constrain labels within feature width
             labelPositions.set(labelKey, {
-              featureLeftPx: featureVisualLeftPx,
+              featureLeftPx: leftPx,
               featureRightPx: rightPx,
               labelWidth,
               y,
@@ -234,17 +226,15 @@ function FloatingLabels({
               element.style.lineHeight = lineHeight
             }
 
-            // Set initial transform (offset autorun will update x on scroll)
-            // Use untracked to avoid this autorun re-running on offsetPx changes
+            // Set initial transform using untracked to avoid re-running on offsetPx changes
             const offsetPx = untracked(() => view.offsetPx)
-            const naturalX = featureVisualLeftPx - offsetPx
+            const naturalX = leftPx - offsetPx
             const maxX = rightPx - offsetPx - labelWidth
             const x = clamp(0, naturalX, maxX)
             element.style.transform = `translate(${x}px, ${y}px)`
           }
         }
 
-        // Remove stale elements
         for (const [key, element] of domElements.entries()) {
           if (!newKeys.has(key)) {
             element.remove()
@@ -255,7 +245,7 @@ function FloatingLabels({
       },
       { name: 'FloatingLabelsLayout' },
     )
-  }, [assembly, model, view])
+  }, [assemblyManager, assemblyName, model, view])
 
   // Autorun 2: Update transforms when offsetPx changes (fast path)
   useEffect(() => {
@@ -276,7 +266,6 @@ function FloatingLabels({
           const maxX = featureRightPx - offsetPx - labelWidth
           const x = clamp(0, naturalX, maxX)
 
-          // Only update DOM if x position changed
           if (pos.lastX !== x) {
             pos.lastX = x
             element.style.transform = `translate(${x}px, ${y}px)`
@@ -301,6 +290,6 @@ function FloatingLabels({
       }}
     />
   )
-}
+})
 
 export default FloatingLabels

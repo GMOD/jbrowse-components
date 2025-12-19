@@ -13,7 +13,7 @@ import type {
   ResultsDeserialized as FeatureResultsDeserialized,
   ResultsSerialized as FeatureResultsSerialized,
 } from './FeatureRendererType'
-import type { LayoutSessionProps } from './LayoutSession'
+import type { LayoutSessionLike, LayoutSessionProps } from './LayoutSession'
 import type { RenderReturn } from './RendererType'
 import type RpcManager from '../../rpc/RpcManager'
 import type { Feature, Region } from '../../util'
@@ -54,9 +54,9 @@ export interface ResultsDeserialized extends FeatureResultsDeserialized {
 }
 
 export default class BoxRendererType extends FeatureRendererType {
-  layoutSessions: Record<string, LayoutSession> = {}
+  layoutSessions: Record<string, LayoutSessionLike> = {}
 
-  createLayoutSession(props: LayoutSessionProps) {
+  createLayoutSession(props: LayoutSessionProps): LayoutSessionLike {
     return new LayoutSession(props)
   }
 

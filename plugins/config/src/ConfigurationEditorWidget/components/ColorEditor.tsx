@@ -13,7 +13,7 @@ export const ColorSlot = (props: {
   }
   onChange: (arg: string) => void
 }) => {
-  const { value = '#000', label = '', TextFieldProps = {}, onChange } = props
+  const { value, label = '', TextFieldProps = {}, onChange } = props
   const [displayed, setDisplayed] = useState(false)
 
   return (

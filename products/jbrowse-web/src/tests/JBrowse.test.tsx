@@ -6,11 +6,11 @@ import { fireEvent } from '@testing-library/react'
 
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
+import TestPlugin from './TestPlugin'
+import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
 import * as sessionSharing from '../sessionSharing'
-import TestPlugin from './TestPlugin'
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

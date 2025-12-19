@@ -7,14 +7,27 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-test('matrix', async () => {
-  await testMultiVariantDisplay({ displayType: 'matrix', timeout: 90000 })
-}, 90000)
+const timeout = 90_000
 
-test('mphased', async () => {
-  await testMultiVariantDisplay({
-    displayType: 'matrix',
-    phasedMode: 'phased',
-    timeout: 90000,
-  })
-}, 90000)
+test(
+  'matrix',
+  async () => {
+    await testMultiVariantDisplay({
+      displayType: 'matrix',
+      timeout,
+    })
+  },
+  timeout,
+)
+
+test(
+  'mphased',
+  async () => {
+    await testMultiVariantDisplay({
+      displayType: 'matrix',
+      phasedMode: 'phased',
+      timeout,
+    })
+  },
+  timeout,
+)

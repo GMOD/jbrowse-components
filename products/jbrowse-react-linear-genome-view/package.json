@@ -70,8 +70,7 @@
     "@mui/material": "^7.0.0",
     "mobx": "^6.6.0",
     "mobx-react": "^9.0.0",
-    "rxjs": "^7.0.0",
-    "tss-react": "^4.4.1"
+    "rxjs": "^7.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

@@ -7,6 +7,7 @@ import MultiLayout from '../../util/layouts/MultiLayout'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { Region } from '../../util'
 import type SerializableFilterChain from './util/serializableFilterChain'
+import type { BaseLayout } from '../../util/layouts'
 
 export interface LayoutSessionProps {
   regions: Region[]
@@ -15,29 +16,25 @@ export interface LayoutSessionProps {
   filters?: SerializableFilterChain
 }
 
+// Generic type for any MultiLayout
+export type BaseMultiLayout = MultiLayout<BaseLayout<unknown>, unknown>
+
+// Default type for GranularRectLayout (backwards compatibility)
 export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 
 export interface CachedLayout {
-  layout: MyMultiLayout
+  layout: BaseMultiLayout
   props: LayoutSessionProps
-  /** Track the min/max coordinates we've seen to detect large jumps */
-  minCoord: number
-  maxCoord: number
 }
 
-/**
- * Check if two regions overlap
- */
-function regionsOverlap(
-  r1Start: number,
-  r1End: number,
-  r2Start: number,
-  r2End: number,
-) {
-  return r1End > r2Start && r2End > r1Start
+// Generic session interface that any layout session must implement
+export interface LayoutSessionLike {
+  layout: BaseMultiLayout
+  update(props: LayoutSessionProps): LayoutSessionLike
+  checkAndClearLayoutWasReset(): boolean
 }
 
-export class LayoutSession {
+export class LayoutSession implements LayoutSessionLike {
   props: LayoutSessionProps
 
   cachedLayout: CachedLayout | undefined
@@ -85,29 +82,15 @@ export class LayoutSession {
       return false
     }
 
-    // Check if current regions overlap with the cached coordinate range
-    // If there's no overlap, we've scrolled far away and should discard the layout
-    const region = this.props.regions[0]
-    if (region) {
-      const hasOverlap = regionsOverlap(
-        region.start,
-        region.end,
-        cachedLayout.minCoord,
-        cachedLayout.maxCoord,
-      )
-      if (!hasOverlap) {
-        return false
-      }
-    }
+    // Note: We intentionally do NOT check for coordinate overlap here.
+    // This allows disparate regions in the same view (e.g., chr1:1-100 and chr1:5000-5100)
+    // to share the same layout without triggering a reset.
+    // Memory cleanup is handled by discardRange() when blocks are destroyed.
 
     return true
   }
 
-  get layout(): MyMultiLayout {
-    const region = this.props.regions[0]
-    const regionStart = region?.start ?? 0
-    const regionEnd = region?.end ?? 0
-
+  get layout(): BaseMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       // Only signal reset if we're recreating an existing layout, not on first creation.
       // On first load there are no stale blocks to worry about.
@@ -117,19 +100,7 @@ export class LayoutSession {
       this.cachedLayout = {
         layout: this.makeLayout(),
         props: this.props,
-        minCoord: regionStart,
-        maxCoord: regionEnd,
       }
-    } else {
-      // Expand the tracked coordinate range as we see new regions
-      this.cachedLayout.minCoord = Math.min(
-        this.cachedLayout.minCoord,
-        regionStart,
-      )
-      this.cachedLayout.maxCoord = Math.max(
-        this.cachedLayout.maxCoord,
-        regionEnd,
-      )
     }
     return this.cachedLayout.layout
   }

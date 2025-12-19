@@ -27,10 +27,10 @@ export default class PileupRenderer extends BoxRendererType {
     const width = (region.end - region.start) / bpPerPx
 
     const features = await this.getFeatures(renderProps)
-    const layout = this.createLayoutInWorker(renderProps)
+    const { layout, layoutWasReset } = this.createLayoutInWorker(renderProps)
 
     const { makeImageData } = await import('./makeImageData')
-    const { result, height } = await updateStatus(
+    const { result, height, featureNames } = await updateStatus(
       'Rendering alignments',
       statusCallback,
       () =>
@@ -50,10 +50,12 @@ export default class PileupRenderer extends BoxRendererType {
     return rpcResult(
       {
         ...result,
+        featureNames,
         layout: serializedLayout,
         height,
         width,
         maxHeightReached: layout.maxHeightReached,
+        layoutWasReset,
       },
       collectTransferables(result),
     )

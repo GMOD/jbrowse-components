@@ -152,7 +152,7 @@ const SessionLoader = types
      * #getter
      */
     get isJb1StyleSession() {
-      return !!self.loc
+      return !!(self.loc || self.assembly)
     },
 
     /**
@@ -493,7 +493,7 @@ const SessionLoader = types
         highlight,
         sessionTracksParsed: sessionTracks,
       } = self
-      if (loc) {
+      if (loc || assembly) {
         self.sessionSpec = {
           sessionTracks,
           views: [

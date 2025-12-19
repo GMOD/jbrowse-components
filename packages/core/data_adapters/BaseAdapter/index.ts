@@ -1,7 +1,7 @@
+import type { AnyDataAdapter } from './util'
 import type PluginManager from '../../PluginManager'
 import type { AnyConfigurationModel } from '../../configuration'
 import type { getSubAdapterType } from '../dataAdapterCache'
-import type { AnyDataAdapter } from './util'
 
 export * from './util'
 export * from './types'

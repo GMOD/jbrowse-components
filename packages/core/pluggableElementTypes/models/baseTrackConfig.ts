@@ -9,7 +9,7 @@ interface BasicTrack {
   trackId: string
   name: string
   type: string
-  displays: {
+  displays?: {
     type: string
     displayId?: string
   }[]

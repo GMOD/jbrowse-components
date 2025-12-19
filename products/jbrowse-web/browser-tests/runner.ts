@@ -4,35 +4,121 @@ import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import pixelmatch from 'pixelmatch'
+import { PNG } from 'pngjs'
 import { type Page, launch } from 'puppeteer'
 import handler from 'serve-handler'
-
-import {
-  type TestSuite,
-  capturePageSnapshot,
-  delay,
-  findByTestId,
-  findByText,
-  parseArgs,
-  runTests,
-  waitForLoadingToComplete,
-} from '../../../puppeteer-test-utils/src/index.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const args = process.argv.slice(2)
-const { headed, slowMo, updateSnapshots } = parseArgs(args)
+const headed = args.includes('--headed')
+const slowMoArg = args.find(a => a.startsWith('--slow-mo='))
+const slowMo = slowMoArg ? parseInt(slowMoArg.split('=')[1]!, 10) : 0
+const updateSnapshots =
+  args.includes('--update-snapshots') || args.includes('-u')
 
 const snapshotsDir = path.resolve(__dirname, '__snapshots__')
 const buildPath = path.resolve(__dirname, '../build')
+const testDataPath = path.resolve(__dirname, '..')
 const PORT = 3333
 
+// Helpers
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+async function findByTestId(page: Page, testId: string, timeout = 30000) {
+  return page.waitForSelector(`[data-testid="${testId}"]`, {
+    timeout,
+    visible: true,
+  })
+}
+
+async function findByText(page: Page, text: string | RegExp, timeout = 30000) {
+  const searchText = typeof text === 'string' ? text : text.source
+  return page.waitForSelector(`::-p-text(${searchText})`, {
+    timeout,
+    visible: true,
+  })
+}
+
+async function waitForLoadingToComplete(page: Page, timeout = 30000) {
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
+    { timeout },
+  )
+}
+
+async function capturePageSnapshot(page: Page, name: string) {
+  if (!fs.existsSync(snapshotsDir)) {
+    fs.mkdirSync(snapshotsDir, { recursive: true })
+  }
+
+  const screenshot = await page.screenshot({ fullPage: true })
+  const snapshotPath = path.join(snapshotsDir, `${name}.png`)
+
+  if (updateSnapshots || !fs.existsSync(snapshotPath)) {
+    fs.writeFileSync(snapshotPath, screenshot)
+    return {
+      passed: true,
+      message: updateSnapshots ? 'Snapshot updated' : 'Snapshot created',
+    }
+  }
+
+  const expectedBuffer = fs.readFileSync(snapshotPath)
+  const expectedImg = PNG.sync.read(expectedBuffer)
+  // @ts-expect-error Uint8Array works at runtime
+  const actualImg = PNG.sync.read(screenshot)
+
+  if (
+    expectedImg.width !== actualImg.width ||
+    expectedImg.height !== actualImg.height
+  ) {
+    fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
+    return {
+      passed: false,
+      message: `Snapshot size differs: expected ${expectedImg.width}x${expectedImg.height}, got ${actualImg.width}x${actualImg.height}`,
+    }
+  }
+
+  const { width, height } = expectedImg
+  const diffImg = new PNG({ width, height })
+
+  const numDiffPixels = pixelmatch(
+    expectedImg.data,
+    actualImg.data,
+    diffImg.data,
+    width,
+    height,
+    { threshold: 0.1 },
+  )
+
+  const totalPixels = width * height
+  const diffPercent = numDiffPixels / totalPixels
+  const threshold = 0.05
+
+  if (diffPercent <= threshold) {
+    return { passed: true, message: 'Snapshot matches' }
+  }
+
+  fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
+  fs.writeFileSync(
+    path.join(snapshotsDir, `${name}.diff-visual.png`),
+    PNG.sync.write(diffImg),
+  )
+  return {
+    passed: false,
+    message: `Snapshot differs by ${(diffPercent * 100).toFixed(2)}% (threshold: ${threshold * 100}%)`,
+  }
+}
+
+// Server
 function startServer(port: number): Promise<http.Server> {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       const url = req.url || '/'
       const publicPath = url.startsWith('/test_data/')
-        ? path.resolve(__dirname, '..')
+        ? testDataPath
         : buildPath
       return handler(req, res, {
         public: publicPath,
@@ -51,6 +137,7 @@ function startServer(port: number): Promise<http.Server> {
   })
 }
 
+// Test helpers
 async function navigateToApp(page: Page) {
   await page.goto(
     `http://localhost:${PORT}/?config=test_data/volvox/config.json`,
@@ -72,13 +159,23 @@ async function openTrack(page: Page, trackId: string) {
 }
 
 async function snapshot(page: Page, name: string) {
-  const result = await capturePageSnapshot(page, name, {
-    snapshotsDir,
-    updateSnapshots,
+  // Set a static session name to avoid snapshot diffs from random names
+  await page.evaluate(() => {
+    const el = document.querySelector('[data-testid="session_name"]')
+    if (el) {
+      el.textContent = 'Test Session'
+    }
   })
+  const result = await capturePageSnapshot(page, name)
   if (!result.passed) {
     throw new Error(result.message)
   }
+}
+
+// Test suites
+interface TestSuite {
+  name: string
+  tests: { name: string; fn: (page: Page) => Promise<void> }[]
 }
 
 const testSuites: TestSuite[] = [
@@ -175,6 +272,47 @@ const testSuites: TestSuite[] = [
   },
 ]
 
+// Runner
+async function runTests(page: Page) {
+  let passed = 0
+  let failed = 0
+
+  for (const suite of testSuites) {
+    console.log(`\n  ${suite.name}`)
+
+    for (const test of suite.tests) {
+      const start = performance.now()
+      process.stdout.write(`    ⏳ ${test.name}...`)
+
+      try {
+        await page.goto('about:blank')
+        await test.fn(page)
+
+        const duration = performance.now() - start
+        passed++
+
+        if (process.stdout.isTTY) {
+          process.stdout.clearLine(0)
+          process.stdout.cursorTo(0)
+        }
+        console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
+      } catch (e) {
+        failed++
+        const error = e instanceof Error ? e.message : String(e)
+
+        if (process.stdout.isTTY) {
+          process.stdout.clearLine(0)
+          process.stdout.cursorTo(0)
+        }
+        console.log(`    ✗ ${test.name}`)
+        console.log(`      Error: ${error}`)
+      }
+    }
+  }
+
+  return { passed, failed }
+}
+
 async function main() {
   if (!fs.existsSync(buildPath)) {
     console.error(
@@ -209,7 +347,7 @@ async function main() {
     })
 
     console.log('\nRunning browser tests...')
-    const { passed, failed } = await runTests(page, testSuites)
+    const { passed, failed } = await runTests(page)
 
     console.log(`\n${'─'.repeat(50)}`)
     console.log(`  Tests: ${passed} passed, ${failed} failed`)
@@ -225,7 +363,5 @@ async function main() {
   }
 }
 
-main().catch((e: unknown) => {
-  console.error('Unhandled error:', e)
-  process.exit(1)
-})
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+main()

@@ -11,15 +11,16 @@ import {
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
 
 import type { Source } from '../util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -78,7 +79,7 @@ export function stateModelFactory(
       /**
        * #volatile
        */
-      sourcesLoadingStopToken: undefined as string | undefined,
+      sourcesLoadingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
@@ -98,7 +99,7 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setSourcesLoading(str: string) {
+      setSourcesLoading(str: StopToken) {
         if (self.sourcesLoadingStopToken) {
           stopStopToken(self.sourcesLoadingStopToken)
         }
@@ -201,15 +202,6 @@ export function stateModelFactory(
 
       /**
        * #getter
-       */
-      get canHaveFill() {
-        return (
-          self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPlotRenderer'
-        )
-      },
-      /**
-       * #getter
        * the multirowxy and multiline don't need to use colors on the legend
        * boxes since their track is drawn with the color. sort of a stylistic
        * choice
@@ -276,7 +268,9 @@ export function stateModelFactory(
       get quantitativeStatsReady() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return (
-          view.initialized && self.statsReadyAndRegionNotTooLarge && !self.error
+          view.initialized &&
+          self.featureDensityStatsReadyAndRegionNotTooLarge &&
+          !self.error
         )
       },
     }))
@@ -435,19 +429,6 @@ export function stateModelFactory(
       get hasGlobalStats() {
         return self.adapterCapabilities.includes('hasGlobalStats')
       },
-
-      /**
-       * #getter
-       */
-      get fillSetting() {
-        if (self.filled) {
-          return 0
-        } else if (self.minSize === 1) {
-          return 1
-        } else {
-          return 2
-        }
-      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
@@ -463,24 +444,6 @@ export function stateModelFactory(
               label: 'Score',
               subMenu: self.scoreTrackMenuItems(),
             },
-
-            ...(self.canHaveFill
-              ? [
-                  {
-                    label: 'Fill mode',
-                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
-                      (elt, idx) => ({
-                        label: elt,
-                        type: 'radio',
-                        checked: self.fillSetting === idx,
-                        onClick: () => {
-                          self.setFill(idx)
-                        },
-                      }),
-                    ),
-                  },
-                ]
-              : []),
 
             ...(hasRenderings
               ? [
@@ -515,18 +478,22 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-            {
-              label: 'Cluster by score',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  WiggleClusterDialog,
+            ...(self.isMultiRow
+              ? [
                   {
-                    model: self,
-                    handleClose,
+                    label: 'Cluster rows by score',
+                    onClick: () => {
+                      getSession(self).queueDialog(handleClose => [
+                        WiggleClusterDialog,
+                        {
+                          model: self,
+                          handleClose,
+                        },
+                      ])
+                    },
                   },
-                ])
-              },
-            },
+                ]
+              : []),
             {
               label: 'Show sidebar',
               type: 'checkbox',
@@ -584,6 +551,20 @@ export function stateModelFactory(
           return renderSvg(self, opts, superRenderSvg)
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { layout, showSidebar, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(layout?.length ? { layout } : {}),
+        ...(!showSidebar ? { showSidebar } : {}),
+      } as typeof snap
     })
 }
 

@@ -5,6 +5,12 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import {
+  getLongReadOrientationAbnormal,
+  getLongReadOrientationColorOrDefault,
+  getPairedOrientationColor,
+  isAbnormalOrientation,
+} from './getOrientationColor'
 import { LEFT, RIGHT, getTestId, getYOffset } from './useBreakpointOverlay'
 import {
   getBadlyPairedAlignments,
@@ -17,12 +23,6 @@ import {
   useNextFrame,
   yPos,
 } from '../util'
-import {
-  getLongReadOrientationAbnormal,
-  getLongReadOrientationColorOrDefault,
-  getPairedOrientationColor,
-  isAbnormalOrientation,
-} from './getOrientationColor'
 
 import type { OverlayProps } from './useBreakpointOverlay'
 
@@ -50,7 +50,7 @@ const AlignmentConnections = observer(function ({
     const layoutMatches = model.getMatchedFeaturesInLayout(trackId, matched)
     if (!hasPaired) {
       for (const m of layoutMatches) {
-        m.sort((a, b) => a.clipPos - b.clipPos)
+        m.sort((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
       }
     }
     return layoutMatches

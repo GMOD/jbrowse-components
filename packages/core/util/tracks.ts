@@ -1,11 +1,16 @@
-import { getParent, isRoot } from '@jbrowse/mobx-state-tree'
+import { getParent, isRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { getEnv, getSession, objectHash } from './index'
 import { readConfObject } from '../configuration'
 
 import type { FileLocation, PreFileLocation } from './types'
 import type { AnyConfigurationModel } from '../configuration'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 /* utility functions for use by track models and so forth */
 
@@ -261,11 +266,17 @@ export function generateUnknownTrackConf(
 }
 
 export function getTrackName(
-  conf: AnyConfigurationModel,
+  conf: AnyConfigurationModel | { name?: string; type?: string },
   session: { assemblies: AnyConfigurationModel[] },
-) {
-  const trackName = readConfObject(conf, 'name') as string
-  if (!trackName && readConfObject(conf, 'type') === 'ReferenceSequenceTrack') {
+): string {
+  // Handle both MST models and plain objects
+  const trackName = isStateTreeNode(conf)
+    ? (readConfObject(conf, 'name') as string)
+    : (conf.name ?? '')
+  const trackType = isStateTreeNode(conf)
+    ? (readConfObject(conf, 'type') as string)
+    : conf.type
+  if (!trackName && trackType === 'ReferenceSequenceTrack') {
     const asm = session.assemblies.find(a => a.sequence === conf)
     return asm
       ? `Reference sequence (${
@@ -274,4 +285,95 @@ export function getTrackName(
       : 'Reference sequence'
   }
   return trackName
+}
+
+type MSTArray<T extends IAnyType> = Instance<ReturnType<typeof types.array<T>>>
+
+interface MinimalTrack extends IAnyType {
+  configuration: { trackId: string }
+}
+
+interface GenericView {
+  type: string
+  tracks: MSTArray<MinimalTrack>
+}
+
+export function showTrackGeneric(
+  self: GenericView,
+  trackId: string,
+  initialSnapshot = {},
+  displayInitialSnapshot = {},
+) {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+
+  // Check if track is already shown
+  const found = self.tracks.find(t => t.configuration.trackId === trackId)
+  if (found) {
+    return found
+  }
+
+  const conf = session.tracksById[trackId]
+  if (!conf) {
+    throw new Error(`Could not resolve identifier "${trackId}"`)
+  }
+
+  const trackType = pluginManager.getTrackType(conf.type)
+  if (!trackType) {
+    throw new Error(`Unknown track type ${conf.type}`)
+  }
+
+  // Find a compatible display for this view type
+  const viewType = pluginManager.getViewType(self.type)!
+  const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
+  const displays = conf.displays ?? []
+  const displayConf = displays.find((d: { type: string }) =>
+    supportedDisplays.has(d.type),
+  )
+
+  // Find a compatible display type for this view
+  const displayType =
+    displayConf?.type ??
+    trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
+
+  if (!displayType) {
+    throw new Error(
+      `Could not find a compatible display for view type ${self.type}`,
+    )
+  }
+
+  // Generate displayId if not found in config - must use the actual displayType
+  const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
+
+  // Create track with just the trackId - the ConfigurationReference will resolve it
+  const track = trackType.stateModel.create({
+    ...initialSnapshot,
+    type: conf.type,
+    configuration: trackId,
+    displays: [
+      {
+        type: displayType,
+        configuration: displayId,
+        ...displayInitialSnapshot,
+      },
+    ],
+  })
+  self.tracks.push(track)
+  return track
+}
+
+export function hideTrackGeneric(self: GenericView, trackId: string) {
+  const t = self.tracks.find(t => t.configuration.trackId === trackId)
+  if (t) {
+    self.tracks.remove(t)
+    return 1
+  }
+  return 0
+}
+
+export function toggleTrackGeneric(self: GenericView, trackId: string) {
+  const hiddenCount = hideTrackGeneric(self, trackId)
+  if (!hiddenCount) {
+    showTrackGeneric(self, trackId)
+  }
 }

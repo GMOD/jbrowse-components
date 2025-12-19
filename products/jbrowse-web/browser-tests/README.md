@@ -5,33 +5,35 @@ browser instead of jsdom.
 
 ## Prerequisites
 
-1. Build jbrowse-web first:
+Build jbrowse-web first:
 
-   ```bash
-   cd products/jbrowse-web
-   yarn build
-   ```
-
-2. Install dependencies:
-   ```bash
-   cd browser-tests
-   yarn install
-   ```
+```bash
+cd products/jbrowse-web
+yarn build
+```
 
 ## Running Tests
 
+From `products/jbrowse-web`:
+
 ```bash
 # Run tests in headless mode
-yarn test
+yarn test:browser
 
 # Run tests with visible browser
-yarn test:headed
-
-# Run tests with visible browser and slow motion (useful for debugging)
-yarn test:debug
+yarn test:browser:headed
 
 # Update canvas snapshots
-yarn test:update
+yarn test:browser:update
+```
+
+Or run directly:
+
+```bash
+node --experimental-strip-types browser-tests/runner.ts
+node --experimental-strip-types browser-tests/runner.ts --headed
+node --experimental-strip-types browser-tests/runner.ts --headed --slow-mo=100
+node --experimental-strip-types browser-tests/runner.ts --update-snapshots
 ```
 
 ## How It Works
@@ -50,52 +52,44 @@ yarn test:update
 
 ## Screenshot Testing
 
-The test runner supports visual regression testing using full page screenshots:
-
-```typescript
-runner.test('my screenshot test', async page => {
-  // ... setup code to render the page ...
-
-  const result = await capturePageSnapshot(page, 'my-snapshot-name')
-
-  if (!result.passed) {
-    throw new Error(result.message)
-  }
-})
-```
-
+The test runner supports visual regression testing using full page screenshots.
 Snapshots are stored in `__snapshots__/` directory. On first run, snapshots are
 created automatically. On subsequent runs, the current screenshot is compared
 against the stored snapshot.
 
-Use `yarn test:update` or `yarn test -u` to update snapshots when intentional
-visual changes are made.
+Use `--update-snapshots` or `-u` to update snapshots when intentional visual
+changes are made.
 
 ## Adding Tests
 
-Tests are defined in `runner.ts` using the `TestRunner` class:
+Tests are defined in `runner.ts` using test suites:
 
 ```typescript
-runner.describe('My Test Suite', () => {
-  runner.test('my test name', async page => {
-    await page.goto(`${baseUrl}/?config=test_data/volvox/config.json`)
-
-    // Find elements
-    const element = await findByTestId(page, 'my-element')
-    await element.click()
-
-    // Wait for text
-    await findByText(page, 'Expected text')
-  })
-})
+const testSuites: TestSuite[] = [
+  {
+    name: 'My Test Suite',
+    tests: [
+      {
+        name: 'my test name',
+        fn: async page => {
+          await page.goto(`${baseUrl}/?config=test_data/volvox/config.json`)
+          const element = await findByTestId(page, 'my-element')
+          await element.click()
+          await findByText(page, 'Expected text')
+        },
+      },
+    ],
+  },
+]
 ```
 
 ## Available Helpers
 
-- `findByTestId(page, testId, options)` - Find element by `data-testid`
+- `findByTestId(page, testId, timeout)` - Find element by `data-testid`
   attribute
-- `findByText(page, text, options)` - Find element containing text (string or
+- `findByText(page, text, timeout)` - Find element containing text (string or
   RegExp)
-- `clickByText(page, text, options)` - Find and click element by text
 - `delay(ms)` - Wait for specified milliseconds
+- `waitForLoadingToComplete(page, timeout)` - Wait for loading overlays to
+  disappear
 - `capturePageSnapshot(page, name)` - Capture and compare full page screenshot

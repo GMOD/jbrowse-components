@@ -46,9 +46,9 @@
     "@jbrowse/product-core": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
+    "dockview-react": "^4.11.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "tss-react": "^4.0.0"
+    "mobx-react": "^9.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

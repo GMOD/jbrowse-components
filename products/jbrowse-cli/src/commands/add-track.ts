@@ -1,7 +1,7 @@
 import path from 'path'
 import { parseArgs } from 'util'
 
-import { printHelp } from '../utils'
+import { printHelp, resolveConfigPath } from '../utils'
 import { guessAdapter } from './add-track-utils/adapter-utils'
 import {
   addSyntenyAssemblyNames,
@@ -21,7 +21,6 @@ import {
   createTrackConfiguration,
   loadTrackConfig,
   processTrackFiles,
-  resolveTrackConfigPath,
   saveTrackConfigAndReport,
 } from './track-utils'
 
@@ -160,7 +159,6 @@ export async function run(args?: string[]) {
 
   const {
     config,
-    skipCheck,
     force,
     overwrite,
     category,
@@ -175,8 +173,7 @@ export async function run(args?: string[]) {
     bed2,
   } = flags
 
-  const output = target || out || '.'
-  const targetConfigPath = resolveTrackConfigPath(output)
+  const targetConfigPath = await resolveConfigPath(target, out)
   const configDir = path.dirname(targetConfigPath)
 
   createTargetDirectory(configDir, subDir)
@@ -212,7 +209,6 @@ export async function run(args?: string[]) {
     flags: { category, description: trackDescription, config },
     adapter,
     configContents,
-    skipCheck,
   })
 
   const { updatedConfig, wasOverwritten } = addTrackToConfig({

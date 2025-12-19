@@ -1,7 +1,7 @@
 import { max, sum } from '@jbrowse/core/util'
 
-import { incWithProbabilities } from './util'
-import { parseCigar } from '../MismatchParser'
+import { createEmptyBin, incWithProbabilities } from './util'
+import { parseCigar2 } from '../MismatchParser'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
 
 import type { ColorBy, PreBaseCoverageBin } from '../shared/types'
@@ -34,13 +34,27 @@ export function processModifications({
     return
   }
 
-  const cigarOps = parseCigar(feature.get('CIGAR'))
+  const cigarOps =
+    feature.get('NUMERIC_CIGAR') ?? parseCigar2(feature.get('CIGAR'))
+  const regionStart = region.start
+  const regionEnd = region.end
 
   // Get only the maximum probability modification at each position
   // this is a hole-y array, does not work with normal for loop
   // eslint-disable-next-line unicorn/no-array-for-each
   getMaxProbModAtEachPosition(feature, cigarOps)?.forEach(
     ({ allProbs, prob, type }, pos) => {
+      const refPos = pos + fstart
+
+      // Skip positions outside visible region (early check before other work)
+      if (refPos < regionStart || refPos >= fend) {
+        return
+      }
+      const epos = refPos - regionStart
+      if (epos < 0 || epos >= regionEnd - regionStart) {
+        return
+      }
+
       if (isolatedModification && type !== isolatedModification) {
         return
       }
@@ -50,36 +64,14 @@ export function processModifications({
         return
       }
 
-      const epos = pos + fstart - region.start
-      if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-        if (bins[epos] === undefined) {
-          bins[epos] = {
-            depth: 0,
-            readsCounted: 0,
-            snps: {},
-            ref: {
-              probabilities: [],
-              entryDepth: 0,
-              '-1': 0,
-              0: 0,
-              1: 0,
-            },
-            mods: {},
-            nonmods: {},
-            delskips: {},
-            noncov: {},
-          }
-        }
+      const bin = (bins[epos] ??= createEmptyBin())
+      bin.refbase = regionSequence[epos]
 
-        const bin = bins[epos]
-        bin.refbase = regionSequence[epos]
-
-        const s = 1 - sum(allProbs)
-        if (twoColor && s > max(allProbs)) {
-          incWithProbabilities(bin, fstrand, 'nonmods', `nonmod_${type}`, s)
-        } else {
-          incWithProbabilities(bin, fstrand, 'mods', `mod_${type}`, prob)
-        }
+      const s = 1 - sum(allProbs)
+      if (twoColor && s > max(allProbs)) {
+        incWithProbabilities(bin, fstrand, 'nonmods', `nonmod_${type}`, s)
+      } else {
+        incWithProbabilities(bin, fstrand, 'mods', `mod_${type}`, prob)
       }
     },
   )

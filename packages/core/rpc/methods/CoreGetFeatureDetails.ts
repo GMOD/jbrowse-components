@@ -5,7 +5,7 @@ import type { RenderArgs, RenderArgsSerialized } from './util'
 import type { BoxRendererType } from '../../pluggableElementTypes'
 
 /**
- * fetches features from an adapter and call a renderer with them
+ * fetches feature details from the layout cache (uses WeakRef)
  */
 export default class CoreGetFeatureDetails extends RpcMethodType {
   name = 'CoreGetFeatureDetails'
@@ -39,7 +39,6 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
       feature: RendererType.getLayoutSession(args)
         // @ts-expect-error
         ?.cachedLayout.layout.getDataByID(featureId)
-        // @ts-expect-error
         ?.toJSON(),
     }
   }

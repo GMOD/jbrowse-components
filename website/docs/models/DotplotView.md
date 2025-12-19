@@ -164,6 +164,17 @@ IArrayType<IAnyModelType>
 viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
 ```
 
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<DotplotViewInit, DotplotViewInit, DotplotViewInit>
+// code
+init: types.frozen<DotplotViewInit | undefined>()
+```
+
 ### DotplotView - Getters
 
 #### getter: width
@@ -208,11 +219,36 @@ any[]
 any[]
 ```
 
-#### getter: loading
+#### getter: hasSomethingToShow
 
 ```js
 // type
 boolean
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+boolean
+```
+
+#### getter: showImportForm
+
+Whether to show the import form
+
+```js
+// type
+boolean
+```
+
+#### getter: loadingMessage
+
+```js
+// type
+string
 ```
 
 #### getter: viewWidth
@@ -354,6 +390,13 @@ setHeight: (newHeight: number) => number
 setError: (e: unknown) => void
 ```
 
+#### action: setInit
+
+```js
+// type signature
+setInit: (init?: DotplotViewInit) => void
+```
+
 #### action: zoomOut
 
 ```js
@@ -379,21 +422,21 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
+showTrack: (trackId: string, initialSnapshot?: {}) => any
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => 0 | 1
 ```
 
 #### action: toggleTrack
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string) => void
 ```
 
 #### action: setAssemblyNames
@@ -443,6 +486,13 @@ calculateBorders: () => {
 ```js
 // type signature
 showAllRegions: () => void
+```
+
+#### action: initializeDisplayedRegions
+
+```js
+// type signature
+initializeDisplayedRegions: () => void
 ```
 
 #### action: onDotplotView

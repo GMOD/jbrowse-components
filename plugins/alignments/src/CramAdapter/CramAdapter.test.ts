@@ -20,6 +20,10 @@ const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
   }
 }
 
+// Mock sequenceAdapter config - the actual config doesn't matter since
+// getVolvoxSequenceSubAdapter ignores it and returns the test adapter
+const sequenceAdapterConfig = { type: 'TestSequenceAdapter' }
+
 function makeAdapter(arg: string) {
   return new Adapter(
     configSchema.create({
@@ -31,7 +35,6 @@ function makeAdapter(arg: string) {
         localPath: require.resolve(`${arg}.crai`),
         locationType: 'LocalPathLocation',
       },
-      sequenceAdapter: {},
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
@@ -40,6 +43,8 @@ function makeAdapter(arg: string) {
 
 test('adapter can fetch features from volvox-sorted.cram', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
+  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
@@ -62,6 +67,9 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
 
 test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
+  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
+
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',

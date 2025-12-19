@@ -34,6 +34,13 @@ composed of
 ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
+#### getter: tracksById
+
+```js
+// type
+Record<string, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
+```
+
 ### TracksManagerSessionMixin - Actions
 
 #### action: addTrackConf

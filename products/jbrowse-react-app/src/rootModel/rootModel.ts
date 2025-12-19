@@ -282,7 +282,18 @@ export default function RootModel({
             },
             {
               label: 'Tools',
-              menuItems: [],
+              menuItems: [
+                {
+                  label: 'Use workspaces',
+                  type: 'checkbox',
+                  checked: self.session?.useWorkspaces ?? false,
+                  helpText:
+                    'Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.',
+                  onClick: () => {
+                    self.session?.setUseWorkspaces(!self.session.useWorkspaces)
+                  },
+                },
+              ],
             },
           ],
           self.mutableMenuActions,

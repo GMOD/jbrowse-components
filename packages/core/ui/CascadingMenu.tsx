@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import type React from 'react'
-import { createContext, useContext, useMemo } from 'react'
+import { useState } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
@@ -14,103 +13,55 @@ import {
 
 import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton'
 import HoverMenu from './HoverMenu'
-import { MenuItemEndDecoration } from './Menu'
-import { bindFocus, bindHover, bindMenu, usePopupState } from './hooks'
+import {
+  ErrorMenuItem,
+  LoadingMenuItem,
+  MenuItemEndDecoration,
+} from './MenuItems'
+import { bindMenu } from './hooks'
+import { useAsyncMenuItems } from './menuHooks'
 
-import type { MenuItem as JBMenuItem } from './Menu'
+import type {
+  CheckboxMenuItem,
+  MenuItem as JBMenuItem,
+  MenuItemsGetter,
+  NormalMenuItem,
+  RadioMenuItem,
+} from './MenuTypes'
 import type { PopupState } from './hooks'
-import type { PopoverOrigin, SvgIconProps } from '@mui/material'
+import type { SvgIconProps } from '@mui/material'
 
-const CascadingContext = createContext({
-  parentPopupState: undefined,
-  rootPopupState: undefined,
-} as {
-  parentPopupState: PopupState | undefined
-  rootPopupState: PopupState | undefined
-})
-
-function HelpIconSpacer() {
-  // Empty spacer that matches HelpIconButton dimensions for alignment
-  return <div style={{ marginLeft: 4, padding: 4, width: 28, height: 28 }} />
-}
-
-function CascadingMenuItem({
-  onClick,
-  closeAfterItemClick,
-  children,
-  ...props
-}: {
-  closeAfterItemClick: boolean
-  onClick?: (event: React.MouseEvent<HTMLLIElement>) => void
-  disabled?: boolean
-  children: React.ReactNode
-}) {
-  const { rootPopupState, parentPopupState } = useContext(CascadingContext)
-
-  if (!rootPopupState) {
-    throw new Error('must be used inside a CascadingMenu')
-  }
-
-  return (
-    <MenuItem
-      {...props}
-      onClick={event => {
-        if (closeAfterItemClick) {
-          rootPopupState.close()
-        }
-        onClick?.(event)
-      }}
-      onMouseOver={() => {
-        // Close any existing child submenu when hovering over a regular menu item
-        // Note: This logic is duplicated in CascadingSubmenu for consistency
-        if (parentPopupState?.childHandle) {
-          parentPopupState.childHandle.close()
-          parentPopupState.setChildHandle(undefined)
-        }
-      }}
-    >
-      {children}
-    </MenuItem>
-  )
-}
+export type { MenuItemsGetter } from './MenuTypes'
+type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
 
 function CascadingSubmenu({
   title,
   Icon,
   inset,
-  ...props
+  menuItems,
+  onMenuItemClick,
+  closeAfterItemClick,
+  onCloseRoot,
+  isOpen,
+  onOpen,
+  onClose,
 }: {
-  children: React.ReactNode
   title: React.ReactNode
   onMenuItemClick: Function
   Icon: React.ComponentType<SvgIconProps> | undefined
   inset: boolean
   menuItems: JBMenuItem[]
+  closeAfterItemClick: boolean
+  onCloseRoot: () => void
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
 }) {
-  const { parentPopupState } = useContext(CascadingContext)
-  const popupState = usePopupState({
-    parentPopupState,
-  })
-
-  const { onMouseOver: originalOnMouseOver, ...hoverProps } =
-    bindHover(popupState)
+  const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
 
   return (
     <>
-      <MenuItem
-        {...bindFocus(popupState)}
-        {...hoverProps}
-        onMouseOver={event => {
-          // Close any existing sibling submenus before opening this one
-          // Note: This logic is duplicated from CascadingMenuItem for consistency
-          if (parentPopupState?.childHandle) {
-            parentPopupState.childHandle.close()
-            parentPopupState.setChildHandle(undefined)
-          }
-          // Call the original hover handler to open this submenu
-          originalOnMouseOver(event)
-        }}
-      >
+      <MenuItem ref={setAnchorEl} onMouseOver={onOpen} onFocus={onOpen}>
         {Icon ? (
           <ListItemIcon>
             <Icon />
@@ -119,99 +70,40 @@ function CascadingSubmenu({
         <ListItemText primary={title} inset={inset} />
         <ChevronRight />
       </MenuItem>
-      <CascadingSubmenuHover
-        {...props}
+      <HoverMenu
+        open={isOpen}
+        anchorEl={anchorEl}
+        onClose={onClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        popupState={popupState}
-      />
+      >
+        <CascadingMenuList
+          closeAfterItemClick={closeAfterItemClick}
+          onMenuItemClick={onMenuItemClick}
+          menuItems={menuItems}
+          onCloseRoot={onCloseRoot}
+        />
+      </HoverMenu>
     </>
   )
-}
-
-function CascadingSubmenuHover({
-  popupState,
-  onMenuItemClick,
-  menuItems,
-  classes,
-  ...props
-}: {
-  classes?: Record<string, string>
-  popupState: PopupState
-  anchorOrigin: PopoverOrigin
-  transformOrigin: PopoverOrigin
-  onMenuItemClick: Function
-  menuItems: JBMenuItem[]
-}) {
-  const { rootPopupState } = useContext(CascadingContext)
-  const context = useMemo(
-    () => ({
-      rootPopupState: rootPopupState || popupState,
-      parentPopupState: popupState,
-    }),
-    [rootPopupState, popupState],
-  )
-
-  return (
-    <CascadingContext.Provider value={context}>
-      {/* @ts-expect-error */}
-      <HoverMenu {...props} {...bindMenu(popupState)} />
-    </CascadingContext.Provider>
-  )
-}
-
-function CascadingMenu({
-  popupState,
-  onMenuItemClick,
-  menuItems,
-  ...props
-}: {
-  popupState: PopupState
-  onMenuItemClick: Function
-  menuItems: JBMenuItem[]
-}) {
-  const { rootPopupState } = useContext(CascadingContext)
-  const context = useMemo(
-    () => ({
-      rootPopupState: rootPopupState || popupState,
-      parentPopupState: popupState,
-    }),
-    [rootPopupState, popupState],
-  )
-
-  return (
-    <CascadingContext.Provider value={context}>
-      {/* @ts-expect-error */}
-      <Menu {...props} {...bindMenu(popupState)} />
-    </CascadingContext.Provider>
-  )
-}
-
-function EndDecoration({ item }: { item: JBMenuItem }) {
-  if ('subMenu' in item) {
-    return <MenuItemEndDecoration type="subMenu" />
-  } else if (item.type === 'checkbox' || item.type === 'radio') {
-    return (
-      <MenuItemEndDecoration
-        type={item.type}
-        checked={item.checked}
-        disabled={item.disabled}
-      />
-    )
-  }
-  return null
 }
 
 function CascadingMenuList({
   onMenuItemClick,
   closeAfterItemClick,
   menuItems,
-  ...props
+  onCloseRoot,
 }: {
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
   onMenuItemClick: Function
+  onCloseRoot: () => void
 }) {
+  const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
+  const closeSubmenu = () => {
+    setOpenSubmenuIdx(undefined)
+  }
+
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
   const hasCheckboxOrRadioWithHelp = menuItems.some(
     m =>
@@ -220,12 +112,15 @@ function CascadingMenuList({
       m.helpText,
   )
 
+  const sortedItems = menuItems.toSorted(
+    (a, b) => (b.priority || 0) - (a.priority || 0),
+  )
+
   return (
     <>
-      {menuItems
-        .toSorted((a, b) => (b.priority || 0) - (a.priority || 0))
-        .map((item, idx) => {
-          return 'subMenu' in item ? (
+      {sortedItems.map((item, idx) => {
+        if ('subMenu' in item) {
+          return (
             <CascadingSubmenu
               key={`subMenu-${item.label}-${idx}`}
               title={item.label}
@@ -233,86 +128,112 @@ function CascadingMenuList({
               inset={hasIcon && !item.icon}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}
-            >
-              <CascadingMenuList
-                {...props}
-                closeAfterItemClick={closeAfterItemClick}
-                onMenuItemClick={onMenuItemClick}
-                menuItems={item.subMenu}
-              />
-            </CascadingSubmenu>
-          ) : item.type === 'divider' ? (
-            <Divider
-              key={`divider-${JSON.stringify(item)}-${idx}`}
-              component="li"
+              closeAfterItemClick={closeAfterItemClick}
+              onCloseRoot={onCloseRoot}
+              isOpen={openSubmenuIdx === idx}
+              onOpen={() => {
+                setOpenSubmenuIdx(idx)
+              }}
+              onClose={closeSubmenu}
             />
-          ) : item.type === 'subHeader' ? (
+          )
+        }
+        if (item.type === 'divider') {
+          return <Divider key={`divider-${idx}`} component="li" />
+        }
+        if (item.type === 'subHeader') {
+          return (
             <ListSubheader key={`subHeader-${item.label}-${idx}`}>
               {item.label}
             </ListSubheader>
-          ) : (
-            <CascadingMenuItem
-              key={`${item.label}-${idx}`}
-              closeAfterItemClick={closeAfterItemClick}
-              onClick={
-                'onClick' in item
-                  ? event => {
-                      onMenuItemClick(event, item.onClick)
-                    }
-                  : undefined
-              }
-              disabled={Boolean(item.disabled)}
-            >
-              {item.icon ? (
-                <ListItemIcon>
-                  <item.icon />
-                </ListItemIcon>
-              ) : null}{' '}
-              <ListItemText
-                primary={item.label}
-                secondary={item.subLabel}
-                inset={hasIcon && !item.icon}
-              />
-              <CascadingSpacer />
-              <EndDecoration item={item} />
-              {item.type === 'checkbox' || item.type === 'radio' ? (
-                'helpText' in item && item.helpText ? (
-                  <CascadingMenuHelpIconButton
-                    helpText={item.helpText}
-                    label={item.label}
-                  />
-                ) : hasCheckboxOrRadioWithHelp ? (
-                  <HelpIconSpacer />
-                ) : null
-              ) : 'helpText' in item && item.helpText ? (
-                <CascadingMenuHelpIconButton
-                  helpText={item.helpText}
-                  label={item.label}
-                />
-              ) : null}
-            </CascadingMenuItem>
           )
-        })}
+        }
+
+        const actionItem = item as ActionableMenuItem
+        const helpText = actionItem.helpText
+        const isCheckOrRadio =
+          actionItem.type === 'checkbox' || actionItem.type === 'radio'
+
+        return (
+          <MenuItem
+            key={`${actionItem.label}-${idx}`}
+            disabled={Boolean(actionItem.disabled)}
+            onClick={event => {
+              if (closeAfterItemClick) {
+                onCloseRoot()
+              }
+              onMenuItemClick(event, actionItem.onClick)
+            }}
+            onMouseOver={closeSubmenu}
+          >
+            {actionItem.icon ? (
+              <ListItemIcon>
+                <actionItem.icon />
+              </ListItemIcon>
+            ) : null}
+            <ListItemText
+              primary={actionItem.label}
+              secondary={actionItem.subLabel}
+              inset={hasIcon && !actionItem.icon}
+            />
+            <div style={{ flexGrow: 1, minWidth: 10 }} />
+            {isCheckOrRadio ? (
+              <MenuItemEndDecoration
+                type={actionItem.type}
+                checked={actionItem.checked}
+                disabled={actionItem.disabled}
+              />
+            ) : null}
+            {helpText ? (
+              <CascadingMenuHelpIconButton
+                helpText={helpText}
+                label={actionItem.label}
+              />
+            ) : isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
+              <div
+                style={{ marginLeft: 4, padding: 4, width: 28, height: 28 }}
+              />
+            ) : null}
+          </MenuItem>
+        )
+      })}
     </>
   )
 }
 
-function CascadingSpacer() {
-  return <div style={{ flexGrow: 1, minWidth: 10 }} />
-}
-
-function CascadingMenuChildren(props: {
+export default function CascadingMenuChildren(props: {
   onMenuItemClick: Function
   closeAfterItemClick?: boolean
-  menuItems: JBMenuItem[]
+  menuItems: MenuItemsGetter
   popupState: PopupState
 }) {
-  const { closeAfterItemClick = true, ...rest } = props
+  const { closeAfterItemClick = true, menuItems, popupState } = props
+  const { items, loading, error } = useAsyncMenuItems(
+    menuItems,
+    popupState.isOpen,
+  )
+  const { anchorEl, onClose, ...menuProps } = bindMenu(popupState)
+
   return (
-    <CascadingMenu {...rest}>
-      <CascadingMenuList {...rest} closeAfterItemClick={closeAfterItemClick} />
-    </CascadingMenu>
+    <Menu
+      {...menuProps}
+      anchorEl={anchorEl ?? null}
+      onClose={() => {
+        onClose()
+      }}
+    >
+      {loading ? (
+        <LoadingMenuItem />
+      ) : error ? (
+        <ErrorMenuItem error={error} />
+      ) : (
+        <CascadingMenuList
+          menuItems={items}
+          closeAfterItemClick={closeAfterItemClick}
+          onMenuItemClick={props.onMenuItemClick}
+          onCloseRoot={onClose}
+        />
+      )}
+    </Menu>
   )
 }
-
-export default CascadingMenuChildren

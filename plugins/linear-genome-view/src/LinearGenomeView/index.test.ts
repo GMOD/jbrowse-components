@@ -62,6 +62,7 @@ function initialize() {
     .model({})
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
+      initialized: true,
     }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
@@ -147,7 +148,7 @@ test('can instantiate a model that lets you navigate', () => {
   expect(model.maxBpPerPx).toBeCloseTo(13.888)
   model.setNewView(0.02, 0)
 
-  expect(model.scaleBarHeight).toEqual(20)
+  expect(model.scalebarHeight).toEqual(20)
   // header height 20 + area where polygons get drawn has height of 48
   expect(model.headerHeight).toEqual(68)
   // TODO: figure out how to better test height
@@ -661,6 +662,30 @@ test('can showAllRegionsInAssembly', async () => {
   ])
 })
 
+test('init without loc shows whole genome', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testInitNoLoc',
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+      },
+    }),
+  )
+  model.setWidth(width)
+  await waitFor(() => {
+    expect(model.displayedRegions.map(reg => reg.refName)).toEqual([
+      'ctgA',
+      'ctgB',
+    ])
+  })
+})
+
 describe('get sequence for selected displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   /* the start of all the results should be +1
@@ -1000,5 +1025,56 @@ test('space separated locstring', async () => {
   })
   await waitFor(() => {
     expect(model.bpPerPx).toBe(0.125)
+  })
+})
+
+test('showLoading is true when displayedRegions are set but not yet initialized', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+      ],
+      bpPerPx: 1,
+      offsetPx: 0,
+    }),
+  )
+  // width not set yet, so not initialized
+  expect(model.showLoading).toBe(true)
+  expect(model.initialized).toBe(false)
+
+  // after setting width, should be initialized
+  model.setWidth(800)
+  expect(model.showLoading).toBe(false)
+  expect(model.initialized).toBe(true)
+})
+
+test('showLoading is true when init is set and becomes false after initialization', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+        loc: 'ctgA:1000-2000',
+      },
+    }),
+  )
+  // not initialized yet, so showLoading should be true
+  expect(model.showLoading).toBe(true)
+  expect(model.initialized).toBe(false)
+
+  model.setWidth(800)
+  // after init autorun processes and view initializes, showLoading should become false
+  await waitFor(() => {
+    expect(model.showLoading).toBe(false)
+  })
+  await waitFor(() => {
+    expect(model.initialized).toBe(true)
   })
 })

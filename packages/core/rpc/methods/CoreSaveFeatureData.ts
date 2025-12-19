@@ -1,7 +1,6 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-// locals
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'

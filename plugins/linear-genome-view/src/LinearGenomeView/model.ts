@@ -17,6 +17,7 @@ import {
   localStorageGetItem,
   localStorageSetItem,
   measureText,
+  parseLocString,
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
@@ -24,15 +25,18 @@ import { bpToPx, moveTo, pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   addDisposer,
   cast,
   getParent,
-  getRoot,
   getSnapshot,
-  resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
@@ -45,15 +49,10 @@ import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import { autorun, transaction, when } from 'mobx'
+import { autorun, when } from 'mobx'
 
-import Header from './components/Header'
-import {
-  calculateVisibleLocStrings,
-  generateLocations,
-  parseLocStrings,
-} from './util'
 import { handleSelectedRegion } from '../searchUtils'
+import Header from './components/Header'
 import MiniControls from './components/MiniControls'
 import {
   HEADER_BAR_HEIGHT,
@@ -62,6 +61,11 @@ import {
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts'
+import {
+  calculateVisibleLocStrings,
+  generateLocations,
+  parseLocStrings,
+} from './util'
 
 import type {
   BpOffset,
@@ -73,11 +77,10 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
-import type { Region, Region as IRegion } from '@jbrowse/core/util/types'
+import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
@@ -138,7 +141,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * advised to use the entire set of chromosomes if your assembly is very
          * fragmented
          */
-        displayedRegions: types.optional(types.frozen<IRegion[]>(), []),
+        displayedRegions: types.optional(types.frozen<Region[]>(), []),
 
         /**
          * #property
@@ -224,7 +227,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * color by CDS
+         * show the track outlines
          */
         showTrackOutlines: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showTrackOutlines', true),
@@ -261,14 +264,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      volatileError: undefined as unknown,
-
+      lastTrackDragY: undefined as undefined | number,
       /**
        * #volatile
-       * array of callbacks to run after the next set of the displayedRegions,
-       * which is basically like an onLoad
        */
-      afterDisplayedRegionsSetCallbacks: [] as (() => void)[],
+      volatileError: undefined as unknown,
+
       /**
        * #volatile
        */
@@ -341,19 +342,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyNames() {
-        return [
-          ...new Set(self.displayedRegions.map(region => region.assemblyName)),
-        ]
+        return [...new Set(self.displayedRegions.map(r => r.assemblyName))]
       },
       /**
        * #getter
        */
       get assemblyDisplayNames() {
         const { assemblyManager } = getSession(self)
-        return this.assemblyNames.map(assemblyName => {
-          const assembly = assemblyManager.get(assemblyName)
-          return assembly?.displayName ?? assemblyName
-        })
+        return this.assemblyNames.map(
+          a => assemblyManager.get(a)?.displayName ?? a,
+        )
       },
       /**
        * #getter
@@ -361,8 +359,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * capability, sticky positioning
        */
       get isTopLevelView() {
-        const session = getSession(self)
-        return session.views.some(r => r.id === self.id)
+        return getSession(self).views.some(r => r.id === self.id)
       },
       /**
        * #getter
@@ -401,7 +398,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      scaleBarDisplayPrefix() {
+      scalebarDisplayPrefix() {
         return getParent<any>(self, 2).type === 'LinearSyntenyView'
           ? self.assemblyDisplayNames[0]
           : ''
@@ -459,7 +456,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get initialized() {
-        return self.volatileWidth !== undefined && this.assembliesInitialized
+        if (self.volatileWidth === undefined) {
+          return false
+        }
+        // if init is set, wait for that assembly to have regions loaded
+        if (self.init) {
+          const { assemblyManager } = getSession(self)
+          const asm = assemblyManager.get(self.init.assembly)
+          return !!(asm?.initialized && asm.regions)
+        }
+        return this.assembliesInitialized
       },
 
       /**
@@ -472,7 +478,37 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get scaleBarHeight() {
+      get loadingMessage() {
+        return this.showLoading ? 'Loading' : undefined
+      },
+
+      /**
+       * #getter
+       */
+      get hasSomethingToShow() {
+        return this.hasDisplayedRegions || !!self.init
+      },
+
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return !this.initialized && !this.error && this.hasSomethingToShow
+      },
+
+      /**
+       * #getter
+       * Whether to show the import form
+       */
+      get showImportForm() {
+        return !this.hasSomethingToShow || !!this.error
+      },
+
+      /**
+       * #getter
+       */
+      get scalebarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
 
@@ -510,7 +546,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return (
           this.trackHeightsWithResizeHandles +
           this.headerHeight +
-          this.scaleBarHeight
+          this.scalebarHeight
         )
       },
 
@@ -813,60 +849,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
         initialSnapshot = {},
         displayInitialSnapshot = {},
       ) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        if (!conf) {
-          throw new Error(`Could not resolve identifier "${trackId}"`)
-        }
-        const trackType = pluginManager.getTrackType(conf?.type)
-        if (!trackType) {
-          throw new Error(`Unknown track type ${conf.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)!
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
+        return showTrackGeneric(
+          self,
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
         )
-        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          supportedDisplays.has(d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `Could not find a compatible display for view type ${self.type}`,
-          )
-        }
-
-        const t = self.tracks.filter(t => t.configuration === conf)
-        if (t.length === 0) {
-          const track = trackType.stateModel.create({
-            ...initialSnapshot,
-            type: conf.type,
-            configuration: conf,
-            displays: [
-              {
-                type: displayConf.type,
-                configuration: displayConf,
-                ...displayInitialSnapshot,
-              },
-            ],
-          })
-          self.tracks.push(track)
-          return track
-        }
-        return t[0]
       },
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const tracks = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => {
-          for (const track of tracks) {
-            self.tracks.remove(track)
-          }
-        })
-        return tracks.length
+        return hideTrackGeneric(self, trackId)
       },
     }))
     .actions(self => ({
@@ -875,10 +869,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       moveTrackDown(id: string) {
         const idx = self.tracks.findIndex(v => v.id === id)
-        if (idx === -1) {
-          return
-        }
-
         if (idx !== -1 && idx < self.tracks.length - 1) {
           self.tracks.splice(idx, 2, self.tracks[idx + 1], self.tracks[idx])
         }
@@ -896,21 +886,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       moveTrackToTop(id: string) {
-        const idx = self.tracks.findIndex(track => track.id === id)
-        self.tracks = cast([
-          self.tracks[idx],
-          ...self.tracks.filter(track => track.id !== id),
-        ])
+        const track = self.tracks.find(track => track.id === id)
+        if (track) {
+          self.tracks = cast([track, ...self.tracks.filter(t => t.id !== id)])
+        }
       },
       /**
        * #action
        */
       moveTrackToBottom(id: string) {
-        const idx = self.tracks.findIndex(track => track.id === id)
-        self.tracks = cast([
-          ...self.tracks.filter(track => track.id !== id),
-          self.tracks[idx],
-        ])
+        const track = self.tracks.find(track => track.id === id)
+        if (track) {
+          self.tracks = cast([...self.tracks.filter(t => t.id !== id), track])
+        }
       },
       /**
        * #action
@@ -934,21 +922,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
-        const hiddenCount = self.hideTrack(trackId)
-        // if none had that configuration, turn one on
-        if (!hiddenCount) {
-          self.showTrack(trackId)
-          return true
-        }
-        return false
+        toggleTrackGeneric(self, trackId)
       },
 
       /**
        * #action
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
-        localStorage.setItem('lgv-trackLabels', setting)
+        localStorageSetItem('lgv-trackLabels', setting)
         self.trackLabels = setting
       },
 
@@ -1018,15 +999,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * schedule something to be run after the next time displayedRegions is
-       * set
-       */
-      afterDisplayedRegionsSet(cb: () => void) {
-        self.afterDisplayedRegionsSetCallbacks.push(cb)
-      },
-
-      /**
-       * #action
        */
       horizontalScroll(distance: number) {
         const oldOffsetPx = self.offsetPx
@@ -1068,15 +1040,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           ;[assemblyName] = [...names]
         }
-        const assembly = assemblyManager.get(assemblyName!)
-        if (assembly) {
-          const { regions } = assembly
-          if (regions) {
-            this.setDisplayedRegions(regions)
-            self.zoomTo(self.maxBpPerPx)
-            this.center()
-          }
+        const regions = assemblyManager.get(assemblyName!)?.regions
+        if (!regions) {
+          return
         }
+        this.setDisplayedRegions(regions)
+        self.zoomTo(self.maxBpPerPx)
+        this.center()
       },
 
       /**
@@ -1084,6 +1054,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
+        if (idx === undefined) {
+          self.lastTrackDragY = undefined
+        }
+      },
+
+      /**
+       * #action
+       */
+      setLastTrackDragY(y: number) {
+        self.lastTrackDragY = y
       },
 
       /**
@@ -1237,7 +1217,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Return to import form',
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              session.queueDialog(handleClose => [
                 ReturnToImportFormDialog,
                 { model: self, handleClose },
               ])
@@ -1250,7 +1230,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   label: 'Sequence search',
                   icon: SearchIcon,
                   onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
+                    session.queueDialog(handleClose => [
                       SequenceSearchDialog,
                       {
                         model: self,
@@ -1265,7 +1245,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              session.queueDialog(handleClose => [
                 ExportSvgDialog,
                 {
                   model: self,
@@ -1895,16 +1875,72 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(
             function initAutorun() {
-              const { init } = self
+              const { init, initialized } = self
+              if (!initialized) {
+                return
+              }
               if (init) {
-                self
-                  .navToLocString(init.loc, init.assembly)
-                  .catch((e: unknown) => {
-                    console.error(init, e)
-                    getSession(self).notifyError(`${e}`, e)
-                  })
+                const session = getSession(self)
+                const { assemblyManager } = session
 
-                init.tracks?.map(t => self.showTrack(t))
+                if (init.loc) {
+                  self
+                    .navToLocString(init.loc, init.assembly)
+                    .catch((e: unknown) => {
+                      console.error(init, e)
+                      session.notifyError(`${e}`, e)
+                    })
+                } else {
+                  self.showAllRegionsInAssembly(init.assembly)
+                }
+
+                if (init.tracks) {
+                  const idsNotFound = [] as string[]
+                  for (const t of init.tracks) {
+                    try {
+                      self.showTrack(t)
+                    } catch (e) {
+                      if (/Could not resolve identifier/.exec(`${e}`)) {
+                        idsNotFound.push(t)
+                      } else {
+                        throw e
+                      }
+                    }
+                  }
+                  if (idsNotFound.length) {
+                    session.notifyError(
+                      `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+                      new Error(
+                        `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+                      ),
+                    )
+                  }
+                }
+
+                if (init.tracklist) {
+                  self.activateTrackSelector()
+                }
+
+                if (init.nav !== undefined) {
+                  self.setHideHeader(!init.nav)
+                }
+
+                if (init.highlight) {
+                  for (const h of init.highlight) {
+                    const p = parseLocString(h, refName =>
+                      assemblyManager.isValidRefName(refName, init.assembly),
+                    )
+                    const { start, end } = p
+                    if (start !== undefined && end !== undefined) {
+                      self.addToHighlights({
+                        ...p,
+                        start,
+                        end,
+                        assemblyName: init.assembly,
+                      })
+                    }
+                  }
+                }
 
                 // clear init state
                 self.setInit(undefined)
@@ -1921,7 +1957,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.setCoarseDynamicBlocks(self.dynamicBlocks)
               }
             },
-            { delay: 100, name: 'LGVCoarseDynamicBlocks' },
+            { delay: 500, name: 'LGVCoarseDynamicBlocks' },
           ),
         )
 
@@ -1930,10 +1966,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
           autorun(
             function localStorageAutorun() {
               const s = (s: unknown) => JSON.stringify(s)
-              const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+              const {
+                showCytobandsSetting,
+                showCenterLine,
+                colorByCDS,
+                showTrackOutlines,
+              } = self
               localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
               localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
               localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
+              localStorageSetItem('lgv-showTrackOutlines', s(showTrackOutlines))
             },
             { name: 'LGVLocalStorage' },
           ),
@@ -1958,10 +2000,44 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
-      } else {
-        const { init, ...rest } = snap as Omit<typeof snap, symbol>
-        return rest
       }
+      const {
+        init,
+        offsetPx,
+        bpPerPx,
+        hideHeader,
+        hideHeaderOverview,
+        hideNoTracksActive,
+        showGridlines,
+        trackSelectorType,
+        displayedRegions,
+        highlight,
+        showCenterLine,
+        showCytobandsSetting,
+        trackLabels,
+        colorByCDS,
+        showTrackOutlines,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+
+      return {
+        ...rest,
+        // only include non-default values
+        ...(offsetPx ? { offsetPx } : {}),
+        ...(bpPerPx !== 1 ? { bpPerPx } : {}),
+        ...(hideHeader ? { hideHeader } : {}),
+        ...(hideHeaderOverview ? { hideHeaderOverview } : {}),
+        ...(hideNoTracksActive ? { hideNoTracksActive } : {}),
+        ...(!showGridlines ? { showGridlines } : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(displayedRegions.length ? { displayedRegions } : {}),
+        ...(highlight.length ? { highlight } : {}),
+        ...(showCenterLine ? { showCenterLine } : {}),
+        ...(!showCytobandsSetting ? { showCytobandsSetting } : {}),
+        ...(trackLabels ? { trackLabels } : {}),
+        ...(colorByCDS ? { colorByCDS } : {}),
+        ...(!showTrackOutlines ? { showTrackOutlines } : {}),
+      } as typeof snap
     })
 }
 

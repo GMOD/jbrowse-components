@@ -83,6 +83,7 @@ export type DialogComponentType =
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
+  tracksById: Record<string, AnyConfigurationModel>
   jbrowse: IAnyStateTreeNode
   drawerPosition?: string
   configuration: AnyConfigurationModel
@@ -295,10 +296,12 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
+type Display = { displayId: string } & AnyConfigurationModel
+
 export interface AbstractTrackModel {
   id: string
   displays: AbstractDisplayModel[]
-  configuration: AnyConfigurationModel
+  configuration: AnyConfigurationModel & { displays: Display[] }
 }
 
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
@@ -317,6 +320,7 @@ export interface AbstractDisplayModel {
   renderDelay: number
   rendererType: any
   cannotBeRenderedReason?: string
+  reload(): void
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
   return (

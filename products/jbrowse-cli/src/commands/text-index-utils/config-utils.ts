@@ -13,16 +13,6 @@ export function writeConf(obj: Config, configPath: string): void {
   fs.writeFileSync(configPath, JSON.stringify(obj, null, 2))
 }
 
-export function getConfigPath(outFlag: string): {
-  configPath: string
-  outLocation: string
-} {
-  const isDir = fs.lstatSync(outFlag).isDirectory()
-  const configPath = isDir ? path.join(outFlag, 'config.json') : outFlag
-  const outLocation = path.dirname(configPath)
-  return { configPath, outLocation }
-}
-
 export function ensureTrixDir(outLocation: string): string {
   const trixDir = path.join(outLocation, 'trix')
   if (!fs.existsSync(trixDir)) {
@@ -48,11 +38,11 @@ export function getAssemblyNames(
 }
 
 export function getTrackConfigs(
-  configPath: string,
+  config: Config,
   trackIds?: string[],
   assemblyName?: string,
 ): Track[] {
-  const { tracks } = readConf(configPath)
+  const { tracks } = config
   if (!tracks) {
     return []
   }

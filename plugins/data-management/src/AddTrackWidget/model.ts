@@ -1,4 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import {
   UNSUPPORTED,
@@ -272,13 +271,7 @@ export default function f(pluginManager: PluginManager) {
                 type: self.trackType,
                 name: self.trackName,
                 assemblyNames: [self.assembly],
-                adapter: {
-                  ...self.trackAdapter,
-                  sequenceAdapter: getConf(assemblyInstance, [
-                    'sequence',
-                    'adapter',
-                  ]),
-                },
+                adapter: self.trackAdapter,
               },
               self.mixinData,
             )

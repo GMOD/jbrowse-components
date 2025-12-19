@@ -11,7 +11,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const layout = this.createLayoutInWorker(renderProps)
+    const { layout, layoutWasReset } = this.createLayoutInWorker(renderProps)
     const { regions, bpPerPx } = renderProps
     const region = regions[0]!
     const width = Math.max(1, (region.end - region.start) / bpPerPx)
@@ -32,6 +32,7 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       height,
       width,
       maxHeightReached: layout.maxHeightReached,
+      layoutWasReset,
     }
 
     return rpcResult(serialized, collectTransferables(res))

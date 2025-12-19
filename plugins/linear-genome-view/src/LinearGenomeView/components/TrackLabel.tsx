@@ -50,10 +50,9 @@ const TrackLabel = observer(
     const { classes } = useStyles()
     const view = getContainingView(track) as LGV
     const session = getSession(track)
-    const trackConf = track.configuration
     const { minimized } = track
     const trackId = getConf(track, 'trackId')
-    const trackName = getTrackName(trackConf, session)
+    const trackName = getTrackName(track.configuration, session)
 
     return (
       <Paper

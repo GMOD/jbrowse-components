@@ -1,7 +1,11 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
+// Warning: block widths use fractional pixels (block.widthPx) intentionally.
+// Do not round these values - rounding causes 1px gaps between blocks.
+// The parent flex container handles subpixel layout correctly.
 const useStyles = makeStyles()(theme => ({
   contentBlock: {
     position: 'relative',
@@ -9,7 +13,6 @@ const useStyles = makeStyles()(theme => ({
     boxSizing: 'border-box',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
-    contain: 'layout style',
   },
   elidedBlock: {
     minHeight: '100%',
@@ -28,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ContentBlock({
+const ContentBlock = observer(function ({
   block,
   children,
 }: {
@@ -36,12 +39,13 @@ function ContentBlock({
   children: React.ReactNode
 }) {
   const { classes } = useStyles()
+  const { widthPx } = block
   return (
-    <div style={{ width: block.widthPx }} className={classes.contentBlock}>
+    <div style={{ width: widthPx }} className={classes.contentBlock}>
       {children}
     </div>
   )
-}
+})
 
 function ElidedBlock({ width }: { width: number }) {
   const { classes } = useStyles()

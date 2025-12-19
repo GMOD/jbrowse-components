@@ -10,6 +10,15 @@ export type ImportFormSyntenyTrack =
   | { type: 'userOpened'; value: Conf }
   | { type: 'none' }
 
+export interface LinearSyntenyViewInit {
+  views: {
+    loc?: string
+    assembly: string
+    tracks?: string[]
+  }[]
+  tracks?: string[]
+}
+
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   scale?: number
@@ -23,4 +32,5 @@ export interface ExportSvgOptions {
   cytobandHeight?: number
   themeName?: string
   trackLabels?: string
+  showGridlines?: boolean
 }

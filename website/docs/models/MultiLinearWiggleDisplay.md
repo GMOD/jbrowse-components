@@ -107,13 +107,6 @@ this yet but flag can be used for this
 boolean
 ```
 
-#### getter: canHaveFill
-
-```js
-// type
-boolean
-```
-
 #### getter: renderColorBoxes
 
 the multirowxy and multiline don't need to use colors on the legend boxes since
@@ -213,13 +206,6 @@ boolean
 boolean
 ```
 
-#### getter: fillSetting
-
-```js
-// type
-;0 | 1 | 2
-```
-
 ### MultiLinearWiggleDisplay - Methods
 
 #### method: adapterProps
@@ -240,7 +226,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: "MultiLinearWiggleDisplay"; rpcDriverName: string; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<...>> & IStateTreeNode<...>; ... 16 more ...; showSidebar: boolean; } & ... 35 more ... & IStateTreeNode<...>; onMo...
+renderingProps: () => { displayModel: { id: string; type: "MultiLinearWiggleDisplay"; rpcDriverName: string; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<...>> & IStateTreeNode<...>; ... 16 more ...; showSidebar: boolean; } & ... 36 more ... & IStateTreeNode<...>; onMo...
 ```
 
 #### method: trackMenuItems

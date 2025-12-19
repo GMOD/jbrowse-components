@@ -103,7 +103,7 @@ test('adds track and connection configs to an assembly', () => {
     type: 'FeatureTrack',
     trackId: 'trackId0',
   })
-  expect(getSnapshot(newTrackConf)).toMatchSnapshot()
+  expect(newTrackConf).toMatchSnapshot()
   expect(root.jbrowse.tracks.length).toBe(1)
   const newConnectionConf = root.jbrowse.addConnectionConf({
     type: 'JBrowse1Connection',

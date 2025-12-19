@@ -40,17 +40,6 @@ const configSchema = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-
-    /**
-     * #slot sequenceAdapter
-     * generally refers to the reference genome assembly's sequence adapter
-     * currently needs to be manually added
-     */
-    sequenceAdapter: {
-      type: 'frozen',
-      description: 'sequence data adapter',
-      defaultValue: null,
-    },
   },
   {
     explicitlyTyped: true,
@@ -58,18 +47,12 @@ const configSchema = ConfigurationSchema(
     /**
      * #preProcessSnapshot
      *
-     *
-     * preprocessor to allow minimal config, assumes yourfile.cram.crai, note
-     * that sequenceAdapter required:
+     * preprocessor to allow minimal config, assumes yourfile.cram.crai:
      *
      * ```json
      * {
      *   "type": "CramAdapter",
-     *   "uri": "yourfile.cram",
-     *   "sequenceAdapter":{
-     *     "type":"TwoBitAdapter",
-     *     "uri":"genome.2bit"
-     *   }
+     *   "uri": "yourfile.cram"
      * }
      * ```
      */

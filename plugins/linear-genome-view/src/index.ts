@@ -79,6 +79,7 @@ export type {
   BaseLinearDisplayModel,
   BlockModel,
   ExportSvgDisplayOptions,
+  LegendItem,
 } from './BaseLinearDisplay'
 
 export {
@@ -90,6 +91,7 @@ export {
   BaseLinearDisplayComponent,
   BlockMsg,
   FeatureDensityMixin,
+  FloatingLegend,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
@@ -101,6 +103,7 @@ export {
   SearchBox,
 } from './LinearGenomeView'
 export {
+  SVGGridlines,
   SVGRuler,
   SVGTracks,
   renderToSvg,

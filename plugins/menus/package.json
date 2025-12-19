@@ -40,12 +40,11 @@
     "@jbrowse/mobx-state-tree": "^5.4.7",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
-    "@mui/x-data-grid": "^8.20.0",
+    "@mui/x-data-grid": "^8.22.1",
     "date-fns": "^4.1.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
-    "react-dropzone": "^14.2.1",
-    "tss-react": "^4.0.0"
+    "react-dropzone": "^14.2.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

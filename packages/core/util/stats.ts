@@ -13,11 +13,17 @@ export interface UnrectifiedQuantitativeStats {
   featureCount: number
   basesCovered: number
 }
-export interface QuantitativeStats extends UnrectifiedQuantitativeStats {
-  currStatsBpPerPx: number
+
+// What adapters return (without view-specific context)
+export interface RectifiedQuantitativeStats extends UnrectifiedQuantitativeStats {
   featureDensity: number
   scoreMean: number
   scoreStdDev: number
+}
+
+// Full type with view context (what display models use)
+export interface QuantitativeStats extends RectifiedQuantitativeStats {
+  currStatsBpPerPx: number
 }
 
 /**
@@ -59,7 +65,9 @@ export function calcStdFromSums(
  * @returns - a summary stats object with
  * scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(s: UnrectifiedQuantitativeStats) {
+export function rectifyStats(
+  s: UnrectifiedQuantitativeStats,
+): RectifiedQuantitativeStats {
   return {
     ...s,
     scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
@@ -69,7 +77,7 @@ export function rectifyStats(s: UnrectifiedQuantitativeStats) {
       s.featureCount || s.basesCovered,
     ),
     featureDensity: (s.featureCount || 1) / s.basesCovered,
-  } as QuantitativeStats
+  }
 }
 
 /**
@@ -124,7 +132,7 @@ export async function scoresToStats(
     : blankStats()
 }
 
-export function blankStats() {
+export function blankStats(): RectifiedQuantitativeStats {
   return {
     scoreMin: 0,
     scoreMax: 0,
@@ -135,5 +143,5 @@ export function blankStats() {
     featureCount: 0,
     featureDensity: 0,
     basesCovered: 0,
-  } as QuantitativeStats
+  }
 }
