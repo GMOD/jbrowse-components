@@ -57,10 +57,6 @@ const Breakends = observer(function ({
           const id = f1.id()
 
           const relevantAlt = findMatchingAlt(f1, f2)
-          if (!c1 || !c2) {
-            return null
-          }
-
           const { f1ref, f2ref } = getCanonicalRefs(
             assembly,
             f1.get('refName'),

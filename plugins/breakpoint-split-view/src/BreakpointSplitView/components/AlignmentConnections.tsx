@@ -73,11 +73,6 @@ const AlignmentConnections = observer(function ({
           const { layout: c1, feature: f1, level: level1 } = chunk[i]!
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
 
-          if (!c1 || !c2) {
-            console.warn('received null layout for a overlay feature')
-            return null
-          }
-
           if (!showIntraviewLinks && level1 === level2) {
             return null
           }

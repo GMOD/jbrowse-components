@@ -1,15 +1,13 @@
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
-
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
-import type { RenderArgs } from '@jbrowse/core/rpc/methods/util'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { RenderArgs } from '@jbrowse/core/rpc/methods/util'
 import type { Region } from '@jbrowse/core/util'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 const startClip = /(\d+)[SH]$/
 const endClip = /^(\d+)([SH])/
@@ -19,24 +17,6 @@ function getClip(cigar: string, strand: number) {
     ? +(startClip.exec(cigar)?.[1] ?? 0)
     : +(endClip.exec(cigar)?.[1] ?? 0)
 }
-
-// Minimal feature fields needed for breakpoint split view
-const BREAKPOINT_FIELDS = [
-  'uniqueId',
-  'refName',
-  'start',
-  'end',
-  'strand',
-  'flags',
-  'name',
-  'id',
-  'tags',
-  'pair_orientation',
-  'INFO',
-  'ALT',
-  'mate',
-  'type',
-] as const
 
 interface MinimalFeature {
   [key: string]: unknown
@@ -119,12 +99,10 @@ export default class BreakpointGetFeatures extends RpcMethodType {
 
     // Only serialize the minimal fields needed for breakpoint view
     // Process in a single pass to avoid multiple iterations
-    const result = new Array(features.length)
-    for (let i = 0; i < features.length; i++) {
-      const feature = features[i]!
+    return features.map(feature => {
       const cigar = feature.get('CIGAR')
       const strand = feature.get('strand')
-      result[i] = {
+      return {
         uniqueId: feature.id(),
         start: feature.get('start'),
         end: feature.get('end'),
@@ -139,7 +117,6 @@ export default class BreakpointGetFeatures extends RpcMethodType {
         clipLengthAtStartOfRead:
           cigar && strand !== undefined ? getClip(cigar, strand) : undefined,
       }
-    }
-    return result
+    })
   }
 }

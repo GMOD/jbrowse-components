@@ -55,11 +55,6 @@ const PairedFeatures = observer(function ({
           const { layout: c1, feature: f1, level: level1 } = chunk[i]!
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
           const id = f1.id()
-
-          if (!c1 || !c2) {
-            return null
-          }
-
           const { f1ref, f2ref } = getCanonicalRefs(
             assembly,
             f1.get('refName'),

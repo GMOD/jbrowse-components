@@ -63,7 +63,7 @@ export function calculateYPositions(
   level1: number,
   level2: number,
   views: BreakpointViewModel['views'],
-  tracks: ReturnType<typeof views[number]['getTrack']>[],
+  tracks: ReturnType<(typeof views)[number]['getTrack']>[],
   c1: LayoutRecord,
   c2: LayoutRecord,
   yOffset: number,

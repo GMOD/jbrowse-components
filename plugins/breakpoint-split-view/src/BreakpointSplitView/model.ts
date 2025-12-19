@@ -197,8 +197,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return features.map(c =>
           c
             .map(feature => {
-              for (let level = 0; level < tracks.length; level++) {
-                const layout = calc(tracks[level], feature)
+              for (const [level, track] of tracks.entries()) {
+                const layout = calc(track, feature)
                 if (layout) {
                   return {
                     feature,
@@ -234,7 +234,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
               if (self.linkViews && syncActions.includes(rawCall.name)) {
                 const sourcePath = getPath(rawCall.context)
-                const result = next(rawCall)
+                next(rawCall)
                 // Sync to all other views
                 for (const view of self.views) {
                   const viewPath = getPath(view)
@@ -243,10 +243,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     view[rawCall.name](rawCall.args[0])
                   }
                 }
-                return result
               }
             }
-            return next(rawCall)
+            next(rawCall)
           }),
         )
       },
@@ -457,7 +456,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Export SVG',
             icon: PhotoCamera,
-            onClick: (): void => {
+            onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ExportSvgDialog,
                 {
