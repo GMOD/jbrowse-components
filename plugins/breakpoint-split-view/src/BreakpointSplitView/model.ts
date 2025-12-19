@@ -362,34 +362,42 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
         addDisposer(
           self,
-          autorun(async () => {
-            try {
-              // check all views 'initialized'
-              if (!self.views.every(view => view.initialized)) {
-                return
-              }
-              // check that tracks are 'ready' (not notReady)
-              if (
-                self.matchedTracks.some(track => track.displays[0].notReady?.())
-              ) {
-                return
-              }
+          autorun(
+            async () => {
+              try {
+                // check all views 'initialized'
+                if (!self.views.every(view => view.initialized)) {
+                  return
+                }
+                // check that tracks are 'ready' (not notReady)
+                if (
+                  self.matchedTracks.some(track =>
+                    track.displays[0].notReady?.(),
+                  )
+                ) {
+                  return
+                }
 
-              self.setMatchedTrackFeatures(
-                Object.fromEntries(
-                  await Promise.all(
-                    self.matchedTracks.map(async track => [
-                      track.configuration.trackId,
-                      await getBlockFeatures(self, track),
-                    ]),
+                self.setMatchedTrackFeatures(
+                  Object.fromEntries(
+                    await Promise.all(
+                      self.matchedTracks.map(async track => [
+                        track.configuration.trackId,
+                        await getBlockFeatures(self, track),
+                      ]),
+                    ),
                   ),
-                ),
-              )
-            } catch (e) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            }
-          }),
+                )
+              } catch (e) {
+                console.error(e)
+                getSession(self).notifyError(`${e}`, e)
+              }
+            },
+            {
+              name: 'BreakpointFeatureFetcher',
+              delay: 1000,
+            },
+          ),
         )
       },
 

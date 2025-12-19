@@ -39,12 +39,13 @@ const BREAKPOINT_FIELDS = [
 ] as const
 
 interface MinimalFeature {
+  [key: string]: unknown
   uniqueId: string
-  refName?: string
-  start?: number
-  end?: number
-  strand?: number
-  flags?: number
+  refName: string
+  start: number
+  end: number
+  strand: number
+  flags: number
   name?: string
   id?: string
   tags?: Record<string, unknown>
@@ -89,7 +90,7 @@ export default class BreakpointGetFeatures extends RpcMethodType {
       adapterConfig: Record<string, unknown>
       statusCallback: (arg: string) => void
       stopToken?: string
-      opts?: unknown
+      opts?: Record<string, unknown>
     },
     rpcDriver: string,
   ) {
@@ -117,29 +118,28 @@ export default class BreakpointGetFeatures extends RpcMethodType {
     )
 
     // Only serialize the minimal fields needed for breakpoint view
-    return features.map(feature => {
-      const minimal: MinimalFeature = {
-        uniqueId: feature.id(),
-      }
-
-      for (const field of BREAKPOINT_FIELDS) {
-        if (field === 'uniqueId') {
-          continue
-        }
-        const value = feature.get(field)
-        if (value !== undefined) {
-          minimal[field] = value
-        }
-      }
-
-      // Pre-calculate clip position on the worker
+    // Process in a single pass to avoid multiple iterations
+    const result = new Array(features.length)
+    for (let i = 0; i < features.length; i++) {
+      const feature = features[i]!
       const cigar = feature.get('CIGAR')
-      const strand = minimal.strand
-      if (cigar !== undefined && strand !== undefined) {
-        minimal.clipLengthAtStartOfRead = getClip(cigar, strand)
+      const strand = feature.get('strand')
+      result[i] = {
+        uniqueId: feature.id(),
+        start: feature.get('start'),
+        end: feature.get('end'),
+        refName: feature.get('refName'),
+        strand,
+        flags: feature.get('flags'),
+        name: feature.get('name'),
+        id: feature.get('id'),
+        tags: feature.get('tags'),
+        pair_orientation: feature.get('pair_orientation'),
+        type: feature.get('type'),
+        clipLengthAtStartOfRead:
+          cigar && strand !== undefined ? getClip(cigar, strand) : undefined,
       }
-
-      return minimal
-    })
+    }
+    return result
   }
 }
