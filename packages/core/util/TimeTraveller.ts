@@ -101,6 +101,11 @@ const TimeTraveller = types
             skipNextUndoState = false
             return
           }
+          // Skip patches for derived/transient state that shouldn't be part of
+          // undo history - blockState is recalculated from view position
+          if (patch.path.includes('/blockState/')) {
+            return
+          }
           pendingPatches.push(patch)
           pendingInversePatches.push(inversePatch)
 

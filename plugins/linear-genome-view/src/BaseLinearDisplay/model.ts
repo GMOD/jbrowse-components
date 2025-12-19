@@ -559,19 +559,23 @@ function stateModelFactory() {
                 if (!isAlive(self)) {
                   return
                 }
-                const blocksPresent: Record<string, boolean> = {}
                 const view = getContainingView(self) as LGV
                 if (!view.initialized) {
                   return
                 }
-                for (const block of self.blockDefinitions.contentBlocks) {
-                  blocksPresent[block.key] = true
+                const contentBlocks = self.blockDefinitions.contentBlocks
+                const newKeys = new Set(contentBlocks.map(b => b.key))
+
+                // Add new blocks
+                for (const block of contentBlocks) {
                   if (!self.blockState.has(block.key)) {
                     self.addBlock(block.key, block)
                   }
                 }
+
+                // Remove old blocks
                 for (const key of self.blockState.keys()) {
-                  if (!blocksPresent[key]) {
+                  if (!newKeys.has(key)) {
                     self.deleteBlock(key)
                   }
                 }

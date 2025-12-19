@@ -1398,7 +1398,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
-      let stringifiedCurrentlyCalculatedStaticBlocks = ''
+      let currentBlockKeys = ''
       return {
         /**
          * #getter
@@ -1410,10 +1410,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         get staticBlocks() {
           const ret = calculateStaticBlocks(self)
-          const sret = JSON.stringify(ret)
-          if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
+          // Use block keys for comparison instead of JSON.stringify for better
+          // performance - keys uniquely identify blocks
+          const newKeys = ret.blocks.map(b => b.key).join(',')
+          if (currentBlockKeys !== newKeys) {
             currentlyCalculatedStaticBlocks = ret
-            stringifiedCurrentlyCalculatedStaticBlocks = sret
+            currentBlockKeys = newKeys
           }
           return currentlyCalculatedStaticBlocks!
         },
