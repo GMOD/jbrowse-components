@@ -470,8 +470,7 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
-                      statsId: getContainingTrack(self).id,
+                      trackId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                       rpcDriverName: self.effectiveRpcDriverName,
                     },
@@ -506,8 +505,7 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
-                      statsId: getContainingTrack(self).id,
+                      trackId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
                       rpcDriverName: self.effectiveRpcDriverName,
                     },

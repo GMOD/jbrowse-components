@@ -27,8 +27,7 @@ export function renderReactionData(self: any) {
       regions: structuredClone(view.displayedRegions),
       blockDefinitions: self.blockDefinitions,
       sessionId: getRpcSessionId(self),
-      layoutId: getContainingTrack(self).id,
-      statsId: getContainingTrack(self).id,
+      trackId: getContainingTrack(self).id,
       timeout: 1000000,
     },
   }

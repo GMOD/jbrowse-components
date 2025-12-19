@@ -23,7 +23,7 @@ import type {
 } from '../../util/layouts/BaseLayout'
 export interface RenderArgs extends FeatureRenderArgs {
   bpPerPx: number
-  layoutId: string
+  trackId: string
 }
 
 export interface RenderArgsSerialized extends FeatureRenderArgsSerialized {
@@ -33,7 +33,7 @@ export interface RenderArgsSerialized extends FeatureRenderArgsSerialized {
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   statusCallback?: (arg: string) => void
   bpPerPx: number
-  layoutId: string
+  trackId: string
 }
 
 export interface RenderResults extends FeatureRenderResults {
@@ -57,12 +57,12 @@ export default class BoxRendererType extends FeatureRendererType {
     return new LayoutSession(props)
   }
 
-  getLayoutSession(props: { sessionId: string; layoutId: string }) {
+  getLayoutSession(props: { sessionId: string; trackId: string }) {
     return this.layoutSessions[getLayoutId(props)]
   }
 
   getWorkerSession(
-    props: LayoutSessionProps & { sessionId: string; layoutId: string },
+    props: LayoutSessionProps & { sessionId: string; trackId: string },
   ) {
     const key = getLayoutId(props)
     if (!this.layoutSessions[key]) {

@@ -394,7 +394,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       // Fetch data for all static blocks (with caching)
       const staticBlockData = await Promise.all(
         staticBlocks.map(async block => {
-          const cacheKey = `${block.refName}:${block.start}-${block.end}|${opts.statsId || ''}`
+          const cacheKey = `${block.refName}:${block.start}-${block.end}|${opts.trackId || ''}`
           let cached = this.statsCache.get(cacheKey)
 
           if (!cached) {

@@ -77,8 +77,7 @@ export function doAfterAttach(model: {
           adapterConfig,
           rendererType: rendererType.name,
           sessionId: getRpcSessionId(model),
-          layoutId: getContainingTrack(model).id,
-          statsId: getContainingTrack(model).id,
+          trackId: getContainingTrack(model).id,
           timeout: 1_000_000,
           statusCallback: (arg: string) => {
             if (isAlive(model)) {

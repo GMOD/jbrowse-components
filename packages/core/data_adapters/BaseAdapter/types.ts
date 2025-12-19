@@ -4,7 +4,7 @@ export interface BaseOptions {
   stopToken?: StopToken
   bpPerPx?: number
   sessionId?: string
-  statsId?: string
+  trackId?: string
   signal?: AbortSignal
   statusCallback?: (message: string) => void
   headers?: Record<string, string>

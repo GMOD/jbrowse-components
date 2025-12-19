@@ -33,11 +33,11 @@ export async function getQuantitativeStats(
   const numStdDev = getConf(self, 'numStdDev') || 3
   const { adapterConfig, autoscaleType, effectiveRpcDriverName } = self
   const sessionId = getRpcSessionId(self)
-  const statsId = getContainingTrack(self).id
+  const trackId = getContainingTrack(self).id
   const { currStatsBpPerPx } = opts
   const params = {
     sessionId,
-    statsId,
+    trackId,
     adapterConfig,
     rpcDriverName: effectiveRpcDriverName,
     statusCallback: (message: string) => {

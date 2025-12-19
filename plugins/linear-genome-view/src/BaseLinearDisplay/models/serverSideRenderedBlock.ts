@@ -317,8 +317,7 @@ export function renderBlockData(
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
-    const layoutId = parentTrack.id
-    const statsId = parentTrack.id
+    const trackId = parentTrack.id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
@@ -339,8 +338,7 @@ export function renderBlockData(
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
-        layoutId,
-        statsId,
+        trackId,
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
         timeout: 1_000_000,

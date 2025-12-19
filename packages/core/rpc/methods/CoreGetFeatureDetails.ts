@@ -35,7 +35,6 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
     )! as BoxRendererType
 
     return {
-      // @ts-expect-error
       feature: RendererType.getLayoutSession(args)
         // @ts-expect-error
         ?.cachedLayout.layout.getDataByID(featureId)
