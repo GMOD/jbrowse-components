@@ -35,11 +35,7 @@ export function heightFromSpecificLevel(
   trackId: string,
   level: number,
   getYPosOverride?: (trackId: string, level: number) => number,
-  heightCache?: Map<number, number>,
 ) {
-  if (heightCache?.has(level)) {
-    return heightCache.get(level)!
-  }
   return getYPosOverride
     ? getYPosOverride(trackId, level)
     : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0
@@ -57,7 +53,6 @@ export function yPos(
   tracks: Track[],
   c: LayoutRecord,
   getYPosOverride?: (trackId: string, level: number) => number,
-  heightCache?: Map<number, number>,
 ) {
   const display = tracks[level]!.displays[0]!
   const min = 0
@@ -70,7 +65,7 @@ export function yPos(
   const yPos = getYPosOverride ? 0 : display.scrollTop
   return (
     clamp(c[TOP] - yPos + cheight(c) / 2 + offset, min, max) +
-    heightFromSpecificLevel(views, trackId, level, getYPosOverride, heightCache) +
+    heightFromSpecificLevel(views, trackId, level, getYPosOverride) +
     display.scrollTop
   )
 }

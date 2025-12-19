@@ -4,9 +4,11 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import {
   addDisposer,
+  addMiddleware,
   cast,
   getPath,
-  onAction,
+  getRelativePathBetweenNodes,
+  getStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
 import LinkIcon from '@mui/icons-material/Link'
@@ -219,34 +221,32 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          onAction(
-            self,
-            ({
-              name,
-              path,
-              args,
-            }: {
-              name: string
-              path?: string
-              args?: unknown[]
-            }) => {
-              if (self.linkViews) {
-                const actions = [
-                  'horizontalScroll',
-                  'zoomTo',
-                  'setScaleFactor',
-                  'showTrack',
-                  'toggleTrack',
-                  'hideTrack',
-                  'setTrackLabels',
-                  'toggleCenterLine',
-                ]
-                if (actions.includes(name) && path) {
-                  this.onSubviewAction(name, path, args)
-                }
+          addMiddleware(self, (rawCall, next) => {
+            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
+              const syncActions = [
+                'horizontalScroll',
+                'zoomTo',
+                'setScaleFactor',
+                'showTrack',
+                'toggleTrack',
+                'hideTrack',
+                'setTrackLabels',
+                'toggleCenterLine',
+              ]
+
+              if (self.linkViews && syncActions.includes(rawCall.name)) {
+                const sourceNode = getStateTreeNode(rawCall.context)
+                const path = getRelativePathBetweenNodes(
+                  getStateTreeNode(self),
+                  sourceNode,
+                )
+                const result = next(rawCall)
+                this.onSubviewAction(rawCall.name, path, rawCall.args)
+                return result
               }
-            },
-          ),
+            }
+            return next(rawCall)
+          }),
         )
       },
 

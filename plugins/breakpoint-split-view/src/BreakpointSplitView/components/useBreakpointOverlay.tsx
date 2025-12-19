@@ -68,13 +68,12 @@ export function calculateYPositions(
   c2: LayoutRecord,
   yOffset: number,
   getTrackYPosOverride?: (trackId: string, level: number) => number,
-  heightCache?: Map<number, number>,
 ) {
   return {
     y1:
-      yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride, heightCache) - yOffset,
+      yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) - yOffset,
     y2:
-      yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride, heightCache) - yOffset,
+      yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) - yOffset,
   }
 }
 
