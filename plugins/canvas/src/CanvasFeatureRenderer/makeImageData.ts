@@ -53,6 +53,7 @@ export function makeImageData({
     layout,
     peptideDataMap,
     colorByCDS,
+    pluginManager,
   } = renderArgs
   const region = regions[0]!
   const theme = createJBrowseTheme(configTheme)
@@ -106,6 +107,7 @@ export function makeImageData({
       canvasWidth,
       peptideDataMap,
       colorByCDS,
+      pluginManager,
     })
 
     const featureType = feature.get('type')
