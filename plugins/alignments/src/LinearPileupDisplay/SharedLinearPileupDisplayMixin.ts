@@ -106,6 +106,10 @@ export function SharedLinearPileupDisplayMixin(
          * #property
          */
         hideSmallIndelsSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        hideMismatchesSetting: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -153,6 +157,12 @@ export function SharedLinearPileupDisplayMixin(
        */
       get hideSmallIndels() {
         return self.hideSmallIndelsSetting
+      },
+      /**
+       * #getter
+       */
+      get hideMismatches() {
+        return self.hideMismatchesSetting
       },
     }))
     .actions(self => ({
@@ -281,6 +291,13 @@ export function SharedLinearPileupDisplayMixin(
       setHideSmallIndels(arg: boolean) {
         self.hideSmallIndelsSetting = arg
       },
+
+      /**
+       * #action
+       */
+      setHideMismatches(arg: boolean) {
+        self.hideMismatchesSetting = arg
+      },
     }))
 
     .views(self => ({
@@ -303,6 +320,7 @@ export function SharedLinearPileupDisplayMixin(
           featureHeight: height,
           noSpacing,
           hideSmallIndels,
+          hideMismatches,
           trackMaxHeight: maxHeight,
           rendererTypeName,
         } = self
@@ -311,6 +329,7 @@ export function SharedLinearPileupDisplayMixin(
           {
             ...configBlob,
             ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
+            ...(hideMismatches !== undefined ? { hideMismatches } : {}),
             ...(height !== undefined ? { height } : {}),
             ...(noSpacing !== undefined ? { noSpacing } : {}),
             ...(maxHeight !== undefined ? { maxHeight } : {}),
@@ -356,7 +375,7 @@ export function SharedLinearPileupDisplayMixin(
        * #method
        * Returns legend items based on current colorBy setting
        */
-      legendItems(theme?: Theme): LegendItem[] {
+      legendItems(theme: Theme): LegendItem[] {
         return getPileupLegendItems(self.colorBy, theme)
       },
     }))
@@ -629,6 +648,15 @@ export function SharedLinearPileupDisplayMixin(
               checked: self.hideSmallIndels,
               onClick: () => {
                 self.setHideSmallIndels(!self.hideSmallIndels)
+              },
+            },
+            {
+              label: 'Hide mismatches',
+              priority: -1,
+              type: 'checkbox',
+              checked: self.hideMismatches,
+              onClick: () => {
+                self.setHideMismatches(!self.hideMismatches)
               },
             },
             {

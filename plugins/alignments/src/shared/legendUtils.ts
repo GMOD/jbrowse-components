@@ -13,7 +13,7 @@ export interface LegendItem {
  */
 export function getPileupLegendItems(
   colorBy: ColorBy | undefined,
-  theme?: Theme,
+  theme: Theme,
 ): LegendItem[] {
   const colorType = colorBy?.type
 
@@ -22,14 +22,12 @@ export function getPileupLegendItems(
       { color: fillColor.color_fwd_strand, label: 'Forward strand' },
       { color: fillColor.color_rev_strand, label: 'Reverse strand' },
     ]
-  }
-  if (colorType === 'stranded') {
+  } else if (colorType === 'stranded') {
     return [
       { color: fillColor.color_fwd_strand, label: 'First-of-pair forward' },
       { color: fillColor.color_rev_strand, label: 'First-of-pair reverse' },
     ]
-  }
-  if (colorType === 'insertSize') {
+  } else if (colorType === 'insertSize') {
     return [
       { color: fillColor.color_pair_lr, label: 'Normal' },
       { color: fillColor.color_longinsert, label: 'Long insert' },
@@ -37,8 +35,7 @@ export function getPileupLegendItems(
       { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
       { color: fillColor.color_unmapped_mate, label: 'Unmapped mate' },
     ]
-  }
-  if (colorType === 'pairOrientation') {
+  } else if (colorType === 'pairOrientation') {
     return [
       { color: fillColor.color_pair_lr, label: 'LR (proper)' },
       { color: fillColor.color_pair_rr, label: 'RR' },
@@ -46,8 +43,7 @@ export function getPileupLegendItems(
       { color: fillColor.color_pair_ll, label: 'LL' },
       { color: fillColor.color_unmapped_mate, label: 'Unmapped mate' },
     ]
-  }
-  if (colorType === 'insertSizeAndPairOrientation') {
+  } else if (colorType === 'insertSizeAndPairOrientation') {
     return [
       { color: fillColor.color_pair_lr, label: 'Normal (LR)' },
       { color: fillColor.color_pair_rr, label: 'RR orientation' },
@@ -58,24 +54,24 @@ export function getPileupLegendItems(
       { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
       { color: fillColor.color_unmapped_mate, label: 'Unmapped mate' },
     ]
+  } else {
+    // Default: show ACGT, insertion, deletion, hardclip, softclip
+    const bases = theme.palette.bases
+    const insertion = theme.palette.insertion
+    const deletion = theme.palette.deletion
+    const hardclip = theme.palette.hardclip
+    const softclip = theme.palette.softclip
+    return [
+      { color: bases.A.main, label: 'A' },
+      { color: bases.C.main, label: 'C' },
+      { color: bases.G.main, label: 'G' },
+      { color: bases.T.main, label: 'T' },
+      { color: insertion, label: 'Insertion' },
+      { color: deletion, label: 'Deletion' },
+      { color: hardclip, label: 'Hard clip' },
+      { color: softclip, label: 'Soft clip' },
+    ]
   }
-
-  // Default: show ACGT, insertion, deletion, hardclip, softclip
-  const bases = theme?.palette?.bases
-  const insertion = theme?.palette?.insertion
-  const deletion = theme?.palette?.deletion
-  const hardclip = theme?.palette?.hardclip
-  const softclip = theme?.palette?.softclip
-  return [
-    { color: bases?.A?.main, label: 'A' },
-    { color: bases?.C?.main, label: 'C' },
-    { color: bases?.G?.main, label: 'G' },
-    { color: bases?.T?.main, label: 'T' },
-    { color: insertion, label: 'Insertion' },
-    { color: deletion, label: 'Deletion' },
-    { color: hardclip, label: 'Hard clip' },
-    { color: softclip, label: 'Soft clip' },
-  ]
 }
 
 /**
@@ -84,15 +80,14 @@ export function getPileupLegendItems(
 export function getSNPCoverageLegendItems(
   colorBy: ColorBy | undefined,
   visibleModifications: Map<string, ModificationTypeWithColor>,
-  theme?: Theme,
+  theme: Theme,
 ): LegendItem[] {
   if (colorBy?.type === 'methylation') {
     return [
       { color: 'red', label: 'CpG methylated' },
       { color: 'blue', label: 'CpG unmethylated' },
     ]
-  }
-  if (colorBy?.type === 'modifications') {
+  } else if (colorBy?.type === 'modifications') {
     const items: LegendItem[] = []
     for (const [type, mod] of visibleModifications.entries()) {
       items.push({
@@ -101,25 +96,31 @@ export function getSNPCoverageLegendItems(
       })
     }
     return items
-  }
+  } else {
+    const bases = theme.palette.bases
+    const insertion = theme.palette.insertion
+    const deletion = theme.palette.deletion
+    const hardclip = theme.palette.hardclip
+    const softclip = theme.palette.softclip
 
-  const bases = theme?.palette?.bases
-  const insertion = theme?.palette?.insertion
-  const deletion = theme?.palette?.deletion
-  return [
-    { color: bases?.A?.main, label: 'A' },
-    { color: bases?.C?.main, label: 'C' },
-    { color: bases?.G?.main, label: 'G' },
-    { color: bases?.T?.main, label: 'T' },
-    { color: insertion, label: 'Insertion' },
-    { color: deletion, label: 'Deletion' },
-  ]
+    return [
+      { color: bases.A.main, label: 'A' },
+      { color: bases.C.main, label: 'C' },
+      { color: bases.G.main, label: 'G' },
+      { color: bases.T.main, label: 'T' },
+      { color: insertion, label: 'Insertion' },
+      { color: deletion, label: 'Deletion' },
+      { color: hardclip, label: 'Hard clip' },
+      { color: softclip, label: 'Soft clip' },
+    ]
+  }
 }
 
 /**
- * Get legend items for read cloud/arcs display based on colorBy setting
+ * Get legend items for read cloud/arcs display based on colorBy setting.
+ * Used by both LinearReadCloudDisplay and LinearReadArcsDisplay.
  */
-export function getReadCloudLegendItems(
+export function getReadDisplayLegendItems(
   colorBy: ColorBy | undefined,
   visibleModifications?: Map<string, ModificationTypeWithColor>,
 ): LegendItem[] {
@@ -132,45 +133,6 @@ export function getReadCloudLegendItems(
     }
     return items
   }
-  if (colorType === 'insertSizeAndOrientation') {
-    return [
-      { color: fillColor.color_pair_lr, label: 'Normal (LR)' },
-      { color: fillColor.color_pair_rr, label: 'RR orientation' },
-      { color: fillColor.color_pair_rl, label: 'RL orientation' },
-      { color: fillColor.color_pair_ll, label: 'LL orientation' },
-      { color: fillColor.color_longinsert, label: 'Long insert' },
-      { color: fillColor.color_shortinsert, label: 'Short insert' },
-      { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
-    ]
-  }
-  if (colorType === 'insertSize') {
-    return [
-      { color: fillColor.color_pair_lr, label: 'Normal' },
-      { color: fillColor.color_longinsert, label: 'Long insert' },
-      { color: fillColor.color_shortinsert, label: 'Short insert' },
-      { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
-    ]
-  }
-  if (colorType === 'orientation') {
-    return [
-      { color: fillColor.color_pair_lr, label: 'LR (proper)' },
-      { color: fillColor.color_pair_rr, label: 'RR' },
-      { color: fillColor.color_pair_rl, label: 'RL' },
-      { color: fillColor.color_pair_ll, label: 'LL' },
-    ]
-  }
-
-  return []
-}
-
-/**
- * Get legend items for read arcs display based on colorBy setting
- */
-export function getReadArcsLegendItems(
-  colorBy: ColorBy | undefined,
-): LegendItem[] {
-  const colorType = colorBy?.type
-
   if (colorType === 'insertSizeAndOrientation') {
     return [
       { color: fillColor.color_pair_lr, label: 'Normal (LR)' },

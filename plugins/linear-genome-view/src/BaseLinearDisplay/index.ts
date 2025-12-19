@@ -15,3 +15,4 @@ export {
 export { default as TrackHeightMixin } from './models/TrackHeightMixin'
 export { default as FeatureDensityMixin } from './models/FeatureDensityMixin'
 export { default as TooLargeMessage } from './components/TooLargeMessage'
+export { default as FloatingLegend } from './components/FloatingLegend'

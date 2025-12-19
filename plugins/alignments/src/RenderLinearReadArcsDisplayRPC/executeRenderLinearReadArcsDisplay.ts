@@ -16,8 +16,8 @@ import { rpcResult } from 'librpc-web-mod'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { getInsertSizeStats } from '../../shared/insertSizeStats'
-import { drawFeatsRPC } from '../drawFeatsRPC'
+import { drawFeatsRPC } from './drawFeatsRPC'
+import { getInsertSizeStats } from '../shared/insertSizeStats'
 
 import type { RenderLinearReadArcsDisplayArgs } from './RenderLinearReadArcsDisplay'
 import type PluginManager from '@jbrowse/core/PluginManager'

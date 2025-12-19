@@ -53,7 +53,7 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'insertion',
-        base: `${len}`,
+        insertlen: len,
         insertedBases: seq?.slice(soffset, soffset + len),
         length: 0,
       })
@@ -62,7 +62,6 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'deletion',
-        base: '*',
         length: len,
       })
       roffset += len
@@ -70,7 +69,6 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'skip',
-        base: 'N',
         length: len,
       })
       roffset += len
@@ -90,7 +88,6 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'hardclip',
-        base: `H${len}`,
         cliplen: len,
         length: 1,
       })
@@ -98,7 +95,6 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'softclip',
-        base: `S${len}`,
         cliplen: len,
         length: 1,
       })

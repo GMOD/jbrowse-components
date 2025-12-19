@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -63,60 +64,6 @@ const BaseDisplayComponent = observer(function ({
   )
 })
 
-// Inline FloatingLegend component pinned to right side of view
-function FloatingLegend({
-  items,
-}: {
-  items: { color?: string; label: string }[]
-}) {
-  if (items.length === 0) {
-    return null
-  }
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        right: 10,
-        top: 10,
-        background: 'rgba(255,255,255,0.4)',
-        padding: 3,
-        fontSize: 10,
-        pointerEvents: 'none',
-        zIndex: 100,
-        maxWidth: 200,
-      }}
-    >
-      {items.map((item, idx) => (
-        <div
-          key={`${item.label}-${idx}`}
-          style={{ display: 'flex', alignItems: 'center', marginBottom: 1 }}
-        >
-          {item.color ? (
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                marginRight: 6,
-                flexShrink: 0,
-                backgroundColor: item.color,
-              }}
-            />
-          ) : null}
-          <span
-            style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {item.label}
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 const DataDisplay = observer(function ({
   model,
   children,
@@ -127,7 +74,7 @@ const DataDisplay = observer(function ({
   const { drawn, loading, showLegend, legendItems } = model
   const view = getContainingView(model) as LinearGenomeViewModel
   const calculatedLeft = (model.lastDrawnOffsetPx || 0) - view.offsetPx
-  const styleLeft = view.offsetPx < 0 ? 0 : calculatedLeft
+  const styleLeft = calculatedLeft
   const items = legendItems?.() ?? []
 
   return (

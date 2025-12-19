@@ -1,13 +1,12 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { drawLongReadChains } from './drawLongReadChains'
 import { drawPairChains } from './drawPairChains'
 import { PairType, getPairedType } from '../shared/color'
+import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
 import { shouldRenderChevrons } from '../shared/util'
 
-import type { LinearReadCloudDisplayModel } from './model'
+import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 import type { FlatbushItem } from '../PileupRenderer/types'
 import type { FlatbushEntry } from '../shared/flatbushType'
 import type {
@@ -52,10 +51,10 @@ export function filterChains(
     }
 
     // Filter out proper pairs if drawProperPairs is false
-    // Check if this is a paired-end read using SAM flag 1 (read paired)
+    // Check if this is a paired-end read
     let isPairedEnd = false
     for (const element of chain) {
-      if (element.get('flags') & 1) {
+      if (element.get('flags') & SAM_FLAG_PAIRED) {
         isPairedEnd = true
         break
       }
@@ -65,7 +64,7 @@ export function filterChains(
       // Collect non-supplementary alignments
       const nonSupplementary: Feature[] = []
       for (const element of chain) {
-        if (!(element.get('flags') & 2048)) {
+        if (!(element.get('flags') & SAM_FLAG_SUPPLEMENTARY)) {
           nonSupplementary.push(element)
         }
       }
@@ -101,6 +100,7 @@ export function filterChains(
  */
 export function computeChainBounds(chains: Feature[][], view: LGV) {
   const computedChains: ComputedChain[] = []
+  const { bpPerPx } = view
 
   // get bounds on the 'distances' (TLEN for pairs, pixel span for others)
   for (const chain_ of chains) {
@@ -113,15 +113,15 @@ export function computeChainBounds(chains: Feature[][], view: LGV) {
 
     for (let j = 0; j < chainLength; j++) {
       const elt = chain[j]!
+      const start = elt.get('start')
+      const end = elt.get('end')
+      // Only call bpToPx once per feature, calculate end from start + length
       const rs = view.bpToPx({
         refName: elt.get('refName'),
-        coord: elt.get('start'),
+        coord: start,
       })?.offsetPx
-      const re = view.bpToPx({
-        refName: elt.get('refName'),
-        coord: elt.get('end'),
-      })?.offsetPx
-      if (rs !== undefined && re !== undefined) {
+      if (rs !== undefined) {
+        const re = rs + (end - start) / bpPerPx
         minX = Math.min(minX, rs)
         maxX = Math.max(maxX, re)
       }
@@ -204,19 +204,6 @@ export function buildFlatbushIndex(
 }
 
 /**
- * Build Flatbush index for mismatch mouseover detection
- */
-export function buildMismatchFlatbushIndex(
-  mismatchFlatbushData: ArrayBuffer,
-  mismatchItems: FlatbushItem[],
-  self: LinearReadCloudDisplayModel,
-) {
-  const mismatchFlatbush = Flatbush.from(mismatchFlatbushData)
-  self.setMismatchLayout(mismatchFlatbush)
-  self.setMismatchItems(mismatchItems)
-}
-
-/**
  * Add full-width rectangles for each chain to enable mouseover on connecting lines
  */
 export function addChainMouseoverRects(
@@ -253,7 +240,8 @@ export function addChainMouseoverRects(
           id: firstFeat.id(),
           tlen: firstFeat.get('template_length') || 0,
           pair_orientation: firstFeat.get('pair_orientation') || '',
-          clipPos: firstFeat.get('clipPos') || 0,
+          clipLengthAtStartOfRead:
+            firstFeat.get('clipLengthAtStartOfRead') || 0,
         },
         chainId: id,
         chainMinX: chainMinXPx,
@@ -268,7 +256,7 @@ export function addChainMouseoverRects(
           id: f.id(),
           tlen: f.get('template_length') || 0,
           pair_orientation: f.get('pair_orientation') || '',
-          clipPos: f.get('clipPos') || 0,
+          clipLengthAtStartOfRead: f.get('clipLengthAtStartOfRead') || 0,
         })),
       })
     }
@@ -291,6 +279,8 @@ export interface DrawFeatsParams {
   canvasWidth: number
   stopToken?: string
   visibleModifications?: Record<string, ModificationTypeWithColor>
+  hideSmallIndels?: boolean
+  hideMismatches?: boolean
 }
 
 export interface DrawFeatsResult {
@@ -387,6 +377,8 @@ export function drawFeatsCore({
       colorBy: params.colorBy,
       visibleModifications: params.visibleModifications,
       stopToken,
+      hideSmallIndels: params.hideSmallIndels,
+      hideMismatches: params.hideMismatches,
     })
 
     const longReadMismatches = drawLongReadChains({
@@ -405,11 +397,23 @@ export function drawFeatsCore({
       colorBy: params.colorBy,
       visibleModifications: params.visibleModifications,
       stopToken,
+      hideSmallIndels: params.hideSmallIndels,
+      hideMismatches: params.hideMismatches,
     })
 
-    // Aggregate mismatch data
-    mismatchCoords.push(...pairMismatches.coords, ...longReadMismatches.coords)
-    mismatchItems.push(...pairMismatches.items, ...longReadMismatches.items)
+    // Aggregate mismatch data (avoid push(...list) which can cause stack overflow)
+    for (const coord of pairMismatches.coords) {
+      mismatchCoords.push(coord)
+    }
+    for (const coord of longReadMismatches.coords) {
+      mismatchCoords.push(coord)
+    }
+    for (const item of pairMismatches.items) {
+      mismatchItems.push(item)
+    }
+    for (const item of longReadMismatches.items) {
+      mismatchItems.push(item)
+    }
 
     ctx.restore()
   }
@@ -448,62 +452,14 @@ export function drawFeatsCore({
 }
 
 /**
- * Common drawing function that delegates Y-offset calculation to a strategy function
+ * Build Flatbush index for mismatch mouseover detection
  */
-export function drawFeatsCommon({
-  self,
-  ctx,
-  canvasWidth,
-  calculateYOffsets,
-}: {
-  self: LinearReadCloudDisplayModel
-  ctx: CanvasRenderingContext2D
-  canvasWidth: number
-  calculateYOffsets: (computedChains: ComputedChain[]) => {
-    chainYOffsets: Map<string, number>
-    layoutHeight?: number
-  }
-}) {
-  const { chainData } = self
-  if (!chainData) {
-    return
-  }
-  const session = getSession(self)
-  const { assemblyManager } = session
-  const view = getContainingView(self) as LGV
-  const assemblyName = view.assemblyNames[0]!
-  const asm = assemblyManager.get(assemblyName)
-  if (!asm) {
-    return
-  }
-  const featureHeight = self.featureHeight ?? getConf(self, 'featureHeight')
-
-  const { featuresForFlatbush, layoutHeight } = drawFeatsCore({
-    ctx,
-    params: {
-      canvasWidth,
-      chainData,
-      featureHeight,
-      colorBy: self.colorBy,
-      drawSingletons: self.drawSingletons,
-      drawProperPairs: self.drawProperPairs,
-      flipStrandLongReadChains: self.flipStrandLongReadChains,
-      noSpacing: self.noSpacing,
-      trackMaxHeight: self.trackMaxHeight,
-      config: self.configuration,
-      theme: session.theme!,
-      regions: view.staticBlocks.contentBlocks,
-      bpPerPx: view.bpPerPx,
-    },
-    view,
-    calculateYOffsets,
-  })
-
-  // Build and set Flatbush index
-  buildFlatbushIndex(featuresForFlatbush, self)
-
-  // Set layout height if provided (for stack mode)
-  if (layoutHeight !== undefined) {
-    self.setLayoutHeight(layoutHeight)
-  }
+export function buildMismatchFlatbushIndex(
+  mismatchFlatbushData: ArrayBuffer,
+  mismatchItems: FlatbushItem[],
+  self: LinearReadCloudDisplayModel,
+) {
+  const mismatchFlatbush = Flatbush.from(mismatchFlatbushData)
+  self.setMismatchLayout(mismatchFlatbush)
+  self.setMismatchItems(mismatchItems)
 }

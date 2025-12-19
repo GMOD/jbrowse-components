@@ -72,11 +72,20 @@ export function sortFeature(
       featuresInCenterLine.sort((a, b) => {
         const aMismatch = baseMap.get(a.id())
         const bMismatch = baseMap.get(b.id())
-        const acode = aMismatch?.base.toUpperCase()
-        const bcode = bMismatch?.base.toUpperCase()
+        const acode =
+          aMismatch?.type === 'mismatch'
+            ? aMismatch.base.toUpperCase()
+            : aMismatch?.type === 'deletion'
+              ? '*'
+              : undefined
+        const bcode =
+          bMismatch?.type === 'mismatch'
+            ? bMismatch.base.toUpperCase()
+            : bMismatch?.type === 'deletion'
+              ? '*'
+              : undefined
         return acode === bcode && acode === '*'
-          ? // @ts-expect-error
-            bMismatch.length - aMismatch.length
+          ? (bMismatch?.length ?? 0) - (aMismatch?.length ?? 0)
           : (bcode ? bcode.charCodeAt(0) : 0) -
               (acode ? acode.charCodeAt(0) : 0)
       })

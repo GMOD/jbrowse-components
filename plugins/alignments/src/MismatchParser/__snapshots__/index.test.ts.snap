@@ -19,8 +19,8 @@ exports[`more skip 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "1",
     "insertedBases": "C",
+    "insertlen": 1,
     "length": 0,
     "start": 31,
     "type": "insertion",
@@ -58,7 +58,6 @@ exports[`more skip 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 48,
     "type": "deletion",

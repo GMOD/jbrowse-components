@@ -1,12 +1,20 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { assembleLocString, getContainingView } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+  toLocale,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import {
   type FlatbushItem,
+  flatbushItemToFeatureData,
   getFlatbushItemLabel,
 } from '../../PileupRenderer/types'
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
@@ -65,7 +73,7 @@ function MismatchTooltip({
     >
       <div>
         <div>{getFlatbushItemLabel(mismatchData)}</div>
-        <div>Position: {mismatchData.start + 1}</div>
+        <div>Position: {toLocale(mismatchData.start + 1)}</div>
       </div>
     </BaseTooltip>
   )
@@ -349,8 +357,33 @@ const Cloud = observer(function ({
 
   const onClick = useCallback(
     (event: React.MouseEvent) => {
-      const { feature } = getFeatureUnderMouse(event)
+      const mismatch = getMismatchUnderMouse(event)
+      if (mismatch) {
+        const session = getSession(model)
+        const regions = view.dynamicBlocks.contentBlocks
+        const refName = regions[0]?.refName || ''
+        const { feature } = getFeatureUnderMouse(event)
+        const sourceRead = feature?.data.name
+        if (isSessionModelWithWidgets(session)) {
+          const featureWidget = session.addWidget(
+            'BaseFeatureWidget',
+            'baseFeature',
+            {
+              featureData: flatbushItemToFeatureData(
+                mismatch,
+                refName,
+                sourceRead,
+              ),
+              view,
+              track: getContainingTrack(model),
+            },
+          )
+          session.showWidget(featureWidget)
+        }
+        return
+      }
 
+      const { feature } = getFeatureUnderMouse(event)
       if (feature) {
         model.selectFeature(feature.chain)
         model.setSelectedFeatureId(feature.chainId)
@@ -358,7 +391,7 @@ const Cloud = observer(function ({
         model.setSelectedFeatureId(undefined)
       }
     },
-    [getFeatureUnderMouse, model],
+    [getMismatchUnderMouse, getFeatureUnderMouse, model, view],
   )
 
   const hasHover = hoveredMismatchData || hoveredFeatureData
