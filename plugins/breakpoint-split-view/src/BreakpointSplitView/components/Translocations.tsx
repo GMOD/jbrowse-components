@@ -1,16 +1,19 @@
+import { useMemo, useState } from 'react'
+
+import { getSession } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import {
   LEFT,
-  calculateYPositions,
   createMouseHandlers,
   getTestId,
-  useBreakpointOverlaySetup,
-} from './useBreakpointOverlay'
+  getYOffset,
+} from './overlayUtils'
 import { getMatchedTranslocationFeatures } from './util'
-import { getPxFromCoordinate } from '../util'
+import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
 
-import type { OverlayProps } from './useBreakpointOverlay'
+import type { OverlayProps } from './overlayUtils'
 import type { LayoutRecord } from '../types'
 
 function str(s: string) {
@@ -24,22 +27,21 @@ const Translocations = observer(function ({
   getTrackYPosOverride,
 }: OverlayProps) {
   const { interactiveOverlay, views } = model
+  const session = getSession(model)
+  const { assemblyManager } = session
+  const snap = getSnapshot(model)
+  const v0 = views[0]
+  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
+  useNextFrame(snap)
   const totalFeatures = model.getTrackFeatures(trackId)
-  const {
-    session,
-    assembly,
-    layoutMatches,
-    mouseoverElt,
-    setMouseoverElt,
-    yOffset,
-  } = useBreakpointOverlaySetup(
-    model,
-    trackId,
-    parentRef,
-    getMatchedTranslocationFeatures,
-    totalFeatures,
-  )
 
+  const layoutMatches = useMemo(() => {
+    const matchedFeatures = getMatchedTranslocationFeatures(totalFeatures)
+    return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
+  }, [totalFeatures, trackId, model])
+
+  const [mouseoverElt, setMouseoverElt] = useState<string>()
+  const yOffset = getYOffset(parentRef)
   const tracks = views.map(v => v.getTrack(trackId))
 
   if (!assembly) {
@@ -85,17 +87,12 @@ const Translocations = observer(function ({
             const reversed1 = views[level1]!.pxToBp(x1).reversed
             const reversed2 = views[level2]!.pxToBp(x2).reversed
 
-            const { y1, y2 } = calculateYPositions(
-              trackId,
-              level1,
-              level2,
-              views,
-              tracks,
-              c1,
-              c2,
-              yOffset,
-              getTrackYPosOverride,
-            )
+            const y1 =
+              yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
+              yOffset
+            const y2 =
+              yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
+              yOffset
 
             const path = [
               'M',

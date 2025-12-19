@@ -11,7 +11,7 @@ import {
   getPairedOrientationColor,
   isAbnormalOrientation,
 } from './getOrientationColor'
-import { LEFT, RIGHT, getTestId, getYOffset } from './useBreakpointOverlay'
+import { LEFT, RIGHT, getTestId, getYOffset } from './overlayUtils'
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
@@ -24,7 +24,7 @@ import {
   yPos,
 } from '../util'
 
-import type { OverlayProps } from './useBreakpointOverlay'
+import type { OverlayProps } from './overlayUtils'
 
 const AlignmentConnections = observer(function ({
   model,

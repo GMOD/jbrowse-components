@@ -18,6 +18,15 @@ function getClip(cigar: string, strand: number) {
     : +(endClip.exec(cigar)?.[1] ?? 0)
 }
 
+// This interface covers features from two different track types:
+//
+// 1. AlignmentsTrack (BAM/CRAM) - uses fields like:
+//    - CIGAR, strand, flags, pair_orientation, clipLengthAtStartOfRead
+//    - Rendered by AlignmentConnections component
+//
+// 2. VariantTrack (VCF) - uses fields like:
+//    - ALT, INFO, type (e.g. 'translocation', 'paired_feature', or breakend)
+//    - Rendered by Translocations, PairedFeatures, or Breakends components
 interface MinimalFeature {
   [key: string]: unknown
   uniqueId: string
@@ -28,13 +37,15 @@ interface MinimalFeature {
   flags: number
   name?: string
   id?: string
+  // Alignment-specific fields
   tags?: Record<string, unknown>
   pair_orientation?: string
+  clipLengthAtStartOfRead?: number
+  // Variant-specific fields
   INFO?: Record<string, unknown>
   ALT?: unknown[]
   mate?: Record<string, unknown>
   type?: string
-  clipLengthAtStartOfRead?: number
 }
 
 export default class BreakpointGetFeatures extends RpcMethodType {
@@ -97,8 +108,10 @@ export default class BreakpointGetFeatures extends RpcMethodType {
         .pipe(toArray()),
     )
 
-    // Only serialize the minimal fields needed for breakpoint view
-    // Process in a single pass to avoid multiple iterations
+    // Serialize minimal fields needed for breakpoint view. This includes fields
+    // for both alignment features (CIGAR, strand, pair_orientation) and variant
+    // features (ALT, INFO, type). Each feature will only have the relevant
+    // fields populated based on its source adapter.
     return features.map(feature => {
       const cigar = feature.get('CIGAR')
       const strand = feature.get('strand')
@@ -114,6 +127,8 @@ export default class BreakpointGetFeatures extends RpcMethodType {
         tags: feature.get('tags'),
         pair_orientation: feature.get('pair_orientation'),
         type: feature.get('type'),
+        ALT: feature.get('ALT'),
+        INFO: feature.get('INFO'),
         clipLengthAtStartOfRead:
           cigar && strand !== undefined ? getClip(cigar, strand) : undefined,
       }
