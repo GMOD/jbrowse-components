@@ -36,6 +36,8 @@ const Breakends = observer(function ({
     totalFeatures,
   )
 
+  const tracks = views.map(v => v.getTrack(trackId))
+
   if (!assembly) {
     return null
   }
@@ -55,10 +57,6 @@ const Breakends = observer(function ({
           const id = f1.id()
 
           const relevantAlt = findMatchingAlt(f1, f2)
-          if (!c1 || !c2) {
-            return null
-          }
-
           const { f1ref, f2ref } = getCanonicalRefs(
             assembly,
             f1.get('refName'),
@@ -74,6 +72,7 @@ const Breakends = observer(function ({
             level1,
             level2,
             views,
+            tracks,
             c1,
             c2,
             yOffset,

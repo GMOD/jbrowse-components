@@ -36,6 +36,8 @@ const PairedFeatures = observer(function ({
     totalFeatures,
   )
 
+  const tracks = views.map(v => v.getTrack(trackId))
+
   if (!assembly) {
     return null
   }
@@ -53,11 +55,6 @@ const PairedFeatures = observer(function ({
           const { layout: c1, feature: f1, level: level1 } = chunk[i]!
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
           const id = f1.id()
-
-          if (!c1 || !c2) {
-            return null
-          }
-
           const { f1ref, f2ref } = getCanonicalRefs(
             assembly,
             f1.get('refName'),
@@ -71,6 +68,7 @@ const PairedFeatures = observer(function ({
             level1,
             level2,
             views,
+            tracks,
             c1,
             c2,
             yOffset,

@@ -63,12 +63,12 @@ export function calculateYPositions(
   level1: number,
   level2: number,
   views: BreakpointViewModel['views'],
+  tracks: ReturnType<(typeof views)[number]['getTrack']>[],
   c1: LayoutRecord,
   c2: LayoutRecord,
   yOffset: number,
   getTrackYPosOverride?: (trackId: string, level: number) => number,
 ) {
-  const tracks = views.map(v => v.getTrack(trackId))
   return {
     y1:
       yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) - yOffset,

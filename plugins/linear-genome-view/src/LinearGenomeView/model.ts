@@ -628,10 +628,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #getter
+       */
+      get trackMap() {
+        const map = new Map()
+        for (const track of self.tracks) {
+          map.set(track.configuration.trackId, track)
+        }
+        return map
+      },
+
+      /**
        * #method
        */
       getTrack(id: string) {
-        return self.tracks.find(t => t.configuration.trackId === id)
+        return this.trackMap.get(id)
       },
 
       /**
