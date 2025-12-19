@@ -31,14 +31,12 @@ const ServerSideRenderedBlockContent = observer(function ({
     ) : (
       <BlockMsg message={`${model.message}`} severity="info" />
     )
-  } else if (model.statusMessage) {
+  } else {
     return (
       <LoadingOverlay statusMessage={model.statusMessage}>
         {model.reactElement}
       </LoadingOverlay>
     )
-  } else {
-    return model.reactElement ?? null
   }
 })
 

@@ -1,3 +1,11 @@
+import {
+  discardIntervals,
+  findInsertionPoint,
+  getItemAt,
+  insertInterval,
+  isRangeClear,
+} from './intervalUtils'
+
 import type {
   BaseLayout,
   RectTuple,
@@ -39,42 +47,11 @@ class LayoutRow<T> {
       return this.allFilled
     }
 
-    const intervals = this.intervals
-    const len = intervals.length
-
-    if (len === 0) {
+    const dataIdx = getItemAt(this.intervals, x)
+    if (dataIdx === -1) {
       return undefined
     }
-
-    // Linear scan for small arrays
-    if (len < 40) {
-      for (let i = 0; i < len; i += 2) {
-        if (x >= intervals[i]! && x < intervals[i + 1]!) {
-          return this.data[i >> 1]
-        }
-      }
-      return undefined
-    }
-
-    // Binary search for larger arrays - find interval containing x
-    let low = 0
-    let high = len >> 1
-
-    while (low < high) {
-      const mid = (low + high) >>> 1
-      const midIdx = mid << 1
-      if (intervals[midIdx + 1]! <= x) {
-        low = mid + 1
-      } else {
-        high = mid
-      }
-    }
-
-    const idx = low << 1
-    if (idx < len && x >= intervals[idx]! && x < intervals[idx + 1]!) {
-      return this.data[low]
-    }
-    return undefined
+    return this.data[dataIdx]
   }
 
   isRangeClear(left: number, right: number): boolean {
@@ -82,94 +59,17 @@ class LayoutRow<T> {
       return false
     }
 
-    const intervals = this.intervals
-    const len = intervals.length
-
-    // Empty row is always clear
-    if (len === 0) {
-      return true
-    }
-
-    // Linear scan for small arrays (better cache locality)
-    if (len < 40) {
-      for (let i = 0; i < len; i += 2) {
-        const start = intervals[i]!
-        const end = intervals[i + 1]!
-        // Intersection check: end > left && start < right
-        if (end > left && start < right) {
-          return false
-        }
-      }
-      return true
-    }
-
-    // Binary search for larger arrays
-    // Find first interval whose end > left (first potential overlap)
-    let low = 0
-    let high = len >> 1
-
-    while (low < high) {
-      const mid = (low + high) >>> 1
-      const midIdx = mid << 1
-      if (intervals[midIdx + 1]! <= left) {
-        low = mid + 1
-      } else {
-        high = mid
-      }
-    }
-
-    // Check if found interval overlaps
-    const idx = low << 1
-    if (idx >= len) {
-      return true
-    }
-
-    // If the first candidate's start is >= right, no overlap possible
-    const start = intervals[idx]!
-    if (start >= right) {
-      return true
-    }
-
-    // This interval overlaps (we know end > left from binary search, and start < right)
-    return false
+    return isRangeClear(this.intervals, left, right)
   }
 
   addRect(rect: Rectangle<T>, data: Record<string, T> | string): void {
     const left = rect.l
     const right = rect.r + this.padding
     const intervals = this.intervals
-    const len = intervals.length
 
-    // Hybrid insertion strategy
-    if (len < 40) {
-      // Linear insertion for small arrays
-      let idx = len
-      for (let i = 0; i < len; i += 2) {
-        if (left < intervals[i]!) {
-          idx = i
-          break
-        }
-      }
-      intervals.splice(idx, 0, left, right)
-      this.data.splice(idx >> 1, 0, data)
-    } else {
-      // Binary search insertion for larger arrays
-      let low = 0
-      let high = len >> 1
-
-      while (low < high) {
-        const mid = (low + high) >>> 1
-        const midIdx = mid << 1
-        if (intervals[midIdx]! < left) {
-          low = mid + 1
-        } else {
-          high = mid
-        }
-      }
-
-      intervals.splice(low << 1, 0, left, right)
-      this.data.splice(low, 0, data)
-    }
+    const idx = findInsertionPoint(intervals, left)
+    insertInterval(intervals, idx, left, right)
+    this.data.splice(idx >> 1, 0, data)
   }
 
   discardRange(left: number, right: number): void {
@@ -177,47 +77,9 @@ class LayoutRow<T> {
       return
     }
 
-    const intervals = this.intervals
-    const data = this.data
-    const oldLen = intervals.length
-    const newIntervals: number[] = []
-    const newData: (Record<string, T> | string)[] = []
-
-    for (let i = 0; i < oldLen; i += 2) {
-      const start = intervals[i]!
-      const end = intervals[i + 1]!
-      const intervalData = data[i >> 1]!
-
-      // If interval is completely within discard range, skip it
-      if (start >= left && end <= right) {
-        continue
-      }
-      // If no overlap, keep it
-      if (end <= left || start >= right) {
-        newIntervals.push(start, end)
-        newData.push(intervalData)
-      }
-      // If interval overlaps left edge
-      else if (start < left && end > left) {
-        if (end <= right) {
-          // Trim from the right
-          newIntervals.push(start, left)
-          newData.push(intervalData)
-        } else {
-          // Interval spans the entire discard range, split it
-          newIntervals.push(start, left, right, end)
-          newData.push(intervalData, intervalData)
-        }
-      }
-      // If interval overlaps right edge only
-      else if (start < right && end > right) {
-        newIntervals.push(right, end)
-        newData.push(intervalData)
-      }
-    }
-
-    this.intervals = newIntervals
-    this.data = newData
+    const result = discardIntervals(this.intervals, this.data, left, right)
+    this.intervals = result.intervals
+    this.data = result.data
   }
 }
 
@@ -340,13 +202,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         : 0
 
     if (this.displayMode !== 'collapse') {
-      // OPTIMIZATION: Inline collision checking for hot path
-      // Eliminates function call overhead which is critical at 100k+ features
       const bitmap = this.bitmap
 
-      outer: for (; top <= maxTop; top += 1) {
+      for (; top <= maxTop; top += 1) {
         // Check all rows that this rectangle would occupy
         const maxY = top + pHeight
+        let hasCollision = false
         for (let y = top; y < maxY; y += 1) {
           const row = bitmap[y]
 
@@ -355,53 +216,17 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
             continue
           }
 
-          // Fast path: row is all filled
-          if (row.allFilled) {
-            continue outer
-          }
-
-          // Fully inlined isRangeClear for maximum performance
-          const intervals = row.getIntervals()
-          const len = intervals.length
-
-          if (len > 0) {
-            if (len < 40) {
-              // Linear scan for small arrays
-              for (let i = 0; i < len; i += 2) {
-                const start = intervals[i]!
-                const end = intervals[i + 1]!
-                if (end > pLeft && start < pRight) {
-                  continue outer
-                }
-              }
-            } else {
-              // Binary search for larger arrays
-              let low = 0
-              let high = len >> 1
-
-              while (low < high) {
-                const mid = (low + high) >>> 1
-                const midIdx = mid << 1
-                if (intervals[midIdx + 1]! <= pLeft) {
-                  low = mid + 1
-                } else {
-                  high = mid
-                }
-              }
-
-              const idx = low << 1
-              if (idx < len) {
-                const start = intervals[idx]!
-                if (start < pRight) {
-                  continue outer
-                }
-              }
-            }
+          // Check for collision
+          if (!row.isRangeClear(pLeft, pRight)) {
+            hasCollision = true
+            break
           }
         }
 
         // No collision found in any row
-        break
+        if (!hasCollision) {
+          break
+        }
       }
 
       if (top > maxTop) {

@@ -3,7 +3,6 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawDensityArrays } from '../drawDensity'
-import { serializeReducedFeatures } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { WiggleFeatureArrays } from '../util'
@@ -26,18 +25,9 @@ export async function renderDensityArrays(
       ),
   )
 
-  const features = []
-  for (const f of serializeReducedFeatures(
-    reducedFeatures,
-    'bigwig',
-    region.refName,
-  )) {
-    features.push(f)
-  }
-
   const serialized = {
     ...rest,
-    features,
+    reducedFeatures,
     height,
     width,
   }
