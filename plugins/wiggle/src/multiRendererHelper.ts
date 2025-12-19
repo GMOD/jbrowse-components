@@ -1,4 +1,11 @@
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import {
+  BaseFeatureDataAdapter,
+  isFeatureAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import type { MultiWiggleFeatureArrays } from './MultiWiggleAdapter/MultiWiggleAdapter'
 import type { MultiRenderArgsDeserialized } from './types'
@@ -16,15 +23,9 @@ type RenderFeaturesFn = (
   features: Map<string, Feature>,
 ) => Promise<RenderReturn>
 
-/**
- * Shared render logic for Multi* wiggle renderers.
- * Tries array-based rendering first for better performance,
- * falls back to feature-based rendering if arrays aren't available.
- */
 export async function renderMultiWiggle(
   pluginManager: PluginManager,
   renderProps: MultiRenderArgsDeserialized,
-  getFeatures: () => Promise<Map<string, Feature>>,
   renderArrays: RenderArraysFn,
   renderFeatures: RenderFeaturesFn,
 ) {
@@ -36,21 +37,20 @@ export async function renderMultiWiggle(
   )
   const region = regions[0]!
 
-  // Try array-based rendering for better performance
   if ('getFeaturesAsArrays' in dataAdapter) {
     const arraysBySource = await (dataAdapter as any).getFeaturesAsArrays(
       region,
       renderProps,
     )
-    const allSourcesHaveArrays = renderProps.sources.every(
-      s => arraysBySource[s.name],
+    console.log('here')
+    return renderArrays(renderProps, arraysBySource)
+  } else {
+    const feats = await firstValueFrom(
+      (dataAdapter as BaseFeatureDataAdapter)
+        .getFeatures(region, renderProps)
+        .pipe(toArray()),
     )
-    if (allSourcesHaveArrays) {
-      return renderArrays(renderProps, arraysBySource)
-    }
+    const features = new Map(feats.map(f => [f.id(), f] as const))
+    return renderFeatures(renderProps, features)
   }
-
-  // Fallback to feature-based rendering
-  const features = await getFeatures()
-  return renderFeatures(renderProps, features)
 }

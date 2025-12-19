@@ -69,24 +69,14 @@ function addRectToPath(
   ctx.rect(x, y, width, height)
 }
 
-interface ColorArrays {
-  colors?: string[]
-  lightenedColors?: string[]
-  darkenedColors?: string[]
-  maxScoreColors?: string[]
-  minScoreColors?: string[]
-}
-
 /**
  * Convert Feature objects to structure-of-arrays format for use with drawXYArrays.
  * Optionally computes per-feature colors using the provided callback.
- * When whiskers=true, also pre-computes lightened/darkened colors for the 3-pass rendering.
  */
 function featuresToArrays(
   features: Map<string, Feature> | Feature[],
   colorCallback?: (f: Feature, score: number) => string,
-  whiskers?: boolean,
-): WiggleFeatureArrays & ColorArrays {
+): WiggleFeatureArrays & { colors?: string[] } {
   const featureList = Array.isArray(features)
     ? features
     : Array.from(features.values())
@@ -97,20 +87,7 @@ function featuresToArrays(
   const minScoresArr = new Float32Array(len)
   const maxScoresArr = new Float32Array(len)
   const colors = colorCallback ? new Array<string>(len) : undefined
-  const lightenedColors =
-    colorCallback && whiskers ? new Array<string>(len) : undefined
-  const darkenedColors =
-    colorCallback && whiskers ? new Array<string>(len) : undefined
-  const maxScoreColors =
-    colorCallback && whiskers ? new Array<string>(len) : undefined
-  const minScoreColors =
-    colorCallback && whiskers ? new Array<string>(len) : undefined
   let hasSummary = false
-
-  // Cache for color transformations to avoid recomputing for same colors
-  let lastColor = ''
-  let lastLightened = ''
-  let lastDarkened = ''
 
   for (let i = 0; i < len; i++) {
     const f = featureList[i]!
@@ -125,23 +102,7 @@ function featuresToArrays(
       maxScoresArr[i] = f.get('maxScore')
     }
     if (colors && colorCallback) {
-      const color = colorCallback(f, score)
-      colors[i] = color
-      if (whiskers) {
-        // Cache lightened/darkened colors to avoid recomputing for same color
-        if (color !== lastColor) {
-          const colordColor = colord(color)
-          lastLightened = lighten(colordColor, 0.4).toHex()
-          lastDarkened = darken(colordColor, 0.4).toHex()
-          lastColor = color
-        }
-        lightenedColors![i] = lastLightened
-        darkenedColors![i] = lastDarkened
-        if (isSummary) {
-          maxScoreColors![i] = colorCallback(f, maxScoresArr[i]!)
-          minScoreColors![i] = colorCallback(f, minScoresArr[i]!)
-        }
-      }
+      colors[i] = colorCallback(f, score)
     }
   }
 
@@ -152,10 +113,6 @@ function featuresToArrays(
     minScores: hasSummary ? minScoresArr : undefined,
     maxScores: hasSummary ? maxScoresArr : undefined,
     colors,
-    lightenedColors,
-    darkenedColors,
-    maxScoreColors,
-    minScoreColors,
   }
 }
 
@@ -186,7 +143,7 @@ function darken(color: Colord, amount: number) {
 export function drawXYArrays(
   ctx: CanvasRenderingContext2D,
   props: {
-    featureArrays: WiggleFeatureArrays & ColorArrays
+    featureArrays: WiggleFeatureArrays & { colors?: string[] }
     bpPerPx: number
     regions: Region[]
     scaleOpts: ScaleOpts
@@ -226,18 +183,7 @@ export function drawXYArrays(
   } = props
 
   // Determine color mode: per-feature colors, bicolor, or static color
-  const {
-    starts,
-    ends,
-    scores,
-    minScores,
-    maxScores,
-    colors,
-    lightenedColors,
-    darkenedColors,
-    maxScoreColors,
-    minScoreColors,
-  } = featureArrays
+  const { starts, ends, scores, minScores, maxScores, colors } = featureArrays
   const usePerFeatureColors = colors !== undefined && colors.length > 0
   const useBicolor =
     !usePerFeatureColors && posColor !== undefined && negColor !== undefined
@@ -317,8 +263,6 @@ export function drawXYArrays(
     }
     const toOrigin = (n: number) => toY(originY) - toY(n)
 
-    // Determine if we can batch (static color, no alpha)
-    const useWhiskersPerFeatureColors = lightenedColors !== undefined
     const colordStatic = colord(staticColor)
     const lightenedColor = lighten(colordStatic, 0.4).toHex()
     const darkenedColor = darken(colordStatic, 0.4).toHex()
@@ -328,8 +272,12 @@ export function drawXYArrays(
     const crossingOrigin =
       niceMin < bicolorPivotValue && niceMax > bicolorPivotValue
 
-    if (useWhiskersPerFeatureColors) {
+    if (usePerFeatureColors) {
       // Per-feature colors path (cannot batch)
+      // Cache for lightened/darkened color transforms
+      let lastColor = ''
+      let lastLightened = ''
+      let lastDarkened = ''
       const lastFillStyle = { value: '' }
 
       // Pass 1: max scores (lightened)
@@ -345,7 +293,15 @@ export function drawXYArrays(
           : (fend - regionStart) * invBpPerPx
         const maxScore = maxScores![i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-        const featureColor = crossingOrigin ? colors![i]! : lightenedColors[i]!
+        const baseColor = colors![i]!
+        let featureColor = baseColor
+        if (!crossingOrigin) {
+          if (baseColor !== lastColor) {
+            lastLightened = lighten(colord(baseColor), 0.4).toHex()
+            lastColor = baseColor
+          }
+          featureColor = lastLightened
+        }
         fillRectCtx(
           leftPx,
           toY(maxScore),
@@ -357,6 +313,7 @@ export function drawXYArrays(
         )
       }
       lastFillStyle.value = ''
+      lastColor = ''
 
       // Pass 2: average scores
       for (let i = 0; i < len; i++) {
@@ -384,13 +341,7 @@ export function drawXYArrays(
           prevLeftPx = leftPx
         }
 
-        // For crossing origin, mix maxScore and minScore colors
-        let featureColor = colors![i]!
-        if (crossingOrigin && maxScoreColors && minScoreColors) {
-          featureColor = colord(maxScoreColors[i]!)
-            .mix(colord(minScoreColors[i]!))
-            .toHex()
-        }
+        const featureColor = colors![i]!
         fillRectCtx(
           leftPx,
           toY(score),
@@ -402,6 +353,7 @@ export function drawXYArrays(
         )
       }
       lastFillStyle.value = ''
+      lastColor = ''
 
       // Pass 3: min scores (darkened)
       for (let i = 0; i < len; i++) {
@@ -415,7 +367,15 @@ export function drawXYArrays(
           : (fend - regionStart) * invBpPerPx
         const minScore = minScores[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
-        const featureColor = crossingOrigin ? colors![i]! : darkenedColors![i]!
+        const baseColor = colors![i]!
+        let featureColor = baseColor
+        if (!crossingOrigin) {
+          if (baseColor !== lastColor) {
+            lastDarkened = darken(colord(baseColor), 0.4).toHex()
+            lastColor = baseColor
+          }
+          featureColor = lastDarkened
+        }
         fillRectCtx(
           leftPx,
           toY(minScore),
@@ -936,34 +896,15 @@ export function drawXY(
     filled?: boolean
   },
 ): { reducedFeatures: ReducedFeatureArrays } {
-  const {
+  const { features, colorCallback, staticColor, filled: filledProp } = props
+  const featureArrays = featuresToArrays(
     features,
-    config,
-    colorCallback,
-    staticColor,
-    filled: filledProp,
-  } = props
-
-  const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
-
-  // When staticColor is set, delegate to drawXYArrays (handles all summaryScoreModes)
-  if (staticColor) {
-    const featureArrays = featuresToArrays(features)
-    return drawXYArrays(ctx, {
-      ...props,
-      featureArrays,
-      color: staticColor,
-      filled: filledProp,
-    })
-  }
-
-  // Delegate to drawXYArrays with per-feature colors
-  // For whiskers mode, pass whiskers=true to pre-compute lightened/darkened colors
-  const isWhiskers = summaryScoreMode === 'whiskers'
-  const featureArrays = featuresToArrays(features, colorCallback, isWhiskers)
+    staticColor ? undefined : colorCallback,
+  )
   return drawXYArrays(ctx, {
     ...props,
     featureArrays,
+    color: staticColor,
     filled: filledProp,
   })
 }

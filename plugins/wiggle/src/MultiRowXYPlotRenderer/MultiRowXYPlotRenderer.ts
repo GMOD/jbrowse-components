@@ -11,7 +11,6 @@ export default class MultiRowXYPlotRenderer extends FeatureRendererType {
     return renderMultiWiggle(
       this.pluginManager,
       renderProps,
-      () => this.getFeatures(renderProps),
       async (props, arrays) => {
         const { renderMultiRowXYPlotArrays } =
           await import('./renderMultiRowXYPlotArrays')

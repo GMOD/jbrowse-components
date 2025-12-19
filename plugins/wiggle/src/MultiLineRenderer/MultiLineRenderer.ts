@@ -11,7 +11,6 @@ export default class MultiLineRenderer extends FeatureRendererType {
     return renderMultiWiggle(
       this.pluginManager,
       renderProps,
-      () => this.getFeatures(renderProps),
       async (props, arrays) => {
         const { renderMultiLineArrays } =
           await import('./renderMultiLineArrays')
