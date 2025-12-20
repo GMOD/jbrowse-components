@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay'
 import Header from './Header'
+import Rubberband from './Rubberband'
 
 import type { BreakpointViewModel } from '../model'
 
@@ -20,6 +21,18 @@ const useStyles = makeStyles()(theme => ({
   },
   rel: {
     position: 'relative',
+  },
+  rubberbandContainer: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  rubberbandDiv: {
+    width: '100%',
+    background: theme.palette.action.disabledBackground,
+    height: 15,
+    '&:hover': {
+      background: theme.palette.action.selected,
+    },
   },
 }))
 
@@ -59,8 +72,12 @@ const BreakpointSplitView = observer(function ({
 }) {
   const { classes } = useStyles()
   return (
-    <div>
+    <div className={classes.rubberbandContainer}>
       {model.showHeader ? <Header model={model} /> : null}
+      <Rubberband
+        model={model}
+        ControlComponent={<div className={classes.rubberbandDiv} />}
+      />
       <div className={classes.container}>
         <BreakpointSplitViewLevels model={model} />
         <BreakpointSplitViewOverlay model={model} />

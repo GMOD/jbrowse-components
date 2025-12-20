@@ -4,16 +4,15 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import {
   addDisposer,
+  addMiddleware,
   cast,
   getPath,
-  onAction,
   types,
 } from '@jbrowse/mobx-state-tree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
-import { getClip } from './getClip'
 import { calc, getBlockFeatures, intersect } from './util'
 
 import type { BreakpointSplitViewInit, ExportSvgOptions } from './types'
@@ -198,18 +197,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return features.map(c =>
           c
             .map(feature => {
-              const level = tracks.findIndex(track => calc(track, feature))
-              return level !== -1
-                ? {
+              for (const [level, track] of tracks.entries()) {
+                const layout = calc(track, feature)
+                if (layout) {
+                  return {
                     feature,
-                    layout: calc(tracks[level], feature),
+                    layout,
                     level,
-                    clipLengthAtStartOfRead: getClip(
-                      feature.get('CIGAR'),
-                      feature.get('strand'),
-                    ),
+                    clipLengthAtStartOfRead:
+                      feature.get('clipLengthAtStartOfRead') ?? 0,
                   }
-                : undefined
+                }
+              }
+              return undefined
             })
             .filter(notEmpty),
         )
@@ -219,34 +219,34 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          onAction(
-            self,
-            ({
-              name,
-              path,
-              args,
-            }: {
-              name: string
-              path?: string
-              args?: unknown[]
-            }) => {
-              if (self.linkViews) {
-                const actions = [
-                  'horizontalScroll',
-                  'zoomTo',
-                  'setScaleFactor',
-                  'showTrack',
-                  'toggleTrack',
-                  'hideTrack',
-                  'setTrackLabels',
-                  'toggleCenterLine',
-                ]
-                if (actions.includes(name) && path) {
-                  this.onSubviewAction(name, path, args)
+          addMiddleware(self, (rawCall, next) => {
+            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
+              const syncActions = [
+                'horizontalScroll',
+                'zoomTo',
+                'setScaleFactor',
+                'showTrack',
+                'toggleTrack',
+                'hideTrack',
+                'setTrackLabels',
+                'toggleCenterLine',
+              ]
+
+              if (self.linkViews && syncActions.includes(rawCall.name)) {
+                const sourcePath = getPath(rawCall.context)
+                next(rawCall)
+                // Sync to all other views
+                for (const view of self.views) {
+                  const viewPath = getPath(view)
+                  if (viewPath !== sourcePath) {
+                    // @ts-expect-error
+                    view[rawCall.name](rawCall.args[0])
+                  }
                 }
               }
-            },
-          ),
+            }
+            next(rawCall)
+          }),
         )
       },
 
@@ -361,34 +361,42 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
         addDisposer(
           self,
-          autorun(async () => {
-            try {
-              // check all views 'initialized'
-              if (!self.views.every(view => view.initialized)) {
-                return
-              }
-              // check that tracks are 'ready' (not notReady)
-              if (
-                self.matchedTracks.some(track => track.displays[0].notReady?.())
-              ) {
-                return
-              }
+          autorun(
+            async () => {
+              try {
+                // check all views 'initialized'
+                if (!self.views.every(view => view.initialized)) {
+                  return
+                }
+                // check that tracks are 'ready' (not notReady)
+                if (
+                  self.matchedTracks.some(track =>
+                    track.displays[0].notReady?.(),
+                  )
+                ) {
+                  return
+                }
 
-              self.setMatchedTrackFeatures(
-                Object.fromEntries(
-                  await Promise.all(
-                    self.matchedTracks.map(async track => [
-                      track.configuration.trackId,
-                      await getBlockFeatures(self, track),
-                    ]),
+                self.setMatchedTrackFeatures(
+                  Object.fromEntries(
+                    await Promise.all(
+                      self.matchedTracks.map(async track => [
+                        track.configuration.trackId,
+                        await getBlockFeatures(self, track),
+                      ]),
+                    ),
                   ),
-                ),
-              )
-            } catch (e) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            }
-          }),
+                )
+              } catch (e) {
+                console.error(e)
+                getSession(self).notifyError(`${e}`, e)
+              }
+            },
+            {
+              name: 'BreakpointFeatureFetcher',
+              delay: 1000,
+            },
+          ),
         )
       },
 
@@ -448,7 +456,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Export SVG',
             icon: PhotoCamera,
-            onClick: (): void => {
+            onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ExportSvgDialog,
                 {
@@ -456,6 +464,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   handleClose,
                 },
               ])
+            },
+          },
+        ]
+      },
+
+      /**
+       * #method
+       */
+      rubberBandMenuItems() {
+        return [
+          {
+            label: 'Zoom to region(s)',
+            onClick: () => {
+              for (const view of self.views) {
+                const { leftOffset, rightOffset } = view
+                if (leftOffset && rightOffset) {
+                  view.moveTo(leftOffset, rightOffset)
+                }
+              }
             },
           },
         ]

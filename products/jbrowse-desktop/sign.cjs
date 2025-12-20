@@ -11,6 +11,10 @@ if (!fs.existsSync(TEMP_DIR)) {
 }
 
 function sign(configuration) {
+  if (!process.env.WINDOWS_SIGN_CREDENTIAL_ID) {
+    console.log(`Skipping code signing for ${configuration.path}`)
+    return
+  }
   console.log(`Signing ${configuration.path}`)
   // we move signed files to a file named tmp.exe because our product name
   // contains a space, meaning our .exe contains a space, which CodeSignTool

@@ -1,6 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 
 import BreakpointAlignmentsWidgetF from './BreakpointAlignmentsFeatureDetail'
+import BreakpointGetFeaturesF from './BreakpointGetFeatures'
 import BreakpointSplitViewF from './BreakpointSplitView'
 import LaunchBreakpointSplitViewF from './LaunchBreakpointSplitView'
 
@@ -13,6 +14,7 @@ export default class BreakpointSplitViewPlugin extends Plugin {
     BreakpointSplitViewF(pluginManager)
     BreakpointAlignmentsWidgetF(pluginManager)
     LaunchBreakpointSplitViewF(pluginManager)
+    BreakpointGetFeaturesF(pluginManager)
   }
 
   configure() {}
