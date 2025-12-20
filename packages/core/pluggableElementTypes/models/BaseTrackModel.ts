@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
 
 import { ConfigurationReference, getConf } from '../../configuration'
@@ -19,6 +19,7 @@ import type {
 } from '../../configuration'
 import type { MenuItem } from '../../ui'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
 
@@ -303,6 +304,20 @@ export function createBaseTrackModel(
               ]
             : []),
         ]
+      },
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            if (!self.displays.length) {
+              const compatDisp = getCompatibleDisplays(self)
+              console.log({ compatDisp })
+              self.showDisplay(
+                self.configuration.trackId + '-' + compatDisp[0].type,
+              )
+            }
+          }),
+        )
       },
     }))
     .postProcessSnapshot(snap => {
